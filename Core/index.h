@@ -56,15 +56,6 @@ namespace Vital::Lua {
     static bool isNumber(lua_State* L, int index) {};
     static int getArgCount(lua_State* L) {};
 
-    // Getters
-    static bool getBool(lua_State* L, int index) {};
-    static std::string getString(lua_State* L, int index) {};
-    static int getInt(lua_State* L, int index) {};
-    static long getLong(lua_State* L, int index) {};
-    static float getFloat(lua_State* L, int index) {};
-    static double getDouble(lua_State* L, int index) {};
-    static void* getUserData(lua_State* L) {};
-    
     // Setters
     static void setNull(lua_State* L) {};
     static void setBool(lua_State* L, bool value) {};
@@ -76,4 +67,13 @@ namespace Vital::Lua {
     static void setUserData(lua_State* L, void* value) {};
     static void setError(lua_State* L, const std::string& error = "") {};
     static void setMetaTable(lua_State* L, const std::string& name) {};
+
+    // Getters
+    static bool getBool(lua_State* L, int index) {};
+    static std::string getString(lua_State* L, int index) {};
+    static int getInt(lua_State* L, int index) {};
+    static long getLong(lua_State* L, int index) {};
+    static float getFloat(lua_State* L, int index) {};
+    static double getDouble(lua_State* L, int index) {};
+    static void* getUserData(lua_State* L) {};
 };
