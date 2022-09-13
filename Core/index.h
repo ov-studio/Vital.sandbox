@@ -51,7 +51,7 @@ namespace Vital::Lua {
 	static XMFLOAT3 getFloat3(lua_State* L, int index) {};
 	static XMFLOAT4 getFloat4(lua_State* L, int index) {};
 	static double getDouble(lua_State* L, int index) {};
-	static void* getUservalue(lua_State* L) {};
+	static void* getUserData(lua_State* L) {};
 	
 	// Setters
 	static void setNull(lua_State* L) {};
@@ -64,7 +64,7 @@ namespace Vital::Lua {
 	static void setFloat3(lua_State* L, const XMFLOAT3& value) {};
 	static void setFloat4(lua_State* L, const XMFLOAT4& value) {};
 	static void setDouble(lua_State* L, double value) {};
-	static void setUservalue(lua_State* L, void* value) {};
+	static void setUserData(lua_State* L, void* value) {};
 	static void setError(lua_State* L, const std::string& error = "") {};
 	static void setMetaTable(lua_State* L, const std::string& name) {};
 };
