@@ -39,7 +39,7 @@ namespace Vital::Lua {
         "dofile", "load", "loadfile"
     };
 
-    // Creates & Destroys instances
+    // Instance Managers
     lua_State* createInstance() {
         lua_CInstance cInstance;
         cInstance.instance = luaL_newstate();
@@ -53,7 +53,11 @@ namespace Vital::Lua {
             lua_setglobal(cInstance.instance, i);
         }
     };
-    vm = createInstance();
+
+    bool destroyInstance(lua_State* cInstance) {
+        lua_close(cInstance);
+        return true
+    }
 
     //register function to use in scripts
     //bool RegisterFunc(lua_State* L, const std::string& name, lua_CFunction function) {};
