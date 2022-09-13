@@ -54,7 +54,7 @@ namespace Vital::Lua {
 	static void* getUservalue(lua_State* L) {};
 	
 	// Setters
-	static void setNull(lua_State* L);
+	static void setNull(lua_State* L) {};
 	static void setBool(lua_State* L, bool value) {};
 	static void setString(lua_State* L, const std::string& value) {};
 	static void setInt(lua_State* L, int value) {};
@@ -65,6 +65,6 @@ namespace Vital::Lua {
 	static void setFloat4(lua_State* L, const XMFLOAT4& value) {};
 	static void setDouble(lua_State* L, double value) {};
 	static void setUservalue(lua_State* L, void* value) {};
-	static void setError(lua_State* L, const std::string& error = "");
-	static void setMetaTable(lua_State* L, const std::string& name);
+	static void setError(lua_State* L, const std::string& error = "") {};
+	static void setMetaTable(lua_State* L, const std::string& name) {};
 };
