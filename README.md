@@ -14,7 +14,7 @@
 * Modular Programming
 * Completely Performance-Friendly
 * Completely Safe & Secure
-* Blazing fast & Straightforward
+* Blazing Fast & Straightforward
 * Built-In Types & Helpers
 * Completely Embeddable
 * Necessary Integration APIs
