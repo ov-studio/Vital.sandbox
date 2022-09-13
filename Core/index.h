@@ -33,7 +33,7 @@ namespace Vital::Lua {
 	// Add function array to the previously registered object
 	//void AddFuncs(lua_State* L, const luaL_Reg* functions) {};
 	// Add int member to registered object
-	//void AddInt(lua_State* L, const std::string& name, int data) {};
+	//void AddInt(lua_State* L, const std::string& name, int value) {};
 
 	// Checkers
 	static bool isNull(lua_State* L, int index) {};
@@ -51,20 +51,20 @@ namespace Vital::Lua {
 	static XMFLOAT3 getFloat3(lua_State* L, int index) {};
 	static XMFLOAT4 getFloat4(lua_State* L, int index) {};
 	static double getDouble(lua_State* L, int index) {};
-	static void* getUserData(lua_State* L) {};
+	static void* getUservalue(lua_State* L) {};
 	
 	// Setters
 	static void setNull(lua_State* L);
-	static void setBool(lua_State* L, bool data) {};
-	static void setString(lua_State* L, const std::string& data) {};
-	static void setInt(lua_State* L, int data) {};
-	static void setLong(lua_State* L, long data) {};
-	static void setFloat(lua_State* L, float data) {};
-	static void setFloat2(lua_State* L, const XMFLOAT2& data) {};
-	static void setFloat3(lua_State* L, const XMFLOAT3& data) {};
-	static void setFloat4(lua_State* L, const XMFLOAT4& data) {};
-	static void setDouble(lua_State* L, double data) {};
-	static void setUserData(lua_State* L, void* data) {};
+	static void setBool(lua_State* L, bool value) {};
+	static void setString(lua_State* L, const std::string& value) {};
+	static void setInt(lua_State* L, int value) {};
+	static void setLong(lua_State* L, long value) {};
+	static void setFloat(lua_State* L, float value) {};
+	static void setFloat2(lua_State* L, const XMFLOAT2& value) {};
+	static void setFloat3(lua_State* L, const XMFLOAT3& value) {};
+	static void setFloat4(lua_State* L, const XMFLOAT4& value) {};
+	static void setDouble(lua_State* L, double value) {};
+	static void setUservalue(lua_State* L, void* value) {};
 	static void setError(lua_State* L, const std::string& error = "");
 	static void setMetaTable(lua_State* L, const std::string& name);
 };
