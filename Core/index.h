@@ -20,6 +20,21 @@
 /////////////////
 
 namespace Vital::Lua {
+    // Whitelisted Libraries & Globals
+    static const luaL_Reg Library_Whitelist[] = {
+        {"_G", luaopen_base},
+        {LUA_TABLIBNAME, luaopen_table},
+        {LUA_STRLIBNAME, luaopen_string},
+        {LUA_MATHLIBNAME, luaopen_math},
+        {LUA_DBLIBNAME, luaopen_debug},
+        {LUA_COLIBNAME, luaopen_coroutine},
+        {LUA_UTF8LIBNAME, luaopen_utf8},
+        {"json", luaopen_rapidjson},
+        {NULL, NULL}
+    }, const char* Global_Blacklist[] = {
+        "dofile", "load", "loadfile"
+    };
+
 	//register function to use in scripts
 	//bool RegisterFunc(lua_State* L, const std::string& name, lua_CFunction function) {};
 	// Registers Namespace
