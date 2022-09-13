@@ -24,6 +24,7 @@
 
 namespace Vital::Lua {
     // Whitelisted Libraries & Globals
+    static lua_State* vm = nullptr;
     static const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {LUA_TABLIBNAME, luaopen_table},
@@ -37,6 +38,22 @@ namespace Vital::Lua {
     }, const char* Global_Blacklist[] = {
         "dofile", "load", "loadfile"
     };
+
+    // Creates & Destroys instances
+    lua_State* createInstance() {
+        lua_CInstance cInstance;
+        cInstance.instance = luaL_newstate();
+        const luaL_Reg* library;
+        for (library = Library_Whitelist; library -> func; library++) {
+            luaL_requiref(cInstance.instance, library -> name, library->func, 1);
+            lua_pop(cInstance.instance, 1);
+        }
+        for (auto i : Global_Blacklist) {
+            setNull(cInstance.instance);
+            lua_setglobal(cInstance.instance, i);
+        }
+    };
+    vm = createInstance();
 
     //register function to use in scripts
     //bool RegisterFunc(lua_State* L, const std::string& name, lua_CFunction function) {};
