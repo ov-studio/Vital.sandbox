@@ -13,7 +13,9 @@
 //////////////
 
 #pragma once
+#include <string>
 #include "Vendors/lua/lua.hpp"
+#include "Vendors/lua-rapidjson/rapidjson.cpp"
 
 
 /////////////////
