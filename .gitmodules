@@ -1,4 +1,4 @@
 [submodule "Vendors/lua"]
-    path = Vendors/lua
-    url = https://github.com/lua/lua.git
-    branch = v5.4.4
+	path = Vendors/lua
+	url = https://github.com/lua/lua.git
+	branch = v5.4.4
