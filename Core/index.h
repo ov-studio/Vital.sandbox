@@ -52,6 +52,7 @@ namespace Vital::Lua {
             setNull(cInstance.instance);
             lua_setglobal(cInstance.instance, i);
         }
+        return cInstance;
     };
 
     bool destroyInstance(lua_State* cInstance) {
