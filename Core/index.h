@@ -62,9 +62,6 @@ namespace Vital::Lua {
     static int getInt(lua_State* L, int index) {};
     static long getLong(lua_State* L, int index) {};
     static float getFloat(lua_State* L, int index) {};
-    static XMFLOAT2 getFloat2(lua_State* L, int index) {};
-    static XMFLOAT3 getFloat3(lua_State* L, int index) {};
-    static XMFLOAT4 getFloat4(lua_State* L, int index) {};
     static double getDouble(lua_State* L, int index) {};
     static void* getUserData(lua_State* L) {};
     
@@ -75,9 +72,6 @@ namespace Vital::Lua {
     static void setInt(lua_State* L, int value) {};
     static void setLong(lua_State* L, long value) {};
     static void setFloat(lua_State* L, float value) {};
-    static void setFloat2(lua_State* L, const XMFLOAT2& value) {};
-    static void setFloat3(lua_State* L, const XMFLOAT3& value) {};
-    static void setFloat4(lua_State* L, const XMFLOAT4& value) {};
     static void setDouble(lua_State* L, double value) {};
     static void setUserData(lua_State* L, void* value) {};
     static void setError(lua_State* L, const std::string& error = "") {};
