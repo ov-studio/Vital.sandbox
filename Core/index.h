@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.lua
-     Script: index.h
+     Script: Core: index.h
      Author: vStudio
      Developer(s): Aviril, Mario, Tron
      DOC: 14/09/2022
