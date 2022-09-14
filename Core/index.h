@@ -24,8 +24,7 @@
 
 namespace Vital {}
 namespace Vital::Lua {
-    // Whitelisted Libraries & Globals
-    static lua_State* vm = nullptr;
+    const char* Global_Blacklist[] = {"dofile", "load", "loadfile"};
     static const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {LUA_TABLIBNAME, luaopen_table},
@@ -36,33 +35,122 @@ namespace Vital::Lua {
         {LUA_UTF8LIBNAME, luaopen_utf8},
         {"json", luaopen_rapidjson},
         {NULL, NULL}
-    }, const char* Global_Blacklist[] = {
-        "dofile", "load", "loadfile"
     };
 
-    // Instance Managers
-    lua_State* createInstance() {
-        lua_CInstance cInstance;
-        cInstance.instance = luaL_newstate();
-        for (int i = 0; i < sizeof(Library_Whitelist); i++) {
-            const luaL_Reg* j = Library_Whitelist[i];
-            if (j -> funct) {
-                luaL_requiref(cInstance.instance, j -> name, j -> func, 1);
-                lua_pop(cInstance.instance, 1);
+    class create {
+        private:
+            bool isUnloaded = false;
+            lua_State* vm = nullptr;
+        public:
+            create() {
+                vm = luaL_newstate();
+                for (int i = 0; i < sizeof(Library_Whitelist); i++) {
+                    const luaL_Reg* j = Library_Whitelist[i];
+                    if (j -> funct) {
+                        luaL_requiref(vm, j -> name, j -> func, 1);
+                        lua_pop(vm, 1);
+                    }
+                }
+                for (auto i : Global_Blacklist) {
+                    setNull(vm);
+                    lua_setglobal(vm, i);
+                }
+                return cInstance;
             }
-        }
-        for (auto i : Global_Blacklist) {
-            setNull(cInstance.instance);
-            lua_setglobal(cInstance.instance, i);
-        }
-        return cInstance;
-    };
 
-    bool destroyInstance(lua_State* cInstance) {
-        lua_close(cInstance.instance);
-        cInstance = nullptr;
-        return true
-    }
+            bool destroy() {
+                if (isUnloaded) return false;
+                isUnloaded = true;
+                lua_close(vm);
+                vm = nullptr;
+                return true
+            }
+
+            bool isNull(int index) {
+
+            };
+
+            bool isString(int index) {
+
+            };
+
+            bool isNumber(int index) {
+
+            };
+
+            int getArgCount(lua_State* L) {
+
+            };
+
+            void setNull(lua_State* L) {
+
+            };
+
+            void setBool(bool value) {
+
+            };
+
+            void setString(const std::string& value) {
+
+            };
+
+            void setInt(int value) {
+
+            };
+
+            void setLong(long value) {
+
+            };
+
+            void setFloat(float value) {
+
+            };
+
+            void setDouble(double value) {
+
+            };
+
+            void setUserData(void* value) {
+
+            };
+
+            void setError(const std::string& error = "") {
+
+            };
+
+            void setMetaTable(const std::string& name) {
+
+            };
+
+            // Getters
+            bool getBool(int index) {
+
+            };
+
+            std::string getString(int index) {
+
+            };
+
+            int getInt(int index) {
+
+            };
+
+            long getLong(int index) {
+
+            };
+
+            float getFloat(int index) {
+
+            };
+
+            double getDouble(int index) {
+
+            };
+
+            void* getUserData(lua_State* L) {
+
+            };
+    };
 
     //register function to use in scripts
     //bool RegisterFunc(lua_State* L, const std::string& name, lua_CFunction function) {};
@@ -78,31 +166,4 @@ namespace Vital::Lua {
     //void AddFuncs(lua_State* L, const luaL_Reg* functions) {};
     // Add int member to registered object
     //void AddInt(lua_State* L, const std::string& name, int value) {};
-
-    // Checkers
-    static bool isNull(lua_State* L, int index) {};
-    static bool isString(lua_State* L, int index) {};
-    static bool isNumber(lua_State* L, int index) {};
-    static int getArgCount(lua_State* L) {};
-
-    // Setters
-    static void setNull(lua_State* L) {};
-    static void setBool(lua_State* L, bool value) {};
-    static void setString(lua_State* L, const std::string& value) {};
-    static void setInt(lua_State* L, int value) {};
-    static void setLong(lua_State* L, long value) {};
-    static void setFloat(lua_State* L, float value) {};
-    static void setDouble(lua_State* L, double value) {};
-    static void setUserData(lua_State* L, void* value) {};
-    static void setError(lua_State* L, const std::string& error = "") {};
-    static void setMetaTable(lua_State* L, const std::string& name) {};
-
-    // Getters
-    static bool getBool(lua_State* L, int index) {};
-    static std::string getString(lua_State* L, int index) {};
-    static int getInt(lua_State* L, int index) {};
-    static long getLong(lua_State* L, int index) {};
-    static float getFloat(lua_State* L, int index) {};
-    static double getDouble(lua_State* L, int index) {};
-    static void* getUserData(lua_State* L) {};
 };
