@@ -55,7 +55,6 @@ namespace Vital::Lua {
                     setNull(vm);
                     lua_setglobal(vm, i);
                 }
-                return cInstance;
             }
 
             bool destroy() {
@@ -147,7 +146,7 @@ namespace Vital::Lua {
 
             };
 
-            void* getUserData(lua_State* L) {
+            void* getUserData() {
 
             };
     };
