@@ -75,15 +75,12 @@ namespace Vital::Lua {
             bool isUserdata(int index) return lua_isuserdata(vm, index);
             bool isFunction(int index) return lua_isfunction(vm, index);
 
-            int getArgCount(lua_State* L) {
-            };
-
             void setNil() return lua_pushnil(vm);
             void setBool(bool value) return lua_pushboolean(vm, static_cast<int>(value))
             void setString(const std::string& value) return lua_pushstring(vm, value.c_str());
             void setInt(int value) return lua_pushnumber(vm, (lua_Number)value);
-            void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
             void setFloat(float value) return lua_pushnumber(vm, (lua_Number)value);
+            void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
             void setDouble(double value) return lua_pushnumber(vm, (lua_Number)value);
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
 
@@ -95,34 +92,14 @@ namespace Vital::Lua {
 
             };
 
-            // Getters
-            bool getBool(int index) {
-
-            };
-
-            std::string getString(int index) {
-
-            };
-
-            int getInt(int index) {
-
-            };
-
-            long getLong(int index) {
-
-            };
-
-            float getFloat(int index) {
-
-            };
-
-            double getDouble(int index) {
-
-            };
-
-            void* getUserData() {
-
-            };
+            int getArgCount() return lua_gettop(vm);
+            bool getBool(int index = 1) return static_cast<bool>(lua_toboolean(vm, index));
+            std::string getString(int index = 1) return lua_tostring(vm, index) || std::string("");
+            int getInt(int index = 1) return lua_tonumber(vm, index);
+            float getFloat(int index = 1) return lua_tonumber(vm, index);
+            double getDouble(int index = 1) return lua_tonumber(vm, index);
+            long getLong(int index = 1) return lua_tonumber(vm, index);
+            void* getUserData(int index = 1) return lua_touserdata(vm, index);;
     };
 
     //register function to use in scripts
