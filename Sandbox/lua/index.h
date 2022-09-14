@@ -26,6 +26,13 @@ namespace Vital {}
 namespace Vital::Lua {
     std::function<void(std::string& error)> onErrorHandler = nullptr;
     const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
+    const std::string Global_Modules[] = {
+        "table.lua"
+        "string.lua",
+        "namespacer.lua",
+        "thread.lua",
+        "vcl.lua"
+    };
     const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {LUA_TABLIBNAME, luaopen_table},
@@ -35,12 +42,6 @@ namespace Vital::Lua {
         {LUA_UTF8LIBNAME, luaopen_utf8},
         {"json", luaopen_rapidjson},
         {NULL, NULL}
-    };
-    const std::string Global_Modules[] = {
-        "namespacer.lua",
-        "thread.lua",
-        "string.lua",
-        "vcl.lua"
     };
 
     class create {
