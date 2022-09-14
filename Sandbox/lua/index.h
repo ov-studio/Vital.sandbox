@@ -26,7 +26,7 @@ namespace Vital {}
 namespace Vital::Lua {
     std::function<void(std::string& error)> onErrorHandler = nullptr;
     const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
-    const std::string luaL_Reg Library_Whitelist[] = {
+    const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {LUA_TABLIBNAME, luaopen_table},
         {LUA_STRLIBNAME, luaopen_string},
