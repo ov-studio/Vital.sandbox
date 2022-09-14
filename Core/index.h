@@ -51,7 +51,7 @@ namespace Vital::Lua {
                         lua_pop(vm, 1);
                     }
                 }
-                for (auto i : Global_Blacklist) {
+                for (auto& i : Global_Blacklist) {
                     setNil(vm);
                     lua_setglobal(vm, i);
                 }
@@ -86,6 +86,7 @@ namespace Vital::Lua {
             void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
             void setDouble(double value) return lua_pushnumber(vm, (lua_Number)value);
             void setTable(int index = 1) return lua_settable(vm, index);
+            void setTableField(int index = 1, std::string value) return lua_setfield(vm, index, value.c_str());
             void createMetaTable(std::string value) return luaL_newmetatable(vm, value.c_str());
             void setMetaTable(int index = 1) return lua_setmetatable(vm, index);
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
@@ -101,6 +102,7 @@ namespace Vital::Lua {
             double getDouble(int index = 1) return lua_tonumber(vm, index);
             long getLong(int index = 1) return lua_tonumber(vm, index);
             bool getTable(int index = 1) return lua_gettable(vm, index);
+            bool getTableField(int index = 1, std::string value) return lua_getfield(vm, index, value.c_str());
             bool getMetaTable(int index = 1) return lua_getmetatable(vm, index);
             void* getUserData(int index = 1) return lua_touserdata(vm, index);
 
