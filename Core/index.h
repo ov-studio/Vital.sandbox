@@ -91,7 +91,7 @@ namespace Vital::Lua {
             void createMetaTable(std::string& value) return luaL_newmetatable(vm, value.c_str());
             void setMetaTable(int index = 1) return lua_setmetatable(vm, index);
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
-            void setFunction(void* value) return lua_pushcfunction(vm, (lua_CFunction)value);
+            void setFunction(lua_CFunction value) return lua_pushcfunction(vm, value);
 
             // Getters //
             int getArgCount() return lua_gettop(vm);
