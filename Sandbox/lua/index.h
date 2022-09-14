@@ -151,6 +151,6 @@ namespace Vital::Lua {
                 lua_getinfo(L, "nSl", &debug);
                 if (onErrorHandler) onErrorHandler("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error));
                 return true
-            };
-    };
-};
+            }
+    }
+}
