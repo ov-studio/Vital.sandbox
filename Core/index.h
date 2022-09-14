@@ -41,6 +41,7 @@ namespace Vital::Lua {
         private:
             bool isUnloaded = false;
             lua_State* vm = nullptr;
+            onError = NULL;
         public:
             create() {
                 vm = luaL_newstate();
@@ -108,8 +109,12 @@ namespace Vital::Lua {
 
             // Utils //
             bool loadString(std::string& buffer) return luaL_loadstring(vm, buffer.c_str());
-            bool setError(std::string error = "") {
-                
+            bool createError(std::string error = "N/A") {
+                lua_Debug debug;
+                lua_getstack(L, 1, &debug);
+                lua_getinfo(L, "nSl", &debug);
+                if (onError) onError("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + error);
+                return true
             };
     };
 
