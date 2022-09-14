@@ -75,30 +75,33 @@ namespace Vital::Lua {
             bool isUserData(int index) return lua_isuserdata(vm, index);
             bool isFunction(int index) return lua_isfunction(vm, index);
 
+            void setGlobal(std::string& index) return lua_setglobal(vm, index.c_str());
             void setNil() return lua_pushnil(vm);
             void setBool(bool value) return lua_pushboolean(vm, static_cast<int>(value))
-            void setString(const std::string& value) return lua_pushstring(vm, value.c_str());
+            void setString(std::string& value) return lua_pushstring(vm, value.c_str());
             void setInt(int value) return lua_pushnumber(vm, (lua_Number)value);
             void setFloat(float value) return lua_pushnumber(vm, (lua_Number)value);
             void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
             void setDouble(double value) return lua_pushnumber(vm, (lua_Number)value);
-            void setUserData(void* value) return lua_pushlightuserdata(vm, value);
-            void setGlobal(const std::string& index) return lua_setglobal(vm, index.c_str());
-            void createMetaTable(const std::string& value) return luaL_newmetatable(vm, value.c_str());
+            void setTable(int index = 1) return lua_settable(vm, int index);
+            void createMetaTable(std::string& value) return luaL_newmetatable(vm, value.c_str());
             void setMetaTable(int index = 1) return lua_setmetatable(vm, int index);
+            void setUserData(void* value) return lua_pushlightuserdata(vm, value);
 
             int getArgCount() return lua_gettop(vm);
+            bool getGlobal(std::string& index) return lua_getglobal(vm, index);
             bool getBool(int index = 1) return static_cast<bool>(lua_toboolean(vm, index));
             std::string getString(int index = 1) return lua_tostring(vm, index) || std::string("");
             int getInt(int index = 1) return lua_tonumber(vm, index);
             float getFloat(int index = 1) return lua_tonumber(vm, index);
             double getDouble(int index = 1) return lua_tonumber(vm, index);
             long getLong(int index = 1) return lua_tonumber(vm, index);
-            void* getUserData(int index = 1) return lua_touserdata(vm, index);
+            bool getTable(int index = 1) return lua_gettable(vm, index);
             bool getMetaTable(int index = 1) return lua_getmetatable(vm, index);
+            void* getUserData(int index = 1) return lua_touserdata(vm, index);
 
             // TODO: WIP
-            bool setError(const std::string& error = "") {
+            bool setError(std::string& error = "") {
                 
             };
     };
