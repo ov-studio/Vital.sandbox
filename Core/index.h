@@ -61,6 +61,7 @@ namespace Vital::Lua {
                 if (isUnloaded) return false;
                 isUnloaded = true;
                 lua_close(vm);
+                delete vm;
                 vm = nullptr;
                 return true
             }
