@@ -39,6 +39,7 @@ namespace Vital::Lua {
     const std::string Global_Modules[] = {
         "namespacer.lua",
         "thread.lua",
+        "string.lua",
         "vcl.lua"
     };
 
