@@ -83,9 +83,11 @@ namespace Vital::Lua {
             void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
             void setDouble(double value) return lua_pushnumber(vm, (lua_Number)value);
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
+    
+            void setGlobal(const std::string& index) return lua_setglobal(vm, index.c_str());
             void createMetaTable(const std::string& value) return luaL_newmetatable(vm, value.c_str());
             void setMetaTable(int index = 1) return lua_setmetatable(vm, int index);
-    
+
             bool setError(const std::string& error = "") {
 
             };
