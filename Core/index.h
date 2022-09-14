@@ -101,6 +101,8 @@ namespace Vital::Lua {
             void* getUserData(int index = 1) return lua_touserdata(vm, index);
 
             // TODO: WIP
+
+            bool loadString(std::string& buffer) return luaL_loadstring(vm, buffer.c_str());
             bool setError(std::string& error = "") {
                 
             };
