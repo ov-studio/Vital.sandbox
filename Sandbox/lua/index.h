@@ -35,7 +35,7 @@ namespace Vital::Lua {
         "math/matrix.lua",
         "string.lua",
         "thread.lua"
-    };
+    }
     const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {LUA_TABLIBNAME, luaopen_table},
@@ -45,7 +45,7 @@ namespace Vital::Lua {
         {LUA_UTF8LIBNAME, luaopen_utf8},
         {"json", luaopen_rapidjson},
         {NULL, NULL}
-    };
+    }
 
     class create {
         private:
