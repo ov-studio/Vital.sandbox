@@ -89,7 +89,7 @@ namespace Vital::Lua {
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
 
             int getArgCount() return lua_gettop(vm);
-            bool getGlobal(std::string& index) return lua_getglobal(vm, index);
+            bool getGlobal(std::string& index) return lua_getglobal(vm, index.c_str());
             bool getBool(int index = 1) return static_cast<bool>(lua_toboolean(vm, index));
             std::string getString(int index = 1) return lua_tostring(vm, index) || std::string("");
             int getInt(int index = 1) return lua_tonumber(vm, index);
