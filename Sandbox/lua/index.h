@@ -27,14 +27,14 @@ namespace Vital::Lua {
     std::function<void(std::string& error)> onErrorHandler = nullptr;
     const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
     const std::string Global_Modules[] = {
+        "namespacer.lua",
+        "vcl.lua",
         "table.lua"
-        "string.lua",
         "math/index.lua",
         "math/quat.lua",
         "math/matrix.lua",
-        "namespacer.lua",
-        "thread.lua",
-        "vcl.lua"
+        "string.lua",
+        "thread.lua"
     };
     const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
