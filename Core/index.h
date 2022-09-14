@@ -66,6 +66,7 @@ namespace Vital::Lua {
                 return true
             }
 
+            // Checkers //
             bool isNil(int index) return lua_isnoneornil(vm, index);
             bool isBool(int index) return lua_isboolean(vm, index);
             bool isString(int index) return lua_isstring(vm, index);
@@ -75,6 +76,7 @@ namespace Vital::Lua {
             bool isUserData(int index) return lua_isuserdata(vm, index);
             bool isFunction(int index) return lua_isfunction(vm, index);
 
+            // Setters //
             void setGlobal(std::string& index) return lua_setglobal(vm, index.c_str());
             void setNil() return lua_pushnil(vm);
             void setBool(bool value) return lua_pushboolean(vm, static_cast<int>(value))
@@ -88,6 +90,7 @@ namespace Vital::Lua {
             void setMetaTable(int index = 1) return lua_setmetatable(vm, int index);
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
 
+            // Getters //
             int getArgCount() return lua_gettop(vm);
             bool getGlobal(std::string& index) return lua_getglobal(vm, index.c_str());
             bool getBool(int index = 1) return static_cast<bool>(lua_toboolean(vm, index));
@@ -100,8 +103,7 @@ namespace Vital::Lua {
             bool getMetaTable(int index = 1) return lua_getmetatable(vm, index);
             void* getUserData(int index = 1) return lua_touserdata(vm, index);
 
-            // TODO: WIP
-
+            // Utils //
             bool loadString(std::string& buffer) return luaL_loadstring(vm, buffer.c_str());
             bool setError(std::string& error = "") {
                 
