@@ -40,7 +40,7 @@ namespace Vital::Lua {
     static const* Global_Modules[] = {
         "namespacer.lua",
         "thread.lua"
-    }
+    };
 
     class create {
         private:
