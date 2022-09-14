@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------
-     Resource: Vital.lua
+     Resource: Vital.sandbox
      Script: Core: index.h
      Author: vStudio
-     Developer(s): Aviril, Mario, Tron
+     Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
      Desc: Module Initializer
 ----------------------------------------------------------------*/
@@ -37,6 +37,10 @@ namespace Vital::Lua {
         {"json", luaopen_rapidjson},
         {NULL, NULL}
     };
+    static const* Global_Modules[] = {
+        "namespacer.lua",
+        "thread.lua"
+    }
 
     class create {
         private:
