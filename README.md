@@ -4,7 +4,7 @@
 
 **━ Maintainer(s):** [**Aviril**](https://github.com/Aviril), [**Mario**](https://github.com/OvileAmriam), [**Tron**](https://github.com/OvileAmriam), [**Anisa**](https://github.com/Anisa-Nur)
 
-**Vital.lua** is a open source straightforward lightweight yet blazing fast & embeddable lua-worker w/ no overheads that you can rely on without stressing about performances issues, since the library is developed with '**Performance-First**' in mind!
+**Vital.sandbox** is an official Sandbox-SDK to power sandbox projects being incorporated by **vStudio**.
 
 ## ━ Features
 
@@ -14,9 +14,10 @@
 * Modular Programming
 * Completely Performance-Friendly
 * Completely Safe & Secure
-* Blazing Fast & Straightforward
+* Lightweight & Straightforward
 * Built-In Types & Helpers
 * Completely Embeddable
+* Built-in Lua API
 * Necessary Integration APIs
 
 ## ━ Contents
