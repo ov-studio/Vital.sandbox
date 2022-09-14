@@ -30,6 +30,7 @@ namespace Vital::Lua {
         "table.lua"
         "string.lua",
         "math/index.lua",
+        "math/quat.lua",
         "namespacer.lua",
         "thread.lua",
         "vcl.lua"
