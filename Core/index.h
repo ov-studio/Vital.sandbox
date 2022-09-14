@@ -113,7 +113,7 @@ namespace Vital::Lua {
                 lua_Debug debug;
                 lua_getstack(L, 1, &debug);
                 lua_getinfo(L, "nSl", &debug);
-                if (onErrorHandler) onErrorHandler("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error);
+                if (onErrorHandler) onErrorHandler("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error));
                 return true
             };
     };
