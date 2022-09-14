@@ -24,7 +24,7 @@
 
 namespace Vital {}
 namespace Vital::Lua {
-    std::function<void(std::string& error)>* onErrorHandler = nullptr;
+    std::function<void(std::string& error)> onErrorHandler = nullptr;
     const char* Global_Blacklist[] = {"dofile", "load", "loadfile"};
     static const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
@@ -90,6 +90,11 @@ namespace Vital::Lua {
             void setTableField(int index = 1, std::string value) return lua_setfield(vm, index, value.c_str());
             void createMetaTable(std::string value) return luaL_newmetatable(vm, value.c_str());
             void setMetaTable(int index = 1) return lua_setmetatable(vm, index);
+            void createUserData(void* value) {
+                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
+                *userdata = value;
+                return;
+            }
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
             void setFunction(lua_CFunction value) return lua_pushcfunction(vm, value);
 
@@ -107,6 +112,28 @@ namespace Vital::Lua {
             bool getMetaTable(int index = 1) return lua_getmetatable(vm, index);
             void* getUserData(int index = 1) return lua_touserdata(vm, index);
 
+            // Registerers //
+            void registerBool(std::string& index, bool value) {
+                setBool(value);
+                return setTableField(-2, index.c_str());
+            }
+            void registerString(std::string& index, std::string& value) {
+                setString(value);
+                return setTableField(-2, index.c_str());
+            }
+            void registerNumber(std::string& index, int value) {
+                setInt(value);
+                return setTableField(-2, index.c_str());
+            }
+            void registerFunction(std::string& index, lua_CFunction exec) {
+                setFunction(exec);
+                return setTableField(-2, index.c_str());
+            }
+            bool registerObject(std::string& index, void* value) {
+                createUserData(value);
+                return setMetaTable(index.c_str());
+            }
+
             // Utils //
             bool loadString(std::string& buffer) return luaL_loadstring(vm, buffer.c_str());
             bool createError(std::string& error = "") {
@@ -117,19 +144,4 @@ namespace Vital::Lua {
                 return true
             };
     };
-
-    //register function to use in scripts
-    //bool RegisterFunc(lua_State* L, const std::string& name, lua_CFunction function) {};
-    // Registers Namespace
-    //void RegisterNamespace(lua_State* L, const char* namespac, const wi::vector<std::string>& namespaceIndex) {};
-    // Registers Library
-    //void RegisterLibrary(lua_State* L, const std::string& tableName, const luaL_Reg* functions, const char* namespac = NULL, const wi::vector<std::string>& namespaceIndex = {}) {};
-    // Registers Object
-    //bool RegisterObject(lua_State* L, const std::string& tableName, void* object, const char* namespac = NULL, const wi::vector<std::string>& namespaceIndex = {}) {};
-    // Add function to the previously registered object
-    //void AddFunc(lua_State* L, const std::string& name, lua_CFunction function) {};
-    // Add function array to the previously registered object
-    //void AddFuncs(lua_State* L, const luaL_Reg* functions) {};
-    // Add int member to registered object
-    //void AddInt(lua_State* L, const std::string& name, int value) {};
 };
