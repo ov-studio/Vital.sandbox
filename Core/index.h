@@ -76,46 +76,48 @@ namespace Vital::Lua {
             bool isFunction(int index) return lua_isfunction(vm, index);
 
             int getArgCount(lua_State* L) {
+            };
+
+            bool setNil() {
+                lua_pushnil(vm);
+                return true;
+            };
+
+            bool setBool(bool value) {
+                lua_pushboolean(vm, static_cast<int>(value));
+                return true;
+            }
+
+            bool setString(const std::string& value) {
+                lua_pushstring(vm, value.c_str());
+                return true
+            };
+
+            bool setInt(int value) {
 
             };
 
-            void setNil(lua_State* L) {
+            bool setLong(long value) {
 
             };
 
-            void setBool(bool value) {
+            bool setFloat(float value) {
 
             };
 
-            void setString(const std::string& value) {
+            bool setDouble(double value) {
 
             };
 
-            void setInt(int value) {
+            bool setUserData(void* value) {
 
             };
 
-            void setLong(long value) {
+            bool setError(const std::string& error = "") {
 
             };
 
-            void setFloat(float value) {
-
-            };
-
-            void setDouble(double value) {
-
-            };
-
-            void setUserData(void* value) {
-
-            };
-
-            void setError(const std::string& error = "") {
-
-            };
-
-            void setMetaTable(const std::string& name) {
+            bool setMetaTable(const std::string& name) {
 
             };
 
