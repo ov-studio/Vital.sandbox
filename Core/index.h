@@ -52,7 +52,7 @@ namespace Vital::Lua {
                     }
                 }
                 for (auto i : Global_Blacklist) {
-                    setNull(vm);
+                    setNil(vm);
                     lua_setglobal(vm, i);
                 }
             }
@@ -66,23 +66,20 @@ namespace Vital::Lua {
                 return true
             }
 
-            bool isNull(int index) {
-
-            };
-
-            bool isString(int index) {
-
-            };
-
-            bool isNumber(int index) {
-
-            };
+            bool isNil(int index) return lua_isnoneornil(vm, index);
+            bool isBool(int index) return lua_isboolean(vm, index);
+            bool isString(int index) return lua_isstring(vm, index);
+            bool isNumber(int index) return lua_isnumber(vm, index);
+            bool isTable(int index) return lua_istable(vm, index);
+            bool isThread(int index) return lua_isthread(vm, index);
+            bool isUserdata(int index) return lua_isuserdata(vm, index);
+            bool isFunction(int index) return lua_isfunction(vm, index);
 
             int getArgCount(lua_State* L) {
 
             };
 
-            void setNull(lua_State* L) {
+            void setNil(lua_State* L) {
 
             };
 
