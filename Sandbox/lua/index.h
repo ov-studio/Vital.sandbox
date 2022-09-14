@@ -58,7 +58,7 @@ namespace Vital::Lua {
                 }
                 for (auto& i : Global_Blacklist) {
                     setNil();
-                    setGlobal(vm, i);
+                    setGlobal(i);
                 }
             }
 
