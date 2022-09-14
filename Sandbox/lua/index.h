@@ -84,7 +84,7 @@ namespace Vital::Lua {
             // Setters //
             void setGlobal(std::string index) return lua_setglobal(vm, index.c_str());
             void setNil() return lua_pushnil(vm);
-            void setBool(bool value) return lua_pushboolean(vm, static_cast<int>(value))
+            void setBool(bool value) return lua_pushboolean(vm, static_cast<int>(value));
             void setString(std::string value) return lua_pushstring(vm, value.c_str());
             void setInt(int value) return lua_pushnumber(vm, (lua_Number)value);
             void setFloat(float value) return lua_pushnumber(vm, (lua_Number)value);
