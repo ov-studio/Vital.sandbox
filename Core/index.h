@@ -22,6 +22,7 @@
 // Class: Lua //
 /////////////////
 
+namespace Vital {}
 namespace Vital::Lua {
     // Whitelisted Libraries & Globals
     static lua_State* vm = nullptr;
@@ -43,10 +44,12 @@ namespace Vital::Lua {
     lua_State* createInstance() {
         lua_CInstance cInstance;
         cInstance.instance = luaL_newstate();
-        const luaL_Reg* library;
-        for (library = Library_Whitelist; library -> func; library++) {
-            luaL_requiref(cInstance.instance, library -> name, library->func, 1);
-            lua_pop(cInstance.instance, 1);
+        for (int i = 0; i < sizeof(Library_Whitelist); i++) {
+            const luaL_Reg* j = Library_Whitelist[i];
+            if (j -> funct) {
+                luaL_requiref(cInstance.instance, j -> name, j -> func, 1);
+                lua_pop(cInstance.instance, 1);
+            }
         }
         for (auto i : Global_Blacklist) {
             setNull(cInstance.instance);
@@ -56,7 +59,8 @@ namespace Vital::Lua {
     };
 
     bool destroyInstance(lua_State* cInstance) {
-        lua_close(cInstance);
+        lua_close(cInstance.instance);
+        cInstance = nullptr;
         return true
     }
 
