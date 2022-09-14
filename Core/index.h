@@ -72,7 +72,7 @@ namespace Vital::Lua {
             bool isNumber(int index) return lua_isnumber(vm, index);
             bool isTable(int index) return lua_istable(vm, index);
             bool isThread(int index) return lua_isthread(vm, index);
-            bool isUserdata(int index) return lua_isuserdata(vm, index);
+            bool isUserData(int index) return lua_isuserdata(vm, index);
             bool isFunction(int index) return lua_isfunction(vm, index);
 
             void setNil() return lua_pushnil(vm);
@@ -95,7 +95,7 @@ namespace Vital::Lua {
             double getDouble(int index = 1) return lua_tonumber(vm, index);
             long getLong(int index = 1) return lua_tonumber(vm, index);
             void* getUserData(int index = 1) return lua_touserdata(vm, index);
-
+            bool getMetaTable(int index = 1) return lua_getmetatable(vm, index);
 
             // TODO: WIP
             bool setError(const std::string& error = "") {
