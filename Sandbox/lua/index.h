@@ -41,6 +41,7 @@ namespace Vital::Lua {
         {"table", luaopen_table},
         {"string", luaopen_string},
         {"math", luaopen_math},
+        {"os", luaopen_os},
         {"coroutine", luaopen_coroutine},
         {"utf8", luaopen_utf8},
         {"json", luaopen_rapidjson},
