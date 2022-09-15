@@ -22,6 +22,6 @@
 
 ## ━ Contents
 
-* [**Official Releases**](https://github.com/ov-studio/Vital.lua/releases)
-* [**Installation Guide**](https://github.com/ov-studio/Vital.lua/wiki)
+* [**Official Releases**](https://github.com/ov-studio/Vital.sandbox/releases)
+* [**Installation Guide**](https://github.com/ov-studio/Vital.sandbox/wiki)
 * [**Discord Community**](http://discord.gg/sVCnxPW)
