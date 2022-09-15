@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <filesystem>
 
 
 ////////////////////////////
@@ -23,6 +24,12 @@
 ////////////////////////////
 
 namespace Vital::FileSystem {
+    static bool generatePath(std::string& path) {
+        std::filesystem::path __path = std::filesystem::absolute(path);
+        if (!path.empty()) path = __path.string();
+        return true
+    }
+
     static bool exists(std::string& path) {
         std::fstream handle(path, std::ios::in | std::ios::binary);
         const bool isValid = (handle.is_open() && true) || false;
