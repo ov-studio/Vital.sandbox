@@ -27,6 +27,6 @@ namespace Vital {
     static const unsigned int vTick = getSystemTick();
 
     static unsigned int getApplicationTick() {
-        return getSystemTick() - vTick
+        return getSystemTick() - vTick;
     }
 }
