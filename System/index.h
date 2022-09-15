@@ -12,7 +12,8 @@
 // Imports //
 //////////////
 
-#include <windows.h>
+#pragma once
+#include <chrono>
 
 
 ///////////////////////
@@ -20,7 +21,12 @@
 ///////////////////////
 
 namespace Vital {
-    unsigned int getTick() {
-        return GetTickCount()
+    static unsigned int getSystemTick() {
+        return std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000;
+    }
+    static const unsigned int vTick = getSystemTick();
+
+    static unsigned int getApplicationTick() {
+        return getSystemTick() - vTick
     }
 }
