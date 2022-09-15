@@ -36,7 +36,7 @@ namespace Vital::Lua {
         "string.lua",
         "thread.lua",
         "timer.lua"
-    }
+    };
     const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {LUA_TABLIBNAME, luaopen_table},
@@ -46,7 +46,7 @@ namespace Vital::Lua {
         {LUA_UTF8LIBNAME, luaopen_utf8},
         {"json", luaopen_rapidjson},
         {NULL, NULL}
-    }
+    };
 
     class create {
         private:
@@ -153,5 +153,5 @@ namespace Vital::Lua {
                 if (onErrorHandler) onErrorHandler("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error));
                 return true
             }
-    }
+    };
 }
