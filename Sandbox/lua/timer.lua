@@ -52,27 +52,16 @@ function timer.public:load(exec, interval, executions, ...)
     self.interval, self.executions = interval, executions
     self.arguments = table.pack(...)
     imports.coroutine.resume(imports.coroutine.create(function()
-        if not timer.public:isInstance(self) then return false end
-        self.currentExec = self.currentExec + 1
-        if (self.executions > 0) and (self.currentExec >= self.executions) then
-            self:destroy()
+        while ((self.executions == 0) or (self.currentExec < self.executions)) do
+            if not timer.public:isInstance(self) then return false end
+            self.currentExec = self.currentExec + 1
+            if (self.executions > 0) and (self.currentExec >= self.executions) then
+                self:destroy()
+            end
+            self.exec(table.unpack(self.arguments))
         end
-        self.exec(table.unpack(self.arguments))
-    end, self.interval, self.executions))
+    end))
     return self
-end
-
---TODO: MERGE
-function timer:load(exec, duration, executions, ...)
-     imports.coroutine.create(function()
-        self.currentExec = 0
-         while ((executions == 0) or (self.currentExec < executions)) do
-           exec(imports.table.unpack(self.arguments))
-           self.currentExec = self.currentExec + 1
-           imports.os.execute("sleep "..duration)
-         end
-     end)
-     return true
 end
 
 function timer.public:unload()
