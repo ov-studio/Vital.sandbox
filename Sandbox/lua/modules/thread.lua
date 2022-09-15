@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
 --[[ Resource: Vital.sandbox
-     Script: lua: threader.lua
+     Script: lua: modules: threader.lua
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022

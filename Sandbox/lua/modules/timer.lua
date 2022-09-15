@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
 --[[ Resource: Vital.sandbox
-     Script: lua: timer.lua
+     Script: lua: modules: timer.lua
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022

@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
 --[[ Resource: Vital.sandbox
-     Script: lua: math: matrix.lua
+     Script: lua: modules: math: matrix.lua
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
