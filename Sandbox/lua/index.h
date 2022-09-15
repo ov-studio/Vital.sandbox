@@ -39,11 +39,11 @@ namespace Vital::Lua {
     };
     const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
-        {LUA_TABLIBNAME, luaopen_table},
-        {LUA_STRLIBNAME, luaopen_string},
-        {LUA_MATHLIBNAME, luaopen_math},
-        {LUA_COLIBNAME, luaopen_coroutine},
-        {LUA_UTF8LIBNAME, luaopen_utf8},
+        {"table", luaopen_table},
+        {"string", luaopen_string},
+        {"math", luaopen_math},
+        {"coroutine", luaopen_coroutine},
+        {"utf8", luaopen_utf8},
         {"json", luaopen_rapidjson},
         {NULL, NULL}
     };
