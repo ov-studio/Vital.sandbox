@@ -124,23 +124,23 @@ namespace Vital::Lua {
             void* getUserData(int index = 1) return lua_touserdata(vm, index);
 
             // Registerers //
-            void registerBool(std::string& index, bool value) {
+            void registerBool(std::string index, bool value) {
                 setBool(value);
                 return setTableField(-2, index.c_str());
             }
-            void registerString(std::string& index, std::string& value) {
+            void registerString(std::string index, std::string& value) {
                 setString(value);
                 return setTableField(-2, index.c_str());
             }
-            void registerNumber(std::string& index, int value) {
+            void registerNumber(std::string index, int value) {
                 setInt(value);
                 return setTableField(-2, index.c_str());
             }
-            void registerFunction(std::string& index, lua_CFunction exec) {
+            void registerFunction(std::string index, lua_CFunction exec) {
                 setFunction(exec);
                 return setTableField(-2, index.c_str());
             }
-            bool registerObject(std::string& index, void* value) {
+            bool registerObject(std::string index, void* value) {
                 createUserData(value);
                 return setMetaTable(index);
             }
