@@ -100,6 +100,7 @@ namespace Vital::Lua {
             void setTableField(int index = 1, std::string value) return lua_setfield(vm, index, value.c_str());
             void createMetaTable(std::string value) return luaL_newmetatable(vm, value.c_str());
             void setMetaTable(int index = 1) return lua_setmetatable(vm, index);
+            void setMetaTable(std::string index) return lua_setmetatable(vm, index.c_str());
             void createUserData(void* value) {
                 void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
                 *userdata = value;
@@ -141,7 +142,7 @@ namespace Vital::Lua {
             }
             bool registerObject(std::string& index, void* value) {
                 createUserData(value);
-                return setMetaTable(index.c_str());
+                return setMetaTable(index);
             }
 
             // Utils //
