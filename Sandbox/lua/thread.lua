@@ -18,7 +18,6 @@ local imports = {
     coroutine = coroutine,
     math = math
 }
-coroutine = nil
 
 
 -----------------------
