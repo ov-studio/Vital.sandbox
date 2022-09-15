@@ -8,8 +8,19 @@
 ----------------------------------------------------------------*/
 
 
+//////////////
+// Imports //
+//////////////
+
+#include <windows.h>
+
+
 ///////////////////////
 // Namespace: Vital //
 ///////////////////////
 
-namespace Vital {}
+namespace Vital {
+    unsigned int getTick() {
+        return GetTickCount()
+    }
+}
