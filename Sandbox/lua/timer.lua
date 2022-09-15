@@ -52,11 +52,13 @@ function timer.public:load(exec, interval, executions, ...)
     self.interval, self.executions = interval, executions
     self.arguments = table.pack(...)
     self.timer = imports.setTimer(function()
-        self.currentExec = self.currentExec + 1
-        if (self.executions > 0) and (self.currentExec >= self.executions) then
-            self:destroy()
+        if timer.public:isInstance(self) then
+            self.currentExec = self.currentExec + 1
+            if (self.executions > 0) and (self.currentExec >= self.executions) then
+                self:destroy()
+            end
+            self.exec(table.unpack(self.arguments))
         end
-        self.exec(table.unpack(self.arguments))
     end, self.interval, self.executions)
     return self
 end
@@ -81,9 +83,6 @@ end
 
 function timer.public:unload()
     if not timer.public:isInstance(self) then return false end
-    if self.timer and imports.isTimer(self.timer) then
-        imports.killTimer(self.timer)
-    end
     self:destroyInstance()
     return true
 end
