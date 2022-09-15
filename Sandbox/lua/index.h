@@ -34,7 +34,8 @@ namespace Vital::Lua {
         "math/quat.lua",
         "math/matrix.lua",
         "string.lua",
-        "thread.lua"
+        "thread.lua",
+        "timer.lua"
     }
     const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
