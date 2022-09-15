@@ -23,7 +23,7 @@
 ////////////////////////////
 
 namespace Vital::FileSystem {
-    bool exists(std::string& path) {
+    static bool exists(std::string& path) {
         std::fstream handle(path, std::ios::in | std::ios::binary);
         const bool isValid = (handle.is_open() && true) || false;
         handle.close();
