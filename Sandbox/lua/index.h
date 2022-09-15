@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: lua: index.h
+     Script: Sandbox: lua: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
@@ -18,15 +18,14 @@
 #include "Vendors/lua-rapidjson/rapidjson.cpp"
 
 
-/////////////////
-// Class: Lua //
-/////////////////
+/////////////////////
+// Namespace: Lua //
+/////////////////////
 
-namespace Vital {}
 namespace Vital::Lua {
     std::function<void(std::string& error)> onErrorHandler = nullptr;
-    const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
-    const std::string Global_Modules[] = {
+    static const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
+    static const std::string Global_Modules[] = {
         "namespacer.lua",
         "vcl.lua",
         "table.lua"
@@ -37,7 +36,7 @@ namespace Vital::Lua {
         "thread.lua",
         "timer.lua"
     };
-    const luaL_Reg Library_Whitelist[] = {
+    static const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
         {"string", luaopen_string},
@@ -65,6 +64,10 @@ namespace Vital::Lua {
                 for (auto& i : Global_Blacklist) {
                     setNil();
                     setGlobal(i);
+                }
+                for (auto& i : Global_Modules) {
+                    std::string j = std::filesystem::current_path() + "/modules/" + i;
+                    loadString();
                 }
             }
 
