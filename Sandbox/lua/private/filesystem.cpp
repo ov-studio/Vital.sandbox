@@ -21,15 +21,15 @@
 //////////////////////
 
 namespace Vital::Lua {
-    bind("file", "getPath", [](vital_vm* vm) {
-        // TODO:
-    })
-
-    bind("file", "getSize", [](vital_vm* vm) {
+    bind("file", "resolve", [](vital_vm* vm) {
         // TODO:
     })
 
     bind("file", "exists", [](vital_vm* vm) {
+        // TODO:
+    })
+
+    bind("file", "size", [](vital_vm* vm) {
         // TODO:
     })
 
