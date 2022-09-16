@@ -152,12 +152,12 @@ namespace Vital::Lua {
     typedef create vital_vm;
     typedef lua_CFunction vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
-    static const std::map<lua_State*, vital_vm*> vInstances;
-    static const std::map<vital_exec_ref, vital_exec&> vMethods;
+    const std::map<lua_State*, vital_vm*> vInstances;
+    const std::map<vital_exec_ref, vital_exec&> vMethods;
 
     // Method Binders //
-    static std::function<void(std::string&)> onError = NULL;
-    static const bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec) {
+    std::function<void(std::string&)> onError = NULL;
+    const bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (vMethodRefs[ref] && (vMethodRefs[ref] == exec)) return false;
         vMethods.insert_or_assign(ref, [](luastate* vm) {
@@ -165,7 +165,7 @@ namespace Vital::Lua {
         });
         return true
     }
-    static const bool unbind(std::string parent, std::string name) {
+    const bool unbind(std::string parent, std::string name) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (!vMethodRefs[ref]) return false;
         vMethods.erase(ref);
