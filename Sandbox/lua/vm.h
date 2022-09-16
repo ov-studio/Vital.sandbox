@@ -122,7 +122,7 @@ namespace Vital::Lua {
             }
             void registerFunction(std::string index, lua_CFunction& exec, std::string& parent) {
                 getGlobal(parent)
-                if (isNil(-1)) {
+                if (!isTable(-1)) {
                     createTable();
                     setGlobal(parent);
                     getGlobal(parent);
