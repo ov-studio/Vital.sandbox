@@ -20,22 +20,24 @@
 // Lua: FileSystem //
 //////////////////////
 
-Vital::Lua::bind("file", "getPath", [](Vital::Lua::vital_vm* vm) {
-    // TODO:
-})
+namespace Vital::Lua {
+    bind("file", "getPath", [](vital_vm* vm) {
+        // TODO:
+    })
 
-Vital::Lua::bind("file", "getSize", [](Vital::Lua::vital_vm* vm) {
-    // TODO:
-})
+    bind("file", "getSize", [](vital_vm* vm) {
+        // TODO:
+    })
 
-Vital::Lua::bind("file", "exists", [](Vital::Lua::vital_vm* vm) {
-    // TODO:
-})
+    bind("file", "exists", [](vital_vm* vm) {
+        // TODO:
+    })
 
-Vital::Lua::bind("file", "read", [](Vital::Lua::vital_vm* vm) {
-    // TODO:
-})
+    bind("file", "read", [](vital_vm* vm) {
+        // TODO:
+    })
 
-Vital::Lua::bind("file", "write", [](Vital::Lua::vital_vm* vm) {
-    // TODO:
-})
+    bind("file", "write", [](vital_vm* vm) {
+        // TODO:
+    })
+}
