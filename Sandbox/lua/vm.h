@@ -147,13 +147,14 @@ namespace Vital::Lua {
     typedef create vital_vm;
 
     // Method Binders
-    static const bool bind(vital_exec exec) {
+    static const bool bind(vital_exec& exec) {
         map.insert_or_assign([](luastate* vm) {
+            // TODO: WRAPPER CANT BE REFERENCE FOR UNBINDING!??
             exec(vital_vm* vm)
         }, true);
         return true
     }
-    static const bool unbind(vital_exec exec) {
+    static const bool unbind(vital_exec& exec) {
         map.erase(exec)
         return true
     }
