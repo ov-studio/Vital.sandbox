@@ -75,6 +75,7 @@ namespace Vital::Lua {
             void setFloat(float value) return lua_pushnumber(vm, (lua_Number)value);
             void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
             void setDouble(double value) return lua_pushnumber(vm, (lua_Number)value);
+            void createTable() return lua_newtable(vm);
             void setTable(int index = 1) return lua_settable(vm, index);
             void setTableField(int index = 1, std::string value) return lua_setfield(vm, index, value.c_str());
             void createMetaTable(std::string value) return luaL_newmetatable(vm, value.c_str());
@@ -86,7 +87,7 @@ namespace Vital::Lua {
                 return;
             }
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
-            void setFunction(lua_CFunction value) return lua_pushcfunction(vm, value);
+            void setFunction(lua_CFunction& value) return lua_pushcfunction(vm, value);
 
             // Getters //
             int getArgCount() return lua_gettop(vm);
@@ -115,9 +116,18 @@ namespace Vital::Lua {
                 setInt(value);
                 return setTableField(-2, index.c_str());
             }
-            void registerFunction(std::string index, lua_CFunction exec) {
+            void registerFunction(std::string index, lua_CFunction& exec) {
                 setFunction(exec);
                 return setTableField(-2, index.c_str());
+            }
+            void registerFunction(std::string index, lua_CFunction& exec, std::string& parent) {
+                getGlobal(parent)
+                if (isNil(-1)) {
+                    createTable();
+                    setGlobal(parent);
+                    getGlobal(parent);
+                }
+                return registerFunction(index, exec);
             }
             bool registerObject(std::string index, void* value) {
                 createUserData(value);
