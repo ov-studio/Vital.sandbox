@@ -42,8 +42,7 @@ namespace Vital::Lua {
                     setGlobal(i);
                 }
                 for (auto& i : vMethods) {
-                    const j = i.second;
-                    // TDDO: EXPOSE IT
+                    registerFunction(i.first.second, i.second, i.first.first);
                 }
                 for (auto& i : vModules) {
                     loadString(Vital::FileSystem::read(std::filesystem::current_path() + "/modules/" + i));
