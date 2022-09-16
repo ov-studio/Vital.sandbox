@@ -23,11 +23,8 @@
 /////////////////////
 
 namespace Vital::Lua {
-    typedef lua_CFunction vital_exec;
-    typedef std::pair<std::string, std::string> vital_exec_ref;
-    std::function<void(std::string& error)> onErrorHandler = nullptr;
-    static const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
-    static const std::string Global_Modules[] = {
+    static const std::string vBlacklist[] = {"dofile", "load", "loadfile"};
+    static const std::string vModules[] = {
         "namespacer.lua",
         "vcl.lua",
         "table.lua"

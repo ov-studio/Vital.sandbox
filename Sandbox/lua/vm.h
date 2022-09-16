@@ -37,7 +37,7 @@ namespace Vital::Lua {
                         lua_pop(vm, 1);
                     }
                 }
-                for (auto& i : Global_Blacklist) {
+                for (auto& i : vBlacklist) {
                     setNil();
                     setGlobal(i);
                 }
@@ -45,7 +45,7 @@ namespace Vital::Lua {
                     const j = i.second;
                     // TDDO: EXPOSE IT
                 }
-                for (auto& i : Global_Modules) {
+                for (auto& i : vModules) {
                     loadString(Vital::FileSystem::read(std::filesystem::current_path() + "/modules/" + i));
                 }
             }
@@ -143,15 +143,18 @@ namespace Vital::Lua {
                 lua_Debug debug;
                 lua_getstack(L, 1, &debug);
                 lua_getinfo(L, "nSl", &debug);
-                if (onErrorHandler) onErrorHandler("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error));
+                if (onError) onError("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error));
                 return true
             }
     };
     typedef create vital_vm;
+    typedef lua_CFunction vital_exec;
+    typedef std::pair<std::string, std::string> vital_exec_ref;
     static const std::map<lua_State*, vital_vm*> vInstances;
     static const std::map<vital_exec_ref, vital_exec&> vMethods;
 
     // Method Binders
+    std::function<void(std::string& error)> onError = NULL;
     static const bool bind(std::string parent, std::string name, vital_exec& exec) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (vMethodRefs[ref] && (vMethodRefs[ref] == exec)) return false;
