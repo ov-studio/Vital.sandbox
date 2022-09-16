@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <vector>
+#include <map>
 #include "System/filesystem.h"
 #include "Vendors/lua/lua.hpp"
 #include "Vendors/lua-rapidjson/rapidjson.cpp"
@@ -25,7 +25,7 @@
 
 namespace Vital::Lua {
     std::function<void(std::string& error)> onErrorHandler = nullptr;
-    static const std::vector<lua_CFunction> Global_Methods;
+    static const std::map<lua_CFunction, bool> Global_Methods;
     static const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
     static const std::string Global_Modules[] = {
         "namespacer.lua",
@@ -50,8 +50,13 @@ namespace Vital::Lua {
         {NULL, NULL}
     };
 
-    static const bool createMethod(lua_CFunction exec) {
-        Global_Methods.push_back(exec);
+    // Method Binders
+    static const bool bind(lua_CFunction exec) {
+        map.insert_or_assign(exec, true);
+        return true
+    }
+    static const bool unbind(lua_CFunction exec) {
+        map.erase(exec)
         return true
     }
 }
