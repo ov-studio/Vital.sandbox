@@ -4,3 +4,6 @@
 [submodule "Vendors/lua-rapidjson"]
 	path = Vendors/lua-rapidjson
 	url = https://github.com/xpol/lua-rapidjson
+[submodule "Vendors/openssl"]
+	path = Vendors/openssl
+	url = https://github.com/openssl/openssl
