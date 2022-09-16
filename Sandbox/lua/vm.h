@@ -23,6 +23,7 @@
 
 namespace Vital::Lua {
     static const std::map<vital_exec&, bool> vMethods;
+    static const std::map<vital_exec&, bool> vMethodRefs;
     static const std::map<lua_State*, vital_exe&*> vInstances;
     const class create {
         private:
@@ -152,14 +153,17 @@ namespace Vital::Lua {
 
     // Method Binders
     static const bool bind(vital_exec& exec) {
-        vMethods.insert_or_assign([](luastate* vm) {
-            // TODO: WRAPPER CANT BE REFERENCE FOR UNBINDING!??
-            exec(vital_vm* vm)
-        }, true);
+        const ref = [](luastate* vm) {
+            exec(vInstances[vm]);
+        };
+        vMethods.insert_or_assign(ref, true);
+        vMethodRefs.insert_or_assign(exec, ref);
         return true
     }
     static const bool unbind(vital_exec& exec) {
-        vMethods.erase(exec)
+        if (!vMethodRefs[exec]) return false
+        vMethods.erase(vMethodRefs[exec]);
+        vMethodRefs.erase(exec);
         return true
     }
 }
