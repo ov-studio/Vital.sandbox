@@ -23,18 +23,12 @@
 /////////////////////
 
 namespace Vital::Lua {
-    static const std::string vBlacklist[] = {"dofile", "load", "loadfile"};
-    static const std::string vModules[] = {
-        "namespacer.lua",
-        "vcl.lua",
-        "table.lua"
-        "math/index.lua",
-        "math/quat.lua",
-        "math/matrix.lua",
-        "string.lua",
-        "thread.lua",
-        "timer.lua"
+    static const std::string vBlacklist[] = {
+        "dofile",
+        "load",
+        "loadfile"
     };
+
     static const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
@@ -45,5 +39,17 @@ namespace Vital::Lua {
         {"utf8", luaopen_utf8},
         {"json", luaopen_rapidjson},
         {NULL, NULL}
+    };
+
+    static const std::string vModules[] = {
+        "namespacer.lua",
+        "vcl.lua",
+        "table.lua"
+        "math/index.lua",
+        "math/quat.lua",
+        "math/matrix.lua",
+        "string.lua",
+        "thread.lua",
+        "timer.lua"
     };
 }
