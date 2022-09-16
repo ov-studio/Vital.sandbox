@@ -14,7 +14,6 @@
 
 #pragma once
 #include "Vendor/lua/lua.hpp"
-#include "Vendor/lua-rapidjson/rapidjson.cpp"
 
 
 /////////////////////
@@ -22,33 +21,7 @@
 /////////////////////
 
 namespace Vital::Lua {
-    static const std::string vBlacklist[] = {
-        "dofile",
-        "load",
-        "loadfile"
-    };
-
-    static const luaL_Reg Library_Whitelist[] = {
-        {"_G", luaopen_base},
-        {"table", luaopen_table},
-        {"string", luaopen_string},
-        {"math", luaopen_math},
-        {"os", luaopen_os},
-        {"coroutine", luaopen_coroutine},
-        {"utf8", luaopen_utf8},
-        {"json", luaopen_rapidjson},
-        {NULL, NULL}
-    };
-
-    static const std::string vModules[] = {
-        "namespacer.lua",
-        "vcl.lua",
-        "table.lua"
-        "math/index.lua",
-        "math/quat.lua",
-        "math/matrix.lua",
-        "string.lua",
-        "thread.lua",
-        "timer.lua"
-    };
+    static const std::string vBlacklist[];
+    static const luaL_Reg Library_Whitelist[];
+    static const std::string vModules[];
 }
