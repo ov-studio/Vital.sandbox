@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: public: vm.h
+     Script: Sandbox: lua: public: vm.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
@@ -16,7 +16,8 @@
 #include <map>
 #include <functional>
 #include <filesystem>
-#include "Sandbox/lua/index.h"
+#include "Sandbox/lua/public/index.h"
+#include "Sandbox/lua/public/vm.h"
 
 
 //////////////
@@ -156,6 +157,18 @@ namespace Vital::Lua {
 
     // Method Binders //
     static std::function<void(std::string&)> onError = NULL;
-    static const bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec);
-    static const bool unbind(std::string parent, std::string name);
+    static const bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec) {
+        const vital_exec_ref ref = vital_exec_ref {parent, name};
+        if (vMethodRefs[ref] && (vMethodRefs[ref] == exec)) return false;
+        vMethods.insert_or_assign(ref, [](luastate* vm) {
+            exec(vInstances[vm]);
+        });
+        return true
+    }
+    static const bool unbind(std::string parent, std::string name) {
+        const vital_exec_ref ref = vital_exec_ref {parent, name};
+        if (!vMethodRefs[ref]) return false;
+        vMethods.erase(ref);
+        return true
+    }
 }
