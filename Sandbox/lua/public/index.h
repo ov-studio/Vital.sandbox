@@ -13,9 +13,9 @@
 //////////////
 
 #pragma once
-#include "System/filesystem.h"
-#include " Vendor/lua/lua.hpp"
-#include " Vendor/lua-rapidjson/rapidjson.cpp"
+#include "System/public/filesystem.h"
+#include "Vendor/lua/lua.hpp"
+#include "Vendor/lua-rapidjson/rapidjson.cpp"
 
 
 /////////////////////
