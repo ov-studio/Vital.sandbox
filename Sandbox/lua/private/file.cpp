@@ -21,23 +21,23 @@
 //////////////////////
 
 namespace Vital::Lua {
-    bind("file", "resolve", [](vital_vm* vm) {
+    bind("file", "resolve", [](vital_vm* vm) int {
         // TODO:
     })
 
-    bind("file", "exists", [](vital_vm* vm) {
+    bind("file", "exists", [](vital_vm* vm) int {
         // TODO:
     })
 
-    bind("file", "size", [](vital_vm* vm) {
+    bind("file", "size", [](vital_vm* vm) int {
         // TODO:
     })
 
-    bind("file", "read", [](vital_vm* vm) {
+    bind("file", "read", [](vital_vm* vm) int {
         // TODO:
     })
 
-    bind("file", "write", [](vital_vm* vm) {
+    bind("file", "write", [](vital_vm* vm) int {
         // TODO:
     })
 }
