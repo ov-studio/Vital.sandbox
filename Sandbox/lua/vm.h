@@ -22,7 +22,8 @@
 //////////////
 
 namespace Vital::Lua {
-    static const std::map<vital_exec, bool> Global_Methods;
+    static const std::map<vital_exec*, bool> vMethods;
+    static const std::map<lua_State*, vital_exec*> vInstances;
     const class create {
         private:
             bool isUnloaded = false;
@@ -30,6 +31,7 @@ namespace Vital::Lua {
         public:
             create() {
                 vm = luaL_newstate();
+                vInstances.insert_or_assign(vm, this);
                 for (int i = 0; i < sizeof(Library_Whitelist); i++) {
                     const luaL_Reg* j = Library_Whitelist[i];
                     if (j -> funct) {
@@ -41,7 +43,7 @@ namespace Vital::Lua {
                     setNil();
                     setGlobal(i);
                 }
-                for (auto& i : Global_Methods) {
+                for (auto& i : vMethods) {
                     // TDDO: EXPOSE IT
                 }
                 for (auto& i : Global_Modules) {
@@ -150,14 +152,14 @@ namespace Vital::Lua {
 
     // Method Binders
     static const bool bind(vital_exec& exec) {
-        Global_Methods.insert_or_assign([](luastate* vm) {
+        vMethods.insert_or_assign([](luastate* vm) {
             // TODO: WRAPPER CANT BE REFERENCE FOR UNBINDING!??
             exec(vital_vm* vm)
         }, true);
         return true
     }
     static const bool unbind(vital_exec& exec) {
-        Global_Methods.erase(exec)
+        vMethods.erase(exec)
         return true
     }
 }
