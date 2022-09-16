@@ -22,13 +22,13 @@
 /////////////////////
 
 namespace Vital::Lua {
-    static const std::string vBlacklist[] = {
+    const std::string vBlacklist[] = {
         "dofile",
         "load",
         "loadfile"
     };
 
-    static const luaL_Reg Library_Whitelist[] = {
+    const luaL_Reg Library_Whitelist[] = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
         {"string", luaopen_string},
@@ -40,7 +40,7 @@ namespace Vital::Lua {
         {NULL, NULL}
     };
 
-    static const std::string vModules[] = {
+    const std::string vModules[] = {
         "namespacer.lua",
         "vcl.lua",
         "table.lua"

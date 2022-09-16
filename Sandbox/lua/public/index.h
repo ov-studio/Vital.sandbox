@@ -21,7 +21,7 @@
 /////////////////////
 
 namespace Vital::Lua {
-    static const std::string vBlacklist[];
-    static const luaL_Reg Library_Whitelist[];
-    static const std::string vModules[];
+    const std::string vBlacklist[];
+    const luaL_Reg Library_Whitelist[];
+    const std::string vModules[];
 }
