@@ -42,6 +42,7 @@ namespace Vital::Lua {
                     setGlobal(i);
                 }
                 for (auto& i : vMethods) {
+                    const j = i.second;
                     // TDDO: EXPOSE IT
                 }
                 for (auto& i : Global_Modules) {
