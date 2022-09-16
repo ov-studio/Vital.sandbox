@@ -148,12 +148,13 @@ namespace Vital::Lua {
             }
     };
     typedef create vital_vm;
+    typedef create vital_vm;
     static const std::map<lua_State*, vital_vm*> vInstances;
-    static const std::map<std::string, vital_exec&> vMethods;
+    static const std::map<vital_exec_ref, vital_exec&> vMethods;
 
     // Method Binders
     static const bool bind(std::string parent, std::string name, vital_exec& exec) {
-        const std::string ref = parent + name;
+        const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (vMethodRefs[ref] && (vMethodRefs[ref] == exec)) return false;
         vMethods.insert_or_assign(ref, [](luastate* vm) {
             exec(vInstances[vm]);
@@ -161,7 +162,7 @@ namespace Vital::Lua {
         return true
     }
     static const bool unbind(std::string parent, std::string name) {
-        const std::string ref = parent + name;
+        const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (!vMethodRefs[ref]) return false;
         vMethods.erase(ref);
         return true
