@@ -22,8 +22,8 @@
 //////////////
 
 namespace Vital::Lua {
-    static const std::map<vital_exec*, bool> vMethods;
-    static const std::map<lua_State*, vital_exec*> vInstances;
+    static const std::map<vital_exec&, bool> vMethods;
+    static const std::map<lua_State*, vital_exe&*> vInstances;
     const class create {
         private:
             bool isUnloaded = false;
