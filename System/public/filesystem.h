@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: System: filesystem.h
+     Script: System: public: filesystem.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
