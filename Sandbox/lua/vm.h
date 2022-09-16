@@ -24,7 +24,6 @@
 namespace Vital::Lua {
     static const std::map<vital_exec&, bool> vMethods;
     static const std::map<vital_exec&, bool> vMethodRefs;
-    static const std::map<lua_State*, vital_exe&*> vInstances;
     const class create {
         private:
             bool isUnloaded = false;
@@ -125,7 +124,7 @@ namespace Vital::Lua {
                 setFunction(exec);
                 return setTableField(-2, index.c_str());
             }
-            void registerFunction(std::string parent, std::string index, vital_exec& exec) {
+            void registerFunction(std::string index, vital_exec& exec, std::string parent) {
                 getGlobal(parent)
                 if (!isTable(-1)) {
                     createTable();
@@ -150,9 +149,11 @@ namespace Vital::Lua {
             }
     };
     typedef create vital_vm;
+    static const std::map<lua_State*, vital_vm*> vInstances;
 
     // Method Binders
     static const bool bind(vital_exec& exec) {
+        if (!vMethodRefs[exec]) return false
         const ref = [](luastate* vm) {
             exec(vInstances[vm]);
         };
@@ -160,9 +161,9 @@ namespace Vital::Lua {
         vMethodRefs.insert_or_assign(exec, ref);
         return true
     }
-    static const bool unbind(vital_exec& exec) {
-        if (!vMethodRefs[exec]) return false
-        vMethods.erase(vMethodRefs[exec]);
+    static const bool unbind(std::string parent, std::string name) {
+        if (!vMethodRefs[name]) return false
+        vMethods.erase(name);
         vMethodRefs.erase(exec);
         return true
     }
