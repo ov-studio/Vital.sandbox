@@ -39,7 +39,7 @@ namespace Vital::Lua {
                     setNil();
                     setGlobal(i);
                 }
-                for (auto& i : Vital::Lua::Global_Methods) {
+                for (auto& i : Global_Methods) {
                     // TDDO: EXPOSE IT
                 }
                 for (auto& i : Global_Modules) {
