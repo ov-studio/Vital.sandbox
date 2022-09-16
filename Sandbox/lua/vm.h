@@ -148,7 +148,6 @@ namespace Vital::Lua {
             }
     };
     typedef create vital_vm;
-    typedef create vital_vm;
     static const std::map<lua_State*, vital_vm*> vInstances;
     static const std::map<vital_exec_ref, vital_exec&> vMethods;
 
