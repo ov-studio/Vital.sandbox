@@ -50,14 +50,4 @@ namespace Vital::Lua {
         {"json", luaopen_rapidjson},
         {NULL, NULL}
     };
-
-    // Method Binders
-    static const bool bind(vital_exec exec) {
-        map.insert_or_assign(exec, true);
-        return true
-    }
-    static const bool unbind(vital_exec exec) {
-        map.erase(exec)
-        return true
-    }
 }
