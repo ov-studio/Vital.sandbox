@@ -20,7 +20,7 @@
 ///////////////////////
 
 namespace Vital {
-    static const unsigned int getSystemTick();
-    static const const unsigned int vTick;
-    static const unsigned int getApplicationTick();
+    const unsigned int getSystemTick();
+    const const unsigned int vTick;
+    const unsigned int getApplicationTick();
 }
