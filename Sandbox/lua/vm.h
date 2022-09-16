@@ -16,9 +16,9 @@
 #include "Sandbox/lua/index.h"
 
 
-/////////////////////
-// Namespace: Lua //
-/////////////////////
+//////////////
+// Lua: VM //
+//////////////
 
 namespace Vital::Lua {
     class create {
@@ -120,7 +120,7 @@ namespace Vital::Lua {
                 setFunction(exec);
                 return setTableField(-2, index.c_str());
             }
-            void registerFunction(std::string index, lua_CFunction& exec, std::string& parent) {
+            void registerFunction(std::string parent, std::string index, lua_CFunction& exec) {
                 getGlobal(parent)
                 if (!isTable(-1)) {
                     createTable();

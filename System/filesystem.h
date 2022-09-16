@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
-     Desc: Module Initializer
+     Desc: File System Handler
 ----------------------------------------------------------------*/
 
 
@@ -24,10 +24,16 @@
 ////////////////////////////
 
 namespace Vital::FileSystem {
-    static const bool generatePath(std::string& path) {
+    static const bool getPath(std::string& path) {
         std::filesystem::path __path = std::filesystem::absolute(path);
         if (!path.empty()) path = __path.string();
         return true
+    }
+
+    static const std::streampos getSize(std::fstream handle) {
+        if (!handle.is_open()) return 0;
+        handle.seekg(0, std::ios::end);
+        return handle.tellg();
     }
 
     static const bool exists(std::string& path) {
@@ -35,12 +41,6 @@ namespace Vital::FileSystem {
         const bool isValid = (handle.is_open() && true) || false;
         handle.close();
         return isValid;
-    }
-
-    static const std::streampos getSize(std::fstream handle) {
-        if (!handle.is_open()) return 0;
-        handle.seekg(0, std::ios::end);
-        return handle.tellg();
     }
 
     static const char* read(std::string& path) {
