@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#include <map>
 #include "System/filesystem.h"
 #include "Vendors/lua/lua.hpp"
 #include "Vendors/lua-rapidjson/rapidjson.cpp"
@@ -26,7 +25,6 @@
 namespace Vital::Lua {
     typedef lua_CFunction vital_exec;
     std::function<void(std::string& error)> onErrorHandler = nullptr;
-    static const std::map<vital_exec, bool> Global_Methods;
     static const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
     static const std::string Global_Modules[] = {
         "namespacer.lua",

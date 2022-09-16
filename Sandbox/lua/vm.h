@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <map>
 #include "Sandbox/lua/index.h"
 
 
@@ -21,6 +22,7 @@
 //////////////
 
 namespace Vital::Lua {
+    static const std::map<vital_exec, bool> Global_Methods;
     const class create {
         private:
             bool isUnloaded = false;
@@ -148,14 +150,14 @@ namespace Vital::Lua {
 
     // Method Binders
     static const bool bind(vital_exec& exec) {
-        map.insert_or_assign([](luastate* vm) {
+        Global_Methods.insert_or_assign([](luastate* vm) {
             // TODO: WRAPPER CANT BE REFERENCE FOR UNBINDING!??
             exec(vital_vm* vm)
         }, true);
         return true
     }
     static const bool unbind(vital_exec& exec) {
-        map.erase(exec)
+        Global_Methods.erase(exec)
         return true
     }
 }
