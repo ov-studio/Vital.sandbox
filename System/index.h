@@ -21,12 +21,12 @@
 ///////////////////////
 
 namespace Vital {
-    static unsigned int getSystemTick() {
+    static const unsigned int getSystemTick() {
         return std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000;
     }
-    static const unsigned int vTick = getSystemTick();
+    static const const unsigned int vTick = getSystemTick();
 
-    static unsigned int getApplicationTick() {
+    static const unsigned int getApplicationTick() {
         return getSystemTick() - vTick;
     }
 }

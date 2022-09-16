@@ -39,6 +39,9 @@ namespace Vital::Lua {
                     setNil();
                     setGlobal(i);
                 }
+                for (auto& i : Vital::Lua::Global_Methods) {
+                    // TDDO: EXPOSE IT
+                }
                 for (auto& i : Global_Modules) {
                     loadString(Vital::FileSystem::read(std::filesystem::current_path() + "/modules/" + i));
                 }
