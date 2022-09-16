@@ -24,8 +24,9 @@
 /////////////////////
 
 namespace Vital::Lua {
+    typedef lua_CFunction lua_exec;
     std::function<void(std::string& error)> onErrorHandler = nullptr;
-    static const std::map<lua_CFunction, bool> Global_Methods;
+    static const std::map<lua_exec, bool> Global_Methods;
     static const std::string Global_Blacklist[] = {"dofile", "load", "loadfile"};
     static const std::string Global_Modules[] = {
         "namespacer.lua",
@@ -51,11 +52,11 @@ namespace Vital::Lua {
     };
 
     // Method Binders
-    static const bool bind(lua_CFunction exec) {
+    static const bool bind(lua_exec exec) {
         map.insert_or_assign(exec, true);
         return true
     }
-    static const bool unbind(lua_CFunction exec) {
+    static const bool unbind(lua_exec exec) {
         map.erase(exec)
         return true
     }
