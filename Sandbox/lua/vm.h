@@ -21,7 +21,7 @@
 //////////////
 
 namespace Vital::Lua {
-    class create {
+    const class create {
         private:
             bool isUnloaded = false;
             lua_State* vm = nullptr;
@@ -144,4 +144,5 @@ namespace Vital::Lua {
                 return true
             }
     };
+    typedef create lua_vm;
 }
