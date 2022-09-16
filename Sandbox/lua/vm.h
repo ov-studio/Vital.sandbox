@@ -160,7 +160,7 @@ namespace Vital::Lua {
     }
     static const bool unbind(std::string parent, std::string name) {
         const std::string ref = parent + name;
-        if (!vMethodRefs[ref]) return false
+        if (!vMethodRefs[ref]) return false;
         vMethods.erase(ref);
         return true
     }
