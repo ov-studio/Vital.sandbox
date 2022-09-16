@@ -87,7 +87,7 @@ namespace Vital::Lua {
                 return;
             }
             void setUserData(void* value) return lua_pushlightuserdata(vm, value);
-            void setFunction(lua_exec& value) return lua_pushcfunction(vm, value);
+            void setFunction(vital_exec& value) return lua_pushcfunction(vm, value);
 
             // Getters //
             int getArgCount() return lua_gettop(vm);
@@ -116,11 +116,11 @@ namespace Vital::Lua {
                 setInt(value);
                 return setTableField(-2, index.c_str());
             }
-            void registerFunction(std::string index, lua_exec& exec) {
+            void registerFunction(std::string index, vital_exec& exec) {
                 setFunction(exec);
                 return setTableField(-2, index.c_str());
             }
-            void registerFunction(std::string parent, std::string index, lua_exec& exec) {
+            void registerFunction(std::string parent, std::string index, vital_exec& exec) {
                 getGlobal(parent)
                 if (!isTable(-1)) {
                     createTable();
@@ -144,5 +144,5 @@ namespace Vital::Lua {
                 return true
             }
     };
-    typedef create lua_vm;
+    typedef create vital_vm;
 }
