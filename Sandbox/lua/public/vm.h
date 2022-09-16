@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
-     Desc: VM Handler
+     Desc: VM Utilities
 ----------------------------------------------------------------*/
 
 
