@@ -34,7 +34,8 @@ resource,private.globals = {
     table = table,
     string = string,
     math = math,
-    file = file
+    file = file,
+    engine = engine
 }
 
 function resource.private.fetch(name)
