@@ -64,15 +64,15 @@ function resource.public:load(name)
     if self.rw.manifest and self.rw.manifest.scripts and (imports.type(self.rw.manifest.scripts) == "table") then
         self.rw.isLoaded = true
         for i, j in imports.pairs(self.rw.manifest.scripts) do
-            local isHandlerLoaded = false
-            local cHandler = file.read(self.rw.manifest.scripts)
-            if cHandler then
-                cHandler = imports.loadstring(cHandler)
-                imports.setfenv(cHandler, self.rw.env)
-                local status, error = assetify.imports.pcall(cHandler)
-                isHandlerLoaded = status
+            local isValid = false
+            local vHandler = file.read(self.rw.manifest.scripts)
+            if vHandler then
+                vHandler = imports.loadstring(vHandler)
+                imports.setfenv(vHandler, self.rw.env)
+                local status, error = assetify.imports.pcall(vHandler)
+                isValid = status
             end
-            if not isHandlerLoaded then
+            if not isValid then
                 self.rw.isLoaded = false
                 break
             end
