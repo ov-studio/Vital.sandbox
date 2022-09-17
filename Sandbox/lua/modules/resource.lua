@@ -18,6 +18,7 @@ local imports = {
     loadstring = loadstring,
     debug = debug
 }
+debug = nil
 
 
 -------------------------
