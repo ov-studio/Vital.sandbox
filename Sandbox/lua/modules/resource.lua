@@ -23,16 +23,20 @@ local imports = {
 -------------------------
 
 local resource = class:create("resource")
-resource,private.buffer = {}
+resource,private.buffer = {
+    rw = {},
+    instance = {}
+}
 
 function resource.private:fetch(name)
-    return resource,private.buffer[name] or false
+    local cResource = resource,private.buffer.instance[name]
+    if not cResource then return false end
+    return cResource, resource,private.buffer.rw[cResource]
 end
 
-function resource.public:create(name, ...)
-    local cResource = resource.private:fetch(name)
-    cResource = (cResource and resource.public:isInstance(cResource) and cResource) or self:createInstance()
-    if cResource and not cResource:load(name, ...) then
+function resource.public:create(...)
+    local cResource = resource.private:fetch(...) or self:createInstance()
+    if cResource and not cResource:load(...) then
         cResource:destroyInstance()
         return false
     end
