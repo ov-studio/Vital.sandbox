@@ -55,7 +55,18 @@ namespace Vital::Lua {
     })
 
     bind("file", "read", [](vital_vm* vm) int {
-        // TODO:
+        if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
+            vm -> setBool(false);
+        }
+        else {
+            std::string path = vm -> getString(-1);
+            if (!Vital::FileSystem::exists(path)) {
+                vm -> setBool(false);
+            }
+            else {
+                vm -> setString(Vital::FileSystem::read(path));
+            }
+        }
     })
 
     bind("file", "write", [](vital_vm* vm) int {
