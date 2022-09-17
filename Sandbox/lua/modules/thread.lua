@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
 --[[ Resource: Vital.sandbox
-     Script: Sandbox: lua: modules: threader.lua
+     Script: Sandbox: lua: modules: thread.lua
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
-     Desc: Threader Utilities ]]--
+     Desc: Thread Utilities ]]--
 ----------------------------------------------------------------
 
 
