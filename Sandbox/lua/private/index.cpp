@@ -42,7 +42,7 @@ namespace Vital::Lua {
     };
 
     const std::string vModules[] = {
-        "namespacer.lua",
+        "namespace.lua",
         "vcl.lua",
         "table.lua"
         "math/index.lua",
