@@ -31,7 +31,8 @@ resource,private.globals = {
     timer = timer,
     table = table,
     string = string,
-    math = math
+    math = math,
+    file = file
 }
 resource,private.buffer = {}
 
