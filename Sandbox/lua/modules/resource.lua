@@ -23,15 +23,10 @@ local imports = {
 -------------------------
 
 local resource = class:create("resource")
-resource,private.buffer = {
-    rw = {},
-    instance = {}
-}
+resource,private.buffer = {}
 
 function resource.private:fetch(name)
-    local cResource = resource,private.buffer.instance[name]
-    if not cResource then return false end
-    return cResource, resource,private.buffer.rw[cResource]
+    return resource,private.buffer[name] or false
 end
 
 function resource.public:create(...)
@@ -50,9 +45,10 @@ end
 
 function resource.public:load(name)
     if not resource.public:isInstance(self) then return false end
-    local resourceManifest = table.decode(file.read("resources/"..name.."/manifest.vcl"))
-    if not resourceManifest then return false end
-    for i, j in imports.pairs(resourceManifest.scripts) do
+    self.rw = {}
+    self.rw.manifest = table.decode(file.read("resources/"..name.."/manifest.vcl"))
+    if not self.rw.manifest or not self.rw.manifest.scripts or (imports.type(self.rw.manifest.scripts) ~= "table") then return false end
+    for i, j in imports.pairs(self.rw.manifest.scripts) do
         --TODO: LOAD ALL SCRIPTS IN NEW ENV
     end
     return self
@@ -60,6 +56,7 @@ end
 
 function resource.public:unload()
     if not resource.public:isInstance(self) then return false end
+    resource,private.buffer[(self.name)] = nil
     self:destroyInstance()
     return true
 end
