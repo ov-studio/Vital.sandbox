@@ -22,11 +22,26 @@
 
 namespace Vital::Lua {
     bind("file", "resolve", [](vital_vm* vm) int {
-        // TODO:
+        if (vm -> getArgCount() < 1) {
+            vm -> setBool(false);
+        }
+        else {
+            std::string path = vm -> getString(-1);
+            Vital::FileSystem::resolve(path);
+            vm -> setString(path);
+        }
+        return 1;
     })
 
     bind("file", "exists", [](vital_vm* vm) int {
-        // TODO:
+        if (vm -> getArgCount() < 1) {
+            vm -> setBool(false);
+        }
+        else {
+            std::string path = vm -> getString(-1);
+            vm -> setBool(Vital::FileSystem::exists(path));
+        }
+        return 1;
     })
 
     bind("file", "size", [](vital_vm* vm) int {
