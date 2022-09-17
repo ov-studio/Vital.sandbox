@@ -32,8 +32,8 @@ resource,private.globals = {
     thread = thread,
     timer = timer,
     table = table,
-    string = string,
     math = math,
+    string = string,
     file = file,
     engine = engine
 }
