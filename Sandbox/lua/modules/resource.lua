@@ -58,7 +58,8 @@ function resource.public:load(name)
     if not resource.public:isInstance(self) then return false end
     self.rw = {
         env = table.clone(resource,private.globals),
-        manifest = table.decode(file.read("resources/"..name.."/manifest.vcl"))
+        manifest = table.decode(file.read("resources/"..name.."/manifest.vcl")),
+        entity = {}
     }
     if self.rw.manifest and self.rw.manifest.scripts and (imports.type(self.rw.manifest.scripts) == "table") then
         self.rw.isLoaded = true
