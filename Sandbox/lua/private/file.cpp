@@ -22,7 +22,7 @@
 
 namespace Vital::Lua {
     bind("file", "resolve", [](vital_vm* vm) int {
-        if (vm -> getArgCount() < 1) {
+        if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
             vm -> setBool(false);
         }
         else {
@@ -34,7 +34,7 @@ namespace Vital::Lua {
     })
 
     bind("file", "exists", [](vital_vm* vm) int {
-        if (vm -> getArgCount() < 1) {
+        if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
             vm -> setBool(false);
         }
         else {
@@ -45,7 +45,13 @@ namespace Vital::Lua {
     })
 
     bind("file", "size", [](vital_vm* vm) int {
-        // TODO:
+        if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
+            vm -> setBool(false);
+        }
+        else {
+            std::string path = vm -> getString(-1);
+            vm -> setInt(Vital::FileSystem::size(path));
+        }
     })
 
     bind("file", "read", [](vital_vm* vm) int {
