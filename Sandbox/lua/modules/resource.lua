@@ -15,6 +15,7 @@
 local imports = {
     type = type,
     pairs = pairs,
+    setfenv = setfenv,
     loadstring = loadstring
 }
 
@@ -24,6 +25,11 @@ local imports = {
 -------------------------
 
 local resource = class:create("resource")
+resource,private.globals = {
+    string = string,
+    math = math
+    table = table
+}
 resource,private.buffer = {}
 
 function resource.private:fetch(name)
@@ -47,19 +53,27 @@ end
 function resource.public:load(name)
     if not resource.public:isInstance(self) then return false end
     self.rw = {
-        env = {}
+        env = table.clone(resource,private.globals),
+        manifest = table.decode(file.read("resources/"..name.."/manifest.vcl"))
     }
-    self.rw.manifest = table.decode(file.read("resources/"..name.."/manifest.vcl"))
-    if not self.rw.manifest or not self.rw.manifest.scripts or (imports.type(self.rw.manifest.scripts) ~= "table") then return false end
-    for i, j in imports.pairs(self.rw.manifest.scripts) do
-        local scriptData = file.read(self.rw.manifest.scripts)
-        if not scriptData then return false end
-        scriptData = imports.loadstring(scriptData)
-        --TODO: SET ENV
-        local status, error = assetify.imports.pcall(scriptData)
-        if not status then return false end
+    if self.rw.manifest and self.rw.manifest.scripts and (imports.type(self.rw.manifest.scripts) == "table") then
+        self.rw.isLoaded = true
+        for i, j in imports.pairs(self.rw.manifest.scripts) do
+            local isHandlerLoaded = false
+            local cHandler = file.read(self.rw.manifest.scripts)
+            if cHandler then
+                cHandler = imports.loadstring(cHandler)
+                imports.setfenv(cHandler, self.rw.env)
+                local status, error = assetify.imports.pcall(cHandler)
+                isHandlerLoaded = status
+            end
+            if not isHandlerLoaded then
+                self.rw.isLoaded = false
+                break
+            end
+        end
     end
-    return self
+    return (self.rw.isLoaded and self) or false
 end
 
 function resource.public:unload()
