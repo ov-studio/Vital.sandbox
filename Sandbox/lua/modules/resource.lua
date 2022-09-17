@@ -56,7 +56,7 @@ end
 function resource.private.getENV(exec)
     local i = 1
     while true do
-        local name, env = debug.getupvalue(exec, i)
+        local name, env = imports.debug.getupvalue(exec, i)
         if name == "_ENV" then return env
         elseif not name then break end
         i = i + 1
