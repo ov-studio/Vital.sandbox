@@ -49,6 +49,7 @@ namespace Vital::Lua {
         "math/matrix.lua",
         "string.lua",
         "thread.lua",
-        "timer.lua"
+        "timer.lua",
+        "resource.lua"
     };
 }
