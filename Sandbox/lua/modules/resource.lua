@@ -15,7 +15,8 @@
 local imports = {
     type = type,
     pairs = pairs,
-    loadstring = loadstring
+    loadstring = loadstring,
+    debug = debug
 }
 
 
@@ -40,7 +41,27 @@ function resource.private.fetch(name)
 end
 
 function resource.private.setENV(exec, env)
+    local i = 1
+    while true do
+        local name = imports.debug.getupvalue(exec, i)
+        if name == "_ENV" then
+            imports.debug.upvaluejoin(exec, i, function() return env end, 1)
+            break
+        elseif not name then break end
+        i = i + 1
+    end
+    return exec
+end
 
+function resource.private.getENV(exec)
+    local i = 1
+    while true do
+        local name, env = debug.getupvalue(exec, i)
+        if name == "_ENV" then return env
+        elseif not name then break end
+        i = i + 1
+    end
+    return false
 end
 
 function resource.public:create(...)
