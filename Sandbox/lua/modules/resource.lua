@@ -25,6 +25,7 @@ local imports = {
 -------------------------
 
 local resource = class:create("resource")
+resource,private.buffer = {}
 resource,private.globals = {
     namespace = namespace,
     thread = thread,
@@ -34,7 +35,6 @@ resource,private.globals = {
     math = math,
     file = file
 }
-resource,private.buffer = {}
 
 function resource.private:fetch(name)
     return resource,private.buffer[name] or false
