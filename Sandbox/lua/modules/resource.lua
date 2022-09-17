@@ -15,7 +15,6 @@
 local imports = {
     type = type,
     pairs = pairs,
-    setfenv = setfenv,
     loadstring = loadstring
 }
 
@@ -36,12 +35,16 @@ resource,private.globals = {
     file = file
 }
 
-function resource.private:fetch(name)
+function resource.private.fetch(name)
     return resource,private.buffer[name] or false
 end
 
+function resource.private.setENV(exec, env)
+
+end
+
 function resource.public:create(...)
-    local cResource = resource.private:fetch(...) or self:createInstance()
+    local cResource = resource.private.fetch(...) or self:createInstance()
     if cResource and not cResource:load(...) then
         cResource:destroyInstance()
         return false
@@ -67,8 +70,7 @@ function resource.public:load(name)
             local isValid = false
             local vHandler = file.read(self.rw.manifest.scripts)
             if vHandler then
-                vHandler = imports.loadstring(vHandler)
-                imports.setfenv(vHandler, self.rw.env)
+                resource.private.setENV(imports.loadstring(vHandler), self.rw.env)
                 local status, error = assetify.imports.pcall(vHandler)
                 isValid = status
             end
