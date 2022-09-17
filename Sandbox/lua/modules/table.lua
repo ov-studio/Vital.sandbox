@@ -106,6 +106,7 @@ function table.private.inspect(baseTable, showHidden, limit, level, buffer, skip
     return table.public.concat(buffer)
 end
 function table.public.inspect(...) return table.private.inspect(table.public.unpack(table.public.pack(...), 3)) end 
+function table.public.print(...) return imports.print(table.public.inspect(...)) end
 
 function table.public.keys(baseTable)
     if not baseTable or (imports.type(baseTable) ~= "table") then return false end
@@ -171,6 +172,3 @@ function table.public.forEach(baseTable, exec)
     end
     return true
 end
-
-inspect = function(...) return table.public.inspect(...) end
-iprint = function(...) return imports.print(table.public.inspect(...)) end
