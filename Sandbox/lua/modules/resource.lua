@@ -26,9 +26,12 @@ local imports = {
 
 local resource = class:create("resource")
 resource,private.globals = {
+    namespace = namespace,
+    thread = thread,
+    timer = timer,
+    table = table,
     string = string,
     math = math
-    table = table
 }
 resource,private.buffer = {}
 
