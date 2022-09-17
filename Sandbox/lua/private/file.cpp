@@ -52,6 +52,7 @@ namespace Vital::Lua {
             std::string path = vm -> getString(-1);
             vm -> setInt(Vital::FileSystem::size(path));
         }
+        return 1;
     })
 
     bind("file", "read", [](vital_vm* vm) int {
@@ -67,9 +68,18 @@ namespace Vital::Lua {
                 vm -> setString(Vital::FileSystem::read(path));
             }
         }
+        return 1;
     })
 
     bind("file", "write", [](vital_vm* vm) int {
-        // TODO:
+        if ((vm -> getArgCount() < 2) || (!vm -> isString(-1)) || (!vm -> isString(-2))) {
+            vm -> setBool(false);
+        }
+        else {
+            std::string path = vm -> getString(-1);
+            std::string buffer = vm -> getString(-2);
+            vm -> setBool(Vital::FileSystem::write(path, buffer));
+        }
+        return 1;
     })
 }
