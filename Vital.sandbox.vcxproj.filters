@@ -19,6 +19,21 @@
     <Filter Include="Sandbox\lua">
       <UniqueIdentifier>{63e9e37a-d9db-4d8c-bf19-04cda51c10e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sandbox\lua\private">
+      <UniqueIdentifier>{5a54ff73-280d-4073-81a2-7c78c7f74428}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sandbox\lua\public">
+      <UniqueIdentifier>{4bbbd8e1-4b6c-486b-8d08-d03828f54997}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{1944a537-8ddb-41dc-9e9e-002f8f5e1928}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\private">
+      <UniqueIdentifier>{fbf407bf-6f70-43db-9e47-aec74a1bae32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\public">
+      <UniqueIdentifier>{617f4b10-ce0f-4a2d-a926-c68f8e5b9d06}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
@@ -123,17 +138,23 @@
     <ClCompile Include="Vendor\lua\ltm.c">
       <Filter>Vendor\lua</Filter>
     </ClCompile>
-    <ClCompile Include="Sandbox\lua\private\engine.cpp">
-      <Filter>Sandbox\lua</Filter>
-    </ClCompile>
     <ClCompile Include="Sandbox\lua\private\file.cpp">
-      <Filter>Sandbox\lua</Filter>
+      <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
     <ClCompile Include="Sandbox\lua\private\index.cpp">
-      <Filter>Sandbox\lua</Filter>
+      <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
     <ClCompile Include="Sandbox\lua\private\vm.cpp">
-      <Filter>Sandbox\lua</Filter>
+      <Filter>Sandbox\lua\private</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\engine.cpp">
+      <Filter>Sandbox\lua\private</Filter>
+    </ClCompile>
+    <ClCompile Include="System\private\vital.cpp">
+      <Filter>System\private</Filter>
+    </ClCompile>
+    <ClCompile Include="System\private\filesystem.cpp">
+      <Filter>System\private</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -332,11 +353,17 @@
     <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\encodings.h">
       <Filter>Vendor\lua-rapidjson</Filter>
     </ClInclude>
-    <ClInclude Include="Sandbox\lua\public\index.h">
-      <Filter>Sandbox\lua</Filter>
-    </ClInclude>
     <ClInclude Include="Sandbox\lua\public\vm.h">
-      <Filter>Sandbox\lua</Filter>
+      <Filter>Sandbox\lua\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Sandbox\lua\public\index.h">
+      <Filter>Sandbox\lua\public</Filter>
+    </ClInclude>
+    <ClInclude Include="System\public\filesystem.h">
+      <Filter>System\public</Filter>
+    </ClInclude>
+    <ClInclude Include="System\public\vital.h">
+      <Filter>System\public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

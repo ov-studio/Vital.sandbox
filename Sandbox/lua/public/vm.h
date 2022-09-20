@@ -61,51 +61,51 @@ namespace Vital::Lua {
             }
 
             // Checkers //
-            bool isNil(int index) return lua_isnoneornil(vm, index);
-            bool isBool(int index) return lua_isboolean(vm, index);
-            bool isString(int index) return lua_isstring(vm, index);
-            bool isNumber(int index) return lua_isnumber(vm, index);
-            bool isTable(int index) return lua_istable(vm, index);
-            bool isThread(int index) return lua_isthread(vm, index);
-            bool isUserData(int index) return lua_isuserdata(vm, index);
-            bool isFunction(int index) return lua_isfunction(vm, index);
+            bool isNil(int index) {return lua_isnoneornil(vm, index)};
+            bool isBool(int index) {return lua_isboolean(vm, index)};
+            bool isString(int index) {return lua_isstring(vm, index)};
+            bool isNumber(int index) {return lua_isnumber(vm, index)};
+            bool isTable(int index) {return lua_istable(vm, index)};
+            bool isThread(int index) {return lua_isthread(vm, index)};
+            bool isUserData(int index) {return lua_isuserdata(vm, index)};
+            bool isFunction(int index) {return lua_isfunction(vm, index)};
 
             // Setters //
-            void setGlobal(std::string index) return lua_setglobal(vm, index.c_str());
-            void setNil() return lua_pushnil(vm);
-            void setBool(bool value) return lua_pushboolean(vm, static_cast<int>(value));
-            void setString(std::string value) return lua_pushstring(vm, value.c_str());
-            void setInt(int value) return lua_pushnumber(vm, (lua_Number)value);
-            void setFloat(float value) return lua_pushnumber(vm, (lua_Number)value);
-            void setLong(long value) return lua_pushnumber(vm, (lua_Number)value);
-            void setDouble(double value) return lua_pushnumber(vm, (lua_Number)value);
-            void createTable() return lua_newtable(vm);
-            void setTable(int index = 1) return lua_settable(vm, index);
-            void setTableField(int index = 1, std::string value) return lua_setfield(vm, index, value.c_str());
-            void createMetaTable(std::string value) return luaL_newmetatable(vm, value.c_str());
-            void setMetaTable(int index = 1) return lua_setmetatable(vm, index);
-            void setMetaTable(std::string index) return luaL_setmetatable(vm, index.c_str());
+            void setGlobal(std::string index) {return lua_setglobal(vm, index.c_str())};
+            void setNil() {return lua_pushnil(vm)};
+            void setBool(bool value) {return lua_pushboolean(vm, static_cast<int>(value))};
+            void setString(std::string value) {return lua_pushstring(vm, value.c_str())};
+            void setInt(int value) {return lua_pushnumber(vm, (lua_Number)value)};
+            void setFloat(float value) {return lua_pushnumber(vm, (lua_Number)value)};
+            void setLong(long value) {return lua_pushnumber(vm, (lua_Number)value)};
+            void setDouble(double value) {return lua_pushnumber(vm, (lua_Number)value)};
+            void createTable() {return lua_newtable(vm)};
+            void setTable(int index = 1) {return lua_settable(vm, index)};
+            void setTableField(int index = 1, std::string value) {return lua_setfield(vm, index, value.c_str())};
+            void createMetaTable(std::string value) {return luaL_newmetatable(vm, value.c_str())};
+            void setMetaTable(int index = 1) {return lua_setmetatable(vm, index)};
+            void setMetaTable(std::string index) {return luaL_setmetatable(vm, index.c_str())};
             void createUserData(void* value) {
-                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
+                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)))};
                 *userdata = value;
                 return;
             }
-            void setUserData(void* value) return lua_pushlightuserdata(vm, value);
-            void setFunction(vital_exec& value) return lua_pushcfunction(vm, value);
+            void setUserData(void* value) {return lua_pushlightuserdata(vm, value)};
+            void setFunction(vital_exec& value) {return lua_pushcfunction(vm, value)};
 
             // Getters //
-            int getArgCount() return lua_gettop(vm);
-            bool getGlobal(std::string index) return lua_getglobal(vm, index.c_str());
-            bool getBool(int index = 1) return static_cast<bool>(lua_toboolean(vm, index));
-            std::string getString(int index = 1) return lua_tostring(vm, index) || std::string("");
-            int getInt(int index = 1) return lua_tonumber(vm, index);
-            float getFloat(int index = 1) return lua_tonumber(vm, index);
-            double getDouble(int index = 1) return lua_tonumber(vm, index);
-            long getLong(int index = 1) return lua_tonumber(vm, index);
-            bool getTable(int index = 1) return lua_gettable(vm, index);
-            bool getTableField(int index = 1, std::string value) return lua_getfield(vm, index, value.c_str());
-            bool getMetaTable(int index = 1) return lua_getmetatable(vm, index);
-            void* getUserData(int index = 1) return lua_touserdata(vm, index);
+            int getArgCount() {return lua_gettop(vm)};
+            bool getGlobal(std::string index) {return lua_getglobal(vm, index.c_str())};
+            bool getBool(int index = 1) {return static_cast<bool>(lua_toboolean(vm, index))};
+            std::string getString(int index = 1) {return lua_tostring(vm, index) || std::string("")};
+            int getInt(int index = 1) {return lua_tonumber(vm, index)};
+            float getFloat(int index = 1) {return lua_tonumber(vm, index)};
+            double getDouble(int index = 1) {return lua_tonumber(vm, index)};
+            long getLong(int index = 1) {return lua_tonumber(vm, index)};
+            bool getTable(int index = 1) {return lua_gettable(vm, index)};
+            bool getTableField(int index = 1, std::string value) {return lua_getfield(vm, index, value.c_str())};
+            bool getMetaTable(int index = 1) {return lua_getmetatable(vm, index)};
+            void* getUserData(int index = 1) {return lua_touserdata(vm, index)};
 
             // Registerers //
             void registerBool(std::string index, bool value) {
@@ -139,7 +139,7 @@ namespace Vital::Lua {
             }
 
             // Utils //
-            bool loadString(std::string& buffer) return luaL_loadstring(vm, buffer.c_str());
+            bool loadString(std::string& buffer) {return luaL_loadstring(vm, buffer.c_str());
             bool throwError(std::string& error = "") {
                 lua_Debug debug;
                 lua_getstack(L, 1, &debug);

@@ -16,6 +16,7 @@
 #pragma once
 #include <fstream>
 #include <string>
+#include <System/public/vital.h>
 
 
 ////////////////////////////
