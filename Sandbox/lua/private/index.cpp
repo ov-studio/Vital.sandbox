@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <string>
 #include <Sandbox/lua/public/index.h>
 #include "Vendor/lua-rapidjson/rapidjson.cpp"
 
