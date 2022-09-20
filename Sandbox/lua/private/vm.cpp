@@ -25,6 +25,7 @@
 //////////////
 
 namespace Vital::Lua {
+    /*
     const class create {
         private:
             bool isUnloaded = false;
@@ -154,6 +155,7 @@ namespace Vital::Lua {
     typedef std::pair<std::string, std::string> vital_exec_ref;
     const std::map<lua_State*, vital_vm*> vInstances;
     const std::map<vital_exec_ref, vital_exec&> vMethods;
+    */
 
     // Method Binders //
     std::function<void(std::string&)> onError = NULL;
