@@ -18,6 +18,72 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Vendor\lua\lapi.c" />
+    <ClCompile Include="Vendor\lua\lauxlib.c" />
+    <ClCompile Include="Vendor\lua\lbaselib.c" />
+    <ClCompile Include="Vendor\lua\lcode.c" />
+    <ClCompile Include="Vendor\lua\lcorolib.c" />
+    <ClCompile Include="Vendor\lua\lctype.c" />
+    <ClCompile Include="Vendor\lua\ldblib.c" />
+    <ClCompile Include="Vendor\lua\ldebug.c" />
+    <ClCompile Include="Vendor\lua\ldo.c" />
+    <ClCompile Include="Vendor\lua\ldump.c" />
+    <ClCompile Include="Vendor\lua\lfunc.c" />
+    <ClCompile Include="Vendor\lua\lgc.c" />
+    <ClCompile Include="Vendor\lua\linit.c" />
+    <ClCompile Include="Vendor\lua\liolib.c" />
+    <ClCompile Include="Vendor\lua\llex.c" />
+    <ClCompile Include="Vendor\lua\lmathlib.c" />
+    <ClCompile Include="Vendor\lua\lmem.c" />
+    <ClCompile Include="Vendor\lua\loadlib.c" />
+    <ClCompile Include="Vendor\lua\lobject.c" />
+    <ClCompile Include="Vendor\lua\lopcodes.c" />
+    <ClCompile Include="Vendor\lua\loslib.c" />
+    <ClCompile Include="Vendor\lua\lparser.c" />
+    <ClCompile Include="Vendor\lua\lstate.c" />
+    <ClCompile Include="Vendor\lua\lstring.c" />
+    <ClCompile Include="Vendor\lua\lstrlib.c" />
+    <ClCompile Include="Vendor\lua\ltable.c" />
+    <ClCompile Include="Vendor\lua\ltablib.c" />
+    <ClCompile Include="Vendor\lua\ltests.c" />
+    <ClCompile Include="Vendor\lua\ltm.c" />
+    <ClCompile Include="Vendor\lua\lua.c" />
+    <ClCompile Include="Vendor\lua\lundump.c" />
+    <ClCompile Include="Vendor\lua\lutf8lib.c" />
+    <ClCompile Include="Vendor\lua\lvm.c" />
+    <ClCompile Include="Vendor\lua\lzio.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vendor\lua\lapi.h" />
+    <ClInclude Include="Vendor\lua\lauxlib.h" />
+    <ClInclude Include="Vendor\lua\lcode.h" />
+    <ClInclude Include="Vendor\lua\lctype.h" />
+    <ClInclude Include="Vendor\lua\ldebug.h" />
+    <ClInclude Include="Vendor\lua\ldo.h" />
+    <ClInclude Include="Vendor\lua\lfunc.h" />
+    <ClInclude Include="Vendor\lua\lgc.h" />
+    <ClInclude Include="Vendor\lua\ljumptab.h" />
+    <ClInclude Include="Vendor\lua\llex.h" />
+    <ClInclude Include="Vendor\lua\llimits.h" />
+    <ClInclude Include="Vendor\lua\lmem.h" />
+    <ClInclude Include="Vendor\lua\lobject.h" />
+    <ClInclude Include="Vendor\lua\lopcodes.h" />
+    <ClInclude Include="Vendor\lua\lopnames.h" />
+    <ClInclude Include="Vendor\lua\lparser.h" />
+    <ClInclude Include="Vendor\lua\lprefix.h" />
+    <ClInclude Include="Vendor\lua\lstate.h" />
+    <ClInclude Include="Vendor\lua\lstring.h" />
+    <ClInclude Include="Vendor\lua\ltable.h" />
+    <ClInclude Include="Vendor\lua\ltests.h" />
+    <ClInclude Include="Vendor\lua\ltm.h" />
+    <ClInclude Include="Vendor\lua\lua.h" />
+    <ClInclude Include="Vendor\lua\luaconf.h" />
+    <ClInclude Include="Vendor\lua\lualib.h" />
+    <ClInclude Include="Vendor\lua\lundump.h" />
+    <ClInclude Include="Vendor\lua\lvm.h" />
+    <ClInclude Include="Vendor\lua\lzio.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -72,9 +138,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir).build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir).output\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir).build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir).output\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -116,8 +184,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;VITALSANDBOX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,8 +202,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;VITALSANDBOX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
