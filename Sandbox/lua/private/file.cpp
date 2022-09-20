@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include "Sandbox/lua/index.h"
+#include "Sandbox/lua/public/index.h"
 
 
 //////////////////////
@@ -31,7 +31,7 @@ namespace Vital::Lua {
             vm -> setString(path);
         }
         return 1;
-    })
+    });
 
     bind("file", "exists", [](vital_vm* vm) int {
         if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
@@ -42,7 +42,7 @@ namespace Vital::Lua {
             vm -> setBool(Vital::FileSystem::exists(path));
         }
         return 1;
-    })
+    });
 
     bind("file", "size", [](vital_vm* vm) int {
         if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
@@ -53,7 +53,7 @@ namespace Vital::Lua {
             vm -> setInt(Vital::FileSystem::size(path));
         }
         return 1;
-    })
+    });
 
     bind("file", "read", [](vital_vm* vm) int {
         if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
@@ -69,7 +69,7 @@ namespace Vital::Lua {
             }
         }
         return 1;
-    })
+    });
 
     bind("file", "write", [](vital_vm* vm) int {
         if ((vm -> getArgCount() < 2) || (!vm -> isString(-1)) || (!vm -> isString(-2))) {
@@ -81,5 +81,5 @@ namespace Vital::Lua {
             vm -> setBool(Vital::FileSystem::write(path, buffer));
         }
         return 1;
-    })
+    });
 }

@@ -7,6 +7,18 @@
     <Filter Include="Vendor\lua">
       <UniqueIdentifier>{a2598b62-6cce-43a7-9ab1-4e20444fec71}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Vendor\lua-rapidjson">
+      <UniqueIdentifier>{5975879f-ea54-4071-8a5d-b3311e150fd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\openssl">
+      <UniqueIdentifier>{46c0d042-bb19-451b-b50c-4bb66a5dcd05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sandbox">
+      <UniqueIdentifier>{e568c1b6-f121-403d-87c1-d95752aa6a12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sandbox\lua">
+      <UniqueIdentifier>{63e9e37a-d9db-4d8c-bf19-04cda51c10e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
@@ -111,6 +123,18 @@
     <ClCompile Include="Vendor\lua\ltm.c">
       <Filter>Vendor\lua</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\engine.cpp">
+      <Filter>Sandbox\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\file.cpp">
+      <Filter>Sandbox\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\index.cpp">
+      <Filter>Sandbox\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\vm.cpp">
+      <Filter>Sandbox\lua</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
@@ -196,6 +220,123 @@
     </ClInclude>
     <ClInclude Include="Vendor\lua\lzio.h">
       <Filter>Vendor\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\filereadstream.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\filewritestream.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\fwd.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\istreamwrapper.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\memorybuffer.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\memorystream.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\ostreamwrapper.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\pointer.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\prettywriter.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\rapidjson.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\reader.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\schema.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\stream.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\stringbuffer.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\writer.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\error\en.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\error\error.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\biginteger.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\clzll.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\diyfp.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\dtoa.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\ieee754.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\itoa.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\meta.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\pow10.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\regex.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\stack.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\strfunc.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\strtod.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\swap.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\msinttypes\inttypes.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\msinttypes\stdint.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\allocators.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\cursorstreamwrapper.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\document.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\encodedstream.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\encodings.h">
+      <Filter>Vendor\lua-rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="Sandbox\lua\public\index.h">
+      <Filter>Sandbox\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="Sandbox\lua\public\vm.h">
+      <Filter>Sandbox\lua</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

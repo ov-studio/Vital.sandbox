@@ -19,6 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sandbox\lua\private\engine.cpp" />
+    <ClCompile Include="Sandbox\lua\private\file.cpp" />
+    <ClCompile Include="Sandbox\lua\private\index.cpp" />
+    <ClCompile Include="Sandbox\lua\private\vm.cpp" />
     <ClCompile Include="Vendor\lua\lapi.c" />
     <ClCompile Include="Vendor\lua\lauxlib.c" />
     <ClCompile Include="Vendor\lua\lbaselib.c" />
@@ -55,6 +59,45 @@
     <ClCompile Include="Vendor\lua\lzio.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sandbox\lua\public\index.h" />
+    <ClInclude Include="Sandbox\lua\public\vm.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\allocators.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\document.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\encodedstream.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\encodings.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\error\en.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\error\error.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\filereadstream.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\filewritestream.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\fwd.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\clzll.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\itoa.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\meta.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\pow10.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\regex.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\stack.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\strtod.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\internal\swap.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\memorybuffer.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\memorystream.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\pointer.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\prettywriter.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\rapidjson.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\reader.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\schema.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\stream.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\stringbuffer.h" />
+    <ClInclude Include="Vendor\lua-rapidjson\rapidjson\include\rapidjson\writer.h" />
     <ClInclude Include="Vendor\lua\lapi.h" />
     <ClInclude Include="Vendor\lua\lauxlib.h" />
     <ClInclude Include="Vendor\lua\lcode.h" />
@@ -187,6 +230,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Sandbox;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua-rapidjson\rapidjson\include\rapidjson;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;C:\Users\Tron\Documents\GITs\Vital.sandbox\Sandbox\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -205,6 +249,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Sandbox;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua-rapidjson\rapidjson\include\rapidjson;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;C:\Users\Tron\Documents\GITs\Vital.sandbox\Sandbox\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include "Sandbox/lua/index.h"
+#include "Sandbox/lua/public/index.h"
 
 
 //////////////////////
