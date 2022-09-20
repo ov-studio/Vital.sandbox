@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <string>
 #include <vector>
 extern "C" {
     #include <Vendor/lua/lua.h>
