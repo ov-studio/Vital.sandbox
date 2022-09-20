@@ -29,6 +29,7 @@ namespace Vital::Lua {
     typedef lua_CFunction vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
     const std::map<vital_exec_ref, vital_exec&> vMethods;
+    std::function<void(std::string&)> onError = NULL;
 
     const class create {
         private:
@@ -81,7 +82,6 @@ namespace Vital::Lua {
             void setString(std::string value) {lua_pushstring(vm, value.c_str());};
             void setInt(int value) {lua_pushnumber(vm, (lua_Number)value);};
             void setFloat(float value) {lua_pushnumber(vm, (lua_Number)value);};
-            void setLong(long value) {lua_pushnumber(vm, (lua_Number)value);};
             void setDouble(double value) {lua_pushnumber(vm, (lua_Number)value);};
             void createTable() {lua_newtable(vm);};
             void setTable(int index = 1) {lua_settable(vm, index);};
@@ -105,7 +105,6 @@ namespace Vital::Lua {
             int getInt(int index = 1) {return lua_tonumber(vm, index);};
             float getFloat(int index = 1) {return lua_tonumber(vm, index);};
             double getDouble(int index = 1) {return lua_tonumber(vm, index);};
-            long getLong(int index = 1) {return lua_tonumber(vm, index);};
             bool getTable(int index = 1) {return lua_gettable(vm, index);};
             bool getTableField(int index = 1, std::string value = "") { return lua_getfield(vm, index, value.c_str()); };
             bool getMetaTable(int index = 1) {return lua_getmetatable(vm, index);};
@@ -150,14 +149,13 @@ namespace Vital::Lua {
                 lua_getstack(vm, 1, &debug);
                 lua_getinfo(vm, "nSl", &debug);
                 if (onError) onError("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
-                return true
+                return true;
             }
     };
     typedef create vital_vm;
     const std::map<lua_State*, vital_vm*> vInstances;
 
     // Method Binders //
-    std::function<void(std::string&)> onError = NULL;
     bool bind(std::string parent, std::string name, vital_vm* exec);
     bool unbind(std::string parent, std::string name);
 }
