@@ -88,7 +88,7 @@ namespace Vital::Lua {
             void setMetaTable(int index = 1) {return lua_setmetatable(vm, index);};
             void setMetaTable(std::string index) {return luaL_setmetatable(vm, index.c_str());};
             void createUserData(void* value) {
-                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));};
+                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
                 *userdata = value;
                 return;
             }
