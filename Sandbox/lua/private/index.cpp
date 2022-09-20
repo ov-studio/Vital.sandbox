@@ -23,13 +23,13 @@
 /////////////////////
 
 namespace Vital::Lua {
-    std::string vBlacklist[] = {
+    std::vector<std::string> vBlacklist = {
         "dofile",
         "load",
         "loadfile"
     };
 
-    luaL_Reg Library_Whitelist[] = {
+    std::vector<luaL_Reg> Library_Whitelist = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
         {"string", luaopen_string},
@@ -42,7 +42,7 @@ namespace Vital::Lua {
         {NULL, NULL}
     };
 
-    std::string vModules[] = {
+    std::vector<std::string> vModules = {
         "namespace.lua",
         "vcl.lua",
         "table.lua"

@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <vector>
 extern "C" {
     #include <Vendor/lua/lua.h>
     #include <Vendor/lua/lauxlib.h>
@@ -26,7 +27,7 @@ extern "C" {
 /////////////////////
 
 namespace Vital::Lua {
-    std::string vBlacklist[];
-    luaL_Reg Library_Whitelist[];
-    std::string vModules[];
+    std::vector<std::string> vBlacklist;
+    std::vector<luaL_Reg> Library_Whitelist;
+    std::vector<std::string> vModules;
 }
