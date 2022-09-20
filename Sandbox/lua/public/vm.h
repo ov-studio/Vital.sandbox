@@ -140,7 +140,7 @@ namespace Vital::Lua {
 
             // Utils //
             bool loadString(std::string& buffer) {return luaL_loadstring(vm, buffer.c_str());
-            bool throwError(std::string& error = "") {
+            bool throwError(std::string& error) {
                 lua_Debug debug;
                 lua_getstack(L, 1, &debug);
                 lua_getinfo(L, "nSl", &debug);
