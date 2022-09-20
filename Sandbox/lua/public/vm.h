@@ -102,9 +102,9 @@ namespace Vital::Lua {
             bool getGlobal(std::string index) {return lua_getglobal(vm, index.c_str());};
             bool getBool(int index = 1) {return static_cast<bool>(lua_toboolean(vm, index));};
             std::string getString(int index = 1) {return lua_tostring(vm, index);};
-            int getInt(int index = 1) {return lua_tonumber(vm, index);};
-            float getFloat(int index = 1) {return lua_tonumber(vm, index);};
-            double getDouble(int index = 1) {return lua_tonumber(vm, index);};
+            int getInt(int index = 1) { return static_cast<int>(lua_tonumber(vm, index)); };
+            float getFloat(int index = 1) { return static_cast<float>(lua_tonumber(vm, index)); };
+            double getDouble(int index = 1) { return static_cast<double>(lua_tonumber(vm, index)); };
             bool getTable(int index = 1) {return lua_gettable(vm, index);};
             bool getTableField(int index = 1, std::string value = "") { return lua_getfield(vm, index, value.c_str()); };
             bool getMetaTable(int index = 1) {return lua_getmetatable(vm, index);};
