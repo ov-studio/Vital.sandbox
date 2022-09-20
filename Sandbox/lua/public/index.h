@@ -13,7 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vendor/lua/lua.h>
+extern "C" {
+    #include <Vendor/lua/lua.h>
+    #include <Vendor/lua/lauxlib.h>
+    #include <Vendor/lua/lualib.h>
+}
+
 
 
 /////////////////////

@@ -26,6 +26,7 @@
 //////////////
 
 namespace Vital::Lua {
+    typedef lua_CFunction vital_exec;
     const class create {
         private:
             bool isUnloaded = false;
@@ -151,7 +152,6 @@ namespace Vital::Lua {
             }
     };
     typedef create vital_vm;
-    typedef lua_CFunction vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
     const std::map<lua_State*, vital_vm*> vInstances;
     const std::map<vital_exec_ref, vital_exec&> vMethods;
