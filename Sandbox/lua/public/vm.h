@@ -27,6 +27,9 @@
 
 namespace Vital::Lua {
     typedef lua_CFunction vital_exec;
+    typedef std::pair<std::string, std::string> vital_exec_ref;
+    const std::map<vital_exec_ref, vital_exec&> vMethods;
+
     const class create {
         private:
             bool isUnloaded = false;
@@ -35,21 +38,21 @@ namespace Vital::Lua {
             create() {
                 vm = luaL_newstate();
                 vInstances.insert_or_assign(vm, this);
-                for (auto& i : Library_Whitelist) {
+                for (auto* i : Library_Whitelist) {
                     if (i -> func) {
                         luaL_requiref(vm, i -> name, i -> func, 1);
                         lua_pop(vm, 1);
                     }
                 }
-                for (auto& i : vBlacklist) {
+                for (std::string i : vBlacklist) {
                     setNil();
                     setGlobal(i);
                 }
                 for (auto& i : vMethods) {
                     registerFunction(i.first.second, i.second, i.first.first);
                 }
-                for (auto& i : vModules) {
-                    loadString(Vital::FileSystem::read(std::filesystem::current_path() + "/modules/" + i));
+                for (std::string i : vModules) {
+                    loadString(Vital::FileSystem::read(std::filesystem::current_path().string() + "/modules/" + i));
                 }
             }
 
@@ -99,7 +102,7 @@ namespace Vital::Lua {
             int getArgCount() {return lua_gettop(vm);};
             bool getGlobal(std::string index) {return lua_getglobal(vm, index.c_str());};
             bool getBool(int index = 1) {return static_cast<bool>(lua_toboolean(vm, index));};
-            std::string getString(int index = 1) {return lua_tostring(vm, index) || std::string("");};
+            std::string getString(int index = 1) {return lua_tostring(vm, index);};
             int getInt(int index = 1) {return lua_tonumber(vm, index);};
             float getFloat(int index = 1) {return lua_tonumber(vm, index);};
             double getDouble(int index = 1) {return lua_tonumber(vm, index);};
@@ -152,9 +155,7 @@ namespace Vital::Lua {
             }
     };
     typedef create vital_vm;
-    typedef std::pair<std::string, std::string> vital_exec_ref;
     const std::map<lua_State*, vital_vm*> vInstances;
-    const std::map<vital_exec_ref, vital_exec&> vMethods;
 
     // Method Binders //
     std::function<void(std::string&)> onError = NULL;
