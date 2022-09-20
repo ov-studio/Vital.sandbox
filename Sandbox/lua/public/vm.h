@@ -138,7 +138,8 @@ namespace Vital::Lua {
             }
             bool registerObject(std::string index, void* value) {
                 createUserData(value);
-                return setMetaTable(index);
+                setMetaTable(index);
+                return true;
             }
 
             // Utils //
