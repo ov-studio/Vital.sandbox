@@ -37,7 +37,7 @@ namespace Vital::Lua {
                 vInstances.insert_or_assign(vm, this);
                 for (int i = 0; i < sizeof(Library_Whitelist); i++) {
                     const luaL_Reg j = Library_Whitelist[i];
-                    if (j -> funct) {
+                    if (j -> func) {
                         luaL_requiref(vm, j -> name, j -> func, 1);
                         lua_pop(vm, 1);
                     }
@@ -60,7 +60,7 @@ namespace Vital::Lua {
                 lua_close(vm);
                 delete vm;
                 vm = nullptr;
-                return true
+                return true;
             }
 
             // Checkers //
@@ -159,6 +159,6 @@ namespace Vital::Lua {
 
     // Method Binders //
     std::function<void(std::string&)> onError = NULL;
-    bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec);
+    bool bind(std::string parent, std::string name, vital_vm* exec);
     bool unbind(std::string parent, std::string name);
 }

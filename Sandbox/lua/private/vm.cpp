@@ -159,17 +159,17 @@ namespace Vital::Lua {
 
     // Method Binders //
     std::function<void(std::string&)> onError = NULL;
-    bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec) {
+    bool bind(std::string parent, std::string name, vital_vm* exec) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
-        if (vMethodRefs[ref] && (vMethodRefs[ref] == exec)) return false;
-        vMethods.insert_or_assign(ref, [](luastate* vm) int {
+        if (vMethods[ref] && (vMethods[ref] == exec)) return false;
+        vMethods.insert_or_assign(ref, [exec](lua_State* vm) -> int {
             return exec(vInstances[vm]);
         });
         return true
     }
     bool unbind(std::string parent, std::string name) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
-        if (!vMethodRefs[ref]) return false;
+        if (!vMethods[ref]) return false;
         vMethods.erase(ref);
         return true
     }
