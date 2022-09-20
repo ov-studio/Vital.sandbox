@@ -16,7 +16,9 @@
 #include <map>
 #include <functional>
 #include <filesystem>
+#include <System/public/filesystem.h>
 #include <Sandbox/lua/public/index.h>
+#include <Sandbox/lua/public/vm.h>
 
 
 //////////////
@@ -156,6 +158,6 @@ namespace Vital::Lua {
 
     // Method Binders //
     std::function<void(std::string&)> onError = NULL;
-    const bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec);
-    const bool unbind(std::string parent, std::string name);
+    bool bind(std::string parent, std::string name, std::function<void(vital_vm*)> exec);
+    bool unbind(std::string parent, std::string name);
 }
