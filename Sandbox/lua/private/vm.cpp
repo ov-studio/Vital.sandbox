@@ -165,12 +165,12 @@ namespace Vital::Lua {
         vMethods.insert_or_assign(ref, [exec](lua_State* vm) -> int {
             return exec(vInstances[vm]);
         });
-        return true
+        return true;
     }
     bool unbind(std::string parent, std::string name) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (!vMethods[ref]) return false;
         vMethods.erase(ref);
-        return true
+        return true;
     }
 }

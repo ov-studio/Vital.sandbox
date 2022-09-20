@@ -26,7 +26,7 @@ namespace Vital::FileSystem {
     bool resolve(std::string& path) {
         std::filesystem::path __path = std::filesystem::absolute(path);
         if (!path.empty()) path = __path.string();
-        return true
+        return true;
     }
 
     bool exists(std::string& path) {
