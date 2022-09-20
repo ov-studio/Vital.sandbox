@@ -106,7 +106,7 @@ namespace Vital::Lua {
             double getDouble(int index = 1) {return lua_tonumber(vm, index);};
             long getLong(int index = 1) {return lua_tonumber(vm, index);};
             bool getTable(int index = 1) {return lua_gettable(vm, index);};
-            bool getTableField(int index = 1, std::string value) {return lua_getfield(vm, index, value.c_str());};
+            bool getTableField(int index = 1, std::string value = "") { return lua_getfield(vm, index, value.c_str()); };
             bool getMetaTable(int index = 1) {return lua_getmetatable(vm, index);};
             void* getUserData(int index = 1) {return lua_touserdata(vm, index);};
 
