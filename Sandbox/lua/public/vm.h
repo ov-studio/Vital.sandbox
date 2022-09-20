@@ -16,7 +16,7 @@
 #include <map>
 #include <functional>
 #include <filesystem>
-#include "Sandbox/lua/index.h"
+#include <Sandbox/lua/public/index.h>
 
 
 //////////////

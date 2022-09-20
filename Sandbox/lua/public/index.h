@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include "Vendor/lua/lua.hpp"
+#include <Vendor/lua/lua.h>
 
 
 /////////////////////
