@@ -128,7 +128,7 @@ namespace Vital::Lua {
                 return setTableField(-2, index.c_str());
             }
             void registerFunction(std::string index, vital_exec& exec, std::string parent) {
-                getGlobal(parent)
+                getGlobal(parent);
                 if (!isTable(-1)) {
                     createTable();
                     setGlobal(parent);
@@ -142,11 +142,11 @@ namespace Vital::Lua {
             }
 
             // Utils //
-            bool loadString(std::string& buffer) {return luaL_loadstring(vm, buffer.c_str());
+            bool loadString(std::string& buffer) {return luaL_loadstring(vm, buffer.c_str());};
             bool throwError(std::string& error) {
                 lua_Debug debug;
-                lua_getstack(L, 1, &debug);
-                lua_getinfo(L, "nSl", &debug);
+                lua_getstack(vm, 1, &debug);
+                lua_getinfo(vm, "nSl", &debug);
                 if (onError) onError("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + ((error.is_empty() && "N/A") || error));
                 return true
             }
