@@ -25,8 +25,8 @@ namespace Vital {
     unsigned int getSystemTick() {
         return std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000;
     }
-    unsigned int vTick = getSystemTick();
     unsigned int getApplicationTick() {
+        vTick = vTick || getSystemTick();
         return getSystemTick() - vTick;
     }
 }
