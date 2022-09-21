@@ -53,7 +53,7 @@ namespace Vital::Lua {
                     registerFunction(i.first.second, i.second, i.first.first);
                 }
                 for (std::string i : vModules) {
-                    const std::string path = std::filesystem::current_path().string() + "/modules/" + i;
+                    std::string path = std::filesystem::current_path().string() + "/modules/" + i;
                     loadString(Vital::FileSystem::read(path));
                 }
             }
