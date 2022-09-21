@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <System/public/vital.h>
 #include <Sandbox/lua/public/index.h>
 #include <Sandbox/lua/public/vm.h>
 
@@ -22,8 +23,7 @@
 //////////////////////
 
 namespace Vital::Lua {
-    /*
-    void bind_Engine() {
+    void Bind_Engine_API() {
         bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
             vm -> setInt(Vital::getSystemTick());
             return 1;
@@ -34,5 +34,4 @@ namespace Vital::Lua {
             return 1;
         });
     }
-    */
 }

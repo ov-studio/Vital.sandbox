@@ -49,7 +49,11 @@ namespace Vital::Lua {
         "resource.lua"
     };
 
+    extern bool Bind_Engine_API();
+    extern bool Bind_FileSystem_API();
     bool boot() {
+        Bind_Engine_API();
+        Bind_FileSystem_API();
         return true;
     }
 }
