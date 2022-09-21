@@ -49,10 +49,10 @@ namespace Vital::FileSystem {
         char* buffer = nullptr;
         if (exists(path)) {
             std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
-            std::streampos size = handle.tellg();
-            buffer = new char[size];
+            std::streampos bytes = size(path);
+            buffer = new char[bytes];
             handle.seekg(0, std::ios::beg);
-            handle.read(buffer, size);
+            handle.read(buffer, bytes);
             handle.close();
         }
         return buffer;
