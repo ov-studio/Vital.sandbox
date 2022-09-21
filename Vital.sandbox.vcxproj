@@ -197,8 +197,7 @@
       <PreprocessorDefinitions>_DEBUG;VITALSANDBOX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua-rapidjson\rapidjson\include\rapidjson;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -217,8 +216,7 @@
       <PreprocessorDefinitions>NDEBUG;VITALSANDBOX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua-rapidjson\rapidjson\include\rapidjson;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>

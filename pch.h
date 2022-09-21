@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: vital.h
+     Script: pch.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
-     Desc: Vital Utilities
+     Desc: Precompiled Header
 ----------------------------------------------------------------*/
 
 
@@ -13,15 +13,11 @@
 //////////////
 
 #pragma once
-#include <pch.h>
-
-
-///////////////////////
-// Namespace: Vital //
-///////////////////////
-
-namespace Vital {
-    extern unsigned int getSystemTick();
-    static unsigned int vTick = NULL;
-    extern unsigned int getApplicationTick();
-}
+#include <iostream>
+#include <chrono>
+#include <functional>
+#include <filesystem>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <string>

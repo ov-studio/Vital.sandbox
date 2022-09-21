@@ -13,8 +13,7 @@
 //////////////
 
 #pragma once
-#include <string>
-#include <vector>
+#include <pch.h>
 extern "C" {
     #include <Vendor/lua/lua.h>
     #include <Vendor/lua/lauxlib.h>

@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: filesystem.h
      Script: System: public: filesystem.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
@@ -14,8 +13,7 @@
 //////////////
 
 #pragma once
-#include <fstream>
-#include <string>
+#include <pch.h>
 #include <System/public/vital.h>
 
 
