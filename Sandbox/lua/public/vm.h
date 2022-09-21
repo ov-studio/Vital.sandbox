@@ -39,9 +39,9 @@ namespace Vital::Lua {
             create() {
                 vm = luaL_newstate();
                 vInstances.emplace(vm, this);
-                for (luaL_Reg* i : vLibraries) {
-                    if (i -> func) {
-                        luaL_requiref(vm, i -> name, i -> func, 1);
+                for (luaL_Reg i : vLibraries) {
+                    if (i.func) {
+                        luaL_requiref(vm, i.name, i.func, 1);
                         lua_pop(vm, 1);
                     }
                 }
