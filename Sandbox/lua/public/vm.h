@@ -14,11 +14,11 @@
 
 #pragma once
 #include <map>
+#include <vector>
 #include <functional>
 #include <filesystem>
 #include <System/public/filesystem.h>
 #include <Sandbox/lua/public/index.h>
-#include <Sandbox/lua/public/vm.h>
 
 
 //////////////
@@ -53,7 +53,8 @@ namespace Vital::Lua {
                     registerFunction(i.first.second, i.second, i.first.first);
                 }
                 for (std::string i : vModules) {
-                    loadString(Vital::FileSystem::read(std::filesystem::current_path().string() + "/modules/" + i));
+                    const std::string path = std::filesystem::current_path().string() + "/modules/" + i;
+                    loadString(Vital::FileSystem::read(path));
                 }
             }
 
@@ -156,6 +157,8 @@ namespace Vital::Lua {
     const std::map<lua_State*, vital_vm*> vInstances;
 
     // Method Binders //
-    bool bind(std::string parent, std::string name, vital_vm* exec);
+    const std::vector<std::function<void()>> vBinds;
+    template<typename lambda_exec>
+    bool bind(std::string parent, std::string name, lambda_exec exec);
     bool unbind(std::string parent, std::string name);
 }
