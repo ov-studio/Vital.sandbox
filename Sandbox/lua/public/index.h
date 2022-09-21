@@ -31,4 +31,5 @@ namespace Vital::Lua {
     std::vector<std::string> vBlacklist;
     std::vector<luaL_Reg*> Library_Whitelist;
     std::vector<std::string> vModules;
+    bool boot();
 }
