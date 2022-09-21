@@ -28,5 +28,5 @@ namespace Vital::FileSystem {
     bool exists(std::string& path);
     std::streampos size(std::fstream handle);
     char* read(std::string& path);
-    bool write(std::string& path, char* buffer, std::streampos size);
+    bool write(std::string& path, char* buffer);
 }
