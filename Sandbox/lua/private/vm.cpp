@@ -74,7 +74,7 @@ namespace Vital::Lua {
     inline void create::setDouble(double value) {lua_pushnumber(vm, (lua_Number)value);}
     inline void create::createTable() {lua_newtable(vm);}
     inline void create::setTable(int index) {lua_settable(vm, index);}
-    inline void create::setTableField(int index, std::string value) {lua_setfield(vm, index, value.c_str());}
+    inline void create::setTableField(std::string value, int index) {lua_setfield(vm, index, value.c_str());}
     inline void create::createMetaTable(std::string value) {luaL_newmetatable(vm, value.c_str());}
     inline void create::setMetaTable(int index) {lua_setmetatable(vm, index);}
     inline void create::setMetaTable(std::string index) {luaL_setmetatable(vm, index.c_str());}
@@ -95,26 +95,26 @@ namespace Vital::Lua {
     inline float create::getFloat(int index) {return static_cast<float>(lua_tonumber(vm, index));}
     inline double create::getDouble(int index) {return static_cast<double>(lua_tonumber(vm, index));}
     inline bool create::getTable(int index) {return lua_gettable(vm, index);}
-    inline bool create::getTableField(int index, std::string value) {return lua_getfield(vm, index, value.c_str());}
+    inline bool create::getTableField(std::string value, int index) {return lua_getfield(vm, index, value.c_str());}
     inline bool create::getMetaTable(int index) {return lua_getmetatable(vm, index);}
     inline void* create::getUserData(int index) {return lua_touserdata(vm, index);}
 
     // Registerers //
     inline void create::registerBool(std::string index, bool value) {
         setBool(value);
-        setTableField(-2, index.c_str());
+        setTableField(index.c_str(), -2);
     }
     inline void create::registerString(std::string index, std::string& value) {
         setString(value);
-        setTableField(-2, index.c_str());
+        setTableField(index.c_str(), -2);
     }
     inline void create::registerNumber(std::string index, int value) {
         setInt(value);
-        setTableField(-2, index.c_str());
+        setTableField(index.c_str(), -2);
     }
     inline void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);
-        setTableField(-2, index.c_str());
+        setTableField(index.c_str(), -2);
     }
     inline void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
         getGlobal(parent);
