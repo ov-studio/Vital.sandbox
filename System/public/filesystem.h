@@ -24,10 +24,10 @@
 ////////////////////////////
 
 namespace Vital::FileSystem {
-    static bool resolve(std::string& path);
-    static bool exists(std::string& path);
-    static std::streampos size(std::string& path);
-    static bool remove(std::string& path);
-    static char* read(std::string& path);
-    static bool write(std::string& path, char* buffer);
+    extern bool resolve(std::string& path);
+    extern bool exists(std::string& path);
+    extern std::streampos size(std::string& path);
+    extern bool remove(std::string& path);
+    extern char* read(std::string& path);
+    extern bool write(std::string& path, char* buffer);
 }
