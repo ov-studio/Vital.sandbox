@@ -26,6 +26,10 @@
 //////////////
 
 namespace Vital::Lua {
+    typedef lua_CFunction vital_exec;
+    typedef std::pair<std::string, std::string> vital_exec_ref;
+    std::map<vital_exec_ref, vital_exec&> vMethods;
+
     const class create {
         private:
             bool isUnloaded = false;
@@ -88,10 +92,7 @@ namespace Vital::Lua {
             bool throwError(std::string& error);
     };
     typedef create vital_vm;
-    typedef lua_CFunction vital_exec;
-    typedef std::pair<std::string, std::string> vital_exec_ref;
-    const std::map<vital_exec_ref, vital_exec&> vMethods;
-    const std::map<lua_State*, vital_vm*> vInstances;
+    std::map<lua_State*, vital_vm*> vInstances;
 
     // Method Binders //
     std::function<void(std::string&)> onError = NULL;
