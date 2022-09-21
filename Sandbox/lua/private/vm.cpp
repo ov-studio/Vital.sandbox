@@ -167,6 +167,7 @@ namespace Vital::Lua {
         });
         return true;
     }
+    template<typename lambda_exec>
     bool unbind(std::string parent, std::string name) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (vMethods.find(ref) == vMethods.end()) return false;
