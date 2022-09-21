@@ -57,6 +57,17 @@ namespace Vital::Lua {
         return 1;
     });
 
+    bind("file", "remove", [](vital_vm* vm) -> int {
+        if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
+            vm -> setBool(false);
+        }
+        else {
+            std::string path = vm -> getString(-1);
+            vm -> setBool(Vital::FileSystem::remove(path));
+        }
+        return 1;
+    });
+
     bind("file", "read", [](vital_vm* vm) -> int {
         if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
             vm -> setBool(false);
