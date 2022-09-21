@@ -158,7 +158,8 @@ namespace Vital::Lua {
     */
 
     // Method Binders //
-    bool bind(std::string parent, std::string name, vital_vm* exec) {
+    template<typename lambda_exec>
+    bool bind(std::string parent, std::string name, lambda_exec exec) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (vMethods[ref] && (vMethods[ref] == exec)) return false;
         vMethods.insert_or_assign(ref, [exec](lua_State* vm) -> int {
