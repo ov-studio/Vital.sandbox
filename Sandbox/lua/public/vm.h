@@ -159,7 +159,6 @@ namespace Vital::Lua {
     const std::map<lua_State*, vital_vm*> vInstances;
 
     // Method Binders //
-    const std::vector<std::function<void()>> vBinds;
     template<typename lambda_exec>
     bool bind(std::string parent, std::string name, lambda_exec exec);
     bool unbind(std::string parent, std::string name);

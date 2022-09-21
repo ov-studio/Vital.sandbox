@@ -23,7 +23,7 @@
 //////////////////////
 
 namespace Vital::Lua {
-    void bindFS() {
+    void bind_FileSystem() {
         bind("file", "resolve", [](vital_vm* vm) -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);

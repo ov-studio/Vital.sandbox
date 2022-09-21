@@ -22,13 +22,15 @@
 //////////////////////
 
 namespace Vital::Lua {
-    bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
-        vm -> setInt(Vital::getSystemTick());
-        return 1;
-    });
+    void bind_Engine() {
+        bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
+            vm -> setInt(Vital::getSystemTick());
+            return 1;
+        });
 
-    bind("engine", "getApplicationTick", [](vital_vm* vm) -> int {
-        vm -> setInt(Vital::getSystemTick());
-        return 1;
-    });
+        bind("engine", "getApplicationTick", [](vital_vm* vm) -> int {
+            vm -> setInt(Vital::getSystemTick());
+            return 1;
+        });
+    }
 }
