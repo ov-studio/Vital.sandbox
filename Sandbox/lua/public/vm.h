@@ -54,7 +54,8 @@ namespace Vital::Lua {
                 }
                 for (std::string i : vModules) {
                     std::string path = std::filesystem::current_path().string() + "/modules/" + i;
-                    loadString(Vital::FileSystem::read(path));
+                    std::string buffer = Vital::FileSystem::read(path);
+                    loadString(buffer);
                 }
             }
 
