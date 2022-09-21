@@ -21,35 +21,34 @@
 /////////////////////
 
 namespace Vital::Lua {
+    std::vector<std::string> vBlacklist = {
+        "dofile",
+        "load",
+        "loadfile"
+    };
+    std::vector<luaL_Reg> vLibraries = {
+        {"_G", luaopen_base},
+        {"table", luaopen_table},
+        {"string", luaopen_string},
+        {"math", luaopen_math},
+        {"os", luaopen_os},
+        {"debug", luaopen_debug},
+        {"coroutine", luaopen_coroutine},
+        {"utf8", luaopen_utf8}
+    };
+    std::vector<std::string> vModules = {
+        "namespace.lua",
+        "vcl.lua",
+        "table.lua"
+        "math/index.lua",
+        "math/quat.lua",
+        "math/matrix.lua",
+        "string.lua",
+        "thread.lua",
+        "timer.lua",
+        "resource.lua"
+    };
     bool boot() {
-        vBlacklist = {
-            "dofile",
-            "load",
-            "loadfile"
-        };
-        vLibraries = {
-            {"_G", luaopen_base},
-            {"table", luaopen_table},
-            {"string", luaopen_string},
-            {"math", luaopen_math},
-            {"os", luaopen_os},
-            {"debug", luaopen_debug},
-            {"coroutine", luaopen_coroutine},
-            {"utf8", luaopen_utf8},
-            {NULL, NULL}
-        };
-        vModules = {
-            "namespace.lua",
-            "vcl.lua",
-            "table.lua"
-            "math/index.lua",
-            "math/quat.lua",
-            "math/matrix.lua",
-            "string.lua",
-            "thread.lua",
-            "timer.lua",
-            "resource.lua"
-        };
         return true;
     }
 }

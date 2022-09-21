@@ -28,10 +28,8 @@ namespace Vital::Lua {
         vm = luaL_newstate();
         vInstances.emplace(vm, this);
         for (luaL_Reg i : vLibraries) {
-            if (i.func) {
-                luaL_requiref(vm, i.name, i.func, 1);
-                lua_pop(vm, 1);
-            }
+            luaL_requiref(vm, i.name, i.func, 1);
+            lua_pop(vm, 1);
         }
         for (std::string i : vBlacklist) {
             setNil();

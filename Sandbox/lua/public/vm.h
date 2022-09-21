@@ -93,6 +93,6 @@ namespace Vital::Lua {
     // Method Binders //
     static std::function<void(std::string&)> onError = NULL;
     template<typename lambda_exec>
-    static bool bind(std::string parent, std::string name, lambda_exec exec);
-    static bool unbind(std::string parent, std::string name);
+    extern bool bind(std::string parent, std::string name, lambda_exec exec);
+    extern bool unbind(std::string parent, std::string name);
 }
