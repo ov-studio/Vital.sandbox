@@ -15,7 +15,6 @@
 #pragma once
 #include <string>
 #include <Sandbox/lua/public/index.h>
-#include "Vendor/lua-rapidjson/rapidjson.cpp"
 
 
 /////////////////////
@@ -38,7 +37,6 @@ namespace Vital::Lua {
             {"debug", luaopen_debug},
             {"coroutine", luaopen_coroutine},
             {"utf8", luaopen_utf8},
-            {"json", luaopen_rapidjson},
             {NULL, NULL}
         };
         vModules = {
