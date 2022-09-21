@@ -168,7 +168,7 @@ namespace Vital::Lua {
     }
     bool unbind(std::string parent, std::string name) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
-        if (!vMethods[ref]) return false;
+        if (vMethods.find(ref) == vMethods.end()) return false;
         vMethods.erase(ref);
         return true;
     }
