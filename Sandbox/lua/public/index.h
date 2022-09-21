@@ -28,8 +28,8 @@ extern "C" {
 /////////////////////
 
 namespace Vital::Lua {
-    std::vector<std::string> vBlacklist;
-    std::vector<luaL_Reg> vLibraries;
-    std::vector<std::string> vModules;
-    bool boot();
+    static std::vector<std::string> vBlacklist;
+    static std::vector<luaL_Reg> vLibraries;
+    static std::vector<std::string> vModules;
+    static bool boot();
 }

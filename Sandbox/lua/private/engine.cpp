@@ -22,6 +22,7 @@
 //////////////////////
 
 namespace Vital::Lua {
+    /*
     void bind_Engine() {
         bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
             vm -> setInt(Vital::getSystemTick());
@@ -33,4 +34,5 @@ namespace Vital::Lua {
             return 1;
         });
     }
+    */
 }
