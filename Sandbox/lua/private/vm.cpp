@@ -158,7 +158,6 @@ namespace Vital::Lua {
     */
 
     // Method Binders //
-    std::function<void(std::string&)> onError = NULL;
     bool bind(std::string parent, std::string name, vital_vm* exec) {
         const vital_exec_ref ref = vital_exec_ref {parent, name};
         if (vMethods[ref] && (vMethods[ref] == exec)) return false;
