@@ -141,9 +141,6 @@
     <ClCompile Include="Sandbox\lua\private\file.cpp">
       <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
-    <ClCompile Include="Sandbox\lua\private\index.cpp">
-      <Filter>Sandbox\lua\private</Filter>
-    </ClCompile>
     <ClCompile Include="Sandbox\lua\private\vm.cpp">
       <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
@@ -155,6 +152,9 @@
     </ClCompile>
     <ClCompile Include="System\private\filesystem.cpp">
       <Filter>System\private</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\index.cpp">
+      <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
