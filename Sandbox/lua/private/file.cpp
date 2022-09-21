@@ -80,7 +80,7 @@ namespace Vital::Lua {
         else {
             std::string path = vm -> getString(-1);
             std::string buffer = vm -> getString(-2);
-            vm -> setBool(Vital::FileSystem::write(path, buffer, sizeof(buffer)));
+            vm -> setBool(Vital::FileSystem::write(path, reinterpret_cast<char*>(&buffer), sizeof(buffer)));
         }
         return 1;
     });

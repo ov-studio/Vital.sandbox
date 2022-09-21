@@ -25,41 +25,43 @@
 namespace Vital::FileSystem {
     bool resolve(std::string& path) {
         std::filesystem::path __path = std::filesystem::absolute(path);
-        if (!path.empty()) path = __path.string();
+        path = !__path.empty() ? __path.string() : path;
         return true;
     }
 
     bool exists(std::string& path) {
         resolve(path);
-        std::fstream handle(path, std::ios::in | std::ios::binary);
-        bool isValid = (handle.is_open() && true) || false;
-        handle.close();
-        return isValid;
+        return std::filesystem::exists(path);
     }
 
-    std::streampos size(std::fstream handle) {
-        if (!handle.is_open()) return 0;
-        handle.seekg(0, std::ios::end);
-        return handle.tellg();
+    std::streampos size(std::string& path) {
+        if (!exists(path)) return 0;
+        return std::filesystem::file_size(path);
+    }
+
+    bool remove(std::string& path) {
+        if (!exists(path)) return false;
+        return std::filesystem::remove(path);
     }
 
     char* read(std::string& path) {
         resolve(path);
-        std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
         char* buffer = nullptr;
-        if (handle.is_open()) {
+        if (exists(path)) {
+            std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
             std::streampos size = handle.tellg();
-            char* buffer = new char[size];
+            buffer = new char[size];
             handle.seekg(0, std::ios::beg);
             handle.read(buffer, size);
+            handle.close();
         }
         return buffer;
     }
 
-    bool write(std::string& path, char* buffer, std::streampos size) {
+    bool write(std::string& path, char* buffer) {
         resolve(path);
         std::fstream handle(path, std::ios::out | std::ios::binary | std::ios::trunc);
-        handle.write(buffer, size);
+        handle.write(buffer, sizeof(buffer));
         handle.close();
         return true;
     }
