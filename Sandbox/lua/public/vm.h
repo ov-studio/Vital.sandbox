@@ -31,6 +31,7 @@ namespace Vital::Lua {
             bool isUnloaded = false;
             lua_State* vm = nullptr;
         public:
+            // Instantiators //
             create();
             bool destroy();
 

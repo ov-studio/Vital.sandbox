@@ -21,7 +21,7 @@
 ///////////////////////
 
 namespace Vital {
-    extern unsigned int getSystemTick();
     static unsigned int vTick = NULL;
+    extern unsigned int getSystemTick();
     extern unsigned int getApplicationTick();
 }

@@ -48,6 +48,7 @@ namespace Vital::Lua {
         "timer.lua",
         "resource.lua"
     };
+
     bool boot() {
         return true;
     }
