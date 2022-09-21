@@ -29,7 +29,7 @@ namespace Vital::Lua {
             "load",
             "loadfile"
         };
-        Library_Whitelist = {
+        vLibraries = {
             {"_G", luaopen_base},
             {"table", luaopen_table},
             {"string", luaopen_string},
