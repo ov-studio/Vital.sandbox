@@ -23,6 +23,7 @@
 //////////////////////
 
 namespace Vital::Lua {
+    /*
     void Bind_FileSystem_API() {
         bind("file", "resolve", [](vital_vm* vm) -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
@@ -97,4 +98,5 @@ namespace Vital::Lua {
             return 1;
         });
     }
+    */
 }

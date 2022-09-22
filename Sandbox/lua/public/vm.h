@@ -22,9 +22,8 @@
 //////////////
 
 namespace Vital::Lua {
-    typedef lua_CFunction vital_exec;
+    typedef std::function<int(lua_State*)> vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
-    static std::map<vital_exec_ref, vital_exec&> vMethods;
 
     const class create {
         private:
@@ -89,11 +88,11 @@ namespace Vital::Lua {
             bool throwError(std::string& error);
     };
     typedef create vital_vm;
+    static std::map<vital_exec_ref, vital_exec> vMethods;
     static std::map<lua_State*, vital_vm*> vInstances;
 
     // Method Binders //
     static std::function<void(std::string&)> onError = NULL;
-    template<typename lambda_exec>
-    extern bool bind(std::string parent, std::string name, lambda_exec exec);
+    extern bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec);
     extern bool unbind(std::string parent, std::string name);
 }

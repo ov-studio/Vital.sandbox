@@ -31,5 +31,6 @@ namespace Vital::Lua {
     extern std::vector<luaL_Reg> vLibraries;
     extern std::vector<std::string> vModules;
 
+    extern void Bind_Engine_API();
     extern bool boot();
 }

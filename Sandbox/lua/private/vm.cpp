@@ -67,9 +67,9 @@ namespace Vital::Lua {
     inline void create::setNil() {lua_pushnil(vm);}
     inline void create::setBool(bool value) {lua_pushboolean(vm, static_cast<int>(value));}
     inline void create::setString(std::string value) {lua_pushstring(vm, value.c_str());}
-    inline void create::setInt(int value) {lua_pushnumber(vm, (lua_Number)value);}
-    inline void create::setFloat(float value) {lua_pushnumber(vm, (lua_Number)value);}
-    inline void create::setDouble(double value) {lua_pushnumber(vm, (lua_Number)value);}
+    inline void create::setInt(int value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
+    inline void create::setFloat(float value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
+    inline void create::setDouble(double value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
     inline void create::createTable() {lua_newtable(vm);}
     inline void create::setTable(int index) {lua_settable(vm, index);}
     inline void create::setTableField(std::string value, int index) {lua_setfield(vm, index, value.c_str());}
@@ -82,7 +82,7 @@ namespace Vital::Lua {
         return;
     }
     inline void create::setUserData(void* value) {lua_pushlightuserdata(vm, value);}
-    inline void create::setFunction(vital_exec& value) {lua_pushcfunction(vm, value);}
+    inline void create::setFunction(vital_exec& value) {lua_pushcfunction(vm, reinterpret_cast<lua_CFunction>(&value));}
 
     // Getters //
     inline int create::getArgCount() {return lua_gettop(vm);}
@@ -141,20 +141,31 @@ namespace Vital::Lua {
     }
 
     // Method Binders //
-    template<typename lambda_exec>
-    bool bind(std::string parent, std::string name, lambda_exec exec) {
-        const vital_exec_ref ref = vital_exec_ref {parent, name};
-        if (vMethods[ref] && (vMethods[ref] == exec)) return false;
-        vMethods.emplace(ref, [exec](lua_State* vm) -> int {
+    bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec) {
+        vital_exec_ref ref = {parent, name};
+        auto test = [&](lua_State* vm) -> int {
             return exec(vInstances[vm]);
-        });
+        };
+        vMethods[ref] = test;
         return true;
     }
-    template<typename lambda_exec>
     bool unbind(std::string parent, std::string name) {
-        const vital_exec_ref ref = vital_exec_ref {parent, name};
-        if (vMethods.find(ref) == vMethods.end()) return false;
+        vital_exec_ref ref = {parent, name};
         vMethods.erase(ref);
         return true;
     }
+
+    /*
+    void Bind_Engine_API() {
+        bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
+            vm -> setInt(Vital::getSystemTick());
+            return 1;
+        });
+
+        bind("engine", "getApplicationTick", [](vital_vm* vm) -> int {
+            vm -> setInt(Vital::getSystemTick());
+            return 1;
+        });
+    }
+    */
 }
