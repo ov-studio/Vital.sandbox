@@ -49,10 +49,4 @@ namespace Vital::Lua {
         "timer.lua",
         "resource.lua"
     };
-
-    bool boot() {
-        Bind_Engine_API();
-        //Bind_FileSystem_API();
-        return true;
-    }
 }

@@ -135,9 +135,6 @@
     <ClCompile Include="Vendor\lua\ltm.c">
       <Filter>Vendor\lua</Filter>
     </ClCompile>
-    <ClCompile Include="Sandbox\lua\private\file.cpp">
-      <Filter>Sandbox\lua\private</Filter>
-    </ClCompile>
     <ClCompile Include="Sandbox\lua\private\vm.cpp">
       <Filter>Sandbox\lua\private</Filter>
     </ClCompile>

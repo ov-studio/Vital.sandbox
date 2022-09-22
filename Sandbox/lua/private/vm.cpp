@@ -154,18 +154,4 @@ namespace Vital::Lua {
         vMethods.erase(ref);
         return true;
     }
-
-    /*
-    void Bind_Engine_API() {
-        bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
-            vm -> setInt(Vital::getSystemTick());
-            return 1;
-        });
-
-        bind("engine", "getApplicationTick", [](vital_vm* vm) -> int {
-            vm -> setInt(Vital::getSystemTick());
-            return 1;
-        });
-    }
-    */
 }
