@@ -83,7 +83,7 @@ end
 function resource.public:load(name)
     if not resource.public:isInstance(self) then return false end
     self.rw = {
-        env = table.clone(resource,private.globals),
+        env = table.clone(resource,private.globals, true),
         manifest = table.decode(file.read("resources/"..name.."/manifest.vcl")),
         entity = {}
     }
