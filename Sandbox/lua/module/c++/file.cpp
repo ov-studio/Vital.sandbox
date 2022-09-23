@@ -60,7 +60,7 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "remove", [](vital_ref* ref) -> int {
+        bind("file", "delete", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
