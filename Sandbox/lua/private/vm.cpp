@@ -15,6 +15,7 @@
 #pragma once
 #include <System/public/filesystem.h>
 #include <Sandbox/lua/public/api.h>
+#include <iostream>
 
 
 //////////////

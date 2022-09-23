@@ -22,10 +22,10 @@
 ////////////////////////////
 
 namespace Vital::FileSystem {
-    extern __declspec(dllexport) bool resolve(std::string& path);
-    extern __declspec(dllexport) bool exists(std::string& path);
-    extern __declspec(dllexport) std::streampos size(std::string& path);
-    extern __declspec(dllexport) bool remove(std::string& path);
-    extern __declspec(dllexport) char* read(std::string& path);
-    extern __declspec(dllexport) bool write(std::string& path, char* buffer);
+    extern bool resolve(std::string& path);
+    extern bool exists(std::string& path);
+    extern std::streampos size(std::string& path);
+    extern bool remove(std::string& path);
+    extern std::string read(std::string& path);
+    extern bool write(std::string& path, std::string buffer);
 }

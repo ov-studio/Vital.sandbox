@@ -42,24 +42,26 @@ namespace Vital::FileSystem {
         return std::filesystem::remove(path);
     }
 
-    char* read(std::string& path) {
+    std::string read(std::string& path) {
         resolve(path);
-        char* buffer = nullptr;
+        std::string result = "";
         if (exists(path)) {
             std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
             std::streampos bytes = size(path);
-            buffer = new char[bytes];
+            char* buffer = new char[bytes];
             handle.seekg(0, std::ios::beg);
             handle.read(buffer, bytes);
             handle.close();
+            result = buffer;
+            delete buffer;
         }
-        return buffer;
+        return result;
     }
 
-    bool write(std::string& path, char* buffer) {
+    bool write(std::string& path, std::string buffer) {
         resolve(path);
         std::fstream handle(path, std::ios::out | std::ios::binary | std::ios::trunc);
-        handle.write(buffer, sizeof(buffer));
+        handle.write(buffer.c_str(), sizeof(buffer));
         handle.close();
         return true;
     }
