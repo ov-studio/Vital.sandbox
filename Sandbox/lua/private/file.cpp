@@ -18,9 +18,9 @@
 #include <Sandbox/lua/public/vm.h>
 
 
-//////////////////////
-// Lua: FileSystem //
-//////////////////////
+////////////////
+// Lua: File //
+////////////////
 
 namespace Vital::Lua {
     void Bind_FileSystem_API() {
