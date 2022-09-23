@@ -51,5 +51,6 @@ namespace Vital::Lua::API {
     bool boot() {
         vSandbox_Engine();
         vSandbox_File();
+        return true;
     }
 }
