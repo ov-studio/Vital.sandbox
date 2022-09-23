@@ -62,26 +62,26 @@ namespace Vital::Lua {
     bool create::isFunction(int index) { return lua_isfunction(vm, index); }
 
     // Setters //
-    void create::setGlobal(std::string index) {lua_setglobal(vm, index.c_str()); }
-    void create::setNil() {lua_pushnil(vm); }
-    void create::setBool(bool value) {lua_pushboolean(vm, static_cast<int>(value)); }
-    void create::setString(std::string value) {lua_pushstring(vm, value.c_str()); }
-    void create::setInt(int value) {lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setFloat(float value) {lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setDouble(double value) {lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::createTable() {lua_newtable(vm); }
-    void create::setTable(int index) {lua_settable(vm, index); }
-    void create::setTableField(std::string value, int index) {lua_setfield(vm, index, value.c_str()); }
-    void create::createMetaTable(std::string value) {luaL_newmetatable(vm, value.c_str()); }
-    void create::setMetaTable(int index) {lua_setmetatable(vm, index); }
-    void create::setMetaTable(std::string index) {luaL_setmetatable(vm, index.c_str()); }
+    void create::setGlobal(std::string index) { lua_setglobal(vm, index.c_str()); }
+    void create::setNil() { lua_pushnil(vm); }
+    void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
+    void create::setString(std::string value) { lua_pushstring(vm, value.c_str()); }
+    void create::setInt(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setFloat(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setDouble(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::createTable() { lua_newtable(vm); }
+    void create::setTable(int index) { lua_settable(vm, index); }
+    void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.c_str()); }
+    void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.c_str()); }
+    void create::setMetaTable(int index) { lua_setmetatable(vm, index); }
+    void create::setMetaTable(std::string index) { luaL_setmetatable(vm, index.c_str()); }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
         return;
     }
-    void create::setUserData(void* value) {lua_pushlightuserdata(vm, value); }
-    void create::setFunction(vital_exec& value) {lua_pushcfunction(vm, reinterpret_cast<lua_CFunction>(&value)); }
+    void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
+    void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, reinterpret_cast<lua_CFunction>(&value)); }
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
