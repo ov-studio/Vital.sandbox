@@ -30,7 +30,7 @@ namespace Vital::Lua {
         });
 
         bind("engine", "getApplicationTick", [](vital_vm* vm) -> int {
-            vm -> setInt(Vital::getSystemTick());
+            vm -> setInt(Vital::getApplicationTick());
             return 1;
         });
     }
