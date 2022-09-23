@@ -22,8 +22,9 @@
 //////////////
 
 namespace Vital::Lua {
-    std::map<lua_State*, vital_vm*> vInstances;
     // Instantiators //
+    std::map<lua_State*, vital_vm*> vInstances;
+    vital_vm* fetchVM(vital_ref* vm) { return vInstances[vm]; }
     create::create() {
         vm = luaL_newstate();
         vInstances.emplace(vm, this);

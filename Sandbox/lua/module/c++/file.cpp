@@ -23,7 +23,8 @@
 
 namespace Vital::Lua::API {
     void vSandbox_File() {
-        bind("file", "resolve", [](vital_vm* vm) -> int {
+        bind("file", "resolve", [](vital_ref* vm) -> int {
+            auto vm = fetchVM(vm);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -35,7 +36,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "exists", [](vital_vm* vm) -> int {
+        bind("file", "exists", [](vital_ref* vm) -> int {
+            auto vm = fetchVM(vm);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -46,7 +48,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "size", [](vital_vm* vm) -> int {
+        bind("file", "size", [](vital_ref* vm) -> int {
+            auto vm = fetchVM(vm);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -57,7 +60,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "remove", [](vital_vm* vm) -> int {
+        bind("file", "remove", [](vital_ref* vm) -> int {
+            auto vm = fetchVM(vm);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -68,7 +72,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "read", [](vital_vm* vm) -> int {
+        bind("file", "read", [](vital_ref* vm) -> int {
+            auto vm = fetchVM(vm);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -84,7 +89,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "write", [](vital_vm* vm) -> int {
+        bind("file", "write", [](vital_ref* vm) -> int {
+            auto vm = fetchVM(vm);
             if ((vm -> getArgCount() < 2) || (!vm -> isString(-1)) || (!vm -> isString(-2))) {
                 vm -> setBool(false);
             }

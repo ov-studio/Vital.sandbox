@@ -21,12 +21,13 @@
 //////////////
 
 namespace Vital::Lua {
+    typedef lua_State vital_ref;
     typedef lua_CFunction vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
     class create {
         private:
             bool isUnloaded = false;
-            lua_State* vm = nullptr;
+            vital_ref* vm = nullptr;
         public:
             // Instantiators //
             create();
@@ -86,5 +87,5 @@ namespace Vital::Lua {
             bool throwError(std::string& error);
     };
     typedef create vital_vm;
-    extern std::map<lua_State*, vital_vm*> vInstances;
+    extern vital_vm* fetchVM(vital_ref* vm);
 }

@@ -35,11 +35,10 @@ namespace Vital::Lua::API {
         onErrorHandler(error);
         return true;
     }
-    bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec) {
+
+    bool bind(std::string parent, std::string name, vital_exec exec) {
         vital_exec_ref ref = { parent, name };
-        vMethods.emplace(ref, [&](lua_State* vm) -> int {
-            return exec(vInstances[vm]);
-        });
+        vMethods[ref] = exec;
         return true;
     }
     bool unbind(std::string parent, std::string name) {
