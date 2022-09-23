@@ -15,7 +15,6 @@
 #pragma once
 #include <System/public/filesystem.h>
 #include <Sandbox/lua/public/api.h>
-#include <iostream>
 
 
 //////////////
@@ -130,13 +129,23 @@ namespace Vital::Lua {
     }
 
     // Utils //
-    bool create::loadString(std::string& buffer) { return luaL_loadstring(vm, buffer.c_str()); }
+    bool create::loadString(std::string& buffer) {
+        if (buffer.empty()) return false;
+        luaL_loadstring(vm, buffer.c_str());
+        bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
+        if (!status) {
+            std::string error = getString(-1);
+            API::error(error);
+            return false;
+        }
+        return true;
+    }
     bool create::throwError(std::string& error) {
         lua_Debug debug;
         lua_getstack(vm, 1, &debug);
         lua_getinfo(vm, "nSl", &debug);
         error = "[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error);
-        if (API::onError) API::onError(error);
+        API::error(error);
         return true;
     }
 }

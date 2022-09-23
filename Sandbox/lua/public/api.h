@@ -21,8 +21,9 @@
 ///////////////
 
 namespace Vital::Lua::API {
-    static std::function<void(std::string&)> onError = NULL;
     extern bool boot();
+    extern bool onErrorHandle(std::function<void(std::string&)> exec);
+    extern bool error(std::string& error);
     extern bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec);
     extern bool unbind(std::string parent, std::string name);
 

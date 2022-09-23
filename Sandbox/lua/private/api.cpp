@@ -25,7 +25,16 @@ namespace Vital::Lua::API {
         vSandbox_Engine();
         vSandbox_File();
     }
-
+    std::function<void(std::string&)> onErrorHandler = NULL;
+    bool onErrorHandle(std::function<void(std::string&)> exec) {
+        onErrorHandler = exec;
+        return true;
+    }
+    bool error(std::string& error) {
+        if (!onErrorHandler) return false;
+        onErrorHandler(error);
+        return true;
+    }
     bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec) {
         vital_exec_ref ref = { parent, name };
         vMethods[ref] = [&](lua_State* vm) -> int {
@@ -33,7 +42,6 @@ namespace Vital::Lua::API {
         };
         return true;
     }
-
     bool unbind(std::string parent, std::string name) {
         vital_exec_ref ref = { parent, name };
         vMethods.erase(ref);
