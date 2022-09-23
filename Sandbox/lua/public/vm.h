@@ -88,9 +88,4 @@ namespace Vital::Lua {
     typedef create vital_vm;
     static std::map<vital_exec_ref, vital_exec> vMethods;
     static std::map<lua_State*, vital_vm*> vInstances;
-
-    // Method Binders //
-    static std::function<void(std::string&)> onError = NULL;
-    extern bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec);
-    extern bool unbind(std::string parent, std::string name);
 }

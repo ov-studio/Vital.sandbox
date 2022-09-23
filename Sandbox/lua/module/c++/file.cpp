@@ -22,7 +22,7 @@
 ///////////////////////
 
 namespace Vital::Lua::API {
-    void vSandbox_File_API() {
+    void vSandbox_File() {
         bind("file", "resolve", [](vital_vm* vm) -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);

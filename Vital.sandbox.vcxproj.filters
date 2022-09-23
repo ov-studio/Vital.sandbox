@@ -156,6 +156,9 @@
     <ClCompile Include="Sandbox\lua\module\c++\engine.cpp">
       <Filter>Sandbox\lua\module</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\lua\private\api.cpp">
+      <Filter>Sandbox\lua\private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
@@ -253,6 +256,9 @@
     </ClInclude>
     <ClInclude Include="System\public\vital.h">
       <Filter>System\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Sandbox\lua\public\api.h">
+      <Filter>Sandbox\lua\public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

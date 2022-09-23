@@ -14,13 +14,20 @@
 
 #pragma once
 #include <Sandbox/lua/public/index.h>
+#include <Sandbox/lua/public/vm.h>
 
 
-/////////////////////
-// Namespace: Lua //
-/////////////////////
+///////////////
+// Lua: API //
+///////////////
 
 namespace Vital::Lua::API {
-    //extern void vSandbox_Engine();
-    //extern void vSandbox_File();
+    static std::function<void(std::string&)> onError = NULL;
+    extern bool boot();
+    extern bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec);
+    extern bool unbind(std::string parent, std::string name);
+
+    // Binds //
+    extern void vSandbox_Engine();
+    extern void vSandbox_File();
 }

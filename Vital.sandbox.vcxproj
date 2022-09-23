@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Sandbox\lua\module\c++\engine.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\file.cpp" />
+    <ClCompile Include="Sandbox\lua\private\api.cpp" />
     <ClCompile Include="Sandbox\lua\private\index.cpp" />
     <ClCompile Include="Sandbox\lua\private\vm.cpp" />
     <ClCompile Include="System\private\filesystem.cpp" />
@@ -61,6 +62,7 @@
     <ClCompile Include="Vendor\lua\lzio.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sandbox\lua\public\api.h" />
     <ClInclude Include="Sandbox\lua\public\index.h" />
     <ClInclude Include="Sandbox\lua\public\vm.h" />
     <ClInclude Include="System\public\filesystem.h" />

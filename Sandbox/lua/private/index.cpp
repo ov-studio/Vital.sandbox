@@ -26,6 +26,7 @@ namespace Vital::Lua {
         "load",
         "loadfile"
     };
+
     std::vector<luaL_Reg> vLibraries = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
@@ -36,6 +37,7 @@ namespace Vital::Lua {
         {"coroutine", luaopen_coroutine},
         {"utf8", luaopen_utf8}
     };
+
     std::vector<std::string> vModules = {
         "namespace.lua",
         "vcl.lua",

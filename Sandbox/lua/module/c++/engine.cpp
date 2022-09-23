@@ -21,8 +21,8 @@
 // Lua: Engine Binder //
 /////////////////////////
 
-namespace Vital::Lua {
-    void vSandbox_Engine_API() {
+namespace Vital::Lua::API {
+    void vSandbox_Engine() {
         bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
             vm -> setInt(Vital::getSystemTick());
             return 1;

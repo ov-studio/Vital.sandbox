@@ -16,6 +16,7 @@
 #include <System/public/filesystem.h>
 #include <Sandbox/lua/public/index.h>
 #include <Sandbox/lua/public/vm.h>
+#include <Sandbox/lua/public/api.h>
 
 
 //////////////
@@ -136,21 +137,7 @@ namespace Vital::Lua {
         lua_getstack(vm, 1, &debug);
         lua_getinfo(vm, "nSl", &debug);
         error = "[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error);
-        if (onError) onError(error);
-        return true;
-    }
-
-    // Method Binders //
-    bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec) {
-        vital_exec_ref ref = {parent, name};
-        vMethods[ref] = [&](lua_State* vm) -> int {
-            return exec(vInstances[vm]);
-        };
-        return true;
-    }
-    bool unbind(std::string parent, std::string name) {
-        vital_exec_ref ref = {parent, name};
-        vMethods.erase(ref);
+        if (API::onError) API::onError(error);
         return true;
     }
 }
