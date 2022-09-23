@@ -18,12 +18,12 @@
 #include <Sandbox/lua/public/vm.h>
 
 
-//////////////////
-// Lua: Engine //
-//////////////////
+/////////////////////////
+// Lua: Engine Binder //
+/////////////////////////
 
 namespace Vital::Lua {
-    void Bind_Engine_API() {
+    void vSandbox_Engine_API() {
         bind("engine", "getSystemTick", [](vital_vm* vm) -> int {
             vm -> setInt(Vital::getSystemTick());
             return 1;

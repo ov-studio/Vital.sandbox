@@ -18,12 +18,12 @@
 #include <Sandbox/lua/public/vm.h>
 
 
-////////////////
-// Lua: File //
-////////////////
+///////////////////////
+// Lua: File Binder //
+///////////////////////
 
 namespace Vital::Lua {
-    void Bind_FileSystem_API() {
+    void vSandbox_File_API() {
         bind("file", "resolve", [](vital_vm* vm) -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
