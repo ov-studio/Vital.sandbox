@@ -18,9 +18,9 @@
 #include <Sandbox/lua/public/vm.h>
 
 
-//////////////////////
-// Lua: FileSystem //
-//////////////////////
+//////////////////
+// Lua: Engine //
+//////////////////
 
 namespace Vital::Lua {
     void Bind_Engine_API() {

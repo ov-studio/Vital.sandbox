@@ -53,68 +53,68 @@ namespace Vital::Lua {
     }
 
     // Checkers //
-    inline bool create::isNil(int index) {return lua_isnoneornil(vm, index);}
-    inline bool create::isBool(int index) {return lua_isboolean(vm, index);}
-    inline bool create::isString(int index) {return lua_isstring(vm, index);}
-    inline bool create::isNumber(int index) {return lua_isnumber(vm, index);}
-    inline bool create::isTable(int index) {return lua_istable(vm, index);}
-    inline bool create::isThread(int index) {return lua_isthread(vm, index);}
-    inline bool create::isUserData(int index) {return lua_isuserdata(vm, index);}
-    inline bool create::isFunction(int index) {return lua_isfunction(vm, index);}
+    bool create::isNil(int index) {return lua_isnoneornil(vm, index);}
+    bool create::isBool(int index) {return lua_isboolean(vm, index);}
+    bool create::isString(int index) {return lua_isstring(vm, index);}
+    bool create::isNumber(int index) {return lua_isnumber(vm, index);}
+    bool create::isTable(int index) {return lua_istable(vm, index);}
+    bool create::isThread(int index) {return lua_isthread(vm, index);}
+    bool create::isUserData(int index) {return lua_isuserdata(vm, index);}
+    bool create::isFunction(int index) {return lua_isfunction(vm, index);}
 
     // Setters //
-    inline void create::setGlobal(std::string index) {lua_setglobal(vm, index.c_str());}
-    inline void create::setNil() {lua_pushnil(vm);}
-    inline void create::setBool(bool value) {lua_pushboolean(vm, static_cast<int>(value));}
-    inline void create::setString(std::string value) {lua_pushstring(vm, value.c_str());}
-    inline void create::setInt(int value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
-    inline void create::setFloat(float value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
-    inline void create::setDouble(double value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
-    inline void create::createTable() {lua_newtable(vm);}
-    inline void create::setTable(int index) {lua_settable(vm, index);}
-    inline void create::setTableField(std::string value, int index) {lua_setfield(vm, index, value.c_str());}
-    inline void create::createMetaTable(std::string value) {luaL_newmetatable(vm, value.c_str());}
-    inline void create::setMetaTable(int index) {lua_setmetatable(vm, index);}
-    inline void create::setMetaTable(std::string index) {luaL_setmetatable(vm, index.c_str());}
-    inline void create::createUserData(void* value) {
+    void create::setGlobal(std::string index) {lua_setglobal(vm, index.c_str());}
+    void create::setNil() {lua_pushnil(vm);}
+    void create::setBool(bool value) {lua_pushboolean(vm, static_cast<int>(value));}
+    void create::setString(std::string value) {lua_pushstring(vm, value.c_str());}
+    void create::setInt(int value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
+    void create::setFloat(float value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
+    void create::setDouble(double value) {lua_pushnumber(vm, static_cast<lua_Number>(value));}
+    void create::createTable() {lua_newtable(vm);}
+    void create::setTable(int index) {lua_settable(vm, index);}
+    void create::setTableField(std::string value, int index) {lua_setfield(vm, index, value.c_str());}
+    void create::createMetaTable(std::string value) {luaL_newmetatable(vm, value.c_str());}
+    void create::setMetaTable(int index) {lua_setmetatable(vm, index);}
+    void create::setMetaTable(std::string index) {luaL_setmetatable(vm, index.c_str());}
+    void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
         return;
     }
-    inline void create::setUserData(void* value) {lua_pushlightuserdata(vm, value);}
-    inline void create::setFunction(vital_exec& value) {lua_pushcfunction(vm, reinterpret_cast<lua_CFunction>(&value));}
+    void create::setUserData(void* value) {lua_pushlightuserdata(vm, value);}
+    void create::setFunction(vital_exec& value) {lua_pushcfunction(vm, reinterpret_cast<lua_CFunction>(&value));}
 
     // Getters //
-    inline int create::getArgCount() {return lua_gettop(vm);}
-    inline bool create::getGlobal(std::string index) {return lua_getglobal(vm, index.c_str());}
-    inline bool create::getBool(int index) {return static_cast<bool>(lua_toboolean(vm, index));}
-    inline std::string create::getString(int index) {return lua_tostring(vm, index);}
-    inline int create::getInt(int index) {return static_cast<int>(lua_tonumber(vm, index));}
-    inline float create::getFloat(int index) {return static_cast<float>(lua_tonumber(vm, index));}
-    inline double create::getDouble(int index) {return static_cast<double>(lua_tonumber(vm, index));}
-    inline bool create::getTable(int index) {return lua_gettable(vm, index);}
-    inline bool create::getTableField(std::string value, int index) {return lua_getfield(vm, index, value.c_str());}
-    inline bool create::getMetaTable(int index) {return lua_getmetatable(vm, index);}
-    inline void* create::getUserData(int index) {return lua_touserdata(vm, index);}
+    int create::getArgCount() {return lua_gettop(vm);}
+    bool create::getGlobal(std::string index) {return lua_getglobal(vm, index.c_str());}
+    bool create::getBool(int index) {return static_cast<bool>(lua_toboolean(vm, index));}
+    std::string create::getString(int index) {return lua_tostring(vm, index);}
+    int create::getInt(int index) {return static_cast<int>(lua_tonumber(vm, index));}
+    float create::getFloat(int index) {return static_cast<float>(lua_tonumber(vm, index));}
+    double create::getDouble(int index) {return static_cast<double>(lua_tonumber(vm, index));}
+    bool create::getTable(int index) {return lua_gettable(vm, index);}
+    bool create::getTableField(std::string value, int index) {return lua_getfield(vm, index, value.c_str());}
+    bool create::getMetaTable(int index) {return lua_getmetatable(vm, index);}
+    void* create::getUserData(int index) {return lua_touserdata(vm, index);}
 
     // Registerers //
-    inline void create::registerBool(std::string index, bool value) {
+    void create::registerBool(std::string index, bool value) {
         setBool(value);
         setTableField(index.c_str(), -2);
     }
-    inline void create::registerString(std::string index, std::string& value) {
+    void create::registerString(std::string index, std::string& value) {
         setString(value);
         setTableField(index.c_str(), -2);
     }
-    inline void create::registerNumber(std::string index, int value) {
+    void create::registerNumber(std::string index, int value) {
         setInt(value);
         setTableField(index.c_str(), -2);
     }
-    inline void create::registerFunction(std::string index, vital_exec& exec) {
+    void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);
         setTableField(index.c_str(), -2);
     }
-    inline void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
+    void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
         getGlobal(parent);
         if (!isTable(-1)) {
             createTable();
@@ -123,15 +123,15 @@ namespace Vital::Lua {
         }
         registerFunction(index, exec);
     }
-    inline bool create::registerObject(std::string index, void* value) {
+    bool create::registerObject(std::string index, void* value) {
         createUserData(value);
         setMetaTable(index);
         return true;
     }
 
     // Utils //
-    inline bool create::loadString(std::string& buffer) {return luaL_loadstring(vm, buffer.c_str());}
-    inline bool create::throwError(std::string& error) {
+    bool create::loadString(std::string& buffer) {return luaL_loadstring(vm, buffer.c_str());}
+    bool create::throwError(std::string& error) {
         lua_Debug debug;
         lua_getstack(vm, 1, &debug);
         lua_getinfo(vm, "nSl", &debug);
@@ -143,10 +143,9 @@ namespace Vital::Lua {
     // Method Binders //
     bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec) {
         vital_exec_ref ref = {parent, name};
-        auto test = [&](lua_State* vm) -> int {
+        vMethods[ref] = [&](lua_State* vm) -> int {
             return exec(vInstances[vm]);
         };
-        vMethods[ref] = test;
         return true;
     }
     bool unbind(std::string parent, std::string name) {
