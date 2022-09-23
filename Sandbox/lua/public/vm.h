@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#include <pch.h>
 #include <Sandbox/lua/public/index.h>
 
 
