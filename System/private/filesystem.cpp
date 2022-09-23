@@ -22,8 +22,7 @@
 
 namespace Vital::FileSystem {
     bool resolve(std::string& path) {
-        std::filesystem::path __path = std::filesystem::absolute(path);
-        path = !__path.empty() ? __path.string() : path;
+        path = std::filesystem::absolute(path).string();
         return true;
     }
 
