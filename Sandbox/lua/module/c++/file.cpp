@@ -52,7 +52,7 @@ namespace Vital::Lua::API {
             }
             else {
                 std::string path = vm -> getString(-1);
-                vm -> setDouble(Vital::FileSystem::size(path));
+                vm -> setDouble(static_cast<double>(Vital::FileSystem::size(path)));
             }
             return 1;
         });
