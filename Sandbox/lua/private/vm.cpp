@@ -34,7 +34,7 @@ namespace Vital::Lua {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : vMethods) {
+        for (auto& i : API::vMethods) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         for (std::string i : vModules) {

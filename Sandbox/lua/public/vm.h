@@ -86,6 +86,5 @@ namespace Vital::Lua {
             bool throwError(std::string& error);
     };
     typedef create vital_vm;
-    static std::map<vital_exec_ref, vital_exec> vMethods;
     static std::map<lua_State*, vital_vm*> vInstances;
 }

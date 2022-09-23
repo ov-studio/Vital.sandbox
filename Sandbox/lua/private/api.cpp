@@ -22,6 +22,7 @@
 
 namespace Vital::Lua::API {
     // Handlers //
+    std::map<vital_exec_ref, vital_exec> vMethods;
     std::function<void(std::string&)> onErrorHandler = NULL;
     bool onErrorHandle(std::function<void(std::string&)> exec) {
         onErrorHandler = exec;
@@ -36,9 +37,9 @@ namespace Vital::Lua::API {
     }
     bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec) {
         vital_exec_ref ref = { parent, name };
-        vMethods[ref] = [&](lua_State* vm) -> int {
+        vMethods.emplace(ref, [&](lua_State* vm) -> int {
             return exec(vInstances[vm]);
-        };
+        });
         return true;
     }
     bool unbind(std::string parent, std::string name) {

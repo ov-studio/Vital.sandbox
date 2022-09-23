@@ -22,6 +22,7 @@
 
 namespace Vital::Lua::API {
     // Handlers //
+    extern std::map<vital_exec_ref, vital_exec> vMethods;
     extern bool onErrorHandle(std::function<void(std::string&)> exec);
 
     // Helpers //
