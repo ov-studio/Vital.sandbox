@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sandbox\lua\private\engine.cpp" />
-    <ClCompile Include="Sandbox\lua\private\file.cpp" />
+    <ClCompile Include="Sandbox\lua\modules\c++\engine.cpp" />
+    <ClCompile Include="Sandbox\lua\modules\c++\file.cpp" />
     <ClCompile Include="Sandbox\lua\private\index.cpp" />
     <ClCompile Include="Sandbox\lua\private\vm.cpp" />
     <ClCompile Include="System\private\filesystem.cpp" />

@@ -31,6 +31,9 @@
     <Filter Include="System\public">
       <UniqueIdentifier>{617f4b10-ce0f-4a2d-a926-c68f8e5b9d06}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sandbox\lua\modules">
+      <UniqueIdentifier>{b0903692-c74e-4be9-9317-3fcf135e3237}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
@@ -147,11 +150,11 @@
     <ClCompile Include="Sandbox\lua\private\index.cpp">
       <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
-    <ClCompile Include="Sandbox\lua\private\engine.cpp">
-      <Filter>Sandbox\lua\private</Filter>
+    <ClCompile Include="Sandbox\lua\modules\c++\engine.cpp">
+      <Filter>Sandbox\lua\modules</Filter>
     </ClCompile>
-    <ClCompile Include="Sandbox\lua\private\file.cpp">
-      <Filter>Sandbox\lua\private</Filter>
+    <ClCompile Include="Sandbox\lua\modules\c++\file.cpp">
+      <Filter>Sandbox\lua\modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
