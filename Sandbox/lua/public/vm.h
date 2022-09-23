@@ -21,7 +21,7 @@
 //////////////
 
 namespace Vital::Lua {
-    typedef std::function<int(lua_State*)> vital_exec;
+    typedef lua_CFunction vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
     class create {
         private:

@@ -81,7 +81,7 @@ namespace Vital::Lua {
         return;
     }
     void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
-    void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, reinterpret_cast<lua_CFunction>(&value)); }
+    void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, value); }
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
