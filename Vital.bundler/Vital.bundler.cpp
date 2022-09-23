@@ -3,6 +3,7 @@
 #include <System/public/filesystem.h>
 #include <Sandbox/lua/public/api.h>
 
+
 int main() {
     std::string path = "../";
     Vital::FileSystem::resolve(path);
@@ -15,7 +16,9 @@ int main() {
     });
     Vital::Lua::API::boot();
     Vital::Lua::vital_vm* test = new Vital::Lua::create();
-    std::string testbuffer = "print('hello')";
+    //test->registerFunction("me", reinterpret_cast<Vital::Lua::vital_exec>(mefunc));
+    std::string testbuffer = "print('hello') print('Table: '..tostring(table)) print('File: '..tostring(file)) print('Tick: '..tostring(engine.getApplicationTick()))";
+    //std::string testbuffer = "print('me: '..tostring(me))";
     test -> loadString(testbuffer);
     return 0;
 }
