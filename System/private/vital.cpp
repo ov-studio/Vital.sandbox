@@ -13,7 +13,8 @@
 //////////////
 
 #pragma once
-#include "System/public/vital.h"
+#include <System/public/vital.h>
+#include <iostream>
 
 
 ///////////////////////
@@ -25,7 +26,7 @@ namespace Vital {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count() / 1000000);
     }
     unsigned int getApplicationTick() {
-        vTick = vTick || getSystemTick();
+        vTick = vTick ? vTick : getSystemTick();
         return static_cast<unsigned int>(getSystemTick() - vTick);
     }
 }
