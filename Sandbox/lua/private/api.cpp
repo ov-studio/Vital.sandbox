@@ -21,15 +21,14 @@
 ///////////////
 
 namespace Vital::Lua::API {
-    bool boot() {
-        vSandbox_Engine();
-        vSandbox_File();
-    }
+    // Handlers //
     std::function<void(std::string&)> onErrorHandler = NULL;
     bool onErrorHandle(std::function<void(std::string&)> exec) {
         onErrorHandler = exec;
         return true;
     }
+
+    // Helpers //
     bool error(std::string& error) {
         if (!onErrorHandler) return false;
         onErrorHandler(error);
@@ -46,5 +45,11 @@ namespace Vital::Lua::API {
         vital_exec_ref ref = { parent, name };
         vMethods.erase(ref);
         return true;
+    }
+
+    // Booter //
+    bool boot() {
+        vSandbox_Engine();
+        vSandbox_File();
     }
 }

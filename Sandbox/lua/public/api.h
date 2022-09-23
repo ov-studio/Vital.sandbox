@@ -21,11 +21,16 @@
 ///////////////
 
 namespace Vital::Lua::API {
-    extern bool boot();
+    // Handlers //
     extern bool onErrorHandle(std::function<void(std::string&)> exec);
+
+    // Helpers //
     extern bool error(std::string& error);
     extern bool bind(std::string parent, std::string name, std::function<int(vital_vm* vm)> exec);
     extern bool unbind(std::string parent, std::string name);
+
+    // Booter //
+    extern bool boot();
 
     // Binds //
     extern void vSandbox_Engine();
