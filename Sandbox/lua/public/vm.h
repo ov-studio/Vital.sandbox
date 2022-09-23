@@ -24,8 +24,7 @@
 namespace Vital::Lua {
     typedef std::function<int(lua_State*)> vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
-
-    const class create {
+    class create {
         private:
             bool isUnloaded = false;
             lua_State* vm = nullptr;

@@ -150,6 +150,12 @@
     <ClCompile Include="Sandbox\lua\private\index.cpp">
       <Filter>Sandbox\lua\private</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\lua\module\c++\file.cpp">
+      <Filter>Sandbox\lua\module</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\lua\module\c++\engine.cpp">
+      <Filter>Sandbox\lua\module</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
