@@ -23,14 +23,14 @@
 
 namespace Vital::Lua::API {
     void vSandbox_Engine() {
-        bind("engine", "getSystemTick", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("engine", "getSystemTick", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             vm -> setInt(Vital::getSystemTick());
             return 1;
         });
 
-        bind("engine", "getApplicationTick", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("engine", "getApplicationTick", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             std::cout << "CALLED INNER";
             vm -> setInt(Vital::getApplicationTick());
             return 1;

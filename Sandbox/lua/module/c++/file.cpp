@@ -23,8 +23,8 @@
 
 namespace Vital::Lua::API {
     void vSandbox_File() {
-        bind("file", "resolve", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("file", "resolve", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -36,8 +36,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "exists", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("file", "exists", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -48,8 +48,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "size", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("file", "size", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -60,8 +60,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "remove", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("file", "remove", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -72,8 +72,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "read", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("file", "read", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
                 vm -> setBool(false);
             }
@@ -89,8 +89,8 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-        bind("file", "write", [](vital_ref* vm) -> int {
-            auto vm = fetchVM(vm);
+        bind("file", "write", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 2) || (!vm -> isString(-1)) || (!vm -> isString(-2))) {
                 vm -> setBool(false);
             }
