@@ -31,7 +31,6 @@ namespace Vital::Lua::API {
 
         bind("engine", "getApplicationTick", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            std::cout << "CALLED INNER";
             vm -> setInt(Vital::getApplicationTick());
             return 1;
         });
