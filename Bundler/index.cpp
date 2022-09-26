@@ -1,3 +1,6 @@
+#pragma once
+#include <Sandbox/lua/public/index.h>
+
 #include <iostream>
 #include <System/public/vital.h>
 #include <System/public/filesystem.h>
@@ -5,6 +8,11 @@
 
 
 int main() {
+    std::cout << "Bundling : Lua";
+    for (auto i : Vital::Lua::vModules) {
+        std::cout << i;
+    }
+    /*
     std::string path = "../";
     Vital::FileSystem::resolve(path);
     path += ".gitignore";
@@ -25,5 +33,6 @@ int main() {
     test->loadString(testbuffer);
     testbuffer = "print('Current Path: '..file.resolve('../'))";
     test->loadString(testbuffer);
+    */
     return 0;
 }
