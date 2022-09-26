@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vital.sandbox", "Vital.sandbox.vcxproj", "{7A66D2A0-5ABB-47A2-9C18-B4E54408ECFC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vital.bundler", "Vital.bundler\Vital.bundler.vcxproj", "{49C0C7E0-0C09-483E-BBA0-9C9A9D9EBDEC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vital.bundler", "Vital.bundler.vcxproj", "{49C0C7E0-0C09-483E-BBA0-9C9A9D9EBDEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
