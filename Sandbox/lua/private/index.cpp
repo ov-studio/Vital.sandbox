@@ -44,7 +44,7 @@ namespace Vital::Lua {
     std::vector<std::string> vModules = {
         "namespace.lua",
         "vcl.lua",
-        "table.lua"
+        "table.lua",
         "math/index.lua",
         "math/quat.lua",
         "math/matrix.lua",
