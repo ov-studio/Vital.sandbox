@@ -99,9 +99,6 @@
     <ClInclude Include="Vendor\lua\lvm.h" />
     <ClInclude Include="Vendor\lua\lzio.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Vendor\duktape\duk_source_meta.json" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

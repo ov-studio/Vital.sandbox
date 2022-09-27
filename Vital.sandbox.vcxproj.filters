@@ -273,9 +273,4 @@
       <Filter>Vendor\duktape</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Vendor\duktape\duk_source_meta.json">
-      <Filter>Vendor\duktape</Filter>
-    </None>
-  </ItemGroup>
 </Project>
