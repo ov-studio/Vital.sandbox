@@ -39,5 +39,5 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
-    return 0;
+    return 1;
 }
