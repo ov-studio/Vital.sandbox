@@ -1,4 +1,4 @@
 {
-  src: "https://github.com/lua/lua/releases",
-  version: "v5.4.4"
+  src: "https://duktape.org/download.html",
+  version: "v2.7.0"
 }
