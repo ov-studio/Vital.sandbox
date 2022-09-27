@@ -1,4 +1,18 @@
-﻿#pragma once
+﻿/*----------------------------------------------------------------
+     Resource: Vital.sandbox
+     Script: Bundler: index.cpp
+     Author: vStudio
+     Developer(s): Aviril, Tron, Mario, Аниса
+     DOC: 14/09/2022
+     Desc: Bundler Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
 #include <Sandbox/lua/public/index.h>
 #include <System/public/filesystem.h>
 
