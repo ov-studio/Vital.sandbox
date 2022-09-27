@@ -15,6 +15,9 @@
 #pragma once
 #include <System/public/filesystem.h>
 #include <Sandbox/lua/public/api.h>
+#if __has_include(<Sandbox/lua/module/bundle.h>)
+    #include <Sandbox/lua/module/bundle.h>
+#endif
 
 
 //////////////
@@ -39,11 +42,11 @@ namespace Vital::Lua {
         for (auto& i : API::vMethods) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
-        for (std::string i : vModules) {
-            std::string path = std::filesystem::current_path().string() + "/modules/" + i;
-            std::string buffer = Vital::FileSystem::read(path);
-            loadString(buffer);
-        }
+        #if __has_include(<Sandbox/lua/module/bundle.h>)
+            for (std::string i : vBundle) {
+                loadString(i);
+            }
+        #endif
     }
     bool create::destroy() {
         if (isUnloaded) return false;

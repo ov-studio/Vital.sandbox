@@ -4,24 +4,22 @@
 
 void outputConsole(std::string message) { std::cout << "\nVital.bundler | " << message; }
 void genPackage(std::string name, std::string entry, std::vector<std::string> modules) {
-    std::string rwBuffer = "namespace Vital::" + name + " {\nstd::vector<std::string> buffer = {";
+    std::string rwBundle = "namespace Vital::" + name + " {\nstd::vector<std::string> vBundle = {";
     outputConsole("Packaging " + name + "...");
     for (auto i : modules) {
         std::string path = entry + i;
         if (!Vital::FileSystem::exists(path)) {
-            std::string error = "Invalid File: " + path;
-            outputConsole(error);
-            throw error;
+            outputConsole("Invalid File: " + path);
+            throw 0;
         }
         else {
-            std::string buffer = Vital::FileSystem::read(path);
-            rwBuffer += "\nR\"" + Vital::vSignature + "(\n" + buffer + "\n)" + Vital::vSignature + "\",";
+            rwBundle += "\nR\"" + Vital::vSignature + "(\n" + Vital::FileSystem::read(path) + "\n)" + Vital::vSignature + "\",";
             outputConsole("Bundled File: " + path);
         }
     }
-    rwBuffer += "\n};\n}";
+    rwBundle += "\n};\n}";
     std::string path = entry + "bundle.h";
-    Vital::FileSystem::write(path, rwBuffer);
+    Vital::FileSystem::write(path, rwBundle);
     outputConsole("Packaged " + name + " successfully!");
 }
 
