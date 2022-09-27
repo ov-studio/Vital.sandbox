@@ -15,8 +15,8 @@
 * Completely Performance-Friendly
 * Completely Safe & Secure
 * Lightweight & Straightforward
-* Built-In Types & Helpers
 * Completely Embeddable
+* Built-In VM Modules
 * Built-in Lua API
 * Necessary Integration APIs
 
