@@ -46,13 +46,14 @@ namespace Vital::FileSystem {
         std::string result = "";
         if (exists(path)) {
             std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
-            std::streampos bytes = size(path);
-            char* buffer = new char[bytes];
+            auto bytes = std::filesystem::file_size(path);
+            char* buffer = new char[bytes + 1];
             handle.seekg(0, std::ios::beg);
             handle.read(buffer, bytes);
             handle.close();
+            buffer[bytes] = 0;
             result = buffer;
-            delete buffer;
+            delete[] buffer;
         }
         return result;
     }
@@ -60,7 +61,7 @@ namespace Vital::FileSystem {
     bool write(std::string& path, std::string buffer) {
         resolve(path);
         std::fstream handle(path, std::ios::out | std::ios::binary | std::ios::trunc);
-        handle.write(buffer.c_str(), sizeof(buffer));
+        handle.write(buffer.c_str(), (buffer.size() + 1)*sizeof(char));
         handle.close();
         return true;
     }
