@@ -1,6 +1,3 @@
-[submodule "Vendor/lua"]
-	path = Vendor/lua
-	url = https://github.com/lua/lua
 [submodule "Vendor/openssl"]
 	path = Vendor/openssl
 	url = https://github.com/openssl/openssl
