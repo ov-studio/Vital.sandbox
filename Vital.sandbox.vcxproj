@@ -26,6 +26,7 @@
     <ClCompile Include="Sandbox\lua\private\vm.cpp" />
     <ClCompile Include="System\private\filesystem.cpp" />
     <ClCompile Include="System\private\vital.cpp" />
+    <ClCompile Include="Vendor\duktape\duktape.c" />
     <ClCompile Include="Vendor\lua\lapi.c" />
     <ClCompile Include="Vendor\lua\lauxlib.c" />
     <ClCompile Include="Vendor\lua\lbaselib.c" />
@@ -67,6 +68,8 @@
     <ClInclude Include="Sandbox\lua\public\vm.h" />
     <ClInclude Include="System\public\filesystem.h" />
     <ClInclude Include="System\public\vital.h" />
+    <ClInclude Include="Vendor\duktape\duktape.h" />
+    <ClInclude Include="Vendor\duktape\duk_config.h" />
     <ClInclude Include="Vendor\lua\lapi.h" />
     <ClInclude Include="Vendor\lua\lauxlib.h" />
     <ClInclude Include="Vendor\lua\lcode.h" />
@@ -95,6 +98,9 @@
     <ClInclude Include="Vendor\lua\lundump.h" />
     <ClInclude Include="Vendor\lua\lvm.h" />
     <ClInclude Include="Vendor\lua\lzio.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Vendor\duktape\duk_source_meta.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
