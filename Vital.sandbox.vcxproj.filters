@@ -37,6 +37,9 @@
     <Filter Include="Vendor\duktape">
       <UniqueIdentifier>{f2cefef0-4cd5-4928-9dac-02d32b558cf7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sandbox\js">
+      <UniqueIdentifier>{7c905a9c-8051-4347-9cdd-deceffad550d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
