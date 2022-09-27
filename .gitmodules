@@ -1,3 +1,0 @@
-[submodule "Vendor/openssl"]
-	path = Vendor/openssl
-	url = https://github.com/openssl/openssl

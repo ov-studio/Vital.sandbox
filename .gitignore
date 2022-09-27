@@ -3,3 +3,4 @@
 .build
 .output
 bundle.h
+.openssl_
