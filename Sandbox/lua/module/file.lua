@@ -49,3 +49,7 @@ function file.public:write(path, data)
     imports.collectgarbage()
     return result
 end
+
+function file.public:fetchContents(...)
+    return imports.file.fetchContents(...)
+end
