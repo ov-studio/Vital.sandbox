@@ -43,10 +43,6 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 }
 
 int main() {
-    //genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
-    std::string path = "../";
-    for (auto i : Vital::FileSystem::fetchContents(path)) {
-        std::cout << i << "\n";
-    }
+    genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
     return 1;
 }
