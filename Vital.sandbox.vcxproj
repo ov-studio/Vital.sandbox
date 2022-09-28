@@ -64,6 +64,7 @@
     <ClCompile Include="Vendor\lua\lzio.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pch.h" />
     <ClInclude Include="Sandbox\lua\public\api.h" />
     <ClInclude Include="Sandbox\lua\public\index.h" />
     <ClInclude Include="Sandbox\lua\public\vm.h" />

@@ -22,6 +22,14 @@
 ////////////////////////
 
 namespace Vital::Crypto {
+    std::string HexToBin(unsigned char* hash, int length) {
+        std::stringstream ss;
+        for (int i = 0; i < length; i++) {
+            ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
+        }
+        return ss.str();
+    }
+
     std::string SHA256(std::string& buffer) {
         unsigned char hash[SHA256_DIGEST_LENGTH];
         return SHA256(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);

@@ -1112,5 +1112,6 @@
     <ClInclude Include="System\public\crypto.h">
       <Filter>System\public</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h" />
   </ItemGroup>
 </Project>
