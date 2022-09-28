@@ -48,6 +48,8 @@ namespace Vital::Lua {
         "string.lua",
         "thread.lua",
         "timer.lua",
+        "engine.lua",
+        "crypto.lua",
         "file.lua",
         "resource.lua"
     };
