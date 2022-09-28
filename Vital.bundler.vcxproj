@@ -152,12 +152,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vital.sandbox.vcxproj">
-      <Project>{7a66d2a0-5abb-47a2-9c18-b4e54408ecfc}</Project>
-    </ProjectReference>
+    <ClCompile Include="Bundler\index.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bundler\index.cpp" />
+    <ProjectReference Include="Vital.sandbox.vcxproj">
+      <Project>{7a66d2a0-5abb-47a2-9c18-b4e54408ecfc}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
