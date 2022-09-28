@@ -98,6 +98,118 @@
     <ClInclude Include="Vendor\lua\lundump.h" />
     <ClInclude Include="Vendor\lua\lvm.h" />
     <ClInclude Include="Vendor\lua\lzio.h" />
+    <ClInclude Include="Vendor\openssl\aes.h" />
+    <ClInclude Include="Vendor\openssl\asn1err.h" />
+    <ClInclude Include="Vendor\openssl\asn1_mac.h" />
+    <ClInclude Include="Vendor\openssl\async.h" />
+    <ClInclude Include="Vendor\openssl\asyncerr.h" />
+    <ClInclude Include="Vendor\openssl\bioerr.h" />
+    <ClInclude Include="Vendor\openssl\blowfish.h" />
+    <ClInclude Include="Vendor\openssl\bn.h" />
+    <ClInclude Include="Vendor\openssl\bnerr.h" />
+    <ClInclude Include="Vendor\openssl\buffer.h" />
+    <ClInclude Include="Vendor\openssl\buffererr.h" />
+    <ClInclude Include="Vendor\openssl\camellia.h" />
+    <ClInclude Include="Vendor\openssl\cast.h" />
+    <ClInclude Include="Vendor\openssl\cmac.h" />
+    <ClInclude Include="Vendor\openssl\cmperr.h" />
+    <ClInclude Include="Vendor\openssl\cmp_util.h" />
+    <ClInclude Include="Vendor\openssl\cmserr.h" />
+    <ClInclude Include="Vendor\openssl\comp.h" />
+    <ClInclude Include="Vendor\openssl\comperr.h" />
+    <ClInclude Include="Vendor\openssl\conferr.h" />
+    <ClInclude Include="Vendor\openssl\conftypes.h" />
+    <ClInclude Include="Vendor\openssl\conf_api.h" />
+    <ClInclude Include="Vendor\openssl\core.h" />
+    <ClInclude Include="Vendor\openssl\core_dispatch.h" />
+    <ClInclude Include="Vendor\openssl\core_names.h" />
+    <ClInclude Include="Vendor\openssl\core_object.h" />
+    <ClInclude Include="Vendor\openssl\crmferr.h" />
+    <ClInclude Include="Vendor\openssl\cryptoerr.h" />
+    <ClInclude Include="Vendor\openssl\cryptoerr_legacy.h" />
+    <ClInclude Include="Vendor\openssl\cterr.h" />
+    <ClInclude Include="Vendor\openssl\decoder.h" />
+    <ClInclude Include="Vendor\openssl\decodererr.h" />
+    <ClInclude Include="Vendor\openssl\des.h" />
+    <ClInclude Include="Vendor\openssl\dh.h" />
+    <ClInclude Include="Vendor\openssl\dherr.h" />
+    <ClInclude Include="Vendor\openssl\dsa.h" />
+    <ClInclude Include="Vendor\openssl\dsaerr.h" />
+    <ClInclude Include="Vendor\openssl\dtls1.h" />
+    <ClInclude Include="Vendor\openssl\ebcdic.h" />
+    <ClInclude Include="Vendor\openssl\ec.h" />
+    <ClInclude Include="Vendor\openssl\ecdh.h" />
+    <ClInclude Include="Vendor\openssl\ecdsa.h" />
+    <ClInclude Include="Vendor\openssl\ecerr.h" />
+    <ClInclude Include="Vendor\openssl\encoder.h" />
+    <ClInclude Include="Vendor\openssl\encodererr.h" />
+    <ClInclude Include="Vendor\openssl\engine.h" />
+    <ClInclude Include="Vendor\openssl\engineerr.h" />
+    <ClInclude Include="Vendor\openssl\esserr.h" />
+    <ClInclude Include="Vendor\openssl\evp.h" />
+    <ClInclude Include="Vendor\openssl\evperr.h" />
+    <ClInclude Include="Vendor\openssl\e_os2.h" />
+    <ClInclude Include="Vendor\openssl\fips_names.h" />
+    <ClInclude Include="Vendor\openssl\hmac.h" />
+    <ClInclude Include="Vendor\openssl\http.h" />
+    <ClInclude Include="Vendor\openssl\httperr.h" />
+    <ClInclude Include="Vendor\openssl\idea.h" />
+    <ClInclude Include="Vendor\openssl\kdf.h" />
+    <ClInclude Include="Vendor\openssl\kdferr.h" />
+    <ClInclude Include="Vendor\openssl\macros.h" />
+    <ClInclude Include="Vendor\openssl\md2.h" />
+    <ClInclude Include="Vendor\openssl\md4.h" />
+    <ClInclude Include="Vendor\openssl\md5.h" />
+    <ClInclude Include="Vendor\openssl\mdc2.h" />
+    <ClInclude Include="Vendor\openssl\modes.h" />
+    <ClInclude Include="Vendor\openssl\objects.h" />
+    <ClInclude Include="Vendor\openssl\objectserr.h" />
+    <ClInclude Include="Vendor\openssl\obj_mac.h" />
+    <ClInclude Include="Vendor\openssl\ocsperr.h" />
+    <ClInclude Include="Vendor\openssl\opensslconf.h" />
+    <ClInclude Include="Vendor\openssl\ossl_typ.h" />
+    <ClInclude Include="Vendor\openssl\params.h" />
+    <ClInclude Include="Vendor\openssl\param_build.h" />
+    <ClInclude Include="Vendor\openssl\pem.h" />
+    <ClInclude Include="Vendor\openssl\pem2.h" />
+    <ClInclude Include="Vendor\openssl\pemerr.h" />
+    <ClInclude Include="Vendor\openssl\pkcs12err.h" />
+    <ClInclude Include="Vendor\openssl\pkcs7err.h" />
+    <ClInclude Include="Vendor\openssl\proverr.h" />
+    <ClInclude Include="Vendor\openssl\provider.h" />
+    <ClInclude Include="Vendor\openssl\prov_ssl.h" />
+    <ClInclude Include="Vendor\openssl\rand.h" />
+    <ClInclude Include="Vendor\openssl\randerr.h" />
+    <ClInclude Include="Vendor\openssl\rc2.h" />
+    <ClInclude Include="Vendor\openssl\rc4.h" />
+    <ClInclude Include="Vendor\openssl\rc5.h" />
+    <ClInclude Include="Vendor\openssl\ripemd.h" />
+    <ClInclude Include="Vendor\openssl\rsa.h" />
+    <ClInclude Include="Vendor\openssl\rsaerr.h" />
+    <ClInclude Include="Vendor\openssl\seed.h" />
+    <ClInclude Include="Vendor\openssl\self_test.h" />
+    <ClInclude Include="Vendor\openssl\sha.h" />
+    <ClInclude Include="Vendor\openssl\srtp.h" />
+    <ClInclude Include="Vendor\openssl\ssl2.h" />
+    <ClInclude Include="Vendor\openssl\ssl3.h" />
+    <ClInclude Include="Vendor\openssl\sslerr.h" />
+    <ClInclude Include="Vendor\openssl\sslerr_legacy.h" />
+    <ClInclude Include="Vendor\openssl\stack.h" />
+    <ClInclude Include="Vendor\openssl\store.h" />
+    <ClInclude Include="Vendor\openssl\storeerr.h" />
+    <ClInclude Include="Vendor\openssl\symhacks.h" />
+    <ClInclude Include="Vendor\openssl\tls1.h" />
+    <ClInclude Include="Vendor\openssl\trace.h" />
+    <ClInclude Include="Vendor\openssl\ts.h" />
+    <ClInclude Include="Vendor\openssl\tserr.h" />
+    <ClInclude Include="Vendor\openssl\txt_db.h" />
+    <ClInclude Include="Vendor\openssl\types.h" />
+    <ClInclude Include="Vendor\openssl\uierr.h" />
+    <ClInclude Include="Vendor\openssl\whrlpool.h" />
+    <ClInclude Include="Vendor\openssl\x509err.h" />
+    <ClInclude Include="Vendor\openssl\x509v3err.h" />
+    <ClInclude Include="Vendor\openssl\__DECC_INCLUDE_EPILOGUE.H" />
+    <ClInclude Include="Vendor\openssl\__DECC_INCLUDE_PROLOGUE.H" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -154,12 +266,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir).build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir).output\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir).build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir).output\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -203,7 +315,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua-rapidjson\rapidjson\include\rapidjson;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -222,7 +334,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua-rapidjson\rapidjson\include\rapidjson;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

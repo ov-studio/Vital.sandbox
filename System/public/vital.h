@@ -25,4 +25,6 @@ namespace Vital {
     static unsigned int vTick;
     extern unsigned int getSystemTick();
     extern unsigned int getApplicationTick();
+    extern std::string sha256(std::string str);
+    //extern std::string md5(std::string& str);
 }
