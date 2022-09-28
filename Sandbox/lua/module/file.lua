@@ -23,24 +23,24 @@ local imports = {
 
 local file = class:create("file")
 
-function file.public:resolve(path)
-    return imports.file.resolve(path)
+function file.public:resolve(...)
+    return imports.file.resolve(...)
 end
 
-function file.public:exists(path)
-    return imports.file.exists(path)
+function file.public:exists(...)
+    return imports.file.exists(...)
 end
 
-function file.public:size(path)
-    return imports.file.size(path)
+function file.public:size(...)
+    return imports.file.size(...)
 end
 
-function file.public:delete(path)
-    return imports.file.delete(path)
+function file.public:delete(...)
+    return imports.file.delete(...)
 end
 
-function file.public:read(path)
-    return imports.file.read(path)
+function file.public:read(...)
+    return imports.file.read(...)
 end
 
 function file.public:write(path, data)

@@ -23,6 +23,6 @@ local imports = {
 
 local crypto = class:create("crypto")
 
-function crypto.public:sha256(path)
-    return imports.crypto.sha256(path)
+function crypto.public:sha256(...)
+    return imports.crypto.sha256(...)
 end
