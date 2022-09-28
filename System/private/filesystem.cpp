@@ -47,7 +47,7 @@ namespace Vital::FileSystem {
         if (exists(path)) {
             std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
             auto bytes = std::filesystem::file_size(path);
-            char* buffer = new char[bytes + 1];
+            char* buffer = new char[(bytes + 1)];
             handle.seekg(0, std::ios::beg);
             handle.read(buffer, bytes);
             handle.close();
@@ -64,5 +64,14 @@ namespace Vital::FileSystem {
         handle.write(buffer.c_str(), (buffer.size() + 1)*sizeof(char));
         handle.close();
         return true;
+    }
+
+    std::vector<std::string> fetchContents(std::string& path) {
+        resolve(path);
+        std::vector<std::string> result;
+        for (auto& entry : std::filesystem::directory_iterator(path)) {
+            result.push_back(entry.path().string());
+        }
+        return result;
     }
 }
