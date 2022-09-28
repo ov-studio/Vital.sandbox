@@ -695,5 +695,416 @@
     <ClInclude Include="Vendor\openssl\x64\Debug\include\openssl\asn1t.h">
       <Filter>Vendor\openssl\x64\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\asn1_mac.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\asn1err.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\asn1t.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\async.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\asyncerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\bio.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\bioerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\blowfish.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\bn.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\bnerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\buffer.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\buffererr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\camellia.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cast.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cmac.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cmp.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cmp_util.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cmperr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cms.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cmserr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\comp.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\comperr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\conf.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\conf_api.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\conferr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\configuration.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\conftypes.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\core.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\core_dispatch.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\core_names.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\core_object.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\crmf.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\crmferr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\crypto.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cryptoerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cryptoerr_legacy.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ct.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\cterr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\decoder.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\decodererr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\des.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\dh.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\dherr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\dsa.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\dsaerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\dtls1.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\e_os2.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ebcdic.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ec.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ecdh.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ecdsa.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ecerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\encoder.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\encodererr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\engine.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\engineerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\err.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ess.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\esserr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\evp.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\evperr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\fips_names.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\fipskey.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\hmac.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\http.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\httperr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\idea.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\kdf.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\kdferr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\lhash.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\macros.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\md2.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\md4.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\md5.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\mdc2.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\modes.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\obj_mac.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\objects.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\objectserr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ocsp.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ocsperr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\opensslconf.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\opensslv.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ossl_typ.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\param_build.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\params.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pem.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pem2.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pemerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pkcs7.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pkcs7err.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pkcs12.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\pkcs12err.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\prov_ssl.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\proverr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\provider.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\rand.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\randerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\rc2.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\rc4.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\rc5.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ripemd.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\rsa.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\rsaerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\safestack.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\seed.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\self_test.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\sha.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\srp.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\srtp.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ssl.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ssl2.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ssl3.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\sslerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\sslerr_legacy.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\stack.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\store.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\storeerr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\symhacks.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\tls1.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\trace.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ts.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\tserr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\txt_db.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\types.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\ui.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\uierr.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\whrlpool.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\x509.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\x509_vfy.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\x509err.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\x509v3.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\x509v3err.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\__DECC_INCLUDE_EPILOGUE.H">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\__DECC_INCLUDE_PROLOGUE.H">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\aes.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\asn1.h">
+      <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
