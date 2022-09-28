@@ -41,7 +41,8 @@ namespace Vital {
         unsigned char text[] = "Test String";
         unsigned int len = strlen((const char*)text);
         unsigned char hash[SHA256_DIGEST_LENGTH];
-        std::cout << SHA256(text, len, hash);
+        auto test = SHA256(text, len, hash);
+        std::cout << test;
         return "";
     }
 
