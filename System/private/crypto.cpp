@@ -24,7 +24,6 @@
 namespace Vital::Crypto {
     std::string SHA256(std::string& buffer) {
         unsigned char hash[SHA256_DIGEST_LENGTH];
-        auto base = reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str()));
-        return SHA256(base, buffer.size(), hash);
+        return SHA256(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
     }
 }
