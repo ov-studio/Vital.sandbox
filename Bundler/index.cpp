@@ -43,7 +43,7 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 int main() {
     Vital::Lua::API::boot();
     auto test = new Vital::Lua::create();
-    std::string rwString = "print(crypto.sha256)";
+    std::string rwString = "print(crypto.sha256('tron'))";
     test->loadString(rwString);
     //genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
     return 1;
