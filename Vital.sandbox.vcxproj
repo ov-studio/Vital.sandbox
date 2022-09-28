@@ -483,6 +483,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -505,6 +506,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
