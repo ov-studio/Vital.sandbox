@@ -31,11 +31,17 @@ namespace Vital {
     }
 
     std::string sha256(std::string str) {
+        /*
         const char* base = str.c_str();
         unsigned char hash[SHA256_DIGEST_LENGTH];
         auto __base = reinterpret_cast<unsigned char*>(const_cast<char*>(base));
         auto buffer = SHA256(__base, str.size(), hash);
         std::cout << buffer;
+        */
+        unsigned char text[] = "Test String";
+        unsigned int len = strlen((const char*)text);
+        unsigned char hash[SHA256_DIGEST_LENGTH];
+        std::cout << SHA256(text, len, hash);
         return "";
     }
 
