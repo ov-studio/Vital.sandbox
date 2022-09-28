@@ -133,10 +133,7 @@ namespace Vital::Lua {
     }
 
     // Utils //
-    bool create::pop(int index) {
-        lua_pop(vm, index);
-        return true
-    }
+    void create::pop(int index) { lua_pop(vm, index); }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.c_str());

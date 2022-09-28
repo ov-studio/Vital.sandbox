@@ -83,7 +83,7 @@ namespace Vital::Lua {
             void registerObject(std::string index, void* value);
 
             // Utils //
-            bool pop(int index = 1);
+            void pop(int index = 1);
             bool loadString(std::string& buffer);
             bool throwError(std::string& error);
     };
