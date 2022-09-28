@@ -80,9 +80,10 @@ namespace Vital::Lua {
             void registerNumber(std::string index, int value);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
-            bool registerObject(std::string index, void* value);
+            void registerObject(std::string index, void* value);
 
             // Utils //
+            bool pop(int index = 1);
             bool loadString(std::string& buffer);
             bool throwError(std::string& error);
     };

@@ -33,7 +33,7 @@ namespace Vital::Lua {
         vInstances.emplace(vm, this);
         for (luaL_Reg i : vLibraries) {
             luaL_requiref(vm, i.name, i.func, 1);
-            lua_pop(vm, 1);
+            pop();
         }
         for (std::string i : vBlacklist) {
             setNil();
@@ -127,13 +127,16 @@ namespace Vital::Lua {
         }
         registerFunction(index, exec);
     }
-    bool create::registerObject(std::string index, void* value) {
+    void create::registerObject(std::string index, void* value) {
         createUserData(value);
         setMetaTable(index);
-        return true;
     }
 
     // Utils //
+    bool create::pop(int index) {
+        lua_pop(vm, 1);
+        return true
+    }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.c_str());
