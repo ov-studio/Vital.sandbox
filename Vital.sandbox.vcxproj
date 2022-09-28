@@ -428,12 +428,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir).build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir).output\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir).build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir).output\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\Tron\Documents\GITs\Vital.sandbox;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -477,7 +477,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -485,6 +485,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <Lib>
+      <AdditionalDependencies>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -496,7 +499,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -506,6 +509,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <Lib>
+      <AdditionalDependencies>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
