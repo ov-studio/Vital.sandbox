@@ -16,8 +16,10 @@
 #include <Sandbox/lua/public/index.h>
 #include <System/public/filesystem.h>
 
-#include <Sandbox/lua/public/api.h>
 
+//////////////
+// Bundler //
+//////////////
 
 void outputConsole(std::string message) { std::cout << "\nVital.bundler | " << message; }
 void genPackage(std::string name, std::string entry, std::vector<std::string> modules) {
@@ -41,9 +43,6 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 }
 
 int main() {
-    Vital::Lua::API::boot();
-    auto test = new Vital::Lua::create();
-    std::string rwString = "print(crypto.sha256('tron'))";
-    //genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
+    genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
     return 1;
 }
