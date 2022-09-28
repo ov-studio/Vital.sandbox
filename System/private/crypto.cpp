@@ -14,7 +14,8 @@
 
 #pragma once
 #include <System/public/crypto.h>
-#include <Vendor/openssl/sha.h>
+// TODO: MAKE IT BASED ON VENDOR POINTER
+#include <openssl/sha.h>
 
 
 ////////////////////////
@@ -22,7 +23,7 @@
 ////////////////////////
 
 namespace Vital::Crypto {
-    std::string HexToBin(unsigned char* hash, int length) {
+    std::string HexToBin(unsigned char* hash, size_t length) {
         std::stringstream ss;
         for (int i = 0; i < length; i++) {
             ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
@@ -32,6 +33,7 @@ namespace Vital::Crypto {
 
     std::string SHA256(std::string& buffer) {
         unsigned char hash[SHA256_DIGEST_LENGTH];
-        return SHA256(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
+        ::SHA256(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
+        return HexToBin(hash, SHA256_DIGEST_LENGTH);
     }
 }

@@ -15,6 +15,7 @@
 #pragma once
 #include <Sandbox/lua/public/index.h>
 #include <System/public/filesystem.h>
+#include <System/public/crypto.h>
 
 void outputConsole(std::string message) { std::cout << "\nVital.bundler | " << message; }
 void genPackage(std::string name, std::string entry, std::vector<std::string> modules) {
@@ -38,7 +39,8 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 }
 
 int main() {
-    std::cout << Vital::sha256("testing");
+    std::string test = "testing";
+    std::cout << "SHA (" << test << "): " << Vital::Crypto::SHA256(test);
     //genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
     return 1;
 }
