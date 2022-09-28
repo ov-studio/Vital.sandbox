@@ -177,6 +177,9 @@
     <ClCompile Include="Vendor\duktape\duktape.c">
       <Filter>Vendor\duktape</Filter>
     </ClCompile>
+    <ClCompile Include="System\private\crypto.cpp">
+      <Filter>System\private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
@@ -1105,6 +1108,9 @@
     </ClInclude>
     <ClInclude Include="Vendor\openssl\x64\Release\include\openssl\asn1.h">
       <Filter>Vendor\openssl\x64\Release</Filter>
+    </ClInclude>
+    <ClInclude Include="System\public\crypto.h">
+      <Filter>System\public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
