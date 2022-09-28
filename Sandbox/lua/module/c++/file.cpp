@@ -101,5 +101,21 @@ namespace Vital::Lua::API {
             }
             return 1;
         });
+
+        bind("file", "fetchContents", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
+                vm -> setBool(false);
+            }
+            else {
+                std::string path = vm -> getString(-1);
+                vm -> createTable();
+                for (auto i : Vital::FileSystem::fetchContents(path)) {
+                    vm -> setString(i);
+                    vm -> pop(1);
+                }
+            }
+            return 1;
+        });
     }
 }
