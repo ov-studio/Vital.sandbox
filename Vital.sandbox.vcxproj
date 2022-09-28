@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sandbox\lua\module\c++\crypto.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\engine.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\file.cpp" />
     <ClCompile Include="Sandbox\lua\private\api.cpp" />

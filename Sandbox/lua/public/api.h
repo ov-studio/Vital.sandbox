@@ -35,5 +35,6 @@ namespace Vital::Lua::API {
 
     // Binds //
     extern void vSandbox_Engine();
+    extern void vSandbox_Crypto();
     extern void vSandbox_File();
 }

@@ -180,6 +180,9 @@
     <ClCompile Include="System\private\crypto.cpp">
       <Filter>System\private</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\lua\module\c++\crypto.cpp">
+      <Filter>Sandbox\lua\module</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">

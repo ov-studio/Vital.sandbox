@@ -50,6 +50,7 @@ namespace Vital::Lua::API {
     // Booter //
     bool boot() {
         vSandbox_Engine();
+        vSandbox_Crypto();
         vSandbox_File();
         return true;
     }
