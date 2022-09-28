@@ -38,7 +38,7 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 }
 
 int main() {
-    Vital::sha256("testing");
+    std::cout << Vital::sha256("testing");
     //genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
     return 1;
 }
