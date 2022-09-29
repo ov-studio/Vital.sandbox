@@ -493,6 +493,9 @@
     <Lib>
       <AdditionalDependencies>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
     </Lib>
+    <PostBuildEvent>
+      <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib.ossl_static.pdb  $(OutDir)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -518,6 +521,9 @@
     <Lib>
       <AdditionalDependencies>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
     </Lib>
+    <PostBuildEvent>
+      <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib.ossl_static.pdb  $(OutDir)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
