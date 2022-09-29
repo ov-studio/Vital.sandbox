@@ -15,9 +15,9 @@
 #pragma once
 #include <pch.h>
 extern "C" {
-    #include <lua/lua.h>
-    #include <lua/lauxlib.h>
-    #include <lua/lualib.h>
+    #include <Vendor/lua/lua.h>
+    #include <Vendor/lua/lauxlib.h>
+    #include <Vendor/lua/lualib.h>
 }
 
 
