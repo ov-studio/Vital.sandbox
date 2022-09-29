@@ -27,4 +27,8 @@ namespace Vital::Crypto {
     extern std::string SHA256(std::string& buffer);
     extern std::string SHA384(std::string& buffer);
     extern std::string SHA512(std::string& buffer);
+    class AES256 {
+        public:
+            static std::vector<std::string, std::string> encrypt(std::string& buffer, std::string& key);
+    };
 }

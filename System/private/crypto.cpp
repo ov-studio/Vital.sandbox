@@ -14,7 +14,10 @@
 
 #pragma once
 #include <System/public/crypto.h>
+#include <openssl/rand.h>
+#include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <openssl/aes.h>
 
 
 ////////////////////////
@@ -58,5 +61,22 @@ namespace Vital::Crypto {
         unsigned char hash[SHA512_DIGEST_LENGTH];
         ::SHA512(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
         return HexToBin(hash, SHA512_DIGEST_LENGTH);
+    }
+
+    std::vector<std::string, std::string> AES256::encrypt(std::string& buffer, std::string& key) {
+        int len;
+        int ciphertext_len;
+        unsigned char* ciphertext;
+        EVP_CIPHER_CTX* ctx;
+        unsigned char iv[AES_BLOCK_SIZE];
+        RAND_pseudo_bytes(iv, sizeof(iv));
+        EVP_EncryptInit(ctx, EVP_aes_256_cbc(), reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv);
+        EVP_EncryptUpdate(ctx, ciphertext, &len, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
+        ciphertext_len = len;
+        EVP_EncryptFinal(ctx, ciphertext + len, &len);
+        ciphertext_len += len;
+        std::cout << ciphertext;
+        //return ciphertext_len;
+        return { "", "" };
     }
 }

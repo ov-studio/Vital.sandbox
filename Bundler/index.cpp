@@ -16,6 +16,8 @@
 #include <Sandbox/lua/public/index.h>
 #include <System/public/filesystem.h>
 
+#include <System/public/crypto.h>
+
 
 //////////////
 // Bundler //
@@ -47,6 +49,10 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
 
+    std::string buffer = "encryptMe";
+    std::string key = "01234567890123456789012345678901";
+    Vital::Crypto::AES256::encrypt(buffer, key);
+    /*
     Vital::Lua::API::boot();
     Vital::Lua::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
@@ -61,5 +67,6 @@ int main() {
     )";
     auto testVM = new Vital::Lua::create();
     testVM -> loadString(rwString);
+    */
     return 1;
 }
