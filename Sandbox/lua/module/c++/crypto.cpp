@@ -98,6 +98,10 @@ namespace Vital::Lua::API {
                 std::string key = vm->getString(3);
                 try {
                     auto result = Vital::Crypto::encrypt(mode, buffer, key);
+                    std::string test = "testing";
+                    vm -> setString(test);
+                    //vm -> setString(result.second);
+                    vm -> setString(result.first);
                 }
                 catch (int error) { vm->setBool(false); }
             }
