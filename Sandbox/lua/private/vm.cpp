@@ -102,7 +102,10 @@ namespace Vital::Lua {
     bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.c_str()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
-
+    int create::getLength(int index) {
+        lua_len(vm, index);
+        return getInt();
+    }
 
     void create::pushString(std::string& value) {
         int index = 1; // TODO: GET LENGTH OF THE TABLE HERE..
