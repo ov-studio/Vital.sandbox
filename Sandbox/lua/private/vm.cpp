@@ -104,7 +104,7 @@ namespace Vital::Lua {
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
-        int result = getInt();
+        int result = getInt(-1);
         pop();
         return result;
     }
