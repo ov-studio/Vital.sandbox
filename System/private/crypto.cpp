@@ -69,7 +69,7 @@ namespace Vital::Crypto {
         else throw 0;
     }
 
-    std::pair<std::string, std::string> encrypt(std::string& mode, std::string& buffer, std::string& key) {
+    std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
         EVP_CIPHER* cipherType;
         try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
         catch(int error) { throw 0; }
@@ -94,7 +94,7 @@ namespace Vital::Crypto {
         return result;
     }
 
-    std::string decrypt(std::string& mode, std::string& buffer, std::string& key, std::string& iv) {
+    std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
         EVP_CIPHER* cipherType;
         try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
         catch(int error) { throw 0; }
