@@ -30,9 +30,33 @@ namespace Vital::Crypto {
         return ss.str();
     }
 
+    std::string SHA1(std::string& buffer) {
+        unsigned char hash[SHA_DIGEST_LENGTH];
+        ::SHA1(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
+        return HexToBin(hash, SHA_DIGEST_LENGTH);
+    }
+
+    std::string SHA224(std::string& buffer) {
+        unsigned char hash[SHA224_DIGEST_LENGTH];
+        ::SHA224(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
+        return HexToBin(hash, SHA224_DIGEST_LENGTH);
+    }
+
     std::string SHA256(std::string& buffer) {
         unsigned char hash[SHA256_DIGEST_LENGTH];
         ::SHA256(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
         return HexToBin(hash, SHA256_DIGEST_LENGTH);
+    }
+
+    std::string SHA384(std::string& buffer) {
+        unsigned char hash[SHA384_DIGEST_LENGTH];
+        ::SHA384(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
+        return HexToBin(hash, SHA384_DIGEST_LENGTH);
+    }
+
+    std::string SHA512(std::string& buffer) {
+        unsigned char hash[SHA512_DIGEST_LENGTH];
+        ::SHA512(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
+        return HexToBin(hash, SHA512_DIGEST_LENGTH);
     }
 }

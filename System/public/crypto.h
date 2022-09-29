@@ -22,5 +22,9 @@
 ////////////////////////
 
 namespace Vital::Crypto {
+    extern std::string SHA1(std::string& buffer);
+    extern std::string SHA224(std::string& buffer);
     extern std::string SHA256(std::string& buffer);
+    extern std::string SHA384(std::string& buffer);
+    extern std::string SHA512(std::string& buffer);
 }
