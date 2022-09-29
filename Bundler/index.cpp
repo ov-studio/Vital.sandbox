@@ -58,6 +58,6 @@ int main() {
         end
     )";
     auto testVM = new Vital::Lua::create();
-    testVM->loadString(rwString);
+    testVM -> loadString(rwString);
     return 1;
 }
