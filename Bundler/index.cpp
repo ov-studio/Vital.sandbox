@@ -42,7 +42,23 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
     outputConsole("Packaged " + name + " successfully!");
 }
 
+#include <Sandbox/lua/public/api.h>
+
 int main() {
+    Vital::Lua::API::boot();
+    Vital::Lua::API::onErrorHandle([](std::string& err) -> void {
+        std::cout << "\n" << err;
+    });
+
+    std::string rwString = R"(
+        local result = file:fetchContents("../")
+        print("RESULT: "..tostring(result))
+        for i, j in pairs(result) do
+            print(i)
+        end
+    )";
+    auto testVM = new Vital::Lua::create();
+    testVM->loadString(rwString);
     genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
     return 1;
 }

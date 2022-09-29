@@ -112,6 +112,7 @@ namespace Vital::Lua::API {
                 vm -> createTable();
                 for (auto i : Vital::FileSystem::fetchContents(path)) {
                     vm -> setString(i);
+                    // TODO: INSERT IT...
                     vm -> pop();
                 }
             }
