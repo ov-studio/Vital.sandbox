@@ -36,7 +36,7 @@ namespace Vital::Crypto {
 
     const EVP_CIPHER* CipherMode(std::string& mode) {
         if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw "Invalid mode";
+        else throw 0;
     }
 
     std::string SHA1(std::string& buffer) {
@@ -72,7 +72,7 @@ namespace Vital::Crypto {
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
         EVP_CIPHER* cipherType;
         try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
-        catch(std::string& error) { throw error; }
+        catch(int error) { throw error; }
         int __cipherSize, cipherSize;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
@@ -96,7 +96,7 @@ namespace Vital::Crypto {
     std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
         EVP_CIPHER* cipherType;
         try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
-        catch(std::string& error) { throw error; }
+        catch(int error) { throw error; }
         int __cipherSize, cipherSize;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
