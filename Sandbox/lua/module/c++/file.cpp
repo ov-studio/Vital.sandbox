@@ -109,9 +109,12 @@ namespace Vital::Lua::API {
             }
             else {
                 std::string path = vm -> getString(-1);
+                bool fetchDirs = vm -> isBool(-2) ? vm -> getBool(-2) : false;
                 vm -> createTable();
-                for (auto i : Vital::FileSystem::fetchContents(path)) {
+                for (auto i : Vital::FileSystem::fetchContents(path, fetchDirs)) {
                     vm -> pushString(i);
+                    // TODO: REMOVE AFTER DEBUGG'N
+                    break;
                 }
             }
             return 1;

@@ -66,11 +66,16 @@ namespace Vital::FileSystem {
         return true;
     }
 
-    std::vector<std::string> fetchContents(std::string& path) {
+    std::vector<std::string> fetchContents(std::string& path, bool fetchDirs) {
         resolve(path);
         std::vector<std::string> result;
         for (auto& entry : std::filesystem::directory_iterator(path)) {
-            result.push_back(entry.path().string());
+            auto& path = entry.path();
+            bool isDir = std::filesystem::is_directory(path);
+            if (fetchDirs) {
+                if (isDir) result.push_back(path.parent_path().filename().string());
+            }
+            else if (!isDir) result.push_back(path.filename().string());
         }
         return result;
     }

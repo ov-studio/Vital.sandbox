@@ -28,5 +28,5 @@ namespace Vital::FileSystem {
     extern bool remove(std::string& path);
     extern std::string read(std::string& path);
     extern bool write(std::string& path, std::string buffer);
-    extern std::vector<std::string> fetchContents(std::string& path);
+    extern std::vector<std::string> fetchContents(std::string& path, bool fetchDirs);
 }

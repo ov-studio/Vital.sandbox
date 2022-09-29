@@ -52,7 +52,6 @@ int main() {
 
     std::string rwString = R"(
         local result = file:fetchContents("../")
-        print("RESULT: "..tostring(result))
         for i, j in pairs(result) do
             print(i.."("..type(i)..") : "..tostring(j))
         end
