@@ -53,11 +53,11 @@ int main() {
     });
     std::string rwString = R"(
         print("\n")
-        print("SHA1: "..crypto.sha1("test"))
-        print("SHA224: "..crypto.sha224("test"))
-        print("SHA256: "..crypto.sha256("test"))
-        print("SHA384: "..crypto.sha384("test"))
-        print("SHA512: "..crypto.sha512("test"))
+        print("SHA1: "..crypto:sha1("test"))
+        print("SHA224: "..crypto:sha224("test"))
+        print("SHA256: "..crypto:sha256("test"))
+        print("SHA384: "..crypto:sha384("test"))
+        print("SHA512: "..crypto:sha512("test"))
     )";
     auto testVM = new Vital::Lua::create();
     testVM -> loadString(rwString);

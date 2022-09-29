@@ -23,7 +23,6 @@
 
 namespace Vital::Lua::API {
     void vSandbox_Crypto() {
-
         bind("crypto", "sha1", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
