@@ -72,10 +72,7 @@ namespace Vital::FileSystem {
         for (auto& entry : std::filesystem::directory_iterator(path)) {
             auto& path = entry.path();
             bool isDir = std::filesystem::is_directory(path);
-            if (fetchDirs) {
-                if (isDir) result.push_back(path.parent_path().filename().string());
-            }
-            else if (!isDir) result.push_back(path.filename().string());
+            if (fetchDirs == isDir) result.push_back(path.filename().string());
         }
         return result;
     }
