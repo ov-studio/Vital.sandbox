@@ -89,7 +89,6 @@ namespace Vital::Lua::API {
             return 1;
         });
 
-
         bind("crypto", "encrypt", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm->isString(2)) || (!vm->isString(3))) vm -> setBool(false);
