@@ -22,7 +22,6 @@
 
 namespace Vital {
     static const std::string vSignature = "VitalSDK";
-    static unsigned int vTick;
     extern unsigned int getSystemTick();
     extern unsigned int getApplicationTick();
 }
