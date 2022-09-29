@@ -56,9 +56,6 @@ int main() {
         for i, j in pairs(file:fetchContents("../")) do
             print(i.."("..type(i)..") : "..tostring(j))
         end
-        for i, j in pairs(file:fetchContents("../")) do
-            print(i.."("..type(i)..") : "..tostring(j))
-        end
     )";
     auto testVM = new Vital::Lua::create();
     testVM->loadString(rwString);
