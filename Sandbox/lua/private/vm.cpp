@@ -104,13 +104,14 @@ namespace Vital::Lua {
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
-        return getInt();
+        int result = getInt();
+        pop();
+        return result;
     }
 
     void create::pushString(std::string& value) {
-        int index = 1; // TODO: GET LENGTH OF THE TABLE HERE..
         setString(value);
-        setTableField(index, -2);
+        setTableField(getLength() + 1, -2);
     }
 
     // Registerers //
