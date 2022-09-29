@@ -113,8 +113,6 @@ namespace Vital::Lua::API {
                 vm -> createTable();
                 for (auto i : Vital::FileSystem::fetchContents(path, fetchDirs)) {
                     vm -> pushString(i);
-                    // TODO: REMOVE AFTER DEBUGG'N
-                    break;
                 }
             }
             return 1;
