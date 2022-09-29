@@ -27,8 +27,9 @@ namespace Vital::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string buffer = vm->getString(1);
-                vm -> setString(Vital::Crypto::SHA256(buffer));
+                std::string buffer = vm -> getString(1);
+                std::string hash = Vital::Crypto::SHA256(buffer);
+                vm -> setString(hash);
             }
             return 1;
         });
