@@ -103,15 +103,18 @@ namespace Vital::Lua {
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
+        std::cout << "\nINDEX: " << index;
         lua_len(vm, index);
         int result = getInt();
         pop();
+        std::cout << "\nLENGTH CURRENT: " << result;
         return result;
     }
 
     void create::pushString(std::string& value) {
         setString(value);
-        setTableField(getLength() + 1, -2);
+        auto length = getLength(-2);
+        setTableField(length + 1, -2);
     }
 
     // Registerers //

@@ -54,7 +54,7 @@ int main() {
         local result = file:fetchContents("../")
         print("RESULT: "..tostring(result))
         for i, j in pairs(result) do
-            print(i.." : "..tostring(j))
+            print(i.."("..type(i)..") : "..tostring(j))
         end
     )";
     auto testVM = new Vital::Lua::create();
