@@ -47,7 +47,7 @@ namespace Vital::Lua {
             void setGlobal(std::string index);
             void setNil();
             void setBool(bool value);
-            void setString(std::string value);
+            void setString(std::string& value);
             void setInt(int value);
             void setFloat(float value);
             void setDouble(double value);
@@ -77,7 +77,11 @@ namespace Vital::Lua {
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 
+            // Pushers //
+            void pushBool(bool value);
             void pushString(std::string& value);
+            void pushNumber(int value);
+            void pushFunction(vital_exec& exec);
 
             // Registerers //
             void registerBool(std::string index, bool value);

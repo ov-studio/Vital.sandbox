@@ -70,7 +70,7 @@ namespace Vital::Lua {
     void create::setGlobal(std::string index) { lua_setglobal(vm, index.c_str()); }
     void create::setNil() { lua_pushnil(vm); }
     void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
-    void create::setString(std::string value) { lua_pushstring(vm, value.c_str()); }
+    void create::setString(std::string& value) { lua_pushstring(vm, value.c_str()); }
     void create::setInt(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setFloat(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setDouble(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
@@ -109,8 +109,21 @@ namespace Vital::Lua {
         return result;
     }
 
+    // Pushers //
+    void create::pushBool(bool value) {
+        setBool(value);
+        setTableField(getLength(-2) + 1, -2);
+    }
     void create::pushString(std::string& value) {
         setString(value);
+        setTableField(getLength(-2) + 1, -2);
+    }
+    void create::pushNumber(int value) {
+        setInt(value);
+        setTableField(getLength(-2) + 1, -2);
+    }
+    void create::pushFunction(vital_exec& exec) {
+        setFunction(exec);
         setTableField(getLength(-2) + 1, -2);
     }
 
