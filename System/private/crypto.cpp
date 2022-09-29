@@ -99,7 +99,6 @@ namespace Vital::Crypto {
         try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
         catch(int error) { throw 0; }
         int __cipherSize, cipherSize;
-        auto cipherType = EVP_aes_256_cbc();
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
         unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
