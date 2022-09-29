@@ -36,7 +36,7 @@ namespace Vital::Crypto {
 
     const EVP_CIPHER* CipherMode(std::string& mode) {
         if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw 0;
+        else throw "Invalid mode";
     }
 
     std::string SHA1(std::string& buffer) {
@@ -72,7 +72,7 @@ namespace Vital::Crypto {
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
         EVP_CIPHER* cipherType;
         try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
-        catch(int error) { throw 0; }
+        catch(std::string& error) { throw error; }
         int __cipherSize, cipherSize;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
@@ -88,16 +88,15 @@ namespace Vital::Crypto {
         cipherSize += __cipherSize;
         cipher[cipherSize] = 0;
         std::pair<std::string, std::string> result = {reinterpret_cast<const char*>(cipher), reinterpret_cast<const char*>(iv)};
-        delete[] cipher, iv;
-        std::cout << "AES (Encrypt): " << result.first << "\n";
-        decrypt(mode, result.first, key, result.second);
+        delete[] cipher;
+        delete[] iv;
         return result;
     }
 
     std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
         EVP_CIPHER* cipherType;
         try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
-        catch(int error) { throw 0; }
+        catch(std::string& error) { throw error; }
         int __cipherSize, cipherSize;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
@@ -110,7 +109,8 @@ namespace Vital::Crypto {
         EVP_CipherFinal(ctx, cipher + __cipherSize, &__cipherSize);
         cipherSize += __cipherSize;
         cipher[cipherSize] = 0;
-        std::cout << "\nAES (Decrypt): " << cipher << " Length: " << cipherSize;
-        return reinterpret_cast<const char*>(cipher);
+        std::string result = reinterpret_cast<const char*>(cipher);
+        delete[] cipher;
+        return result;
     }
 }
