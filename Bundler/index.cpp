@@ -53,7 +53,7 @@ int main() {
     });
     std::string rwString = R"(
         print("\n")
-        for i, j in pairs(file:fetchContents("../", true)) do
+        for i, j in pairs(file:fetchContents("../")) do
             print(i.."("..type(i)..") : "..tostring(j))
         end
     )";
