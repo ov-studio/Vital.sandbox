@@ -63,18 +63,24 @@ namespace Vital::Crypto {
         ::SHA512(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
         return HexToBin(hash, SHA512_DIGEST_LENGTH);
     }
+    
+    const EVP_CIPHER* createCipher(std::string& mode) {
+        if (mode == "AES256") return EVP_aes_256_cbc();
+        else throw 0;
+    }
 
-    std::pair<std::string, std::string> encrypt(std::string& buffer, std::string& key) {
+    std::pair<std::string, std::string> encrypt(std::string& mode, std::string& buffer, std::string& key) {
+        EVP_CIPHER* cipherType;
+        try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
+        catch(int error) { throw 0; }
         int __cipherSize, cipherSize;
-        auto cipherType = EVP_aes_256_cbc();
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
         unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
         unsigned char* iv = new unsigned char[blockSize];
         RAND_bytes(iv, blockSize);
         EVP_CipherInit(ctx, cipherType, NULL, NULL, 1);
-        //if (EVP_CIPHER_CTX_key_length(ctx) != key) throw 0;
-        //if (EVP_CIPHER_CTX_iv_length(ctx) != iv) throw 0;
+        if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw 0;
         EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv, 1);
         EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
         cipherSize = __cipherSize;
@@ -88,15 +94,17 @@ namespace Vital::Crypto {
         return result;
     }
 
-    std::string decrypt(std::string& buffer, std::string& key, std::string& iv) {
+    std::string decrypt(std::string& mode, std::string& buffer, std::string& key, std::string& iv) {
+        EVP_CIPHER* cipherType;
+        try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
+        catch(int error) { throw 0; }
         int __cipherSize, cipherSize;
         auto cipherType = EVP_aes_256_cbc();
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int blockSize = EVP_CIPHER_block_size(cipherType);
         unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
         EVP_CipherInit(ctx, cipherType, NULL, NULL, 0);
-        //if (EVP_CIPHER_CTX_key_length(ctx) != key) throw 0;
-        //if (EVP_CIPHER_CTX_iv_length(ctx) != iv) throw 0;
+        if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
         EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())), 0);
         EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
         cipherSize = __cipherSize;

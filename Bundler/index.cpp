@@ -51,7 +51,7 @@ int main() {
 
     std::string buffer = "xdddd";
     std::string key = "01234567890123456789012345678901";
-    Vital::Crypto::encrypt(buffer, key);
+    Vital::Crypto::encrypt("AES256", buffer, key);
     /*
     Vital::Lua::API::boot();
     Vital::Lua::API::onErrorHandle([](std::string& err) -> void {
