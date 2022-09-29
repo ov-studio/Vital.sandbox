@@ -53,6 +53,7 @@ namespace Vital::Lua {
             void setDouble(double value);
             void createTable();
             void setTable(int index = 1);
+            void setTableField(int value, int index = 1);
             void setTableField(std::string value, int index = 1);
             void createMetaTable(std::string value);
             void setMetaTable(int index = 1);
@@ -70,9 +71,12 @@ namespace Vital::Lua {
             float getFloat(int index = 1);
             double getDouble(int index = 1);
             bool getTable(int index = 1);
+            bool getTableField(int value, int index = 1);
             bool getTableField(std::string value, int index = 1);
             bool getMetaTable(int index = 1);
             void* getUserData(int index = 1);
+
+            void pushString(std::string& value);
 
             // Registerers //
             void registerBool(std::string index, bool value);

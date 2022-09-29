@@ -76,6 +76,7 @@ namespace Vital::Lua {
     void create::setDouble(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::createTable() { lua_newtable(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
+    void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
     void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.c_str()); }
     void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.c_str()); }
     void create::setMetaTable(int index) { lua_setmetatable(vm, index); }
@@ -97,9 +98,17 @@ namespace Vital::Lua {
     float create::getFloat(int index) { return static_cast<float>(lua_tonumber(vm, index)); }
     double create::getDouble(int index) { return static_cast<double>(lua_tonumber(vm, index)); }
     bool create::getTable(int index) { return lua_gettable(vm, index); }
+    bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
     bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.c_str()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
+
+
+    void create::pushString(std::string& value) {
+        int index = 1; // TODO: GET LENGTH OF THE TABLE HERE..
+        setString(value);
+        setTableField(index, -2);
+    }
 
     // Registerers //
     void create::registerBool(std::string index, bool value) {
