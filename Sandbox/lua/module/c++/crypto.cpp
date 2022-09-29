@@ -25,11 +25,9 @@ namespace Vital::Lua::API {
     void vSandbox_Crypto() {
         bind("crypto", "sha256", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string buffer = vm->getString(-1);
+                std::string buffer = vm->getString(1);
                 vm -> setString(Vital::Crypto::SHA256(buffer));
             }
             return 1;

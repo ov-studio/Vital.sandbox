@@ -25,11 +25,9 @@ namespace Vital::Lua::API {
     void vSandbox_File() {
         bind("file", "resolve", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
+                std::string path = vm -> getString(1);
                 Vital::FileSystem::resolve(path);
                 vm -> setString(path);
             }
@@ -38,11 +36,9 @@ namespace Vital::Lua::API {
 
         bind("file", "exists", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
+                std::string path = vm -> getString(1);
                 vm -> setBool(Vital::FileSystem::exists(path));
             }
             return 1;
@@ -50,11 +46,9 @@ namespace Vital::Lua::API {
 
         bind("file", "size", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
+                std::string path = vm -> getString(1);
                 vm -> setDouble(static_cast<double>(Vital::FileSystem::size(path)));
             }
             return 1;
@@ -62,11 +56,9 @@ namespace Vital::Lua::API {
 
         bind("file", "delete", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
+                std::string path = vm -> getString(1);
                 vm -> setBool(Vital::FileSystem::remove(path));
             }
             return 1;
@@ -74,29 +66,21 @@ namespace Vital::Lua::API {
 
         bind("file", "read", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
-                if (!Vital::FileSystem::exists(path)) {
-                    vm -> setBool(false);
-                }
-                else {
-                    vm -> setString(Vital::FileSystem::read(path));
-                }
+                std::string path = vm -> getString(1);
+                if (!Vital::FileSystem::exists(path)) vm -> setBool(false);
+                else vm -> setString(Vital::FileSystem::read(path));
             }
             return 1;
         });
 
         bind("file", "write", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 2) || (!vm -> isString(-1)) || (!vm -> isString(-2))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
-                std::string buffer = vm -> getString(-2);
+                std::string path = vm -> getString(1);
+                std::string buffer = vm -> getString(2);
                 vm -> setBool(Vital::FileSystem::write(path, reinterpret_cast<char*>(&buffer)));
             }
             return 1;
@@ -104,12 +88,10 @@ namespace Vital::Lua::API {
 
         bind("file", "fetchContents", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(-1))) {
-                vm -> setBool(false);
-            }
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string path = vm -> getString(-1);
-                bool fetchDirs = vm -> isBool(-2) ? vm -> getBool(-2) : false;
+                std::string path = vm -> getString(1);
+                bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;
                 vm -> createTable();
                 for (auto i : Vital::FileSystem::fetchContents(path, fetchDirs)) {
                     vm -> pushString(i);
