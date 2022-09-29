@@ -82,15 +82,15 @@ namespace Vital::Crypto {
         EVP_CipherInit(ctx, cipherType, NULL, NULL, 1);
         if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw 0;
         EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv, 1);
-        EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
+        EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), static_cast<int>(buffer.size()));
         cipherSize = __cipherSize;
         EVP_CipherFinal(ctx, cipher + __cipherSize, &__cipherSize);
         cipherSize += __cipherSize;
         cipher[cipherSize] = 0;
         std::pair<std::string, std::string> result = {reinterpret_cast<const char*>(cipher), reinterpret_cast<const char*>(iv)};
-        delete[] iv, cipher;
-        std::cout << "AES (Encrypt): " << cipher << "\n";
-        decrypt(mode, result.first, key, result.second);
+        delete[] cipher, iv;
+        std::cout << "AES (Encrypt): " << result.first << "\n";
+        //decrypt(mode, result.first, key, result.second);
         return result;
     }
 
@@ -105,7 +105,7 @@ namespace Vital::Crypto {
         EVP_CipherInit(ctx, cipherType, NULL, NULL, 0);
         if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
         EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())), 0);
-        EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
+        EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), static_cast<int>(buffer.size()));
         cipherSize = __cipherSize;
         EVP_CipherFinal(ctx, cipher + __cipherSize, &__cipherSize);
         cipherSize += __cipherSize;
