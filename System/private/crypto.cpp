@@ -34,6 +34,11 @@ namespace Vital::Crypto {
         return ss.str();
     }
 
+    const EVP_CIPHER* CipherMode(std::string& mode) {
+        if (mode == "AES256") return EVP_aes_256_cbc();
+        else throw 0;
+    }
+
     std::string SHA1(std::string& buffer) {
         unsigned char hash[SHA_DIGEST_LENGTH];
         ::SHA1(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
@@ -63,15 +68,10 @@ namespace Vital::Crypto {
         ::SHA512(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
         return HexToBin(hash, SHA512_DIGEST_LENGTH);
     }
-    
-    const EVP_CIPHER* createCipher(std::string& mode) {
-        if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw 0;
-    }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
         EVP_CIPHER* cipherType;
-        try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
+        try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
         catch(int error) { throw 0; }
         int __cipherSize, cipherSize;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -90,13 +90,13 @@ namespace Vital::Crypto {
         std::pair<std::string, std::string> result = {reinterpret_cast<const char*>(cipher), reinterpret_cast<const char*>(iv)};
         delete[] iv, cipher;
         std::cout << "AES (Encrypt): " << cipher << "\n";
-        //decrypt(result.first, key, result.second);
+        decrypt(mode, result.first, key, result.second);
         return result;
     }
 
     std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
         EVP_CIPHER* cipherType;
-        try { cipherType = const_cast<EVP_CIPHER*>(createCipher(mode)); }
+        try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
         catch(int error) { throw 0; }
         int __cipherSize, cipherSize;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
