@@ -15,9 +15,10 @@
 #pragma once
 #include <System/public/crypto.h>
 #include <openssl/rand.h>
-#include <openssl/evp.h>
 #include <openssl/sha.h>
-#include <openssl/aes.h>
+#define AES_BLOCK_SIZE 16
+#define AES_128_KEY_SIZE 16
+#define AES_256_KEY_SIZE 32
 
 
 ////////////////////////
@@ -63,21 +64,49 @@ namespace Vital::Crypto {
         return HexToBin(hash, SHA512_DIGEST_LENGTH);
     }
 
-    void AES256::encrypt(std::string& buffer, std::string& key) {
+    void encrypt(std::string& buffer, std::string& key) {
+        int len, ciphertext_len;
+
+        auto cipherType = EVP_aes_256_cbc();
+
+        EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+        int blockSize = EVP_CIPHER_block_size(cipherType);
+        unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
+
+
+        unsigned char* iv = new unsigned char[blockSize];
+        RAND_bytes(iv, blockSize);
+        EVP_CipherInit(ctx, cipherType, NULL, NULL, 1);
+        //if (EVP_CIPHER_CTX_key_length(ctx) != key) throw 0;
+        //if (EVP_CIPHER_CTX_iv_length(ctx) != iv) throw 0;
+        EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv, 1);
+        EVP_CipherUpdate(ctx, cipher, &len, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
+        ciphertext_len = len;
+        EVP_CipherFinal(ctx, cipher + len, &len);
+        ciphertext_len += len;
+        cipher[ciphertext_len] = 0;
+        std::cout << "AES (Encrypt): " << cipher << "\n";
+
+        std::string result = reinterpret_cast<const char*>(cipher);
+        std::string newkey = "test";
+        decrypt(result, key, iv);
+        delete[] iv, cipher;
+        //return ciphertext_len;
+        //return { "", "" };
+    }
+
+    void decrypt(std::string& buffer, std::string& key, unsigned char* iv) {
         int len;
         int ciphertext_len;
-        unsigned char* ciphertext;
-        EVP_CIPHER_CTX* ctx;
-        unsigned char* iv = (unsigned char*)"0123456789012345";
-        //unsigned char iv[AES_BLOCK_SIZE];
-        //iv = "0123456789012345";
-        //RAND_pseudo_bytes(iv, sizeof(iv));
-        EVP_EncryptInit(ctx, EVP_aes_256_cbc(), reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv);
-        EVP_EncryptUpdate(ctx, ciphertext, &len, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
+        unsigned char ciphertext[128];
+        EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+        EVP_CipherInit(ctx, EVP_aes_256_cbc(), reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv, 0);
+        EVP_CipherUpdate(ctx, ciphertext, &len, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
         ciphertext_len = len;
-        EVP_EncryptFinal(ctx, ciphertext + len, &len);
+        EVP_CipherFinal(ctx, ciphertext + len, &len);
         ciphertext_len += len;
-        std::cout << ciphertext;
+        ciphertext[ciphertext_len] = 0;
+        std::cout << "AES (Decrypt): " << ciphertext << " Length: " << ciphertext_len;
         //return ciphertext_len;
         //return { "", "" };
     }
