@@ -63,13 +63,15 @@ namespace Vital::Crypto {
         return HexToBin(hash, SHA512_DIGEST_LENGTH);
     }
 
-    std::vector<std::string, std::string> AES256::encrypt(std::string& buffer, std::string& key) {
+    void AES256::encrypt(std::string& buffer, std::string& key) {
         int len;
         int ciphertext_len;
         unsigned char* ciphertext;
         EVP_CIPHER_CTX* ctx;
-        unsigned char iv[AES_BLOCK_SIZE];
-        RAND_pseudo_bytes(iv, sizeof(iv));
+        unsigned char* iv = (unsigned char*)"0123456789012345";
+        //unsigned char iv[AES_BLOCK_SIZE];
+        //iv = "0123456789012345";
+        //RAND_pseudo_bytes(iv, sizeof(iv));
         EVP_EncryptInit(ctx, EVP_aes_256_cbc(), reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), iv);
         EVP_EncryptUpdate(ctx, ciphertext, &len, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size());
         ciphertext_len = len;
@@ -77,6 +79,6 @@ namespace Vital::Crypto {
         ciphertext_len += len;
         std::cout << ciphertext;
         //return ciphertext_len;
-        return { "", "" };
+        //return { "", "" };
     }
 }
