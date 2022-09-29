@@ -111,13 +111,7 @@ namespace Vital::Lua::API {
                 std::string path = vm -> getString(-1);
                 vm -> createTable();
                 for (auto i : Vital::FileSystem::fetchContents(path)) {
-                    vm->pushString(i);
-                    //vm -> setString(i);
-                    //vm->setString("test");
-                    //vm->setTableField("test", 1);
-                    // TODO: INSERT IT...
-                    //vm -> pop();
-                    //break;
+                    vm -> pushString(i);
                 }
             }
             return 1;
