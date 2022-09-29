@@ -42,3 +42,11 @@ end
 function crypto.public:sha512(...)
     return imports.crypto.sha512(...)
 end
+
+function crypto.public:encrypt(...)
+    return imports.crypto.encrypt(...)
+end
+
+function crypto.public:decrypt(...)
+    return imports.crypto.decrypt(...)
+end
