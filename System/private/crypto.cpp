@@ -90,7 +90,7 @@ namespace Vital::Crypto {
         std::pair<std::string, std::string> result = {reinterpret_cast<const char*>(cipher), reinterpret_cast<const char*>(iv)};
         delete[] cipher, iv;
         std::cout << "AES (Encrypt): " << result.first << "\n";
-        //decrypt(mode, result.first, key, result.second);
+        decrypt(mode, result.first, key, result.second);
         return result;
     }
 

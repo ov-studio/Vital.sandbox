@@ -28,5 +28,5 @@ namespace Vital::Crypto {
     extern std::string SHA384(std::string& buffer);
     extern std::string SHA512(std::string& buffer);
     extern std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key);
-    extern std::string decrypt(std::string mode, std::string& buffer, std::string& key, unsigned char* iv);
+    extern std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv);
 }
