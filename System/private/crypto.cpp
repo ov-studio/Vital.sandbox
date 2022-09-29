@@ -14,7 +14,6 @@
 
 #pragma once
 #include <System/public/crypto.h>
-// TODO: MAKE IT BASED ON VENDOR POINTER
 #include <openssl/sha.h>
 
 

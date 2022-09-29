@@ -28,7 +28,7 @@ namespace Vital::FileSystem {
 
     bool exists(std::string& path) {
         resolve(path);
-        return std::filesystem::exists(path);
+        return (std::filesystem::exists(path) && !std::filesystem::is_directory(path)) ? true : false;
     }
 
     std::streampos size(std::string& path) {

@@ -481,7 +481,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -504,7 +504,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\lua;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\include;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
