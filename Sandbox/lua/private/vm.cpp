@@ -105,7 +105,7 @@ namespace Vital::Lua {
     int create::getLength(int index) {
         lua_len(vm, index);
         int result = getInt();
-        pop(-1);
+        pop();
         return result;
     }
 
@@ -146,7 +146,7 @@ namespace Vital::Lua {
     }
 
     // Utils //
-    void create::pop(int index) { lua_pop(vm, index); }
+    void create::pop(int count) { lua_pop(vm, count); }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.c_str());

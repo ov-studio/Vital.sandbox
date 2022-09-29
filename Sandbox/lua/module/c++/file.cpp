@@ -93,7 +93,7 @@ namespace Vital::Lua::API {
                 std::string path = vm -> getString(1);
                 bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;
                 vm -> createTable();
-                for (auto i : Vital::FileSystem::fetchContents(path, fetchDirs)) {
+                for (auto& i : Vital::FileSystem::fetchContents(path, fetchDirs)) {
                     vm -> pushString(i);
                 }
             }
