@@ -23,23 +23,6 @@
 ////////////////////////
 
 namespace Vital::Crypto {
-    std::string encode(std::string& buffer) {
-        std::stringstream result;
-        for (unsigned char i : buffer) {
-            result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(i);
-        }
-        return result.str();
-    }
-
-    /*
-    std::string BinToHex(std::string& buffer) {
-        std::stringstream result;
-        for (int i = 0; i < length; i++) {
-            result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(buffer[i]);
-        }
-        return result.str();
-    }
-    */
     std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {
         if (mode == "SHA1") return {::SHA1, SHA_DIGEST_LENGTH};
         else if (mode == "SHA224") return {::SHA224, SHA224_DIGEST_LENGTH};
@@ -93,12 +76,7 @@ namespace Vital::Crypto {
             // Cleans CTX //
             std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
             EVP_CIPHER_CTX_free(ctx);
-            std::string test = "┬♀EO0\0!Hey";
-            //std::string binTest = encode(reinterpret_cast<unsigned char*>(test.data()), test.size());
-            //std::cout << "ORIG LENGTH: " << inputSize << " - NEW LENGTH: " << outputSize << "\n";
-            //std::cout << "String Length: " << result.size() << "\n" << result << "\n\n-------------\n\n";
-            //return result;
-            return test;
+            return result;
         }
         catch(int error) { throw error; }
     }
@@ -117,17 +95,43 @@ namespace Vital::Crypto {
         catch(int error) { throw error; }
     }
 
+    std::string encode(std::string& buffer) {
+        std::stringstream result;
+        for (unsigned char i : buffer) {
+            result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(i);
+        }
+        return result.str();
+    }
+
+    std::string decode(std::string& buffer) {
+        int bufferSize = buffer.size();
+        if ((bufferSize%2) == 0) {
+            std::string extract, result;
+            result.reserve(bufferSize/2);
+            for (std::string::iterator i = buffer.begin(); i < buffer.end(); i += 2) {
+                extract.assign(i, i + 2);
+                result.push_back(std::stoi(extract, nullptr, 16));
+            }
+            return result;
+        }
+        return "";
+    }
+
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
         try {
             std::string iv = CipherIV(mode);
             std::string result = CipherHandle(mode, true, buffer, key, iv);
-            return {result, iv};
+            return {encode(result), encode(iv)};
         }
         catch(int error) { throw error; }
     }
 
     std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
-        try { return CipherHandle(mode, false, buffer, key, iv); }
+        try {
+            std::string __buffer = decode(buffer);
+            std::string __iv = decode(iv);
+            return CipherHandle(mode, false, __buffer, key, __iv);
+        }
         catch(int error) { throw error; }
     }
 }
