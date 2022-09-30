@@ -31,6 +31,15 @@ namespace Vital::Crypto {
         return ss.str();
     }
 
+    std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {
+        if (mode == "SHA1") return {::SHA1, SHA_DIGEST_LENGTH};
+        else if (mode == "SHA224") return {::SHA224, SHA224_DIGEST_LENGTH};
+        else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
+        else if (mode == "SHA384") return {::SHA384, SHA384_DIGEST_LENGTH};
+        else if (mode == "SHA512") return {::SHA512, SHA512_DIGEST_LENGTH};
+        else throw 0;
+    }
+
     const EVP_CIPHER* CipherMode(std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
         else if (mode == "AES192") return EVP_aes_192_cbc();
@@ -76,34 +85,15 @@ namespace Vital::Crypto {
         catch(int error) { throw error; }
     }
 
-    std::string SHA1(std::string& buffer) {
-        unsigned char hash[SHA_DIGEST_LENGTH];
-        ::SHA1(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
-        return HexToBin(hash, SHA_DIGEST_LENGTH);
-    }
-
-    std::string SHA224(std::string& buffer) {
-        unsigned char hash[SHA224_DIGEST_LENGTH];
-        ::SHA224(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
-        return HexToBin(hash, SHA224_DIGEST_LENGTH);
-    }
-
-    std::string SHA256(std::string& buffer) {
-        unsigned char hash[SHA256_DIGEST_LENGTH];
-        ::SHA256(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
-        return HexToBin(hash, SHA256_DIGEST_LENGTH);
-    }
-
-    std::string SHA384(std::string& buffer) {
-        unsigned char hash[SHA384_DIGEST_LENGTH];
-        ::SHA384(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
-        return HexToBin(hash, SHA384_DIGEST_LENGTH);
-    }
-
-    std::string SHA512(std::string& buffer) {
-        unsigned char hash[SHA512_DIGEST_LENGTH];
-        ::SHA512(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
-        return HexToBin(hash, SHA512_DIGEST_LENGTH);
+    std::string hash(std::string mode, std::string& buffer) {
+        try {
+            auto cipherType = HashMode(mode);
+            const int hashSize = cipherType.second;
+            unsigned char result[hashSize];
+            cipherType.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), result);
+            return HexToBin(result, hashSize);
+        }
+        catch(int error) { throw error; }
     }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
