@@ -89,7 +89,6 @@ namespace Vital::Crypto {
         cipher[cipherSize] = 0;
         iv[blockSize] = 0;
         std::pair<std::string, std::string> result = {reinterpret_cast<const char*>(cipher), reinterpret_cast<const char*>(iv)};
-        //std::cout << "\nIV LENGTH??: " << result.second.size() << "\n";
         delete[] cipher;
         delete[] iv;
         return result;
