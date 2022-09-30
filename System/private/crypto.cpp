@@ -88,7 +88,7 @@ namespace Vital::Crypto {
     std::string hash(std::string mode, std::string& buffer) {
         try {
             auto algorithm = HashMode(mode);
-            const int outputSize = algorithm.second;
+            int outputSize = algorithm.second;
             unsigned char* output = new unsigned char[outputSize];
             algorithm.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), output);
             std::string result = HexToBin(output, outputSize);
