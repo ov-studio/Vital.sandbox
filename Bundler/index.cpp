@@ -64,7 +64,7 @@ int main() {
     std::string rwString = R"(
         print("\n")
         
-        print(decode("123"))
+        print(crypte:decode("123"))
         --[[
         print("SHA1 (Hash): "..crypto:hash("SHA1", "test"))
         print("SHA224 (Hash): "..crypto:hash("SHA224", "test"))

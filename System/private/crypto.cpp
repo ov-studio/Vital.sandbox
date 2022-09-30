@@ -62,7 +62,7 @@ namespace Vital::Crypto {
             auto EVP_Update = isEncrypt ? EVP_EncryptUpdate : EVP_DecryptUpdate;
             auto EVP_Final = isEncrypt ? EVP_EncryptFinal : EVP_DecryptFinal;
             int blockSize = EVP_CIPHER_block_size(algorithm);
-            int inputSize = buffer.size() + 1, outputSize = 0, currentSize = 0;
+            int inputSize = static_cast<int>(buffer.size()) + 1, outputSize = 0, currentSize = 0;
             unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
             EVP_Init(ctx, algorithm, NULL, NULL);
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
@@ -101,7 +101,7 @@ namespace Vital::Crypto {
     }
 
     std::string decode(std::string& buffer) {
-        int bufferSize = buffer.size();
+        int bufferSize = static_cast<int>(buffer.size());
         if ((bufferSize%2) == 0) {
             std::string extract, result;
             result.reserve(bufferSize/2);
