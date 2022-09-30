@@ -63,7 +63,9 @@ int main() {
     });
     std::string rwString = R"(
         print("\n")
-
+        
+        print(decode("123"))
+        --[[
         print("SHA1 (Hash): "..crypto:hash("SHA1", "test"))
         print("SHA224 (Hash): "..crypto:hash("SHA224", "test"))
         print("SHA256 (Hash): "..crypto:hash("SHA256", "test"))
@@ -84,6 +86,7 @@ int main() {
         local hash, iv = crypto:encrypt("AES256", buffer, key)
         print("AES256 (Encrypt): "..hash)
         print("AES256 (Decrypt): "..crypto:decrypt("AES256", hash, key, iv))
+        ]]
     )";
     auto testVM = new Vital::Lua::create();
     testVM -> loadString(rwString);

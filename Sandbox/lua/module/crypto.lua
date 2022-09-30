@@ -27,6 +27,14 @@ function crypto.public:hash(...)
     return imports.crypto.hash(...)
 end
 
+function crypto.public:encode(...)
+    return imports.crypto.encode(...)
+end
+
+function crypto.public:decode(...)
+    return imports.crypto.decode(...)
+end
+
 function crypto.public:encrypt(...)
     return imports.crypto.encrypt(...)
 end
