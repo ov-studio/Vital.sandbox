@@ -64,7 +64,7 @@ namespace Vital::Crypto {
 
     std::string CipherHandle(std::string& mode, bool isEncrypt, std::string& buffer, std::string& key, std::string& iv) {
         try {
-            // Init CTX //
+            // Initializes CTX //
             EVP_CIPHER* algorithm = const_cast<EVP_CIPHER*>(CipherMode(mode));
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
             auto EVP_Init = isEncrypt ? EVP_EncryptInit : EVP_DecryptInit;
@@ -73,7 +73,8 @@ namespace Vital::Crypto {
             int blockSize = EVP_CIPHER_block_size(algorithm);
             int inputSize = buffer.size() + 1, outputSize = 0, currentSize = 0;
             unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
-            // Handle CTX //
+
+            // Handles CTX //
             EVP_Init(ctx, algorithm, NULL, NULL);
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
             EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(key.data()), reinterpret_cast<unsigned char*>(iv.data()));
@@ -81,11 +82,10 @@ namespace Vital::Crypto {
             outputSize += currentSize;
             EVP_Final(ctx, output + currentSize, &currentSize);
             outputSize += currentSize;
-            // Cleanup CTX //
+
+            // Cleans CTX //
             std::string result = std::string(reinterpret_cast<char const*>(output), outputSize);
             EVP_CIPHER_CTX_free(ctx);
-            std::cout << "ORIG LENGTH: " << inputSize << " - NEW LENGTH: " << outputSize << "\n";
-            std::cout << "String Length: " << result.size() << "\n" << result << "\n\n-------------\n\n";
             return result;
         }
         catch(int error) { throw error; }
