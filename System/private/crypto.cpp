@@ -35,7 +35,8 @@ namespace Vital::Crypto {
     }
 
     const EVP_CIPHER* CipherMode(std::string& mode) {
-        if (mode == "AES256") return EVP_aes_256_cbc();
+        if (mode == "AES128") return EVP_aes_128_cbc();
+        else if (mode == "AES256") return EVP_aes_256_cbc();
         else throw 0;
     }
 

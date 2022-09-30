@@ -63,11 +63,17 @@ int main() {
     });
     std::string rwString = R"(
         print("\n")
+
+        local buffer, key = "EncryptMe", "0123456789012345"
+        local hash, iv = crypto:encrypt("AES128", buffer, key)
+        print("AES128 (Encrypt): "..hash)
+        print("AES128 (Decrypt): "..crypto:decrypt("AES128", hash, key, iv))
+
+
         local buffer, key = "EncryptMe", "01234567890123456789012345678901"
         local hash, iv = crypto:encrypt("AES256", buffer, key)
         print("AES256 (Encrypt): "..hash)
         print("AES256 (Decrypt): "..crypto:decrypt("AES256", hash, key, iv))
-        
     )";
     auto testVM = new Vital::Lua::create();
     testVM -> loadString(rwString);
