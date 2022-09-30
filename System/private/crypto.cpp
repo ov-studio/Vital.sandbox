@@ -52,7 +52,7 @@ namespace Vital::Crypto {
             EVP_CIPHER* cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode));
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
             int ivSize = EVP_CIPHER_block_size(cipherType);
-            unsigned char* iv = new unsigned char[ivSize];
+            unsigned char* iv = new unsigned char[(ivSize + 1)];
             RAND_bytes(iv, ivSize);
             iv[ivSize] = 0;
             std::string result = reinterpret_cast<const char*>(iv);
