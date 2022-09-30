@@ -129,7 +129,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>.build\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Vital.sandbox.lib;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Vital.sandbox.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
