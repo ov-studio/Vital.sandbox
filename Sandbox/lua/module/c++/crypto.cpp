@@ -119,7 +119,7 @@ namespace Vital::Lua::API {
                     std::string result = Vital::Crypto::decrypt(mode, buffer, key, iv);
                     vm -> setString(result);
                 }
-                catch (int error) { std::cout << "Issues";  vm->setBool(false); }
+                catch(int error) { vm -> setBool(false); }
             }
             return 1;
         });
