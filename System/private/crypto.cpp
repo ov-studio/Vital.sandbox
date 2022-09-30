@@ -102,16 +102,17 @@ namespace Vital::Crypto {
 
     std::string decode(std::string& buffer) {
         int bufferSize = static_cast<int>(buffer.size());
-        if ((bufferSize%2) == 0) {
-            std::string extract, result;
-            result.reserve(bufferSize/2);
-            for (std::string::iterator i = buffer.begin(); i < buffer.end(); i += 2) {
-                extract.assign(i, i + 2);
-                result.push_back(std::stoi(extract, nullptr, 16));
-            }
-            return result;
+        std::string __buffer = buffer;
+        if ((bufferSize%2) != 0) {
+            bufferSize--;
+            __buffer = buffer.substr(0, bufferSize);
         }
-        return "";
+        std::string result;
+        result.reserve(bufferSize/2);
+        for (std::string::iterator i = __buffer.begin(); i < __buffer.end(); i += 2) {
+            result.push_back(std::stoi(std::string(i, i + 2), nullptr, 16));
+        }
+        return result;
     }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
