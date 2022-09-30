@@ -104,7 +104,7 @@ namespace Vital::Crypto {
         try {
             int bufferSize = static_cast<int>(buffer.size());
             std::string result;
-            result.reserve(bufferSize / 2);
+            result.reserve(bufferSize/2);
             for (std::string::iterator i = buffer.begin(); i < buffer.end(); i += 2) {
                 result.push_back(std::stoi(std::string(i, i + 2), nullptr, 16));
             }
