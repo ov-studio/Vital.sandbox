@@ -67,20 +67,20 @@ namespace Vital::Lua {
     bool create::isFunction(int index) { return lua_isfunction(vm, index); }
 
     // Setters //
-    void create::setGlobal(std::string index) { lua_setglobal(vm, index.c_str()); }
+    void create::setGlobal(std::string index) { lua_setglobal(vm, index.data()); }
     void create::setNil() { lua_pushnil(vm); }
     void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
-    void create::setString(std::string& value) { lua_pushstring(vm, value.c_str()); }
+    void create::setString(std::string& value) { lua_pushstring(vm, value.data()); }
     void create::setInt(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setFloat(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setDouble(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::createTable() { lua_newtable(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
     void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
-    void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.c_str()); }
-    void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.c_str()); }
+    void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.data()); }
+    void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.data()); }
     void create::setMetaTable(int index) { lua_setmetatable(vm, index); }
-    void create::setMetaTable(std::string index) { luaL_setmetatable(vm, index.c_str()); }
+    void create::setMetaTable(std::string index) { luaL_setmetatable(vm, index.data()); }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
@@ -91,7 +91,7 @@ namespace Vital::Lua {
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
-    bool create::getGlobal(std::string index) { return lua_getglobal(vm, index.c_str()); }
+    bool create::getGlobal(std::string index) { return lua_getglobal(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(lua_toboolean(vm, index)); }
     std::string create::getString(int index) { return lua_tostring(vm, index); }
     int create::getInt(int index) { return static_cast<int>(lua_tonumber(vm, index)); }
@@ -99,7 +99,7 @@ namespace Vital::Lua {
     double create::getDouble(int index) { return static_cast<double>(lua_tonumber(vm, index)); }
     bool create::getTable(int index) { return lua_gettable(vm, index); }
     bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
-    bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.c_str()); }
+    bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
@@ -130,19 +130,19 @@ namespace Vital::Lua {
     // Registerers //
     void create::registerBool(std::string index, bool value) {
         setBool(value);
-        setTableField(index.c_str(), -2);
+        setTableField(index.data(), -2);
     }
     void create::registerString(std::string index, std::string& value) {
         setString(value);
-        setTableField(index.c_str(), -2);
+        setTableField(index.data(), -2);
     }
     void create::registerNumber(std::string index, int value) {
         setInt(value);
-        setTableField(index.c_str(), -2);
+        setTableField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);
-        setTableField(index.c_str(), -2);
+        setTableField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
         getGlobal(parent);
@@ -162,7 +162,7 @@ namespace Vital::Lua {
     void create::pop(int count) { lua_pop(vm, count); }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
-        luaL_loadstring(vm, buffer.c_str());
+        luaL_loadstring(vm, buffer.data());
         bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
         if (!status) {
             std::string error = getString(-1);

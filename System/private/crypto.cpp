@@ -76,8 +76,8 @@ namespace Vital::Crypto {
             // Handle CTX //
             EVP_Init(ctx, algorithm, NULL, NULL);
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
-            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())));
-            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), inputSize);
+            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.data())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.data())));
+            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), inputSize);
             outputSize += currentSize;
             EVP_Final(ctx, output + currentSize, &currentSize);
             outputSize += currentSize;
@@ -85,7 +85,7 @@ namespace Vital::Crypto {
             std::string result = std::string(reinterpret_cast<char const*>(output), outputSize);
             EVP_CIPHER_CTX_free(ctx);
             std::cout << "ORIG LENGTH: " << inputSize << " - NEW LENGTH: " << outputSize << "\n";
-            std::cout << "String Length: " << result.size() << "\n\n-------------\n\n";
+            std::cout << "String Length: " << result.size() << "\n" << result << "\n\n-------------\n\n";
             return result;
         }
         catch(int error) { throw error; }
@@ -96,7 +96,7 @@ namespace Vital::Crypto {
             auto algorithm = HashMode(mode);
             int outputSize = algorithm.second;
             unsigned char* output = new unsigned char[outputSize];
-            algorithm.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), output);
+            algorithm.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), buffer.size(), output);
             std::string result = HexToBin(output, outputSize);
             delete[] output;
             return result;
