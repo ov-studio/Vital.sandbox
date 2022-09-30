@@ -17,8 +17,8 @@
 * Lightweight & Straightforward
 * Completely Embeddable
 * Built-In VM Modules
-* Built-In File Module
-* Built-In Crypto Module
+* Built-In File System
+* Built-In Crypto System
 * Built-in Lua APIs
 * Necessary Integration APIs
 
