@@ -23,12 +23,12 @@
 ////////////////////////
 
 namespace Vital::Crypto {
-    std::string HexToBin(unsigned char* hash, size_t length) {
-        std::stringstream ss;
+    std::string HexToBin(unsigned char* buffer, size_t length) {
+        std::stringstream result;
         for (int i = 0; i < length; i++) {
-            ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
+            result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(buffer[i]);
         }
-        return ss.str();
+        return result.str();
     }
 
     std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {
@@ -88,10 +88,12 @@ namespace Vital::Crypto {
     std::string hash(std::string mode, std::string& buffer) {
         try {
             auto cipherType = HashMode(mode);
-            const int hashSize = cipherType.second;
-            unsigned char result[hashSize];
-            cipherType.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), result);
-            return HexToBin(result, hashSize);
+            const int cipherSize = cipherType.second;
+            unsigned char* cipher = new unsigned char[cipherSize];
+            cipherType.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), cipher);
+            std::string result = HexToBin(cipher, cipherSize);
+            delete[] cipher;
+            return result;
         }
         catch(int error) { throw error; }
     }

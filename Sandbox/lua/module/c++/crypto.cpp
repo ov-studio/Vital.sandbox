@@ -23,68 +23,17 @@
 
 namespace Vital::Lua::API {
     void vSandbox_Crypto() {
-        bind("crypto", "sha1", [](vital_ref* ref) -> int {
+        bind("crypto", "hash", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+            if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) vm -> setBool(false);
             else {
-                std::string buffer = vm -> getString(1);
-                std::string hash = Vital::Crypto::SHA1(buffer);
-                vm -> setString(hash);
-            }
-            return 1;
-        });
-
-        bind("crypto", "sha224", [](vital_ref* ref) -> int {
-            auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
-            else {
-                std::string buffer = vm -> getString(1);
-                std::string hash = Vital::Crypto::SHA224(buffer);
-                vm -> setString(hash);
-            }
-            return 1;
-        });
-
-        bind("crypto", "sha256", [](vital_ref* ref) -> int {
-            auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
-            else {
-                std::string buffer = vm -> getString(1);
-                std::string hash = Vital::Crypto::SHA256(buffer);
-                vm -> setString(hash);
-            }
-            return 1;
-        });
-
-        bind("crypto", "sha384", [](vital_ref* ref) -> int {
-            auto vm = fetchVM(ref);
-            if ((vm->getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
-            else {
-                std::string buffer = vm -> getString(1);
-                std::string hash = Vital::Crypto::SHA384(buffer);
-                vm -> setString(hash);
-            }
-            return 1;
-        });
-
-        bind("crypto", "sha512", [](vital_ref* ref) -> int {
-            auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
-            else {
-                std::string buffer = vm -> getString(1);
-                std::string hash = Vital::Crypto::SHA512(buffer);
-                vm -> setString(hash);
-            }
-            return 1;
-        });
-
-        bind("crypto", "sha512", [](vital_ref* ref) -> int {
-            auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
-            else {
-                std::string buffer = vm -> getString(1);
-                std::string hash = Vital::Crypto::SHA512(buffer);
-                vm -> setString(hash);
+                std::string mode = vm -> getString(1);
+                std::string buffer = vm -> getString(2);
+                try {
+                    auto result = Vital::Crypto::hash(mode, buffer);
+                    vm -> setString(result);
+                }
+                catch([[maybe_unused]] int error) { vm -> setBool(false); }
             }
             return 1;
         });
