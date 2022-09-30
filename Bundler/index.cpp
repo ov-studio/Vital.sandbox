@@ -63,15 +63,20 @@ int main() {
     });
     std::string rwString = R"(
         print("\n")
-        
-        print(crypto:decode("123"))
-        --[[
+
+        --Encoding/Decoding
+        local buffer = crypto:encode("EncodeMe")
+        print("Encoded: "..buffer)
+        print("Decoded: "..crypto:decode(buffer))
+
+        --Hashing
         print("SHA1 (Hash): "..crypto:hash("SHA1", "test"))
         print("SHA224 (Hash): "..crypto:hash("SHA224", "test"))
         print("SHA256 (Hash): "..crypto:hash("SHA256", "test"))
         print("SHA384 (Hash): "..crypto:hash("SHA384", "test"))
         print("SHA512 (Hash): "..crypto:hash("SHA512", "test"))
 
+        --Encrypting/Decrypting
         local buffer, key = "EncryptMe", "0123456789012345"
         local hash, iv = crypto:encrypt("AES128", buffer, key)
         print("AES128 (Encrypt): "..hash)
