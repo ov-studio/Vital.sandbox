@@ -15,16 +15,10 @@
 local imports = {
     type = type,
     pairs = pairs,
-    md5 = md5,
     tostring = tostring,
     tonumber = tonumber,
     loadstring = loadstring,
-    string = string,
-    --[[
-    --TODO: WIP
-    encodeString = encodeString,
-    decodeString = decodeString
-    ]]
+    string = string
 }
 
 
@@ -37,7 +31,7 @@ for i, j in imports.pairs(imports.string) do
     string.public[i] = (not string.public[i] and j) or string.public[i]
 end
 utf8 = nil
-string.private.minifier = imports.md5("vStudio")
+string.private.minifier = crypto.hash("SHA256", "vStudio")
 
 function string.public.isVoid(baseString)
     if not baseString or (imports.type(baseString) ~= "string") then return false end
@@ -66,20 +60,6 @@ function string.public.parseHex(baseString)
     baseString = string.public.gsub(baseString, "#", "")
     return imports.tonumber("0x"..string.public.sub(baseString, 1, 2)) or 0, imports.tonumber("0x"..string.public.sub(baseString, 3, 4)) or 0, imports.tonumber("0x"..string.public.sub(baseString, 5, 6)) or 0
 end
-
---[[
---TODO: WIP
-function string.public.encode(baseString, type, options)
-    if not baseString or (imports.type(baseString) ~= "string") then return false end
-    return imports.encodeString(type, baseString, options)
-end
-
-function string.public.decode(baseString, type, options, clipNull)
-    if not baseString or (imports.type(baseString) ~= "string") then return false end
-    baseString = imports.decodeString(type, baseString, options)
-    return (baseString and clipNull and string.public.gsub(baseString, string.public.char(0), "")) or baseString
-end
-]]
 
 function string.public.split(baseString, separator)
     if not baseString or (imports.type(baseString) ~= "string") or not separator or (imports.type(separator) ~= "string") then return false end
