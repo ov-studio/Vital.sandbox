@@ -63,8 +63,6 @@ namespace Vital::Crypto {
             int blockSize = EVP_CIPHER_block_size(cipherType);
             unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
             EVP_CipherInit(ctx, cipherType, NULL, NULL, cipherMode);
-            std::cout << "\nKEY-SIZE: " << EVP_CIPHER_CTX_key_length(ctx) << " : " << key.size();
-            std::cout << "\nIV-SIZE: " << EVP_CIPHER_CTX_iv_length(ctx) << " : " << iv.size();
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
             EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())), cipherMode);
             EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), static_cast<int>(buffer.size()));

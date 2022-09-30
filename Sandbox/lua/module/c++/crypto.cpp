@@ -102,7 +102,7 @@ namespace Vital::Lua::API {
                     vm -> setString(result.second);
                     return 2;
                 }
-                catch(int error) { vm -> setBool(false); }
+                catch([[maybe_unused]] int error) { vm -> setBool(false); }
             }
             return 1;
         });
@@ -119,7 +119,7 @@ namespace Vital::Lua::API {
                     std::string result = Vital::Crypto::decrypt(mode, buffer, key, iv);
                     vm -> setString(result);
                 }
-                catch(int error) { vm -> setBool(false); }
+                catch([[maybe_unused]] int error) { vm -> setBool(false); }
             }
             return 1;
         });
