@@ -76,8 +76,8 @@ namespace Vital::Crypto {
             // Handle CTX //
             EVP_Init(ctx, algorithm, NULL, NULL);
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
-            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.data())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.data())));
-            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), inputSize);
+            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(key.data()), reinterpret_cast<unsigned char*>(iv.data()));
+            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(buffer.data()), inputSize);
             outputSize += currentSize;
             EVP_Final(ctx, output + currentSize, &currentSize);
             outputSize += currentSize;
@@ -96,7 +96,7 @@ namespace Vital::Crypto {
             auto algorithm = HashMode(mode);
             int outputSize = algorithm.second;
             unsigned char* output = new unsigned char[outputSize];
-            algorithm.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), buffer.size(), output);
+            algorithm.first(reinterpret_cast<unsigned char*>(buffer.data()), buffer.size(), output);
             std::string result = HexToBin(output, outputSize);
             delete[] output;
             return result;
