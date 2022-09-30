@@ -91,7 +91,6 @@ int main() {
         local hash, iv = crypto:encrypt("AES256", buffer, key)
         print("AES256 (Encrypt): "..hash)
         print("AES256 (Decrypt): "..crypto:decrypt("AES256", hash, key, iv))
-        ]]
     )";
     auto testVM = new Vital::Lua::create();
     testVM -> loadString(rwString);
