@@ -30,7 +30,7 @@ namespace Vital::Lua::API {
                 std::string mode = vm -> getString(1);
                 std::string buffer = vm -> getString(2);
                 try {
-                    auto result = Vital::Crypto::hash(mode, buffer);
+                    std::string result = Vital::Crypto::hash(mode, buffer);
                     vm -> setString(result);
                 }
                 catch([[maybe_unused]] int error) { vm -> setBool(false); }
