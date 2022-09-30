@@ -80,7 +80,7 @@ int main() {
         local buffer, key = "EncryptMeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEETEST.....WORKS??YESCHECKAGAIN;YESITDOES", "012345678901234511111111"
         local hash, iv = crypto:encrypt("AES192", buffer, key)
         print("AES192 (Encrypt): "..hash.." | Length: "..#hash)
-        --print("AES192 (Decrypt): "..crypto:decrypt("AES192", hash, key, iv))
+        print("AES192 (Decrypt): "..crypto:decrypt("AES192", hash, key, iv))
 
         --[[
         local buffer, key = "EncryptMe", "01234567890123456789012345678901"
