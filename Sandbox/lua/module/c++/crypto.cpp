@@ -53,9 +53,12 @@ namespace Vital::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                std::string buffer = vm -> getString(1);
-                auto result = Vital::Crypto::decode(buffer);
-                vm -> setString(result);
+                try {
+                    std::string buffer = vm -> getString(1);
+                    auto result = Vital::Crypto::decode(buffer);
+                    vm -> setString(result);
+                }
+                catch([[maybe_unused]] int error) { vm -> setBool(false); }
             }
             return 1;
         });
