@@ -38,6 +38,28 @@ namespace Vital::Crypto {
         else throw 0;
     }
 
+    std::string CipherHandle(std::string mode, bool isEncrypt, std::string& buffer, std::string& key, std::string& iv) {
+        EVP_CIPHER* cipherType;
+        try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
+        catch (int error) { throw error; }
+        int __cipherSize, cipherSize;
+        EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+        int cipherMode = static_cast<int>(isEncrypt);
+        int blockSize = EVP_CIPHER_block_size(cipherType);
+        unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
+        EVP_CipherInit(ctx, cipherType, NULL, NULL, cipherMode);
+        if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
+        EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())), cipherMode);
+        EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), static_cast<int>(buffer.size()));
+        cipherSize = __cipherSize;
+        EVP_CipherFinal(ctx, cipher + __cipherSize, &__cipherSize);
+        cipherSize += __cipherSize;
+        cipher[cipherSize] = 0;
+        std::string result = reinterpret_cast<const char*>(cipher);
+        delete[] cipher;
+        return result;
+    }
+
     std::string SHA1(std::string& buffer) {
         unsigned char hash[SHA_DIGEST_LENGTH];
         ::SHA1(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), buffer.size(), hash);
@@ -94,23 +116,9 @@ namespace Vital::Crypto {
     }
 
     std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
-        EVP_CIPHER* cipherType;
-        try { cipherType = const_cast<EVP_CIPHER*>(CipherMode(mode)); }
+        std::string result;
+        try { result = CipherHandle(mode, false, buffer, key, iv); }
         catch(int error) { throw error; }
-        int __cipherSize, cipherSize;
-        EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-        int blockSize = EVP_CIPHER_block_size(cipherType);
-        unsigned char* cipher = new unsigned char[(buffer.size() + blockSize)];
-        EVP_CipherInit(ctx, cipherType, NULL, NULL, 0);
-        if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
-        EVP_CipherInit(ctx, cipherType, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())), 0);
-        EVP_CipherUpdate(ctx, cipher, &__cipherSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), static_cast<int>(buffer.size()));
-        cipherSize = __cipherSize;
-        EVP_CipherFinal(ctx, cipher + __cipherSize, &__cipherSize);
-        cipherSize += __cipherSize;
-        cipher[cipherSize] = 0;
-        std::string result = reinterpret_cast<const char*>(cipher);
-        delete[] cipher;
         return result;
     }
 }
