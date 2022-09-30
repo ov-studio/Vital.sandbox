@@ -16,9 +16,6 @@
 #include <System/public/crypto.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
-#define AES_BLOCK_SIZE 16
-#define AES_128_KEY_SIZE 16
-#define AES_256_KEY_SIZE 32
 
 
 ////////////////////////
@@ -36,6 +33,7 @@ namespace Vital::Crypto {
 
     const EVP_CIPHER* CipherMode(std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
+        else if (mode == "AES192") return EVP_aes_192_cbc();
         else if (mode == "AES256") return EVP_aes_256_cbc();
         else throw 0;
     }
