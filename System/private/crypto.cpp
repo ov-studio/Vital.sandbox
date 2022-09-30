@@ -23,14 +23,23 @@
 ////////////////////////
 
 namespace Vital::Crypto {
-    std::string HexToBin(unsigned char* buffer, size_t length) {
+    std::string encode(std::string& buffer) {
+        std::stringstream result;
+        for (unsigned char i : buffer) {
+            result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(i);
+        }
+        return result.str();
+    }
+
+    /*
+    std::string BinToHex(std::string& buffer) {
         std::stringstream result;
         for (int i = 0; i < length; i++) {
             result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(buffer[i]);
         }
         return result.str();
     }
-
+    */
     std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {
         if (mode == "SHA1") return {::SHA1, SHA_DIGEST_LENGTH};
         else if (mode == "SHA224") return {::SHA224, SHA224_DIGEST_LENGTH};
@@ -54,7 +63,7 @@ namespace Vital::Crypto {
             int ivSize = EVP_CIPHER_block_size(algorithm);
             unsigned char* iv = new unsigned char[(ivSize + 1)];
             RAND_bytes(iv, ivSize);
-            std::string result = std::string(reinterpret_cast<char const*>(iv), ivSize);
+            std::string result = std::string(reinterpret_cast<char*>(iv), ivSize);
             EVP_CIPHER_CTX_free(ctx);
             delete[] iv;
             return result;
@@ -73,7 +82,6 @@ namespace Vital::Crypto {
             int blockSize = EVP_CIPHER_block_size(algorithm);
             int inputSize = buffer.size() + 1, outputSize = 0, currentSize = 0;
             unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
-
             // Handles CTX //
             EVP_Init(ctx, algorithm, NULL, NULL);
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
@@ -82,11 +90,15 @@ namespace Vital::Crypto {
             outputSize += currentSize;
             EVP_Final(ctx, output + currentSize, &currentSize);
             outputSize += currentSize;
-
             // Cleans CTX //
-            std::string result = std::string(reinterpret_cast<char const*>(output), outputSize);
+            std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
             EVP_CIPHER_CTX_free(ctx);
-            return result;
+            std::string test = "┬♀EO0\0!Hey";
+            //std::string binTest = encode(reinterpret_cast<unsigned char*>(test.data()), test.size());
+            //std::cout << "ORIG LENGTH: " << inputSize << " - NEW LENGTH: " << outputSize << "\n";
+            //std::cout << "String Length: " << result.size() << "\n" << result << "\n\n-------------\n\n";
+            //return result;
+            return test;
         }
         catch(int error) { throw error; }
     }
@@ -97,7 +109,8 @@ namespace Vital::Crypto {
             int outputSize = algorithm.second;
             unsigned char* output = new unsigned char[outputSize];
             algorithm.first(reinterpret_cast<unsigned char*>(buffer.data()), buffer.size(), output);
-            std::string result = HexToBin(output, outputSize);
+            std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
+            result = encode(result);
             delete[] output;
             return result;
         }
