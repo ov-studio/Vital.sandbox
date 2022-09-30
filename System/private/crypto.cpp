@@ -55,7 +55,7 @@ namespace Vital::Crypto {
             unsigned char* iv = new unsigned char[(ivSize + 1)];
             RAND_bytes(iv, ivSize);
             iv[ivSize] = 0;
-            std::string result = reinterpret_cast<const char*>(iv);
+            std::string result(reinterpret_cast<char const*>(iv), ivSize);
             EVP_CIPHER_CTX_free(ctx);
             delete[] iv;
             return result;
@@ -66,21 +66,29 @@ namespace Vital::Crypto {
     std::string CipherHandle(std::string& mode, bool isEncrypt, std::string& buffer, std::string& key, std::string& iv) {
         try {
             EVP_CIPHER* algorithm = const_cast<EVP_CIPHER*>(CipherMode(mode));
-            int __outputSize, outputSize;
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-            int cipherMode = static_cast<int>(isEncrypt);
-            int blockSize = EVP_CIPHER_block_size(algorithm);
-            unsigned char* output = new unsigned char[(buffer.size() + blockSize)];
-            EVP_CipherInit(ctx, algorithm, NULL, NULL, cipherMode);
+            auto EVP_Init = isEncrypt ? EVP_EncryptInit : EVP_DecryptInit;
+            auto EVP_Update = isEncrypt ? EVP_EncryptUpdate : EVP_DecryptUpdate;
+            auto EVP_Final = isEncrypt ? EVP_EncryptFinal : EVP_DecryptFinal;
+            int inputSize = buffer.size() + 1, blockSize = EVP_CIPHER_block_size(algorithm), currentSize = 0, outputSize = 0;
+            unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
+
+            EVP_Init(ctx, algorithm, NULL, NULL);
             if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
-            EVP_CipherInit(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())), cipherMode);
-            EVP_CipherUpdate(ctx, output, &__outputSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), static_cast<int>(buffer.size()));
-            outputSize = __outputSize;
-            EVP_CipherFinal(ctx, output + __outputSize, &__outputSize);
-            outputSize += __outputSize;
+            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.c_str())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.c_str())));
+            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.c_str())), inputSize);
+            outputSize += currentSize;
+            
+            std::cout << "\nORIG LENGTH (PHASE 1): " << inputSize << " - NEW LENGTH: " << outputSize << "\n";
+            EVP_Final(ctx, output + currentSize, &currentSize);
+            outputSize += currentSize;
+            std::cout << "ORIG LENGTH (PHASE 2): " << inputSize << " - NEW LENGTH: " << outputSize << "\n";
+
             output[outputSize] = 0;
+            std::string testresult(reinterpret_cast<char const*>(output), outputSize);
+            std::cout << "String Length: " << testresult.size() << "\n";
             EVP_CIPHER_CTX_free(ctx);
-            return reinterpret_cast<const char*>(output);
+            return testresult;
         }
         catch(int error) { throw error; }
     }
