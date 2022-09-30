@@ -69,6 +69,10 @@ int main() {
         print("AES128 (Encrypt): "..hash)
         print("AES128 (Decrypt): "..crypto:decrypt("AES128", hash, key, iv))
 
+        local buffer, key = "EncryptMe", "012345678901234511111111"
+        local hash, iv = crypto:encrypt("AES192", buffer, key)
+        print("AES192 (Encrypt): "..hash)
+        print("AES192 (Decrypt): "..crypto:decrypt("AES192", hash, key, iv))
 
         local buffer, key = "EncryptMe", "01234567890123456789012345678901"
         local hash, iv = crypto:encrypt("AES256", buffer, key)
