@@ -71,7 +71,7 @@ namespace Vital::Lua::API {
                 std::string path = vm -> getString(1);
                 if (!Vital::FileSystem::exists(path)) vm -> setBool(false);
                 else {
-                    std::string buffer = Vital::FileSystem::read(path);
+                    auto buffer = Vital::FileSystem::read(path);
                     vm -> setString(buffer);
                 }
             }
