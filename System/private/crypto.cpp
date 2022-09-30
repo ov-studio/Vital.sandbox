@@ -70,6 +70,7 @@ namespace Vital::Crypto {
             EVP_CipherFinal(ctx, cipher + __cipherSize, &__cipherSize);
             cipherSize += __cipherSize;
             cipher[cipherSize] = 0;
+            EVP_CIPHER_CTX_free(ctx);
             return reinterpret_cast<const char*>(cipher);
         }
         catch(int error) { throw error; }
