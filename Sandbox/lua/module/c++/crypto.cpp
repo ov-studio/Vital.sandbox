@@ -102,7 +102,7 @@ namespace Vital::Lua::API {
                     vm -> setString(result.second);
                     return 2;
                 }
-                catch (int error) { vm -> setBool(false); }
+                catch(int error) { vm -> setBool(false); }
             }
             return 1;
         });
