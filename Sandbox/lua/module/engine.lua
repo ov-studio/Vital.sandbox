@@ -65,7 +65,7 @@ end
 
 function engine.public.bindKey(...) return engine.private.bind("key", ...) end
 function engine.public.unbindKey(...) return engine.private.unbind("key", ...) end
-function engine.public.executeBindKey(ref) return engine.private.executeBind("key", ref) end
+function engine.public.executeBindKey(...) return engine.private.executeBind("key", ...) end
 function engine.public.bindCommand(...) return engine.private.bind("command", ...) end
 function engine.public.unbindComand(...) return engine.private.unbind("command", ...) end
 function engine.public.executeBindCommand(...) return engine.private.executeBind("command", ...) end
