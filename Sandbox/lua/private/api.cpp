@@ -37,12 +37,12 @@ namespace Vital::Lua::API {
     }
 
     bool bind(std::string parent, std::string name, vital_exec exec) {
-        vital_exec_ref ref = { parent, name };
+        vital_exec_ref ref = {parent, name};
         vMethods[ref] = exec;
         return true;
     }
     bool unbind(std::string parent, std::string name) {
-        vital_exec_ref ref = { parent, name };
+        vital_exec_ref ref = {parent, name};
         vMethods.erase(ref);
         return true;
     }
