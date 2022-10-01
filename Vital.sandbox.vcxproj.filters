@@ -192,6 +192,9 @@
     <ClCompile Include="Sandbox\js\private\index.cpp">
       <Filter>Sandbox\js\private</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\js\private\vm.cpp">
+      <Filter>Sandbox\js\private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
@@ -1126,6 +1129,9 @@
     </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Sandbox\js\public\index.h">
+      <Filter>Sandbox\js\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Sandbox\js\public\vm.h">
       <Filter>Sandbox\js\public</Filter>
     </ClInclude>
   </ItemGroup>

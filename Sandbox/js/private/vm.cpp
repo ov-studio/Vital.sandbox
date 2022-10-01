@@ -14,9 +14,7 @@
 
 #pragma once
 #include <System/public/filesystem.h>
-// TODO: REMOVE LATER
-#include <Sandbox/js/public/vm.h>
-//#include <Sandbox/js/public/api.h>
+#include <Sandbox/js/public/api.h>
 #if __has_include(<Sandbox/js/module/bundle.h>)
     #include <Sandbox/js/module/bundle.h>
 #endif
@@ -37,11 +35,9 @@ namespace Vital::JS {
             setNil();
             setGlobal(i);
         }
-        /*
         for (auto& i : API::vMethods) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
-        */
         #if __has_include(<Sandbox/js/module/bundle.h>)
             for (std::string i : vBundle) {
                 loadString(i);
@@ -80,11 +76,14 @@ namespace Vital::JS {
     void create::setTable(int index) { duk_put_prop(vm, index); }
     void create::setTableField(int value, int index) { duk_put_prop_index(vm, index, value); }
     void create::setTableField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
+    /*
+    * TODO: REQUIRES FURTHER DISCUSSION
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
         return;
     }
+    */
     void create::setUserData(void* value) { duk_push_pointer(vm, value); }
     void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
