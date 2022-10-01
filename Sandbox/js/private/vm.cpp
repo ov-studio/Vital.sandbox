@@ -152,10 +152,6 @@ namespace Vital::JS {
         }
         registerFunction(index, exec);
     }
-    void create::registerObject(std::string index, void* value) {
-        createUserData(value);
-        setMetaTable(index);
-    }
 
     // Utils //
     void create::pop(int count) { duk_pop_n(vm, count); }

@@ -88,7 +88,6 @@ namespace Vital::JS {
             void registerNumber(std::string index, int value);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
-            void registerObject(std::string index, void* value);
 
             // Utils //
             void pop(int count = 1);
