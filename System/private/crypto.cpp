@@ -110,8 +110,8 @@ namespace Vital::Crypto {
             }
             return result;
         }
-        catch (std::invalid_argument const& ex) { throw 0; }
-        catch (std::out_of_range const& ex) { throw 0; }
+        catch([[maybe_unused]] std::invalid_argument const& ex) { throw 0; }
+        catch([[maybe_unused]] std::out_of_range const& ex) { throw 0; }
     }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
