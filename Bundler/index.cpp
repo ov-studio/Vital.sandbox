@@ -68,10 +68,10 @@ int main() {
     Vital::JS::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
     });
-    std::string rwString = R"(
-        hey + 2 + 5
-    )";
+    std::string rwString = R"(hey)";
     auto testVM = new Vital::JS::create();
     testVM -> loadString(rwString);
+    std::string result = testVM -> getString(-1);
+    std::cout << "\n" << "RESULT: " << result;
     return 1;
 }
