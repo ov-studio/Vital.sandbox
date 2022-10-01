@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Sandbox/lua/public/index.h>
+#include <Sandbox/js/public/index.h>
 #include <System/public/filesystem.h>
 
 #include <System/public/crypto.h>
@@ -48,6 +49,7 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
+    /*
     Vital::Lua::API::boot();
     Vital::Lua::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
@@ -59,5 +61,8 @@ int main() {
     )";
     auto testVM = new Vital::Lua::create();
     testVM -> loadString(rwString);
+    */
+
+    Vital::JS::test();
     return 1;
 }

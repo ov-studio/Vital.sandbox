@@ -21,4 +21,6 @@
 // Namespace: JS //
 ////////////////////
 
-namespace Vital::JS {}
+namespace Vital::JS {
+    extern void test();
+}

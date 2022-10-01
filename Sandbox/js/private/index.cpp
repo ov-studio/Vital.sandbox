@@ -20,4 +20,12 @@
 // Namespace: JS //
 ////////////////////
 
-namespace Vital::JS {}
+namespace Vital::JS {
+    void test() {
+        duk_context* ctx = duk_create_heap_default();
+        if (ctx) {
+            duk_eval_string(ctx, "print('Hello world from Javascript!');");
+            duk_destroy_heap(ctx);
+        }
+    }
+}
