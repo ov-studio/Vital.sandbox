@@ -16,9 +16,9 @@
 #include <Sandbox/js/public/index.h>
 
 
-//////////////
-// Lua: VM //
-//////////////
+/////////////
+// JS: VM //
+/////////////
 
 namespace Vital::JS {
     typedef duk_context vital_ref;
