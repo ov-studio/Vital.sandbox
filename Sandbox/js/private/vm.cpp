@@ -164,7 +164,7 @@ namespace Vital::JS {
     void create::pop(int count) { duk_pop_n(vm, count); }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
-        luaL_loadstring(vm, buffer.data());
+        duk_eval_string(vm, buffer.data());
         bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
         if (!status) {
             std::string error = getString(-1);
