@@ -105,7 +105,7 @@ namespace Vital::JS {
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
-        lua_len(vm, index);
+        duk_get_length(vm, index);
         int result = getInt(-1);
         pop();
         return result;
