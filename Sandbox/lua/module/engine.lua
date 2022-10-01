@@ -51,18 +51,8 @@ function engine.private.unbind(source, ref, refType, exec)
     return true
 end
 
-function engine.public.bindKey(source, ref, exec)
-    return engine.private.bind(source, ref, "key", exec)
-end
+function engine.private.executeBind(ref, refType)
 
-function engine.public.unbindKey(source, ref, exec)
-    if not engine.private.isBindSource(source, ref, exec) then return false end
-    if not engine.private.binds[refType][ref] or not engine.private.binds[refType][ref][source] or not engine.private.binds[refType][ref][exec] then return false end
-    engine.private.binds[refType][ref][exec] = nil
-    return true
-end
-
-function engine.public.executeBindKey(ref)
     if not ref or (imports.type(source) ~= "string") then return false end
     if engine.private.binds[refType][ref] then
         for i, j in imports.pairs(engine.private.binds[refType][ref]) do
@@ -71,15 +61,16 @@ function engine.public.executeBindKey(ref)
             end
         end
     end
+
+    if not engine.private.binds[refType][ref] or not engine.private.binds[refType][ref][source] or not engine.private.binds[refType][ref][exec] then return false end
+    engine.private.binds[refType][ref][exec] = nil
     return true
 end
 
-function engine.public.bindCommand(source, ref, exec)
-    return engine.private.bind(source, ref, "command", exec)
-end
+function engine.public.bindKey(source, ref, exec) return engine.private.bind(source, ref, "key", exec) end
+function engine.public.unbindKey(source, ref, exec) return engine.private.unbind(source, ref, "key", exec) end
+function engine.public.executeBindKey(ref) return engine.private.executeBind(ref, "key") end
+function engine.public.bindCommand(source, ref, exec) return engine.private.bind(source, ref, "command", exec) end
+function engine.public.unbindComand(source, ref, exec) return engine.private.unbind(source, ref, "command", exec) end
+function engine.public.executeBindCommand(ref) return engine.private.executeBind(ref, "command") end
 
-function engine.public.unbindComand(source, ref, exec)
-    if not engine.private.binds.command[ref] or not engine.private.binds.command[source] or not engine.private.binds.command[exec] then return false end
-    engine.private.binds.command[exec] = nil
-    return true
-end
