@@ -67,10 +67,10 @@ function engine.private.executeBind(ref, refType)
     return true
 end
 
-function engine.public.bindKey(source, ref, exec) return engine.private.bind(source, ref, "key", exec) end
-function engine.public.unbindKey(source, ref, exec) return engine.private.unbind(source, ref, "key", exec) end
-function engine.public.executeBindKey(ref) return engine.private.executeBind(ref, "key") end
-function engine.public.bindCommand(source, ref, exec) return engine.private.bind(source, ref, "command", exec) end
-function engine.public.unbindComand(source, ref, exec) return engine.private.unbind(source, ref, "command", exec) end
-function engine.public.executeBindCommand(ref) return engine.private.executeBind(ref, "command") end
+function engine.public.bindKey(...) return engine.private.bind("key", ...) end
+function engine.public.unbindKey(...) return engine.private.unbind("key", ...) end
+function engine.public.executeBindKey(ref) return engine.private.executeBind("key", ref) end
+function engine.public.bindCommand(...) return engine.private.bind("command", ...) end
+function engine.public.unbindComand(...) return engine.private.unbind(s"command", ...) end
+function engine.public.executeBindCommand(...) return engine.private.executeBind("command", ...) end
 
