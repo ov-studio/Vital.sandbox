@@ -69,4 +69,3 @@ function engine.public.executeBindKey(...) return engine.private.executeBind("ke
 function engine.public.bindCommand(...) return engine.private.bind("command", ...) end
 function engine.public.unbindComand(...) return engine.private.unbind("command", ...) end
 function engine.public.executeBindCommand(...) return engine.private.executeBind("command", ...) end
-
