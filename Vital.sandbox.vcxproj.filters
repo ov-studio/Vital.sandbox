@@ -49,6 +49,12 @@
     <Filter Include="Vendor\openssl\x64\Release">
       <UniqueIdentifier>{d7e89ba7-a270-451a-844c-5a6a4c427669}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sandbox\js\public">
+      <UniqueIdentifier>{992e366e-5aef-4cc2-9188-393f07f020d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sandbox\js\private">
+      <UniqueIdentifier>{e41d0e5f-de49-4ff2-bcb2-83ff63ba9ca9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
@@ -182,6 +188,9 @@
     </ClCompile>
     <ClCompile Include="Sandbox\lua\module\c++\crypto.cpp">
       <Filter>Sandbox\lua\module</Filter>
+    </ClCompile>
+    <ClCompile Include="Sandbox\js\private\index.cpp">
+      <Filter>Sandbox\js\private</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1116,5 +1125,8 @@
       <Filter>System\public</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Sandbox\js\public\index.h">
+      <Filter>Sandbox\js\public</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
