@@ -52,18 +52,14 @@ function engine.private.unbind(type, parent, ref, exec)
 end
 
 function engine.private.executeBind(type, ref)
-
-    if not ref or (imports.type(parent) ~= "string") then return false end
+    if (imports.type(type) ~= "string") or not engine.private.binds[type] then return false end
     if engine.private.binds[type][ref] then
         for i, j in imports.pairs(engine.private.binds[type][ref]) do
             for k, v in imports.pairs(j) do
-                v()
+                v(type, ref)
             end
         end
     end
-
-    if not engine.private.binds[type][ref] or not engine.private.binds[type][ref][parent] or not engine.private.binds[type][ref][exec] then return false end
-    engine.private.binds[type][ref][exec] = nil
     return true
 end
 
