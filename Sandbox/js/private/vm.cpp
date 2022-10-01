@@ -77,7 +77,7 @@ namespace Vital::JS {
     void create::setDouble(double value) { duk_push_number(vm, value); }
     void create::createArray() { duk_push_array(vm); }
     void create::createObject() { duk_push_object(vm); }
-    void create::setTable(int index) { lua_settable(vm, index); }
+    void create::setTable(int index) { duk_put_prop(vm, index); }
     void create::setTableField(int value, int index) { duk_put_prop_index(vm, index, value); }
     void create::setTableField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
     void create::createUserData(void* value) {
@@ -96,10 +96,9 @@ namespace Vital::JS {
     int create::getInt(int index) { return static_cast<int>(duk_to_number(vm, index)); }
     float create::getFloat(int index) { return static_cast<float>(duk_to_number(vm, index)); }
     double create::getDouble(int index) { return static_cast<double>(duk_to_number(vm, index)); }
-    bool create::getTable(int index) { return lua_gettable(vm, index); }
+    bool create::getTable(int index) { return duk_get_prop(vm, index); }
     bool create::getTableField(int value, int index) { return duk_get_prop_index(vm, index, value); }
     bool create::getTableField(std::string value, int index) { return duk_get_prop_string(vm, index, value.data()); }
-    bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
         duk_get_length(vm, index);

@@ -72,7 +72,6 @@ namespace Vital::JS {
             bool getTable(int index = 1);
             bool getTableField(int value, int index = 1);
             bool getTableField(std::string value, int index = 1);
-            bool getMetaTable(int index = 1);
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 
