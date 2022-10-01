@@ -103,7 +103,7 @@ namespace Vital::JS {
     bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
     bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
-    void* create::getUserData(int index) { return lua_touserdata(vm, index); }
+    void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
         int result = getInt(-1);
