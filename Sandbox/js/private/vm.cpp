@@ -97,8 +97,8 @@ namespace Vital::JS {
     float create::getFloat(int index) { return static_cast<float>(duk_to_number(vm, index)); }
     double create::getDouble(int index) { return static_cast<double>(duk_to_number(vm, index)); }
     bool create::getTable(int index) { return lua_gettable(vm, index); }
-    bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
-    bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
+    bool create::getTableField(int value, int index) { return duk_get_prop_index(vm, index, value); }
+    bool create::getTableField(std::string value, int index) { return duk_get_prop_string(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
