@@ -57,9 +57,6 @@ namespace Vital::JS {
             void setTable(int index = 1);
             void setTableField(int value, int index = 1);
             void setTableField(std::string value, int index = 1);
-            void createMetaTable(std::string value);
-            void setMetaTable(int index = 1);
-            void setMetaTable(std::string index);
             void createUserData(void* value);
             void setUserData(void* value);
             void setFunction(vital_exec& value);

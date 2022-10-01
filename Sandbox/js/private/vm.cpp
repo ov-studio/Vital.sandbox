@@ -78,11 +78,8 @@ namespace Vital::JS {
     void create::createArray() { duk_push_array(vm); }
     void create::createObject() { duk_push_object(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
-    void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
-    void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.data()); }
-    void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.data()); }
-    void create::setMetaTable(int index) { lua_setmetatable(vm, index); }
-    void create::setMetaTable(std::string index) { luaL_setmetatable(vm, index.data()); }
+    void create::setTableField(int value, int index) { duk_put_prop_index(vm, index, value); }
+    void create::setTableField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
