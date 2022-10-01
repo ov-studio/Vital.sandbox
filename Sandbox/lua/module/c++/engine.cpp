@@ -34,5 +34,11 @@ namespace Vital::Lua::API {
             vm -> setInt(Vital::getApplicationTick());
             return 1;
         });
+
+        bind("engine", "getClientTick", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            vm -> setInt(Vital::getClientTick());
+            return 1;
+        });
     }
 }
