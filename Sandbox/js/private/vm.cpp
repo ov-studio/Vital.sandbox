@@ -166,10 +166,9 @@ namespace Vital::JS {
         return true;
     }
     bool create::throwError(std::string& error) {
-        lua_Debug debug;
-        lua_getstack(vm, 1, &debug);
-        lua_getinfo(vm, "nSl", &debug);
-        error = "[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error);
+        duk_inspect_callstack_entry(vm, -1);
+        getTableField("lineNumber", -1);
+        error = "[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
         API::error(error);
         return true;
     }
