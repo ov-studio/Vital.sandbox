@@ -86,17 +86,17 @@ namespace Vital::JS {
         *userdata = value;
         return;
     }
-    void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
+    void create::setUserData(void* value) { duk_push_pointer(vm, value); }
     void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
     bool create::getGlobal(std::string index) { return lua_getglobal(vm, index.data()); }
-    bool create::getBool(int index) { return static_cast<bool>(lua_toboolean(vm, index)); }
-    std::string create::getString(int index) { return lua_tostring(vm, index); }
-    int create::getInt(int index) { return static_cast<int>(lua_tonumber(vm, index)); }
-    float create::getFloat(int index) { return static_cast<float>(lua_tonumber(vm, index)); }
-    double create::getDouble(int index) { return static_cast<double>(lua_tonumber(vm, index)); }
+    bool create::getBool(int index) { return static_cast<bool>(duk_to_boolean(vm, index)); }
+    std::string create::getString(int index) { return duk_to_string(vm, index); }
+    int create::getInt(int index) { return static_cast<int>(duk_to_number(vm, index)); }
+    float create::getFloat(int index) { return static_cast<float>(duk_to_number(vm, index)); }
+    double create::getDouble(int index) { return static_cast<double>(duk_to_number(vm, index)); }
     bool create::getTable(int index) { return lua_gettable(vm, index); }
     bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
     bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
