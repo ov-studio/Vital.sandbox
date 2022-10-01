@@ -28,7 +28,7 @@ engine.private.binds = {
     command = {}
 }
 
-function engine.private.isBindSource(type, parent, ref, exec)
+function engine.private.isBindSourceValid(type, parent, ref, exec)
     if not type or not parent or not ref or not exec then return false end
     if (imports.type(type) ~= "string") or not engine.private.binds[type] then return false end
     if (imports.type(parent) ~= "string") or (imports.type(ref) ~= "string") or (imports.type(exec) ~= "function") then return false end
@@ -36,7 +36,7 @@ function engine.private.isBindSource(type, parent, ref, exec)
 end
 
 function engine.private.bind(type, parent, ref, exec)
-    if not engine.private.isBindSource(type, parent, ref, exec) then return false end
+    if not engine.private.isBindSourceValid(type, parent, ref, exec) then return false end
     engine.private.binds[type][ref] = engine.private.binds[type][ref] or {}
     engine.private.binds[type][ref][parent] = engine.private.binds[type][ref][parent] or {}
     if engine.private.binds[type][ref][exec] then return false end
@@ -45,7 +45,7 @@ function engine.private.bind(type, parent, ref, exec)
 end
 
 function engine.private.unbind(type, parent, ref, exec)
-    if not engine.private.isBindSource(type, parent, ref, exec) then return false end
+    if not engine.private.isBindSourceValid(type, parent, ref, exec) then return false end
     if not engine.private.binds[type][ref] or not engine.private.binds[type][ref][parent] or not engine.private.binds[type][ref][exec] then return false end
     engine.private.binds[type][ref][exec] = nil
     return true
