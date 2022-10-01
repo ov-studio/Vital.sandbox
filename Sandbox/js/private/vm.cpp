@@ -57,23 +57,23 @@ namespace Vital::JS {
     }
 
     // Checkers //
-    bool create::isNil(int index) { return lua_isnoneornil(vm, index); }
-    bool create::isBool(int index) { return lua_isboolean(vm, index); }
-    bool create::isString(int index) { return lua_isstring(vm, index); }
-    bool create::isNumber(int index) { return lua_isnumber(vm, index); }
+    bool create::isNil(int index) { return duk_is_null_or_undefined(vm, index); }
+    bool create::isBool(int index) { return duk_is_boolean(vm, index); }
+    bool create::isString(int index) { return duk_is_string(vm, index); }
+    bool create::isNumber(int index) { return duk_is_number(vm, index); }
     bool create::isTable(int index) { return lua_istable(vm, index); }
-    bool create::isThread(int index) { return lua_isthread(vm, index); }
+    bool create::isThread(int index) { return duk_is_thread(vm, index); }
     bool create::isUserData(int index) { return lua_isuserdata(vm, index); }
-    bool create::isFunction(int index) { return lua_isfunction(vm, index); }
+    bool create::isFunction(int index) { return duk_is_function(vm, index); }
 
     // Setters //
     void create::setGlobal(std::string index) { lua_setglobal(vm, index.data()); }
-    void create::setNil() { lua_pushnil(vm); }
-    void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
-    void create::setString(std::string& value) { lua_pushstring(vm, value.data()); }
-    void create::setInt(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setFloat(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setDouble(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setNil() { duk_push_null(vm); }
+    void create::setBool(bool value) { duk_push_boolean(vm, static_cast<int>(value)); }
+    void create::setString(std::string& value) { duk_push_string(vm, value.data()); }
+    void create::setInt(int value) { duk_push_number(vm, value); }
+    void create::setFloat(float value) { duk_push_number(vm, value); }
+    void create::setDouble(double value) { duk_push_number(vm, value); }
     void create::createTable() { lua_newtable(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
     void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
@@ -87,7 +87,7 @@ namespace Vital::JS {
         return;
     }
     void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
-    void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, value); }
+    void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
@@ -159,7 +159,7 @@ namespace Vital::JS {
     }
 
     // Utils //
-    void create::pop(int count) { lua_pop(vm, count); }
+    void create::pop(int count) { duk_pop_n(vm, count); }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.data());

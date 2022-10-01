@@ -22,7 +22,7 @@
 
 namespace Vital::JS {
     typedef duk_context vital_ref;
-    typedef duk_ret_t vital_exec;
+    typedef duk_c_function vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
     class create {
         private:
