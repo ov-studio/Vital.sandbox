@@ -48,15 +48,6 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
-
-    /*
-    std::string buffer = "xdddd";
-    std::string key = "01234567890123456789012345678901";
-    auto encResult = Vital::Crypto::encrypt("AES256", buffer, key);
-    std::cout << "\nENCRYPTED VALUE: " << encResult.first << " IV: " << encResult.second;
-    auto decResult = Vital::Crypto::decrypt("AES256", encResult.first, key, encResult.second);
-    std::cout << "\nDECRYPTED VALUE: " << decResult;
-    */
     Vital::Lua::API::boot();
     Vital::Lua::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
