@@ -24,5 +24,4 @@
 namespace Vital::JS {
     extern std::vector<std::string> vBlacklist;
     extern std::vector<std::string> vModules;
-    extern void test();
 }
