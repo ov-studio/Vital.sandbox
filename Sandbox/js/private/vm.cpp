@@ -145,8 +145,8 @@ namespace Vital::JS {
     }
     void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
         getGlobal(parent);
-        if (!isTable(-1)) {
-            createTable();
+        if (!isObject(-1)) {
+            createObject();
             setGlobal(parent);
             getGlobal(parent);
         }
