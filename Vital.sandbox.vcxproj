@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sandbox\js\private\api.cpp" />
     <ClCompile Include="Sandbox\js\private\index.cpp" />
     <ClCompile Include="Sandbox\js\private\vm.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\crypto.cpp" />
@@ -68,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Sandbox\js\public\api.h" />
     <ClInclude Include="Sandbox\js\public\index.h" />
     <ClInclude Include="Sandbox\js\public\vm.h" />
     <ClInclude Include="Sandbox\lua\public\api.h" />
