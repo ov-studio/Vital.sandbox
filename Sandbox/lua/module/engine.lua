@@ -28,42 +28,42 @@ engine.private.binds = {
     command = {}
 }
 
-function engine.private.isBindSource(source, ref, refType, exec)
-    if not source or not ref or not refType or not exec then return false end
-    if (imports.type(source) ~= "string") or (imports.type(ref) ~= "string") or (imports.type(refType) ~= "string") or (imports.type(exec) ~= "function") then return false end
-    if not engine.private.binds[refType] then return false end
+function engine.private.isBindSource(type, source, ref, exec)
+    if not source or not ref or not type or not exec then return false end
+    if (imports.type(source) ~= "string") or (imports.type(ref) ~= "string") or (imports.type(type) ~= "string") or (imports.type(exec) ~= "function") then return false end
+    if not engine.private.binds[type] then return false end
     return true
 end
 
-function engine.private.bind(source, ref, refType, exec)
-    if not engine.private.isBindSource(source, ref, refType, exec) then return false end
-    engine.private.binds[refType][ref] = engine.private.binds[refType][ref] or {}
-    engine.private.binds[refType][ref][source] = engine.private.binds[refType][ref][source] or {}
-    if engine.private.binds[refType][ref][exec] then return false end
-    engine.private.binds[refType][ref][exec] = true
+function engine.private.bind(type, source, ref, exec)
+    if not engine.private.isBindSource(type, source, ref, exec) then return false end
+    engine.private.binds[type][ref] = engine.private.binds[type][ref] or {}
+    engine.private.binds[type][ref][source] = engine.private.binds[type][ref][source] or {}
+    if engine.private.binds[type][ref][exec] then return false end
+    engine.private.binds[type][ref][exec] = true
     return true
 end
 
-function engine.private.unbind(source, ref, refType, exec)
-    if not engine.private.isBindSource(source, ref, refType, exec) then return false end
-    if not engine.private.binds[refType][ref] or not engine.private.binds[refType][ref][source] or not engine.private.binds[refType][ref][exec] then return false end
-    engine.private.binds[refType][ref][exec] = nil
+function engine.private.unbind(type, source, ref, exec)
+    if not engine.private.isBindSource(type, source, ref, exec) then return false end
+    if not engine.private.binds[type][ref] or not engine.private.binds[type][ref][source] or not engine.private.binds[type][ref][exec] then return false end
+    engine.private.binds[type][ref][exec] = nil
     return true
 end
 
-function engine.private.executeBind(ref, refType)
+function engine.private.executeBind(type, ref)
 
     if not ref or (imports.type(source) ~= "string") then return false end
-    if engine.private.binds[refType][ref] then
-        for i, j in imports.pairs(engine.private.binds[refType][ref]) do
+    if engine.private.binds[type][ref] then
+        for i, j in imports.pairs(engine.private.binds[type][ref]) do
             for k, v in imports.pairs(j) do
                 v()
             end
         end
     end
 
-    if not engine.private.binds[refType][ref] or not engine.private.binds[refType][ref][source] or not engine.private.binds[refType][ref][exec] then return false end
-    engine.private.binds[refType][ref][exec] = nil
+    if not engine.private.binds[type][ref] or not engine.private.binds[type][ref][source] or not engine.private.binds[type][ref][exec] then return false end
+    engine.private.binds[type][ref][exec] = nil
     return true
 end
 
