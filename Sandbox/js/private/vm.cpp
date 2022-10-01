@@ -155,7 +155,7 @@ namespace Vital::JS {
     void create::pop(int count) { duk_pop_n(vm, count); }
     bool create::loadString(std::string& buffer) {
         if (buffer.empty()) return false;
-        pushString(buffer);
+        setString(buffer);
         bool status = !duk_peval(vm);
         if (!status) {
             std::string error = getString(-1);
@@ -165,7 +165,7 @@ namespace Vital::JS {
         return true;
     }
     bool create::throwError(std::string& error) {
-        duk_inspect_callstack_entry(vm, -1);
+        duk_inspect_callstack_entry(vm, -2);
         getTableField("lineNumber", -1);
         error = "[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
         API::error(error);

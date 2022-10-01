@@ -45,6 +45,7 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 }
 
 #include <Sandbox/lua/public/api.h>
+#include <Sandbox/js/public/api.h>
 
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
@@ -63,13 +64,14 @@ int main() {
     testVM -> loadString(rwString);
     */
 
-    /*
-    void test() {
-        duk_context* ctx = duk_create_heap_default();
-        duk_eval_string(ctx, "1+2");
-        printf("1+2=%d\n", duk_get_int(ctx, -1));
-        duk_destroy_heap(ctx);
-    }
-    */
+    Vital::JS::API::boot();
+    Vital::JS::API::onErrorHandle([](std::string& err) -> void {
+        std::cout << "\n" << err;
+    });
+    std::string rwString = R"(
+        hey + 2 + 5
+    )";
+    auto testVM = new Vital::JS::create();
+    testVM -> loadString(rwString);
     return 1;
 }
