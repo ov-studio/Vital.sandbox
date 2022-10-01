@@ -61,13 +61,14 @@ namespace Vital::JS {
     bool create::isBool(int index) { return duk_is_boolean(vm, index); }
     bool create::isString(int index) { return duk_is_string(vm, index); }
     bool create::isNumber(int index) { return duk_is_number(vm, index); }
-    bool create::isTable(int index) { return lua_istable(vm, index); }
+    bool create::isArray(int index) { return duk_is_array(vm, index); }
+    bool create::isObject(int index) { return duk_is_object(vm, index); }
     bool create::isThread(int index) { return duk_is_thread(vm, index); }
-    bool create::isUserData(int index) { return lua_isuserdata(vm, index); }
+    bool create::isUserData(int index) { return duk_is_pointer(vm, index); }
     bool create::isFunction(int index) { return duk_is_function(vm, index); }
 
     // Setters //
-    void create::setGlobal(std::string index) { lua_setglobal(vm, index.data()); }
+    void create::setGlobal(std::string index) { duk_put_global_string(vm, index.data()); }
     void create::setNil() { duk_push_null(vm); }
     void create::setBool(bool value) { duk_push_boolean(vm, static_cast<int>(value)); }
     void create::setString(std::string& value) { duk_push_string(vm, value.data()); }
@@ -91,7 +92,7 @@ namespace Vital::JS {
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
-    bool create::getGlobal(std::string index) { return lua_getglobal(vm, index.data()); }
+    bool create::getGlobal(std::string index) { return duk_get_global_string(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(duk_to_boolean(vm, index)); }
     std::string create::getString(int index) { return duk_to_string(vm, index); }
     int create::getInt(int index) { return static_cast<int>(duk_to_number(vm, index)); }

@@ -38,7 +38,8 @@ namespace Vital::JS {
             bool isBool(int index);
             bool isString(int index);
             bool isNumber(int index);
-            bool isTable(int index);
+            bool isArray(int index);
+            bool isObject(int index);
             bool isThread(int index);
             bool isUserData(int index);
             bool isFunction(int index);
