@@ -20,7 +20,7 @@
 // Lua: VM //
 //////////////
 
-namespace Vital::Lua {
+namespace Vital::JS {
     typedef duk_context vital_ref;
     typedef duk_ret_t vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;
