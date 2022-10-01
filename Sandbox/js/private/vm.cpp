@@ -75,7 +75,8 @@ namespace Vital::JS {
     void create::setInt(int value) { duk_push_number(vm, value); }
     void create::setFloat(float value) { duk_push_number(vm, value); }
     void create::setDouble(double value) { duk_push_number(vm, value); }
-    void create::createTable() { lua_newtable(vm); }
+    void create::createArray() { duk_push_array(vm); }
+    void create::createObject() { duk_push_object(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
     void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
     void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.data()); }
@@ -91,7 +92,7 @@ namespace Vital::JS {
     void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
     // Getters //
-    int create::getArgCount() { return lua_gettop(vm); }
+    int create::getArgCount() { return duk_get_top(vm); }
     bool create::getGlobal(std::string index) { return duk_get_global_string(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(duk_to_boolean(vm, index)); }
     std::string create::getString(int index) { return duk_to_string(vm, index); }

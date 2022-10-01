@@ -52,7 +52,8 @@ namespace Vital::JS {
             void setInt(int value);
             void setFloat(float value);
             void setDouble(double value);
-            void createTable();
+            void createArray();
+            void createObject();
             void setTable(int index = 1);
             void setTableField(int value, int index = 1);
             void setTableField(std::string value, int index = 1);
