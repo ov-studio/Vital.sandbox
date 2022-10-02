@@ -34,14 +34,14 @@ namespace Vital::Lua {
             bool destroy();
 
             // Checkers //
-            bool isNil(int index);
-            bool isBool(int index);
-            bool isString(int index);
-            bool isNumber(int index);
-            bool isTable(int index);
-            bool isThread(int index);
-            bool isUserData(int index);
-            bool isFunction(int index);
+            bool isNil(int index = 1);
+            bool isBool(int index = 1);
+            bool isString(int index = 1);
+            bool isNumber(int index = 1);
+            bool isTable(int index = 1);
+            bool isThread(int index = 1);
+            bool isUserData(int index = 1);
+            bool isFunction(int index = 1);
 
             // Setters //
             void setGlobal(std::string index);
