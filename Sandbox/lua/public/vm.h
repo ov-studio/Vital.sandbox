@@ -74,6 +74,7 @@ namespace Vital::Lua {
             bool getTableField(int value, int index = 1);
             bool getTableField(std::string value, int index = 1);
             bool getMetaTable(int index = 1);
+            bool getMetaTable(std::string index);
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 
