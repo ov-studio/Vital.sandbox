@@ -80,13 +80,17 @@ namespace Vital::JS {
             // Pushers //
             void pushBool(bool value);
             void pushString(std::string& value);
-            void pushNumber(int value);
+            void pushInt(int value);
+            void pushFloat(float value);
+            void pushDouble(double value);
             void pushFunction(vital_exec& exec);
 
             // Registerers //
             void registerBool(std::string index, bool value);
             void registerString(std::string index, std::string& value);
-            void registerNumber(std::string index, int value);
+            void registerInt(std::string index, int value);
+            void registerFloat(std::string index, float value);
+            void registerDouble(std::string index, double value);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
 
