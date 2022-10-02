@@ -81,7 +81,9 @@ namespace Vital::Lua {
             // Pushers //
             void pushBool(bool value);
             void pushString(std::string& value);
-            void pushNumber(int value);
+            void pushInt(int value);
+            void pushFloat(float value);
+            void pushDouble(double value);
             void pushFunction(vital_exec& exec);
 
             // Registerers //
