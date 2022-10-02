@@ -55,7 +55,7 @@ namespace Vital::JS {
             void createArray();
             void createObject();
             void setObject(int index = 1);
-            void setTableField(int value, int index = 1);
+            void setArrayField(int value, int index = 1);
             void setObjectField(std::string value, int index = 1);
             //void createUserData(void* value);
             void setUserData(void* value);
