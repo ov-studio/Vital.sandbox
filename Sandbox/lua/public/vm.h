@@ -89,7 +89,9 @@ namespace Vital::Lua {
             // Registerers //
             void registerBool(std::string index, bool value);
             void registerString(std::string index, std::string& value);
-            void registerNumber(std::string index, int value);
+            void registerInt(std::string index, int value);
+            void registerFloat(std::string index, float value);
+            void registerDouble(std::string index, double value);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
             void registerObject(std::string index, void* value);
