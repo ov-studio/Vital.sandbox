@@ -70,9 +70,10 @@ namespace Vital::JS {
             int getInt(int index = 1);
             float getFloat(int index = 1);
             double getDouble(int index = 1);
-            bool getTable(int index = 1);
-            bool getTableField(int value, int index = 1);
-            bool getTableField(std::string value, int index = 1);
+            bool getArray(int index = 1);
+            bool getObject(int index = 1);
+            bool getArrayField(int value, int index = 1);
+            bool getObjectField(std::string value, int index = 1);
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 
