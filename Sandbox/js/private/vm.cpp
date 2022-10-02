@@ -117,8 +117,16 @@ namespace Vital::JS {
         setString(value);
         setArrayField(getLength(-2) + 1, -2);
     }
-    void create::pushNumber(int value) {
+    void create::pushInt(int value) {
         setInt(value);
+        setArrayField(getLength(-2) + 1, -2);
+    }
+    void create::pushFloat(float value) {
+        setFloat(value);
+        setArrayField(getLength(-2) + 1, -2);
+    }
+    void create::pushDouble(double value) {
+        setDouble(value);
         setArrayField(getLength(-2) + 1, -2);
     }
     void create::pushFunction(vital_exec& exec) {
@@ -135,8 +143,16 @@ namespace Vital::JS {
         setString(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, int value) {
+    void create::registerInt(std::string index, int value) {
         setInt(value);
+        setObjectField(index.data(), -2);
+    }
+    void create::registerFloat(std::string index, float value) {
+        setFloat(value);
+        setObjectField(index.data(), -2);
+    }
+    void create::registerDouble(std::string index, double value) {
+        setDouble(value);
         setObjectField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
