@@ -144,8 +144,16 @@ namespace Vital::Lua {
         setString(value);
         setTableField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, int value) {
+    void create::registerInt(std::string index, int value) {
         setInt(value);
+        setTableField(index.data(), -2);
+    }
+    void create::registerFloat(std::string index, float value) {
+        setFloat(value);
+        setTableField(index.data(), -2);
+    }
+    void create::registerDouble(std::string index, double value) {
+        setDouble(value);
         setTableField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
