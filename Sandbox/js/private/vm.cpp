@@ -74,7 +74,7 @@ namespace Vital::JS {
     void create::createArray() { duk_push_array(vm); }
     void create::createObject() { duk_push_object(vm); }
     void create::setObject(int index) { duk_put_prop(vm, index); }
-    void create::setTableField(int value, int index) { duk_put_prop_index(vm, index, value); }
+    void create::setArrayField(int value, int index) { duk_put_prop_index(vm, index, value); }
     void create::setObjectField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
     /*
     * TODO: REQUIRES FURTHER DISCUSSION
@@ -109,19 +109,19 @@ namespace Vital::JS {
     // Pushers //
     void create::pushBool(bool value) {
         setBool(value);
-        setTableField(getLength(-2) + 1, -2);
+        setArrayField(getLength(-2) + 1, -2);
     }
     void create::pushString(std::string& value) {
         setString(value);
-        setTableField(getLength(-2) + 1, -2);
+        setArrayField(getLength(-2) + 1, -2);
     }
     void create::pushNumber(int value) {
         setInt(value);
-        setTableField(getLength(-2) + 1, -2);
+        setArrayField(getLength(-2) + 1, -2);
     }
     void create::pushFunction(vital_exec& exec) {
         setFunction(exec);
-        setTableField(getLength(-2) + 1, -2);
+        setArrayField(getLength(-2) + 1, -2);
     }
 
     // Registerers //
