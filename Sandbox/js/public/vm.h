@@ -54,9 +54,9 @@ namespace Vital::JS {
             void setDouble(double value);
             void createArray();
             void createObject();
-            void setTable(int index = 1);
+            void setObject(int index = 1);
             void setTableField(int value, int index = 1);
-            void setTableField(std::string value, int index = 1);
+            void setObjectField(std::string value, int index = 1);
             //void createUserData(void* value);
             void setUserData(void* value);
             void setFunction(vital_exec& value);
