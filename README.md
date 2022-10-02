@@ -12,6 +12,7 @@
 
 * Completely Open-Source
 * Modular Programming
+* C++17 Oriented
 * Completely Performance-Friendly
 * Completely Safe & Secure
 * Lightweight & Straightforward
