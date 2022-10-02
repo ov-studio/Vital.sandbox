@@ -96,9 +96,10 @@ namespace Vital::JS {
     int create::getInt(int index) { return static_cast<int>(duk_to_number(vm, index)); }
     float create::getFloat(int index) { return static_cast<float>(duk_to_number(vm, index)); }
     double create::getDouble(int index) { return static_cast<double>(duk_to_number(vm, index)); }
-    bool create::getTable(int index) { return duk_get_prop(vm, index); }
-    bool create::getTableField(int value, int index) { return duk_get_prop_index(vm, index, value); }
-    bool create::getTableField(std::string value, int index) { return duk_get_prop_string(vm, index, value.data()); }
+    bool create::getArray(int index) { return duk_get_prop(vm, index); }
+    bool create::getObject(int index) { return duk_get_prop(vm, index); }
+    bool create::getArrayField(int value, int index) { return duk_get_prop_index(vm, index, value); }
+    bool create::getObjectField(std::string value, int index) { return duk_get_prop_string(vm, index, value.data()); }
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
         duk_get_length(vm, index);
