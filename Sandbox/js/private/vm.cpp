@@ -73,9 +73,9 @@ namespace Vital::JS {
     void create::setDouble(double value) { duk_push_number(vm, value); }
     void create::createArray() { duk_push_array(vm); }
     void create::createObject() { duk_push_object(vm); }
-    void create::setTable(int index) { duk_put_prop(vm, index); }
+    void create::setObject(int index) { duk_put_prop(vm, index); }
     void create::setTableField(int value, int index) { duk_put_prop_index(vm, index, value); }
-    void create::setTableField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
+    void create::setObjectField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
     /*
     * TODO: REQUIRES FURTHER DISCUSSION
     void create::createUserData(void* value) {
@@ -127,19 +127,19 @@ namespace Vital::JS {
     // Registerers //
     void create::registerBool(std::string index, bool value) {
         setBool(value);
-        setTableField(index.data(), -2);
+        setObjectField(index.data(), -2);
     }
     void create::registerString(std::string index, std::string& value) {
         setString(value);
-        setTableField(index.data(), -2);
+        setObjectField(index.data(), -2);
     }
     void create::registerNumber(std::string index, int value) {
         setInt(value);
-        setTableField(index.data(), -2);
+        setObjectField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);
-        setTableField(index.data(), -2);
+        setObjectField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
         getGlobal(parent);
