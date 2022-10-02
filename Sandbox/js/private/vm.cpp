@@ -168,7 +168,7 @@ namespace Vital::JS {
     }
     bool create::throwError(std::string& error) {
         duk_inspect_callstack_entry(vm, -2);
-        getTableField("lineNumber", -1);
+        getObjectField("lineNumber", -1);
         error = "[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
         API::error(error);
         return true;
