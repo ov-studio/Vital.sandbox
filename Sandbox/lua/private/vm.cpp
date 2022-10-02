@@ -84,7 +84,6 @@ namespace Vital::Lua {
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
-        return;
     }
     void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
     void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, value); }
