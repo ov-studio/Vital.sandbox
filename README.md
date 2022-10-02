@@ -21,6 +21,7 @@
 * Built-In File System
 * Built-In Crypto System
 * Built-in Lua APIs
+* Built-in JS APIs
 * Necessary Integration APIs
 
 ## ━ Contents
