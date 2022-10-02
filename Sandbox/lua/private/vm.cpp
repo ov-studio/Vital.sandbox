@@ -118,8 +118,16 @@ namespace Vital::Lua {
         setString(value);
         setTableField(getLength(-2) + 1, -2);
     }
-    void create::pushNumber(int value) {
+    void create::pushInt(int value) {
         setInt(value);
+        setTableField(getLength(-2) + 1, -2);
+    }
+    void create::pushFloat(float value) {
+        setFloat(value);
+        setTableField(getLength(-2) + 1, -2);
+    }
+    void create::pushDouble(double value) {
+        setDouble(value);
         setTableField(getLength(-2) + 1, -2);
     }
     void create::pushFunction(vital_exec& exec) {
