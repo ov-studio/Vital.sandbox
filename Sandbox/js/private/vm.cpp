@@ -73,6 +73,7 @@ namespace Vital::JS {
     void create::setDouble(double value) { duk_push_number(vm, value); }
     void create::createArray() { duk_push_array(vm); }
     void create::createObject() { duk_push_object(vm); }
+    void create::setArray(int index) { duk_put_prop(vm, index); }
     void create::setObject(int index) { duk_put_prop(vm, index); }
     void create::setArrayField(int value, int index) { duk_put_prop_index(vm, index, value); }
     void create::setObjectField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
