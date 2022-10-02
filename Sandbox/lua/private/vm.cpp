@@ -100,6 +100,7 @@ namespace Vital::Lua {
     bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
     bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
+    bool create::getMetaTable(std::string index) { return luaL_getmetatable(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
