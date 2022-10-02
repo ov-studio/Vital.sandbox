@@ -54,6 +54,7 @@ namespace Vital::JS {
             void setDouble(double value);
             void createArray();
             void createObject();
+            void setArray(int index = 1);
             void setObject(int index = 1);
             void setArrayField(int value, int index = 1);
             void setObjectField(std::string value, int index = 1);
