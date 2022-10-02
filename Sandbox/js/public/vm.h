@@ -34,15 +34,15 @@ namespace Vital::JS {
             bool destroy();
 
             // Checkers //
-            bool isNil(int index);
-            bool isBool(int index);
-            bool isString(int index);
-            bool isNumber(int index);
-            bool isArray(int index);
-            bool isObject(int index);
-            bool isThread(int index);
-            bool isUserData(int index);
-            bool isFunction(int index);
+            bool isNil(int index = 1);
+            bool isBool(int index = 1);
+            bool isString(int index = 1);
+            bool isNumber(int index = 1);
+            bool isArray(int index = 1);
+            bool isObject(int index = 1);
+            bool isThread(int index = 1);
+            bool isUserData(int index = 1);
+            bool isFunction(int index = 1);
 
             // Setters //
             void setGlobal(std::string index);
