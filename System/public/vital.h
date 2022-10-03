@@ -14,6 +14,7 @@
 
 #pragma once
 #include <pch.h>
+#include <Vendor/fmod/include/fmod.hpp>
 
 
 ///////////////////////
