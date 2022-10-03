@@ -22,6 +22,8 @@
 
 namespace Vital {
     static const std::string vSignature = "VitalSDK";
+    namespace System {}
+    namespace Sandbox {}
 }
 
 namespace Vital::System {
