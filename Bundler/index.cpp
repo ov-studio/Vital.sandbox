@@ -25,7 +25,7 @@
 
 void outputConsole(std::string message) { std::cout << "\nVital.bundler | " << message; }
 void genPackage(std::string name, std::string entry, std::vector<std::string> modules) {
-    std::string rwBundle = "namespace Vital::" + name + " {\nstd::vector<std::string> vBundle = {";
+    std::string rwBundle = "namespace Vital::Sandbox::" + name + " {\nstd::vector<std::string> vBundle = {";
     outputConsole("Packaging " + name + "...");
     for (auto i : modules) {
         std::string path = entry + i;
