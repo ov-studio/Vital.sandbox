@@ -30,7 +30,7 @@ namespace Vital::Sandbox::Lua::API {
                 std::string mode = vm -> getString(1);
                 std::string buffer = vm -> getString(2);
                 try {
-                    auto result = Vital::Crypto::hash(mode, buffer);
+                    auto result = Vital::System::Crypto::hash(mode, buffer);
                     vm -> setString(result);
                 }
                 catch([[maybe_unused]] int error) { vm -> setBool(false); }
@@ -43,7 +43,7 @@ namespace Vital::Sandbox::Lua::API {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
                 std::string buffer = vm -> getString(1);
-                auto result = Vital::Crypto::encode(buffer);
+                auto result = Vital::System::Crypto::encode(buffer);
                 vm -> setString(result);
             }
             return 1;
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::Lua::API {
             else {
                 try {
                     std::string buffer = vm -> getString(1);
-                    auto result = Vital::Crypto::decode(buffer);
+                    auto result = Vital::System::Crypto::decode(buffer);
                     vm -> setString(result);
                 }
                 catch([[maybe_unused]] int error) { vm -> setBool(false); }
@@ -71,7 +71,7 @@ namespace Vital::Sandbox::Lua::API {
                 std::string buffer = vm -> getString(2);
                 std::string key = vm -> getString(3);
                 try {
-                    auto result = Vital::Crypto::encrypt(mode, buffer, key);
+                    auto result = Vital::System::Crypto::encrypt(mode, buffer, key);
                     vm -> setString(result.first);
                     vm -> setString(result.second);
                     return 2;
@@ -90,7 +90,7 @@ namespace Vital::Sandbox::Lua::API {
                 std::string key = vm -> getString(3);
                 std::string iv = vm -> getString(4);
                 try {
-                    auto result = Vital::Crypto::decrypt(mode, buffer, key, iv);
+                    auto result = Vital::System::Crypto::decrypt(mode, buffer, key, iv);
                     vm -> setString(result);
                 }
                 catch([[maybe_unused]] int error) { vm -> setBool(false); }
