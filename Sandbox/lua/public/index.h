@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <pch.h>
+#include <System/public/vital.h>
 extern "C" {
     #include <Vendor/lua/lua.h>
     #include <Vendor/lua/lauxlib.h>

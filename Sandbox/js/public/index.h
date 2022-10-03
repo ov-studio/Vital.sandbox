@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <pch.h>
+#include <System/public/vital.h>
 #include <Vendor/duktape/duktape.h>
 
 
