@@ -55,6 +55,9 @@
     <Filter Include="Sandbox\js\private">
       <UniqueIdentifier>{e41d0e5f-de49-4ff2-bcb2-83ff63ba9ca9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Vendor\fmod">
+      <UniqueIdentifier>{4f4faa1d-89a2-4fe6-882c-871f2450f6a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
@@ -1139,6 +1142,30 @@
     </ClInclude>
     <ClInclude Include="Sandbox\js\public\api.h">
       <Filter>Sandbox\js\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod_dsp_effects.h">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod_errors.h">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod_output.h">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod.h">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod.hpp">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod_codec.h">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod_common.h">
+      <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\fmod\include\fmod_dsp.h">
+      <Filter>Vendor\fmod</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

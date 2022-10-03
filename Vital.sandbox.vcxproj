@@ -80,6 +80,14 @@
     <ClInclude Include="System\public\vital.h" />
     <ClInclude Include="Vendor\duktape\duktape.h" />
     <ClInclude Include="Vendor\duktape\duk_config.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod.hpp" />
+    <ClInclude Include="Vendor\fmod\include\fmod_codec.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod_common.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod_dsp.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod_dsp_effects.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod_errors.h" />
+    <ClInclude Include="Vendor\fmod\include\fmod_output.h" />
     <ClInclude Include="Vendor\lua\lapi.h" />
     <ClInclude Include="Vendor\lua\lauxlib.h" />
     <ClInclude Include="Vendor\lua\lcode.h" />
