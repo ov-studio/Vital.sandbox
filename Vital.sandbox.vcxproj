@@ -487,7 +487,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\include;$(SolutionDir)\Vendor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\include;$(SolutionDir)\Vendor\;$(SolutionDir)\Vendor\fmod\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -497,7 +497,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <Lib>
-      <AdditionalDependencies>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;$(SolutionDir)\Vendor\fmod\lib\$(Platform)\fmodL_vc.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib\ossl_static.pdb  $(OutDir)</Command>
@@ -513,7 +513,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\include;$(SolutionDir)\Vendor\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\include;$(SolutionDir)\Vendor\;$(SolutionDir)\Vendor\fmod\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
@@ -525,7 +525,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <Lib>
-      <AdditionalDependencies>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;$(SolutionDir)\Vendor\fmod\lib\$(Platform)\fmod_vc.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib\ossl_static.pdb  $(OutDir)</Command>
