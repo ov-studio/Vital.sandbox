@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <System/public/filesystem.h>
+#include <System/public/file.h>
 #include <System/public/crypto.h>
 #include <Sandbox/lua/public/index.h>
 #include <Sandbox/js/public/index.h>
@@ -29,18 +29,18 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
     outputConsole("Packaging " + name + "...");
     for (auto i : modules) {
         std::string path = entry + i;
-        if (!Vital::FileSystem::exists(path)) {
+        if (!Vital::System::File::exists(path)) {
             outputConsole("Invalid File: " + path);
             throw 0;
         }
         else {
-            rwBundle += "\nR\"" + Vital::vSignature + "(\n" + Vital::FileSystem::read(path) + "\n)" + Vital::vSignature + "\",";
+            rwBundle += "\nR\"" + Vital::vSignature + "(\n" + Vital::System::File::read(path) + "\n)" + Vital::vSignature + "\",";
             outputConsole("Bundled File: " + path);
         }
     }
     rwBundle += "\n};\n}";
     std::string path = entry + "bundle.h";
-    Vital::FileSystem::write(path, rwBundle);
+    Vital::System::File::write(path, rwBundle);
     outputConsole("Packaged " + name + " successfully!");
 }
 

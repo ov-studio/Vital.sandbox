@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <System/public/filesystem.h>
+#include <System/public/file.h>
 #include <Sandbox/lua/public/api.h>
 #if __has_include(<Sandbox/lua/module/bundle.h>)
     #include <Sandbox/lua/module/bundle.h>

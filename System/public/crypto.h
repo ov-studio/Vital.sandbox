@@ -16,9 +16,9 @@
 #include <System/public/vital.h>
 
 
-////////////////////
-// Vital: Crypto //
-////////////////////
+////////////////////////////
+// Vital: System: Crypto //
+////////////////////////////
 
 namespace Vital::Crypto {
     extern std::string hash(std::string mode, std::string& buffer);

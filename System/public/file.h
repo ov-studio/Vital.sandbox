@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: filesystem.h
+     Script: System: public: file.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
@@ -20,7 +20,7 @@
 // Vital: System: File //
 //////////////////////////
 
-namespace Vital::FileSystem {
+namespace Vital::System::File {
     extern bool resolve(std::string& path);
     extern bool exists(std::string& path);
     extern std::streampos size(std::string& path);

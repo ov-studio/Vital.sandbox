@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: private: filesystem.cpp
+     Script: System: private: file.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
@@ -13,14 +13,14 @@
 //////////////
 
 #pragma once
-#include <System/public/filesystem.h>
+#include <System/public/file.h>
 
 
 //////////////////////////
 // Vital: System: File //
 //////////////////////////
 
-namespace Vital::FileSystem {
+namespace Vital::System::File {
     bool resolve(std::string& path) {
         path = std::filesystem::absolute(path).string();
         return true;

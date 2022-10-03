@@ -165,7 +165,7 @@
     <ClCompile Include="System\private\vital.cpp">
       <Filter>System\private</Filter>
     </ClCompile>
-    <ClCompile Include="System\private\filesystem.cpp">
+    <ClCompile Include="System\private\file.cpp">
       <Filter>System\private</Filter>
     </ClCompile>
     <ClCompile Include="Sandbox\lua\private\index.cpp">
@@ -290,7 +290,7 @@
     <ClInclude Include="Sandbox\lua\public\index.h">
       <Filter>Sandbox\lua\public</Filter>
     </ClInclude>
-    <ClInclude Include="System\public\filesystem.h">
+    <ClInclude Include="System\public\file.h">
       <Filter>System\public</Filter>
     </ClInclude>
     <ClInclude Include="System\public\vital.h">

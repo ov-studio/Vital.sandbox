@@ -16,9 +16,9 @@
 #include <System/public/vital.h>
 
 
-///////////////////////
-// Namespace: Vital //
-///////////////////////
+////////////
+// Vital //
+////////////
 
 namespace Vital {
     unsigned int getSystemTick() {

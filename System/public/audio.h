@@ -17,8 +17,8 @@
 #include <Vendor/fmod/include/fmod_errors.h>
 
 
-///////////////////
-// Vital: Audio //
-///////////////////
+///////////////////////////
+// Vital: System: Audio //
+///////////////////////////
 
-namespace Vital::Audio {}
+namespace Vital::System::Audio {}

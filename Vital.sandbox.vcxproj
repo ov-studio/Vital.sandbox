@@ -29,7 +29,7 @@
     <ClCompile Include="Sandbox\lua\private\index.cpp" />
     <ClCompile Include="Sandbox\lua\private\vm.cpp" />
     <ClCompile Include="System\private\crypto.cpp" />
-    <ClCompile Include="System\private\filesystem.cpp" />
+    <ClCompile Include="System\private\file.cpp" />
     <ClCompile Include="System\private\vital.cpp" />
     <ClCompile Include="Vendor\duktape\duktape.c" />
     <ClCompile Include="Vendor\lua\lapi.c" />
@@ -76,7 +76,7 @@
     <ClInclude Include="Sandbox\lua\public\index.h" />
     <ClInclude Include="Sandbox\lua\public\vm.h" />
     <ClInclude Include="System\public\crypto.h" />
-    <ClInclude Include="System\public\filesystem.h" />
+    <ClInclude Include="System\public\file.h" />
     <ClInclude Include="System\public\vital.h" />
     <ClInclude Include="Vendor\duktape\duktape.h" />
     <ClInclude Include="Vendor\duktape\duk_config.h" />

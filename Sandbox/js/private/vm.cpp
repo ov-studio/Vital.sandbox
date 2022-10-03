@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <System/public/filesystem.h>
+#include <System/public/file.h>
 #include <Sandbox/js/public/api.h>
 #if __has_include(<Sandbox/js/module/bundle.h>)
     #include <Sandbox/js/module/bundle.h>
