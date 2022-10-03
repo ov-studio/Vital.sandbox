@@ -77,14 +77,6 @@ namespace Vital::JS {
     void create::setObject(int index) { duk_put_prop(vm, index); }
     void create::setArrayField(int value, int index) { duk_put_prop_index(vm, index, value); }
     void create::setObjectField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
-    /*
-    * TODO: REQUIRES FURTHER DISCUSSION
-    void create::createUserData(void* value) {
-        void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
-        *userdata = value;
-        return;
-    }
-    */
     void create::setUserData(void* value) { duk_push_pointer(vm, value); }
     void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
