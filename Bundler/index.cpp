@@ -68,7 +68,12 @@ int main() {
     Vital::JS::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
     });
-    std::string rwString = R"(hey)";
+    std::string rwString = R"(
+    test = function() {
+        return Duktape;
+    }
+    test()
+    )";
     auto testVM = new Vital::JS::create();
     testVM -> loadString(rwString);
     std::string result = testVM -> getString(-1);
