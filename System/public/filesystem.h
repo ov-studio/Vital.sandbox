@@ -13,13 +13,12 @@
 //////////////
 
 #pragma once
-#include <pch.h>
 #include <System/public/vital.h>
 
 
-////////////////////////////
-// Namespace: FileSystem //
-////////////////////////////
+//////////////////////////
+// Vital: System: File //
+//////////////////////////
 
 namespace Vital::FileSystem {
     extern bool resolve(std::string& path);

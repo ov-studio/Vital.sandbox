@@ -18,9 +18,9 @@
 #include <openssl/sha.h>
 
 
-////////////////////////
-// Namespace: Crypto //
-////////////////////////
+////////////////////
+// Vital: Crypto //
+////////////////////
 
 namespace Vital::Crypto {
     std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {

@@ -16,9 +16,9 @@
 #include <System/public/filesystem.h>
 
 
-////////////////////////////
-// Namespace: FileSystem //
-////////////////////////////
+//////////////////////////
+// Vital: System: File //
+//////////////////////////
 
 namespace Vital::FileSystem {
     bool resolve(std::string& path) {

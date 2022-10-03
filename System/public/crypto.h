@@ -13,13 +13,12 @@
 //////////////
 
 #pragma once
-#include <pch.h>
 #include <System/public/vital.h>
 
 
-////////////////////////
-// Namespace: Crypto //
-////////////////////////
+////////////////////
+// Vital: Crypto //
+////////////////////
 
 namespace Vital::Crypto {
     extern std::string hash(std::string mode, std::string& buffer);
