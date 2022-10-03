@@ -201,6 +201,9 @@
     <ClCompile Include="Sandbox\js\private\api.cpp">
       <Filter>Sandbox\js\private</Filter>
     </ClCompile>
+    <ClCompile Include="System\private\audio.cpp">
+      <Filter>System\private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
@@ -1166,6 +1169,9 @@
     </ClInclude>
     <ClInclude Include="Vendor\fmod\include\fmod_dsp.h">
       <Filter>Vendor\fmod</Filter>
+    </ClInclude>
+    <ClInclude Include="System\public\audio.h">
+      <Filter>System\public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

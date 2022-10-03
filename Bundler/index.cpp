@@ -46,6 +46,7 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 
 #include <Sandbox/lua/public/api.h>
 #include <Sandbox/js/public/api.h>
+#include <System/public/audio.h>
 #include <thread>
 
 bool succeededOrWarn(const std::string& message, FMOD_RESULT result)

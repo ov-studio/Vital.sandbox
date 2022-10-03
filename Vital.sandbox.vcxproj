@@ -28,6 +28,7 @@
     <ClCompile Include="Sandbox\lua\private\api.cpp" />
     <ClCompile Include="Sandbox\lua\private\index.cpp" />
     <ClCompile Include="Sandbox\lua\private\vm.cpp" />
+    <ClCompile Include="System\private\audio.cpp" />
     <ClCompile Include="System\private\crypto.cpp" />
     <ClCompile Include="System\private\file.cpp" />
     <ClCompile Include="System\private\vital.cpp" />
@@ -75,6 +76,7 @@
     <ClInclude Include="Sandbox\lua\public\api.h" />
     <ClInclude Include="Sandbox\lua\public\index.h" />
     <ClInclude Include="Sandbox\lua\public\vm.h" />
+    <ClInclude Include="System\public\audio.h" />
     <ClInclude Include="System\public\crypto.h" />
     <ClInclude Include="System\public\file.h" />
     <ClInclude Include="System\public\vital.h" />
@@ -508,7 +510,8 @@
       <AdditionalDependencies>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;$(SolutionDir)\Vendor\fmod\lib\$(Platform)\fmodL_vc.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib\ossl_static.pdb  $(OutDir)</Command>
+      <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib\ossl_static.pdb  $(OutDir)
+copy /y $(SolutionDir)Vendor\fmod\lib\$(Platform)\fmodL_vc.lib  $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -536,7 +539,8 @@
       <AdditionalDependencies>$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libcrypto.lib;$(SolutionDir)\Vendor\openssl\$(Platform)\$(Configuration)\lib\libssl.lib;$(SolutionDir)\Vendor\fmod\lib\$(Platform)\fmod_vc.lib;ws2_32.lib;crypt32.lib</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib\ossl_static.pdb  $(OutDir)</Command>
+      <Command>copy /y $(SolutionDir)Vendor\openssl\$(Platform)\$(Configuration)\lib\ossl_static.pdb  $(OutDir)
+copy /y $(SolutionDir)Vendor\fmod\lib\$(Platform)\fmod_vc.lib  $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -14,6 +14,8 @@
 
 #pragma once
 #include <System/public/vital.h>
+#include <Vendor/fmod/include/fmod.hpp>
+#include <Vendor/fmod/include/fmod_errors.h>
 
 
 ///////////////////////////
