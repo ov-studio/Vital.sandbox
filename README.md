@@ -29,5 +29,5 @@
 
 * [**Official Releases**](https://github.com/ov-studio/Vital.sandbox/releases)
 * [**Installation Guide**](https://github.com/ov-studio/Vital.sandbox/wiki)
-* [**Vendor & Licenses**](https://github.com/ov-studio/Vital.sandbox/blob/main/VENDOR.md)
+* [**Vendors**](https://github.com/ov-studio/Vital.sandbox/blob/main/VENDOR.md)
 * [**Discord Community**](http://discord.gg/sVCnxPW)
