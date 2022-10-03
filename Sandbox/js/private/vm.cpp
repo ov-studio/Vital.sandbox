@@ -168,7 +168,7 @@ namespace Vital::JS {
         setString(buffer);
         bool status = !duk_peval(vm);
         if (!status) {
-            std::string error = getString(-1);
+            std::string error = duk_safe_to_string(vm, -1);
             API::error(error);
             return false;
         }
