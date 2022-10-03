@@ -18,10 +18,11 @@
 * Lightweight & Straightforward
 * Completely Embeddable
 * Built-In VM Modules
-* Built-In File System
-* Built-In Crypto System
 * Built-in Lua APIs
 * Built-in JS APIs
+* Built-In File System
+* Built-In Crypto System
+* Built-In Audio System
 * Necessary Integration APIs
 
 ## ━ Contents
