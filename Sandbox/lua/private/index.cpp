@@ -20,7 +20,7 @@
 // Namespace: Lua //
 /////////////////////
 
-namespace Vital::Lua {
+namespace Vital::Sandbox::Lua {
     std::vector<std::string> vBlacklist = {
         "dofile",
         "load",

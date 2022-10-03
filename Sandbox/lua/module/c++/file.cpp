@@ -21,7 +21,7 @@
 // Lua: File Binder //
 ///////////////////////
 
-namespace Vital::Lua::API {
+namespace Vital::Sandbox::Lua::API {
     void vSandbox_File() {
         bind("file", "resolve", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);

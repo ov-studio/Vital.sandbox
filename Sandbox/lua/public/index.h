@@ -25,7 +25,7 @@ extern "C" {
 // Namespace: Lua //
 /////////////////////
 
-namespace Vital::Lua {
+namespace Vital::Sandbox::Lua {
     extern std::vector<std::string> vBlacklist;
     extern std::vector<luaL_Reg> vLibraries;
     extern std::vector<std::string> vModules;

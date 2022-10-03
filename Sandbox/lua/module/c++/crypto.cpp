@@ -21,7 +21,7 @@
 // Lua: Crypto Binder //
 /////////////////////////
 
-namespace Vital::Lua::API {
+namespace Vital::Sandbox::Lua::API {
     void vSandbox_Crypto() {
         bind("crypto", "hash", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);

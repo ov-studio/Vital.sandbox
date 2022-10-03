@@ -20,7 +20,7 @@
 // JS: VM //
 /////////////
 
-namespace Vital::JS {
+namespace Vital::Sandbox::JS {
     typedef duk_context vital_ref;
     typedef duk_c_function vital_exec;
     typedef std::pair<std::string, std::string> vital_exec_ref;

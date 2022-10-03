@@ -20,7 +20,7 @@
 // Namespace: JS //
 ////////////////////
 
-namespace Vital::JS {
+namespace Vital::Sandbox::JS {
     std::vector<std::string> vBlacklist = {};
     std::vector<std::string> vModules = {};
 }

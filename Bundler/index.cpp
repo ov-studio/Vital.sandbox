@@ -66,11 +66,11 @@ FMOD_RESULT F_CALLBACK channelGroupCallback(FMOD_CHANNELCONTROL* channelControl,
 }
 
 int main() {
-    genPackage("Lua", "Sandbox/lua/module/", Vital::Lua::vModules);
-    genPackage("JS", "Sandbox/js/module/", Vital::JS::vModules);
+    genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::vModules);
+    genPackage("JS", "Sandbox/js/module/", Vital::Sandbox::JS::vModules);
     /*
-    Vital::Lua::API::boot();
-    Vital::Lua::API::onErrorHandle([](std::string& err) -> void {
+    Vital::Sandbox::Lua::API::boot();
+    Vital::Sandbox::Lua::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
     });
     std::string rwString = R"(
@@ -78,12 +78,12 @@ int main() {
         local buffer = "test"
         print(crypto:decode(buffer))
     )";
-    auto testVM = new Vital::Lua::create();
+    auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
     */
 
-    Vital::JS::API::boot();
-    Vital::JS::API::onErrorHandle([](std::string& err) -> void {
+    Vital::Sandbox::JS::API::boot();
+    Vital::Sandbox::JS::API::onErrorHandle([](std::string& err) -> void {
         std::cout << "\n" << err;
     });
     std::string rwString = R"(
@@ -92,7 +92,7 @@ int main() {
     }
     test()
     )";
-    auto testVM = new Vital::JS::create();
+    auto testVM = new Vital::Sandbox::JS::create();
     testVM -> loadString(rwString);
     std::string result = testVM -> getString(-1);
     std::cout << "\n" << "RESULT: " << result;

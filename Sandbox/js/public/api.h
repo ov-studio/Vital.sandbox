@@ -20,7 +20,7 @@
 // JS: API //
 //////////////
 
-namespace Vital::JS::API {
+namespace Vital::Sandbox::JS::API {
     // Handlers //
     extern std::map<vital_exec_ref, vital_exec> vMethods;
     extern bool onErrorHandle(std::function<void(std::string&)> exec);

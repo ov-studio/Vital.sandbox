@@ -24,7 +24,7 @@
 // Lua: VM //
 //////////////
 
-namespace Vital::Lua {
+namespace Vital::Sandbox::Lua {
     // Instantiators //
     std::map<lua_State*, vital_vm*> vInstances;
     vital_vm* fetchVM(vital_ref* vm) { return vInstances[vm]; }

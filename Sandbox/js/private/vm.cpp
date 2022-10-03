@@ -24,7 +24,7 @@
 // JS: VM //
 /////////////
 
-namespace Vital::JS {
+namespace Vital::Sandbox::JS {
     // Instantiators //
     std::map<vital_ref*, vital_vm*> vInstances;
     vital_vm* fetchVM(vital_ref* vm) { return vInstances[vm]; }
