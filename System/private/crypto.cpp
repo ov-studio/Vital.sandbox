@@ -22,7 +22,7 @@
 // Vital: System: Crypto //
 ////////////////////////////
 
-namespace Vital::Crypto {
+namespace Vital::System::Crypto {
     std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {
         if (mode == "SHA1") return {::SHA1, SHA_DIGEST_LENGTH};
         else if (mode == "SHA224") return {::SHA224, SHA224_DIGEST_LENGTH};
