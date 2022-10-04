@@ -22,7 +22,8 @@
 
 namespace Vital::System::Audio {
     FMOD::System* vSystem = nullptr;
-    bool isErrored(FMOD_RESULT result) { return result != FMOD_OK }
+    std::map<vital_sound*, bool> vInstances;
+    bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
     FMOD_RESULT F_CALLBACK channelGroupCallback(
         FMOD_CHANNELCONTROL* channelControl,

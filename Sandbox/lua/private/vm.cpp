@@ -49,8 +49,7 @@ namespace Vital::Sandbox::Lua {
         #endif
     }
     bool create::destroy() {
-        if (isUnloaded) return false;
-        isUnloaded = true;
+        if (!vm) return false;
         lua_close(vm);
         vm = nullptr;
         return true;

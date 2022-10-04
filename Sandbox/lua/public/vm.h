@@ -26,7 +26,6 @@ namespace Vital::Sandbox::Lua {
     typedef std::pair<std::string, std::string> vital_exec_ref;
     class create {
         private:
-            bool isUnloaded = false;
             vital_ref* vm = nullptr;
         public:
             // Instantiators //

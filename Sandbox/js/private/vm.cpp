@@ -45,8 +45,7 @@ namespace Vital::Sandbox::JS {
         #endif
     }
     bool create::destroy() {
-        if (isUnloaded) return false;
-        isUnloaded = true;
+        if (!vm) return false;
         duk_destroy_heap(vm);
         vm = nullptr;
         return true;
