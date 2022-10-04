@@ -88,18 +88,20 @@ namespace Vital::System::Audio {
     }
 
     namespace Sound {
+        // Instantiators //
         std::map<vital_sound*, bool> vInstances;
         create::create(std::string& path) {
             vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
             vInstances.emplace(this, true);
         }
-
         bool create::destroy() {
             if (!sound) return false;
+            vInstances.erase(this);
             sound -> release();
             sound = nullptr;
-            vInstances.erase(this);
             return true;
         }
+
+        bool 
     }
 }
