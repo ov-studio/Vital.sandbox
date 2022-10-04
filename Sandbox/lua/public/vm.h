@@ -68,9 +68,9 @@ namespace Vital::Sandbox::Lua {
             bool getGlobal(std::string index);
             bool getBool(int index = 1);
             std::string getString(int index = 1);
-            int getInt(int index = 1);
-            float getFloat(int index = 1);
-            double getDouble(int index = 1);
+            int getNumber(int index = 1);
+            float getNumber(int index = 1);
+            double getNumber(int index = 1);
             bool getTable(int index = 1);
             bool getTableField(int value, int index = 1);
             bool getTableField(std::string value, int index = 1);

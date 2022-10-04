@@ -85,9 +85,9 @@ namespace Vital::Sandbox::JS {
     bool create::getGlobal(std::string index) { return duk_get_global_string(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(duk_to_boolean(vm, index)); }
     std::string create::getString(int index) { return duk_to_string(vm, index); }
-    int create::getInt(int index) { return static_cast<int>(duk_to_number(vm, index)); }
-    float create::getFloat(int index) { return static_cast<float>(duk_to_number(vm, index)); }
-    double create::getDouble(int index) { return static_cast<double>(duk_to_number(vm, index)); }
+    int create::getNumber(int index) { return static_cast<int>(duk_to_number(vm, index)); }
+    float create::getNumber(int index) { return static_cast<float>(duk_to_number(vm, index)); }
+    double create::getNumber(int index) { return static_cast<double>(duk_to_number(vm, index)); }
     bool create::getArray(int index) { return duk_get_prop(vm, index); }
     bool create::getObject(int index) { return duk_get_prop(vm, index); }
     bool create::getArrayField(int value, int index) { return duk_get_prop_index(vm, index, value); }
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::JS {
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
         duk_get_length(vm, index);
-        int result = getInt(-1);
+        int result = getNumber(-1);
         pop();
         return result;
     }
@@ -177,7 +177,7 @@ namespace Vital::Sandbox::JS {
     bool create::throwError(std::string& error) {
         duk_inspect_callstack_entry(vm, -2);
         getObjectField("lineNumber", -1);
-        error = "[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
+        error = "[ERROR - L" + std::to_string(getNumber(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
         API::error(error);
         return true;
     }
