@@ -49,13 +49,6 @@ namespace Vital::System::Audio {
         if (vSystem) return false;
         if (isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
         if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw "FMOD: Failed to initialize system";
-
-        std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
-        auto sound = new Sound::create(url);
-        sound -> setVolumeRamp(true);
-        do {
-            update();
-        } while (true);
         return true;
     }
 
@@ -80,7 +73,7 @@ namespace Vital::System::Audio {
 
             // TODO: REMOVE LATER
             play();
-            setPan(10);
+            setPitch(100);
             do {
                 
             } while (true);
