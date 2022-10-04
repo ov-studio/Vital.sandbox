@@ -42,6 +42,20 @@ namespace Vital::System::Audio {
                 bool play(FMOD::ChannelGroup* channelGroup);
                 bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
                 bool isPlaying();
+                bool stop();
+
+                bool getPaused(bool state);
+                float getPitch();
+                float getAudibility();
+                float getVolume();
+                bool getVolumeRamp();
+                bool getMute();
+
+                bool setPaused(bool state);
+                bool setPitch(float value);
+                bool setVolume(float value);
+                bool setVolumeRamp(bool state);
+                bool setMute(bool state);
         };
         typedef create vital_sound;
     }

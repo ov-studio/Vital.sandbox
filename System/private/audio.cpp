@@ -96,10 +96,61 @@ namespace Vital::System::Audio {
         bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
             return !isErrored(channel -> setChannelGroup(channelGroup));
         }
+
         bool create::isPlaying() {
-            bool result = false;
-            channel -> isPlaying(&result);
-            return result;
+            bool state = false;
+            channel -> isPlaying(&state);
+            return state;
+        }
+
+        bool create::getPaused() {
+            bool state = false;
+            channel->getPaused(&state);
+            return state;
+        }
+        float create::getPitch() {
+            float value = 0;
+            channel -> getPitch(&value);
+            return value;
+        }
+        float create::getAudibility() {
+            float value = 0;
+            channel -> getAudibility(&value);
+            return value;
+        }
+        float create::getVolume() {
+            float value = 0;
+            channel -> getVolume(&value);
+            return value;
+        }
+        bool create::getVolumeRamp() {
+            bool state = false;
+            channel -> getVolumeRamp(&state);
+            return state;
+        }
+        bool create::getMute() {
+            bool state = false;
+            channel -> getMute(&state);
+            return state;
+        }
+
+        bool create::stop() {
+            return !isErrored(channel -> stop());
+        }
+        bool create::setPaused(bool state) {
+            return !isErrored(channel -> setPaused(state));
+        }
+        bool create::setPitch(float value) {
+            return !isErrored(channel -> setPitch(value));
+        }
+        bool create::setVolume(float value) {
+            return !isErrored(channel -> setVolume(value));
+        }
+        bool create::setVolumeRamp(bool state) {
+            return !isErrored(channel -> setVolumeRamp(state));
+        }
+        bool create::setMute(bool state) {
+            return !isErrored(channel -> setMute(state));
         }
     }
 }
