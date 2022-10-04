@@ -51,8 +51,7 @@ namespace Vital::System::Audio {
                 bool setVolume(float value);
                 bool setVolumeRamp(bool state);
                 bool setMute(bool state);
-
-                bool setPan(bool state);
+                bool setPan(float value);
 
                 // Getters //
                 bool getPaused();

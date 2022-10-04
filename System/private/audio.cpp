@@ -52,7 +52,7 @@ namespace Vital::System::Audio {
 
         std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
         auto sound = new Sound::create(url);
-        sound -> play();
+        sound -> setVolumeRamp(true);
         do {
             update();
         } while (true);
@@ -79,6 +79,8 @@ namespace Vital::System::Audio {
             vInstances.emplace(this, true);
 
             // TODO: REMOVE LATER
+            play();
+            setPan(10);
             do {
                 
             } while (true);
@@ -127,9 +129,8 @@ namespace Vital::System::Audio {
         bool create::setMute(bool state) {
             return !isErrored(channel -> setMute(state));
         }
-
-        bool create::setPan(bool state) {
-            return !isErrored(channel -> setPan(state));
+        bool create::setPan(float value) {
+            return !isErrored(channel -> setPan(value));
         }
 
         // Getters //
