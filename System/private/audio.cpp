@@ -35,37 +35,30 @@ namespace Vital::System::Audio {
 
     bool create() {
         if (vSystem) return false;
-        // Create the main vSystem object.
         if (!isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
-        // Initialize FMOD.
-        if (!isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, nullptr))) throw "FMOD: Failed to initialise system";
-
-        // Create the channel group.
-        FMOD::ChannelGroup* channelGroup = nullptr;
-        if (!isErrored(vSystem->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
+        if (!isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw "FMOD: Failed to initialize system";
 
         // Play the sound.
-        FMOD::Channel* channel = nullptr;
         std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
-        FMOD::Sound* sound = play(url);
-        if (!isErrored(vSystem->playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
+        auto sound = new Sound::create(url);
+        sound -> play();
 
-        // Assign the channel to the group.
-        if (!isErrored(channel -> setChannelGroup(channelGroup))) throw "FMOD: Failed to set channel group on";
+        // Create the channel group.
+        //FMOD::ChannelGroup* channelGroup = nullptr;
+        //if (!isErrored(vSystem->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
 
         // Set a callback on the channel.
-        if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
+        //if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
 
         bool isPlaying = false;
         do {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            channel -> isPlaying(&isPlaying);
+            //channel -> isPlaying(&isPlaying);
             update();
-        } while (isPlaying);
+        } while (true);
 
         // Clean up.
-        sound -> release();
-        channelGroup -> release();
+        //channelGroup -> release();
         return true;
     }
 
@@ -81,17 +74,11 @@ namespace Vital::System::Audio {
         return true;
     }
 
-    FMOD::Sound* play(std::string& path) {
-        if (!vSystem) return false;
-        vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
-        return sound;
-    }
-
     namespace Sound {
         // Instantiators //
         std::map<vital_sound*, bool> vInstances;
         create::create(std::string& path) {
-            vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
+            if (!isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw "FMOD: Failed to create sound";
             vInstances.emplace(this, true);
         }
         bool create::destroy() {
@@ -99,9 +86,18 @@ namespace Vital::System::Audio {
             vInstances.erase(this);
             sound -> release();
             sound = nullptr;
+            channel = nullptr;
             return true;
         }
 
-        bool 
+        void create::play() {
+            if (!isErrored(vSystem -> playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
+        }
+        void create::play(FMOD::ChannelGroup* channelGroup) {
+            if (!isErrored(vSystem -> playSound(sound, channelGroup, false, &channel))) throw "FMOD: Failed to play sound";
+        }
+        void create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
+            if (!isErrored(channel -> setChannelGroup(channelGroup))) throw "FMOD: Failed to set channel group on";
+        }
     }
 }

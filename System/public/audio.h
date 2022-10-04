@@ -30,12 +30,17 @@ namespace Vital::System::Audio {
 
     namespace Sound {
         class create {
-        private:
-            FMOD::Sound* sound = nullptr;
-        public:
-            // Instantiators //
-            create(std::string& path);
-            bool destroy();
+            private:
+                FMOD::Sound* sound = nullptr;
+                FMOD::Channel* channel = nullptr;
+            public:
+                // Instantiators //
+                create(std::string& path);
+                bool destroy();
+
+                void play();
+                void play(FMOD::ChannelGroup* channelGroup);
+                void setChannelGroup(FMOD::ChannelGroup* channelGroup);
         };
         typedef create vital_sound;
     }
