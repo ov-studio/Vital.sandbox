@@ -24,6 +24,8 @@ namespace Vital::System::Audio {
     FMOD::System* vSystem = nullptr;
     bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
+    /*
+    * TODO: ADD THIS UNDER CHANNEL GROUP..
     FMOD_RESULT F_CALLBACK channelGroupCallback(
         FMOD_CHANNELCONTROL* channelControl,
         FMOD_CHANNELCONTROL_TYPE controlType, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbackType,
@@ -33,22 +35,24 @@ namespace Vital::System::Audio {
         return FMOD_OK;
     }
 
+    // Create the channel group.
+    FMOD::ChannelGroup* channelGroup = nullptr;
+    if (!isErrored(vSystem->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
+
+    // Set a callback on the channel.
+    if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
+
+    channelGroup -> release();
+    */
+
     bool create() {
         if (vSystem) return false;
         if (isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
         if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw "FMOD: Failed to initialize system";
 
-        // Play the sound.
         std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
         auto sound = new Sound::create(url);
         sound -> play();
-
-        // Create the channel group.
-        //FMOD::ChannelGroup* channelGroup = nullptr;
-        //if (!isErrored(vSystem->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
-
-        // Set a callback on the channel.
-        //if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
 
         bool isPlaying = false;
         do {
@@ -56,9 +60,6 @@ namespace Vital::System::Audio {
             //channel -> isPlaying(&isPlaying);
             update();
         } while (true);
-
-        // Clean up.
-        //channelGroup -> release();
         return true;
     }
 
