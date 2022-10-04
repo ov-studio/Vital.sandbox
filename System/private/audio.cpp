@@ -53,11 +53,7 @@ namespace Vital::System::Audio {
         std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
         auto sound = new Sound::create(url);
         sound -> play();
-
-        bool isPlaying = false;
         do {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            //channel -> isPlaying(&isPlaying);
             update();
         } while (true);
         return true;
@@ -91,14 +87,19 @@ namespace Vital::System::Audio {
             return true;
         }
 
-        void create::play() {
-            if (isErrored(vSystem -> playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
+        bool create::play() {
+            return !isErrored(vSystem -> playSound(sound, nullptr, false, &channel));
         }
-        void create::play(FMOD::ChannelGroup* channelGroup) {
-            if (isErrored(vSystem -> playSound(sound, channelGroup, false, &channel))) throw "FMOD: Failed to play sound";
+        bool create::play(FMOD::ChannelGroup* channelGroup) {
+            return !isErrored(vSystem -> playSound(sound, channelGroup, false, &channel));
         }
-        void create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
-            if (isErrored(channel -> setChannelGroup(channelGroup))) throw "FMOD: Failed to set channel group on";
+        bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
+            return !isErrored(channel -> setChannelGroup(channelGroup));
+        }
+        bool create::isPlaying() {
+            bool result = false;
+            channel -> isPlaying(&result);
+            return result;
         }
     }
 }

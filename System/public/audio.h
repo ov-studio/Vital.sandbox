@@ -38,9 +38,10 @@ namespace Vital::System::Audio {
                 create(std::string& path);
                 bool destroy();
 
-                void play();
-                void play(FMOD::ChannelGroup* channelGroup);
-                void setChannelGroup(FMOD::ChannelGroup* channelGroup);
+                bool play();
+                bool play(FMOD::ChannelGroup* channelGroup);
+                bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
+                bool isPlaying();
         };
         typedef create vital_sound;
     }
