@@ -14,12 +14,12 @@
 
 #pragma once
 #include <System/public/vital.h>
-#include <Vendor/fmod/include/fmod.hpp>
-#include <Vendor/fmod/include/fmod_errors.h>
 
 
 ///////////////////////////
 // Vital: System: Audio //
 ///////////////////////////
 
-namespace Vital::System::Audio {}
+namespace Vital::System::Audio {
+    extern void boot();
+}
