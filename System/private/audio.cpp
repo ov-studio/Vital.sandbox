@@ -14,8 +14,6 @@
 
 #pragma once
 #include <System/public/audio.h>
-#include <Vendor/fmod/include/fmod.hpp>
-#include <Vendor/fmod/include/fmod_errors.h>
 
 
 ///////////////////////////
@@ -23,16 +21,8 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
-    FMOD::System* system = nullptr;
-    FMOD_RESULT result;
-
-    bool isErrored(const std::string& message, FMOD_RESULT result) {
-        if (result != FMOD_OK) {
-            std::cerr << message << ": " << result << " " << FMOD_ErrorString(result) << std::endl;
-            return false;
-        }
-        return true;
-    }
+    FMOD::System* vSystem = nullptr;
+    bool isErrored(FMOD_RESULT result) { return result != FMOD_OK }
 
     FMOD_RESULT F_CALLBACK channelGroupCallback(
         FMOD_CHANNELCONTROL* channelControl,
@@ -44,58 +34,56 @@ namespace Vital::System::Audio {
     }
 
     bool create() {
-        if (system) return false;
-        // Create the main system object.
-        result = FMOD::System_Create(&system);
-        if (!isErrored("FMOD: Failed to create system object", result)) return false;
+        if (vSystem) return false;
+        // Create the main vSystem object.
+        if (!isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
         // Initialize FMOD.
-        result = system -> init(512, FMOD_INIT_NORMAL, nullptr);
-        if (!isErrored("FMOD: Failed to initialise system object", result)) return false;
+        if (!isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, nullptr))) throw "FMOD: Failed to initialise system";
 
         // Create the channel group.
         FMOD::ChannelGroup* channelGroup = nullptr;
-        result = system->createChannelGroup("inGameSoundEffects", &channelGroup);
-        if (!isErrored("FMOD: Failed to create in-game sound effects channel group", result)) return false;
-
-        // Create the sound.
-        FMOD::Sound* sound = nullptr;
-        system->createSound("C:/Users/Tron/Documents/GITs/Test/Bells.mp3", FMOD_DEFAULT, nullptr, &sound);
+        if (!isErrored(vSystem->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
 
         // Play the sound.
         FMOD::Channel* channel = nullptr;
-        result = system->playSound(sound, nullptr, false, &channel);
-        if (!isErrored("FMOD: Failed to play sound", result)) return false;
+        FMOD::Sound* sound = play("C:/Users/Tron/Documents/GITs/Test/Bells.mp3");
+        if (!isErrored(vSystem->playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
 
         // Assign the channel to the group.
-        result = channel->setChannelGroup(channelGroup);
-        if (!isErrored("FMOD: Failed to set channel group on", result)) return false;
+        if (!isErrored(channel -> setChannelGroup(channelGroup))) throw "FMOD: Failed to set channel group on";
 
         // Set a callback on the channel.
-        channel->setCallback(&channelGroupCallback);
-        if (!isErrored("FMOD: Failed to set callback for sound", result)) return false;
+        if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
 
         bool isPlaying = false;
         do {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            channel->isPlaying(&isPlaying);
+            channel -> isPlaying(&isPlaying);
             update();
         } while (isPlaying);
 
         // Clean up.
-        sound->release();
-        channelGroup->release();
+        sound -> release();
+        channelGroup -> release();
         return true;
     }
 
     bool destroy() {
-        if (!system) return false;
-        system -> release();
-        system = nullptr;
+        if (!vSystem) return false;
+        vSystem -> release();
+        vSystem = nullptr;
         return true;
     }
 
     bool update() {
-        system -> update();
+        vSystem -> update();
         return true;
+    }
+
+    FMOD::Sound* play(std::string& path) {
+        if (!vSystem) return false;
+        FMOD::Sound* sound = nullptr;
+        vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
+        return sound
     }
 }

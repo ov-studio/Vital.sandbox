@@ -14,6 +14,8 @@
 
 #pragma once
 #include <System/public/vital.h>
+#include <Vendor/fmod/include/fmod.hpp>
+#include <Vendor/fmod/include/fmod_errors.h>
 
 
 ///////////////////////////
@@ -21,6 +23,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
+    typedef vital_sound FMOD::Sound;
     extern bool create();
     extern bool destroy();
     extern bool update();
