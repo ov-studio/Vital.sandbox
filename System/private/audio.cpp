@@ -25,9 +25,10 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
+    FMOD::System* system = nullptr;
+    FMOD_RESULT result;
 
-    bool succeededOrWarn(const std::string& message, FMOD_RESULT result)
-    {
+    bool isValid(const std::string& message, FMOD_RESULT result) {
         if (result != FMOD_OK) {
             std::cerr << message << ": " << result << " " << FMOD_ErrorString(result) << std::endl;
             return false;
@@ -35,33 +36,27 @@ namespace Vital::System::Audio {
         return true;
     }
 
-    FMOD_RESULT F_CALLBACK channelGroupCallback(FMOD_CHANNELCONTROL* channelControl,
+    FMOD_RESULT F_CALLBACK channelGroupCallback(
+        FMOD_CHANNELCONTROL* channelControl,
         FMOD_CHANNELCONTROL_TYPE controlType, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbackType,
-        void* commandData1, void* commandData2)
-    {
+        void* commandData1, void* commandData2
+    ) {
         std::cout << "Callback called for " << controlType << std::endl;
         return FMOD_OK;
     }
 
-    void boot() {
-        FMOD_RESULT result;
-
-        FMOD::System* system = nullptr;
+    void create() {
         // Create the main system object.
         result = FMOD::System_Create(&system);
-        if (!succeededOrWarn("FMOD: Failed to create system object", result))
-            return 1;
-
+        if (!isValid("FMOD: Failed to create system object", result)) return;
         // Initialize FMOD.
-        result = system->init(512, FMOD_INIT_NORMAL, nullptr);
-        if (!succeededOrWarn("FMOD: Failed to initialise system object", result))
-            return 1;
+        result = system -> init(512, FMOD_INIT_NORMAL, nullptr);
+        if (!isValid("FMOD: Failed to initialise system object", result)) return;
 
         // Create the channel group.
         FMOD::ChannelGroup* channelGroup = nullptr;
         result = system->createChannelGroup("inGameSoundEffects", &channelGroup);
-        if (!succeededOrWarn("FMOD: Failed to create in-game sound effects channel group", result))
-            return 1;
+        if (!isValid("FMOD: Failed to create in-game sound effects channel group", result)) return;
 
         // Create the sound.
         FMOD::Sound* sound = nullptr;
@@ -70,18 +65,15 @@ namespace Vital::System::Audio {
         // Play the sound.
         FMOD::Channel* channel = nullptr;
         result = system->playSound(sound, nullptr, false, &channel);
-        if (!succeededOrWarn("FMOD: Failed to play sound", result))
-            return 1;
+        if (!isValid("FMOD: Failed to play sound", result)) return;
 
         // Assign the channel to the group.
         result = channel->setChannelGroup(channelGroup);
-        if (!succeededOrWarn("FMOD: Failed to set channel group on", result))
-            return 1;
+        if (!isValid("FMOD: Failed to set channel group on", result)) return;
 
         // Set a callback on the channel.
         channel->setCallback(&channelGroupCallback);
-        if (!succeededOrWarn("FMOD: Failed to set callback for sound", result))
-            return 1;
+        if (!isValid("FMOD: Failed to set callback for sound", result)) return;
 
         bool isPlaying = false;
         do {
@@ -95,6 +87,10 @@ namespace Vital::System::Audio {
         // Clean up.
         sound->release();
         channelGroup->release();
-        system->release();
+    }
+
+    void destroy() {
+        if (system) system -> release();
+        system = nullptr;
     }
 }
