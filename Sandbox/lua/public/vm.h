@@ -59,6 +59,7 @@ namespace Vital::Sandbox::Lua {
             void setMetaTable(int index = 1);
             void setMetaTable(std::string index);
             void createUserData(void* value);
+            void createNamespace(std::string parent);
             void setUserData(void* value);
             void setFunction(vital_exec& value);
 
@@ -88,10 +89,15 @@ namespace Vital::Sandbox::Lua {
 
             // Registerers //
             void registerBool(std::string index, bool value);
+            void registerBool(std::string index, bool value, std::string parent);
             void registerString(std::string index, std::string& value);
+            void registerString(std::string index, std::string& value, std::string parent);
             void registerInt(std::string index, int value);
+            void registerInt(std::string index, int value, std::string parent);
             void registerFloat(std::string index, float value);
+            void registerFloat(std::string index, float value, std::string parent);
             void registerDouble(std::string index, double value);
+            void registerDouble(std::string index, double value, std::string parent);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
             void registerObject(std::string index, void* value);

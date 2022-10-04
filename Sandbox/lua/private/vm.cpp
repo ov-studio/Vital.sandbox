@@ -81,6 +81,14 @@ namespace Vital::Sandbox::Lua {
     void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.data()); }
     void create::setMetaTable(int index) { lua_setmetatable(vm, index); }
     void create::setMetaTable(std::string index) { luaL_setmetatable(vm, index.data()); }
+    void create::createNamespace(std::string parent) {
+        getGlobal(parent);
+        if (!isTable(-1)) {
+            createTable();
+            setGlobal(parent);
+            getGlobal(parent);
+        }
+    }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
@@ -140,33 +148,48 @@ namespace Vital::Sandbox::Lua {
         setBool(value);
         setTableField(index.data(), -2);
     }
+    void create::registerBool(std::string index, bool value, std::string parent) {
+        createNamespace(parent);
+        registerBool(index, value);
+    }
     void create::registerString(std::string index, std::string& value) {
         setString(value);
         setTableField(index.data(), -2);
+    }
+    void create::registerString(std::string index, std::string& value, std::string parent) {
+        createNamespace(parent);
+        registerString(index, value);
     }
     void create::registerInt(std::string index, int value) {
         setInt(value);
         setTableField(index.data(), -2);
     }
+    void create::registerInt(std::string index, int value, std::string parent) {
+        createNamespace(parent);
+        registerInt(index, value);
+    }
     void create::registerFloat(std::string index, float value) {
         setFloat(value);
         setTableField(index.data(), -2);
     }
+    void create::registerFloat(std::string index, float value, std::string parent) {
+        createNamespace(parent);
+        registerFloat(index, value);
+    }
     void create::registerDouble(std::string index, double value) {
         setDouble(value);
         setTableField(index.data(), -2);
+    }
+    void create::registerDouble(std::string index, double value, std::string parent) {
+        createNamespace(parent);
+        registerDouble(index, value);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);
         setTableField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
-        getGlobal(parent);
-        if (!isTable(-1)) {
-            createTable();
-            setGlobal(parent);
-            getGlobal(parent);
-        }
+        createNamespace(parent);
         registerFunction(index, exec);
     }
     void create::registerObject(std::string index, void* value) {
