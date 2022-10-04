@@ -28,7 +28,7 @@ namespace Vital::System::Audio {
     FMOD::System* system = nullptr;
     FMOD_RESULT result;
 
-    bool isValid(const std::string& message, FMOD_RESULT result) {
+    bool isErrored(const std::string& message, FMOD_RESULT result) {
         if (result != FMOD_OK) {
             std::cerr << message << ": " << result << " " << FMOD_ErrorString(result) << std::endl;
             return false;
@@ -45,18 +45,19 @@ namespace Vital::System::Audio {
         return FMOD_OK;
     }
 
-    void create() {
+    bool create() {
+        if (system) return false;
         // Create the main system object.
         result = FMOD::System_Create(&system);
-        if (!isValid("FMOD: Failed to create system object", result)) return;
+        if (!isErrored("FMOD: Failed to create system object", result)) return false;
         // Initialize FMOD.
         result = system -> init(512, FMOD_INIT_NORMAL, nullptr);
-        if (!isValid("FMOD: Failed to initialise system object", result)) return;
+        if (!isErrored("FMOD: Failed to initialise system object", result)) return false;
 
         // Create the channel group.
         FMOD::ChannelGroup* channelGroup = nullptr;
         result = system->createChannelGroup("inGameSoundEffects", &channelGroup);
-        if (!isValid("FMOD: Failed to create in-game sound effects channel group", result)) return;
+        if (!isErrored("FMOD: Failed to create in-game sound effects channel group", result)) return false;
 
         // Create the sound.
         FMOD::Sound* sound = nullptr;
@@ -65,32 +66,38 @@ namespace Vital::System::Audio {
         // Play the sound.
         FMOD::Channel* channel = nullptr;
         result = system->playSound(sound, nullptr, false, &channel);
-        if (!isValid("FMOD: Failed to play sound", result)) return;
+        if (!isErrored("FMOD: Failed to play sound", result)) return false;
 
         // Assign the channel to the group.
         result = channel->setChannelGroup(channelGroup);
-        if (!isValid("FMOD: Failed to set channel group on", result)) return;
+        if (!isErrored("FMOD: Failed to set channel group on", result)) return false;
 
         // Set a callback on the channel.
         channel->setCallback(&channelGroupCallback);
-        if (!isValid("FMOD: Failed to set callback for sound", result)) return;
+        if (!isErrored("FMOD: Failed to set callback for sound", result)) return false;
 
         bool isPlaying = false;
         do {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
             channel->isPlaying(&isPlaying);
-
-            system->update();
+            update();
         } while (isPlaying);
 
         // Clean up.
         sound->release();
         channelGroup->release();
+        return true;
     }
 
-    void destroy() {
-        if (system) system -> release();
+    bool destroy() {
+        if (!system) return false;
+        system -> release();
         system = nullptr;
+        return true;
+    }
+
+    bool update() {
+        system -> update();
+        return true;
     }
 }

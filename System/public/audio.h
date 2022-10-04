@@ -21,5 +21,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
-    extern void boot();
+    extern bool create();
+    extern bool destroy();
+    extern bool update();
 }
