@@ -23,7 +23,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
-    typedef vital_sound FMOD::Sound;
+    typedef FMOD::Sound vital_sound;
     extern bool create();
     extern bool destroy();
     extern bool update();
