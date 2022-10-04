@@ -58,6 +58,7 @@ namespace Vital::Sandbox::JS {
             void setObject(int index = 1);
             void setArrayField(int value, int index = 1);
             void setObjectField(std::string value, int index = 1);
+            void createNamespace(std::string parent);
             void setUserData(void* value);
             void setFunction(vital_exec& value);
 
@@ -86,10 +87,15 @@ namespace Vital::Sandbox::JS {
 
             // Registerers //
             void registerBool(std::string index, bool value);
+            void registerBool(std::string index, bool value, std::string parent);
             void registerString(std::string index, std::string& value);
+            void registerString(std::string index, std::string& value, std::string parent);
             void registerNumber(std::string index, int value);
+            void registerNumber(std::string index, int value, std::string parent);
             void registerNumber(std::string index, float value);
+            void registerNumber(std::string index, float value, std::string parent);
             void registerNumber(std::string index, double value);
+            void registerNumber(std::string index, double value, std::string parent);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
 

@@ -77,6 +77,14 @@ namespace Vital::Sandbox::JS {
     void create::setObject(int index) { duk_put_prop(vm, index); }
     void create::setArrayField(int value, int index) { duk_put_prop_index(vm, index, value); }
     void create::setObjectField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
+    void create::createNamespace(std::string parent) {
+        getGlobal(parent);
+        if (!isObject(-1)) {
+            createObject();
+            setGlobal(parent);
+            getGlobal(parent);
+        }
+    }
     void create::setUserData(void* value) { duk_push_pointer(vm, value); }
     void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
@@ -131,33 +139,52 @@ namespace Vital::Sandbox::JS {
         setBool(value);
         setObjectField(index.data(), -2);
     }
+    void create::registerBool(std::string index, bool value, std::string parent) {
+        createNamespace(parent);
+        registerBool(index, value);
+    }
     void create::registerString(std::string index, std::string& value) {
         setString(value);
         setObjectField(index.data(), -2);
+    }
+    void create::registerString(std::string index, std::string& value, std::string parent) {
+        createNamespace(parent);
+        registerString(index, value);
     }
     void create::registerNumber(std::string index, int value) {
         setNumber(value);
         setObjectField(index.data(), -2);
     }
+    void create::registerNumber(std::string index, int value, std::string parent) {
+        createNamespace(parent);
+        registerNumber(index, value);
+    }
     void create::registerNumber(std::string index, float value) {
         setNumber(value);
         setObjectField(index.data(), -2);
     }
+    void create::registerNumber(std::string index, float value, std::string parent) {
+        createNamespace(parent);
+        registerNumber(index, value);
+    }
     void create::registerNumber(std::string index, double value) {
         setNumber(value);
         setObjectField(index.data(), -2);
+    }
+    void create::registerNumber(std::string index, double value, std::string parent) {
+        createNamespace(parent);
+        registerNumber(index, value);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);
         setObjectField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
-        getGlobal(parent);
-        if (!isObject(-1)) {
-            createObject();
-            setGlobal(parent);
-            getGlobal(parent);
-        }
+        createNamespace(parent);
+        registerFunction(index, exec);
+    }
+    void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
+        createNamespace(parent);
         registerFunction(index, exec);
     }
 
