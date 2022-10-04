@@ -35,8 +35,8 @@ namespace Vital::System::Audio {
 
     bool create() {
         if (vSystem) return false;
-        if (!isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
-        if (!isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw "FMOD: Failed to initialize system";
+        if (isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
+        if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw "FMOD: Failed to initialize system";
 
         // Play the sound.
         std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
@@ -78,7 +78,7 @@ namespace Vital::System::Audio {
         // Instantiators //
         std::map<vital_sound*, bool> vInstances;
         create::create(std::string& path) {
-            if (!isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw "FMOD: Failed to create sound";
+            if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw "FMOD: Failed to create sound";
             vInstances.emplace(this, true);
         }
         bool create::destroy() {
@@ -91,13 +91,13 @@ namespace Vital::System::Audio {
         }
 
         void create::play() {
-            if (!isErrored(vSystem -> playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
+            if (isErrored(vSystem -> playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
         }
         void create::play(FMOD::ChannelGroup* channelGroup) {
-            if (!isErrored(vSystem -> playSound(sound, channelGroup, false, &channel))) throw "FMOD: Failed to play sound";
+            if (isErrored(vSystem -> playSound(sound, channelGroup, false, &channel))) throw "FMOD: Failed to play sound";
         }
         void create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
-            if (!isErrored(channel -> setChannelGroup(channelGroup))) throw "FMOD: Failed to set channel group on";
+            if (isErrored(channel -> setChannelGroup(channelGroup))) throw "FMOD: Failed to set channel group on";
         }
     }
 }
