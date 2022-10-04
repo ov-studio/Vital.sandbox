@@ -23,15 +23,20 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
-    typedef FMOD::Sound vital_sound;
     extern bool create();
     extern bool destroy();
     extern bool update();
     extern FMOD::Sound* play(std::string& path);
 
-    class create {
+    namespace Sound {
+        class create {
         private:
-            vital_ref* vm = nullptr;
+            FMOD::Sound* sound = nullptr;
         public:
+            // Instantiators //
+            create(std::string& path);
+            bool destroy();
+        };
+        typedef create vital_sound;
     }
 }

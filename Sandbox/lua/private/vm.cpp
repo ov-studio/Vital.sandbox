@@ -50,6 +50,7 @@ namespace Vital::Sandbox::Lua {
     }
     bool create::destroy() {
         if (!vm) return false;
+        vInstances.erase(vm);
         lua_close(vm);
         vm = nullptr;
         return true;

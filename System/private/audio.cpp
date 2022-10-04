@@ -22,7 +22,6 @@
 
 namespace Vital::System::Audio {
     FMOD::System* vSystem = nullptr;
-    std::map<vital_sound*, bool> vInstances;
     bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
     FMOD_RESULT F_CALLBACK channelGroupCallback(
@@ -84,8 +83,23 @@ namespace Vital::System::Audio {
 
     FMOD::Sound* play(std::string& path) {
         if (!vSystem) return false;
-        FMOD::Sound* sound = nullptr;
         vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
         return sound;
+    }
+
+    namespace Sound {
+        std::map<vital_sound*, bool> vInstances;
+        create::create(std::string& path) {
+            vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
+            vInstances.emplace(this, true);
+        }
+
+        bool create::destroy() {
+            if (!sound) return false;
+            sound -> release();
+            sound = nullptr;
+            vInstances.erase(this);
+            return true;
+        }
     }
 }
