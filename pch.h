@@ -18,6 +18,7 @@
 #include <functional>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 #include <vector>
 #include <map>
 #include <string>

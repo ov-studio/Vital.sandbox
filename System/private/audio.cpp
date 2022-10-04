@@ -17,8 +17,6 @@
 #include <Vendor/fmod/include/fmod.hpp>
 #include <Vendor/fmod/include/fmod_errors.h>
 
-#include <thread>
-
 
 ///////////////////////////
 // Vital: System: Audio //
