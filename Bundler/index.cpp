@@ -83,6 +83,6 @@ int main() {
     Vital::System::Audio::create();
 
     std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
-    auto testSound = Vital::System::Sound::create(url);
+    auto testSound = Vital::System::Audio::Sound::create(url);
     return 1;
 }

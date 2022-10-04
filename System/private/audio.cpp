@@ -81,7 +81,7 @@ namespace Vital::System::Audio {
             // TODO: REMOVE LATER
             do {
                 
-            } while(true)
+            } while (true);
         }
         bool create::destroy() {
             if (!sound) return false;
