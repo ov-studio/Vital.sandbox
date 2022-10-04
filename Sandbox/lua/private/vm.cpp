@@ -71,9 +71,9 @@ namespace Vital::Sandbox::Lua {
     void create::setNil() { lua_pushnil(vm); }
     void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
     void create::setString(std::string& value) { lua_pushstring(vm, value.data()); }
-    void create::setInt(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setFloat(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setDouble(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setNumber(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setNumber(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setNumber(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::createTable() { lua_newtable(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
     void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
@@ -126,16 +126,16 @@ namespace Vital::Sandbox::Lua {
         setString(value);
         setTableField(getLength(-2) + 1, -2);
     }
-    void create::pushInt(int value) {
-        setInt(value);
+    void create::pushNumber(int value) {
+        setNumber(value);
         setTableField(getLength(-2) + 1, -2);
     }
-    void create::pushFloat(float value) {
-        setFloat(value);
+    void create::pushNumber(float value) {
+        setNumber(value);
         setTableField(getLength(-2) + 1, -2);
     }
-    void create::pushDouble(double value) {
-        setDouble(value);
+    void create::pushNumber(double value) {
+        setNumber(value);
         setTableField(getLength(-2) + 1, -2);
     }
     void create::pushFunction(vital_exec& exec) {
@@ -160,29 +160,29 @@ namespace Vital::Sandbox::Lua {
         createNamespace(parent);
         registerString(index, value);
     }
-    void create::registerInt(std::string index, int value) {
-        setInt(value);
+    void create::registerNumber(std::string index, int value) {
+        setNumber(value);
         setTableField(index.data(), -2);
     }
-    void create::registerInt(std::string index, int value, std::string parent) {
+    void create::registerNumber(std::string index, int value, std::string parent) {
         createNamespace(parent);
-        registerInt(index, value);
+        registerNumber(index, value);
     }
-    void create::registerFloat(std::string index, float value) {
-        setFloat(value);
+    void create::registerNumber(std::string index, float value) {
+        setNumber(value);
         setTableField(index.data(), -2);
     }
-    void create::registerFloat(std::string index, float value, std::string parent) {
+    void create::registerNumber(std::string index, float value, std::string parent) {
         createNamespace(parent);
-        registerFloat(index, value);
+        registerNumber(index, value);
     }
-    void create::registerDouble(std::string index, double value) {
-        setDouble(value);
+    void create::registerNumber(std::string index, double value) {
+        setNumber(value);
         setTableField(index.data(), -2);
     }
-    void create::registerDouble(std::string index, double value, std::string parent) {
+    void create::registerNumber(std::string index, double value, std::string parent) {
         createNamespace(parent);
-        registerDouble(index, value);
+        registerNumber(index, value);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {
         setFunction(exec);

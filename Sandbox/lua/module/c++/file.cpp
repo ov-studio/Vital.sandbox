@@ -49,7 +49,7 @@ namespace Vital::Sandbox::Lua::API {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
                 std::string path = vm -> getString(1);
-                vm -> setDouble(static_cast<double>(Vital::System::File::size(path)));
+                vm -> setNumber(static_cast<double>(Vital::System::File::size(path)));
             }
             return 1;
         });

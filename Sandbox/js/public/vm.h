@@ -49,9 +49,9 @@ namespace Vital::Sandbox::JS {
             void setNil();
             void setBool(bool value);
             void setString(std::string& value);
-            void setInt(int value);
-            void setFloat(float value);
-            void setDouble(double value);
+            void setNumber(int value);
+            void setNumber(float value);
+            void setNumber(double value);
             void createArray();
             void createObject();
             void setArray(int index = 1);
@@ -79,17 +79,17 @@ namespace Vital::Sandbox::JS {
             // Pushers //
             void pushBool(bool value);
             void pushString(std::string& value);
-            void pushInt(int value);
-            void pushFloat(float value);
-            void pushDouble(double value);
+            void pushNumber(int value);
+            void pushNumber(float value);
+            void pushNumber(double value);
             void pushFunction(vital_exec& exec);
 
             // Registerers //
             void registerBool(std::string index, bool value);
             void registerString(std::string index, std::string& value);
-            void registerInt(std::string index, int value);
-            void registerFloat(std::string index, float value);
-            void registerDouble(std::string index, double value);
+            void registerNumber(std::string index, int value);
+            void registerNumber(std::string index, float value);
+            void registerNumber(std::string index, double value);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
 

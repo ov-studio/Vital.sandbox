@@ -68,9 +68,9 @@ namespace Vital::Sandbox::JS {
     void create::setNil() { duk_push_null(vm); }
     void create::setBool(bool value) { duk_push_boolean(vm, static_cast<int>(value)); }
     void create::setString(std::string& value) { duk_push_string(vm, value.data()); }
-    void create::setInt(int value) { duk_push_number(vm, value); }
-    void create::setFloat(float value) { duk_push_number(vm, value); }
-    void create::setDouble(double value) { duk_push_number(vm, value); }
+    void create::setNumber(int value) { duk_push_number(vm, value); }
+    void create::setNumber(float value) { duk_push_number(vm, value); }
+    void create::setNumber(double value) { duk_push_number(vm, value); }
     void create::createArray() { duk_push_array(vm); }
     void create::createObject() { duk_push_object(vm); }
     void create::setArray(int index) { duk_put_prop(vm, index); }
@@ -109,16 +109,16 @@ namespace Vital::Sandbox::JS {
         setString(value);
         setArrayField(getLength(-2) + 1, -2);
     }
-    void create::pushInt(int value) {
-        setInt(value);
+    void create::pushNumber(int value) {
+        setNumber(value);
         setArrayField(getLength(-2) + 1, -2);
     }
-    void create::pushFloat(float value) {
-        setFloat(value);
+    void create::pushNumber(float value) {
+        setNumber(value);
         setArrayField(getLength(-2) + 1, -2);
     }
-    void create::pushDouble(double value) {
-        setDouble(value);
+    void create::pushNumber(double value) {
+        setNumber(value);
         setArrayField(getLength(-2) + 1, -2);
     }
     void create::pushFunction(vital_exec& exec) {
@@ -135,16 +135,16 @@ namespace Vital::Sandbox::JS {
         setString(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerInt(std::string index, int value) {
-        setInt(value);
+    void create::registerNumber(std::string index, int value) {
+        setNumber(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerFloat(std::string index, float value) {
-        setFloat(value);
+    void create::registerNumber(std::string index, float value) {
+        setNumber(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerDouble(std::string index, double value) {
-        setDouble(value);
+    void create::registerNumber(std::string index, double value) {
+        setNumber(value);
         setObjectField(index.data(), -2);
     }
     void create::registerFunction(std::string index, vital_exec& exec) {

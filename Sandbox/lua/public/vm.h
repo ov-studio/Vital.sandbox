@@ -48,9 +48,9 @@ namespace Vital::Sandbox::Lua {
             void setNil();
             void setBool(bool value);
             void setString(std::string& value);
-            void setInt(int value);
-            void setFloat(float value);
-            void setDouble(double value);
+            void setNumber(int value);
+            void setNumber(float value);
+            void setNumber(double value);
             void createTable();
             void setTable(int index = 1);
             void setTableField(int value, int index = 1);
@@ -82,9 +82,9 @@ namespace Vital::Sandbox::Lua {
             // Pushers //
             void pushBool(bool value);
             void pushString(std::string& value);
-            void pushInt(int value);
-            void pushFloat(float value);
-            void pushDouble(double value);
+            void pushNumber(int value);
+            void pushNumber(float value);
+            void pushNumber(double value);
             void pushFunction(vital_exec& exec);
 
             // Registerers //
@@ -92,12 +92,12 @@ namespace Vital::Sandbox::Lua {
             void registerBool(std::string index, bool value, std::string parent);
             void registerString(std::string index, std::string& value);
             void registerString(std::string index, std::string& value, std::string parent);
-            void registerInt(std::string index, int value);
-            void registerInt(std::string index, int value, std::string parent);
-            void registerFloat(std::string index, float value);
-            void registerFloat(std::string index, float value, std::string parent);
-            void registerDouble(std::string index, double value);
-            void registerDouble(std::string index, double value, std::string parent);
+            void registerNumber(std::string index, int value);
+            void registerNumber(std::string index, int value, std::string parent);
+            void registerNumber(std::string index, float value);
+            void registerNumber(std::string index, float value, std::string parent);
+            void registerNumber(std::string index, double value);
+            void registerNumber(std::string index, double value, std::string parent);
             void registerFunction(std::string index, vital_exec& exec);
             void registerFunction(std::string index, vital_exec& exec, std::string parent);
             void registerObject(std::string index, void* value);
