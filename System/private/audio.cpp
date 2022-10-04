@@ -105,7 +105,7 @@ namespace Vital::System::Audio {
 
         bool create::getPaused() {
             bool state = false;
-            channel->getPaused(&state);
+            channel -> getPaused(&state);
             return state;
         }
         float create::getPitch() {
@@ -151,6 +151,10 @@ namespace Vital::System::Audio {
         }
         bool create::setMute(bool state) {
             return !isErrored(channel -> setMute(state));
+        }
+
+        bool create::setPan(bool state) {
+            return !isErrored(channel -> setPan(state));
         }
     }
 }

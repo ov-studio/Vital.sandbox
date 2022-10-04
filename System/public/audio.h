@@ -44,7 +44,7 @@ namespace Vital::System::Audio {
                 bool isPlaying();
                 bool stop();
 
-                bool getPaused(bool state);
+                bool getPaused();
                 float getPitch();
                 float getAudibility();
                 float getVolume();
@@ -56,6 +56,8 @@ namespace Vital::System::Audio {
                 bool setVolume(float value);
                 bool setVolumeRamp(bool state);
                 bool setMute(bool state);
+
+                bool setPan(bool state);
         };
         typedef create vital_sound;
     }
