@@ -183,10 +183,6 @@ namespace Vital::Sandbox::JS {
         createNamespace(parent);
         registerFunction(index, exec);
     }
-    void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
-        createNamespace(parent);
-        registerFunction(index, exec);
-    }
 
     // Utils //
     void create::pop(int count) { duk_pop_n(vm, count); }

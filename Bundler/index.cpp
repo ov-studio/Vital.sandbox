@@ -80,6 +80,6 @@ int main() {
     testVM -> loadString(rwString);
     std::string result = testVM -> getString(-1);
     std::cout << "\n" << "RESULT: " << result;
-    Vital::System::Audio::boot();
+    Vital::System::Audio::create();
     return 1;
 }
