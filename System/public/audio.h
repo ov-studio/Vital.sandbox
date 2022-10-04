@@ -27,4 +27,5 @@ namespace Vital::System::Audio {
     extern bool create();
     extern bool destroy();
     extern bool update();
+    extern FMOD::Sound* play(std::string& path);
 }

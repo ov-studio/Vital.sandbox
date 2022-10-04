@@ -46,7 +46,8 @@ namespace Vital::System::Audio {
 
         // Play the sound.
         FMOD::Channel* channel = nullptr;
-        FMOD::Sound* sound = play("C:/Users/Tron/Documents/GITs/Test/Bells.mp3");
+        std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
+        FMOD::Sound* sound = play(url);
         if (!isErrored(vSystem->playSound(sound, nullptr, false, &channel))) throw "FMOD: Failed to play sound";
 
         // Assign the channel to the group.
@@ -84,6 +85,6 @@ namespace Vital::System::Audio {
         if (!vSystem) return false;
         FMOD::Sound* sound = nullptr;
         vSystem -> createSound(path.data(), FMOD_DEFAULT, nullptr, &sound);
-        return sound
+        return sound;
     }
 }
