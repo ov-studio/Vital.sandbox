@@ -103,7 +103,7 @@ namespace Vital::Sandbox::JS {
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
         duk_get_length(vm, index);
-        int result = getNumber(-1);
+        int result = getInt(-1);
         pop();
         return result;
     }
@@ -204,7 +204,7 @@ namespace Vital::Sandbox::JS {
     bool create::throwError(std::string& error) {
         duk_inspect_callstack_entry(vm, -2);
         getObjectField("lineNumber", -1);
-        error = "[ERROR - L" + std::to_string(getNumber(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
+        error = "[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
         API::error(error);
         return true;
     }

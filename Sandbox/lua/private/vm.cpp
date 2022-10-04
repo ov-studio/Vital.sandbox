@@ -101,9 +101,9 @@ namespace Vital::Sandbox::Lua {
     bool create::getGlobal(std::string index) { return lua_getglobal(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(lua_toboolean(vm, index)); }
     std::string create::getString(int index) { return lua_tostring(vm, index); }
-    int create::getNumber(int index) { return static_cast<int>(lua_tonumber(vm, index)); }
-    float create::getNumber(int index) { return static_cast<float>(lua_tonumber(vm, index)); }
-    double create::getNumber(int index) { return static_cast<double>(lua_tonumber(vm, index)); }
+    int create::getInt(int index) { return static_cast<int>(lua_tonumber(vm, index)); }
+    float create::getFloat(int index) { return static_cast<float>(lua_tonumber(vm, index)); }
+    double create::getDouble(int index) { return static_cast<double>(lua_tonumber(vm, index)); }
     bool create::getTable(int index) { return lua_gettable(vm, index); }
     bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
     bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
@@ -112,7 +112,7 @@ namespace Vital::Sandbox::Lua {
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
-        int result = getNumber(-1);
+        int result = getInt(-1);
         pop();
         return result;
     }
