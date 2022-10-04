@@ -77,6 +77,11 @@ namespace Vital::System::Audio {
         create::create(std::string& path) {
             if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw "FMOD: Failed to create sound";
             vInstances.emplace(this, true);
+
+            // TODO: REMOVE LATER
+            do {
+                
+            } while(true)
         }
         bool create::destroy() {
             if (!sound) return false;

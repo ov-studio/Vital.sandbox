@@ -81,5 +81,8 @@ int main() {
     std::string result = testVM -> getString(-1);
     std::cout << "\n" << "RESULT: " << result;
     Vital::System::Audio::create();
+
+    std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
+    auto testSound = Vital::System::Sound::create(url);
     return 1;
 }
