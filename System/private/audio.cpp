@@ -47,8 +47,8 @@ namespace Vital::System::Audio {
 
     bool create() {
         if (vSystem) return false;
-        if (isErrored(FMOD::System_Create(&vSystem))) throw "FMOD: Failed to create system";
-        if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw "FMOD: Failed to initialize system";
+        if (isErrored(FMOD::System_Create(&vSystem))) throw 0;
+        if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw 0;
         return true;
     }
 
@@ -56,6 +56,7 @@ namespace Vital::System::Audio {
         if (!vSystem) return false;
         vSystem -> release();
         vSystem = nullptr;
+        delete this;
         return true;
     }
 
@@ -68,12 +69,12 @@ namespace Vital::System::Audio {
         // Instantiators //
         std::map<vital_sound*, bool> vInstances;
         create::create(std::string& path) {
-            if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw "FMOD: Failed to create sound";
+            if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw 0;
             vInstances.emplace(this, true);
 
             // TODO: REMOVE LATER
             play();
-            setPitch(100);
+            setPitch(2);
             do {
                 
             } while (true);
@@ -84,6 +85,7 @@ namespace Vital::System::Audio {
             sound -> release();
             sound = nullptr;
             channel = nullptr;
+            delete this;
             return true;
         }
 

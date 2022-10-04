@@ -53,6 +53,7 @@ namespace Vital::Sandbox::Lua {
         vInstances.erase(vm);
         lua_close(vm);
         vm = nullptr;
+        delete this;
         return true;
     }
 
