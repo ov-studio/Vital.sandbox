@@ -67,9 +67,9 @@ namespace Vital::Sandbox::JS {
             bool getGlobal(std::string index);
             bool getBool(int index = 1);
             std::string getString(int index = 1);
-            int getNumber(int index = 1);
-            float getNumber(int index = 1);
-            double getNumber(int index = 1);
+            int getInt(int index = 1);
+            float getFloat(int index = 1);
+            double getDouble(int index = 1);
             bool getArray(int index = 1);
             bool getObject(int index = 1);
             bool getArrayField(int value, int index = 1);
