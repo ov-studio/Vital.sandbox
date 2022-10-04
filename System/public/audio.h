@@ -38,19 +38,14 @@ namespace Vital::System::Audio {
                 create(std::string& path);
                 bool destroy();
 
+                // Checkers //
+                bool isPlaying();
+
+                // Setters //
                 bool play();
                 bool play(FMOD::ChannelGroup* channelGroup);
                 bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
-                bool isPlaying();
                 bool stop();
-
-                bool getPaused();
-                float getPitch();
-                float getAudibility();
-                float getVolume();
-                bool getVolumeRamp();
-                bool getMute();
-
                 bool setPaused(bool state);
                 bool setPitch(float value);
                 bool setVolume(float value);
@@ -58,6 +53,14 @@ namespace Vital::System::Audio {
                 bool setMute(bool state);
 
                 bool setPan(bool state);
+
+                // Getters //
+                bool getPaused();
+                float getPitch();
+                float getAudibility();
+                float getVolume();
+                bool getVolumeRamp();
+                bool getMute();
         };
         typedef create vital_sound;
     }

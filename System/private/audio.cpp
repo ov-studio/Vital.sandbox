@@ -87,6 +87,14 @@ namespace Vital::System::Audio {
             return true;
         }
 
+        // Checkers //
+        bool create::isPlaying() {
+            bool state = false;
+            channel -> isPlaying(&state);
+            return state;
+        }
+
+        // Setters //
         bool create::play() {
             return !isErrored(vSystem -> playSound(sound, nullptr, false, &channel));
         }
@@ -96,13 +104,30 @@ namespace Vital::System::Audio {
         bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
             return !isErrored(channel -> setChannelGroup(channelGroup));
         }
-
-        bool create::isPlaying() {
-            bool state = false;
-            channel -> isPlaying(&state);
-            return state;
+        bool create::stop() {
+            return !isErrored(channel -> stop());
+        }
+        bool create::setPaused(bool state) {
+            return !isErrored(channel -> setPaused(state));
+        }
+        bool create::setPitch(float value) {
+            return !isErrored(channel -> setPitch(value));
+        }
+        bool create::setVolume(float value) {
+            return !isErrored(channel -> setVolume(value));
+        }
+        bool create::setVolumeRamp(bool state) {
+            return !isErrored(channel -> setVolumeRamp(state));
+        }
+        bool create::setMute(bool state) {
+            return !isErrored(channel -> setMute(state));
         }
 
+        bool create::setPan(bool state) {
+            return !isErrored(channel -> setPan(state));
+        }
+
+        // Getters //
         bool create::getPaused() {
             bool state = false;
             channel -> getPaused(&state);
@@ -132,29 +157,6 @@ namespace Vital::System::Audio {
             bool state = false;
             channel -> getMute(&state);
             return state;
-        }
-
-        bool create::stop() {
-            return !isErrored(channel -> stop());
-        }
-        bool create::setPaused(bool state) {
-            return !isErrored(channel -> setPaused(state));
-        }
-        bool create::setPitch(float value) {
-            return !isErrored(channel -> setPitch(value));
-        }
-        bool create::setVolume(float value) {
-            return !isErrored(channel -> setVolume(value));
-        }
-        bool create::setVolumeRamp(bool state) {
-            return !isErrored(channel -> setVolumeRamp(state));
-        }
-        bool create::setMute(bool state) {
-            return !isErrored(channel -> setMute(state));
-        }
-
-        bool create::setPan(bool state) {
-            return !isErrored(channel -> setPan(state));
         }
     }
 }
