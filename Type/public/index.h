@@ -20,8 +20,9 @@
 // Vital //
 ////////////
 
-namespace Vital {}
+namespace Vital {
     static const std::string Signature = "VitalSDK";
     static const std::map<std::string, std::string> ErrorCode;
 }
+
 namespace Vital::Type {}
