@@ -72,7 +72,7 @@ namespace Vital::Sandbox::Lua {
     void create::setString(std::string& value) { lua_pushstring(vm, value.data()); }
     void create::setNumber(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setNumber(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
-    void create::setNumber(double value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
+    void create::setNumber(double value) { lua_pushnumber(vm, value); }
     void create::createTable() { lua_newtable(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
     void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
