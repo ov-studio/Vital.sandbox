@@ -65,7 +65,6 @@ namespace Vital::System::Audio {
     }
 }
 
-
 namespace Vital::System::Audio::Sound {
     // Instantiators //
     std::map<vital_sound*, bool> vInstances;
