@@ -30,7 +30,7 @@ namespace Vital::Sandbox::Lua {
         public:
             // Instantiators //
             create();
-            bool destroy();
+            ~create();
 
             // Checkers //
             bool isNil(int index = 1);

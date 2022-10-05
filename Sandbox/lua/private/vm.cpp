@@ -48,13 +48,11 @@ namespace Vital::Sandbox::Lua {
             }
         #endif
     }
-    bool create::destroy() {
+    create::~create() {
         if (!vm) return false;
         vInstances.erase(vm);
         lua_close(vm);
         vm = nullptr;
-        delete this;
-        return true;
     }
 
     // Checkers //

@@ -30,7 +30,7 @@ namespace Vital::Sandbox::JS {
         public:
             // Instantiators //
             create();
-            bool destroy();
+            ~create();
 
             // Checkers //
             bool isNil(int index = 1);

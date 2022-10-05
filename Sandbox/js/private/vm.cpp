@@ -44,13 +44,10 @@ namespace Vital::Sandbox::JS {
             }
         #endif
     }
-    bool create::destroy() {
-        if (!vm) return false;
+    create::~create() {
         vInstances.erase(vm);
         duk_destroy_heap(vm);
         vm = nullptr;
-        delete this;
-        return true;
     }
 
     // Checkers //
