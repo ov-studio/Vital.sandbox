@@ -56,7 +56,6 @@ namespace Vital::Types::Audio {
         float customLevel = 0;
         float centerFrequency = 0;
     } DistanceFilter;
-    typedef struct 
 }
 
 namespace Vital::System {
