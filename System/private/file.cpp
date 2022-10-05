@@ -32,29 +32,27 @@ namespace Vital::System::File {
     }
 
     std::streampos size(std::string& path) {
-        if (!exists(path)) return 0;
+        if (!exists(path)) throw 0;
         return std::filesystem::file_size(path);
     }
 
     bool remove(std::string& path) {
-        if (!exists(path)) return false;
+        if (!exists(path)) throw 0;
         return std::filesystem::remove(path);
     }
 
     std::string read(std::string& path) {
         resolve(path);
-        std::string result = "";
-        if (exists(path)) {
-            std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
-            auto bytes = std::filesystem::file_size(path);
-            char* buffer = new char[(bytes + 1)];
-            handle.seekg(0, std::ios::beg);
-            handle.read(buffer, bytes);
-            handle.close();
-            buffer[bytes] = 0;
-            result = buffer;
-            delete[] buffer;
-        }
+        if (!exists(path)) throw 0;
+        std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
+        auto bytes = std::filesystem::file_size(path);
+        char* buffer = new char[(bytes + 1)];
+        handle.seekg(0, std::ios::beg);
+        handle.read(buffer, bytes);
+        handle.close();
+        buffer[bytes] = 0;
+        std::string result = buffer;
+        delete[] buffer;
         return result;
     }
 
