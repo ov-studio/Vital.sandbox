@@ -23,7 +23,7 @@
 ////////////////////////////
 
 namespace Vital::System::Crypto {
-    std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(std::string& mode) {
+    std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(const std::string& mode) {
         if (mode == "SHA1") return {::SHA1, SHA_DIGEST_LENGTH};
         else if (mode == "SHA224") return {::SHA224, SHA224_DIGEST_LENGTH};
         else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
@@ -32,7 +32,7 @@ namespace Vital::System::Crypto {
         else throw ErrorCode["hash-mode-nonexistent"];
     }
 
-    const EVP_CIPHER* CipherMode(std::string& mode) {
+    const EVP_CIPHER* CipherMode(const std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
         else if (mode == "AES192") return EVP_aes_192_cbc();
         else if (mode == "AES256") return EVP_aes_256_cbc();
@@ -54,7 +54,7 @@ namespace Vital::System::Crypto {
         catch(std::string error) { throw error; }
     }
 
-    std::string CipherHandle(std::string& mode, bool isEncrypt, std::string& buffer, std::string& key, std::string& iv) {
+    std::string CipherHandle(const std::string& mode, bool isEncrypt, const std::string& buffer, const std::string& key, const std::string& iv) {
         try {
             EVP_CIPHER* algorithm = const_cast<EVP_CIPHER*>(CipherMode(mode));
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -79,7 +79,7 @@ namespace Vital::System::Crypto {
         catch(std::string error) { throw error; }
     }
 
-    std::string hash(std::string mode, std::string& buffer) {
+    std::string hash(const std::string mode, const std::string& buffer) {
         try {
             auto algorithm = HashMode(mode);
             int outputSize = algorithm.second;
@@ -101,7 +101,7 @@ namespace Vital::System::Crypto {
         return result.str();
     }
 
-    std::string decode(std::string& buffer) {
+    std::string decode(const std::string& buffer) {
         try {
             int bufferSize = static_cast<int>(buffer.size());
             std::string result;
@@ -114,7 +114,7 @@ namespace Vital::System::Crypto {
         catch(...) { throw ErrorCode["decode-failed"]; }
     }
 
-    std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
+    std::pair<std::string, std::string> encrypt(const std::string mode, const std::string& buffer, const std::string& key) {
         try {
             std::string iv = CipherIV(mode);
             std::string result = CipherHandle(mode, true, buffer, key, iv);
@@ -123,7 +123,7 @@ namespace Vital::System::Crypto {
         catch(std::string error) { throw error; }
     }
 
-    std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
+    std::string decrypt(const std::string mode, const std::string& buffer, const std::string& key, const std::string& iv) {
         try {
             std::string __buffer = decode(buffer);
             std::string __iv = decode(iv);

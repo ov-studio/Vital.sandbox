@@ -26,6 +26,6 @@ namespace Vital::System::File {
     extern std::streampos size(std::string& path);
     extern bool remove(std::string& path);
     extern std::string read(std::string& path);
-    extern bool write(std::string& path, std::string buffer);
+    extern bool write(std::string& path, const std::string& buffer);
     extern std::vector<std::string> contents(std::string& path, bool fetchDirs = false);
 }
