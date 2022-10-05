@@ -23,12 +23,12 @@
 namespace Vital::Sandbox::Lua::API {
     // Handlers //
     extern std::map<vital_exec_ref, vital_exec> vMethods;
-    extern bool onErrorHandle(std::function<void(std::string&)> exec);
+    extern bool onErrorHandle(std::function<void(const std::string&)> exec);
 
     // Helpers //
-    extern bool error(std::string& error);
-    extern bool bind(std::string parent, std::string name, vital_exec exec);
-    extern bool unbind(std::string parent, std::string name);
+    extern bool error(const std::string& error);
+    extern bool bind(const std::string& parent, const std::string& name, vital_exec exec);
+    extern bool unbind(const std::string& parent, const std::string& name);
 
     // Booter //
     extern bool boot();
