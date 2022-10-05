@@ -31,7 +31,7 @@ namespace Vital::Sandbox::Lua {
     create::create() {
         vm = luaL_newstate();
         vInstances.emplace(vm, this);
-        for (luaL_Reg i : vLibraries) {
+        for (luaL_Reg i : vLibrary) {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
         }

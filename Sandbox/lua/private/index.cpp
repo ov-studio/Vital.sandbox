@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua {
         "loadfile"
     };
 
-    std::vector<luaL_Reg> vLibraries = {
+    std::vector<luaL_Reg> vLibrary = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
         {"string", luaopen_string},
