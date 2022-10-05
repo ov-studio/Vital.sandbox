@@ -23,25 +23,25 @@
 namespace Vital::Sandbox::JS::API {
     // Handlers //
     std::map<vital_exec_ref, vital_exec> vMethods;
-    std::function<void(std::string&)> onErrorHandler = NULL;
-    bool onErrorHandle(std::function<void(std::string&)> exec) {
+    std::function<void(const std::string&)> onErrorHandler = NULL;
+    bool onErrorHandle(std::function<void(const std::string&)> exec) {
         onErrorHandler = exec;
         return true;
     }
 
     // Helpers //
-    bool error(std::string& error) {
+    bool error(const std::string& error) {
         if (!onErrorHandler) return false;
         onErrorHandler(error);
         return true;
     }
 
-    bool bind(std::string parent, std::string name, vital_exec exec) {
+    bool bind(const std::string& parent, const std::string& name, vital_exec exec) {
         vital_exec_ref ref = {parent, name};
         vMethods[ref] = exec;
         return true;
     }
-    bool unbind(std::string parent, std::string name) {
+    bool unbind(const std::string& parent, const std::string& name) {
         vital_exec_ref ref = {parent, name};
         vMethods.erase(ref);
         return true;
