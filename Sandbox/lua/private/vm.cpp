@@ -209,12 +209,12 @@ namespace Vital::Sandbox::Lua {
         }
         return true;
     }
-    bool create::throwError(std::string& error) {
+    bool create::throwError(const std::string& error) {
         lua_Debug debug;
         lua_getstack(vm, 1, &debug);
         lua_getinfo(vm, "nSl", &debug);
-        error = "[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error);
-        API::error(error);
+        API::error("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
+        vm -> setBool(false);
         return true;
     }
 }

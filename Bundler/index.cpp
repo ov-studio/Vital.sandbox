@@ -52,9 +52,8 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::vModules);
     genPackage("JS", "Sandbox/js/module/", Vital::Sandbox::JS::vModules);
-    /*
     Vital::Sandbox::Lua::API::boot();
-    Vital::Sandbox::Lua::API::onErrorHandle([](std::string& err) -> void {
+    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
     std::string rwString = R"(
@@ -64,10 +63,10 @@ int main() {
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
-    */
 
+    /*
     Vital::Sandbox::JS::API::boot();
-    Vital::Sandbox::JS::API::onErrorHandle([](std::string& err) -> void {
+    Vital::Sandbox::JS::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
     std::string rwString = R"(
@@ -80,9 +79,10 @@ int main() {
     testVM -> loadString(rwString);
     std::string result = testVM -> getString(-1);
     std::cout << "\n" << "RESULT: " << result;
-    Vital::System::Audio::create();
+    */
 
     std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
+    Vital::System::Audio::create();
     auto testSound = Vital::System::Audio::Sound::create(url);
     return 1;
 }

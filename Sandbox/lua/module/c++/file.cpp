@@ -32,10 +32,8 @@ namespace Vital::Sandbox::Lua::API {
                     Vital::System::File::resolve(path);
                     vm -> setString(path);
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -48,10 +46,8 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::exists(path));
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -64,10 +60,8 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     vm -> setNumber(static_cast<double>(Vital::System::File::size(path)));
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -80,10 +74,8 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::remove(path));
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -97,10 +89,8 @@ namespace Vital::Sandbox::Lua::API {
                     auto buffer = Vital::System::File::read(path);
                     vm -> setString(buffer);
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -114,15 +104,13 @@ namespace Vital::Sandbox::Lua::API {
                     std::string buffer = vm -> getString(2);
                     vm -> setBool(Vital::System::File::write(path, reinterpret_cast<char*>(&buffer)));
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
 
-        bind("file", "fetchContents", [](vital_ref* ref) -> int {
+        bind("file", "contents", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
@@ -130,14 +118,12 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;
                     vm -> createTable();
-                    for (auto& i : Vital::System::File::fetchContents(path, fetchDirs)) {
+                    for (auto& i : Vital::System::File::contents(path, fetchDirs)) {
                         vm -> pushString(i);
                     }
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });

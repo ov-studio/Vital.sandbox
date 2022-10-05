@@ -33,10 +33,8 @@ namespace Vital::Sandbox::Lua::API {
                     auto result = Vital::System::Crypto::hash(mode, buffer);
                     vm -> setString(result);
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -50,10 +48,8 @@ namespace Vital::Sandbox::Lua::API {
                     auto result = Vital::System::Crypto::encode(buffer);
                     vm -> setString(result);
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -67,10 +63,8 @@ namespace Vital::Sandbox::Lua::API {
                     auto result = Vital::System::Crypto::decode(buffer);
                     vm -> setString(result);
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -88,10 +82,8 @@ namespace Vital::Sandbox::Lua::API {
                     vm -> setString(result.second);
                     return 2;
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });
@@ -108,10 +100,8 @@ namespace Vital::Sandbox::Lua::API {
                     auto result = Vital::System::Crypto::decrypt(mode, buffer, key, iv);
                     vm -> setString(result);
                 }
-                catch(std::string error) {
-                    vm -> setBool(false);
-                    vm -> throwError(error);
-                }
+                catch(const std::string error) { vm -> throwError(error); }
+                catch(...) { vm -> throwError(); }
             }
             return 1;
         });

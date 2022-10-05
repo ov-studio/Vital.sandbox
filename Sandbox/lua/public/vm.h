@@ -104,7 +104,7 @@ namespace Vital::Sandbox::Lua {
             // Utils //
             void pop(int count = 1);
             bool loadString(std::string& buffer);
-            bool throwError(std::string& error);
+            bool throwError(const std::string& error = std::string());
     };
     typedef create vital_vm;
     extern vital_vm* fetchVM(vital_ref* vm);
