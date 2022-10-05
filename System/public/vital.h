@@ -18,9 +18,13 @@
 #include <Type/public/audio.h>
 
 
-////////////
-// Vital //
-////////////
+////////////////////
+// Vital: System //
+////////////////////
 
-namespace Vital::System {}
-namespace Vital::Sandbox {}
+namespace Vital::System {
+    extern unsigned int getSystemTick();
+    extern unsigned int getApplicationTick();
+    extern unsigned int getClientTick();
+    extern bool resetClientTick();
+}

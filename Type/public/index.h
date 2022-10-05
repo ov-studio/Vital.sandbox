@@ -26,3 +26,5 @@ namespace Vital {
 }
 
 namespace Vital::Type {}
+namespace Vital::System {}
+namespace Vital::Sandbox {}
