@@ -70,8 +70,8 @@ namespace Vital::System::Audio::Sound {
     // Instantiators //
     std::map<vital_sound*, bool> vInstances;
     create::create(std::string& path) {
-        if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw 0;
         vInstances.emplace(this, true);
+        if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw 0;
 
         // TODO: REMOVE LATER
         play();
@@ -82,6 +82,7 @@ namespace Vital::System::Audio::Sound {
     }
     create::~create() {
         vInstances.erase(this);
+        if (!sound) return;
         sound -> release();
         sound = nullptr;
         channel = nullptr;

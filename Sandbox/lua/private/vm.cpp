@@ -49,7 +49,7 @@ namespace Vital::Sandbox::Lua {
         #endif
     }
     create::~create() {
-        if (!vm) return false;
+        if (!vm) return;
         vInstances.erase(vm);
         lua_close(vm);
         vm = nullptr;

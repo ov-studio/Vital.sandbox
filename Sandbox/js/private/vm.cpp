@@ -45,6 +45,7 @@ namespace Vital::Sandbox::JS {
         #endif
     }
     create::~create() {
+        if (!vm) return;
         vInstances.erase(vm);
         duk_destroy_heap(vm);
         vm = nullptr;
