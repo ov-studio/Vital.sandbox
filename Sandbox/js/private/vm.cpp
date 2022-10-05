@@ -66,7 +66,7 @@ namespace Vital::Sandbox::JS {
     void create::setGlobal(std::string index) { duk_put_global_string(vm, index.data()); }
     void create::setNil() { duk_push_null(vm); }
     void create::setBool(bool value) { duk_push_boolean(vm, static_cast<int>(value)); }
-    void create::setString(std::string& value) { duk_push_string(vm, value.data()); }
+    void create::setString(const std::string& value) { duk_push_string(vm, value.data()); }
     void create::setNumber(int value) { duk_push_number(vm, value); }
     void create::setNumber(float value) { duk_push_number(vm, value); }
     void create::setNumber(double value) { duk_push_number(vm, value); }
@@ -112,7 +112,7 @@ namespace Vital::Sandbox::JS {
         setBool(value);
         setArrayField(getLength(-2) + 1, -2);
     }
-    void create::pushString(std::string& value) {
+    void create::pushString(const std::string& value) {
         setString(value);
         setArrayField(getLength(-2) + 1, -2);
     }
@@ -142,11 +142,11 @@ namespace Vital::Sandbox::JS {
         createNamespace(parent);
         registerBool(index, value);
     }
-    void create::registerString(std::string index, std::string& value) {
+    void create::registerString(std::string index, const std::string& value) {
         setString(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerString(std::string index, std::string& value, std::string parent) {
+    void create::registerString(std::string index, const std::string& value, std::string parent) {
         createNamespace(parent);
         registerString(index, value);
     }
@@ -185,7 +185,7 @@ namespace Vital::Sandbox::JS {
 
     // Utils //
     void create::pop(int count) { duk_pop_n(vm, count); }
-    bool create::loadString(std::string& buffer) {
+    bool create::loadString(const std::string& buffer) {
         if (buffer.empty()) return false;
         setString(buffer);
         bool status = !duk_peval(vm);
@@ -196,11 +196,11 @@ namespace Vital::Sandbox::JS {
         }
         return true;
     }
-    bool create::throwError(std::string& error) {
+    bool create::throwError(const std::string& error) {
         duk_inspect_callstack_entry(vm, -2);
         getObjectField("lineNumber", -1);
-        error = "[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error);
-        API::error(error);
+        API::error("[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error));
+        vm -> setBool(false);
         return true;
     }
 }

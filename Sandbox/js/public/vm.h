@@ -100,8 +100,8 @@ namespace Vital::Sandbox::JS {
 
             // Utils //
             void pop(int count = 1);
-            bool loadString(std::string& buffer);
-            bool throwError(std::string& error);
+            bool loadString(const std::string& buffer);
+            bool throwError(const std::string& error);
     };
     typedef create vital_vm;
     extern vital_vm* fetchVM(vital_ref* vm);
