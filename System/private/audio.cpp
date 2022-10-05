@@ -47,8 +47,8 @@ namespace Vital::System::Audio {
 
     bool create() {
         if (vSystem) return false;
-        if (isErrored(FMOD::System_Create(&vSystem))) throw 0;
-        if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) throw 0;
+        if (isErrored(FMOD::System_Create(&vSystem))) return false;
+        if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) return false;
         return true;
     }
 
