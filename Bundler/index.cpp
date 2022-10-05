@@ -34,7 +34,7 @@ void genPackage(std::string name, std::string entry, std::vector<std::string> mo
             throw 0;
         }
         else {
-            rwBundle += "\nR\"" + Vital::vSignature + "(\n" + Vital::System::File::read(path) + "\n)" + Vital::vSignature + "\",";
+            rwBundle += "\nR\"" + Vital::Signature + "(\n" + Vital::System::File::read(path) + "\n)" + Vital::Signature + "\",";
             outputConsole("Bundled File: " + path);
         }
     }

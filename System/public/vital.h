@@ -21,7 +21,8 @@
 ////////////
 
 namespace Vital {
-    static const std::string vSignature = "VitalSDK";
+    static const std::string Signature = "VitalSDK";
+    static std::map<std::string, std::string> ErrorCodes;
     namespace Types {
         namespace Math {}
         namespace Audio {}

@@ -110,8 +110,8 @@ namespace Vital::System::Crypto {
             }
             return result;
         }
-        catch([[maybe_unused]] std::invalid_argument const& ex) { throw "unable to decode"; }
-        catch([[maybe_unused]] std::out_of_range const& ex) { throw "unable to decode"; }
+        catch([[maybe_unused]] std::invalid_argument const& ex) { throw "failed to decode"; }
+        catch([[maybe_unused]] std::out_of_range const& ex) { throw "failed to decode"; }
     }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
