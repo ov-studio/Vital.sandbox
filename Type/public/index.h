@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: vital.h
+     Script: Type: public: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
-     Desc: Vital System
+     Desc: Type Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,14 +13,15 @@
 //////////////
 
 #pragma once
-#include <Type/public/index.h>
-#include <Type/public/math.h>
-#include <Type/public/audio.h>
+#include <pch.h>
 
 
 ////////////
 // Vital //
 ////////////
 
-namespace Vital::System {}
-namespace Vital::Sandbox {}
+namespace Vital {}
+    static const std::string Signature = "VitalSDK";
+    static const std::map<std::string, std::string> ErrorCode;
+}
+namespace Vital::Type {}

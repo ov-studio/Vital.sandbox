@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 14/09/2022
-     Desc: Vital Utilities
+     Desc: Vital System
 ----------------------------------------------------------------*/
 
 
@@ -16,20 +16,9 @@
 #include <System/public/vital.h>
 
 
-////////////
-// Vital //
-////////////
-
-std::map<std::string, std::string> Vital::ErrorCodes = {
-    {"request_failed", "Failed to process specified request"},
-    {"decode-failed", "Failed to decode specified data"},
-    {"hash-mode-nonexistent", "Invalid hash mode"},
-    {"cipher-mode-nonexistent", "Invalid cipher mode"},
-    {"cipher-invalid-key", "Invalid cipher key"},
-    {"cipher-invalid-iv", "Invalid cipher IV"},
-    {"invalid-3d-sound", "Invalid 3D sound"},
-    {"file-nonexistent", "File non-existent"}
-};
+////////////////////
+// Vital: System //
+////////////////////
 
 namespace Vital::System {
     unsigned int getSystemTick() {

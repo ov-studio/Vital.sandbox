@@ -58,6 +58,15 @@
     <Filter Include="Vendor\fmod">
       <UniqueIdentifier>{4f4faa1d-89a2-4fe6-882c-871f2450f6a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Type">
+      <UniqueIdentifier>{568d95dd-7cbe-422f-8cf9-2e80f96b3618}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Type\public">
+      <UniqueIdentifier>{18fb14e9-f5b7-4b32-a1af-e0a1bd65010e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Type\private">
+      <UniqueIdentifier>{e01feaa0-a283-43ad-a0ff-c90ecc203eea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vendor\lua\lua.c">
@@ -203,6 +212,9 @@
     </ClCompile>
     <ClCompile Include="System\private\audio.cpp">
       <Filter>System\private</Filter>
+    </ClCompile>
+    <ClCompile Include="Type\private\error.cpp">
+      <Filter>Type\private</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1172,6 +1184,15 @@
     </ClInclude>
     <ClInclude Include="System\public\audio.h">
       <Filter>System\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Type\public\index.h">
+      <Filter>Type\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Type\public\math.h">
+      <Filter>Type\public</Filter>
+    </ClInclude>
+    <ClInclude Include="Type\public\audio.h">
+      <Filter>Type\public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

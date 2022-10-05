@@ -58,10 +58,10 @@ namespace Vital::System::Audio::Sound {
             bool setVolume(float value);
             bool setVolumeRamped(bool state);
             bool setMuted(bool state);
-            bool set3DAttributes(Vital::Types::Math::Vector3D position, Vital::Types::Math::Vector3D velocity);
-            bool set3DConeSettings(Vital::Types::Audio::ConeSettings settings);
-            bool set3DConeOrientation(Vital::Types::Math::Vector3D orientation);
-            bool set3DDistanceFilter(Vital::Types::Audio::DistanceFilter filter);
+            bool set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity);
+            bool set3DConeSettings(Vital::Type::Audio::ConeSettings settings);
+            bool set3DConeOrientation(Vital::Type::Math::Vector3D orientation);
+            bool set3DDistanceFilter(Vital::Type::Audio::DistanceFilter filter);
             bool set3DDopplerLevel(float value);
             bool setPan(float value);
 
@@ -69,10 +69,10 @@ namespace Vital::System::Audio::Sound {
             float getPitch();
             float getAudibility();
             float getVolume();
-            bool get3DAttributes(Vital::Types::Math::Vector3D& position, Vital::Types::Math::Vector3D& velocity);
-            bool get3DConeSettings(Vital::Types::Audio::ConeSettings& settings);
-            bool get3DConeOrientation(Vital::Types::Math::Vector3D& orientation);
-            bool get3DDistanceFilter(Vital::Types::Audio::DistanceFilter& filter);
+            bool get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity);
+            bool get3DConeSettings(Vital::Type::Audio::ConeSettings& settings);
+            bool get3DConeOrientation(Vital::Type::Math::Vector3D& orientation);
+            bool get3DDistanceFilter(Vital::Type::Audio::DistanceFilter& filter);
             float get3DDopplerLevel();
     };
     typedef create vital_sound;
