@@ -29,14 +29,14 @@ namespace Vital::System::Crypto {
         else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
         else if (mode == "SHA384") return {::SHA384, SHA384_DIGEST_LENGTH};
         else if (mode == "SHA512") return {::SHA512, SHA512_DIGEST_LENGTH};
-        else throw 0;
+        else throw "hash mode non-existent";
     }
 
     const EVP_CIPHER* CipherMode(std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
         else if (mode == "AES192") return EVP_aes_192_cbc();
         else if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw 0;
+        else throw "cipher mode non-existent";
     }
 
     std::string CipherIV(std::string& mode) {
@@ -65,7 +65,7 @@ namespace Vital::System::Crypto {
             int inputSize = static_cast<int>(buffer.size()) + 1, outputSize = 0, currentSize = 0;
             unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
             EVP_Init(ctx, algorithm, NULL, NULL);
-            if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw 0;
+            if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw "invalid key/iv provided";
             EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(key.data()), reinterpret_cast<unsigned char*>(iv.data()));
             EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(buffer.data()), inputSize);
             outputSize += currentSize;
@@ -110,8 +110,8 @@ namespace Vital::System::Crypto {
             }
             return result;
         }
-        catch([[maybe_unused]] std::invalid_argument const& ex) { throw 0; }
-        catch([[maybe_unused]] std::out_of_range const& ex) { throw 0; }
+        catch([[maybe_unused]] std::invalid_argument const& ex) { throw "unable to decode"; }
+        catch([[maybe_unused]] std::out_of_range const& ex) { throw "unable to decode"; }
     }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
