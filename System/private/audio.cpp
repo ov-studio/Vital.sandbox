@@ -75,6 +75,7 @@ namespace Vital::System::Audio::Sound {
         // TODO: REMOVE LATER
         play();
         setPitch(2);
+        setLooped(true);
         do {
                 
         } while (true);
@@ -101,7 +102,7 @@ namespace Vital::System::Audio::Sound {
     bool create::isLooping() {
         bool state = false;
         FMOD_MODE mode;
-        if (!isErroed(channel -> getMode(&mode))) state = mode == FMOD_LOOP_NORMAL;
+        if (!isErrored(channel -> getMode(&mode))) state = mode == FMOD_LOOP_NORMAL;
         return state;
     }
     bool create::isVolumeRamped() {
