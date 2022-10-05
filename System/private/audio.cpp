@@ -153,12 +153,12 @@ namespace Vital::System::Audio::Sound {
         FMOD_VECTOR __velocity = {static_cast<float>(velocity.x), static_cast<float>(velocity.y), static_cast<float>(velocity.z)};
         return !isErrored(channel -> set3DAttributes(&__position, &__velocity));
     }
-    bool create::set3DConeSettings(Vital::Types::Math::Vector3D settings) {
+    bool create::set3DConeSettings(Vital::Types::Audio::ConeSettings settings) {
         if (!is3D) return false;
-        float insideAngle = static_cast<float>(std::max(0.0, std::min(360.0, settings.x)));
-        float outsideAngle = static_cast<float>(std::max(0.0, std::min(360.0, settings.y)));
-        float outsideVolume = static_cast<float>(std::max(0.0, std::min(360.0, settings.z)));
-        return !isErrored(channel -> set3DConeSettings(insideAngle, outsideAngle, outsideVolume));
+        settings.insideAngle = std::max(0.0, std::min(360.0, settings.insideAngle));
+        settings.outsideAngle = std::max(0.0, std::min(360.0, settings.outsideAngle));
+        settings.outsideVolume = std::max(0.0, std::min(360.0, settings.outsideVolume));
+        return !isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume));
     }
     bool create::set3DConeOrientation(Vital::Types::Math::Vector3D orientation) {
         if (!is3D) return false;
@@ -200,11 +200,9 @@ namespace Vital::System::Audio::Sound {
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
-    bool create::get3DConeSettings(Vital::Types::Math::Vector3D& settings) {
+    bool create::get3DConeSettings(Vital::Types::Audio::ConeSettings& settings) {
         if (!is3D) return false;
-        float insideAngle = 0, outsideAngle = 0, outsideVolume = 0;
-        channel -> get3DConeSettings(&insideAngle, &outsideAngle, &outsideVolume);
-        settings = {insideAngle, outsideAngle, outsideVolume};
+        channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume);
         return true;
     }
     bool create::get3DConeOrientation(Vital::Types::Math::Vector3D& orientation) {
