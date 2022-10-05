@@ -56,7 +56,6 @@ namespace Vital::System::Audio {
         if (!vSystem) return false;
         vSystem -> release();
         vSystem = nullptr;
-        delete this;
         return true;
     }
 
@@ -79,14 +78,12 @@ namespace Vital::System::Audio {
                 
             } while (true);
         }
-        bool create::destroy() {
+        create::~create() {
             if (!sound) return false;
             vInstances.erase(this);
             sound -> release();
             sound = nullptr;
             channel = nullptr;
-            delete this;
-            return true;
         }
 
         // Checkers //

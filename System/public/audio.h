@@ -36,7 +36,7 @@ namespace Vital::System::Audio {
             public:
                 // Instantiators //
                 create(std::string& path);
-                bool destroy();
+                ~create();
 
                 // Checkers //
                 bool isPlaying();
