@@ -22,9 +22,15 @@
 
 namespace Vital {
     static const std::string vSignature = "VitalSDK";
+    namespace Types {
+        namespace Math {}
+        namespace Audio {}
+    }
+    namespace System {}
+    namespace Sandbox {}
 }
 
-namespace Vital::Types {
+namespace Vital::Types::Math {
     typedef struct Vector2D {
         double x = 0;
         double y = 0;
@@ -35,6 +41,14 @@ namespace Vital::Types {
         double y = 0;
         double z = 0;
     } Vector3D;
+}
+
+namespace Vital::Types::Audio {
+    typedef struct ConeSettings {
+        float insideAngle = 0;
+        float outsideAngle = 0;
+        float outsideVolume = 0;
+    } ConeSettings;
 }
 
 namespace Vital::System {

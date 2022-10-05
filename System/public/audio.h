@@ -58,18 +58,18 @@ namespace Vital::System::Audio::Sound {
             bool setVolume(float value);
             bool setVolumeRamped(bool state);
             bool setMuted(bool state);
-            bool set3DAttributes(Vital::Types::Vector3D position, Vital::Types::Vector3D velocity);
-            bool set3DConeSettings(Vital::Types::Vector3D settings);
-            bool set3DConeOrientation(Vital::Types::Vector3D orientation);
+            bool set3DAttributes(Vital::Types::Math::Vector3D position, Vital::Types::Math::Vector3D velocity);
+            bool set3DConeSettings(Vital::Types::Math::Vector3D settings);
+            bool set3DConeOrientation(Vital::Types::Math::Vector3D orientation);
             bool setPan(float value);
 
             // Getters //
             float getPitch();
             float getAudibility();
             float getVolume();
-            bool get3DAttributes(Vital::Types::Vector3D& position, Vital::Types::Vector3D& velocity);
-            bool get3DConeSettings(Vital::Types::Vector3D& settings);
-            bool get3DConeOrientation(Vital::Types::Vector3D& orientation);
+            bool get3DAttributes(Vital::Types::Math::Vector3D& position, Vital::Types::Math::Vector3D& velocity);
+            bool get3DConeSettings(Vital::Types::Math::Vector3D& settings);
+            bool get3DConeOrientation(Vital::Types::Math::Vector3D& orientation);
     };
     typedef create vital_sound;
 }

@@ -147,24 +147,31 @@ namespace Vital::System::Audio::Sound {
     bool create::setMuted(bool state) {
         return !isErrored(channel -> setMute(state));
     }
-    bool create::set3DAttributes(Vital::Types::Vector3D position, Vital::Types::Vector3D velocity) {
+    bool create::set3DAttributes(Vital::Types::Math::Vector3D position, Vital::Types::Math::Vector3D velocity) {
         if (!is3D) return false;
         FMOD_VECTOR __position = {static_cast<float>(position.x), static_cast<float>(position.y), static_cast<float>(position.z)};
         FMOD_VECTOR __velocity = {static_cast<float>(velocity.x), static_cast<float>(velocity.y), static_cast<float>(velocity.z)};
         return !isErrored(channel -> set3DAttributes(&__position, &__velocity));
     }
-    bool create::set3DConeSettings(Vital::Types::Vector3D settings) {
+    bool create::set3DConeSettings(Vital::Types::Math::Vector3D settings) {
         if (!is3D) return false;
         float insideAngle = static_cast<float>(std::max(0.0, std::min(360.0, settings.x)));
         float outsideAngle = static_cast<float>(std::max(0.0, std::min(360.0, settings.y)));
         float outsideVolume = static_cast<float>(std::max(0.0, std::min(360.0, settings.z)));
         return !isErrored(channel -> set3DConeSettings(insideAngle, outsideAngle, outsideVolume));
     }
-    bool create::set3DConeOrientation(Vital::Types::Vector3D orientation) {
+    bool create::set3DConeOrientation(Vital::Types::Math::Vector3D orientation) {
         if (!is3D) return false;
         FMOD_VECTOR __orientation = {static_cast<float>(orientation.x), static_cast<float>(orientation.y), static_cast<float>(orientation.z)};
         return !isErrored(channel -> set3DConeOrientation(&__orientation));
     }
+
+    bool create::set3DDistanceFilter(Vital::Types::Math::Vector3D orientation) {
+        if (!is3D) return false;
+        FMOD_VECTOR __orientation = {static_cast<float>(orientation.x), static_cast<float>(orientation.y), static_cast<float>(orientation.z)};
+        return !isErrored(channel -> set3DDistanceFilter(&__orientation));
+    }
+
     bool create::setPan(float value) {
         return !isErrored(channel -> setPan(value));
     }
@@ -185,7 +192,7 @@ namespace Vital::System::Audio::Sound {
         channel -> getVolume(&value);
         return value;
     }
-    bool create::get3DAttributes(Vital::Types::Vector3D& position, Vital::Types::Vector3D& velocity) {
+    bool create::get3DAttributes(Vital::Types::Math::Vector3D& position, Vital::Types::Math::Vector3D& velocity) {
         if (!is3D) return false;
         FMOD_VECTOR __position, __velocity;
         if (isErrored(channel -> get3DAttributes(&__position, &__velocity))) return false;
@@ -193,14 +200,14 @@ namespace Vital::System::Audio::Sound {
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
-    bool create::get3DConeSettings(Vital::Types::Vector3D& settings) {
+    bool create::get3DConeSettings(Vital::Types::Math::Vector3D& settings) {
         if (!is3D) return false;
         float insideAngle = 0, outsideAngle = 0, outsideVolume = 0;
         channel -> get3DConeSettings(&insideAngle, &outsideAngle, &outsideVolume);
         settings = {insideAngle, outsideAngle, outsideVolume};
         return true;
     }
-    bool create::get3DConeOrientation(Vital::Types::Vector3D& orientation) {
+    bool create::get3DConeOrientation(Vital::Types::Math::Vector3D& orientation) {
         if (!is3D) return false;
         FMOD_VECTOR __orientation;
         channel -> get3DConeOrientation(&__orientation);
