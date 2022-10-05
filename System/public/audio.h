@@ -72,8 +72,8 @@ namespace Vital::System::Audio::Sound {
             bool get3DAttributes(Vital::Types::Math::Vector3D& position, Vital::Types::Math::Vector3D& velocity);
             bool get3DConeSettings(Vital::Types::Audio::ConeSettings& settings);
             bool get3DConeOrientation(Vital::Types::Math::Vector3D& orientation);
-            Vital::Types::Audio::DistanceFilter get3DDistanceFilter();
-            float set3DDopplerLevel();
+            bool get3DDistanceFilter(Vital::Types::Audio::DistanceFilter& filter);
+            float get3DDopplerLevel();
     };
     typedef create vital_sound;
 }

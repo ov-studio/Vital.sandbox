@@ -29,7 +29,7 @@ std::map<std::string, std::string> Vital::ErrorCodes = {
     {"cipher-invalid-iv", "Invalid cipher IV"},
     {"invalid-3d-sound", "Invalid 3D sound"},
     {"file-nonexistent", "File non-existent"}
-}
+};
 
 namespace Vital::System {
     unsigned int getSystemTick() {
