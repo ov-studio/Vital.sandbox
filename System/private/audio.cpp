@@ -151,19 +151,19 @@ namespace Vital::System::Audio::Sound {
         if (!is3D) return false;
         FMOD_VECTOR __position = {position.x, position.y, position.z};
         FMOD_VECTOR __velocity = {velocity.x, velocity.y, velocity.z};
-        return !isErrored(channel -> set3DAttributes(__position, __velocity));
+        return !isErrored(channel -> set3DAttributes(&__position, &__velocity));
     }
-    bool create::set3DConeSettings(std::array<float, float, float> coneSettings) {
+    bool create::set3DConeSettings(Vital::Types::Vector3D coneSettings) {
         if (!is3D) return false;
-        float insideConeAngle = std::max(0, std::min(360, coneSettings[0]));
-        float outsideConeAngle = std::max(0, std::min(360, coneSettings[1]));
-        float outsideVolume = std::max(0, std::min(360, coneSettings[2]));
+        float insideConeAngle = std::max(0.0, std::min(360.0, coneSettings.x));
+        float outsideConeAngle = std::max(0.0, std::min(360.0, coneSettings.y));
+        float outsideVolume = std::max(0.0, std::min(360.0, coneSettings.z));
         return !isErrored(channel -> set3DConeSettings(insideConeAngle, outsideConeAngle, outsideVolume));
     }
-    bool create::set3DConeOrientation(std::array<float, float, float> coneOrientation) {
+    bool create::set3DConeOrientation(Vital::Types::Vector3D coneOrientation) {
         if (!is3D) return false;
-        FMOD_VECTOR __coneOrientation = {coneOrientation[0], coneOrientation[1], coneOrientation[2]};
-        return !isErrored(channel -> set3DConeOrientation(__coneOrientation));
+        FMOD_VECTOR __coneOrientation = {coneOrientation.x, coneOrientation.y, coneOrientation.z};
+        return !isErrored(channel -> set3DConeOrientation(&__coneOrientation));
     }
     bool create::setPan(float value) {
         return !isErrored(channel -> setPan(value));
@@ -188,7 +188,7 @@ namespace Vital::System::Audio::Sound {
     bool create::get3DAttributes(Vital::Types::Vector3D& position, Vital::Types::Vector3D& velocity) {
         if (!is3D) return false;
         FMOD_VECTOR __position, __velocity;
-        if (isErrored(channel -> get3DAttributes(__position, __velocity))) return false;
+        if (isErrored(channel -> get3DAttributes(&__position, &__velocity))) return false;
         position = {__position.x, __position.y, __position.z};
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;

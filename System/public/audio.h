@@ -59,8 +59,8 @@ namespace Vital::System::Audio::Sound {
             bool setVolumeRamped(bool state);
             bool setMuted(bool state);
             bool set3DAttributes(Vital::Types::Vector3D position, Vital::Types::Vector3D velocity);
-            bool set3DConeSettings(std::array<float, float, float> coneSettings);
-            bool set3DConeOrientation(std::array<float, float, float> coneOrientation);
+            bool set3DConeSettings(Vital::Types::Vector3D coneSettings);
+            bool set3DConeOrientation(Vital::Types::Vector3D coneOrientation);
             bool setPan(float value);
 
             // Getters //
