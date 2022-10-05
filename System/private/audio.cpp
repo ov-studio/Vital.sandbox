@@ -147,11 +147,11 @@ namespace Vital::System::Audio::Sound {
     bool create::setMuted(bool state) {
         return !isErrored(channel -> setMute(state));
     }
-    bool create::set3DAttributes(std::array<float, float, float> position, std::array<float, float, float> velocity) {
+    bool create::set3DAttributes(Vital::Types::Vector3D position, Vital::Types::Vector3D velocity) {
         if (!is3D) return false;
-        FMOD_VECTOR __position = {position[0], position[1], position[2]};
-        FMOD_VECTOR __rotation = {velocity[0], velocity[1], velocity[2]};
-        return !isErrored(channel -> set3DAttributes(__position, __rotation));
+        FMOD_VECTOR __position = {position.x, posiition.y, position.z};
+        FMOD_VECTOR __velocity = {velocity.x, velocity.y, velocity.z};
+        return !isErrored(channel -> set3DAttributes(__position, __velocity));
     }
     bool create::set3DConeSettings(std::array<float, float, float> coneSettings) {
         if (!is3D) return false;
@@ -185,13 +185,13 @@ namespace Vital::System::Audio::Sound {
         channel -> getVolume(&value);
         return value;
     }
-    bool create::get3DAttributes(std::array<float, float, float>& position, std::array<float, float, float>& velocity) {
+    bool create::get3DAttributes(Vital::Types::Vector3D& position, Vital::Types::Vector3D& velocity) {
         if (!is3D) return false;
         position = {0, 0, 0}, velocity = {0, 0, 0};
-        FMOD_VECTOR __position, __rotation;
-        if (!isErrored(channel -> get3DAttributes(__position, __rotation))) {
+        FMOD_VECTOR __position, __velocity;
+        if (!isErrored(channel -> get3DAttributes(__position, __velocity))) {
             position = {__position.x, __position.y, __position.z};
-            velocity = {__rotation.x, __rotation.y, __rotation.z};
+            velocity = {__velocity.x, __velocity.y, __velocity.z};
         }
         return true;
     }

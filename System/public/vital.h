@@ -22,8 +22,19 @@
 
 namespace Vital {
     static const std::string vSignature = "VitalSDK";
-    namespace System {}
-    namespace Sandbox {}
+}
+
+namespace Vital::Types {
+    typedef struct Vector2D {
+        double x = 0;
+        double y = 0;
+    } Vector2D;
+
+    struct Vector3D {
+        double x = 0;
+        double y = 0;
+        double z = 0;
+    } Vector3D;
 }
 
 namespace Vital::System {
@@ -32,3 +43,4 @@ namespace Vital::System {
     extern unsigned int getClientTick();
     extern bool resetClientTick();
 }
+namespace Sandbox {}
