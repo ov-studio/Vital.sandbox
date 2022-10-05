@@ -30,7 +30,7 @@ namespace Vital::Types {
         double y = 0;
     } Vector2D;
 
-    struct Vector3D {
+    typedef struct Vector3D {
         double x = 0;
         double y = 0;
         double z = 0;
