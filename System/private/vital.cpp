@@ -21,9 +21,14 @@
 ////////////
 
 std::map<std::string, std::string> Vital::ErrorCodes = {
-    {"request_failed", "failed to process request"},
-    {"invalid_3d_sound", "invalid 3D sound"},
-    {"file_nonexistent", "file non-existent"}
+    {"request_failed", "Failed to process specified request"},
+    {"decode-failed", "Failed to decode specified data"},
+    {"hash-mode-nonexistent", "Invalid hash mode"},
+    {"cipher-mode-nonexistent", "Invalid cipher mode"},
+    {"cipher-invalid-key", "Invalid cipher key"},
+    {"cipher-invalid-iv", "Invalid cipher IV"},
+    {"invalid-3d-sound", "Invalid 3D sound"},
+    {"file-nonexistent", "File non-existent"}
 }
 
 namespace Vital::System {

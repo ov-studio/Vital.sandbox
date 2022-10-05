@@ -29,14 +29,14 @@ namespace Vital::System::Crypto {
         else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
         else if (mode == "SHA384") return {::SHA384, SHA384_DIGEST_LENGTH};
         else if (mode == "SHA512") return {::SHA512, SHA512_DIGEST_LENGTH};
-        else throw "hash mode non-existent";
+        else throw ErrorCodes["hash-mode-nonexistent"];
     }
 
     const EVP_CIPHER* CipherMode(std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
         else if (mode == "AES192") return EVP_aes_192_cbc();
         else if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw "cipher mode non-existent";
+        else throw ErrorCodes["cipher-mode-nonexistent"];
     }
 
     std::string CipherIV(std::string& mode) {
@@ -51,7 +51,7 @@ namespace Vital::System::Crypto {
             delete[] iv;
             return result;
         }
-        catch(int error) { throw error; }
+        catch(std::string error) { throw error; }
     }
 
     std::string CipherHandle(std::string& mode, bool isEncrypt, std::string& buffer, std::string& key, std::string& iv) {
@@ -65,7 +65,8 @@ namespace Vital::System::Crypto {
             int inputSize = static_cast<int>(buffer.size()) + 1, outputSize = 0, currentSize = 0;
             unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
             EVP_Init(ctx, algorithm, NULL, NULL);
-            if ((EVP_CIPHER_CTX_key_length(ctx) != key.size()) || (EVP_CIPHER_CTX_iv_length(ctx) != iv.size())) throw "invalid key/iv provided";
+            if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw ErrorCodes["cipher-invalid-key"];
+            if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw ErrorCodes["cipher-invalid-iv"];
             EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(key.data()), reinterpret_cast<unsigned char*>(iv.data()));
             EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(buffer.data()), inputSize);
             outputSize += currentSize;
@@ -75,7 +76,7 @@ namespace Vital::System::Crypto {
             EVP_CIPHER_CTX_free(ctx);
             return result;
         }
-        catch(int error) { throw error; }
+        catch(std::string error) { throw error; }
     }
 
     std::string hash(std::string mode, std::string& buffer) {
@@ -89,7 +90,7 @@ namespace Vital::System::Crypto {
             delete[] output;
             return result;
         }
-        catch(int error) { throw error; }
+        catch(std::string error) { throw error; }
     }
 
     std::string encode(std::string& buffer) {
@@ -110,8 +111,8 @@ namespace Vital::System::Crypto {
             }
             return result;
         }
-        catch([[maybe_unused]] std::invalid_argument const& ex) { throw "failed to decode"; }
-        catch([[maybe_unused]] std::out_of_range const& ex) { throw "failed to decode"; }
+        catch([[maybe_unused]] std::invalid_argument const& ex) { throw ErrorCodes["decode-failed"]; }
+        catch([[maybe_unused]] std::out_of_range const& ex) { throw ErrorCodes["decode-failed"]; }
     }
 
     std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key) {
@@ -120,7 +121,7 @@ namespace Vital::System::Crypto {
             std::string result = CipherHandle(mode, true, buffer, key, iv);
             return {encode(result), encode(iv)};
         }
-        catch(int error) { throw error; }
+        catch(std::string error) { throw error; }
     }
 
     std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv) {
@@ -129,6 +130,6 @@ namespace Vital::System::Crypto {
             std::string __iv = decode(iv);
             return CipherHandle(mode, false, __buffer, key, __iv);
         }
-        catch(int error) { throw error; }
+        catch(std::string error) { throw error; }
     }
 }
