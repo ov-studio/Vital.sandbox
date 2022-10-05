@@ -153,17 +153,17 @@ namespace Vital::System::Audio::Sound {
         FMOD_VECTOR __velocity = {velocity.x, velocity.y, velocity.z};
         return !isErrored(channel -> set3DAttributes(&__position, &__velocity));
     }
-    bool create::set3DConeSettings(Vital::Types::Vector3D coneSettings) {
+    bool create::set3DConeSettings(Vital::Types::Vector3D settings) {
         if (!is3D) return false;
-        float insideConeAngle = std::max(0.0, std::min(360.0, coneSettings.x));
-        float outsideConeAngle = std::max(0.0, std::min(360.0, coneSettings.y));
-        float outsideVolume = std::max(0.0, std::min(360.0, coneSettings.z));
-        return !isErrored(channel -> set3DConeSettings(insideConeAngle, outsideConeAngle, outsideVolume));
+        float insideAngle = std::max(0.0, std::min(360.0, settings.x));
+        float outsideAngle = std::max(0.0, std::min(360.0, settings.y));
+        float outsideVolume = std::max(0.0, std::min(360.0, settings.z));
+        return !isErrored(channel -> set3DConeSettings(insideAngle, outsideAngle, outsideVolume));
     }
-    bool create::set3DConeOrientation(Vital::Types::Vector3D coneOrientation) {
+    bool create::set3DConeOrientation(Vital::Types::Vector3D orientation) {
         if (!is3D) return false;
-        FMOD_VECTOR __coneOrientation = {coneOrientation.x, coneOrientation.y, coneOrientation.z};
-        return !isErrored(channel -> set3DConeOrientation(&__coneOrientation));
+        FMOD_VECTOR __orientation = {orientation.x, orientation.y, orientation.z};
+        return !isErrored(channel -> set3DConeOrientation(&__orientation));
     }
     bool create::setPan(float value) {
         return !isErrored(channel -> setPan(value));
@@ -193,18 +193,18 @@ namespace Vital::System::Audio::Sound {
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
-    bool create::get3DConeSettings(std::array<float, float, float>& coneSettings) {
+    bool create::get3DConeSettings(Vital::Types::Vector3D& settings) {
         if (!is3D) return false;
-        float insideConeAngle = 0, outsideConeAngle = 0, outsideVolume = 0;
-        channel -> set3DConeSettings(&insideConeAngle, &outsideConeAngle, &outsideVolume);
-        coneSettings = {insideConeAngle, outsideConeAngle, outsideVolume};
+        float insideAngle = 0, outsideAngle = 0, outsideVolume = 0;
+        channel -> set3DConeSettings(&insideAngle, &outsideAngle, &outsideVolume);
+        settings = {insideAngle, outsideAngle, outsideVolume};
         return true;
     }
-    bool create::get3DConeOrientation(std::array<float, float, float>& coneOrientation) {
+    bool create::get3DConeOrientation(Vital::Types::Vector3D& orientation) {
         if (!is3D) return false;
-        FMOD_VECTOR __coneOrientation;
-        channel -> get3DConeOrientation(&__coneOrientation);
-        coneSettings = {__coneOrientation.x, __coneOrientation.y, __coneOrientation.z};
+        FMOD_VECTOR __orientation;
+        channel -> get3DConeOrientation(&__orientation);
+        settings = {__orientation.x, __orientation.y, __orientation.z};
         return true;
     }
 }
