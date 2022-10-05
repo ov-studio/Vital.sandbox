@@ -100,119 +100,142 @@ namespace Vital::System::Audio::Sound {
         return state;
     }
     bool create::isLooping() {
-        bool state = false;
         FMOD_MODE mode;
-        if (!isErrored(channel -> getMode(&mode))) state = mode == FMOD_LOOP_NORMAL;
-        return state;
+        if (isErrored(channel -> getMode(&mode))) throw 0;
+        return mode == FMOD_LOOP_NORMAL;
     }
     bool create::isVolumeRamped() {
         bool state = false;
-        channel -> getVolumeRamp(&state);
+        if (isErrored(channel -> getVolumeRamp(&state))) throw 0;
         return state;
     }
     bool create::isMuted() {
         bool state = false;
-        channel -> getMute(&state);
+        if (isErrored(channel -> getMute(&state))) throw 0;
         return state;
     }
 
     // Setters //
     bool create::play() {
-        return !isErrored(vSystem -> playSound(sound, nullptr, false, &channel));
+        if (isErrored(vSystem -> playSound(sound, nullptr, false, &channel))) throw 0;
+        return true;
     }
     bool create::play(FMOD::ChannelGroup* channelGroup) {
-        return !isErrored(vSystem -> playSound(sound, channelGroup, false, &channel));
+        if (isErrored(vSystem -> playSound(sound, channelGroup, false, &channel))) throw 0;
+        return true;
     }
     bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
-        return !isErrored(channel -> setChannelGroup(channelGroup));
+        if (isErrored(channel -> setChannelGroup(channelGroup))) throw 0;
+        return true;
     }
     bool create::stop() {
-        return !isErrored(channel -> stop());
+        if (isErrored(channel -> stop())) throw 0;
+        return true;
     }
     bool create::setPaused(bool state) {
-        return !isErrored(channel -> setPaused(state));
+        if (isErrored(channel -> setPaused(state))) throw 0;
+        return true;
     }
     bool create::setLooped(bool state) {
-        return !isErrored(channel -> setMode(FMOD_LOOP_NORMAL));
+        if (isErrored(channel -> setMode(FMOD_LOOP_NORMAL))) throw 0;
+        return true;
     }
     bool create::setPitch(float value) {
-        return !isErrored(channel -> setPitch(value));
+        if (isErrored(channel -> setPitch(value))) throw 0;
+        return true;
     }
     bool create::setVolume(float value) {
-        return !isErrored(channel -> setVolume(value));
+        if (isErrored(channel -> setVolume(value))) throw 0;
+        return true;
     }
     bool create::setVolumeRamped(bool state) {
-        return !isErrored(channel -> setVolumeRamp(state));
+        if (isErrored(channel -> setVolumeRamp(state))) throw 0;
+        return true;
     }
     bool create::setMuted(bool state) {
-        return !isErrored(channel -> setMute(state));
+        if (isErrored(channel -> setMute(state))) throw 0;
+        return true;
     }
     bool create::set3DAttributes(Vital::Types::Math::Vector3D position, Vital::Types::Math::Vector3D velocity) {
-        if (!is3D) return false;
+        if (!is3D) throw 0;
         FMOD_VECTOR __position = {static_cast<float>(position.x), static_cast<float>(position.y), static_cast<float>(position.z)};
         FMOD_VECTOR __velocity = {static_cast<float>(velocity.x), static_cast<float>(velocity.y), static_cast<float>(velocity.z)};
-        return !isErrored(channel -> set3DAttributes(&__position, &__velocity));
+        if (isErrored(channel -> set3DAttributes(&__position, &__velocity))) throw 0;
+        return true;
     }
     bool create::set3DConeSettings(Vital::Types::Audio::ConeSettings settings) {
-        if (!is3D) return false;
+        if (!is3D) throw 0;
         settings.insideAngle = std::max(0.0, std::min(360.0, settings.insideAngle));
         settings.outsideAngle = std::max(0.0, std::min(360.0, settings.outsideAngle));
         settings.outsideVolume = std::max(0.0, std::min(360.0, settings.outsideVolume));
-        return !isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume));
+        if (isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume))) throw 0;
+        return true;
     }
     bool create::set3DConeOrientation(Vital::Types::Math::Vector3D orientation) {
-        if (!is3D) return false;
+        if (!is3D) throw 0;
         FMOD_VECTOR __orientation = {static_cast<float>(orientation.x), static_cast<float>(orientation.y), static_cast<float>(orientation.z)};
-        return !isErrored(channel -> set3DConeOrientation(&__orientation));
+        if (isErrored(channel -> set3DConeOrientation(&__orientation))) throw 0;
+        return true;
     }
     bool create::set3DDistanceFilter(Vital::Types::Audio::DistanceFilter filter) {
-        if (!is3D) return false;
-        return !isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency));
+        if (!is3D) throw 0;
+        if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw 0;
+        return true;
     }
-
+    bool create::set3DDopplerLevel(float value) {
+        if (isErrored(channel -> set3DDopplerLevel(value))) throw 0;
+        return true;
+    }
     bool create::setPan(float value) {
-        return !isErrored(channel -> setPan(value));
+        if (isErrored(channel -> setPan(value))) throw 0;
+        return true;
     }
 
     // Getters //
     float create::getPitch() {
         float value = 0;
-        channel -> getPitch(&value);
+        if (isErrored(channel -> getPitch(&value))) throw 0;
         return value;
     }
     float create::getAudibility() {
         float value = 0;
-        channel -> getAudibility(&value);
+        if (isErrored(channel -> getAudibility(&value))) throw 0;
         return value;
     }
     float create::getVolume() {
         float value = 0;
-        channel -> getVolume(&value);
+        if (isErrored(channel -> getVolume(&value))) throw 0;
         return value;
     }
     bool create::get3DAttributes(Vital::Types::Math::Vector3D& position, Vital::Types::Math::Vector3D& velocity) {
-        if (!is3D) return false;
+        if (!is3D) throw 0;
         FMOD_VECTOR __position, __velocity;
-        if (isErrored(channel -> get3DAttributes(&__position, &__velocity))) return false;
+        if (isErrored(channel -> get3DAttributes(&__position, &__velocity))) throw 0;
         position = {__position.x, __position.y, __position.z};
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
     bool create::get3DConeSettings(Vital::Types::Audio::ConeSettings& settings) {
-        if (!is3D) return false;
-        if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) return false;
+        if (!is3D) throw 0;
+        if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) throw 0;
         return true;
     }
     bool create::get3DConeOrientation(Vital::Types::Math::Vector3D& orientation) {
-        if (!is3D) return false;
+        if (!is3D) throw 0;
         FMOD_VECTOR __orientation;
-        if (isErrored(channel -> get3DConeOrientation(&__orientation))) return false;
+        if (isErrored(channel -> get3DConeOrientation(&__orientation))) throw 0;
         orientation = {__orientation.x, __orientation.y, __orientation.z};
         return true;
     }
     bool create::get3DDistanceFilter(Vital::Types::Audio::DistanceFilter& filter) {
-        if (!is3D) return false;
-        if (isErrored(channel -> set3DDistanceFilter(&filter.enable, &filter.customLevel, &filter.centerFrequency))) return false;
-        return true;
+        if (!is3D) throw 0;
+        if (isErrored(channel -> set3DDistanceFilter(&filter.enable, &filter.customLevel, &filter.centerFrequency))) throw 0;
+        return filter;
+    }
+    float create::get3DDopplerLevel() {
+        if (!is3D) throw 0;
+        float value = 0;
+        if (isErrored(channel -> get3DDopplerLevel(&value))) throw 0;
+        return value;
     }
 }
