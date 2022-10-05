@@ -188,10 +188,9 @@ namespace Vital::System::Audio::Sound {
     bool create::get3DAttributes(Vital::Types::Vector3D& position, Vital::Types::Vector3D& velocity) {
         if (!is3D) return false;
         FMOD_VECTOR __position, __velocity;
-        if (!isErrored(channel -> get3DAttributes(__position, __velocity))) {
-            position = {__position.x, __position.y, __position.z};
-            velocity = {__velocity.x, __velocity.y, __velocity.z};
-        }
+        if (isErrored(channel -> get3DAttributes(__position, __velocity))) return false;
+        position = {__position.x, __position.y, __position.z};
+        velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
     bool create::get3DConeSettings(std::array<float, float, float>& coneSettings) {
