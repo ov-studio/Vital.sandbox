@@ -165,11 +165,9 @@ namespace Vital::System::Audio::Sound {
         FMOD_VECTOR __orientation = {static_cast<float>(orientation.x), static_cast<float>(orientation.y), static_cast<float>(orientation.z)};
         return !isErrored(channel -> set3DConeOrientation(&__orientation));
     }
-
-    bool create::set3DDistanceFilter(Vital::Types::Math::Vector3D orientation) {
+    bool create::set3DDistanceFilter(Vital::Types::Audio::DistanceFilter filter) {
         if (!is3D) return false;
-        FMOD_VECTOR __orientation = {static_cast<float>(orientation.x), static_cast<float>(orientation.y), static_cast<float>(orientation.z)};
-        return !isErrored(channel -> set3DDistanceFilter(&__orientation));
+        return !isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency));
     }
 
     bool create::setPan(float value) {
@@ -202,14 +200,19 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::get3DConeSettings(Vital::Types::Audio::ConeSettings& settings) {
         if (!is3D) return false;
-        channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume);
+        if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) return false;
         return true;
     }
     bool create::get3DConeOrientation(Vital::Types::Math::Vector3D& orientation) {
         if (!is3D) return false;
         FMOD_VECTOR __orientation;
-        channel -> get3DConeOrientation(&__orientation);
+        if (isErrored(channel -> get3DConeOrientation(&__orientation))) return false;
         orientation = {__orientation.x, __orientation.y, __orientation.z};
+        return true;
+    }
+    bool create::get3DDistanceFilter(Vital::Types::Audio::DistanceFilter& filter) {
+        if (!is3D) return false;
+        if (isErrored(channel -> set3DDistanceFilter(&filter.enable, &filter.customLevel, &filter.centerFrequency))) return false;
         return true;
     }
 }

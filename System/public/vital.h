@@ -49,6 +49,13 @@ namespace Vital::Types::Audio {
         float outsideAngle = 0;
         float outsideVolume = 0;
     } ConeSettings;
+
+    typedef struct DistanceFilter {
+        bool enable = false;
+        float customLevel = 0;
+        float centerFrequency = 0;
+    } DistanceFilter;
+    typedef struct 
 }
 
 namespace Vital::System {
