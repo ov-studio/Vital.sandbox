@@ -149,7 +149,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::set3DAttributes(Vital::Types::Vector3D position, Vital::Types::Vector3D velocity) {
         if (!is3D) return false;
-        FMOD_VECTOR __position = {position.x, posiition.y, position.z};
+        FMOD_VECTOR __position = {position.x, position.y, position.z};
         FMOD_VECTOR __velocity = {velocity.x, velocity.y, velocity.z};
         return !isErrored(channel -> set3DAttributes(__position, __velocity));
     }
