@@ -34,6 +34,7 @@ namespace Vital::System::Audio::Sound {
         private:
             FMOD::Sound* sound = nullptr;
             FMOD::Channel* channel = nullptr;
+            bool is3D = false;
         public:
             // Instantiators //
             create(std::string& path);
@@ -41,6 +42,10 @@ namespace Vital::System::Audio::Sound {
 
             // Checkers //
             bool isPlaying();
+            bool isPaused();
+            bool isLooping();
+            bool isVolumeRamped();
+            bool isMuted();
 
             // Setters //
             bool play();
@@ -48,19 +53,23 @@ namespace Vital::System::Audio::Sound {
             bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
             bool stop();
             bool setPaused(bool state);
+            bool setLooped(bool state);
             bool setPitch(float value);
             bool setVolume(float value);
-            bool setVolumeRamp(bool state);
-            bool setMute(bool state);
+            bool setVolumeRamped(bool state);
+            bool setMuted(bool state);
+            bool set3DAttributes(std::array<float, float, float> position, std::array<float, float, float> velocity);
+            bool set3DConeSettings(std::array<float, float, float> coneSettings);
+            bool set3DConeOrientation(std::array<float, float, float> coneOrientation);
             bool setPan(float value);
 
             // Getters //
-            bool getPaused();
             float getPitch();
             float getAudibility();
             float getVolume();
-            bool getVolumeRamp();
-            bool getMute();
+            bool get3DAttributes(std::array<float, float, float>& position, std::array<float, float, float>& velocity);
+            bool get3DConeSettings(std::array<float, float, float>& coneSettings);
+            bool get3DConeOrientation(std::array<float, float, float>& coneOrientation);
     };
     typedef create vital_sound;
 }
