@@ -163,7 +163,7 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> set3DAttributes(&__position, &__velocity))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::set3DConeSettings(Vital::Type::Audio::ConeSettings settings) {
+    bool create::set3DConeSettings(Vital::Type::Audio::3DConeSettings settings) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         //settings.insideAngle = std::max(0.0, std::min(360.0, settings.insideAngle));
         //settings.outsideAngle = std::max(0.0, std::min(360.0, settings.outsideAngle));
@@ -177,7 +177,7 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> set3DConeOrientation(&__orientation))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::set3DDistanceFilter(Vital::Type::Audio::DistanceFilter filter) {
+    bool create::set3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter filter) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
         return true;
@@ -192,12 +192,12 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> set3DLevel(value))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::set3DRange(Vital::Type::Audio::Range range) {
+    bool create::set3DRange(Vital::Type::Audio::3DRange range) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> set3DMinMaxDistance(range.minDistance, range.maxDistance))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::set3DOcclusion(Vital::Type::Audio::Occlusion occlusion) {
+    bool create::set3DOcclusion(Vital::Type::Audio::3DOcclusion occlusion) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> set3DOcclusion(occlusion.directOcclusion, occlusion.reverbOcclusion))) throw ErrorCode["request-failed"];
         return true;
@@ -244,7 +244,7 @@ namespace Vital::System::Audio::Sound {
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
-    bool create::get3DConeSettings(Vital::Type::Audio::ConeSettings& settings) {
+    bool create::get3DConeSettings(Vital::Type::Audio::3DConeSettings& settings) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
@@ -256,7 +256,7 @@ namespace Vital::System::Audio::Sound {
         orientation = {__orientation.x, __orientation.y, __orientation.z};
         return true;
     }
-    bool create::get3DDistanceFilter(Vital::Type::Audio::DistanceFilter& filter) {
+    bool create::get3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter& filter) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
         return true;
@@ -273,12 +273,12 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
         return value;
     }
-    bool create::get3DRange(Vital::Type::Audio::Range& range) {
+    bool create::get3DRange(Vital::Type::Audio::3DRange& range) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> get3DMinMaxDistance(&range.minDistance, &range.maxDistance))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::get3DOcclusion(Vital::Type::Audio::Occlusion& occlusion) {
+    bool create::get3DOcclusion(Vital::Type::Audio::3DOcclusion& occlusion) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> get3DOcclusion(&occlusion.directOcclusion, &occlusion.reverbOcclusion))) throw ErrorCode["request-failed"];
         return true;

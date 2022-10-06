@@ -21,27 +21,27 @@
 /////////////////////////
 
 namespace Vital::Type::Audio {
-    typedef struct ConeSettings {
+    typedef struct 3DConeSettings {
         float insideAngle;
         float outsideAngle;
         float outsideVolume;
-    } ConeSettings;
+    } 3DConeSettings;
 
-    typedef struct DistanceFilter {
+    typedef struct 3DDistanceFilter {
         bool enable;
         float customLevel;
         float centerFrequency;
-    } DistanceFilter;
+    } 3DDistanceFilter;
 
-    typedef struct Range {
+    typedef struct 3DRange {
         float minDistance;
         float maxDistance;
-    } Range;
+    } 3DRange;
 
-    typedef struct Occlusion {
+    typedef struct 3DOcclusion {
         float directOcclusion;
         float reverbOcclusion;
-    } Occlusion;
+    } 3DOcclusion;
 
     typedef struct MixInputLevels {
         float levels[];
