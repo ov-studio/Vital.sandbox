@@ -37,7 +37,7 @@ namespace Vital::System::Audio::Sound {
             bool is3D = false;
         public:
             // Instantiators //
-            create(std::string& path);
+            create(const std::string& path);
             ~create();
 
             // Checkers //

@@ -68,7 +68,7 @@ namespace Vital::System::Audio {
 namespace Vital::System::Audio::Sound {
     // Instantiators //
     std::map<vital_sound*, bool> vInstances;
-    create::create(std::string& path) {
+    create::create(const std::string& path) {
         vInstances.emplace(this, true);
         if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw ErrorCode["request_failed"];
 
