@@ -199,7 +199,7 @@ namespace Vital::Sandbox::JS {
         duk_inspect_callstack_entry(vm, -2);
         getObjectField("lineNumber", -1);
         API::error("[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error));
-        //vm -> setBool(false);
+        setBool(false);
         return true;
     }
 }
