@@ -211,6 +211,14 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setPan(value))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setMixInputLevels(Vital::Type::Audio::MixInputLevels levels) {
+        if (isErrored(channel -> setMixLevelsInput(levels.levels, levels.count))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::setMixOutputLevels(Vital::Type::Audio::MixOutputLevels levels) {
+        if (isErrored(channel -> setMixLevelsOutput(levels.frontLeft, levels.frontRight, levels.center, levels.lowFrequency, levels.surroundLeft, levels.surroundRight, levels.backLeft, levels.backRight))) throw ErrorCode["request-failed"];
+        return true;
+    }
 
     // Getters //
     float create::getPitch() {

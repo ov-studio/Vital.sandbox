@@ -68,6 +68,8 @@ namespace Vital::System::Audio::Sound {
             bool set3DOcclusion(Vital::Type::Audio::Occlusion occlusion);
             bool set3DSpread(float value);
             bool setPan(float value);
+            bool setMixInputLevels(Vital::Type::Audio::MixInputLevels levels);
+            bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevels levels);
 
             // Getters //
             float getPitch();

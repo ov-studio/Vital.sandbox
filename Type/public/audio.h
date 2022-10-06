@@ -22,24 +22,40 @@
 
 namespace Vital::Type::Audio {
     typedef struct ConeSettings {
-        float insideAngle = 0;
-        float outsideAngle = 0;
-        float outsideVolume = 0;
+        float insideAngle;
+        float outsideAngle;
+        float outsideVolume;
     } ConeSettings;
 
     typedef struct DistanceFilter {
-        bool enable = false;
-        float customLevel = 0;
-        float centerFrequency = 0;
+        bool enable;
+        float customLevel;
+        float centerFrequency;
     } DistanceFilter;
 
     typedef struct Range {
-        float minDistance = 0;
-        float maxDistance = 0;
+        float minDistance;
+        float maxDistance;
     } Range;
 
     typedef struct Occlusion {
-        float directOcclusion = 1;
-        float reverbOcclusion = 10000;
+        float directOcclusion;
+        float reverbOcclusion;
     } Occlusion;
+
+    typedef struct MixInputLevels {
+        float[] levels;
+        int count;
+    } MixInputLevels;
+
+    typedef struct MixOutputLevels {
+        float frontLeft;
+        float frontRight;
+        float center;
+        float lowFrequency;
+        float surroundLeft;
+        float surroundRight;
+        float backLeft;
+        float backRight;
+    } MixOutputLevels;
 }
