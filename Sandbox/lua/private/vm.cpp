@@ -69,7 +69,7 @@ namespace Vital::Sandbox::Lua {
     void create::setGlobal(const std::string& index) { lua_setglobal(vm, index.data()); }
     void create::setNil() { lua_pushnil(vm); }
     void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
-    void create::setString(std::string& value) { lua_pushstring(vm, value.data()); }
+    void create::setString(const std::string& value) { lua_pushstring(vm, value.data()); }
     void create::setNumber(int value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setNumber(float value) { lua_pushnumber(vm, static_cast<lua_Number>(value)); }
     void create::setNumber(double value) { lua_pushnumber(vm, value); }
@@ -121,7 +121,7 @@ namespace Vital::Sandbox::Lua {
         setBool(value);
         setTableField(getLength(-2) + 1, -2);
     }
-    void create::pushString(std::string& value) {
+    void create::pushString(const std::string& value) {
         setString(value);
         setTableField(getLength(-2) + 1, -2);
     }
@@ -198,7 +198,7 @@ namespace Vital::Sandbox::Lua {
 
     // Utils //
     void create::pop(int count) { lua_pop(vm, count); }
-    bool create::loadString(std::string& buffer) {
+    bool create::loadString(const std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.data());
         bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);

@@ -46,7 +46,7 @@ namespace Vital::Sandbox::Lua {
             void setGlobal(const std::string& index);
             void setNil();
             void setBool(bool value);
-            void setString(std::string& value);
+            void setString(const std::string& value);
             void setNumber(int value);
             void setNumber(float value);
             void setNumber(double value);
@@ -80,7 +80,7 @@ namespace Vital::Sandbox::Lua {
 
             // Pushers //
             void pushBool(bool value);
-            void pushString(std::string& value);
+            void pushString(const std::string& value);
             void pushNumber(int value);
             void pushNumber(float value);
             void pushNumber(double value);
@@ -103,7 +103,7 @@ namespace Vital::Sandbox::Lua {
 
             // Utils //
             void pop(int count = 1);
-            bool loadString(std::string& buffer);
+            bool loadString(const std::string& buffer);
             bool throwError(const std::string& error = std::string());
     };
     typedef create vital_vm;
