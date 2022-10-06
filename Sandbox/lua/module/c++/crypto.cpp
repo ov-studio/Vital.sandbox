@@ -26,7 +26,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("crypto", "hash", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string mode = vm -> getString(1);
                     std::string buffer = vm -> getString(2);
@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("crypto", "encode", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string buffer = vm -> getString(1);
                     vm -> setString(Vital::System::Crypto::encode(buffer));
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("crypto", "decode", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string buffer = vm -> getString(1);
                     vm -> setString(Vital::System::Crypto::decode(buffer));
@@ -63,7 +63,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("crypto", "encrypt", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string mode = vm -> getString(1);
                     std::string buffer = vm -> getString(2);
@@ -80,7 +80,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("crypto", "decrypt", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 4) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3)) || (!vm -> isString(4))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 4) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3)) || (!vm -> isString(4))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string mode = vm -> getString(1);
                     std::string buffer = vm -> getString(2);

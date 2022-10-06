@@ -26,7 +26,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "resolve", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     Vital::System::File::resolve(path);
@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "exists", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::exists(path));
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "size", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     vm -> setNumber(static_cast<double>(Vital::System::File::size(path)));
@@ -63,7 +63,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "delete", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::remove(path));
@@ -75,7 +75,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "read", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     auto buffer = Vital::System::File::read(path);
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "write", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     std::string buffer = vm -> getString(2);
@@ -101,7 +101,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("file", "contents", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 else {
                     std::string path = vm -> getString(1);
                     bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;

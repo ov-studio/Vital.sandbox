@@ -21,7 +21,8 @@
 /////////////////////////
 
 std::map<std::string, std::string> Vital::ErrorCode = {
-    {"request_failed", "Failed to process specified request"},
+    {"invalid-arguments", "Invalid argument list"},
+    {"request-failed", "Failed to process specified request"},
     {"decode-failed", "Failed to decode specified data"},
     {"hash-mode-nonexistent", "Invalid hash mode"},
     {"cipher-mode-nonexistent", "Invalid cipher mode"},
