@@ -102,7 +102,7 @@ namespace Vital::Sandbox::JS {
             void pop(int count = 1);
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer);
-            bool throwError(const std::string& error = std::string());
+            bool throwError(const std::string& error = "");
     };
     typedef create vital_vm;
     extern vital_vm* fetchVM(vital_ref* vm);
