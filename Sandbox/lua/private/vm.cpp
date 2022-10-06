@@ -198,12 +198,10 @@ namespace Vital::Sandbox::Lua {
 
     // Utils //
     void create::pop(int count) { lua_pop(vm, count); }
-    int create::execute(std::function<void()> exec) {
-        try {
-            return exec();
-        }
-        catch(const std::string& error) { vm -> throwError(error); }
-        catch(...) { vm -> throwError(); }
+    int create::execute(std::function<int()> exec) {
+        try { return exec(); }
+        catch(const std::string& error) { throwError(error); }
+        catch(...) { throwError(); }
         return 1;
     }
     bool create::loadString(const std::string& buffer) {

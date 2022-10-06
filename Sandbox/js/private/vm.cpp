@@ -185,12 +185,10 @@ namespace Vital::Sandbox::JS {
 
     // Utils //
     void create::pop(int count) { duk_pop_n(vm, count); }
-    int create::execute(std::function<void()> exec) {
-        try {
-            return exec();
-        }
-        catch(const std::string& error) { vm -> throwError(error); }
-        catch(...) { vm -> throwError(); }
+    int create::execute(std::function<int()> exec) {
+        try { return exec(); }
+        catch(const std::string& error) { throwError(error); }
+        catch(...) { throwError(); }
         return 1;
     }
     bool create::loadString(const std::string& buffer) {

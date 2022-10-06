@@ -25,7 +25,7 @@ namespace Vital::Sandbox::Lua::API {
     void vSandbox_File() {
         bind("file", "resolve", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "exists", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);
@@ -50,7 +50,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "size", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "delete", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "read", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);
@@ -87,7 +87,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "write", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);
@@ -100,7 +100,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "contents", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
                 else {
                     std::string path = vm -> getString(1);

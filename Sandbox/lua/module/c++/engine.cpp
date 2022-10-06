@@ -25,7 +25,7 @@ namespace Vital::Sandbox::Lua::API {
     void vSandbox_Engine() {
         bind("engine", "getSystemTick", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 vm -> setNumber(static_cast<int>(Vital::System::getSystemTick()));
                 return 1;
             });
@@ -33,7 +33,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("engine", "getApplicationTick", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 vm -> setNumber(static_cast<int>(Vital::System::getApplicationTick()));
                 return 1;
             });
@@ -41,7 +41,7 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("engine", "getClientTick", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            return vm -> execute([]() -> int {
+            return vm -> execute([&]() -> int {
                 vm -> setNumber(static_cast<int>(Vital::System::getClientTick()));
                 return 1;
             });
