@@ -93,7 +93,7 @@ namespace Vital::System::Crypto {
         catch(std::string error) { throw error; }
     }
 
-    std::string encode(std::string& buffer) {
+    std::string encode(const std::string& buffer) {
         std::stringstream result;
         for (unsigned char i : buffer) {
             result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(i);
