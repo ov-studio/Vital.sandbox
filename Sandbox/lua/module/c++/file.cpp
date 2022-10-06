@@ -100,18 +100,18 @@ namespace Vital::Sandbox::Lua::API {
 
         bind("file", "contents", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
-            else {
-                vm -> execute([]() -> void {
+            return vm -> execute([]() -> void {
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
+                else {
                     std::string path = vm -> getString(1);
                     bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;
                     vm -> createTable();
                     for (auto& i : Vital::System::File::contents(path, fetchDirs)) {
                         vm -> pushString(i);
                     }
-                });
-            }
-            return 1;
+                }
+                return 1;
+            });
         });
     }
 }
