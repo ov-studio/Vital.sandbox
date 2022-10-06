@@ -44,7 +44,7 @@ namespace Vital::Type::Audio {
     } Occlusion;
 
     typedef struct MixInputLevels {
-        float[] levels;
+        float levels[];
         int count;
     } MixInputLevels;
 
