@@ -35,7 +35,7 @@ namespace Vital::Sandbox::Lua {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
         }
-        for (std::string i : vBlacklist) {
+        for (const std::string& i : vBlacklist) {
             setNil();
             setGlobal(i);
         }
@@ -43,7 +43,7 @@ namespace Vital::Sandbox::Lua {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/lua/module/bundle.h>)
-            for (std::string i : vBundle) {
+            for (const std::string& i : vBundle) {
                 loadString(i);
             }
         #endif
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::Lua {
     bool create::isFunction(int index) { return lua_isfunction(vm, index); }
 
     // Setters //
-    void create::setGlobal(std::string index) { lua_setglobal(vm, index.data()); }
+    void create::setGlobal(const std::string& index) { lua_setglobal(vm, index.data()); }
     void create::setNil() { lua_pushnil(vm); }
     void create::setBool(bool value) { lua_pushboolean(vm, static_cast<int>(value)); }
     void create::setString(std::string& value) { lua_pushstring(vm, value.data()); }
@@ -76,11 +76,11 @@ namespace Vital::Sandbox::Lua {
     void create::createTable() { lua_newtable(vm); }
     void create::setTable(int index) { lua_settable(vm, index); }
     void create::setTableField(int value, int index) { lua_seti(vm, index, value); }
-    void create::setTableField(std::string value, int index) { lua_setfield(vm, index, value.data()); }
-    void create::createMetaTable(std::string value) { luaL_newmetatable(vm, value.data()); }
+    void create::setTableField(const std::string& value, int index) { lua_setfield(vm, index, value.data()); }
+    void create::createMetaTable(const std::string& value) { luaL_newmetatable(vm, value.data()); }
     void create::setMetaTable(int index) { lua_setmetatable(vm, index); }
-    void create::setMetaTable(std::string index) { luaL_setmetatable(vm, index.data()); }
-    void create::createNamespace(std::string parent) {
+    void create::setMetaTable(const std::string& index) { luaL_setmetatable(vm, index.data()); }
+    void create::createNamespace(const std::string& parent) {
         getGlobal(parent);
         if (!isTable(-1)) {
             createTable();
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::Lua {
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
-    bool create::getGlobal(std::string index) { return lua_getglobal(vm, index.data()); }
+    bool create::getGlobal(const std::string& index) { return lua_getglobal(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(lua_toboolean(vm, index)); }
     std::string create::getString(int index) { return lua_tostring(vm, index); }
     int create::getInt(int index) { return static_cast<int>(lua_tonumber(vm, index)); }
@@ -105,9 +105,9 @@ namespace Vital::Sandbox::Lua {
     double create::getDouble(int index) { return static_cast<double>(lua_tonumber(vm, index)); }
     bool create::getTable(int index) { return lua_gettable(vm, index); }
     bool create::getTableField(int value, int index) { return lua_geti(vm, index, value); }
-    bool create::getTableField(std::string value, int index) { return lua_getfield(vm, index, value.data()); }
+    bool create::getTableField(const std::string& value, int index) { return lua_getfield(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
-    bool create::getMetaTable(std::string index) { return luaL_getmetatable(vm, index.data()); }
+    bool create::getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.data()); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
@@ -143,55 +143,55 @@ namespace Vital::Sandbox::Lua {
     }
 
     // Registerers //
-    void create::registerBool(std::string index, bool value) {
+    void create::registerBool(const std::string& index, bool value) {
         setBool(value);
         setTableField(index.data(), -2);
     }
-    void create::registerBool(std::string index, bool value, std::string parent) {
+    void create::registerBool(const std::string& index, bool value, const std::string& parent) {
         createNamespace(parent);
         registerBool(index, value);
     }
-    void create::registerString(std::string index, std::string& value) {
+    void create::registerString(const std::string& index, const std::string& value) {
         setString(value);
         setTableField(index.data(), -2);
     }
-    void create::registerString(std::string index, std::string& value, std::string parent) {
+    void create::registerString(const std::string& index, const std::string& value, const std::string& parent) {
         createNamespace(parent);
         registerString(index, value);
     }
-    void create::registerNumber(std::string index, int value) {
+    void create::registerNumber(const std::string& index, int value) {
         setNumber(value);
         setTableField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, int value, std::string parent) {
+    void create::registerNumber(const std::string& index, int value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
     }
-    void create::registerNumber(std::string index, float value) {
+    void create::registerNumber(const std::string& index, float value) {
         setNumber(value);
         setTableField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, float value, std::string parent) {
+    void create::registerNumber(const std::string& index, float value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
     }
-    void create::registerNumber(std::string index, double value) {
+    void create::registerNumber(const std::string& index, double value) {
         setNumber(value);
         setTableField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, double value, std::string parent) {
+    void create::registerNumber(const std::string& index, double value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
     }
-    void create::registerFunction(std::string index, vital_exec& exec) {
+    void create::registerFunction(const std::string& index, vital_exec& exec) {
         setFunction(exec);
         setTableField(index.data(), -2);
     }
-    void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
+    void create::registerFunction(const std::string& index, vital_exec& exec, const std::string& parent) {
         createNamespace(parent);
         registerFunction(index, exec);
     }
-    void create::registerObject(std::string index, void* value) {
+    void create::registerObject(const std::string& index, void* value) {
         createUserData(value);
         setMetaTable(index);
     }
@@ -203,8 +203,7 @@ namespace Vital::Sandbox::Lua {
         luaL_loadstring(vm, buffer.data());
         bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
         if (!status) {
-            std::string error = getString(-1);
-            API::error(error);
+            API::error(getString(-1));
             return false;
         }
         return true;

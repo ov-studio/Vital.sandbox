@@ -190,8 +190,7 @@ namespace Vital::Sandbox::JS {
         setString(buffer);
         bool status = !duk_peval(vm);
         if (!status) {
-            std::string error = duk_safe_to_string(vm, -1);
-            API::error(error);
+            API::error(duk_safe_to_string(vm, -1));
             return false;
         }
         return true;
@@ -200,7 +199,7 @@ namespace Vital::Sandbox::JS {
         duk_inspect_callstack_entry(vm, -2);
         getObjectField("lineNumber", -1);
         API::error("[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error));
-        vm -> setBool(false);
+        //vm -> setBool(false);
         return true;
     }
 }
