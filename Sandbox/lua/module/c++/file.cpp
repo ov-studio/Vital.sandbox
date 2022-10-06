@@ -27,13 +27,11 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     Vital::System::File::resolve(path);
                     vm -> setString(path);
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
@@ -42,12 +40,10 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::exists(path));
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
@@ -56,12 +52,10 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     vm -> setNumber(static_cast<double>(Vital::System::File::size(path)));
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
@@ -70,12 +64,10 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::remove(path));
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
@@ -84,13 +76,11 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     auto buffer = Vital::System::File::read(path);
                     vm -> setString(buffer);
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
@@ -99,13 +89,11 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     std::string buffer = vm -> getString(2);
                     vm -> setBool(Vital::System::File::write(path, reinterpret_cast<char*>(&buffer)));
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
@@ -114,16 +102,14 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) vm -> setBool(false);
             else {
-                try {
+                vm -> execute([]() -> void {
                     std::string path = vm -> getString(1);
                     bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;
                     vm -> createTable();
                     for (auto& i : Vital::System::File::contents(path, fetchDirs)) {
                         vm -> pushString(i);
                     }
-                }
-                catch(const std::string& error) { vm -> throwError(error); }
-                catch(...) { vm -> throwError(); }
+                });
             }
             return 1;
         });
