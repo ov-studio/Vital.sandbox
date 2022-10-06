@@ -39,7 +39,7 @@ namespace Vital::System::Crypto {
         else throw ErrorCode["cipher-mode-nonexistent"];
     }
 
-    std::string CipherIV(std::string& mode) {
+    std::string CipherIV(const std::string& mode) {
         try {
             EVP_CIPHER* algorithm = const_cast<EVP_CIPHER*>(CipherMode(mode));
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -67,8 +67,8 @@ namespace Vital::System::Crypto {
             EVP_Init(ctx, algorithm, NULL, NULL);
             if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw ErrorCode["cipher-invalid-key"];
             if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw ErrorCode["cipher-invalid-iv"];
-            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(key.data()), reinterpret_cast<unsigned char*>(iv.data()));
-            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(buffer.data()), inputSize);
+            EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.data())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.data())));
+            EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), inputSize);
             outputSize += currentSize;
             EVP_Final(ctx, output + currentSize, &currentSize);
             outputSize += currentSize;
@@ -84,7 +84,7 @@ namespace Vital::System::Crypto {
             auto algorithm = HashMode(mode);
             int outputSize = algorithm.second;
             unsigned char* output = new unsigned char[outputSize];
-            algorithm.first(reinterpret_cast<unsigned char*>(buffer.data()), buffer.size(), output);
+            algorithm.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), buffer.size(), output);
             std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
             result = encode(result);
             delete[] output;
@@ -106,7 +106,7 @@ namespace Vital::System::Crypto {
             int bufferSize = static_cast<int>(buffer.size());
             std::string result;
             result.reserve(bufferSize/2);
-            for (std::string::iterator i = buffer.begin(); i < buffer.end(); i += 2) {
+            for (std::string::const_iterator i = buffer.begin(); i < buffer.end(); i += 2) {
                 result.push_back(std::stoi(std::string(i, i + 2), nullptr, 16));
             }
             return result;
