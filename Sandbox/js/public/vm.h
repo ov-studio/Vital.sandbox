@@ -85,7 +85,7 @@ namespace Vital::Sandbox::JS {
             void pushFunction(vital_exec& exec);
 
             // Registerers //
-            void registerBool(const std::string index, bool value);
+            void registerBool(const std::string& index, bool value);
             void registerBool(const std::string& index, bool value, const std::string& parent);
             void registerString(const std::string& index, const std::string& value);
             void registerString(const std::string& index, const std::string& value, const std::string& parent);
