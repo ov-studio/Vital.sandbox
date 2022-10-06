@@ -31,15 +31,15 @@ namespace Vital::Sandbox::JS {
     create::create() {
         vm = duk_create_heap_default();
         vInstances.emplace(vm, this);
-        for (std::string i : vBlacklist) {
+        for (const std::string& i : vBlacklist) {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vMethods) {
+        for (auto i : API::vMethods) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/js/module/bundle.h>)
-            for (std::string i : vBundle) {
+            for (const std::string& i : vBundle) {
                 loadString(i);
             }
         #endif
@@ -63,7 +63,7 @@ namespace Vital::Sandbox::JS {
     bool create::isFunction(int index) { return duk_is_function(vm, index); }
 
     // Setters //
-    void create::setGlobal(std::string index) { duk_put_global_string(vm, index.data()); }
+    void create::setGlobal(const std::string& index) { duk_put_global_string(vm, index.data()); }
     void create::setNil() { duk_push_null(vm); }
     void create::setBool(bool value) { duk_push_boolean(vm, static_cast<int>(value)); }
     void create::setString(const std::string& value) { duk_push_string(vm, value.data()); }
@@ -75,8 +75,8 @@ namespace Vital::Sandbox::JS {
     void create::setArray(int index) { duk_put_prop(vm, index); }
     void create::setObject(int index) { duk_put_prop(vm, index); }
     void create::setArrayField(int value, int index) { duk_put_prop_index(vm, index, value); }
-    void create::setObjectField(std::string value, int index) { duk_put_prop_string(vm, index, value.data()); }
-    void create::createNamespace(std::string parent) {
+    void create::setObjectField(const std::string& value, int index) { duk_put_prop_string(vm, index, value.data()); }
+    void create::createNamespace(const std::string& parent) {
         getGlobal(parent);
         if (!isObject(-1)) {
             createObject();
@@ -89,7 +89,7 @@ namespace Vital::Sandbox::JS {
 
     // Getters //
     int create::getArgCount() { return duk_get_top(vm); }
-    bool create::getGlobal(std::string index) { return duk_get_global_string(vm, index.data()); }
+    bool create::getGlobal(const std::string& index) { return duk_get_global_string(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(duk_to_boolean(vm, index)); }
     std::string create::getString(int index) { return duk_to_string(vm, index); }
     int create::getInt(int index) { return static_cast<int>(duk_to_number(vm, index)); }
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::JS {
     bool create::getArray(int index) { return duk_get_prop(vm, index); }
     bool create::getObject(int index) { return duk_get_prop(vm, index); }
     bool create::getArrayField(int value, int index) { return duk_get_prop_index(vm, index, value); }
-    bool create::getObjectField(std::string value, int index) { return duk_get_prop_string(vm, index, value.data()); }
+    bool create::getObjectField(const std::string& value, int index) { return duk_get_prop_string(vm, index, value.data()); }
     void* create::getUserData(int index) { return duk_to_pointer(vm, index); }
     int create::getLength(int index) {
         duk_get_length(vm, index);
@@ -134,51 +134,51 @@ namespace Vital::Sandbox::JS {
     }
 
     // Registerers //
-    void create::registerBool(std::string index, bool value) {
+    void create::registerBool(const std::string& index, bool value) {
         setBool(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerBool(std::string index, bool value, std::string parent) {
+    void create::registerBool(const std::string& index, bool value, const std::string& parent) {
         createNamespace(parent);
         registerBool(index, value);
     }
-    void create::registerString(std::string index, const std::string& value) {
+    void create::registerString(const std::string& index, const std::string& value) {
         setString(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerString(std::string index, const std::string& value, std::string parent) {
+    void create::registerString(const std::string& index, const std::string& value, const std::string& parent) {
         createNamespace(parent);
         registerString(index, value);
     }
-    void create::registerNumber(std::string index, int value) {
+    void create::registerNumber(const std::string& index, int value) {
         setNumber(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, int value, std::string parent) {
+    void create::registerNumber(const std::string& index, int value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
     }
-    void create::registerNumber(std::string index, float value) {
+    void create::registerNumber(const std::string& index, float value) {
         setNumber(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, float value, std::string parent) {
+    void create::registerNumber(const std::string& index, float value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
     }
-    void create::registerNumber(std::string index, double value) {
+    void create::registerNumber(const std::string& index, double value) {
         setNumber(value);
         setObjectField(index.data(), -2);
     }
-    void create::registerNumber(std::string index, double value, std::string parent) {
+    void create::registerNumber(const std::string& index, double value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
     }
-    void create::registerFunction(std::string index, vital_exec& exec) {
+    void create::registerFunction(const std::string& index, vital_exec& exec) {
         setFunction(exec);
         setObjectField(index.data(), -2);
     }
-    void create::registerFunction(std::string index, vital_exec& exec, std::string parent) {
+    void create::registerFunction(const std::string& index, vital_exec& exec, const std::string& parent) {
         createNamespace(parent);
         registerFunction(index, exec);
     }

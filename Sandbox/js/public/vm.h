@@ -44,10 +44,10 @@ namespace Vital::Sandbox::JS {
             bool isFunction(int index = 1);
 
             // Setters //
-            void setGlobal(std::string index);
+            void setGlobal(const std::string& index);
             void setNil();
             void setBool(bool value);
-            void setString(std::string& value);
+            void setString(const std::string& value);
             void setNumber(int value);
             void setNumber(float value);
             void setNumber(double value);
@@ -56,14 +56,14 @@ namespace Vital::Sandbox::JS {
             void setArray(int index = 1);
             void setObject(int index = 1);
             void setArrayField(int value, int index = 1);
-            void setObjectField(std::string value, int index = 1);
-            void createNamespace(std::string parent);
+            void setObjectField(const std::string& value, int index = 1);
+            void createNamespace(const std::string& parent);
             void setUserData(void* value);
             void setFunction(vital_exec& value);
 
             // Getters //
             int getArgCount();
-            bool getGlobal(std::string index);
+            bool getGlobal(const std::string& index);
             bool getBool(int index = 1);
             std::string getString(int index = 1);
             int getInt(int index = 1);
@@ -72,31 +72,31 @@ namespace Vital::Sandbox::JS {
             bool getArray(int index = 1);
             bool getObject(int index = 1);
             bool getArrayField(int value, int index = 1);
-            bool getObjectField(std::string value, int index = 1);
+            bool getObjectField(const std::string& value, int index = 1);
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 
             // Pushers //
             void pushBool(bool value);
-            void pushString(std::string& value);
+            void pushString(const std::string& value);
             void pushNumber(int value);
             void pushNumber(float value);
             void pushNumber(double value);
             void pushFunction(vital_exec& exec);
 
             // Registerers //
-            void registerBool(std::string index, bool value);
-            void registerBool(std::string index, bool value, std::string parent);
-            void registerString(std::string index, std::string& value);
-            void registerString(std::string index, std::string& value, std::string parent);
-            void registerNumber(std::string index, int value);
-            void registerNumber(std::string index, int value, std::string parent);
-            void registerNumber(std::string index, float value);
-            void registerNumber(std::string index, float value, std::string parent);
-            void registerNumber(std::string index, double value);
-            void registerNumber(std::string index, double value, std::string parent);
-            void registerFunction(std::string index, vital_exec& exec);
-            void registerFunction(std::string index, vital_exec& exec, std::string parent);
+            void registerBool(const std::string index, bool value);
+            void registerBool(const std::string& index, bool value, const std::string& parent);
+            void registerString(const std::string& index, const std::string& value);
+            void registerString(const std::string& index, const std::string& value, const std::string& parent);
+            void registerNumber(const std::string& index, int value);
+            void registerNumber(const std::string& index, int value, const std::string& parent);
+            void registerNumber(const std::string& index, float value);
+            void registerNumber(const std::string& index, float value, const std::string& parent);
+            void registerNumber(const std::string& index, double value);
+            void registerNumber(const std::string& index, double value, const std::string& parent);
+            void registerFunction(const std::string& index, vital_exec& exec);
+            void registerFunction(const std::string& index, vital_exec& exec, const std::string& parent);
 
             // Utils //
             void pop(int count = 1);
