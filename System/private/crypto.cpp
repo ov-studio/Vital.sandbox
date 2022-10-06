@@ -125,9 +125,7 @@ namespace Vital::System::Crypto {
 
     std::string decrypt(const std::string& mode, const std::string& buffer, const std::string& key, const std::string& iv) {
         try {
-            std::string __buffer = decode(buffer);
-            std::string __iv = decode(iv);
-            return CipherHandle(mode, false, __buffer, key, __iv);
+            return CipherHandle(mode, false, decode(buffer), key, decode(iv));
         }
         catch(std::string error) { throw error; }
     }
