@@ -100,6 +100,7 @@ namespace Vital::Sandbox::JS {
 
             // Utils //
             void pop(int count = 1);
+            bool execute(std::function<void()> exec);
             bool loadString(const std::string& buffer);
             bool throwError(const std::string& error = std::string());
     };
