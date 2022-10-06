@@ -34,8 +34,8 @@ namespace Vital::Type::Audio {
     } DistanceFilter;
 
     typedef struct Range {
-        float minDistance = 1;
-        float maxDistance = 10000;
+        float minDistance = 0;
+        float maxDistance = 0;
     } Range;
 
     typedef struct Occlusion {
