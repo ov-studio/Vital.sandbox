@@ -32,7 +32,7 @@ namespace Vital::Sandbox::Lua::API {
                     Vital::System::File::resolve(path);
                     vm -> setString(path);
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;
@@ -46,7 +46,7 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::exists(path));
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;
@@ -60,7 +60,7 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     vm -> setNumber(static_cast<double>(Vital::System::File::size(path)));
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::Lua::API {
                     std::string path = vm -> getString(1);
                     vm -> setBool(Vital::System::File::remove(path));
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;
@@ -89,7 +89,7 @@ namespace Vital::Sandbox::Lua::API {
                     auto buffer = Vital::System::File::read(path);
                     vm -> setString(buffer);
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;
@@ -104,7 +104,7 @@ namespace Vital::Sandbox::Lua::API {
                     std::string buffer = vm -> getString(2);
                     vm -> setBool(Vital::System::File::write(path, reinterpret_cast<char*>(&buffer)));
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;
@@ -122,7 +122,7 @@ namespace Vital::Sandbox::Lua::API {
                         vm -> pushString(i);
                     }
                 }
-                catch(const std::string error) { vm -> throwError(error); }
+                catch(const std::string& error) { vm -> throwError(error); }
                 catch(...) { vm -> throwError(); }
             }
             return 1;

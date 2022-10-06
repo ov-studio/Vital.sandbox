@@ -21,9 +21,9 @@
 ////////////////////////////
 
 namespace Vital::System::Crypto {
-    extern std::string hash(std::string mode, std::string& buffer);
-    extern std::string encode(std::string& buffer);
-    extern std::string decode(std::string& buffer);
-    extern std::pair<std::string, std::string> encrypt(std::string mode, std::string& buffer, std::string& key);
-    extern std::string decrypt(std::string mode, std::string& buffer, std::string& key, std::string& iv);
+    extern std::string hash(const std::string& mode, const std::string& buffer);
+    extern std::string encode(const std::string& buffer);
+    extern std::string decode(const std::string& buffer);
+    extern std::pair<std::string, std::string> encrypt(const std::string& mode, const std::string& buffer, const std::string& key);
+    extern std::string decrypt(const std::string& mode, const std::string& buffer, const std::string& key, const std::string& iv);
 }

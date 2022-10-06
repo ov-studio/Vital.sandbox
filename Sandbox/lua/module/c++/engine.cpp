@@ -28,7 +28,7 @@ namespace Vital::Sandbox::Lua::API {
             try {
                 vm -> setNumber(static_cast<int>(Vital::System::getSystemTick()));
             }
-            catch(const std::string error) { vm -> throwError(error); }
+            catch(const std::string& error) { vm -> throwError(error); }
             catch(...) { vm -> throwError(); }
             return 1;
         });
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua::API {
             try {
                 vm -> setNumber(static_cast<int>(Vital::System::getApplicationTick()));
             }
-            catch(const std::string error) { vm -> throwError(error); }
+            catch(const std::string& error) { vm -> throwError(error); }
             catch(...) { vm -> throwError(); }
             return 1;
         });
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::Lua::API {
             try {
                 vm -> setNumber(static_cast<int>(Vital::System::getClientTick()));
             }
-            catch(const std::string error) { vm -> throwError(error); }
+            catch(const std::string& error) { vm -> throwError(error); }
             catch(...) { vm -> throwError(); }
             return 1;
         });

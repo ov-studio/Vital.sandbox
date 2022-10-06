@@ -41,7 +41,7 @@ namespace Vital::System::File {
         return std::filesystem::remove(path);
     }
 
-    std::string read(std::string& path) {
+    std::string& read(std::string& path) {
         resolve(path);
         if (!exists(path)) throw ErrorCode["file-nonexistent"];
         std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
@@ -64,7 +64,7 @@ namespace Vital::System::File {
         return true;
     }
 
-    std::vector<std::string> contents(std::string& path, bool fetchDirs) {
+    std::vector<std::string>& contents(std::string& path, bool fetchDirs) {
         resolve(path);
         std::vector<std::string> result;
         for (auto& entry : std::filesystem::directory_iterator(path)) {

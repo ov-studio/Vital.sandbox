@@ -23,8 +23,8 @@
 // Bundler //
 //////////////
 
-void outputConsole(std::string message) { std::cout << "\nVital.bundler | " << message; }
-void genPackage(std::string name, std::string entry, std::vector<std::string> modules) {
+void outputConsole(const std::string& message) { std::cout << "\nVital.bundler | " << message; }
+void genPackage(const std::string& name, const std::string& entry, std::vector<std::string> modules) {
     std::string rwBundle = "namespace Vital::Sandbox::" + name + " {\nstd::vector<std::string> vBundle = {";
     outputConsole("Packaging " + name + "...");
     for (auto i : modules) {
@@ -81,8 +81,7 @@ int main() {
     std::cout << "\n" << "RESULT: " << result;
     */
 
-    std::string url = "C:/Users/Tron/Documents/GITs/Test/Bells.mp3";
     Vital::System::Audio::create();
-    auto testSound = Vital::System::Audio::Sound::create(url);
+    auto testSound = Vital::System::Audio::Sound::create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3");
     return 1;
 }
