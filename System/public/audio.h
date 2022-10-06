@@ -70,6 +70,7 @@ namespace Vital::System::Audio::Sound {
             bool setPan(float value);
             bool setMixInputLevels(Vital::Type::Audio::MixInputLevels levels);
             bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevels levels);
+            bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
 
             // Getters //
             float getPitch();
@@ -84,6 +85,7 @@ namespace Vital::System::Audio::Sound {
             bool get3DRange(Vital::Type::Audio::3DRange& range);
             bool get3DOcclusion(Vital::Type::Audio::3DOcclusion& occlusion);
             float get3DSpread();
+            bool getMixMatrix(Vital::Type::Audio::MixMatrix& matrix);
     };
     typedef create vital_sound;
 }

@@ -219,6 +219,10 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setMixLevelsOutput(levels.frontLeft, levels.frontRight, levels.center, levels.lowFrequency, levels.surroundLeft, levels.surroundRight, levels.backLeft, levels.backRight))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setMixMatrix(Vital::Type::Audio::MixMatrix matrix) {
+        if (isErrored(channel -> setMixMatrix(matrix.matrix, matrix.countOut, matrix.countIn))) throw ErrorCode["request-failed"];
+        return true;
+    }
 
     // Getters //
     float create::getPitch() {
@@ -288,5 +292,9 @@ namespace Vital::System::Audio::Sound {
         float value = 0;
         if (isErrored(channel -> get3DSpread(&value))) throw ErrorCode["request-failed"];
         return value;
+    }
+    bool create::getMixMatrix(Vital::Type::Audio::MixMatrix& matrix) {
+        if (isErrored(channel -> getMixMatrix(&matrix.matrix, &matrix.countOut, &matrix.countIn))) throw ErrorCode["request-failed"];
+        return true;
     }
 }

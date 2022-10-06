@@ -58,4 +58,10 @@ namespace Vital::Type::Audio {
         float backLeft;
         float backRight;
     } MixOutputLevels;
+
+    typedef struct MixMatrix {
+        float matrix[][];
+        int countIn;
+        int countOut;
+    } MixMatrix;
 }
