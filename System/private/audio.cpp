@@ -183,7 +183,28 @@ namespace Vital::System::Audio::Sound {
         return true;
     }
     bool create::set3DDopplerLevel(float value) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
         if (isErrored(channel -> set3DDopplerLevel(value))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::set3DLevel(float value) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        if (isErrored(channel -> set3DLevel(value))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::set3DRange(Vital::Type::Audio::Range range) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        if (isErrored(channel -> set3DMinMaxDistance(range.minDistance, range.maxDistance))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::set3DOcclusion(Vital::Type::Audio::Occlusion occlusion) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        if (isErrored(channel -> set3DOcclusion(occlusion.directOcclusion, occlusion.reverbOcclusion))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::set3DSpread(float value) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        if (isErrored(channel -> set3DSpread(value))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::setPan(float value) {
@@ -236,6 +257,28 @@ namespace Vital::System::Audio::Sound {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         float value = 0;
         if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
+        return value;
+    }
+    float create::get3DLevel() {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        float value = 0;
+        if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
+        return value;
+    }
+    bool create::get3DRange(Vital::Type::Audio::Range& range) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        if (isErrored(channel -> get3DMinMaxDistance(&range.minDistance, &range.maxDistance))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::get3DOcclusion(Vital::Type::Audio::Occlusion& occlusion) {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        if (isErrored(channel -> get3DOcclusion(&occlusion.directOcclusion, &occlusion.reverbOcclusion))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    float create::get3DSpread() {
+        if (!is3D) throw ErrorCode["invalid-3d-sound"];
+        float value = 0;
+        if (isErrored(channel -> get3DSpread(&value))) throw ErrorCode["request-failed"];
         return value;
     }
 }

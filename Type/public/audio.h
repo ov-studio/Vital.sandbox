@@ -32,4 +32,14 @@ namespace Vital::Type::Audio {
         float customLevel = 0;
         float centerFrequency = 0;
     } DistanceFilter;
+
+    typedef struct Range {
+        float minDistance = 1;
+        float maxDistance = 10000;
+    } Range;
+
+    typedef struct Occlusion {
+        float directOcclusion = 1;
+        float reverbOcclusion = 10000;
+    } Occlusion;
 }
