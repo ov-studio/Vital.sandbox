@@ -64,6 +64,7 @@ namespace Vital::System::Audio::Sound {
             bool setMixInputLevels(Vital::Type::Audio::MixInputLevel level);
             bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level);
             bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
+            bool set3D(bool state);
             bool set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity);
             bool set3DConeSettings(Vital::Type::Audio::3DConeSetting settings);
             bool set3DConeOrientation(Vital::Type::Math::Vector3D orientation);

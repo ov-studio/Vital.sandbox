@@ -85,7 +85,7 @@ namespace Vital::System::Audio::Sound {
     bool create::isLooped() {
         FMOD_MODE mode;
         if (isErrored(channel -> getMode(&mode))) throw ErrorCode["request-failed"];
-        return mode == FMOD_LOOP_NORMAL;
+        return mode & FMOD_LOOP_NORMAL;
     }
     bool create::isVolumeRamped() {
         bool state = false;
@@ -98,8 +98,9 @@ namespace Vital::System::Audio::Sound {
         return state;
     }
     bool create::is3D() {
-        // TODO: WIP
-        return false;
+        FMOD_MODE mode;
+        if (isErrored(channel -> getMode(&mode))) throw ErrorCode["request-failed"];
+        return mode & FMOD_3D;
     }
 
     // Setters //
@@ -167,6 +168,10 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::setMixMatrix(Vital::Type::Audio::MixMatrix matrix) {
         if (isErrored(channel -> setMixMatrix(matrix.matrix, matrix.countOut, matrix.countIn))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::set3D(bool state) {
+        if (isErrored(channel -> setMode(state ? FMOD_3D : FMOD_2D))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity) {
