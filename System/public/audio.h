@@ -83,6 +83,7 @@ namespace Vital::System::Audio::Sound {
             float getVolume();
             float getAudibility();
             unsigned int getPosition();
+            bool getMixMatrix(Vital::Type::Audio::MixMatrix& matrix);
             bool get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity);
             bool get3DConeSettings(Vital::Type::Audio::3DConeSetting& settings);
             bool get3DConeOrientation(Vital::Type::Math::Vector3D& orientation);
@@ -92,7 +93,6 @@ namespace Vital::System::Audio::Sound {
             bool get3DRange(Vital::Type::Audio::3DRange& range);
             bool get3DOcclusion(Vital::Type::Audio::3DOcclusion& occlusion);
             float get3DSpread();
-            bool getMixMatrix(Vital::Type::Audio::MixMatrix& matrix);
     
             // Utils //
             bool play();
