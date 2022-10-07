@@ -26,12 +26,12 @@
 
 namespace Vital::Sandbox::JS {
     // Instantiators //
-    std::map<vital_ref*, vital_vm*> vInstances;
-    vital_vm* fetchVM(vital_ref* vm) { return vInstances[vm]; }
+    std::map<vital_ref*, vital_vm*> instance;
+    vital_vm* fetchVM(vital_ref* vm) { return instance[vm]; }
     create::create() {
         vm = duk_create_heap_default();
-        vInstances.emplace(vm, this);
-        for (const std::string& i : vBlacklist) {
+        instance.emplace(vm, this);
+        for (const std::string& i : blacklist) {
             setNil();
             setGlobal(i);
         }
@@ -46,7 +46,7 @@ namespace Vital::Sandbox::JS {
     }
     create::~create() {
         if (!vm) return;
-        vInstances.erase(vm);
+        instance.erase(vm);
         duk_destroy_heap(vm);
         vm = nullptr;
     }

@@ -21,7 +21,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
-    FMOD::System* vSystem = nullptr;
+    FMOD::System* system = nullptr;
     bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
     /*
@@ -37,7 +37,7 @@ namespace Vital::System::Audio {
 
     // Create the channel group.
     FMOD::ChannelGroup* channelGroup = nullptr;
-    if (!isErrored(vSystem->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
+    if (!isErrored(system->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
 
     // Set a callback on the channel.
     if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
@@ -46,31 +46,34 @@ namespace Vital::System::Audio {
     */
 
     bool create() {
-        if (vSystem) return false;
-        if (isErrored(FMOD::System_Create(&vSystem))) return false;
-        if (isErrored(vSystem -> init(512, FMOD_INIT_NORMAL, 0))) return false;
+        if (system) return false;
+        if (isErrored(FMOD::System_Create(&system))) return false;
+        if (isErrored(system -> init(512, FMOD_INIT_NORMAL, 0))) return false;
         return true;
     }
 
     bool destroy() {
-        if (!vSystem) return false;
-        vSystem -> release();
-        vSystem = nullptr;
+        if (!system) return false;
+        for (auto i : Vital::System::Audio::Sound::instances) {
+            delete i;
+        }
+        system -> release();
+        system = nullptr;
         return true;
     }
 
     bool update() {
-        vSystem -> update();
+        system -> update();
         return true;
     }
 }
 
 namespace Vital::System::Audio::Sound {
     // Instantiators //
-    std::map<vital_sound*, bool> vInstances;
+    std::map<vital_sound*, bool> instances;
     create::create(const std::string& path) {
-        vInstances.emplace(this, true);
-        if (isErrored(vSystem -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw ErrorCode["request-failed"];
+        instances.emplace(this, true);
+        if (isErrored(system -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw ErrorCode["request-failed"];
 
         // TODO: REMOVE LATER
         play();
@@ -81,7 +84,7 @@ namespace Vital::System::Audio::Sound {
         } while (true);
     }
     create::~create() {
-        vInstances.erase(this);
+        instances.erase(this);
         if (!sound) return;
         sound -> release();
         sound = nullptr;
@@ -117,11 +120,11 @@ namespace Vital::System::Audio::Sound {
 
     // Setters //
     bool create::play() {
-        if (isErrored(vSystem -> playSound(sound, nullptr, false, &channel))) throw ErrorCode["request-failed"];
+        if (isErrored(system -> playSound(sound, nullptr, false, &channel))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::play(FMOD::ChannelGroup* channelGroup) {
-        if (isErrored(vSystem -> playSound(sound, channelGroup, false, &channel))) throw ErrorCode["request-failed"];
+        if (isErrored(system -> playSound(sound, channelGroup, false, &channel))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {

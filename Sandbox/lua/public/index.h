@@ -26,7 +26,7 @@ extern "C" {
 /////////////////////
 
 namespace Vital::Sandbox::Lua {
-    extern std::vector<std::string> vBlacklist;
-    extern std::vector<luaL_Reg> vLibrary;
-    extern std::vector<std::string> vModules;
+    extern std::vector<std::string> blacklist;
+    extern std::vector<luaL_Reg> library;
+    extern std::vector<std::string> module;
 }

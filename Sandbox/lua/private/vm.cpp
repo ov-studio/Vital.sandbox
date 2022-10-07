@@ -26,16 +26,16 @@
 
 namespace Vital::Sandbox::Lua {
     // Instantiators //
-    std::map<lua_State*, vital_vm*> vInstances;
-    vital_vm* fetchVM(vital_ref* vm) { return vInstances[vm]; }
+    std::map<lua_State*, vital_vm*> instance;
+    vital_vm* fetchVM(vital_ref* vm) { return instance[vm]; }
     create::create() {
         vm = luaL_newstate();
-        vInstances.emplace(vm, this);
-        for (luaL_Reg i : vLibrary) {
+        instance.emplace(vm, this);
+        for (luaL_Reg i : library) {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
         }
-        for (const std::string& i : vBlacklist) {
+        for (const std::string& i : blacklist) {
             setNil();
             setGlobal(i);
         }
@@ -50,7 +50,7 @@ namespace Vital::Sandbox::Lua {
     }
     create::~create() {
         if (!vm) return;
-        vInstances.erase(vm);
+        instance.erase(vm);
         lua_close(vm);
         vm = nullptr;
     }

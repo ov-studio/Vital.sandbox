@@ -22,6 +22,6 @@
 ////////////////////
 
 namespace Vital::Sandbox::JS {
-    extern std::vector<std::string> vBlacklist;
-    extern std::vector<std::string> vModules;
+    extern std::vector<std::string> blacklist;
+    extern std::vector<std::string> module;
 }

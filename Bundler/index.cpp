@@ -50,8 +50,8 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 
 
 int main() {
-    genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::vModules);
-    genPackage("JS", "Sandbox/js/module/", Vital::Sandbox::JS::vModules);
+    genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::module);
+    genPackage("JS", "Sandbox/js/module/", Vital::Sandbox::JS::module);
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;

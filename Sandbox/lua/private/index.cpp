@@ -21,13 +21,13 @@
 /////////////////////
 
 namespace Vital::Sandbox::Lua {
-    std::vector<std::string> vBlacklist = {
+    std::vector<std::string> blacklist = {
         "dofile",
         "load",
         "loadfile"
     };
 
-    std::vector<luaL_Reg> vLibrary = {
+    std::vector<luaL_Reg> library = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
         {"string", luaopen_string},
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua {
         {"utf8", luaopen_utf8}
     };
 
-    std::vector<std::string> vModules = {
+    std::vector<std::string> module = {
         "namespace.lua",
         "vcl.lua",
         "table.lua",
