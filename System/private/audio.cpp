@@ -24,17 +24,6 @@ namespace Vital::System::Audio {
     FMOD::System* system = nullptr;
     bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
-    /*
-    // Create the channel group.
-    FMOD::ChannelGroup* channelGroup = nullptr;
-    if (!isErrored(system->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
-
-    // Set a callback on the channel.
-    if (!isErrored(channel -> setCallback(&channelGroupCallback))) throw "FMOD: Failed to set callback for sound";
-
-    channelGroup -> release();
-    */
-
     bool create() {
         if (system) return false;
         if (isErrored(FMOD::System_Create(&system))) return false;
