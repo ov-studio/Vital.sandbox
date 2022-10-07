@@ -24,10 +24,11 @@ std::map<std::string, std::string> Vital::ErrorCode = {
     {"invalid-arguments", "Invalid argument list"},
     {"request-failed", "Failed to process specified request"},
     {"decode-failed", "Failed to decode specified data"},
-    {"hash-mode-nonexistent", "Invalid hash mode"},
-    {"cipher-mode-nonexistent", "Invalid cipher mode"},
+    {"hash-mode-nonexistent", "Failed to fetch hash mode"},
+    {"cipher-mode-nonexistent", "Failed to fetch cipher mode"},
     {"cipher-invalid-key", "Invalid cipher key"},
     {"cipher-invalid-iv", "Invalid cipher IV"},
-    {"invalid-3d-sound", "Invalid 3D sound"},
-    {"file-nonexistent", "File non-existent"}
+    {"sound-invalid-loop", "Sound entity not in loopable state"},
+    {"sound-invalid-3d", "Sound entity not in 3D state"},
+    {"file-nonexistent", "Failed to fetch specified file"}
 };
