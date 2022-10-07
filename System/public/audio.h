@@ -47,10 +47,6 @@ namespace Vital::System::Audio::Sound {
             bool isMuted();
 
             // Setters //
-            bool play();
-            bool play(FMOD::ChannelGroup* channelGroup);
-            bool stop();
-
             bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
             bool setPriority(int value);
             bool setPaused(bool state);
@@ -91,6 +87,11 @@ namespace Vital::System::Audio::Sound {
             bool get3DOcclusion(Vital::Type::Audio::3DOcclusion& occlusion);
             float get3DSpread();
             bool getMixMatrix(Vital::Type::Audio::MixMatrix& matrix);
+    
+            // Utils //
+            bool play();
+            bool play(FMOD::ChannelGroup* channelGroup);
+            bool stop();
     };
     typedef create vital_sound;
 }

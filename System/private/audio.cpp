@@ -110,20 +110,6 @@ namespace Vital::System::Audio::Sound {
     }
 
     // Setters //
-    bool create::play() {
-        if (isErrored(system -> playSound(sound, nullptr, false, &channel))) throw ErrorCode["request-failed"];
-        return true;
-    }
-    bool create::play(FMOD::ChannelGroup* channelGroup) {
-        if (isErrored(system -> playSound(sound, channelGroup, false, &channel))) throw ErrorCode["request-failed"];
-        return true;
-    }
-    bool create::stop() {
-        if (isErrored(channel -> stop())) throw ErrorCode["request-failed"];
-        return true;
-    }
-
-    // Setters //
     bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
         if (isErrored(channel -> setChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
         return true;
@@ -310,6 +296,20 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::getMixMatrix(Vital::Type::Audio::MixMatrix& matrix) {
         if (isErrored(channel -> getMixMatrix(&matrix.matrix, &matrix.countOut, &matrix.countIn))) throw ErrorCode["request-failed"];
+        return true;
+    }
+
+    // Utils //
+    bool create::play() {
+        if (isErrored(system -> playSound(sound, nullptr, false, &channel))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::play(FMOD::ChannelGroup* channelGroup) {
+        if (isErrored(system -> playSound(sound, channelGroup, false, &channel))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::stop() {
+        if (isErrored(channel -> stop())) throw ErrorCode["request-failed"];
         return true;
     }
 }
