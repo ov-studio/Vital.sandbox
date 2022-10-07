@@ -42,15 +42,16 @@ namespace Vital::System::Audio::Sound {
             // Checkers //
             bool isPlaying();
             bool isPaused();
-            bool isLooping();
+            bool isLooped();
             bool isVolumeRamped();
             bool isMuted();
 
             // Setters //
             bool play();
             bool play(FMOD::ChannelGroup* channelGroup);
-            bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
             bool stop();
+
+            bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
             bool setPaused(bool state);
             bool setLooped(bool state);
             bool setPitch(float value);
@@ -72,6 +73,7 @@ namespace Vital::System::Audio::Sound {
             bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
 
             // Getters //
+            bool getChannelGroup(FMOD::ChannelGroup*& channelGroup);
             float getPitch();
             float getAudibility();
             float getVolume();

@@ -93,7 +93,7 @@ namespace Vital::System::Audio::Sound {
         channel -> getPaused(&state);
         return state;
     }
-    bool create::isLooping() {
+    bool create::isLooped() {
         FMOD_MODE mode;
         if (isErrored(channel -> getMode(&mode))) throw ErrorCode["request-failed"];
         return mode == FMOD_LOOP_NORMAL;
@@ -118,12 +118,12 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(system -> playSound(sound, channelGroup, false, &channel))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
-        if (isErrored(channel -> setChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
-        return true;
-    }
     bool create::stop() {
         if (isErrored(channel -> stop())) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
+        if (isErrored(channel -> setChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::setPaused(bool state) {
@@ -216,6 +216,10 @@ namespace Vital::System::Audio::Sound {
     }
 
     // Getters //
+    bool create::getChannelGroup(FMOD::ChannelGroup*& channelGroup) {
+        if (isErrored(channel -> getChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
+        return true;
+    }
     float create::getPitch() {
         float value = 0;
         if (isErrored(channel -> getPitch(&value))) throw ErrorCode["request-failed"];
