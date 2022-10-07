@@ -21,11 +21,16 @@
 /////////////////////////
 
 namespace Vital::Type::Audio {
-    typedef struct 3DConeSettings {
+    typedef struct LoopPoint {
+        unsigned int start;
+        unsigned int end;
+    } LoopPoint;
+
+    typedef struct 3DConeSetting {
         float insideAngle;
         float outsideAngle;
         float outsideVolume;
-    } 3DConeSettings;
+    } 3DConeSetting;
 
     typedef struct 3DDistanceFilter {
         bool enable;
@@ -43,12 +48,12 @@ namespace Vital::Type::Audio {
         float reverbOcclusion;
     } 3DOcclusion;
 
-    typedef struct MixInputLevels {
-        float levels[];
+    typedef struct MixInputLevel {
+        float level[];
         int count;
-    } MixInputLevels;
+    } MixInputLevel;
 
-    typedef struct MixOutputLevels {
+    typedef struct MixOutputLevel {
         float frontLeft;
         float frontRight;
         float center;
@@ -57,7 +62,7 @@ namespace Vital::Type::Audio {
         float surroundRight;
         float backLeft;
         float backRight;
-    } MixOutputLevels;
+    } MixOutputLevel;
 
     typedef struct MixMatrix {
         float matrix[][];

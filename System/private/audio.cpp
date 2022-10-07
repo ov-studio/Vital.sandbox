@@ -131,6 +131,11 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setLoopCount(value))) throw ErrorCode["request-failed"];
         return true; 
     }
+    bool create::setLoopPoint(Vital::Type::Audio::LoopPoint point) {
+        if (!isLooped()) throw ErrorCode["sound-invalid-loop"];
+        if (isErrored(channel -> setLoopPoint(point.start, point.end))) throw ErrorCode["request-failed"];
+        return true; 
+    }
     bool create::setPitch(float value) {
         if (isErrored(channel -> setPitch(value))) throw ErrorCode["request-failed"];
         return true;
@@ -162,7 +167,7 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> set3DAttributes(&__position, &__velocity))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::set3DConeSettings(Vital::Type::Audio::3DConeSettings settings) {
+    bool create::set3DConeSettings(Vital::Type::Audio::3DConeSetting settings) {
         if (!is3D) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
@@ -207,12 +212,12 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setPan(value))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::setMixInputLevels(Vital::Type::Audio::MixInputLevels levels) {
-        if (isErrored(channel -> setMixLevelsInput(levels.levels, levels.count))) throw ErrorCode["request-failed"];
+    bool create::setMixInputLevels(Vital::Type::Audio::MixInputLevel level) {
+        if (isErrored(channel -> setMixLevelsInput(level.level, level.count))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::setMixOutputLevels(Vital::Type::Audio::MixOutputLevels levels) {
-        if (isErrored(channel -> setMixLevelsOutput(levels.frontLeft, levels.frontRight, levels.center, levels.lowFrequency, levels.surroundLeft, levels.surroundRight, levels.backLeft, levels.backRight))) throw ErrorCode["request-failed"];
+    bool create::setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level) {
+        if (isErrored(channel -> setMixLevelsOutput(level.frontLeft, level.frontRight, level.center, level.lowFrequency, level.surroundLeft, level.surroundRight, level.backLeft, level.backRight))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::setMixMatrix(Vital::Type::Audio::MixMatrix matrix) {
@@ -235,6 +240,11 @@ namespace Vital::System::Audio::Sound {
         int value;
         if (isErrored(channel -> getLoopCount(&value))) throw ErrorCode["request-failed"];
         return value; 
+    }
+    bool create::getLoopPoint(Vital::Type::Audio::LoopPoint& point) {
+        if (!isLooped()) throw ErrorCode["sound-invalid-loop"];
+        if (isErrored(channel -> getLoopPoint(&point.start, &point.end))) throw ErrorCode["request-failed"];
+        return true; 
     }
     float create::getPitch() {
         float value;
@@ -269,7 +279,7 @@ namespace Vital::System::Audio::Sound {
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
-    bool create::get3DConeSettings(Vital::Type::Audio::3DConeSettings& settings) {
+    bool create::get3DConeSettings(Vital::Type::Audio::3DConeSetting& settings) {
         if (!is3D) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) throw ErrorCode["request-failed"];
         return true;

@@ -52,6 +52,7 @@ namespace Vital::System::Audio::Sound {
             bool setPaused(bool state);
             bool setLooped(bool state);
             bool setLoopCount(int value);
+            bool setLoopPoint(Vital::Type::Audio::LoopPoint point);
             bool setPitch(float value);
             bool setFrequency(float value);
             bool setVolume(float value);
@@ -59,7 +60,7 @@ namespace Vital::System::Audio::Sound {
             bool setMuted(bool state);
             bool setPosition(unsigned int value);
             bool set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity);
-            bool set3DConeSettings(Vital::Type::Audio::3DConeSettings settings);
+            bool set3DConeSettings(Vital::Type::Audio::3DConeSetting settings);
             bool set3DConeOrientation(Vital::Type::Math::Vector3D orientation);
             bool set3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter filter);
             bool set3DDopplerLevel(float value);
@@ -68,21 +69,22 @@ namespace Vital::System::Audio::Sound {
             bool set3DOcclusion(Vital::Type::Audio::3DOcclusion occlusion);
             bool set3DSpread(float value);
             bool setPan(float value);
-            bool setMixInputLevels(Vital::Type::Audio::MixInputLevels levels);
-            bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevels levels);
+            bool setMixInputLevels(Vital::Type::Audio::MixInputLevel level);
+            bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level);
             bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
 
             // Getters //
             bool getChannelGroup(FMOD::ChannelGroup*& channelGroup);
             int getPriority();
             int getLoopCount();
+            bool getLoopPoint(Vital::Type::Audio::LoopPoint& point);
             float getPitch();
             float getFrequency();
             float getVolume();
             float getAudibility();
             unsigned int getPosition();
             bool get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity);
-            bool get3DConeSettings(Vital::Type::Audio::3DConeSettings& settings);
+            bool get3DConeSettings(Vital::Type::Audio::3DConeSetting& settings);
             bool get3DConeOrientation(Vital::Type::Math::Vector3D& orientation);
             bool get3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter& filter);
             float get3DDopplerLevel();
