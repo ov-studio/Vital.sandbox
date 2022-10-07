@@ -20,6 +20,10 @@
 // Vital: System: Audio //
 ///////////////////////////
 
+namespace Vital::System::Audio::Sound {
+    std::map<vital_sound*, bool> instances;
+}
+
 namespace Vital::System::Audio {
     // Handlers //
     FMOD::System* system = nullptr;
@@ -35,7 +39,7 @@ namespace Vital::System::Audio {
     bool stop() {
         if (!system) return false;
         for (auto i : Vital::System::Audio::Sound::instances) {
-            delete i;
+            delete i.first;
         }
         system -> release();
         system = nullptr;
@@ -55,7 +59,6 @@ namespace Vital::System::Audio {
 
 namespace Vital::System::Audio::Sound {
     // Instantiators //
-    std::map<vital_sound*, bool> instances;
     create::create(const std::string& path) {
         instances.emplace(this, true);
         if (isErrored(system -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw ErrorCode["request-failed"];
@@ -132,7 +135,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::setLoopPoint(Vital::Type::Audio::LoopPoint point) {
         if (!isLooped()) throw ErrorCode["sound-invalid-loop"];
-        if (isErrored(channel -> setLoopPoint(point.start, FMOD_TIMEUNIT_MS, point.end, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> setLoopPoints(point.start, FMOD_TIMEUNIT_MS, point.end, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
         return true; 
     }
     bool create::setPitch(float value) {
@@ -230,7 +233,7 @@ namespace Vital::System::Audio::Sound {
 
     // Getters //
     bool create::getChannelGroup(FMOD::ChannelGroup*& channelGroup) {
-        if (isErrored(channel -> getChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> getChannelGroup(&channelGroup))) throw ErrorCode["request-failed"];
         return true;
     }
     int create::getPriority() {
@@ -246,7 +249,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::getLoopPoint(Vital::Type::Audio::LoopPoint& point) {
         if (!isLooped()) throw ErrorCode["sound-invalid-loop"];
-        if (isErrored(channel -> getLoopPoint(&point.start, FMOD_TIMEUNIT_MS, &point.end, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> getLoopPoints(&point.start, FMOD_TIMEUNIT_MS, &point.end, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
         return true; 
     }
     float create::getPitch() {
