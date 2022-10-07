@@ -23,8 +23,8 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
-    extern bool create();
-    extern bool destroy();
+    extern bool start();
+    extern bool stop();
     extern bool update();
 }
 
