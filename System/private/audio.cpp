@@ -126,6 +126,10 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setPriority(int value) {
+        if (isErrored(channel -> setPriority(value))) throw ErrorCode["request-failed"];
+        return true;
+    }
     bool create::setPaused(bool state) {
         if (isErrored(channel -> setPaused(state))) throw ErrorCode["request-failed"];
         return true;
@@ -220,18 +224,23 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> getChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
         return true;
     }
+    int create::getPriority() {
+        int value;
+        if (isErrored(channel -> getPriority(&value))) throw ErrorCode["request-failed"];
+        return value;
+    }
     float create::getPitch() {
-        float value = 0;
+        float value;
         if (isErrored(channel -> getPitch(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     float create::getAudibility() {
-        float value = 0;
+        float value;
         if (isErrored(channel -> getAudibility(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     float create::getVolume() {
-        float value = 0;
+        float value;
         if (isErrored(channel -> getVolume(&value))) throw ErrorCode["request-failed"];
         return value;
     }
@@ -262,13 +271,13 @@ namespace Vital::System::Audio::Sound {
     }
     float create::get3DDopplerLevel() {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
-        float value = 0;
+        float value;
         if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     float create::get3DLevel() {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
-        float value = 0;
+        float value;
         if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
         return value;
     }
@@ -284,7 +293,7 @@ namespace Vital::System::Audio::Sound {
     }
     float create::get3DSpread() {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
-        float value = 0;
+        float value;
         if (isErrored(channel -> get3DSpread(&value))) throw ErrorCode["request-failed"];
         return value;
     }
