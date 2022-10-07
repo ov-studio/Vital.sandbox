@@ -51,6 +51,7 @@ namespace Vital::System::Audio::Sound {
             bool setPriority(int value);
             bool setPaused(bool state);
             bool setLooped(bool state);
+            bool setLoopCount(int value);
             bool setPitch(float value);
             bool setFrequency(float value);
             bool setVolume(float value);
@@ -74,6 +75,7 @@ namespace Vital::System::Audio::Sound {
             // Getters //
             bool getChannelGroup(FMOD::ChannelGroup*& channelGroup);
             int getPriority();
+            int getLoopCount();
             float getPitch();
             float getFrequency();
             float getVolume();

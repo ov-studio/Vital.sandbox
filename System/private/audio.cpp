@@ -126,6 +126,10 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setMode(FMOD_LOOP_NORMAL))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setLoopCount(int value) {
+        if (isErrored(channel -> setLoopCount(value))) throw ErrorCode["request-failed"];
+        return true; 
+    }
     bool create::setPitch(float value) {
         if (isErrored(channel -> setPitch(value))) throw ErrorCode["request-failed"];
         return true;
@@ -224,6 +228,11 @@ namespace Vital::System::Audio::Sound {
         int value;
         if (isErrored(channel -> getPriority(&value))) throw ErrorCode["request-failed"];
         return value;
+    }
+    int create::getLoopCount() {
+        int value;
+        if (isErrored(channel -> getLoopCount(&value))) throw ErrorCode["request-failed"];
+        return value; 
     }
     float create::getPitch() {
         float value;
