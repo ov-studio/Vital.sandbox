@@ -122,6 +122,8 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> stop())) throw ErrorCode["request-failed"];
         return true;
     }
+
+    // Setters //
     bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
         if (isErrored(channel -> setChannelGroup(channelGroup))) throw ErrorCode["request-failed"];
         return true;
