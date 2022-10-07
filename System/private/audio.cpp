@@ -133,7 +133,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::setLoopPoint(Vital::Type::Audio::LoopPoint point) {
         if (!isLooped()) throw ErrorCode["sound-invalid-loop"];
-        if (isErrored(channel -> setLoopPoint(point.start, point.end))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> setLoopPoint(point.start, FMOD_TIMEUNIT_MS, point.end, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
         return true; 
     }
     bool create::setPitch(float value) {
@@ -243,7 +243,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::getLoopPoint(Vital::Type::Audio::LoopPoint& point) {
         if (!isLooped()) throw ErrorCode["sound-invalid-loop"];
-        if (isErrored(channel -> getLoopPoint(&point.start, &point.end))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> getLoopPoint(&point.start, FMOD_TIMEUNIT_MS, &point.end, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
         return true; 
     }
     float create::getPitch() {
