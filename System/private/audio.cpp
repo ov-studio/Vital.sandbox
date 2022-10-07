@@ -278,7 +278,7 @@ namespace Vital::System::Audio::Sound {
         return value;
     }
     bool create::getMixMatrix(Vital::Type::Audio::MixMatrix& matrix) {
-        if (isErrored(channel -> getMixMatrix(&matrix.matrix, &matrix.countOut, &matrix.countIn))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> getMixMatrix(matrix.matrix, &matrix.countOut, &matrix.countIn))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity) {
