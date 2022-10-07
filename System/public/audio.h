@@ -29,6 +29,11 @@ namespace Vital::System::Audio {
     extern bool update();
 }
 
+
+//////////////////////////////////
+// Vital: System: Audio: Sound //
+//////////////////////////////////
+
 namespace Vital::System::Audio::Sound {
     class create {
         private:
