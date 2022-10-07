@@ -43,8 +43,8 @@ namespace Vital::System::Crypto {
         try {
             EVP_CIPHER* algorithm = const_cast<EVP_CIPHER*>(CipherMode(mode));
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-            int ivSize = EVP_CIPHER_block_size(algorithm);
-            unsigned char* iv = new unsigned char[(ivSize + 1)];
+            int ivSize = EVP_CIPHER_block_size(algorithm) + 1;
+            unsigned char* iv = new unsigned char[ivSize];
             RAND_bytes(iv, ivSize);
             std::string result = std::string(reinterpret_cast<char*>(iv), ivSize);
             EVP_CIPHER_CTX_free(ctx);
@@ -62,8 +62,9 @@ namespace Vital::System::Crypto {
             auto EVP_Update = isEncrypt ? EVP_EncryptUpdate : EVP_DecryptUpdate;
             auto EVP_Final = isEncrypt ? EVP_EncryptFinal : EVP_DecryptFinal;
             int blockSize = EVP_CIPHER_block_size(algorithm);
-            int inputSize = static_cast<int>(buffer.size()) + 1, outputSize = 0, currentSize = 0;
-            unsigned char* output = new unsigned char[(inputSize + blockSize - 1)];
+            int inputSize = static_cast<unsigned int>(buffer.size()) + 1, outputSize = 0, currentSize = 0;
+            int bufferSize = inputSize + blockSize - 1;
+            unsigned char* output = new unsigned char[bufferSize];
             EVP_Init(ctx, algorithm, NULL, NULL);
             if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw ErrorCode["cipher-invalid-key"];
             if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw ErrorCode["cipher-invalid-iv"];
