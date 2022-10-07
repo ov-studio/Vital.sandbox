@@ -81,7 +81,7 @@ int main() {
     std::cout << "\n" << "RESULT: " << result;
     */
 
-    Vital::System::Audio::create();
+    Vital::System::Audio::start();
     auto testSound = Vital::System::Audio::Sound::create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3");
     return 1;
 }
