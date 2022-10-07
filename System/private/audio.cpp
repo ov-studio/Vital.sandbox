@@ -146,6 +146,10 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setMute(state))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setPosition(unsigned int value) {
+        if (isErrored(channel -> setPosition(value, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
+        return true;
+    }
     bool create::set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
         FMOD_VECTOR __position = {static_cast<float>(position.x), static_cast<float>(position.y), static_cast<float>(position.z)};
@@ -239,6 +243,11 @@ namespace Vital::System::Audio::Sound {
     float create::getAudibility() {
         float value;
         if (isErrored(channel -> getAudibility(&value))) throw ErrorCode["request-failed"];
+        return value;
+    }
+    unsigned int create::getPosition() {
+        unsigned int value;
+        if (isErrored(channel -> getPosition(&value, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
         return value;
     }
     bool create::get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity) {
