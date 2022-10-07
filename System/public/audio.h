@@ -71,13 +71,13 @@ namespace Vital::System::Audio::Sound {
             bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
             bool set3D(bool state);
             bool set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity);
-            bool set3DConeSettings(Vital::Type::Audio::3DConeSetting settings);
+            bool set3DConeSettings(Vital::Type::Audio::ConeSetting3D settings);
             bool set3DConeOrientation(Vital::Type::Math::Vector3D orientation);
-            bool set3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter filter);
+            bool set3DDistanceFilter(Vital::Type::Audio::DistanceFilter3D filter);
             bool set3DDopplerLevel(float value);
             bool set3DLevel(float value);
-            bool set3DRange(Vital::Type::Audio::3DRange range);
-            bool set3DOcclusion(Vital::Type::Audio::3DOcclusion occlusion);
+            bool set3DRange(Vital::Type::Audio::Range3D range);
+            bool set3DOcclusion(Vital::Type::Audio::Occlusion3D occlusion);
             bool set3DSpread(float value);
 
             // Getters //
@@ -92,13 +92,13 @@ namespace Vital::System::Audio::Sound {
             unsigned int getPosition();
             bool getMixMatrix(Vital::Type::Audio::MixMatrix& matrix);
             bool get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity);
-            bool get3DConeSettings(Vital::Type::Audio::3DConeSetting& settings);
+            bool get3DConeSettings(Vital::Type::Audio::ConeSetting3D& settings);
             bool get3DConeOrientation(Vital::Type::Math::Vector3D& orientation);
-            bool get3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter& filter);
+            bool get3DDistanceFilter(Vital::Type::Audio::DistanceFilter3D& filter);
             float get3DDopplerLevel();
             float get3DLevel();
-            bool get3DRange(Vital::Type::Audio::3DRange& range);
-            bool get3DOcclusion(Vital::Type::Audio::3DOcclusion& occlusion);
+            bool get3DRange(Vital::Type::Audio::Range3D& range);
+            bool get3DOcclusion(Vital::Type::Audio::Occlusion3D& occlusion);
             float get3DSpread();
     
             // Utils //

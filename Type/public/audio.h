@@ -27,7 +27,7 @@ namespace Vital::Type::Audio {
     } LoopPoint;
 
     typedef struct MixInputLevel {
-        float level[];
+        float* level;
         int count;
     } MixInputLevel;
 
@@ -43,30 +43,30 @@ namespace Vital::Type::Audio {
     } MixOutputLevel;
 
     typedef struct MixMatrix {
-        float matrix[][];
+        float** matrix;
         int countIn;
         int countOut;
     } MixMatrix;
 
-    typedef struct 3DConeSetting {
+    typedef struct ConeSetting3D {
         float insideAngle;
         float outsideAngle;
         float outsideVolume;
-    } 3DConeSetting;
+    } ConeSetting3D;
 
-    typedef struct 3DDistanceFilter {
+    typedef struct DistanceFilter3D {
         bool enable;
         float customLevel;
         float centerFrequency;
-    } 3DDistanceFilter;
+    } DistanceFilter3D;
 
-    typedef struct 3DRange {
+    typedef struct Range3D {
         float minDistance;
         float maxDistance;
-    } 3DRange;
+    } Range3D;
 
-    typedef struct 3DOcclusion {
+    typedef struct Occlusion3D {
         float directOcclusion;
         float reverbOcclusion;
-    } 3DOcclusion;
+    } Occlusion3D;
 }
