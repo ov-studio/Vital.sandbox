@@ -25,16 +25,6 @@ namespace Vital::System::Audio {
     bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
     /*
-    * TODO: ADD THIS UNDER CHANNEL GROUP..
-    FMOD_RESULT F_CALLBACK channelGroupCallback(
-        FMOD_CHANNELCONTROL* channelControl,
-        FMOD_CHANNELCONTROL_TYPE controlType, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbackType,
-        void* commandData1, void* commandData2
-    ) {
-        std::cout << "Callback called for " << controlType << std::endl;
-        return FMOD_OK;
-    }
-
     // Create the channel group.
     FMOD::ChannelGroup* channelGroup = nullptr;
     if (!isErrored(system->createChannelGroup("inGameSoundEffects", &channelGroup))) throw "FMOD: Failed to create in-game sound effects channel group";
@@ -63,6 +53,7 @@ namespace Vital::System::Audio {
     }
 
     bool update() {
+        if (!system) return false;
         system -> update();
         return true;
     }
