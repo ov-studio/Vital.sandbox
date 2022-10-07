@@ -159,9 +159,6 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::set3DConeSettings(Vital::Type::Audio::3DConeSettings settings) {
         if (!is3D) throw ErrorCode["invalid-3d-sound"];
-        //settings.insideAngle = std::max(0.0, std::min(360.0, settings.insideAngle));
-        //settings.outsideAngle = std::max(0.0, std::min(360.0, settings.outsideAngle));
-        //settings.outsideVolume = std::max(0.0, std::min(360.0, settings.outsideVolume));
         if (isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
     }
