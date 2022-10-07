@@ -56,6 +56,7 @@ namespace Vital::System::Audio::Sound {
             bool setPaused(bool state);
             bool setLooped(bool state);
             bool setPitch(float value);
+            bool setFrequency(float value);
             bool setVolume(float value);
             bool setVolumeRamped(bool state);
             bool setMuted(bool state);
@@ -77,8 +78,9 @@ namespace Vital::System::Audio::Sound {
             bool getChannelGroup(FMOD::ChannelGroup*& channelGroup);
             int getPriority();
             float getPitch();
-            float getAudibility();
+            float getFrequency();
             float getVolume();
+            float getAudibility();
             bool get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity);
             bool get3DConeSettings(Vital::Type::Audio::3DConeSettings& settings);
             bool get3DConeOrientation(Vital::Type::Math::Vector3D& orientation);

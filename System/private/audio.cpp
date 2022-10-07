@@ -142,6 +142,10 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setPitch(value))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setFrequency(float value) {
+        if (isErrored(channel -> setFrequency(value))) throw ErrorCode["request-failed"];
+        return true;
+    }
     bool create::setVolume(float value) {
         if (isErrored(channel -> setVolume(value))) throw ErrorCode["request-failed"];
         return true;
@@ -234,14 +238,19 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> getPitch(&value))) throw ErrorCode["request-failed"];
         return value;
     }
-    float create::getAudibility() {
+    float create::getFrequency() {
         float value;
-        if (isErrored(channel -> getAudibility(&value))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> getFrequency(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     float create::getVolume() {
         float value;
         if (isErrored(channel -> getVolume(&value))) throw ErrorCode["request-failed"];
+        return value;
+    }
+    float create::getAudibility() {
+        float value;
+        if (isErrored(channel -> getAudibility(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     bool create::get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity) {
