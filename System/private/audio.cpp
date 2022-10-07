@@ -21,16 +21,17 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
+    // Handlers //
     FMOD::System* system = nullptr;
     bool isErrored(FMOD_RESULT result) { return result != FMOD_OK; }
 
+    // Managers //
     bool start() {
         if (system) return false;
         if (isErrored(FMOD::System_Create(&system))) return false;
         if (isErrored(system -> init(512, FMOD_INIT_NORMAL, 0))) return false;
         return true;
     }
-
     bool stop() {
         if (!system) return false;
         for (auto i : Vital::System::Audio::Sound::instances) {
@@ -40,7 +41,6 @@ namespace Vital::System::Audio {
         system = nullptr;
         return true;
     }
-
     bool update() {
         if (!system) return false;
         system -> update();

@@ -23,6 +23,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio {
+    // Managers //
     extern bool start();
     extern bool stop();
     extern bool update();
