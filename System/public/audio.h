@@ -33,7 +33,6 @@ namespace Vital::System::Audio::Sound {
         private:
             FMOD::Sound* sound = nullptr;
             FMOD::Channel* channel = nullptr;
-            bool is3D = false;
         public:
             // Instantiators //
             create(const std::string& path);
@@ -45,7 +44,8 @@ namespace Vital::System::Audio::Sound {
             bool isLooped();
             bool isVolumeRamped();
             bool isMuted();
-
+            bool is3D();
+    
             // Setters //
             bool setChannelGroup(FMOD::ChannelGroup* channelGroup);
             bool setPriority(int value);

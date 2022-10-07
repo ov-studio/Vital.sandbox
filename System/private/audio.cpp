@@ -97,6 +97,10 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> getMute(&state))) throw ErrorCode["request-failed"];
         return state;
     }
+    bool create::is3D() {
+        // TODO: WIP
+        return false;
+    }
 
     // Setters //
     bool create::setChannelGroup(FMOD::ChannelGroup* channelGroup) {
@@ -166,50 +170,50 @@ namespace Vital::System::Audio::Sound {
         return true;
     }
     bool create::set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         FMOD_VECTOR __position = {static_cast<float>(position.x), static_cast<float>(position.y), static_cast<float>(position.z)};
         FMOD_VECTOR __velocity = {static_cast<float>(velocity.x), static_cast<float>(velocity.y), static_cast<float>(velocity.z)};
         if (isErrored(channel -> set3DAttributes(&__position, &__velocity))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DConeSettings(Vital::Type::Audio::3DConeSetting settings) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DConeOrientation(Vital::Type::Math::Vector3D orientation) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         FMOD_VECTOR __orientation = {static_cast<float>(orientation.x), static_cast<float>(orientation.y), static_cast<float>(orientation.z)};
         if (isErrored(channel -> set3DConeOrientation(&__orientation))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter filter) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DDopplerLevel(float value) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DDopplerLevel(value))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DLevel(float value) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DLevel(value))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DRange(Vital::Type::Audio::3DRange range) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DMinMaxDistance(range.minDistance, range.maxDistance))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DOcclusion(Vital::Type::Audio::3DOcclusion occlusion) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DOcclusion(occlusion.directOcclusion, occlusion.reverbOcclusion))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DSpread(float value) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DSpread(value))) throw ErrorCode["request-failed"];
         return true;
     }
@@ -265,7 +269,7 @@ namespace Vital::System::Audio::Sound {
         return true;
     }
     bool create::get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         FMOD_VECTOR __position, __velocity;
         if (isErrored(channel -> get3DAttributes(&__position, &__velocity))) throw ErrorCode["request-failed"];
         position = {__position.x, __position.y, __position.z};
@@ -273,46 +277,46 @@ namespace Vital::System::Audio::Sound {
         return true;
     }
     bool create::get3DConeSettings(Vital::Type::Audio::3DConeSetting& settings) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::get3DConeOrientation(Vital::Type::Math::Vector3D& orientation) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         FMOD_VECTOR __orientation;
         if (isErrored(channel -> get3DConeOrientation(&__orientation))) throw ErrorCode["request-failed"];
         orientation = {__orientation.x, __orientation.y, __orientation.z};
         return true;
     }
     bool create::get3DDistanceFilter(Vital::Type::Audio::3DDistanceFilter& filter) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
         return true;
     }
     float create::get3DDopplerLevel() {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         float value;
         if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     float create::get3DLevel() {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         float value;
         if (isErrored(channel -> get3DDopplerLevel(&value))) throw ErrorCode["request-failed"];
         return value;
     }
     bool create::get3DRange(Vital::Type::Audio::3DRange& range) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> get3DMinMaxDistance(&range.minDistance, &range.maxDistance))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::get3DOcclusion(Vital::Type::Audio::3DOcclusion& occlusion) {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> get3DOcclusion(&occlusion.directOcclusion, &occlusion.reverbOcclusion))) throw ErrorCode["request-failed"];
         return true;
     }
     float create::get3DSpread() {
-        if (!is3D) throw ErrorCode["sound-invalid-3d"];
+        if (!is3D()) throw ErrorCode["sound-invalid-3d"];
         float value;
         if (isErrored(channel -> get3DSpread(&value))) throw ErrorCode["request-failed"];
         return value;
