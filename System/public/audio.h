@@ -59,6 +59,10 @@ namespace Vital::System::Audio::Sound {
             bool setVolumeRamped(bool state);
             bool setMuted(bool state);
             bool setPosition(unsigned int value);
+            bool setPan(float value);
+            bool setMixInputLevels(Vital::Type::Audio::MixInputLevel level);
+            bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level);
+            bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
             bool set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity);
             bool set3DConeSettings(Vital::Type::Audio::3DConeSetting settings);
             bool set3DConeOrientation(Vital::Type::Math::Vector3D orientation);
@@ -68,10 +72,6 @@ namespace Vital::System::Audio::Sound {
             bool set3DRange(Vital::Type::Audio::3DRange range);
             bool set3DOcclusion(Vital::Type::Audio::3DOcclusion occlusion);
             bool set3DSpread(float value);
-            bool setPan(float value);
-            bool setMixInputLevels(Vital::Type::Audio::MixInputLevel level);
-            bool setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level);
-            bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
 
             // Getters //
             bool getChannelGroup(FMOD::ChannelGroup*& channelGroup);

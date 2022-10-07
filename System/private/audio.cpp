@@ -149,6 +149,22 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> setPosition(value, FMOD_TIMEUNIT_MS))) throw ErrorCode["request-failed"];
         return true;
     }
+    bool create::setPan(float value) {
+        if (isErrored(channel -> setPan(value))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::setMixInputLevels(Vital::Type::Audio::MixInputLevel level) {
+        if (isErrored(channel -> setMixLevelsInput(level.level, level.count))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level) {
+        if (isErrored(channel -> setMixLevelsOutput(level.frontLeft, level.frontRight, level.center, level.lowFrequency, level.surroundLeft, level.surroundRight, level.backLeft, level.backRight))) throw ErrorCode["request-failed"];
+        return true;
+    }
+    bool create::setMixMatrix(Vital::Type::Audio::MixMatrix matrix) {
+        if (isErrored(channel -> setMixMatrix(matrix.matrix, matrix.countOut, matrix.countIn))) throw ErrorCode["request-failed"];
+        return true;
+    }
     bool create::set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity) {
         if (!is3D) throw ErrorCode["sound-invalid-3d"];
         FMOD_VECTOR __position = {static_cast<float>(position.x), static_cast<float>(position.y), static_cast<float>(position.z)};
@@ -195,22 +211,6 @@ namespace Vital::System::Audio::Sound {
     bool create::set3DSpread(float value) {
         if (!is3D) throw ErrorCode["sound-invalid-3d"];
         if (isErrored(channel -> set3DSpread(value))) throw ErrorCode["request-failed"];
-        return true;
-    }
-    bool create::setPan(float value) {
-        if (isErrored(channel -> setPan(value))) throw ErrorCode["request-failed"];
-        return true;
-    }
-    bool create::setMixInputLevels(Vital::Type::Audio::MixInputLevel level) {
-        if (isErrored(channel -> setMixLevelsInput(level.level, level.count))) throw ErrorCode["request-failed"];
-        return true;
-    }
-    bool create::setMixOutputLevels(Vital::Type::Audio::MixOutputLevel level) {
-        if (isErrored(channel -> setMixLevelsOutput(level.frontLeft, level.frontRight, level.center, level.lowFrequency, level.surroundLeft, level.surroundRight, level.backLeft, level.backRight))) throw ErrorCode["request-failed"];
-        return true;
-    }
-    bool create::setMixMatrix(Vital::Type::Audio::MixMatrix matrix) {
-        if (isErrored(channel -> setMixMatrix(matrix.matrix, matrix.countOut, matrix.countIn))) throw ErrorCode["request-failed"];
         return true;
     }
 
