@@ -1,3 +1,4 @@
+        if (isBound) return; isBound = true;
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Sandbox: lua: module: c++: audio.cpp
@@ -23,13 +24,16 @@
 ////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
-    Vital::System::Audio::Sound::vital_sound* fetchSoundInstance(void* userdata) {
+    bool isBound = false;
+    Vital::System::Audio::Sound::vital_sound* fetchSound(void* userdata) {
         auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(userdata);
         if (!Vital::System::Audio::Sound::isInstance(sound)) throw ErrorCode["invalid-entities"];
         return sound;
     }
 
     void vSandbox_Audio() {
+        if (isBound) return; isBound = true;
+
         bind("sound", "create", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
@@ -45,7 +49,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isPlaying());
                 return 1;
             });
@@ -55,7 +59,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isPaused());
                 return 1;
             });
@@ -65,7 +69,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isLooped());
                 return 1;
             });
@@ -75,7 +79,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isVolumeRamped());
                 return 1;
             });
@@ -85,7 +89,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isMuted());
                 return 1;
             });
@@ -95,7 +99,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> is3D());
                 return 1;
             });
@@ -105,7 +109,7 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                auto sound = fetchSound(vm -> getUserData(1));
                 sound -> play();
                 vm -> setBool(true);
                 return 1;

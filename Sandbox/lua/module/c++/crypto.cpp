@@ -22,7 +22,10 @@
 /////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
+    bool isBound = false;
     void vSandbox_Crypto() {
+        if (isBound) return; isBound = true;
+
         bind("crypto", "hash", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {

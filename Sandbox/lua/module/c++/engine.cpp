@@ -22,7 +22,10 @@
 /////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
+    bool isBound = false;
     void vSandbox_Engine() {
+        if (isBound) return; isBound = true;
+
         bind("engine", "getSystemTick", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
