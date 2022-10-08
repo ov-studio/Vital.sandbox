@@ -27,7 +27,7 @@ namespace Vital::Type::Audio {
     } LoopPoint;
 
     typedef struct MixInputLevel {
-        float* level;
+        float* level = nullptr;
         int count;
     } MixInputLevel;
 
@@ -43,7 +43,7 @@ namespace Vital::Type::Audio {
     } MixOutputLevel;
 
     typedef struct MixMatrix {
-        float* matrix;
+        float* matrix = nullptr;
         int countIn;
         int countOut;
     } MixMatrix;
