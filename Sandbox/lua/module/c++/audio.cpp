@@ -43,6 +43,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(vm -> getUserData(1));
                 if (!Vital::System::Audio::Sound::isInstance(sound)) throw ErrorCode["invalid-entities"];
                 sound -> play();
+                vm -> setBool(true);
                 return 1;
             });
         });
