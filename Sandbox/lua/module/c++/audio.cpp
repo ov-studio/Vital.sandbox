@@ -238,6 +238,21 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "setMixInputLevels", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::MixInputLevel level;
+                level.count = vm -> getLength(2);
+                level = &float[level.count];
+                // TODO: LOOP AND APPEND ALL VALUES..
+                //int value = vm -> getInt(2);
+                vm -> setBool(sound -> setMixInputLevels(level));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
