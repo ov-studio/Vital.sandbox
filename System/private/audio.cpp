@@ -21,7 +21,9 @@
 ///////////////////////////
 
 namespace Vital::System::Audio::Sound {
+    // Instantiators 
     std::map<vital_sound*, bool> instances;
+    bool isInstance(create* ref) { return instances[ref] ? ref : false; }
 }
 
 namespace Vital::System::Audio {
@@ -62,14 +64,6 @@ namespace Vital::System::Audio::Sound {
     create::create(const std::string& path) {
         instances.emplace(this, true);
         if (isErrored(system -> createSound(path.data(), FMOD_DEFAULT, 0, &sound))) throw ErrorCode["request-failed"];
-
-        // TODO: REMOVE LATER
-        play();
-        setPitch(2);
-        setLooped(true);
-        do {
-                
-        } while (true);
     }
     create::~create() {
         instances.erase(this);

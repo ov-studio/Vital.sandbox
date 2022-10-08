@@ -52,6 +52,7 @@ namespace Vital::Sandbox::Lua::API {
         vSandbox_Engine();
         vSandbox_Crypto();
         vSandbox_File();
+        vSandbox_Audio();
         return true;
     }
 }

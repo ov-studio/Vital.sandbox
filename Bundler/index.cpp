@@ -52,6 +52,7 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::module);
     genPackage("JS", "Sandbox/js/module/", Vital::Sandbox::JS::module);
+    Vital::System::Audio::start();
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
@@ -60,6 +61,8 @@ int main() {
         print("\n")
         local buffer = "test"
         print(crypto:decode(buffer))
+        local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
+        sound.play(testSound)
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
@@ -81,7 +84,9 @@ int main() {
     std::cout << "\n" << "RESULT: " << result;
     */
 
-    Vital::System::Audio::start();
-    auto testSound = Vital::System::Audio::Sound::create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3");
+    // TODO: REMOVE LATER
+    do {
+        Vital::System::Audio::update();
+    } while (true);
     return 1;
 }

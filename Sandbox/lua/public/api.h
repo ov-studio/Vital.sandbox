@@ -37,4 +37,5 @@ namespace Vital::Sandbox::Lua::API {
     extern void vSandbox_Engine();
     extern void vSandbox_Crypto();
     extern void vSandbox_File();
+    extern void vSandbox_Audio();
 }

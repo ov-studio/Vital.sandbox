@@ -216,6 +216,9 @@
     <ClCompile Include="Type\private\error.cpp">
       <Filter>Type\private</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\lua\module\c++\audio.cpp">
+      <Filter>Sandbox\lua\module</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
