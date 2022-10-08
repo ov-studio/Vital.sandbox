@@ -301,14 +301,24 @@ namespace Vital::Sandbox::Lua::API {
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixMatrix matrix;
                 matrix.countIn = vm -> getLength(2);
-                if (level.countIn < 1) throw ErrorCode["invalid-arguments"];
+                if (matrix.countIn < 1) throw ErrorCode["invalid-arguments"];
                 try {
-                    for(int i = 1; i <= level.countIn; i++) {
-                        //vm -> getTableField(i, 2);
-                        //if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
-                        //level.level[(i - 1)] = vm -> getFloat(-1);
+                    for(int i = 1; i <= matrix.countIn; i++) {
+                        vm -> getTableField(i, 2);
+                        if (!vm -> isTable(-1)) throw ErrorCode["invalid-arguments"];
+                        if (i == 1) {
+                            matrix.countOut = vm -> getLength(-1);
+                            if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
+                            matrix.matrix = new float[(matrix.countIn*matrix.countOut)];
+                        }
+                        for(int j = 1; j <= matrix.countOut; j++) {
+                            vm -> getTableField(i, 3);
+                            if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
+                            matrix.matrix[((i - 1) + (j - 1))] = vm -> getFloat(-1);
+                        }
+                        vm -> pop(matrix.countOut + 1);
                     }
-                    //vm -> setBool(sound -> setMixMatrix(matrix));
+                    vm -> setBool(sound -> setMixMatrix(matrix));
                 }
                 catch(...) {
                     if (matrix.matrix) delete[] matrix.matrix;
