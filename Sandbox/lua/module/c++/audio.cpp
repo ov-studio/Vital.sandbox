@@ -251,7 +251,7 @@ namespace Vital::Sandbox::Lua::API {
                     for(int i = 1; i <= level.count; i++) {
                         vm -> getTableField(i, 2);
                         if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
-                        int index = i = 1;
+                        int index = i - 1;
                         level.level[index] = vm -> getFloat(-1);
                     }
                     vm -> setBool(sound -> setMixInputLevels(level));
@@ -295,22 +295,23 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        /*
         bind("sound", "setMixMatrix", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixMatrix matrix;
-                matrix.countIn = vm -> getLength(2);
-                if (matrix.countIn < 1) throw ErrorCode["invalid-arguments"];
+                matrix.countOut = vm -> getLength(2);
+                if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
                 try {
-                    for(int i = 1; i <= matrix.countIn; i++) {
+                    for(int i = 1; i <= matrix.countOut; i++) {
                         vm -> getTableField(i, 2);
                         if (!vm -> isTable(-1)) throw ErrorCode["invalid-arguments"];
                         if (i == 1) {
                             matrix.countOut = vm -> getLength(-1);
                             if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
-                            int size = matrix.countIn*matrix.countOut;
+                            int size = matrix.countOut*matrix.countOut;
                             matrix.matrix = new float[size];
                         }
                         for(int j = 1; j <= matrix.countOut; j++) {
@@ -330,6 +331,7 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+        */
 
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
