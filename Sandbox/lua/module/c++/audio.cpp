@@ -251,7 +251,8 @@ namespace Vital::Sandbox::Lua::API {
                     for(int i = 1; i <= level.count; i++) {
                         vm -> getTableField(i, 2);
                         if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
-                        level.level[(i - 1)] = vm -> getFloat(-1);
+                        int index = i = 1;
+                        level.level[index] = vm -> getFloat(-1);
                     }
                     vm -> setBool(sound -> setMixInputLevels(level));
                     delete[] level.level;
@@ -309,14 +310,14 @@ namespace Vital::Sandbox::Lua::API {
                         if (i == 1) {
                             matrix.countOut = vm -> getLength(-1);
                             if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
-                            int matrixSize = matrix.countIn*matrix.countOut;
-                            matrix.matrix = new float[matrixSize];
+                            int size = matrix.countIn*matrix.countOut;
+                            matrix.matrix = new float[size];
                         }
                         for(int j = 1; j <= matrix.countOut; j++) {
                             vm -> getTableField(i, 3);
                             if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
-                            int matrixIndex = (i - 1) + (j - 1);
-                            matrix.matrix[matrixIndex] = vm -> getFloat(-1);
+                            int index = (i - 1) + (j - 1);
+                            matrix.matrix[index] = vm -> getFloat(-1);
                         }
                         vm -> pop(matrix.countOut + 1);
                     }
