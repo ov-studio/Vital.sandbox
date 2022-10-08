@@ -278,7 +278,7 @@ namespace Vital::Sandbox::Lua::API {
                 vm -> getTableField("surroundRight", 2);
                 vm -> getTableField("backLeft", 2);
                 vm -> getTableField("backRight", 2);
-                for(int i = -1; i <= -8; i--) {
+                for(int i = -1; i >= -8; i--) {
                     if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
                 }
                 level.frontLeft = vm -> getFloat(-8);
