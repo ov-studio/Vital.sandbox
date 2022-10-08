@@ -1,4 +1,3 @@
-        if (isBound) return; isBound = true;
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Sandbox: lua: module: c++: audio.cpp
