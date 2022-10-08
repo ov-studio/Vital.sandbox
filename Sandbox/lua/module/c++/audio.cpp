@@ -110,7 +110,7 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 int value = vm -> getInt(2);
-                vm -> setBool(sound -> setPriority(index));
+                vm -> setBool(sound -> setPriority(value));
                 return 1;
             });
         });
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 int value = vm -> getInt(2);
-                vm -> setBool(sound -> setLoopCount(state));
+                vm -> setBool(sound -> setLoopCount(value));
                 return 1;
             });
         });
@@ -200,7 +200,7 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 bool state = vm -> getBool(2);
-                vm -> setBool(sound -> setVolumeRamped(value));
+                vm -> setBool(sound -> setVolumeRamped(state));
                 return 1;
             });
         });
@@ -211,7 +211,7 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 bool state = vm -> getBool(2);
-                vm -> setBool(sound -> setMuted(value));
+                vm -> setBool(sound -> setMuted(state));
                 return 1;
             });
         });
@@ -245,7 +245,8 @@ namespace Vital::Sandbox::Lua::API {
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixInputLevel level;
                 level.count = vm -> getLength(2);
-                level.level = &float[level.count];
+                float levels[(level.count)];
+                level.level = &levels;
                 // TODO: LOOP AND APPEND ALL VALUES..
                 //int value = vm -> getInt(2);
                 vm -> setBool(sound -> setMixInputLevels(level));
