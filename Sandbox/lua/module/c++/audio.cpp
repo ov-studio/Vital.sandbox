@@ -104,13 +104,56 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "setPriority", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                int value = vm -> getInt(2);
+                vm -> setBool(sound -> setPriority(index));
+                return 1;
+            });
+        });
+
+        bind("sound", "setPaused", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                int state = vm -> getBool(2);
+                vm -> setBool(sound -> setPaused(state));
+                return 1;
+            });
+        });
+
+        bind("sound", "setLooped", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                int state = vm -> getBool(2);
+                vm -> setBool(sound -> setLooped(state));
+                return 1;
+            });
+        });
+
+        bind("sound", "setLoopCount", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                int value = vm -> getInt(2);
+                vm -> setBool(sound -> setLoopCount(state));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
-                sound -> play();
-                vm -> setBool(true);
+                vm -> setBool(sound -> play());
                 return 1;
             });
         });
