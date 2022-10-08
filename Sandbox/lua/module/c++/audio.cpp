@@ -245,19 +245,19 @@ namespace Vital::Sandbox::Lua::API {
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixInputLevel level;
                 level.count = vm -> getLength(2);
+                if (level.count <= 0) throw ErrorCode["invalid-arguments"];
                 level.level = new float[(level.count)];
                 try {
                     for(int i = 1; i <= level.count; i++) {
                         vm -> getTableField(i, 2);
                         if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
                         level.level[(i - 1)] = vm -> getFloat(-1);
-                        vm -> pop();
                     }
                     vm -> setBool(sound -> setMixInputLevels(level));
                     delete[] level.level;
                 }
                 catch(...) {
-                    delete[] level.level;
+                    if (level.level) delete[] level.level;
                     std::rethrow_exception(std::current_exception());
                 }
                 return 1;
@@ -289,8 +289,31 @@ namespace Vital::Sandbox::Lua::API {
                 level.surroundRight = vm -> getFloat(-3);
                 level.backLeft = vm -> getFloat(-2);
                 level.backRight = vm -> getFloat(-1);
-                vm -> pop(8);
                 vm -> setBool(sound -> setMixOutputLevels(level));
+                return 1;
+            });
+        });
+
+        bind("sound", "setMixMatrix", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::MixMatrix matrix;
+                matrix.countIn = vm -> getLength(2);
+                if (level.countIn <= 0) throw ErrorCode["invalid-arguments"];
+                try {
+                    for(int i = 1; i <= level.countIn; i++) {
+                        //vm -> getTableField(i, 2);
+                        //if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
+                        //level.level[(i - 1)] = vm -> getFloat(-1);
+                    }
+                    //vm -> setBool(sound -> setMixMatrix(matrix));
+                }
+                catch(...) {
+                    if (matrix.matrix) delete[] matrix.matrix;
+                    std::rethrow_exception(std::current_exception());
+                }
                 return 1;
             });
         });
