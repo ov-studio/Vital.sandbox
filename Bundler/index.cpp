@@ -60,7 +60,7 @@ int main() {
     std::string rwString = R"(
         print("\n")
         local buffer = "test"
-        print(crypto:decode(buffer))
+        print(crypto.decode(buffer))
         local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
         sound.play(testSound)
         print("IS 3D: "..tostring(sound.is3D(testSound)))

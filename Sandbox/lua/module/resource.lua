@@ -36,7 +36,8 @@ resource,private.globals = {
     string = string,
     engine = engine,
     crypto = crypto,
-    file = file
+    file = file,
+    sound = sound
 }
 
 function resource.private.fetch(name)
