@@ -23,7 +23,12 @@
 ////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
-    //const bool isInstance()
+    Vital::System::Audio::Sound::vital_sound* fetchSoundInstance(void* userdata) {
+        auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(userdata);
+        if (!Vital::System::Audio::Sound::isInstance(sound)) throw ErrorCode["invalid-entities"];
+        return sound;
+    }
+
     void vSandbox_Audio() {
         bind("sound", "create", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
@@ -36,12 +41,71 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "isPlaying", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                vm -> setBool(sound -> isPlaying());
+                return 1;
+            });
+        });
+
+        bind("sound", "isPaused", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                vm -> setBool(sound -> isPaused());
+                return 1;
+            });
+        });
+
+        bind("sound", "isLooped", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                vm -> setBool(sound -> isLooped());
+                return 1;
+            });
+        });
+
+        bind("sound", "isVolumeRamped", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                vm -> setBool(sound -> isVolumeRamped());
+                return 1;
+            });
+        });
+
+        bind("sound", "isMuted", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                vm -> setBool(sound -> isMuted());
+                return 1;
+            });
+        });
+
+        bind("sound", "is3D", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
+                vm -> setBool(sound -> is3D());
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
-                auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(vm -> getUserData(1));
-                if (!Vital::System::Audio::Sound::isInstance(sound)) throw ErrorCode["invalid-entities"];
+                auto sound = fetchSoundInstance(vm -> getUserData(1));
                 sound -> play();
                 vm -> setBool(true);
                 return 1;
