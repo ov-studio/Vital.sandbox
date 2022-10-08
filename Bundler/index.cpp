@@ -63,6 +63,7 @@ int main() {
         print(crypto:decode(buffer))
         local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
         sound.play(testSound)
+        print("IS 3D: "..tostring(sound.is3D(testSound)))
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
