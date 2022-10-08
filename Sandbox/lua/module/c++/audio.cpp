@@ -254,11 +254,43 @@ namespace Vital::Sandbox::Lua::API {
                         vm -> pop();
                     }
                     vm -> setBool(sound -> setMixInputLevels(level));
+                    delete[] level.level;
                 }
                 catch(...) {
                     delete[] level.level;
                     std::rethrow_exception(std::current_exception());
                 }
+                return 1;
+            });
+        });
+
+        bind("sound", "setMixOutputLevels", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::MixOutputLevel level;
+                vm -> getTableField("frontLeft", 2);
+                vm -> getTableField("frontRight", 2);
+                vm -> getTableField("center", 2);
+                vm -> getTableField("lowFrequency", 2);
+                vm -> getTableField("surroundLeft", 2);
+                vm -> getTableField("surroundRight", 2);
+                vm -> getTableField("backLeft", 2);
+                vm -> getTableField("backRight", 2);
+                for(int i = -1; i <= -8; i--) {
+                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                }
+                level.frontLeft = vm -> getFloat(-8);
+                level.frontRight = vm -> getFloat(-7);
+                level.center = vm -> getFloat(-6);
+                level.lowFrequency = vm -> getFloat(-5);
+                level.surroundLeft = vm -> getFloat(-4);
+                level.surroundRight = vm -> getFloat(-3);
+                level.backLeft = vm -> getFloat(-2);
+                level.backRight = vm -> getFloat(-1);
+                vm -> pop(8);
+                vm -> setBool(sound -> setMixOutputLevels(level));
                 return 1;
             });
         });
