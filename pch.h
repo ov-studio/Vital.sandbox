@@ -20,6 +20,7 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#include <exception>
 #include <vector>
 #include <map>
 #include <string>

@@ -245,11 +245,16 @@ namespace Vital::Sandbox::Lua::API {
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixInputLevel level;
                 level.count = vm -> getLength(2);
-                float levels[(level.count)];
-                level.level = &levels;
+                level.level = new float[(level.count)];
                 // TODO: LOOP AND APPEND ALL VALUES..
                 //int value = vm -> getInt(2);
-                vm -> setBool(sound -> setMixInputLevels(level));
+                try {
+                    vm -> setBool(sound -> setMixInputLevels(level));
+                }
+                catch(...) {
+                    delete[] level.level;
+                    std::rethrow_exception(std::current_exception());
+                }
                 return 1;
             });
         });
