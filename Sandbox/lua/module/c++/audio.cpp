@@ -246,9 +246,13 @@ namespace Vital::Sandbox::Lua::API {
                 Vital::Type::Audio::MixInputLevel level;
                 level.count = vm -> getLength(2);
                 level.level = new float[(level.count)];
-                // TODO: LOOP AND APPEND ALL VALUES..
-                //int value = vm -> getInt(2);
                 try {
+                    for(int = 1; i <= level.count; i++) {
+                        vm -> getTableField(i, 2);
+                        if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
+                        level.level[(i - 1)] = getFloat(-1);
+                        pop();
+                    }
                     vm -> setBool(sound -> setMixInputLevels(level));
                 }
                 catch(...) {
