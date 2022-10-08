@@ -172,6 +172,39 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "setFrequency", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                float value = vm -> getFloat(2);
+                vm -> setBool(sound -> setFrequency(value));
+                return 1;
+            });
+        });
+
+        bind("sound", "setVolume", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                float value = vm -> getFloat(2);
+                vm -> setBool(sound -> setVolume(value));
+                return 1;
+            });
+        });
+
+        bind("sound", "setVolumeRamped", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                bool state = vm -> getBool(2);
+                vm -> setBool(sound -> setVolumeRamped(value));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
