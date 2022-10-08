@@ -309,12 +309,14 @@ namespace Vital::Sandbox::Lua::API {
                         if (i == 1) {
                             matrix.countOut = vm -> getLength(-1);
                             if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
-                            matrix.matrix = new float[(matrix.countIn*matrix.countOut)];
+                            int matrixSize = matrix.countIn*matrix.countOut;
+                            matrix.matrix = new float[matrixSize];
                         }
                         for(int j = 1; j <= matrix.countOut; j++) {
                             vm -> getTableField(i, 3);
                             if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
-                            matrix.matrix[((i - 1) + (j - 1))] = vm -> getFloat(-1);
+                            int matrixIndex = (i - 1) + (j - 1);
+                            matrix.matrix[matrixIndex] = vm -> getFloat(-1);
                         }
                         vm -> pop(matrix.countOut + 1);
                     }
