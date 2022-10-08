@@ -22,7 +22,7 @@
 /////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
-    bool isBound = false;
+    static bool isBound = false;
     void vSandbox_Crypto() {
         if (isBound) return; isBound = true;
 

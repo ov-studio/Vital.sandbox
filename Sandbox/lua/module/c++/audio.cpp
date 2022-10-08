@@ -23,7 +23,7 @@
 ////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
-    bool isBound = false;
+    static bool isBound = false;
     Vital::System::Audio::Sound::vital_sound* fetchSound(void* userdata) {
         auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(userdata);
         if (!Vital::System::Audio::Sound::isInstance(sound)) throw ErrorCode["invalid-entities"];
