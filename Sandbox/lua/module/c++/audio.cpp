@@ -295,7 +295,6 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        /*
         bind("sound", "setMixMatrix", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
@@ -331,7 +330,6 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
-        */
 
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);

@@ -65,7 +65,7 @@ int main() {
         sound.play(testSound)
         print("IS 3D: "..tostring(sound.is3D(testSound)))
         local heap = {{1, 2}, {3, 4}}
-        print("SET MIX MATRIX: "..tostring(sound.setMixOutputLevels(testSound, heap)))
+        print("SET MIX MATRIX: "..tostring(sound.setMixMatrix(testSound, heap)))
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
