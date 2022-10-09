@@ -107,5 +107,5 @@ namespace Vital::System::Audio::Sound {
             bool stop();
     };
     typedef create vital_sound;
-    extern bool isInstance(create* ref);
+    extern bool isInstance(vital_sound* ref);
 }
