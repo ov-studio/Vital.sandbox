@@ -388,6 +388,26 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "set3DConeOrientation", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Math::Vector3D orientation;
+                vm -> getTableField("x", 2);
+                vm -> getTableField("y", 2);
+                vm -> getTableField("z", 2);
+                for(int i = -1; i >= -3; i--) {
+                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                }
+                orientation.x = vm -> getFloat(-3);
+                orientation.y = vm -> getFloat(-2);
+                orientation.z = vm -> getFloat(-1);
+                vm -> setBool(sound -> set3DConeOrientation(orientation));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
