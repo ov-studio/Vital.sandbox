@@ -331,6 +331,43 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "set3D", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                bool state = vm -> getBool(2);
+                vm -> setBool(sound -> set3D(state));
+                return 1;
+            });
+        });
+
+        bind("sound", "set3DAttributes", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Math::Vector3D position, velocity;
+                vm -> getTableField("x", 2);
+                vm -> getTableField("y", 2);
+                vm -> getTableField("z", 2);
+                vm -> getTableField("x", 3);
+                vm -> getTableField("y", 3);
+                vm -> getTableField("z", 3);
+                for(int i = -1; i >= -6; i--) {
+                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                }
+                position.x = vm -> getFloat(-6);
+                position.y = vm -> getFloat(-5);
+                position.z = vm -> getFloat(-4);
+                velocity.x = vm -> getFloat(-3);
+                velocity.y = vm -> getFloat(-2);
+                velocity.z = vm -> getFloat(-1);
+                vm -> setBool(sound -> set3DAttributes(position, velocity));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
@@ -340,6 +377,7 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+    
         bind("sound", "stop", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
