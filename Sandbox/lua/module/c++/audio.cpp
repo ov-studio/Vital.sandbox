@@ -408,6 +408,25 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "set3DDistanceFilter", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isBool(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Math::DistanceFilter3D filter;
+                vm -> getTableField("customLevel", 3);
+                vm -> getTableField("centerFrequency", 3);
+                for(int i = -1; i >= -2; i--) {
+                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                }
+                filter.enable = vm -> getBool(2);
+                filter.customLevel = vm -> getFloat(-2);
+                filter.centerFrequency = vm -> getFloat(-1);
+                vm -> setBool(sound -> set3DDistanceFilter(filter));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
