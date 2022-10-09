@@ -83,6 +83,7 @@ namespace Vital::Sandbox::Lua {
     void create::createNamespace(const std::string& parent) {
         getGlobal(parent);
         if (!isTable(-1)) {
+            pop();
             createTable();
             setGlobal(parent);
             getGlobal(parent);
@@ -150,6 +151,7 @@ namespace Vital::Sandbox::Lua {
     void create::registerBool(const std::string& index, bool value, const std::string& parent) {
         createNamespace(parent);
         registerBool(index, value);
+        pop();
     }
     void create::registerString(const std::string& index, const std::string& value) {
         setString(value);
@@ -158,6 +160,7 @@ namespace Vital::Sandbox::Lua {
     void create::registerString(const std::string& index, const std::string& value, const std::string& parent) {
         createNamespace(parent);
         registerString(index, value);
+        pop();
     }
     void create::registerNumber(const std::string& index, int value) {
         setNumber(value);
@@ -166,6 +169,7 @@ namespace Vital::Sandbox::Lua {
     void create::registerNumber(const std::string& index, int value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
+        pop();
     }
     void create::registerNumber(const std::string& index, float value) {
         setNumber(value);
@@ -174,6 +178,7 @@ namespace Vital::Sandbox::Lua {
     void create::registerNumber(const std::string& index, float value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
+        pop();
     }
     void create::registerNumber(const std::string& index, double value) {
         setNumber(value);
@@ -182,6 +187,7 @@ namespace Vital::Sandbox::Lua {
     void create::registerNumber(const std::string& index, double value, const std::string& parent) {
         createNamespace(parent);
         registerNumber(index, value);
+        pop();
     }
     void create::registerFunction(const std::string& index, vital_exec& exec) {
         setFunction(exec);
@@ -190,6 +196,7 @@ namespace Vital::Sandbox::Lua {
     void create::registerFunction(const std::string& index, vital_exec& exec, const std::string& parent) {
         createNamespace(parent);
         registerFunction(index, exec);
+        pop();
     }
     void create::registerObject(const std::string& index, void* value) {
         createUserData(value);
@@ -210,6 +217,7 @@ namespace Vital::Sandbox::Lua {
         bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
         if (!status) {
             API::error(getString(-1));
+            pop();
             return false;
         }
         return true;
