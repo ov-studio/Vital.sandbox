@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua::API {
 
     bool bind(const std::string& parent, const std::string& name, vital_exec exec) {
         vital_exec_ref ref = {parent, name};
-        vMethods[ref] = exec;
+        vMethods.emplace(ref, exec);
         return true;
     }
     bool unbind(const std::string& parent, const std::string& name) {
