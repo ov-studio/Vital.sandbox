@@ -71,7 +71,7 @@ namespace Vital::System::Audio::Sound {
             bool setMixMatrix(Vital::Type::Audio::MixMatrix matrix);
             bool set3D(bool state);
             bool set3DAttributes(Vital::Type::Math::Vector3D position, Vital::Type::Math::Vector3D velocity);
-            bool set3DConeSettings(Vital::Type::Audio::ConeSetting3D settings);
+            bool set3DConeSettings(Vital::Type::Audio::ConeSetting3D setting);
             bool set3DConeOrientation(Vital::Type::Math::Vector3D orientation);
             bool set3DDistanceFilter(Vital::Type::Audio::DistanceFilter3D filter);
             bool set3DDopplerLevel(float value);
@@ -92,7 +92,7 @@ namespace Vital::System::Audio::Sound {
             unsigned int getPosition();
             bool getMixMatrix(Vital::Type::Audio::MixMatrix& matrix);
             bool get3DAttributes(Vital::Type::Math::Vector3D& position, Vital::Type::Math::Vector3D& velocity);
-            bool get3DConeSettings(Vital::Type::Audio::ConeSetting3D& settings);
+            bool get3DConeSettings(Vital::Type::Audio::ConeSetting3D& setting);
             bool get3DConeOrientation(Vital::Type::Math::Vector3D& orientation);
             bool get3DDistanceFilter(Vital::Type::Audio::DistanceFilter3D& filter);
             float get3DDopplerLevel();

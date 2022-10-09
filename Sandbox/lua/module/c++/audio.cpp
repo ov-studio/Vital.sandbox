@@ -345,7 +345,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DAttributes", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isTable(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Math::Vector3D position, velocity;
                 vm -> getTableField("x", 2);
@@ -364,6 +364,26 @@ namespace Vital::Sandbox::Lua::API {
                 velocity.y = vm -> getFloat(-2);
                 velocity.z = vm -> getFloat(-1);
                 vm -> setBool(sound -> set3DAttributes(position, velocity));
+                return 1;
+            });
+        });
+
+        bind("sound", "set3DConeSettings", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::ConeSetting3D setting;
+                vm -> getTableField("insideAngle", 2);
+                vm -> getTableField("outsideAngle", 2);
+                vm -> getTableField("outsideVolume", 2);
+                for(int i = -1; i >= -3; i--) {
+                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                }
+                setting.insideAngle = vm -> getFloat(-3);
+                setting.outsideAngle = vm -> getFloat(-2);
+                setting.outsideVolume = vm -> getFloat(-1);
+                vm -> setBool(sound -> set3DConeSettings(setting));
                 return 1;
             });
         });

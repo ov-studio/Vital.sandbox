@@ -183,9 +183,9 @@ namespace Vital::System::Audio::Sound {
         if (isErrored(channel -> set3DAttributes(&__position, &__velocity))) throw ErrorCode["request-failed"];
         return true;
     }
-    bool create::set3DConeSettings(Vital::Type::Audio::ConeSetting3D settings) {
+    bool create::set3DConeSettings(Vital::Type::Audio::ConeSetting3D setting) {
         if (!is3D()) throw ErrorCode["sound-invalid-3d"];
-        if (isErrored(channel -> set3DConeSettings(settings.insideAngle, settings.outsideAngle, settings.outsideVolume))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> set3DConeSettings(setting.insideAngle, setting.outsideAngle, setting.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DConeOrientation(Vital::Type::Math::Vector3D orientation) {
@@ -283,9 +283,9 @@ namespace Vital::System::Audio::Sound {
         velocity = {__velocity.x, __velocity.y, __velocity.z};
         return true;
     }
-    bool create::get3DConeSettings(Vital::Type::Audio::ConeSetting3D& settings) {
+    bool create::get3DConeSettings(Vital::Type::Audio::ConeSetting3D& setting) {
         if (!is3D()) throw ErrorCode["sound-invalid-3d"];
-        if (isErrored(channel -> get3DConeSettings(&settings.insideAngle, &settings.outsideAngle, &settings.outsideVolume))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> get3DConeSettings(&setting.insideAngle, &setting.outsideAngle, &setting.outsideVolume))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::get3DConeOrientation(Vital::Type::Math::Vector3D& orientation) {
