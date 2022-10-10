@@ -425,7 +425,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isBool(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
-                Vital::Type::Math::DistanceFilter3D filter;
+                Vital::Type::Audio::DistanceFilter3D filter;
                 vm -> getTableField("customLevel", 3);
                 vm -> getTableField("centerFrequency", 3);
                 for(int i = -1; i >= -2; i--) {
@@ -529,7 +529,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
-                vm -> setInt(sound -> getPriority());
+                vm -> setNumber(sound -> getPriority());
                 return 1;
             });
         });
@@ -539,7 +539,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
-                vm -> setInt(sound -> getLoopCount());
+                vm -> setNumber(sound -> getLoopCount());
                 return 1;
             });
         });
@@ -650,7 +650,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
-                Vital::Type::Math::ConeSetting3D setting;
+                Vital::Type::Audio::ConeSetting3D setting;
                 sound -> get3DConeSettings(setting);
                 vm -> createTable();
                 vm -> registerNumber("insideAngle", setting.insideAngle);
@@ -680,7 +680,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
-                Vital::Type::Math::DistanceFilter3D filter;
+                Vital::Type::Audio::DistanceFilter3D filter;
                 sound -> get3DDistanceFilter(filter);
                 vm -> setBool(filter.isEnabled);
                 vm -> createTable();
