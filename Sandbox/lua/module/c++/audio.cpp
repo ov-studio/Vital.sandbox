@@ -430,7 +430,7 @@ namespace Vital::Sandbox::Lua::API {
                 for(int i = -1; i >= -2; i--) {
                     if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
                 }
-                filter.enable = vm -> getBool(2);
+                filter.isEnabled = vm -> getBool(2);
                 filter.customLevel = vm -> getFloat(-2);
                 filter.centerFrequency = vm -> getFloat(-1);
                 vm -> setBool(sound -> set3DDistanceFilter(filter));
@@ -681,7 +681,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Math::DistanceFilter3D filter;
                 sound -> get3DDistanceFilter(filter);
-                vm -> setBool(filter.enable);
+                vm -> setBool(filter.isEnabled);
                 vm -> createTable();
                 vm -> registerNumber("customLevel", filter.customLevel);
                 vm -> registerNumber("centerFrequency", filter.centerFrequency);

@@ -196,7 +196,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::set3DDistanceFilter(Vital::Type::Audio::DistanceFilter3D filter) {
         if (!is3D()) throw ErrorCode["sound-invalid-3d"];
-        if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> set3DDistanceFilter(filter.isEnabled, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
         return true;
     }
     bool create::set3DDopplerLevel(float value) {
@@ -297,7 +297,7 @@ namespace Vital::System::Audio::Sound {
     }
     bool create::get3DDistanceFilter(Vital::Type::Audio::DistanceFilter3D& filter) {
         if (!is3D()) throw ErrorCode["sound-invalid-3d"];
-        if (isErrored(channel -> set3DDistanceFilter(filter.enable, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
+        if (isErrored(channel -> set3DDistanceFilter(filter.isEnabled, filter.customLevel, filter.centerFrequency))) throw ErrorCode["request-failed"];
         return true;
     }
     float create::get3DDopplerLevel() {

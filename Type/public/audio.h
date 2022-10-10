@@ -55,7 +55,7 @@ namespace Vital::Type::Audio {
     } ConeSetting3D;
 
     typedef struct DistanceFilter3D {
-        bool enable;
+        bool isEnabled;
         float customLevel;
         float centerFrequency;
     } DistanceFilter3D;
