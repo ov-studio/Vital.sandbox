@@ -480,6 +480,18 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+
+        bind("sound", "set3DSpread", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                float value = vm -> getFloat(2);
+                vm -> setBool(sound -> set3DSpread(value));
+                return 1;
+            });
+        });
+
         bind("sound", "play", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
