@@ -710,5 +710,19 @@ namespace Vital::Sandbox::Lua::API {
                 return 2;
             });
         });
+    
+        bind("sound", "get3DOcclusion", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::Range3D occlusion;
+                sound -> get3DOcclusion(occlusion);
+                vm -> createTable();
+                vm -> registerNumber("directOcclusion", occlusion.directOcclusion);
+                vm -> registerNumber("reverbOcclusion", occlusion.reverbOcclusion);
+                return 1;
+            });
+        });
     }
 }
