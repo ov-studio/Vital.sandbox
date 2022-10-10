@@ -531,5 +531,18 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+
+        bind("sound", "getLoopPoint", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::LoopPoint point;
+                sound -> getLoopCount(point);
+                vm -> setNumber(point.start);
+                vm -> setNumber(point.end);
+                return 2;
+            });
+        });
     }
 }
