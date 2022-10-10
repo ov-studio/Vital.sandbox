@@ -697,5 +697,18 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+    
+        bind("sound", "get3DRange", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::Range3D range;
+                sound -> get3DRange(range);
+                vm -> setNumber(range.minDistance);
+                vm -> setNumber(range.maxDistance);
+                return 2;
+            });
+        });
     }
 }
