@@ -84,6 +84,7 @@ namespace Vital::Sandbox::Lua {
             void pushNumber(int value);
             void pushNumber(float value);
             void pushNumber(double value);
+            void pushTable();
             void pushFunction(vital_exec& exec);
 
             // Registerers //
@@ -97,6 +98,8 @@ namespace Vital::Sandbox::Lua {
             void registerNumber(const std::string& index, float value, const std::string& parent);
             void registerNumber(const std::string& index, double value);
             void registerNumber(const std::string& index, double value, const std::string& parent);
+            void registerTable(const std::string& index);
+            void registerTable(const std::string& index, const std::string& parent);
             void registerFunction(const std::string& index, vital_exec& exec);
             void registerFunction(const std::string& index, vital_exec& exec, const std::string& parent);
             void registerObject(const std::string& index, void* value);
