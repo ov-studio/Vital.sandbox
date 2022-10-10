@@ -308,18 +308,18 @@ namespace Vital::Sandbox::Lua::API {
                         vm -> getTableField(i, 2);
                         if (!vm -> isTable(-1)) throw ErrorCode["invalid-arguments"];
                         if (i == 1) {
-                            matrix.countOut = vm -> getLength(-1);
-                            if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
-                            int size = matrix.countOut*matrix.countOut;
+                            matrix.countIn = vm -> getLength(-1);
+                            if (matrix.countIn < 1) throw ErrorCode["invalid-arguments"];
+                            int size = matrix.countIn*matrix.countOut;
                             matrix.matrix = new float[size];
                         }
-                        for(int j = 1; j <= matrix.countOut; j++) {
+                        for(int j = 1; j <= matrix.countIn; j++) {
                             vm -> getTableField(i, 3);
                             if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
                             int index = (i - 1) + (j - 1);
                             matrix.matrix[index] = vm -> getFloat(-1);
                         }
-                        vm -> pop(matrix.countOut + 1);
+                        vm -> pop(matrix.countIn + 1);
                     }
                     vm -> setBool(sound -> setMixMatrix(matrix));
                 }
@@ -591,6 +591,20 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(static_cast<int>(sound -> getPosition()));
+                return 1;
+            });
+        });
+
+        bind("sound", "getMixMatrix", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Audio::MixMatrix matrix;
+                sound -> getMixMatrix(matrix);
+                vm -> createTable();
+                for (int i = matrix.countOut, )
+                //vm -> setNumber(static_cast<int>(sound -> getMixMatrix()));
                 return 1;
             });
         });
