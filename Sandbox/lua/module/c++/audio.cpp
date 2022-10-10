@@ -662,5 +662,20 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+
+        bind("sound", "get3DDistanceFilter", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Math::DistanceFilter3D filter;
+                sound -> get3DDistanceFilter(filter);
+                vm -> setBool(filter.enable);
+                vm -> createTable();
+                vm -> registerNumber("customLevel", filter.customLevel);
+                vm -> registerNumber("centerFrequency", filter.centerFrequency);
+                return 2;
+            });
+        });
     }
 }
