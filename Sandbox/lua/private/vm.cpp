@@ -139,7 +139,7 @@ namespace Vital::Sandbox::Lua {
         setTableField(getLength(-2) + 1, -2);
     }
     void create::pushTable() {
-        createTable();
+        if (!isTable(-1)) return;
         setTableField(getLength(-2) + 1, -2);
     }
     void create::pushFunction(vital_exec& exec) {
@@ -194,10 +194,11 @@ namespace Vital::Sandbox::Lua {
         pop();
     }
     void create::registerTable(const std::string& index) {
-        createTable();
+        if (!isTable(-1)) return;
         setTableField(index.data(), -2);
     }
     void create::registerTable(const std::string& index, const std::string& parent) {
+        if (!isTable(-1)) return;
         createNamespace(parent);
         registerTable(index);
         pop();

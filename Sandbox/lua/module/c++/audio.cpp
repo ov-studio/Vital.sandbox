@@ -604,11 +604,11 @@ namespace Vital::Sandbox::Lua::API {
                 sound -> getMixMatrix(matrix);
                 vm -> createTable();
                 for (int i = 1, i <= matrix.countOut; i++) {
-                    vm -> pushTable();
+                    vm -> createTable();
                     for (int j = 1, j <= matrix.countIn; j++) {
                         vm -> pushFloat(matrix.matrix[(i + j)]);
                     }
-                    vm -> pop(matrix.countIn + 1)
+                    vm -> pushTable();
                 }
                 return 1;
             });
