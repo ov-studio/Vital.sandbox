@@ -554,5 +554,45 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+
+        bind("sound", "getFrequency", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                vm -> setNumber(sound -> getFrequency());
+                return 1;
+            });
+        });
+
+        bind("sound", "getVolume", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                vm -> setNumber(sound -> getVolume());
+                return 1;
+            });
+        });
+
+        bind("sound", "getAudibility", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                vm -> setNumber(sound -> getAudibility());
+                return 1;
+            });
+        });
+
+        bind("sound", "getPosition", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                vm -> setNumber(static_cast<int>(sound -> getPosition()));
+                return 1;
+            });
+        });
     }
 }
