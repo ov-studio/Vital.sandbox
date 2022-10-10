@@ -724,5 +724,15 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+
+        bind("sound", "get3DSpread", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                vm -> setNumber(sound -> get3DSpread());
+                return 1;
+            });
+        });
     }
 }
