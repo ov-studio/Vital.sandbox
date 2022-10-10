@@ -623,12 +623,12 @@ namespace Vital::Sandbox::Lua::API {
                 sound -> get3DAttributes(position, velocity);
                 vm -> createTable();
                 vm -> registerNumber("x", position.x);
-                vm -> registerNumber("y", position.x);
-                vm -> registerNumber("z", position.x);
+                vm -> registerNumber("y", position.y);
+                vm -> registerNumber("z", position.z);
                 vm -> createTable();
                 vm -> registerNumber("x", velocity.x);
-                vm -> registerNumber("y", velocity.x);
-                vm -> registerNumber("z", velocity.x);
+                vm -> registerNumber("y", velocity.y);
+                vm -> registerNumber("z", velocity.z);
                 return 2;
             });
         });
@@ -644,6 +644,21 @@ namespace Vital::Sandbox::Lua::API {
                 vm -> registerNumber("insideAngle", setting.insideAngle);
                 vm -> registerNumber("outsideAngle", setting.outsideAngle);
                 vm -> registerNumber("outsideVolume", setting.outsideVolume);
+                return 1;
+            });
+        });
+
+        bind("sound", "get3DConeOrientation", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Math::Vector3D orientation;
+                sound -> get3DConeOrientation(orientation);
+                vm -> createTable();
+                vm -> registerNumber("x", orientation.x);
+                vm -> registerNumber("y", orientation.y);
+                vm -> registerNumber("z", orientation.z);
                 return 1;
             });
         });
