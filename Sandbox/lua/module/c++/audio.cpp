@@ -603,8 +603,13 @@ namespace Vital::Sandbox::Lua::API {
                 Vital::Type::Audio::MixMatrix matrix;
                 sound -> getMixMatrix(matrix);
                 vm -> createTable();
-                for (int i = matrix.countOut, )
-                //vm -> setNumber(static_cast<int>(sound -> getMixMatrix()));
+                for (int i = 1, i <= matrix.countOut; i++) {
+                    vm -> pushTable();
+                    for (int j = 1, j <= matrix.countIn; j++) {
+                        vm -> pushFloat(matrix.matrix[(i + j)]);
+                    }
+                    vm -> pop(matrix.countIn + 1)
+                }
                 return 1;
             });
         });
