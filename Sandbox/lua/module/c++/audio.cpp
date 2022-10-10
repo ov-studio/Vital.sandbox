@@ -632,5 +632,20 @@ namespace Vital::Sandbox::Lua::API {
                 return 2;
             });
         });
+
+        bind("sound", "get3DConeSettings", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                Vital::Type::Math::ConeSetting3D setting;
+                sound -> get3DConeSettings(setting);
+                vm -> createTable();
+                vm -> registerNumber("insideAngle", setting.insideAngle);
+                vm -> registerNumber("outsideAngle", setting.outsideAngle);
+                vm -> registerNumber("outsideVolume", setting.outsideVolume);
+                return 1;
+            });
+        });
     }
 }
