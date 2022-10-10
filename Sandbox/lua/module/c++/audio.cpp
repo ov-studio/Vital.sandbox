@@ -550,9 +550,9 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::LoopPoint point;
-                sound -> getLoopCount(point);
-                vm -> setNumber(point.start);
-                vm -> setNumber(point.end);
+                sound -> getLoopPoint(point);
+                vm -> setNumber(static_cast<int>(point.start));
+                vm -> setNumber(static_cast<int>(point.end));
                 return 2;
             });
         });
@@ -615,10 +615,10 @@ namespace Vital::Sandbox::Lua::API {
                 Vital::Type::Audio::MixMatrix matrix;
                 sound -> getMixMatrix(matrix);
                 vm -> createTable();
-                for (int i = 1, i <= matrix.countOut; i++) {
+                for (int i = 1; i <= matrix.countOut; i++) {
                     vm -> createTable();
-                    for (int j = 1, j <= matrix.countIn; j++) {
-                        vm -> pushFloat(matrix.matrix[(i + j)]);
+                    for (int j = 1; j <= matrix.countIn; j++) {
+                        vm -> pushNumber(matrix.matrix[(i + j)]);
                     }
                     vm -> pushTable();
                 }
