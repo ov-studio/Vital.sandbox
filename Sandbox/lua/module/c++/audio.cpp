@@ -511,5 +511,15 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+
+        bind("sound", "getPriority", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                vm -> setInt(sound -> getPriority());
+                return 1;
+            });
+        });
     }
 }
