@@ -44,6 +44,17 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        bind("sound", "destroy", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                auto sound = fetchSound(vm -> getUserData(1));
+                delete sound;
+                vm -> setBool(true);
+                return 1;
+            });
+        });
+
         bind("sound", "isPlaying", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
