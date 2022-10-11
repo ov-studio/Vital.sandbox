@@ -64,7 +64,9 @@ int main() {
         local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
         sound.play(testSound)
         sound.setPitch(testSound, 5)
+        sound.setLooped(testSound, true)
         print("IS 3D: "..tostring(sound.is3D(testSound)))
+        table.print(sound.getMixMatrix(testSound))
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
