@@ -43,7 +43,7 @@ namespace Vital::Sandbox::Lua {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/lua/module/bundle.h>)
-            for (const std::string& i : vBundle) {
+            for (const std::string& i : rwBundle) {
                 loadString(i);
             }
         #endif
