@@ -4,3 +4,4 @@
 .output
 bundle.h
 .openssl_
+enc_temp*
