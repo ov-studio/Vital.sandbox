@@ -60,7 +60,7 @@ namespace Vital::Sandbox::Lua {
             void setMetaTable(int index = 1);
             void setMetaTable(const std::string& index);
             void createNamespace(const std::string& parent);
-            void createThread();
+            create* createThread();
             void createUserData(void* value);
             void setUserData(void* value);
             void setFunction(vital_exec& value);
@@ -109,7 +109,7 @@ namespace Vital::Sandbox::Lua {
 
             // Utils //
             void pop(int count = 1);
-            void move(create* current, create* target, int count = 1);
+            void move(create* target, int count = 1);
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer);
             bool throwError(const std::string& error = "");

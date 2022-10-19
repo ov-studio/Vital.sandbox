@@ -105,7 +105,7 @@ namespace Vital::Sandbox::Lua {
             getGlobal(parent);
         }
     }
-    void create::createThread() { new create(lua_newthread(vm)); }
+    create* create::createThread() { return new create(lua_newthread(vm)); }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
@@ -239,8 +239,8 @@ namespace Vital::Sandbox::Lua {
 
     // Utils //
     void create::pop(int count) { lua_pop(vm, count); }
-    void create::move(vital_vm* current, vital_vm* target, int count) {
-        lua_xmove(current -> vm, target -> vm, count);
+    void create::move(vital_vm* target, int count) {
+        lua_xmove(vm, target -> vm, count);
     }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
