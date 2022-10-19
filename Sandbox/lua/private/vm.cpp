@@ -58,7 +58,8 @@ namespace Vital::Sandbox::Lua {
         lua_setglobal(vm, "testme");
     }
     create::create(vital_ref* thread) {
-        isThread = true;
+        vm = thread;
+        this -> thread = true;
         instance.emplace(vm, this);
     }
     create::~create() {

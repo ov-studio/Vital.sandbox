@@ -23,6 +23,7 @@
     <ClCompile Include="Sandbox\js\private\index.cpp" />
     <ClCompile Include="Sandbox\js\private\vm.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\audio.cpp" />
+    <ClCompile Include="Sandbox\lua\module\c++\coroutine.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\crypto.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\engine.cpp" />
     <ClCompile Include="Sandbox\lua\module\c++\file.cpp" />

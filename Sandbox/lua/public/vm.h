@@ -31,6 +31,7 @@ namespace Vital::Sandbox::Lua {
         public:
             // Instantiators //
             create();
+            create(vital_ref* thread);
             ~create();
 
             // Checkers //

@@ -219,6 +219,9 @@
     <ClCompile Include="Sandbox\lua\module\c++\audio.cpp">
       <Filter>Sandbox\lua\module</Filter>
     </ClCompile>
+    <ClCompile Include="Sandbox\lua\module\c++\coroutine.cpp">
+      <Filter>Sandbox\lua\module</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
