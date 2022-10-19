@@ -47,15 +47,6 @@ namespace Vital::Sandbox::Lua {
                 loadString(i);
             }
         #endif
-        std::cout << "\n CONST 1: " << this;
-        auto test = [](lua_State* testvm) -> int {
-            std::cout << "\nCURRENT VM ID 1: " << testvm;
-            std::cout << "\nME EXECUTED!";
-            std::cout << "\nTOP ARG: " << lua_gettop(testvm);
-            return 0;
-        };
-        lua_pushcfunction(vm, test);
-        lua_setglobal(vm, "testme");
     }
     create::create(vital_ref* thread) {
         vm = thread;
