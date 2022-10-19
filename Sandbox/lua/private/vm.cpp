@@ -64,7 +64,7 @@ namespace Vital::Sandbox::Lua {
     create::~create() {
         if (!vm) return;
         instance.erase(vm);
-        if (!isThread) lua_close(vm);
+        if (!thread) lua_close(vm);
         vm = nullptr;
         std::cout << "\nDESTRUCTOR EXECUTED...";
     }

@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua {
     class create {
         private:
             vital_ref* vm = nullptr;
-            bool isThread = false;
+            bool thread = false;
         public:
             // Instantiators //
             create();
