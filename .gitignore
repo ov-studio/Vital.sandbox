@@ -1,7 +1,7 @@
 .vs
 .vscode
+enc_temp*
 .build
 .output
 bundle.h
 .openssl_
-enc_temp*
