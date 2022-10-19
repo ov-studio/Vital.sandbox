@@ -36,10 +36,17 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
+        //std::map<std::thread, bool> buffer;
         bind("coroutine", "sleep", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw "INVALID SLEEP ARGS";
+
+                // TODO:  TESTING
+                std::thread thread = std::thread([&]() -> void {
+                    std::cout << "EXECUTED THREAD CALL!";
+                });
+
                 auto duration = vm -> getInt(1);
                 std::cout << "\nSLEEPING FOR DURATION: " << duration;
                 std::this_thread::sleep_for(std::chrono::milliseconds(duration));
