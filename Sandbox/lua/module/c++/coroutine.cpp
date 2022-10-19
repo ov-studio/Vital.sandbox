@@ -28,7 +28,10 @@ namespace Vital::Sandbox::Lua::API {
         bind("coroutine", "create", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                vm -> createThread();
+                if ((vm -> getArgCount() < 1) || (!vm -> isFunction(1))) throw ErrorCode["invalid-arguments"];
+                auto thread = vm -> createThread();
+                vm -> push(1);
+                vm -> move(thread, 1);
                 return 1;
             });
         });
