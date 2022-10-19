@@ -47,12 +47,26 @@ namespace Vital::Sandbox::Lua {
                 loadString(i);
             }
         #endif
+        std::cout << "\n CONST 1: " << this;
+        auto test = [](lua_State* testvm) -> int {
+            std::cout << "\nCURRENT VM ID 1: " << testvm;
+            std::cout << "\nME EXECUTED!";
+            std::cout << "\nTOP ARG: " << lua_gettop(testvm);
+            return 0;
+        };
+        lua_pushcfunction(vm, test);
+        lua_setglobal(vm, "testme");
+    }
+    create::create(vital_ref* thread) {
+        isThread = true;
+        instance.emplace(vm, this);
     }
     create::~create() {
         if (!vm) return;
         instance.erase(vm);
-        lua_close(vm);
+        if (!isThread) lua_close(vm);
         vm = nullptr;
+        std::cout << "\nDESTRUCTOR EXECUTED...";
     }
 
     // Checkers //
@@ -89,6 +103,7 @@ namespace Vital::Sandbox::Lua {
             getGlobal(parent);
         }
     }
+    vital_vm* create::createThread() { return new create(lua_newthread(vm)); }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
@@ -97,7 +112,10 @@ namespace Vital::Sandbox::Lua {
     void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, value); }
 
     // Getters //
-    int create::getArgCount() { return lua_gettop(vm); }
+    int create::getArgCount() {
+        if (vm == nullptr) std::cout << "\n VM PTR IS NULL FOR SOME REASON...";
+        std::cout<< "\n VM ID NOW: " << vm; return lua_gettop(vm);
+    }
     bool create::getGlobal(const std::string& index) { return lua_getglobal(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(lua_toboolean(vm, index)); }
     std::string create::getString(int index) { return lua_tostring(vm, index); }
