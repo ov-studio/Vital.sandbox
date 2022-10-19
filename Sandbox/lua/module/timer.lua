@@ -15,11 +15,10 @@
 local imports = {
     type = type,
     tonumber = tonumber,
-    os = os,
     coroutine = coroutine,
     math = math
 }
-os, coroutine = nil, nil
+--coroutine = nil
 
 
 ----------------------
@@ -53,6 +52,9 @@ function timer.public:load(exec, interval, executions, ...)
     self.arguments = table.pack(...)
     imports.coroutine.resume(imports.coroutine.create(function()
         while ((self.executions == 0) or (self.currentExec < self.executions)) do
+            print("PASSING TIME: "..self.interval)
+            --coroutine.sleep(self.interval)
+            local testSound = output("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
             if not timer.public:isInstance(self) then return false end
             self.currentExec = self.currentExec + 1
             if (self.executions > 0) and (self.currentExec >= self.executions) then
