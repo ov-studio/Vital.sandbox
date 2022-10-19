@@ -108,8 +108,8 @@ namespace Vital::Sandbox::Lua {
             void registerObject(const std::string& index, void* value);
 
             // Utils //
+            void push(int index = 1);
             void pop(int count = 1);
-            void copy(int index = 1);
             void move(create* target, int count = 1);
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer);
