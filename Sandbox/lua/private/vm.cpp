@@ -61,6 +61,7 @@ namespace Vital::Sandbox::Lua {
         vm = thread;
         this -> thread = true;
         instance.emplace(vm, this);
+        std::cout << "\nCreated Thread: " << this;
     }
     create::~create() {
         if (!vm) return;
@@ -238,6 +239,9 @@ namespace Vital::Sandbox::Lua {
 
     // Utils //
     void create::pop(int count) { lua_pop(vm, count); }
+    void create::move(vital_vm* current, vital_vm* target, int count) {
+        lua_xmove(current -> vm, target -> vm, count);
+    }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
         catch(const std::string& error) { throwError(error); }

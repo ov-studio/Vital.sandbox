@@ -109,6 +109,7 @@ namespace Vital::Sandbox::Lua {
 
             // Utils //
             void pop(int count = 1);
+            void move(create* current, create* target, int count = 1);
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer);
             bool throwError(const std::string& error = "");
