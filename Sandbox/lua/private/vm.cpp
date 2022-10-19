@@ -103,7 +103,7 @@ namespace Vital::Sandbox::Lua {
             getGlobal(parent);
         }
     }
-    vital_vm* create::createThread() { return new create(lua_newthread(vm)); }
+    void create::createThread() { new create(lua_newthread(vm)); }
     void create::createUserData(void* value) {
         void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
         *userdata = value;
