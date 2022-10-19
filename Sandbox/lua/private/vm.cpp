@@ -52,7 +52,6 @@ namespace Vital::Sandbox::Lua {
         vm = thread;
         this -> thread = true;
         instance.emplace(vm, this);
-        std::cout << "\nCreated Thread: " << this;
     }
     create::~create() {
         if (!vm) return;
@@ -105,10 +104,7 @@ namespace Vital::Sandbox::Lua {
     void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, value); }
 
     // Getters //
-    int create::getArgCount() {
-        if (vm == nullptr) std::cout << "\n VM PTR IS NULL FOR SOME REASON...";
-        std::cout<< "\n VM ID NOW: " << vm; return lua_gettop(vm);
-    }
+    int create::getArgCount() { return lua_gettop(vm); }
     bool create::getGlobal(const std::string& index) { return lua_getglobal(vm, index.data()); }
     bool create::getBool(int index) { return static_cast<bool>(lua_toboolean(vm, index)); }
     std::string create::getString(int index) { return lua_tostring(vm, index); }
