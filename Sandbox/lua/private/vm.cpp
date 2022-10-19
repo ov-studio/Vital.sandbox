@@ -239,7 +239,7 @@ namespace Vital::Sandbox::Lua {
 
     // Utils //
     void create::pop(int count) { lua_pop(vm, count); }
-    void create::copy(int index = 1) { lua_pushvalue(vm, index); }
+    void create::copy(int index) { lua_pushvalue(vm, index); }
     void create::move(vital_vm* target, int count) {
         lua_xmove(vm, target -> vm, count);
     }
