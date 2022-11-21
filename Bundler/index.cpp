@@ -47,18 +47,6 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 #include <Sandbox/lua/public/api.h>
 #include <Sandbox/js/public/api.h>
 #include <System/public/audio.h>
-#include <System/public/thread.h>
-
-void my_func() {
-    std::cout << "PAUSED FOR 3 SECONDS";
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-    std::cout << "Resumed";
-}
-
-void test() {
-    auto sthread = Vital::System::Thread::create(my_func);
-    std::cout << "TAIL STACK";
-}
 
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::module);
@@ -87,11 +75,12 @@ int main() {
             --sound.play(testSound)
         --end))
 
-        --coroutine.resume(coroutine.create(function()
-            --print("EXECUTED THREAD 2 & PAUSED FOR 3s")
-            --coroutine.sleep(3000)
-            --print("RESUMED THREAD 2")
-        --end))
+        coroutine.resume(coroutine.create(function()
+            print("EXECUTED THREAD & PAUSED FOR 3s")
+            coroutine.sleep(3000)
+            print("RESUMED THREAD 2")
+        end))
+        print("Tail stack reached")
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);

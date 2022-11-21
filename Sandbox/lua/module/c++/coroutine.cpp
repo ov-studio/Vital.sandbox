@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <System/public/thread.h>
 #include <Sandbox/lua/public/api.h>
 
 
@@ -42,22 +43,12 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
 
-                // TODO:  TESTING
-                std::thread thread;
-                thread = std::thread([&]() -> void {
-                    std::cout << "EXECUTED THREAD CALL!";
-                    std::cout << "\n Is Joinable: " << thread.joinable();
-
-                    auto duration = vm->getInt(1);
-                    std::cout << "\nSLEEPING FOR DURATION: " << duration;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+                auto duration = vm -> getInt(1);
+                std::cout << "\nSLEEPING FOR DURATION: " << duration;
+                auto thread = Vital::System::Thread::create([]() -> void {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
                     std::cout << "\nWOKE UP!";
-
-                    thread.join();
-                    return;
                 });
-
-                std::cout << "\nYEA!";
                 return 0;
             });
         });
