@@ -23,7 +23,7 @@
 namespace Vital::System::Thread {
     class create {
         private:
-            std::thread thread = nullptr;
+            std::thread thread;
         public:
             // Instantiators //
             create(std::function<void()> exec);
