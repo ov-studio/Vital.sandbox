@@ -33,6 +33,7 @@
     <ClCompile Include="System\private\audio.cpp" />
     <ClCompile Include="System\private\crypto.cpp" />
     <ClCompile Include="System\private\file.cpp" />
+    <ClCompile Include="System\private\thread.cpp" />
     <ClCompile Include="System\private\vital.cpp" />
     <ClCompile Include="Type\private\error.cpp" />
     <ClCompile Include="Vendor\duktape\duktape.c" />
@@ -82,6 +83,7 @@
     <ClInclude Include="System\public\audio.h" />
     <ClInclude Include="System\public\crypto.h" />
     <ClInclude Include="System\public\file.h" />
+    <ClInclude Include="System\public\thread.h" />
     <ClInclude Include="System\public\vital.h" />
     <ClInclude Include="Type\public\audio.h" />
     <ClInclude Include="Type\public\index.h" />

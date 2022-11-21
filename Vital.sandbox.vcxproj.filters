@@ -222,6 +222,9 @@
     <ClCompile Include="Sandbox\lua\module\c++\coroutine.cpp">
       <Filter>Sandbox\lua\module</Filter>
     </ClCompile>
+    <ClCompile Include="System\private\thread.cpp">
+      <Filter>System\private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vendor\lua\lapi.h">
@@ -1199,6 +1202,9 @@
     </ClInclude>
     <ClInclude Include="Type\public\audio.h">
       <Filter>Type\public</Filter>
+    </ClInclude>
+    <ClInclude Include="System\public\thread.h">
+      <Filter>System\public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
