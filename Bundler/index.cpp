@@ -48,6 +48,30 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 #include <Sandbox/js/public/api.h>
 #include <System/public/audio.h>
 
+#include <iostream>
+#include <thread>
+
+class scoped_thread {
+    private:
+        std::thread t;
+    public:
+        scoped_thread(std::function<void()> exec) { t = std::thread(exec); }
+        ~scoped_thread() { t.join(); }
+};
+
+void my_func()
+{
+    for (int j = 0; j < 3; ++j)
+    {
+        std::cout << "\n " << j;
+    }
+}
+
+void test() {
+    //scoped_thread st1(std::thread(my_func));
+    auto sthread = scoped_thread(my_func);
+    std::cout << "TAIL STACK";
+}
 
 int main() {
     genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::module);
@@ -76,14 +100,16 @@ int main() {
             --sound.play(testSound)
         --end))
 
-        coroutine.resume(coroutine.create(function()
-            print("EXECUTED THREAD 2 & PAUSED FOR 3s")
-            coroutine.sleep(3000)
-            print("RESUMED THREAD 2")
-        end))
+        --coroutine.resume(coroutine.create(function()
+            --print("EXECUTED THREAD 2 & PAUSED FOR 3s")
+            --coroutine.sleep(3000)
+            --print("RESUMED THREAD 2")
+        --end))
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
+
+    test();
 
     /*
     Vital::Sandbox::JS::API::boot();
