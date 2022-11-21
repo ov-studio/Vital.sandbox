@@ -58,7 +58,6 @@ namespace Vital::Sandbox::Lua {
         instance.erase(vm);
         if (!thread) lua_close(vm);
         vm = nullptr;
-        std::cout << "\nDESTRUCTOR EXECUTED...";
     }
 
     // Checkers //

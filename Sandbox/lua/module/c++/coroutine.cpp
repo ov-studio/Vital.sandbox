@@ -40,17 +40,24 @@ namespace Vital::Sandbox::Lua::API {
         bind("coroutine", "sleep", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw "INVALID SLEEP ARGS";
+                if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
 
                 // TODO:  TESTING
-                std::thread thread = std::thread([&]() -> void {
+                std::thread thread;
+                thread = std::thread([&]() -> void {
                     std::cout << "EXECUTED THREAD CALL!";
+                    std::cout << "\n Is Joinable: " << thread.joinable();
+
+                    auto duration = vm->getInt(1);
+                    std::cout << "\nSLEEPING FOR DURATION: " << duration;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+                    std::cout << "\nWOKE UP!";
+
+                    thread.join();
+                    return;
                 });
 
-                auto duration = vm -> getInt(1);
-                std::cout << "\nSLEEPING FOR DURATION: " << duration;
-                std::this_thread::sleep_for(std::chrono::milliseconds(duration));
-                std::cout << "\nWOKE UP!";
+                std::cout << "\nYEA!";
                 return 0;
             });
         });
