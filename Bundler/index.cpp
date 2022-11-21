@@ -49,20 +49,13 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 #include <System/public/audio.h>
 #include <System/public/thread.h>
 
-#include <iostream>
-#include <thread>
-
 void my_func() {
     std::cout << "PAUSED FOR 3 SECONDS";
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-    for (int j = 0; j < 3; ++j)
-    {
-        std::cout << "\n " << j;
-    }
+    std::cout << "Resumed";
 }
 
 void test() {
-    //Vital::System::Thread::create st1(std::thread(my_func));
     auto sthread = Vital::System::Thread::create(my_func);
     std::cout << "TAIL STACK";
 }
