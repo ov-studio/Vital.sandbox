@@ -78,6 +78,7 @@ namespace Vital::Sandbox::Lua {
             bool getTableField(const std::string& value, int index = 1);
             bool getMetaTable(int index = 1);
             bool getMetaTable(const std::string& index);
+            vital_ref* getThread(int index = 1);
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 

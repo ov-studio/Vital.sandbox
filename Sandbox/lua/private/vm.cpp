@@ -115,6 +115,7 @@ namespace Vital::Sandbox::Lua {
     bool create::getTableField(const std::string& value, int index) { return lua_getfield(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     bool create::getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.data()); }
+    vital_ref* create::getThread(int index) { return lua_tothread(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
@@ -235,6 +236,16 @@ namespace Vital::Sandbox::Lua {
         catch(...) { throwError(); }
         return 1;
     }
+    /*
+    bool create::pause() {
+        if (!thread) return false;
+        lua_resume(vm);
+    }
+    bool create::resume() {
+        if (!thread) return false;
+        lua_resume(vm, 1, 0);
+    }
+    */
     bool create::loadString(const std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.data());
