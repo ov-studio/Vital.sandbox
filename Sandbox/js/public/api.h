@@ -2,7 +2,7 @@
      Resource: Vital.sandbox
      Script: Sandbox: js: public: api.h
      Author: vStudio
-     Developer(s): Aviril, Tron, Mario, Аниса
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: API Utilities
 ----------------------------------------------------------------*/
