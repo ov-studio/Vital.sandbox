@@ -85,8 +85,6 @@ int main() {
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
 
-    test();
-
     /*
     Vital::Sandbox::JS::API::boot();
     Vital::Sandbox::JS::API::onErrorHandle([](const std::string& err) -> void {
