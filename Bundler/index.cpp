@@ -47,17 +47,10 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 #include <Sandbox/lua/public/api.h>
 #include <Sandbox/js/public/api.h>
 #include <System/public/audio.h>
+#include <System/public/thread.h>
 
 #include <iostream>
 #include <thread>
-
-class scoped_thread {
-    private:
-        std::thread t;
-    public:
-        scoped_thread(std::function<void()> exec) { t = std::thread(exec); }
-        ~scoped_thread() { t.join(); }
-};
 
 void my_func() {
     std::cout << "PAUSED FOR 3 SECONDS";
@@ -69,8 +62,8 @@ void my_func() {
 }
 
 void test() {
-    //scoped_thread st1(std::thread(my_func));
-    auto sthread = scoped_thread(my_func);
+    //Vital::System::Thread::create st1(std::thread(my_func));
+    auto sthread = Vital::System::Thread::create(my_func);
     std::cout << "TAIL STACK";
 }
 
