@@ -59,8 +59,9 @@ class scoped_thread {
         ~scoped_thread() { t.join(); }
 };
 
-void my_func()
-{
+void my_func() {
+    std::cout << "PAUSED FOR 3 SECONDS";
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     for (int j = 0; j < 3; ++j)
     {
         std::cout << "\n " << j;
