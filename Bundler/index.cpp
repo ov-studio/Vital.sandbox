@@ -68,13 +68,13 @@ int main() {
         --print("IS 3D: "..tostring(sound.is3D(testSound)))
         --table.print(sound.getMixMatrix(testSound))
 
-        coroutine.resume(coroutine.create(function()
-            print("EXECUTED THREAD 1 & PAUSED FOR 10s")
-            engine.sleep(10000)
-            print("RESUMED THREAD 1")
+        --coroutine.resume(coroutine.create(function()
+            --print("EXECUTED THREAD 1 & PAUSED FOR 10s")
+            --engine.sleep(10000)
+            --print("RESUMED THREAD 1")
             --local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
             --sound.play(testSound)
-        end))
+        --end))
 
         coroutine.resume(coroutine.create(function()
             print("EXECUTED THREAD 2 & PAUSED FOR 3s")
