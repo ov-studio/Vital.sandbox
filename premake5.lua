@@ -1,9 +1,11 @@
 workspace "Vital.sandbox"
 	configurations { "Debug", "Release" }
-	location "."
+	location ".solution"
 	platforms { "x86", "x64" }
     outputdir = "%{cfg.system}-%{cfg.platform}-%{cfg.buildcfg}"
-    include "src"
+
+    include "Vital.bundler"
+    include "Vital.sandbox"
 
     filter "system:windows"
         defines { "WINDOWS", "WIN32" }
