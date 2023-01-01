@@ -1,4 +1,4 @@
-workspace "module"
+workspace "Vital.sandbox"
 	configurations { "Debug", "Release" }
 	location "."
 	platforms { "x86", "x64" }
