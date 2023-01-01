@@ -3,5 +3,7 @@
 enc_temp*
 .build
 .output
+*.solution
+
 bundle.h
 .openssl_
