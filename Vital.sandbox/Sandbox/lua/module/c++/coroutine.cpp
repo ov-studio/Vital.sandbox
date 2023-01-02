@@ -46,8 +46,9 @@ namespace Vital::Sandbox::Lua::API {
                 auto thread = vm -> getThread(1);
                 auto thread_vm = fetchVM(thread);
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
-                std::cout << "INVOKED CUSTOM RESUME";
-                return thread_vm -> resume();
+                thread_vm -> resume();
+                vm -> pushBool(true);
+                return 1;
             });
         });
 
