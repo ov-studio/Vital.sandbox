@@ -77,13 +77,11 @@ int main() {
 
         local testcort = coroutine.create(function()
                     print("EXECUTED THREAD & PAUSED FOR 3s")
-                    coroutine.pause()
-                    --print("PASSED BACK")
-                    --coroutine.sleep(3000)
-                    print("RESUMED THREAD 2")
+                    print("Going to sleep")
+                    --coroutine.sleep(10000)
+                    print("Awakened from sleep")
         end)
-        coroutine.customresume(testcort)
-        --coroutine.resume(testcort)
+        coroutine.resume(testcort)
         print("Tail stack reached")
     )";
     std::cout<<"\n Main Thread : " << std::this_thread::get_id();
