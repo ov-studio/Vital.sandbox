@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("coroutine", "resume2", [](vital_ref* ref) -> int {
+        bind("coroutine", "resume", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw ErrorCode["invalid-arguments"];
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto thread_vm = fetchVM(thread);
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 thread_vm -> resume();
-                vm -> pushBool(true);
+                //vm -> pushBool(true);
                 return 1;
             });
         });
