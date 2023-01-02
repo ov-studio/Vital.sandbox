@@ -83,7 +83,7 @@ int main() {
                     print("RESUMED THREAD 2")
         end)
         coroutine.customresume(testcort)
-        --coroutine.resume()
+        --coroutine.resume(testcort)
         print("Tail stack reached")
     )";
     std::cout<<"\n Main Thread : " << std::this_thread::get_id();
