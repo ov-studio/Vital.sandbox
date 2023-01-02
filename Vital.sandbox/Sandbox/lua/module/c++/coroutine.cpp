@@ -47,7 +47,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto thread_vm = fetchVM(thread);
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 thread_vm -> resume();
-                //vm -> pushBool(true);
+                vm -> setBool(true);
                 return 1;
             });
         });
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 vm -> pause();
-                vm -> pushBool(true);
+                vm -> setBool(true);
                 return 1;
             });
         });
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::Lua::API {
                     vm -> resume();
                 });
                 vm -> pause();
-                vm -> pushBool(true);
+                vm -> setBool(true);
                 return 1;
             });
         });
