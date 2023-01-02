@@ -28,6 +28,9 @@ namespace Vital::System::Thread {
             // Instantiators //
             create(std::function<void()> exec);
             ~create();
+
+            // Utils//
+            void join();
     };
     typedef create vital_thread;
     extern bool isInstance(vital_thread* ref);

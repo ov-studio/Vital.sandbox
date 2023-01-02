@@ -30,6 +30,9 @@ namespace Vital::System::Thread {
     }
     create::~create() {
         instance.erase(this);
-        thread.detach();
+        if (thread.joinable()) thread.detach();
     }
+
+    // Utils //
+    void create::join() { thread.join(); }
 }

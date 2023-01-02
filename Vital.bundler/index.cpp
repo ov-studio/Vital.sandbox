@@ -78,7 +78,7 @@ int main() {
         local testcort = coroutine.create(function()
                     print("EXECUTED THREAD & PAUSED FOR 3s")
                     print("Going to sleep")
-                    --coroutine.sleep(10000)
+                    coroutine.sleep(3000)
                     print("Awakened from sleep")
         end)
         coroutine.resume(testcort)

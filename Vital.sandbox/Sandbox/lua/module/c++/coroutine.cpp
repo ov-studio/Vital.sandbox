@@ -67,17 +67,15 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 auto duration = vm -> getInt(1);
-                // TODO: Pause here
                 std::cout << "\n v Thread 1 : " << std::this_thread::get_id();
                 auto thread = Vital::System::Thread::create([&]() -> void {
-                    // TODO: Resume here
                     std::cout << "\n v Thread 2 : " << std::this_thread::get_id();
                     std::cout << "going to sleep in vthread";
-                    vm->pause();
                     std::this_thread::sleep_for(std::chrono::milliseconds(duration));
                     std::cout << "back from sleep in vthread";
-                    //vm -> resume();
                 });
+                thread.join();
+                vm -> resume();
                 return 1;
             });
         });
