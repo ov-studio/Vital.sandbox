@@ -87,8 +87,8 @@ int main() {
         print("Tail stack reached")
     )";
     std::cout<<"\n Main Thread : " << std::this_thread::get_id();
-    //auto testVM = new Vital::Sandbox::Lua::create();
-    //testVM -> loadString(rwString);
+    auto testVM = new Vital::Sandbox::Lua::create();
+    testVM -> loadString(rwString);
 
     /*
     Vital::Sandbox::JS::API::boot();
