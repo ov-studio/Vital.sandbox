@@ -1,7 +1,7 @@
 workspace "Vital.sandbox"
-	configurations { "Debug", "Release" }
-	location ".solution"
-	platforms { "x86", "x64" }
+    configurations { "Debug", "Release" }
+    location ".solution"
+    platforms { "x86", "x64" }
     outputdir = "%{cfg.system}-%{cfg.platform}-%{cfg.buildcfg}"
     filter "system:windows"
         defines { "WINDOWS", "WIN32" }
