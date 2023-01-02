@@ -8,7 +8,7 @@ project "Vital.bundler"
     links { "Vital.sandbox" }
     files {
         "premake5.lua",
-        "**.c",
         "**.cpp",
+        "**.c",
         "**.h"
     }

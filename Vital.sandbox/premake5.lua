@@ -19,7 +19,7 @@ project "Vital.sandbox"
         }
     files {
         "premake5.lua",
-        "**.c",
         "**.cpp",
+        "**.c",
         "**.h"
     }
