@@ -52,7 +52,6 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw ErrorCode["invalid-arguments"];
-                std::cout << "\nCustom Pause Invoked";
                 lua_yield(ref, 0);
                 return 1;
             });
