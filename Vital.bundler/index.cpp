@@ -67,18 +67,12 @@ int main() {
         --print("IS 3D: "..tostring(sound.is3D(testSound)))
         --table.print(sound.getMixMatrix(testSound))
 
-        --coroutine.resume(coroutine.create(function()
-            --print("EXECUTED THREAD 1 & PAUSED FOR 10s")
-            --engine.sleep(10000)
-            --print("RESUMED THREAD 1")
-            --local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
-            --sound.play(testSound)
-        --end))
-
         coroutine.resume(coroutine.create(function()
-                    print("Going to sleep")
-                    coroutine.sleep(5000)
-                    print("Awakened from sleep")
+            print("EXECUTED THREAD 1 & PAUSED FOR 10s")
+            coroutine.sleep(10000)
+            print("RESUMED THREAD 1")
+            local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
+            sound.play(testSound)
         end))
         print("Tail stack reached")
     )";
