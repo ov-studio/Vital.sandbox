@@ -4,8 +4,7 @@ project "Vital.sandbox"
     kind "StaticLib"
     targetdir ("../.build/"..outputdir.."/%{prj.name}")
     objdir ("../.output/"..outputdir.."/%{prj.name}")
-    includedirs { ".", "Vendor/openssl/include", "Vendor/fmod/include", "Vendor/lua", "Vendor/duktape" }
-    pchheader "pch.h"
+    includedirs { ".", "Vendor", "Vendor/openssl/include", "Vendor/fmod/include", "Vendor/lua", "Vendor/duktape" }
     files {
         "premake5.lua",
         "**.cpp",
