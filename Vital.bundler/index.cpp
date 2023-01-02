@@ -68,9 +68,7 @@ int main() {
         --table.print(sound.getMixMatrix(testSound))
 
         coroutine.resume(coroutine.create(function()
-            print("EXECUTED THREAD 1 & PAUSED FOR 10s")
             coroutine.sleep(10000)
-            print("RESUMED THREAD 1")
             local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
             sound.play(testSound)
         end))
