@@ -6,13 +6,13 @@ project "Vital.sandbox"
     objdir ("../.output/"..outputdir.."/%{prj.name}")
     includedirs { ".", "Vendor", "Vendor/openssl/include", "Vendor/fmod/include", "Vendor/lua", "Vendor/duktape" }
     filter "configurations:Debug"
-        links { "Vendor/openssl/lib/%{cfg.platform}/Debug/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Debug/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmodL_vc.lib" }
+        links { "Vendor/openssl/lib/%{cfg.platform}/Debug/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Debug/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmodL_vc.lib", "ws2_32", "crypt32" }
         postbuildcommands {
             "copy /y ..\\Vital.sandbox\\Vendor\\openssl\\lib\\%{cfg.platform}\\Debug\\ossl_static.pdb $(OutDir)",
             "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmodL_vc.dll $(OutDir)"
         }
     filter "configurations:Release"
-        links { "Vendor/openssl/lib/%{cfg.platform}/Release/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Release/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmod_vc.lib" }
+        links { "Vendor/openssl/lib/%{cfg.platform}/Release/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Release/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmod_vc.lib", "ws2_32", "crypt32"  }
         postbuildcommands {
             "copy /y ..\\Vital.sandbox\\Vendor\\openssl\\lib\\%{cfg.platform}\\Release\\ossl_static.pdb $(OutDir)",
             "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmod_vc.dll $(OutDir)"
