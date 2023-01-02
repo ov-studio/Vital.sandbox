@@ -7,11 +7,16 @@ project "Vital.sandbox"
     includedirs { ".", "Vendor", "Vendor/openssl/include", "Vendor/fmod/include", "Vendor/lua", "Vendor/duktape" }
     filter "configurations:Debug"
         links { "Vendor/openssl/x64/Debug/libcrypto.lib", "Vendor/openssl/x64/Debug/libssl.lib", "Vendor/fmod/lib/x64/fmodL_vc.lib" }
+        postbuildcommands {
+            "{COPY} Vendor/openssl/x64/Debug/ossl_static.pdb %{cfg.targetdir}",
+            "{COPY} Vendor/fmod/lib/x64/fmodL_vc.lib %{cfg.targetdir}"
+        }
     filter "configurations:Release"
         links { "Vendor/openssl/x64/Release/libcrypto.lib", "Vendor/openssl/x64/Release/libssl.lib", "Vendor/fmod/lib/x64/fmod_vc.lib" }
-    postbuildcommands {
-        "{COPY} %{cfg.objdir}/output.map %{cfg.targetdir}"
-    }
+        postbuildcommands {
+            "{COPY} Vendor/openssl/x64/Release/ossl_static.pdb %{cfg.targetdir}",
+            "{COPY} Vendor/fmod/lib/x64/fmod_vc.lib %{cfg.targetdir}"
+        }
     files {
         "premake5.lua",
         "**.cpp",
