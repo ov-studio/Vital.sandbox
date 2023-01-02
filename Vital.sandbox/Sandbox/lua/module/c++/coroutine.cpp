@@ -48,7 +48,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("coroutine", "custompause", [](vital_ref* ref) -> int {
+        bind("coroutine", "pause", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw ErrorCode["invalid-arguments"];
