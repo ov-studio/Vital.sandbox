@@ -57,6 +57,7 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 vm -> pause();
+                vm -> pushBool(true);
                 return 1;
             });
         });
@@ -72,6 +73,7 @@ namespace Vital::Sandbox::Lua::API {
                     vm -> resume();
                 });
                 vm -> pause();
+                vm -> pushBool(true);
                 return 1;
             });
         });
