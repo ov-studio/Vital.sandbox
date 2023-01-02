@@ -75,13 +75,11 @@ int main() {
             --sound.play(testSound)
         --end))
 
-        local testcort = coroutine.create(function()
+        coroutine.resume(coroutine.create(function()
                     print("Going to sleep")
                     coroutine.sleep(5000)
                     print("Awakened from sleep")
-        end)
-        coroutine.resume(testcort)
-        print("wot")
+        end))
         print("Tail stack reached")
     )";
     //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
