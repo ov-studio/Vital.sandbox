@@ -14,8 +14,8 @@
 
 #pragma once
 #include <System/public/crypto.h>
-#include <Vendor/openssl/include/rand.h>
-#include <Vendor/openssl/include/sha.h>
+#include <openssl/rand.h>
+#include <openssl/sha.h>
 
 
 ////////////////////////////
