@@ -9,13 +9,13 @@ project "Vital.sandbox"
         links { "Vendor/openssl/lib/%{cfg.platform}/Debug/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Debug/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmodL_vc.lib" }
         postbuildcommands {
             "copy /y ..\\Vital.sandbox\\Vendor\\openssl\\lib\\%{cfg.platform}\\Debug\\ossl_static.pdb $(OutDir)",
-            "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmodL_vc.lib $(OutDir)"
+            "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmodL_vc.dll $(OutDir)"
         }
     filter "configurations:Release"
         links { "Vendor/openssl/lib/%{cfg.platform}/Release/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Release/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmod_vc.lib" }
         postbuildcommands {
             "copy /y ..\\Vital.sandbox\\Vendor\\openssl\\lib\\%{cfg.platform}\\Release\\ossl_static.pdb $(OutDir)",
-            "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmod_vc.lib $(OutDir)"
+            "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmod_vc.dll $(OutDir)"
         }
     files {
         "premake5.lua",
