@@ -10,5 +10,6 @@ project "Vital.bundler"
         "premake5.lua",
         "**.cpp",
         "**.c",
+        "**.hpp",
         "**.h"
     }

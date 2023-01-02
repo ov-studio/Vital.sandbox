@@ -21,5 +21,6 @@ project "Vital.sandbox"
         "premake5.lua",
         "**.cpp",
         "**.c",
+        "**.hpp",
         "**.h"
     }
