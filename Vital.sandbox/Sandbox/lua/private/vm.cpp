@@ -227,8 +227,10 @@ namespace Vital::Sandbox::Lua {
     // Utils //
     void create::push(int index) { lua_pushvalue(vm, index); }
     void create::pop(int count) { lua_pop(vm, count); }
-    void create::move(vital_vm* target, int count) {
-        lua_xmove(vm, target -> vm, count);
+    void create::move(vital_vm* target, int count) { lua_xmove(vm, target -> vm, count); }
+    void create::pause() {
+        if (!thread) return;
+        lua_yield(vm, getArgCount());
     }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
