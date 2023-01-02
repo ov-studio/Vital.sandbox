@@ -39,12 +39,12 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("coroutine", "customresume", [](vital_ref* ref) -> int {
+        bind("coroutine", "resume", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw ErrorCode["invalid-arguments"];
                 auto thread = vm -> getThread(1);
-                auto thread_vm = fetchVM(ref);
+                auto thread_vm = fetchVM(thread);
                 //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 std::cout << "INVOKED CUSTOM RESUME";
                 return thread_vm -> resume();
@@ -64,11 +64,18 @@ namespace Vital::Sandbox::Lua::API {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
+                //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 auto duration = vm -> getInt(1);
                 // TODO: Pause here
+                std::cout << "\n v Thread 1 : " << std::this_thread::get_id();
                 auto thread = Vital::System::Thread::create([&]() -> void {
                     // TODO: Resume here
+                    std::cout << "\n v Thread 2 : " << std::this_thread::get_id();
+                    std::cout << "going to sleep in vthread";
+                    vm->pause();
                     std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+                    std::cout << "back from sleep in vthread";
+                    //vm -> resume();
                 });
                 return 1;
             });
