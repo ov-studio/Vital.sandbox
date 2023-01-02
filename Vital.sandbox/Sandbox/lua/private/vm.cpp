@@ -238,16 +238,6 @@ namespace Vital::Sandbox::Lua {
         catch(...) { throwError(); }
         return 1;
     }
-    /*
-    bool create::pause() {
-        if (!thread) return false;
-        lua_resume(vm);
-    }
-    bool create::resume() {
-        if (!thread) return false;
-        lua_resume(vm, 1, 0);
-    }
-    */
     bool create::loadString(const std::string& buffer) {
         if (buffer.empty()) return false;
         luaL_loadstring(vm, buffer.data());
