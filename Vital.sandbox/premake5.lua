@@ -14,8 +14,8 @@ project "Vital.sandbox"
     filter "configurations:Release"
         links { "Vendor/openssl/lib/x64/Release/libcrypto.lib", "Vendor/openssl/lib/x64/Release/libssl.lib", "Vendor/fmod/lib/x64/fmod_vc.lib" }
         postbuildcommands {
-            "copy /y Vendor/openssl/lib/x64/Release/ossl_static.pdb %{cfg.targetdir}",
-            "copy /y Vendor/fmod/lib/x64/fmod_vc.lib %{cfg.targetdir}"
+            "copy /y ../Vital.sandbox/Vendor/openssl/lib/x64/Release/ossl_static.pdb %{cfg.targetdir}",
+            "copy /y ../Vital.sandbox/Vendor/fmod/lib/x64/fmod_vc.lib %{cfg.targetdir}"
         }
     files {
         "premake5.lua",
