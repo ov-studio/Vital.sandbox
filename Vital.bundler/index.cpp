@@ -76,15 +76,15 @@ int main() {
         --end))
 
         local testcort = coroutine.create(function()
-                    print("EXECUTED THREAD & PAUSED FOR 3s")
                     print("Going to sleep")
-                    coroutine.sleep(3000)
+                    coroutine.sleep(5000)
                     print("Awakened from sleep")
         end)
         coroutine.resume(testcort)
+        print("wot")
         print("Tail stack reached")
     )";
-    std::cout<<"\n Main Thread : " << std::this_thread::get_id();
+    //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
 
