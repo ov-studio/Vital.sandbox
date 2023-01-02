@@ -45,7 +45,7 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw ErrorCode["invalid-arguments"];
                 auto thread = vm -> getThread(1);
                 auto thread_vm = fetchVM(thread);
-                //if (!isThread) throw throw ErrorCode["invalid-thread"];
+                if (!thread_vm -> isVirtualThread()) throw ErrorCode["invalid-thread"];
                 thread_vm -> resume();
                 vm -> setBool(true);
                 return 1;
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("coroutine", "pause", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                //if (!isThread) throw throw ErrorCode["invalid-thread"];
+                if (!vm -> isVirtualThread()) throw ErrorCode["invalid-thread"];
                 vm -> pause();
                 vm -> setBool(true);
                 return 1;
@@ -65,8 +65,8 @@ namespace Vital::Sandbox::Lua::API {
         bind("coroutine", "sleep", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
+                if (!vm -> isVirtualThread()) throw ErrorCode["invalid-thread"];
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
-                //if (!isThread) throw throw ErrorCode["invalid-thread"];
                 auto duration = vm -> getInt(1);
                 auto thread = Vital::System::Thread::create([&]() -> void {
                     std::this_thread::sleep_for(std::chrono::milliseconds(duration));

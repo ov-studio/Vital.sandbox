@@ -33,6 +33,7 @@ namespace Vital::Sandbox::Lua {
             create();
             create(vital_ref* thread);
             ~create();
+            bool isVirtualThread();
 
             // Checkers //
             bool isNil(int index = 1);

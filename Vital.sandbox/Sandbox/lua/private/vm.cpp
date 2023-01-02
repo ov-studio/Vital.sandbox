@@ -56,9 +56,10 @@ namespace Vital::Sandbox::Lua {
     create::~create() {
         if (!vm) return;
         instance.erase(vm);
-        if (!thread) lua_close(vm);
+        if (!isVirtualThread()) lua_close(vm);
         vm = nullptr;
     }
+    bool create::isVirtualThread() { return thread; }
 
     // Checkers //
     bool create::isNil(int index) { return lua_isnoneornil(vm, index); }
@@ -229,12 +230,12 @@ namespace Vital::Sandbox::Lua {
     void create::pop(int count) { lua_pop(vm, count); }
     void create::move(vital_vm* target, int count) { lua_xmove(vm, target -> vm, count); }
     void create::resume() {
-        if (!thread) return;
+        if (!isVirtualThread()) return;
         int ncount;
         lua_resume(vm, nullptr, 0, &ncount);
     }
     void create::pause() {
-        if (!thread) return;
+        if (!isVirtualThread()) return;
         lua_yield(vm, 0);
     }
     int create::execute(std::function<int()> exec) {
