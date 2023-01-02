@@ -49,8 +49,8 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 #include <System/public/audio.h>
 
 int main() {
-    genPackage("Lua", "Sandbox/lua/module/", Vital::Sandbox::Lua::module);
-    genPackage("JS", "Sandbox/js/module/", Vital::Sandbox::JS::module);
+    genPackage("Lua", "../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::module);
+    genPackage("JS", "../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::module);
     Vital::System::Audio::start();
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
@@ -87,8 +87,8 @@ int main() {
         print("Tail stack reached")
     )";
     std::cout<<"\n Main Thread : " << std::this_thread::get_id();
-    auto testVM = new Vital::Sandbox::Lua::create();
-    testVM -> loadString(rwString);
+    //auto testVM = new Vital::Sandbox::Lua::create();
+    //testVM -> loadString(rwString);
 
     /*
     Vital::Sandbox::JS::API::boot();
