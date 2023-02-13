@@ -67,11 +67,6 @@ int main() {
         --print("IS 3D: "..tostring(sound.is3D(testSound)))
         --table.print(sound.getMixMatrix(testSound))
 
-        --coroutine.resume(coroutine.create(function()
-            --coroutine.sleep(10000)
-            --local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
-            --sound.play(testSound)
-        --end))
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
