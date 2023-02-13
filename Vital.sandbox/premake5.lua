@@ -5,6 +5,13 @@ project "Vital.sandbox"
     targetdir ("../.build/"..outputdir.."/%{prj.name}")
     objdir ("../.output/"..outputdir.."/%{prj.name}")
     includedirs { ".", "Vendor", "Vendor/openssl/include", "Vendor/fmod/include", "Vendor/lua", "Vendor/duktape" }
+    files {
+        "premake5.lua",
+        "**.cpp",
+        "**.c",
+        "**.hpp",
+        "**.h"
+    }
     filter "configurations:Debug"
         links { "Vendor/openssl/lib/%{cfg.platform}/Debug/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Debug/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmodL_vc.lib", "ws2_32", "crypt32" }
         postbuildcommands {
@@ -17,10 +24,3 @@ project "Vital.sandbox"
             "copy /y ..\\Vital.sandbox\\Vendor\\openssl\\lib\\%{cfg.platform}\\Release\\ossl_static.pdb $(OutDir)",
             "copy /y ..\\Vital.sandbox\\Vendor\\fmod\\lib\\%{cfg.platform}\\fmod.dll $(OutDir)"
         }
-    files {
-        "premake5.lua",
-        "**.cpp",
-        "**.c",
-        "**.hpp",
-        "**.h"
-    }
