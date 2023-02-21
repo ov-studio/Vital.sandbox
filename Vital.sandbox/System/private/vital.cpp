@@ -13,7 +13,8 @@
 //////////////
 
 #pragma once
-#include <System/public/vital.h>
+#include <System/public/inspect.h>
+#include <System/public/crypto.h>
 
 
 ////////////////////
@@ -21,6 +22,7 @@
 ////////////////////
 
 namespace Vital::System {
+    std::wstring systemSerial = L"-";
     unsigned int applicationTick, clientTick;
 
     std::string getPlatform() {
@@ -29,6 +31,35 @@ namespace Vital::System {
         #else
             return "server";
         #endif
+    }
+
+    std::wstring getSystemSerial() {
+        if (systemSerial.empty() && (getPlatform() == "client")) {
+            auto system = Vital::System::Inspect::system();
+            auto smbios = Vital::System::Inspect::smbios();
+            auto cpu = Vital::System::Inspect::cpu();
+            auto gpu = Vital::System::Inspect::gpu();
+            auto memory = Vital::System::Inspect::memory();
+            auto network = Vital::System::Inspect::network();
+            auto disk = Vital::System::Inspect::disk();
+            systemSerial = L"[";
+            systemSerial += L"\n\tSystem: " + system.hardware_id + L",";
+            systemSerial += L"\n\tOS: " + system.os_serial + L",";
+            systemSerial += L"\n\tSMBIOS: " + smbios.serial + L",";
+            systemSerial += L"\n\tCPU: " + cpu.id + L",";
+            for (int i = 0; i < memory.size(); i++) {
+                systemSerial += L"\n\tMemory: " + memory.at(i).serial + L",";
+            }
+            for (int i = 0; i < network.size(); i++) {
+                if (network.at(i).mac != L"-") systemSerial += L"\n\tNetwork: " + network.at(i).mac + L",";
+            }
+            for (int i = 0; i < disk.size(); i++) {
+                systemSerial += L"\n\tDisk: " + disk.at(i).serial + L",";
+            }
+            // TODO: TRIM LAST `,`
+            systemSerial += L"\n]";
+        }
+        return systemSerial;
     }
 
     unsigned int getSystemTick() {
