@@ -32,7 +32,7 @@ namespace Vital::System::Network {
     const std::string parseMessage(enet_uint8* message, size_t size) { return std::string(reinterpret_cast<char*>(message), size); }
 
     bool isConnected() { return networkInstance ? true : false; }
-    
+
     bool create(Vital::Type::Network::Address address) {
         if (isConnected()) return false;
         enet_initialize();
@@ -108,6 +108,7 @@ namespace Vital::System::Network {
     }
 
     bool setPeerLimit(int limit) {
+        // TODO: ADD API TO GET PLATFORM TYPE
         if (vSDK::Core::getPlatformType() != "server") return false;
         peerLimit = limit;
         return true;
