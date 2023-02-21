@@ -99,7 +99,7 @@ namespace Vital::System::Inspect {
         return queryResult;
     }
 
-    vSDK::Core::System::Type::System vSDK::Core::System::system() {
+    Vital::System::Inspect::Type::System system() {
         auto name = toString(queryWMI(L"Win32_ComputerSystem", L"Name"));
         auto model = toString(queryWMI(L"Win32_ComputerSystem", L"Model"));
         auto manufacturer = toString(queryWMI(L"Win32_BaseBoard", L"Manufacturer"));
@@ -112,7 +112,7 @@ namespace Vital::System::Inspect {
         return { name, model, manufacturer, hardware_id, os, os_architecture, os_version, os_serial };
     }
 
-    vSDK::Core::System::Type::SMBIOS vSDK::Core::System::fetchSMBIOsInfo() {
+    Vital::System::Inspect::Type::SMBIOS smbios() {
         auto manufacturer = toString(queryWMI(L"Win32_BaseBoard", L"Manufacturer"));
         auto product = toString(queryWMI(L"Win32_BaseBoard", L"Product"));
         auto version = toString(queryWMI(L"Win32_BaseBoard", L"Version"));
@@ -120,7 +120,7 @@ namespace Vital::System::Inspect {
         return { manufacturer, product, version, serial };
     }
 
-    vSDK::Core::System::Type::CPU vSDK::Core::System::fetchCPUInfo() {
+    Vital::System::Inspect::Type::CPU cpu() {
         auto name = toString(queryWMI(L"Win32_Processor", L"Name"));
         auto manufacturer = toString(queryWMI(L"Win32_Processor", L"Manufacturer"));
         auto id = toString(queryWMI(L"Win32_Processor", L"ProcessorId"));
@@ -129,13 +129,13 @@ namespace Vital::System::Inspect {
         return { name, manufacturer, id, cores, threads };
     }
 
-    std::vector<vSDK::Core::System::Type::GPU> vSDK::Core::System::fetchGPUInfo() {
+    std::vector<Vital::System::Inspect::Type::GPU> gpu() {
         auto name = queryWMI(L"Win32_VideoController", L"Name");
         auto version = queryWMI(L"Win32_VideoController", L"DriverVersion");
         auto refresh_rate = queryWMI(L"Win32_VideoController", L"CurrentRefreshRate", std::vector<int> {});
         std::pair<std::vector<int>, std::vector<int>> resolution = { queryWMI(L"Win32_VideoController", L"CurrentHorizontalResolution", std::vector<int> {}), queryWMI(L"Win32_VideoController", L"CurrentVerticalResolution", std::vector<int> {})};
         auto capacity = queryWMI(L"Win32_VideoController", L"AdapterRam", std::vector<unsigned long long> {});
-        std::vector<vSDK::Core::System::Type::GPU> devices;
+        std::vector<Vital::System::Inspect::Type::GPU> devices;
         devices.reserve(name.size());
         for (int i = 0; i < devices.capacity(); i++) {
             devices.push_back({ toString(name, i), toString(version, i), toNumber(refresh_rate, i), {toNumber(resolution.first, i), toNumber(resolution.second, i)}, static_cast<const unsigned long long>(toNumber(capacity, i)*2/pow(1024, 2)/1000) });
@@ -143,11 +143,11 @@ namespace Vital::System::Inspect {
         return devices;
     }
 
-    std::vector<vSDK::Core::System::Type::Memory> vSDK::Core::System::fetchMemoryInfo() {
+    std::vector<Vital::System::Inspect::Type::Memory> memory() {
         auto manufacturer = queryWMI(L"Win32_PhysicalMemory", L"Manufacturer");
         auto version = queryWMI(L"Win32_PhysicalMemory", L"Version");
         auto serial = queryWMI(L"Win32_PhysicalMemory", L"SerialNumber");
-        std::vector<vSDK::Core::System::Type::Memory> devices;
+        std::vector<Vital::System::Inspect::Type::Memory> devices;
         devices.reserve(manufacturer.size());
         for (int i = 0; i < devices.capacity(); i++) {
             devices.push_back({ toString(manufacturer, i), toString(version, i), toString(serial, i) });
@@ -155,10 +155,10 @@ namespace Vital::System::Inspect {
         return devices;
     }
 
-    std::vector<vSDK::Core::System::Type::Network> vSDK::Core::System::fetchNetworkInfo() {
+    std::vector<Vital::System::Inspect::Type::Network> network() {
         auto name = queryWMI(L"Win32_NetworkAdapter", L"Name");
         auto mac = queryWMI(L"Win32_NetworkAdapter", L"MACAddress");
-        std::vector<vSDK::Core::System::Type::Network> devices;
+        std::vector<Vital::System::Inspect::Type::Network> devices;
         devices.reserve(name.size());
         for (int i = 0; i < devices.capacity(); i++) {
             devices.push_back({ toString(name, i), toString(mac, i) });
@@ -166,7 +166,7 @@ namespace Vital::System::Inspect {
         return devices;
     }
 
-    std::vector<vSDK::Core::System::Type::Disk> vSDK::Core::System::disk() {
+    std::vector<Vital::System::Inspect::Type::Disk> disk() {
         int drives = 0;
         auto name = queryWMI(L"Win32_DiskDrive", L"Name");
         auto model = queryWMI(L"Win32_DiskDrive", L"Model");
@@ -197,7 +197,7 @@ namespace Vital::System::Inspect {
                 }
             }
         }
-        std::vector<vSDK::Core::System::Type::Disk> devices;
+        std::vector<Vital::System::Inspect::Type::Disk> devices;
         devices.reserve(device_id_sorted.capacity());
         ULARGE_INTEGER diskCapacity;
         for (int i = 0; i < devices.capacity(); i++) {
