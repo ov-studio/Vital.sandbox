@@ -27,7 +27,6 @@ namespace Vital::System::Network {
     Vital::Type::Network::Bandwidth bandwidthLimit = {0, 0};
     Vital::Type::Network::PeerID peerID = 1; int peerLimit = 32;
     std::map<Vital::Type::Network::PeerID, ENetPeer*> networkPeers;
-
     Vital::Type::Network::PeerID getPeerID(ENetPeer* peer) { return reinterpret_cast<Vital::Type::Network::PeerID>(peer -> data); }
     const std::string parseMessage(enet_uint8* message, size_t size) { return std::string(reinterpret_cast<char*>(message), size); }
 
