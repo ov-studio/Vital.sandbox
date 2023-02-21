@@ -22,14 +22,16 @@
 ///////////////////////////
 
 namespace Vital::System::Network {
-    ENetHost* network_instance = nullptr;
-    ENetPeer* network_peer = nullptr;
-    std::map <Vital::Type::Network::PeerID, ENetPeer*> network_peers;
-    Vital::Type::Network::PeerID peer_id = 1;
+    ENetHost* networkInstance = nullptr;
+    ENetPeer* networkPeer = nullptr;
+    std::map<Vital::Type::Network::PeerID, ENetPeer*> networkPeers;
+    Vital::Type::Network::PeerID peerID = 1;
+    int peerLimit = 32;
+
     Vital::Type::Network::PeerID getPeerID(ENetPeer* peer) { return reinterpret_cast<Vital::Type::Network::PeerID>(peer -> data); }
     const std::string parseMessage(enet_uint8* message, size_t size) { return std::string(reinterpret_cast<char*>(message), size); }
 
-    bool isConnected() { return network_instance ? true : false; }
+    bool isConnected() { return networkInstance ? true : false; }
     bool create(Vital::Type::Network::Address address) {
         if (isConnected()) return false;
         enet_initialize();
@@ -38,34 +40,34 @@ namespace Vital::System::Network {
         network_address.port = static_cast<enet_uint16>(address.port);
         auto bandwidthLimit = getBandwidthLimit();
         if (vSDK::Core::getPlatformType() == "client") {
-            network_instance = enet_host_create(NULL, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing);
-            network_peer = enet_host_connect(network_instance, &network_address, 2, 0);
+            networkInstance = enet_host_create(NULL, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing);
+            networkPeer = enet_host_connect(networkInstance, &network_address, 2, 0);
         }
-        else { network_instance = enet_host_create(&network_address, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing); }
+        else { networkInstance = enet_host_create(&network_address, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing); }
         return true;
     }
     bool destroy() {
         if (!isConnected()) return false;
-        if (vSDK::Core::getPlatformType() == "client") enet_peer_reset(network_peer);
-        enet_host_destroy(network_instance);
+        if (vSDK::Core::getPlatformType() == "client") enet_peer_reset(networkPeer);
+        enet_host_destroy(networkInstance);
         enet_deinitialize();
-        network_instance = nullptr;
-        network_peer = nullptr;
-        network_peers.clear();
+        networkInstance = nullptr;
+        networkPeer = nullptr;
+        networkPeers.clear();
         return true;
     }
 
     bool render() {
         if (!isConnected()) return false;
-        ENetEvent network_event;
-        enet_host_service(network_instance, &network_event, 1000);
+        ENetEvent networkEvent;
+        enet_host_service(networkInstance, &networkEvent, 1000);
         if (vSDK::Core::getPlatformType() == "client") {
-            switch (network_event.type) {
+            switch (networkEvent.type) {
                 case ENET_EVENT_TYPE_RECEIVE: {
-                    auto message = parseMessage(network_event.packet -> data, network_event.packet -> dataLength);
+                    auto message = parseMessage(networkEvent.packet -> data, networkEvent.packet -> dataLength);
                     std::cout << "\n*[Server] " << message;
                     emit("Hello From Client");
-                    enet_packet_destroy(network_event.packet);
+                    enet_packet_destroy(networkEvent.packet);
                     break;
                 }
                 case ENET_EVENT_TYPE_DISCONNECT: {
@@ -76,26 +78,26 @@ namespace Vital::System::Network {
             }
         }
         else {
-            switch (network_event.type) {
+            switch (networkEvent.type) {
                 case ENET_EVENT_TYPE_CONNECT: {
-                    network_event.peer -> data = reinterpret_cast<void*>(peer_id);
-                    network_peers[peer_id] = network_event.peer;
-                    std::cout << "\n*Client connected [ID: " << getPeerID(network_event.peer) << "]";
-                    emit("Hello From Server", getPeerID(network_event.peer));
-                    peer_id++;
+                    networkEvent.peer -> data = reinterpret_cast<void*>(peerID);
+                    networkPeers[peerID] = networkEvent.peer;
+                    std::cout << "\n*Client connected [ID: " << getPeerID(networkEvent.peer) << "]";
+                    emit("Hello From Server", getPeerID(networkEvent.peer));
+                    peerID++;
                     break;
                 }
                 case ENET_EVENT_TYPE_RECEIVE: {
-                    auto message = parseMessage(network_event.packet -> data, network_event.packet -> dataLength);
-                    std::cout << "\n*[Client: " << getPeerID(network_event.peer) << "] " << message;
-                    enet_packet_destroy(network_event.packet);
+                    auto message = parseMessage(networkEvent.packet -> data, networkEvent.packet -> dataLength);
+                    std::cout << "\n*[Client: " << getPeerID(networkEvent.peer) << "] " << message;
+                    enet_packet_destroy(networkEvent.packet);
                     break;
                 }
                 case ENET_EVENT_TYPE_DISCONNECT: {
-                    auto peerID = getPeerID(network_event.peer);
-                    std::cout << "\n*Client disconnected [ID: " << getPeerID(network_event.peer) << "]";
-                    network_peers.erase(peerID);
-                    network_event.peer -> data = NULL;
+                    auto peerID = getPeerID(networkEvent.peer);
+                    std::cout << "\n*Client disconnected [ID: " << getPeerID(networkEvent.peer) << "]";
+                    networkPeers.erase(peerID);
+                    networkEvent.peer -> data = NULL;
                     break;
                 }
             }
@@ -103,13 +105,12 @@ namespace Vital::System::Network {
         return true;
     }
 
-    int peer_limit = 32;
     bool setPeerLimit(int limit) {
         if (vSDK::Core::getPlatformType() != "server") return false;
-        peer_limit = limit;
+        peerLimit = limit;
         return true;
     }
-    int getPeerLimit() { return vSDK::Core::getPlatformType() == "server" ? peer_limit : 1; }
+    int getPeerLimit() { return vSDK::Core::getPlatformType() == "server" ? peerLimit : 1; }
 
     Vital::Type::Network::Bandwidth bandwidth_limit = {0, 0};
     bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit) {
@@ -120,10 +121,10 @@ namespace Vital::System::Network {
 
     bool emit(const std::string& buffer, Vital::Type::Network::PeerID peer) {
         if (!isConnected()) return false;
-        if ((vSDK::Core::getPlatformType() == "client") || (peer <= 0)) enet_host_broadcast(network_instance, 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
+        if ((vSDK::Core::getPlatformType() == "client") || (peer <= 0)) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
         else {
-            if (!network_peers[peer]) return false;
-            enet_peer_send(network_peers[peer], 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
+            if (!networkPeers[peer]) return false;
+            enet_peer_send(networkPeers[peer], 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
         }
         return true;
     }
