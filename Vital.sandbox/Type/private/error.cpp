@@ -30,7 +30,7 @@ std::map<std::string, std::string> Vital::ErrorCode = {
     {"cipher-mode-nonexistent", "Failed to fetch cipher mode"},
     {"cipher-invalid-key", "Invalid cipher key"},
     {"cipher-invalid-iv", "Invalid cipher IV"},
+    {"file-nonexistent", "Failed to fetch specified file"},
     {"sound-invalid-loop", "Sound entity not in loopable state"},
-    {"sound-invalid-3d", "Sound entity not in 3D state"},
-    {"file-nonexistent", "Failed to fetch specified file"}
+    {"sound-invalid-3d", "Sound entity not in 3D state"}
 };
