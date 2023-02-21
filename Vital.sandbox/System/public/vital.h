@@ -15,6 +15,7 @@
 #pragma once
 #include <Type/public/index.h>
 #include <Type/public/inspect.h>
+#include <Type/public/network.h>
 #include <Type/public/math.h>
 #include <Type/public/audio.h>
 
