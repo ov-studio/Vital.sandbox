@@ -48,6 +48,8 @@ void genPackage(const std::string& name, const std::string& entry, std::vector<s
 #include <Sandbox/js/public/api.h>
 #include <System/public/audio.h>
 
+#define vSDK_Client true
+
 int main() {
     genPackage("Lua", "../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::module);
     genPackage("JS", "../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::module);
@@ -92,6 +94,8 @@ int main() {
     std::string result = testVM -> getString(-1);
     std::cout << "\n" << "RESULT: " << result;
     */
+
+    std::wcout << "\nSerial: " << Vital::System::getSystemSerial() << "\n";
 
     // TODO: REMOVE LATER
     do {
