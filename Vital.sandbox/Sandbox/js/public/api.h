@@ -34,8 +34,7 @@ namespace Vital::Sandbox::JS::API {
     extern bool boot();
 
     // Binds //
-    // TODO: EXPOSE LATER
-    //extern void vSandbox_Engine();
-    //extern void vSandbox_Crypto();
-    //extern void vSandbox_File();
+    extern void vSandbox_Engine();
+    extern void vSandbox_Crypto();
+    extern void vSandbox_File();
 }

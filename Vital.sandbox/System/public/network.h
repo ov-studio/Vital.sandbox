@@ -24,7 +24,7 @@ namespace Vital::System::Network {
     extern bool isConnected();
     extern bool create(Vital::Type::Network::Address address);
     extern bool destroy();
-    extern bool render();
+    extern bool update();
     extern bool setPeerLimit(int limit);
     extern int getPeerLimit();
     extern bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit);

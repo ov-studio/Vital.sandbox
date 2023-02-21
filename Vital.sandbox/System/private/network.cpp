@@ -27,6 +27,7 @@ namespace Vital::System::Network {
     Vital::Type::Network::Bandwidth bandwidthLimit = {0, 0};
     Vital::Type::Network::PeerID peerID = 1; int peerLimit = 32;
     std::map<Vital::Type::Network::PeerID, ENetPeer*> networkPeers;
+
     Vital::Type::Network::PeerID getPeerID(ENetPeer* peer) { return reinterpret_cast<Vital::Type::Network::PeerID>(peer -> data); }
     const std::string parseMessage(enet_uint8* message, size_t size) { return std::string(reinterpret_cast<char*>(message), size); }
 
@@ -57,7 +58,7 @@ namespace Vital::System::Network {
         return true;
     }
 
-    bool render() {
+    bool update() {
         if (!isConnected()) return false;
         ENetEvent networkEvent;
         enet_host_service(networkInstance, &networkEvent, 1000);
@@ -106,7 +107,6 @@ namespace Vital::System::Network {
     }
 
     bool setPeerLimit(int limit) {
-        // TODO: ADD API TO GET PLATFORM TYPE
         if (Vital::System::getPlatform() != "server") return false;
         peerLimit = limit;
         return true;

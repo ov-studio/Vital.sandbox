@@ -49,10 +49,9 @@ namespace Vital::Sandbox::JS::API {
 
     // Booter //
     bool boot() {
-        // TODO: EXPOSE LATER
-        //vSandbox_Engine();
-        //vSandbox_Crypto();
-        //vSandbox_File();
+        vSandbox_Engine();
+        vSandbox_Crypto();
+        vSandbox_File();
         return true;
     }
 }

@@ -21,7 +21,7 @@
 ////////////////////
 
 namespace Vital::System {
-    const std::string& getPlatform() {
+    std::string getPlatform() {
         return "server";
     }
 
