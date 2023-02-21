@@ -21,11 +21,11 @@
 ///////////////////////////
 
 namespace Vital::System::Inspect {
-    extern Vital::System::Inspect::Type::System system();
-    extern Vital::System::Inspect::Type::SMBIOS smbios();
-    extern Vital::System::Inspect::Type::CPU cpu();
-    extern std::vector<Vital::System::Inspect::Type::GPU> gpu();
-    extern std::vector<Vital::System::Inspect::Type::Memory> memory();
-    extern std::vector<Vital::System::Inspect::Type::Network> network();
-    extern std::vector<Vital::System::Inspect::Type::Disk> disk();
+    extern Vital::Type::Inspect::System system();
+    extern Vital::Type::Inspect::SMBIOS smbios();
+    extern Vital::Type::Inspect::CPU cpu();
+    extern std::vector<Vital::Type::Inspect::GPU> gpu();
+    extern std::vector<Vital::Type::Inspect::Memory> memory();
+    extern std::vector<Vital::Type::Inspect::Network> network();
+    extern std::vector<Vital::Type::Inspect::Disk> disk();
 }
