@@ -21,6 +21,8 @@
 ////////////////////
 
 namespace Vital::System {
+    unsigned int applicationTick, clientTick;
+
     std::string getPlatform() {
         return "server";
     }
@@ -29,20 +31,18 @@ namespace Vital::System {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }
 
-    unsigned int vApplicationTick;
     unsigned int getApplicationTick() {
-        vApplicationTick = vApplicationTick ? vApplicationTick : getSystemTick();
-        return getSystemTick() - vApplicationTick;
+        applicationTick = applicationTick ? applicationTick : getSystemTick();
+        return getSystemTick() - applicationTick;
     }
 
-    unsigned int vClientTick;
     unsigned int getClientTick() {
-        vClientTick = vClientTick ? vClientTick : getApplicationTick();
-        return getSystemTick() - vClientTick;
+        clientTick = clientTick ? clientTick : getApplicationTick();
+        return getSystemTick() - clientTick;
     }
 
     bool resetClientTick() {
-        vClientTick = getApplicationTick();
+        clientTick = getApplicationTick();
         return true;
     }
 }
