@@ -32,13 +32,13 @@ namespace Vital::System {
     unsigned int vApplicationTick;
     unsigned int getApplicationTick() {
         vApplicationTick = vApplicationTick ? vApplicationTick : getSystemTick();
-        return static_cast<unsigned int>(getSystemTick() - vApplicationTick);
+        return getSystemTick() - vApplicationTick;
     }
 
     unsigned int vClientTick;
     unsigned int getClientTick() {
         vClientTick = vClientTick ? vClientTick : getApplicationTick();
-        return static_cast<unsigned int>(getSystemTick() - vClientTick);
+        return getSystemTick() - vClientTick;
     }
 
     bool resetClientTick() {
