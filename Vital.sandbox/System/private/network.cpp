@@ -36,15 +36,14 @@ namespace Vital::System::Network {
     bool create(Vital::Type::Network::Address address) {
         if (isConnected()) return false;
         enet_initialize();
-        ENetAddress network_address;
-        enet_address_set_host(&network_address, address.host.c_str());
-        network_address.port = static_cast<enet_uint16>(address.port);
-        auto bandwidthLimit = getBandwidthLimit();
+        ENetAddress networkAddress;
+        enet_address_set_host(&networkAddress, address.host.c_str());
+        networkAddress.port = static_cast<enet_uint16>(address.port);
         if (vSDK::Core::getPlatformType() == "client") {
             networkInstance = enet_host_create(NULL, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing);
-            networkPeer = enet_host_connect(networkInstance, &network_address, 2, 0);
+            networkPeer = enet_host_connect(networkInstance, &networkAddress, 2, 0);
         }
-        else { networkInstance = enet_host_create(&network_address, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing); }
+        else { networkInstance = enet_host_create(&networkAddress, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing); }
         return true;
     }
 
