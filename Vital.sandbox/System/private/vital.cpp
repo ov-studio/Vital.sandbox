@@ -24,7 +24,11 @@ namespace Vital::System {
     unsigned int applicationTick, clientTick;
 
     std::string getPlatform() {
-        return "server";
+        #if defined(vSDK_Client) && defined(WINDOWS) 
+            return "client";
+        #else
+            return "server";
+        #endif
     }
 
     unsigned int getSystemTick() {
