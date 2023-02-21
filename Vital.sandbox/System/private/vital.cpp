@@ -21,6 +21,14 @@
 ////////////////////
 
 namespace Vital::System {
+    const std::string& getPlatform() {
+        return "server";
+    }
+
+    unsigned int getSystemTick() {
+        return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
+    }
+
     unsigned int getSystemTick() {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }

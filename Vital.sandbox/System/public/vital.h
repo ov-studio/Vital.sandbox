@@ -25,6 +25,7 @@
 ////////////////////
 
 namespace Vital::System {
+    extern const std::string& getPlatform();
     extern unsigned int getSystemTick();
     extern unsigned int getApplicationTick();
     extern unsigned int getClientTick();

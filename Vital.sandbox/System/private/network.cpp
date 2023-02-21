@@ -38,7 +38,7 @@ namespace Vital::System::Network {
         ENetAddress networkAddress;
         enet_address_set_host(&networkAddress, address.host.c_str());
         networkAddress.port = static_cast<enet_uint16>(address.port);
-        if (vSDK::Core::getPlatformType() == "client") {
+        if (Vital::System::getPlatform() == "client") {
             networkInstance = enet_host_create(NULL, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing);
             networkPeer = enet_host_connect(networkInstance, &networkAddress, 2, 0);
         }
@@ -48,7 +48,7 @@ namespace Vital::System::Network {
 
     bool destroy() {
         if (!isConnected()) return false;
-        if (vSDK::Core::getPlatformType() == "client") enet_peer_reset(networkPeer);
+        if (Vital::System::getPlatform() == "client") enet_peer_reset(networkPeer);
         enet_host_destroy(networkInstance);
         enet_deinitialize();
         networkInstance = nullptr;
@@ -61,7 +61,7 @@ namespace Vital::System::Network {
         if (!isConnected()) return false;
         ENetEvent networkEvent;
         enet_host_service(networkInstance, &networkEvent, 1000);
-        if (vSDK::Core::getPlatformType() == "client") {
+        if (Vital::System::getPlatform() == "client") {
             switch (networkEvent.type) {
                 case ENET_EVENT_TYPE_RECEIVE: {
                     auto message = parseMessage(networkEvent.packet -> data, networkEvent.packet -> dataLength);
@@ -107,11 +107,11 @@ namespace Vital::System::Network {
 
     bool setPeerLimit(int limit) {
         // TODO: ADD API TO GET PLATFORM TYPE
-        if (vSDK::Core::getPlatformType() != "server") return false;
+        if (Vital::System::getPlatform() != "server") return false;
         peerLimit = limit;
         return true;
     }
-    int getPeerLimit() { return vSDK::Core::getPlatformType() == "server" ? peerLimit : 1; }
+    int getPeerLimit() { return Vital::System::getPlatform() == "server" ? peerLimit : 1; }
 
     bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit) {
         bandwidthLimit = limit;
@@ -121,7 +121,7 @@ namespace Vital::System::Network {
 
     bool emit(const std::string& buffer, Vital::Type::Network::PeerID peer) {
         if (!isConnected()) return false;
-        if ((vSDK::Core::getPlatformType() == "client") || (peer <= 0)) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
+        if ((Vital::System::getPlatform() == "client") || (peer <= 0)) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
         else {
             if (!networkPeers[peer]) return false;
             enet_peer_send(networkPeers[peer], 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
