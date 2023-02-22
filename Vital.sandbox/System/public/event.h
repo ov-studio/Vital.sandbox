@@ -21,12 +21,7 @@
 /////////////////////////
 
 namespace Vital::System::Event {
-    // Instantiators //
-    extern bool create(const std::string& name);
-    extern bool destroy(const std::string& name);
-
-    // APIs //
-    extern bool bind(const std::string& name, Vital::Type::Event::Handler exec);
-    extern bool unbind(const std::string& name, Vital::Type::Event::Handler exec);
-    extern bool emit(const std::string& name, Vital::Type::Event::Arguments arguments);
+    extern bool bind(const std::string& identifier, Vital::Type::Event::Handler exec);
+    extern bool unbind(const std::string& identifier, Vital::Type::Event::Handler exec);
+    extern bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments);
 }

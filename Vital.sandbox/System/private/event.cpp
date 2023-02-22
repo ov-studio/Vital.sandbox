@@ -21,35 +21,26 @@
 /////////////////////////
 
 namespace Vital::System::Event {
-    // Instantiators //
     std::map<std::string, std::map<Vital::Type::Event::Handler, bool>> instance;
-    bool isInstance(const std::string& name) { return instance.find(name) != instance.end(); }
-    bool create(const std::string& name) {
-        if (isInstance(name)) return false;
-        instance.emplace(name, std::map<Vital::Type::Event::Handler, bool> {});
-        return true;
-    }
-    bool destroy(const std::string& name) {
-        if (!isInstance(name)) return false;
-        instance.erase(name);
-        return true;
-    }
+    bool isInstance(const std::string& identifier) { return instance.find(identifier) != instance.end(); }
 
-    // APIs //
-    bool bind(const std::string& name, Vital::Type::Event::Handler exec) {
-        if (!isInstance(name)) return false;
-        instance[name].emplace(exec, true);
+    bool bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
+        if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::Handler, bool> {});
+        instance[identifier].emplace(exec, true);
         return true;
     }
-    bool unbind(const std::string& name, Vital::Type::Event::Handler exec) {
-        if (!isInstance(name)) return false;
-        instance[name].erase(exec);
+    bool unbind(const std::string& identifier, Vital::Type::Event::Handler exec) {
+        if (isInstance(identifier)) {
+            instance[identifier].erase(exec);
+            if (instance[identifier].empty()) instance.erase(identifier);
+        }
         return true;
     }
-    bool emit(const std::string& name, Vital::Type::Event::Arguments arguments) {
-        if (!isInstance(name)) return false;
-        for (auto& i : instance[name]) {
-            i.first(arguments); 
+    bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
+        if (isInstance(identifier)) {
+            for (auto& i : instance[identifier]) {
+                i.first(arguments); 
+            }
         }
         return true;
     }
