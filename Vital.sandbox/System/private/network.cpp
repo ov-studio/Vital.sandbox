@@ -15,6 +15,7 @@
 #pragma once
 #include <System/public/network.h>
 #include <System/public/crypto.h>
+#include <System/public/event.h>
 #include <Vendor/enet/enet.h>
 
 
@@ -64,7 +65,7 @@ namespace Vital::System::Network {
                 if (Vital::System::getPlatform() == "server") {
                     networkEvent.peer -> data = reinterpret_cast<void*>(peerID);
                     networkPeers[peerID] = networkEvent.peer;
-                    std::cout << "\n*Client connected [ID: " << getPeerID(networkEvent.peer) << "]";
+                    Vital::System::Event::emit("Network:@PeerConnection", {std::to_string(getPeerID(networkEvent.peer))});
                     emit("Hello From Server", getPeerID(networkEvent.peer));
                     peerID++;
                 }
@@ -72,25 +73,16 @@ namespace Vital::System::Network {
             }
             case ENET_EVENT_TYPE_RECEIVE: {
                 auto message = Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength));
-                if (Vital::System::getPlatform() == "client") {
-                    std::cout << "\n*[Server] " << message;
-                    emit("Hello From Client");
-                }
-                else {
-                    std::cout << "\n*[Client: " << getPeerID(networkEvent.peer) << "] " << message;
-                }
+                if (Vital::System::getPlatform() == "client") emit("Hello From Client");
+                Vital::System::Event::emit("Network:@PeerMessage", {Vital::System::getPlatform() == "client" ? "" : std::to_string(getPeerID(networkEvent.peer)), message});
                 enet_packet_destroy(networkEvent.packet);
                 break;
             }
             case ENET_EVENT_TYPE_DISCONNECT: {
-                if (Vital::System::getPlatform() == "client") {
-                    std::cout << "\n*Disconnected from server";
-                    stop();
-                }
+                Vital::System::Event::emit("Network:@PeerDisconnection", {Vital::System::getPlatform() == "client" ? "" : std::to_string(getPeerID(networkEvent.peer))});
+                if (Vital::System::getPlatform() == "client") stop();
                 else {
-                    auto peerID = getPeerID(networkEvent.peer);
-                    std::cout << "\n*Client disconnected [ID: " << getPeerID(networkEvent.peer) << "]";
-                    networkPeers.erase(peerID);
+                    networkPeers.erase(getPeerID(networkEvent.peer));
                     networkEvent.peer -> data = NULL;
                 }
                 break;
