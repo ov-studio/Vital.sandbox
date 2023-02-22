@@ -21,17 +21,19 @@
 // Vital: System //
 ////////////////////
 
-// TODO: REMOVE LATER
-#define vSDK_Client true
-
 namespace Vital::System {
-    std::string getPlatform() {
-        #if defined(vSDK_Client) && defined(WINDOWS) 
-            return "client";
-        #else
-            return "server";
-        #endif
+    std::string systemPlatform = "server";
+    bool setPlatform(const std::string& platform) {
+        if (platform == "client") {
+            #if !defined(WINDOWS)
+                return false;
+            #endif
+        }
+        else if (platform != "server") return false;
+        systemPlatform = platform;
+        return true;
     }
+    std::string getPlatform() { return systemPlatform; }
 
     std::string systemSerial = "";
     std::string getSystemSerial() {
@@ -79,7 +81,6 @@ namespace Vital::System {
         clientTick = clientTick ? clientTick : getApplicationTick();
         return getSystemTick() - clientTick;
     }
-
     bool resetClientTick() {
         clientTick = getApplicationTick();
         return true;

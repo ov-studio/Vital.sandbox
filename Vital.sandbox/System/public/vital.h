@@ -25,6 +25,7 @@
 ////////////////////
 
 namespace Vital::System {
+    extern bool setPlatform(const std::string& platform);
     extern std::string getPlatform();
     extern std::string getSystemSerial();
     extern unsigned int getSystemTick();
