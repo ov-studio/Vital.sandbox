@@ -21,6 +21,6 @@
 /////////////////////////
 
 namespace Vital::Type::Event {
-    typedef std::vector<std::string> Arguments;
+    typedef std::map<std::string, std::string> Arguments;
     typedef std::function<void(Arguments)> Handler;
 }

@@ -26,19 +26,19 @@ namespace Vital::System::Event {
 
     bool bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
         if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::Handler, bool> {});
-        instance[identifier].emplace(exec, true);
+        instance.at(identifier).emplace(exec, true);
         return true;
     }
     bool unbind(const std::string& identifier, Vital::Type::Event::Handler exec) {
         if (isInstance(identifier)) {
-            instance[identifier].erase(exec);
-            if (instance[identifier].empty()) instance.erase(identifier);
+            instance.at(identifier).erase(exec);
+            if (instance.at(identifier).empty()) instance.erase(identifier);
         }
         return true;
     }
     bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
         if (isInstance(identifier)) {
-            for (auto& i : instance[identifier]) {
+            for (auto& i : instance.at(identifier)) {
                 i.first(arguments); 
             }
         }
