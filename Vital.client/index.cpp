@@ -72,8 +72,8 @@ int main() {
     */
 
     do {
-        Vital::System::Audio::update();
         Vital::System::Network::update();
+        Vital::System::Audio::update();
     } while (true);
     return 1;
 }
