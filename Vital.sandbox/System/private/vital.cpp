@@ -42,7 +42,7 @@ namespace Vital::System {
             auto gpu = Vital::System::Inspect::gpu();
             auto memory = Vital::System::Inspect::memory();
             auto network = Vital::System::Inspect::network();
-            //auto disk = Vital::System::Inspect::disk();
+            auto disk = Vital::System::Inspect::disk();
             systemSerial = "[";
             systemSerial += "\n\tSystem: " + Vital::System::Crypto::hash("SHA256", std::string(system.hardware_id.begin(), system.hardware_id.end())) + ",";
             systemSerial += "\n\tOS: " + Vital::System::Crypto::hash("SHA256", std::string(system.os_serial.begin(), system.os_serial.end())) + ",";
@@ -54,9 +54,9 @@ namespace Vital::System {
             for (int i = 0; i < network.size(); i++) {
                 if (network.at(i).mac != L"-") systemSerial += "\n\tNetwork: " + Vital::System::Crypto::hash("SHA256", std::string(network.at(i).mac.begin(), network.at(i).mac.end())) + ",";
             }
-            //for (int i = 0; i < disk.size(); i++) {
-                //systemSerial += L"\n\tDisk: " + disk.at(i).serial + L",";
-            //}
+            for (int i = 0; i < disk.size(); i++) {
+                systemSerial += "\n\tDisk: " + Vital::System::Crypto::hash("SHA256", std::string(disk.at(i).serial.begin(), disk.at(i).serial.end())) + ",";
+            }
             systemSerial = systemSerial.substr(0, systemSerial.size() - 1);
             systemSerial += "\n]";
         }
