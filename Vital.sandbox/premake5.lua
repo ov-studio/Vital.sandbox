@@ -14,7 +14,7 @@ project "Vital.sandbox"
     }
 
     filter "system:windows"
-        links { "wbemuuid" }
+        links { "ws2_32", "winmm", "wbemuuid" }
     filter "configurations:Debug"
         links { "Vendor/openssl/lib/%{cfg.platform}/Debug/libcrypto.lib", "Vendor/openssl/lib/%{cfg.platform}/Debug/libssl.lib", "Vendor/fmod/lib/%{cfg.platform}/fmodL_vc.lib", "ws2_32", "crypt32" }
         postbuildcommands {
