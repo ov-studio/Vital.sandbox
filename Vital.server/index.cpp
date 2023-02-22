@@ -26,7 +26,7 @@
 
 int main() {
     Vital::System::setPlatform("server");
-    Vital::System::Network::create(Vital::Type::Network::Address{"127.0.0.1", 22003});
+    Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
