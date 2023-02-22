@@ -33,10 +33,9 @@ namespace Vital::System {
         #endif
     }
 
-    std::string systemSerial = L"";
+    std::string systemSerial = "";
     std::string getSystemSerial() {
         if (systemSerial.empty() && (getPlatform() == "client")) {
-            std::cout << "Generating..";
             auto system = Vital::System::Inspect::system();
             auto smbios = Vital::System::Inspect::smbios();
             auto cpu = Vital::System::Inspect::cpu();
@@ -61,6 +60,7 @@ namespace Vital::System {
             systemSerial = systemSerial.substr(0, systemSerial.size() - 1);
             systemSerial += "\n]";
         }
+        if (systemSerial.empty()) throw ErrorCode["serial-nonexistent"];
         return systemSerial;
     }
 
