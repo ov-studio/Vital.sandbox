@@ -21,13 +21,22 @@
 ///////////////////////////
 
 namespace Vital::System::Network {
-    extern bool isConnected();
-    extern bool create(Vital::Type::Network::Address address);
-    extern bool destroy();
+    // Managers //
+    extern bool start(Vital::Type::Network::Address address);
+    extern bool stop();
     extern bool update();
+
+    // Checkers //
+    extern bool isConnected();
+
+    // Setters //
     extern bool setPeerLimit(int limit);
-    extern int getPeerLimit();
     extern bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit);
-    extern bool emit(const std::string& buffer, Vital::Type::Network::PeerID peer = 0);
+
+    // Getters //
+    extern int getPeerLimit();
     extern Vital::Type::Network::Bandwidth getBandwidthLimit();
+
+    // Utils //
+    extern bool emit(const std::string& message, Vital::Type::Network::PeerID peer = 0);
 }
