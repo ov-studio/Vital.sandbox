@@ -117,10 +117,10 @@ namespace Vital::System::Network {
     bool emit(const std::string& message, Vital::Type::Network::PeerID peer) {
         if (!isConnected()) return false;
         const std::string buffer = Vital::System::Crypto::encode(message);
-        if ((Vital::System::getPlatform() == "client") || (peer <= 0)) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
+        if ((Vital::System::getPlatform() == "client") || (peer <= 0)) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
         else {
             if (!networkPeers[peer]) return false;
-            enet_peer_send(networkPeers[peer], 0, enet_packet_create(buffer.c_str(), buffer.size() + 1, ENET_PACKET_FLAG_RELIABLE));
+            enet_peer_send(networkPeers[peer], 0, enet_packet_create(buffer.c_str(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
         }
         return true;
     }
