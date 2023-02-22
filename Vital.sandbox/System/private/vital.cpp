@@ -21,10 +21,9 @@
 // Vital: System //
 ////////////////////
 
-namespace Vital::System {
-    std::wstring systemSerial = L"-";
-    unsigned int applicationTick, clientTick;
+#define vSDK_Client true
 
+namespace Vital::System {
     std::string getPlatform() {
         #if defined(vSDK_Client) && defined(WINDOWS) 
             return "client";
@@ -33,8 +32,10 @@ namespace Vital::System {
         #endif
     }
 
+    std::wstring systemSerial = L"";
     std::wstring getSystemSerial() {
         if (systemSerial.empty() && (getPlatform() == "client")) {
+            std::cout << "Generating..";
             auto system = Vital::System::Inspect::system();
             auto smbios = Vital::System::Inspect::smbios();
             auto cpu = Vital::System::Inspect::cpu();
@@ -56,7 +57,7 @@ namespace Vital::System {
             for (int i = 0; i < disk.size(); i++) {
                 systemSerial += L"\n\tDisk: " + disk.at(i).serial + L",";
             }
-            // TODO: TRIM LAST `,`
+            systemSerial = systemSerial.substr(0, systemSerial.size() - 1);
             systemSerial += L"\n]";
         }
         return systemSerial;
@@ -66,11 +67,13 @@ namespace Vital::System {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }
 
+    unsigned int applicationTick;
     unsigned int getApplicationTick() {
         applicationTick = applicationTick ? applicationTick : getSystemTick();
         return getSystemTick() - applicationTick;
     }
 
+    unsigned int clientTick;
     unsigned int getClientTick() {
         clientTick = clientTick ? clientTick : getApplicationTick();
         return getSystemTick() - clientTick;
