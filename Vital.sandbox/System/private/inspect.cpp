@@ -25,13 +25,13 @@
 ///////////////////////////
 
 namespace Vital::System::Inspect {
-    template <typename T = int>
+    template<typename T = int>
     T toNumber(std::vector<T> value, int index = 0) {
         return ((index < 0) || (index > value.size())) ? 0 : value.at(index);
     }
 
     std::wstring toString(std::vector<const wchar_t*> value, int index = 0, bool clipWhitespaces = false) {
-        auto result = std::wstring(((index < 0) || (index > value.size()) || (value.at(index) == nullptr)) ? L"" : value.at(index));
+        auto result = std::wstring(((index < 0) || (index > value.size()) || (value.size() <= 0) || (value.at(index) == nullptr)) ? L"" : value.at(index));
         if (clipWhitespaces) result.erase(std::remove(result.begin(), result.end(), L' '), result.end());
         result = result.length() <= 0 ? L"-" : result;
         return result;
@@ -46,7 +46,7 @@ namespace Vital::System::Inspect {
         return toString({ queryResult.c_str() });
     }
 
-    template <typename T = const wchar_t*>
+    template<typename T = const wchar_t*>
     std::vector<T> queryWMI(const std::wstring& className, const std::wstring& fieldName, std::vector<T> queryResult = {}, const wchar_t* serverName = L"ROOT\\CIMV2") {
         int queryStage = 0;
         IWbemLocator* locator;
