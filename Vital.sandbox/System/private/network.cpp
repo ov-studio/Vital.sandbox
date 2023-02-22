@@ -99,22 +99,18 @@ namespace Vital::System::Network {
         return true;
     }
 
-    // Checkers //
+    // APIs //
     bool isConnected() { return networkInstance ? true : false; }
-
-    // Setters //
     bool setPeerLimit(int limit) {
         if (Vital::System::getPlatform() != "server") return false;
         peerLimit = limit;
         return true;
     }
+    int getPeerLimit() { return Vital::System::getPlatform() == "server" ? peerLimit : 1; }
     bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit) {
         bandwidthLimit = limit;
         return true;
     }
-
-    // Getters //
-    int getPeerLimit() { return Vital::System::getPlatform() == "server" ? peerLimit : 1; }
     Vital::Type::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
 
     // Utils //

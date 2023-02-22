@@ -26,15 +26,11 @@ namespace Vital::System::Network {
     extern bool stop();
     extern bool update();
 
-    // Checkers //
+    // APIs //
     extern bool isConnected();
-
-    // Setters //
     extern bool setPeerLimit(int limit);
-    extern bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit);
-
-    // Getters //
     extern int getPeerLimit();
+    extern bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit);
     extern Vital::Type::Network::Bandwidth getBandwidthLimit();
 
     // Utils //
