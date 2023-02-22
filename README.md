@@ -24,6 +24,7 @@
 * Built-In File System
 * Built-In Crypto System
 * Built-In Inspect System
+* Built-In Event System
 * Built-In Network System
 * Built-In Audio System
 * Necessary Integration APIs
