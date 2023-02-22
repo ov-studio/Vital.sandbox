@@ -5,6 +5,7 @@ workspace "Vital.sandbox"
     outputdir = "%{cfg.system}-%{cfg.platform}-%{cfg.buildcfg}"
     include "Vital.bundler"
     include "Vital.sandbox"
+    include "Vital.client"
 
     filter "system:windows"
         defines { "WINDOWS", "WIN32" }
