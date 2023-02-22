@@ -40,6 +40,7 @@ namespace Vital::System::Network {
         enet_address_set_host(&networkAddress, address.host.c_str());
         networkAddress.port = static_cast<enet_uint16>(address.port);
         if (Vital::System::getPlatform() == "client") {
+            auto bandwidthLimit = getBandwidthLimit();
             networkInstance = enet_host_create(NULL, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing);
             networkPeer = enet_host_connect(networkInstance, &networkAddress, 2, 0);
         }
