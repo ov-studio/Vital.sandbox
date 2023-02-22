@@ -27,6 +27,7 @@
 
 int main() {
     Vital::System::setPlatform("client");
+    std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
     Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
     Vital::System::Audio::start();
@@ -36,7 +37,6 @@ int main() {
     });
 
     std::string rwString = R"(
-        print("\n")
         local buffer = "test"
         --print(crypto.decode(buffer))
         --local testSound = sound.create("C:/Users/Tron/Documents/GITs/Test/Bells.mp3")
