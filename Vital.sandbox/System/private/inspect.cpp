@@ -48,54 +48,38 @@ namespace Vital::System::Inspect {
 
     template<typename T = const wchar_t*>
     std::vector<T> queryWMI(const std::wstring& className, const std::wstring& fieldName, std::vector<T> queryResult = {}, const wchar_t* serverName = L"ROOT\\CIMV2") {
-        int queryStage = 0;
         IWbemLocator* locator;
         IWbemServices* services;
         IEnumWbemClassObject* enumerator;
         HRESULT queryState = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        if (!FAILED(queryState)) {
-            queryStage = 1;
-            queryState = CoInitializeSecurity(nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE, nullptr);
-            if (!FAILED(queryState)) {
-                queryState = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<PVOID*>(&locator));
-                queryStage = 2;
-                queryState = locator -> ConnectServer(_bstr_t(serverName), nullptr, nullptr, nullptr, NULL, nullptr, nullptr, &services);
-                if (!FAILED(queryState)) {
-                    queryStage = 3;
-                    queryState = CoSetProxyBlanket(services, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
-                    if (!FAILED(queryState)) {
-                        std::wstring queryString(L"SELECT ");
-                        queryString.append(fieldName.c_str()).append(L" FROM ").append(className.c_str());
-                        queryState = services -> ExecQuery(bstr_t(L"WQL"), bstr_t(queryString.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &enumerator);
-                        if (!FAILED(queryState)) {
-                            queryStage = 4;
-                            IWbemClassObject* queryObject;
-                            VARIANT queryVariant {};
-                            DWORD queryReturn;
-                            while (enumerator) {
-                                HRESULT result = enumerator -> Next(WBEM_INFINITE, 1, &queryObject, &queryReturn);
-                                if (!queryReturn) break;
-                                result = queryObject -> Get(fieldName.c_str(), 0, &queryVariant, nullptr, nullptr);
-                                if (typeid(T) == typeid(long) || typeid(T) == typeid(int)) queryResult.push_back((T)queryVariant.intVal);
-                                else if (typeid(T) == typeid(bool)) queryResult.push_back((T)queryVariant.boolVal);
-                                else if (typeid(T) == typeid(unsigned int)) queryResult.push_back((T)queryVariant.uintVal);
-                                else if (typeid(T) == typeid(unsigned short)) queryResult.push_back((T)queryVariant.uiVal);
-                                else if (typeid(T) == typeid(long long)) queryResult.push_back((T)queryVariant.llVal);
-                                else if (typeid(T) == typeid(unsigned long long)) queryResult.push_back((T)queryVariant.ullVal);
-                                else queryResult.push_back((T)((bstr_t)queryVariant.bstrVal).copy());
-                                VariantClear(&queryVariant);
-                                queryObject -> Release();
-                            }
-                        }
-                    }
-                }
-            }
+        queryState = CoInitializeSecurity(nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE, nullptr);
+        queryState = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<PVOID*>(&locator));
+        queryState = locator -> ConnectServer(_bstr_t(serverName), nullptr, nullptr, nullptr, NULL, nullptr, nullptr, &services);
+        queryState = CoSetProxyBlanket(services, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
+        std::wstring queryString = L"SELECT ";
+        queryString.append(fieldName.c_str()).append(L" FROM ").append(className.c_str());
+        queryState = services -> ExecQuery(bstr_t(L"WQL"), bstr_t(queryString.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &enumerator);
+        IWbemClassObject* queryObject;
+        VARIANT queryVariant {};
+        DWORD queryReturn;
+        while (enumerator) {
+            HRESULT result = enumerator -> Next(WBEM_INFINITE, 1, &queryObject, &queryReturn);
+            if (!queryReturn) break;
+            result = queryObject -> Get(fieldName.c_str(), 0, &queryVariant, nullptr, nullptr);
+            if (typeid(T) == typeid(long) || typeid(T) == typeid(int)) queryResult.push_back((T)queryVariant.intVal);
+            else if (typeid(T) == typeid(bool)) queryResult.push_back((T)queryVariant.boolVal);
+            else if (typeid(T) == typeid(unsigned int)) queryResult.push_back((T)queryVariant.uintVal);
+            else if (typeid(T) == typeid(unsigned short)) queryResult.push_back((T)queryVariant.uiVal);
+            else if (typeid(T) == typeid(long long)) queryResult.push_back((T)queryVariant.llVal);
+            else if (typeid(T) == typeid(unsigned long long)) queryResult.push_back((T)queryVariant.ullVal);
+            else queryResult.push_back((T)((bstr_t)queryVariant.bstrVal).copy());
+            VariantClear(&queryVariant);
+            queryObject -> Release();
         }
-        if (FAILED(queryState)) queryResult.resize(0);
-        if (queryStage > 3) enumerator -> Release();
-        if (queryStage > 2) services -> Release();
-        if (queryStage > 1) locator -> Release();
-        if (queryStage > 0) CoUninitialize();
+        enumerator -> Release();
+        services -> Release();
+        locator -> Release();
+        CoUninitialize();
         return queryResult;
     }
 
