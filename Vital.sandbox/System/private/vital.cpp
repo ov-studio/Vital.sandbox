@@ -44,18 +44,18 @@ namespace Vital::System {
             auto network = Vital::System::Inspect::network();
             auto disk = Vital::System::Inspect::disk();
             systemSerial = "[";
-            systemSerial += "\n\tSystem: " + Vital::System::Crypto::hash("SHA256", std::string(system.hardware_id.begin(), system.hardware_id.end())) + ",";
-            systemSerial += "\n\tOS: " + Vital::System::Crypto::hash("SHA256", std::string(system.os_serial.begin(), system.os_serial.end())) + ",";
-            systemSerial += "\n\tSMBIOS: " + Vital::System::Crypto::hash("SHA256", std::string(smbios.serial.begin(), smbios.serial.end())) + ",";
-            systemSerial += "\n\tCPU: " + Vital::System::Crypto::hash("SHA256", std::string(cpu.id.begin(), cpu.id.end())) + ",";
+            systemSerial += "\n\t\"System: " + Vital::System::Crypto::hash("SHA256", std::string(system.hardware_id.begin(), system.hardware_id.end())) + "\",";
+            systemSerial += "\n\t\"OS: " + Vital::System::Crypto::hash("SHA256", std::string(system.os_serial.begin(), system.os_serial.end())) + "\",";
+            systemSerial += "\n\t\"SMBIOS: " + Vital::System::Crypto::hash("SHA256", std::string(smbios.serial.begin(), smbios.serial.end())) + "\",";
+            systemSerial += "\n\t\"CPU: " + Vital::System::Crypto::hash("SHA256", std::string(cpu.id.begin(), cpu.id.end())) + "\",";
             for (int i = 0; i < memory.size(); i++) {
-                systemSerial += "\n\tMemory: " + Vital::System::Crypto::hash("SHA256", std::string(memory.at(i).serial.begin(), memory.at(i).serial.end())) + ",";
+                systemSerial += "\n\t\"Memory: " + Vital::System::Crypto::hash("SHA256", std::string(memory.at(i).serial.begin(), memory.at(i).serial.end())) + "\",";
             }
             for (int i = 0; i < network.size(); i++) {
-                if (network.at(i).mac != L"-") systemSerial += "\n\tNetwork: " + Vital::System::Crypto::hash("SHA256", std::string(network.at(i).mac.begin(), network.at(i).mac.end())) + ",";
+                if (network.at(i).mac != L"-") systemSerial += "\n\t\"Network: " + Vital::System::Crypto::hash("SHA256", std::string(network.at(i).mac.begin(), network.at(i).mac.end())) + "\",";
             }
             for (int i = 0; i < disk.size(); i++) {
-                systemSerial += "\n\tDisk: " + Vital::System::Crypto::hash("SHA256", std::string(disk.at(i).serial.begin(), disk.at(i).serial.end())) + ",";
+                systemSerial += "\n\t\"Disk: " + Vital::System::Crypto::hash("SHA256", std::string(disk.at(i).serial.begin(), disk.at(i).serial.end())) + "\",";
             }
             systemSerial = systemSerial.substr(0, systemSerial.size() - 1);
             systemSerial += "\n]";
