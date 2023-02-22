@@ -2,7 +2,7 @@ project "Vital.server"
     language "C++"
     cppdialect "C++17"
     kind "ConsoleApp"
-    targetdir ("../.build/"..outputdir.."/%{prj.name}")
+    targetdir ("../.build/"..outputdir.."/Vital.multiplayer")
     objdir ("../.output/"..outputdir.."/%{prj.name}")
     includedirs { ".", "../Vital.sandbox" }
     links { "Vital.sandbox" }
