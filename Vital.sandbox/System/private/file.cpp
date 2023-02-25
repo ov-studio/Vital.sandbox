@@ -45,13 +45,12 @@ namespace Vital::System::File {
         resolve(path);
         if (!exists(path)) throw ErrorCode["file-nonexistent"];
         std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
-        auto bytes = std::filesystem::file_size(path);
-        char* buffer = new char[(bytes + 1)];
+        auto size = std::filesystem::file_size(path);
+        char* buffer = new char[size];
         handle.seekg(0, std::ios::beg);
-        handle.read(buffer, bytes);
+        handle.read(buffer, size);
         handle.close();
-        buffer[bytes] = 0;
-        std::string result = buffer;
+        auto result = std::string(buffer, size);
         delete[] buffer;
         return result;
     }
