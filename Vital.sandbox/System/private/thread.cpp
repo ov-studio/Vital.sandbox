@@ -23,19 +23,31 @@
 namespace Vital::System::Thread {
     // Instantiators //
     std::map<vital_thread*, bool> instance;
-    bool isInstance(vital_thread* ref) { return instance[ref] ? ref : false; }
+    std::map<std::thread::id, vital_thread*> instance_ref;
+    bool isInstance(vital_thread* ref) { return instance.find(ref) != instance.end(); }
+    vital_thread* fetchThread() {
+        std::thread::id threadID = std::this_thread::get_id();
+        if (instance_ref.find(threadID) != instance_ref.end()) {
+
+        }
+        return nullptr;
+    }
     create::create(std::function<void()> exec) {
         instance.emplace(this, true);
         thread = std::thread(exec);
     }
     create::~create() {
+        std::thread::id threadID = std::this_thread::get_id();
         instance.erase(this);
+        instance_ref.erase(threadID);
         if (thread.joinable()) thread.detach();
     }
 
     // Utils //
     void create::sleep(int duration) {
         if (duration < 0) return;
+        auto thread = fetchThread();
+        if (!thread) return;
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
     void create::join() { thread.join(); }

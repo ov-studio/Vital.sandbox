@@ -35,4 +35,5 @@ namespace Vital::System::Thread {
     };
     typedef create vital_thread;
     extern bool isInstance(vital_thread* ref);
+    extern vital_thread* fetchThread();
 }
