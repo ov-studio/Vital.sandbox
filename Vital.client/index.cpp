@@ -33,12 +33,11 @@ int main() {
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Event::Arguments args){
         std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
     });
-
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Event::Arguments args){
         std::cout << "EXECUTED SUBSCRIBED EVENT 2!";
     });
-
     Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
+
     Vital::System::Audio::start();
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
