@@ -35,7 +35,7 @@ namespace Vital::Sandbox::JS {
             setNil();
             setGlobal(i);
         }
-        for (auto i : API::vmBind) {
+        for (auto& i : API::vmBind) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/js/module/bundle.h>)
