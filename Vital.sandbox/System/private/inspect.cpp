@@ -27,11 +27,11 @@
 namespace Vital::System::Inspect {
     template<typename T = int>
     T toNumber(std::vector<T> value, int index = 0) {
-        return ((index < 0) || (index > value.size()) || (value.size() <= 0)) ? 0 : value.at(index);
+        return ((index < 0) || value.empty() || (index > value.size())) ? 0 : value.at(index);
     }
 
     std::wstring toString(std::vector<const wchar_t*> value, int index = 0, bool clipWhitespaces = false) {
-        auto result = std::wstring(((index < 0) || (index > value.size()) || (value.size() <= 0) || (value.at(index) == nullptr)) ? L"" : value.at(index));
+        auto result = std::wstring(((index < 0) || value.empty() || (index > value.size()) || (value.at(index) == nullptr)) ? L"" : value.at(index));
         if (clipWhitespaces) result.erase(std::remove(result.begin(), result.end(), L' '), result.end());
         result = result.length() <= 0 ? L"-" : result;
         return result;
