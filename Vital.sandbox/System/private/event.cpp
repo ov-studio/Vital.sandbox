@@ -21,12 +21,12 @@
 /////////////////////////
 
 namespace Vital::System::Event {
-    std::map<std::string, std::map<Vital::Type::Event::Handler*, bool>> instance;
+    std::map<std::string, std::map<Vital::Type::Event::Handler*, Vital::Type::Event::Handler>> instance;
     bool isInstance(const std::string& identifier) { return instance.find(identifier) != instance.end(); }
 
     bool bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
-        if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::Handler*, bool> {});
-        instance.at(identifier).emplace(&exec, true);
+        if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::Handler*, Vital::Type::Event::Handler> {});
+        instance.at(identifier).emplace(&exec, exec);
         return true;
     }
     bool unbind(const std::string& identifier, Vital::Type::Event::Handler exec) {
@@ -39,7 +39,7 @@ namespace Vital::System::Event {
     bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
         if (isInstance(identifier)) {
             for (const auto& i : instance.at(identifier)) {
-                (*i.first)(arguments); 
+                i.second(); 
             }
         }
         return true;
