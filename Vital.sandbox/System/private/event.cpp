@@ -31,15 +31,20 @@ namespace Vital::System::Event {
     }
     bool unbind(const std::string& identifier, Vital::Type::Event::Handler exec) {
         if (isInstance(identifier)) {
-            auto iterator = std::find(instance.at(identifier).begin(), instance.at(identifier).end(), exec);
-            if (iterator != instance.at(identifier).end()) instance.at(identifier).erase(instance.at(identifier).begin() + static_cast<int>(iterator - instance.at(identifier).begin()) - 1);
+            for (int i = 0; instance.at(identifier).size(); i++) {
+                if (&instance.at(identifier).at(i) == &exec) {
+                    std::cout << "removed from index: " << i;
+                    instance.at(identifier).erase(instance.at(identifier).begin() + i - 1);
+                    break;
+                }
+            }
             if (instance.at(identifier).empty()) instance.erase(identifier);
         }
         return true;
     }
     bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
         if (isInstance(identifier)) {
-            for (auto& i : instance.at(identifier)) {
+            for (const auto& i : instance.at(identifier)) {
                 i(arguments); 
             }
         }
