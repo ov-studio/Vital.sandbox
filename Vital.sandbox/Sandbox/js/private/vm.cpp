@@ -27,7 +27,7 @@
 namespace Vital::Sandbox::JS {
     // Instantiators //
     std::map<vital_ref*, vital_vm*> instance;
-    vital_vm* fetchVM(vital_ref* vm) { return instance[vm]; }
+    vital_vm* fetchVM(vital_ref* vm) { return instance.find(vm) != instance.end() ? instance.at(vm) : nullptr; }
     create::create() {
         vm = duk_create_heap_default();
         instance.emplace(vm, this);
@@ -35,7 +35,7 @@ namespace Vital::Sandbox::JS {
             setNil();
             setGlobal(i);
         }
-        for (auto i : API::vmBinds) {
+        for (auto i : API::vmBind) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/js/module/bundle.h>)

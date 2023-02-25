@@ -27,7 +27,7 @@
 namespace Vital::Sandbox::Lua {
     // Instantiators //
     std::map<lua_State*, vital_vm*> instance;
-    vital_vm* fetchVM(vital_ref* vm) { return instance[vm]; }
+    vital_vm* fetchVM(vital_ref* vm) { return instance.find(vm) != instance.end() ? instance.at(vm) : nullptr; }
     create::create() {
         vm = luaL_newstate();
         instance.emplace(vm, this);
@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vmBinds) {
+        for (auto& i : API::vmBind) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/lua/module/bundle.h>)
