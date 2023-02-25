@@ -59,6 +59,6 @@ namespace Vital::Type::Event {
             typeid(long double).name():
                 return reinterpret_cast<long double>(arg.first);
         }
-        throw "WRONG VALUE";
+        throw ErrorCode["invalid-arguments"];
     }
 }
