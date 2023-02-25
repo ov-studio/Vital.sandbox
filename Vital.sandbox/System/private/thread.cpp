@@ -34,5 +34,9 @@ namespace Vital::System::Thread {
     }
 
     // Utils //
+    void create::sleep(int duration) {
+        if (duration < 0) return;
+        std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+    }
     void create::join() { thread.join(); }
 }

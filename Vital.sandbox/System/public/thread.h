@@ -30,6 +30,7 @@ namespace Vital::System::Thread {
             ~create();
 
             // Utils//
+            void sleep(int duration);
             void join();
     };
     typedef create vital_thread;
