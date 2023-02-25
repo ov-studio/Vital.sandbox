@@ -27,10 +27,7 @@ namespace Vital::System::Thread {
     bool isInstance(vital_thread* ref) { return instance.find(ref) != instance.end(); }
     vital_thread* fetchThread() {
         std::thread::id threadID = std::this_thread::get_id();
-        if (instance_ref.find(threadID) != instance_ref.end()) {
-
-        }
-        return nullptr;
+        return instance_ref.find(threadID) != instance_ref.end() ? instance_ref.at(threadID) : nullptr;
     }
     create::create(std::function<void()> exec) {
         instance.emplace(this, true);
@@ -47,7 +44,7 @@ namespace Vital::System::Thread {
     void create::sleep(int duration) {
         if (duration < 0) return;
         auto thread = fetchThread();
-        if (!thread) return;
+        if (!thread || (thread != this)) return;
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
     void create::join() { thread.join(); }
