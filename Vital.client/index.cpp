@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <System/public/event.h>
 #include <System/public/network.h>
 #include <System/public/audio.h>
 #include <Sandbox/lua/public/api.h>
