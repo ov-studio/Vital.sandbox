@@ -67,7 +67,7 @@ namespace Vital::System::File {
     std::vector<std::string> contents(std::string& path, bool fetchDirs) {
         resolve(path);
         std::vector<std::string> result;
-        for (auto& entry : std::filesystem::directory_iterator(path)) {
+        for (const auto& entry : std::filesystem::directory_iterator(path)) {
             auto& path = entry.path();
             bool isDir = std::filesystem::is_directory(path);
             if (fetchDirs == isDir) result.push_back(path.filename().string());

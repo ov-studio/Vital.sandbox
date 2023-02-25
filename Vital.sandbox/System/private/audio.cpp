@@ -40,7 +40,7 @@ namespace Vital::System::Audio {
     }
     bool stop() {
         if (!system) return false;
-        for (auto& i : Vital::System::Audio::Sound::instance) {
+        for (const auto& i : Vital::System::Audio::Sound::instance) {
             delete i.first;
         }
         system -> release();

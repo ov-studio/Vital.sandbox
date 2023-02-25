@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vmBind) {
+        for (const auto& i : API::vmBind) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/lua/module/bundle.h>)

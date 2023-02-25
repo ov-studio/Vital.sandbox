@@ -96,7 +96,7 @@ namespace Vital::Sandbox::Lua::API {
                 std::string path = vm -> getString(1);
                 bool fetchDirs = vm -> isBool(2) ? vm -> getBool(2) : false;
                 vm -> createTable();
-                for (auto& i : Vital::System::File::contents(path, fetchDirs)) {
+                for (const auto& i : Vital::System::File::contents(path, fetchDirs)) {
                     vm -> pushString(i);
                 }
                 return 1;
