@@ -40,7 +40,7 @@ namespace Vital::System::Event {
     bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
         if (isInstance(identifier)) {
             for (const auto i : instance.at(identifier)) {
-                (i.second)(); 
+                (i.second)(arguments); 
             }
         }
         return true;

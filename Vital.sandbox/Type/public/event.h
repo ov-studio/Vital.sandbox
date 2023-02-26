@@ -64,7 +64,7 @@ namespace Vital::Type::Event {
     };
     typedef std::map<std::string, Argument> Arguments;
     typedef unsigned long HandleID;
-    typedef std::function<void()> Handler;
+    typedef std::function<void(Arguments)> Handler;
     typedef struct {
         const std::function<void()> unbind;
     } Handle;
