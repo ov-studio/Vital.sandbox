@@ -24,19 +24,25 @@
 // Root //
 //////////
 
-
-
 int main() {
     Vital::System::setPlatform("client");
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
 
-    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Event::Arguments args){
+
+    Vital::System::Event::bind("Network:@PeerMessage", []() -> void {
         std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
+            //std::cout << "\nMessage: " << args.at("message").value(void);
     });
-    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Event::Arguments args){
-        std::cout << "EXECUTED SUBSCRIBED EVENT 2!";
+    auto test2 = Vital::System::Event::bind("Network:@PeerMessage", []() -> void {
+        std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
+            //std::cout << "\nMessage: " << args.at("message").value(void);
     });
+    Vital::System::Event::bind("Network:@PeerMessage", []() -> void {
+        std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
+            //std::cout << "\nMessage: " << args.at("message").value(void);
+    });
+    test2.unbind();
     Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
 
     Vital::System::Audio::start();
