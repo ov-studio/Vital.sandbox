@@ -21,25 +21,26 @@
 /////////////////////////
 
 namespace Vital::System::Event {
-    std::map<std::string, std::map<Vital::Type::Event::Handler*, bool>> instance;
+    Vital::Type::Event::HandleID handleID = 0;
+    std::map<std::string, std::map<Vital::Type::Event::HandleID, Vital::Type::Event::Handler>> instance;
     bool isInstance(const std::string& identifier) { return instance.find(identifier) != instance.end(); }
 
-    bool bind(const std::string& identifier, Vital::Type::Event::Handler& exec) {
-        if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::Handler*, bool> {});
-        instance.at(identifier).emplace(&exec, true);
-        return true;
-    }
-    bool unbind(const std::string& identifier, Vital::Type::Event::Handler& exec) {
-        if (isInstance(identifier)) {
-            instance.at(identifier).erase(&exec);
-            if (instance.at(identifier).empty()) instance.erase(identifier);
-        }
-        return true;
+    Vital::Type::Event::Handle bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
+        if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::HandleID, Vital::Type::Event::Handler> {});
+        handleID++;
+        instance.at(identifier).emplace(handleID, exec);
+        auto __handleID = handleID;
+        return {
+            [=]() -> void {
+                instance.at(identifier).erase(__handleID);
+                if (instance.at(identifier).empty()) instance.erase(identifier);
+            }
+        };
     }
     bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
         if (isInstance(identifier)) {
             for (const auto i : instance.at(identifier)) {
-                (*i.first)(arguments); 
+                (i.second)(); 
             }
         }
         return true;
