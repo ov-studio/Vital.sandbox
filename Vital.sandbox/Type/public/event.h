@@ -37,7 +37,7 @@ namespace Vital::Type::Event {
             inline Argument(long double arg) { buffer = arg, type = std::string(typeid(arg).name()); }
 
             template<typename T>
-            T value() {
+            inline T value() {
                 switch(type) {
                     typeid(const std::string&).name():
                         return buffer;
@@ -63,5 +63,9 @@ namespace Vital::Type::Event {
             }
     };
     typedef std::map<std::string, Argument> Arguments;
-    typedef std::function<void(Arguments)> Handler;
+    typedef unsigned long HandleID;
+    typedef std::function<void()> Handler;
+    typedef struct {
+        const std::function<void()> unbind;
+    } Handle;
 }
