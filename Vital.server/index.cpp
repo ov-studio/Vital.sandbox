@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <System/public/event.h>
 #include <System/public/network.h>
 #include <Sandbox/lua/public/api.h>
 #include <Sandbox/js/public/api.h>
@@ -27,7 +28,18 @@
 int main() {
     Vital::System::setPlatform("server");
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
+
+    Vital::System::Event::bind("Network:@PeerConnection", [](Vital::Type::Stack::Instance arguments) -> void {
+        std::cout << "\n[Client - " << arguments.getString("peerID") << "]: Connected";
+    });
+    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
+        std::cout << "\n[Client - " << arguments.getString("peerID") << "]: " << arguments.getString("message");
+    });
+    Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
+        std::cout << "\n[Client - " << arguments.getString("peerID") << "]: Disconnected";
+    });
     Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
+
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;

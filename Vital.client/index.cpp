@@ -29,13 +29,11 @@ int main() {
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
 
-
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
-        std::cout << "\nEXECUTED SUBSCRIBED EVENT 1!";
-        auto arg = arguments.getString("message");
-        std::cout << "\nMessage is: " << arg;
-        //auto result = arg.testvalue();
-        //std::cout << "\nMessage: " << arguments.at("message").value();
+        std::cout << "\n[Server]: " << arguments.getString("message");
+    });
+    Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
+        std::cout << "\n[Server]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
 
