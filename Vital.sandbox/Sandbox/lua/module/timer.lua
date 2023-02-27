@@ -15,8 +15,7 @@
 local imports = {
     type = type,
     tonumber = tonumber,
-    coroutine = coroutine,
-    math = math
+    coroutine = coroutine
 }
 coroutine = nil
 
@@ -45,7 +44,7 @@ function timer.public:load(exec, interval, executions, ...)
     if not timer.public:isInstance(self) then return false end
     interval, executions = imports.tonumber(interval), imports.tonumber(executions)
     if not exec or (imports.type(exec) ~= "function") or not interval or not executions then return false end
-    interval, executions = imports.math.max(1, interval), imports.math.max(0, executions)
+    interval, executions = math.max(1, interval), math.max(0, executions)
     self.exec = exec
     self.currentExec = 0
     self.interval, self.executions = interval, executions
