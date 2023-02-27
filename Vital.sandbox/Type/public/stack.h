@@ -70,33 +70,33 @@ namespace Vital::Type::Stack {
             std::map<std::string, Value> rwMap;
         public:
             // Checkers //
-            bool isNil(int index = 1);
+            bool isNil(int index = 0);
             bool isNil(const std::string& index);
-            bool isString(int index = 1);
+            bool isString(int index = 0);
             bool isString(const std::string& index);
-            bool isNumber(int index = 1);
+            bool isNumber(int index = 0);
             bool isNumber(const std::string& index);
 
             // Getters //
-            std::string getString(int index = 1);
+            std::string getString(int index = 0);
             std::string getString(const std::string& index);
-            int getInt(int index = 1);
+            int getInt(int index = 0);
             int getInt(const std::string& index);
-            float getFloat(int index = 1);
+            float getFloat(int index = 0);
             float getFloat(const std::string& index);
-            double getDouble(int index = 1);
+            double getDouble(int index = 0);
             double getDouble(const std::string& index);
-            long getLong(int index = 1);
+            long getLong(int index = 0);
             long getLong(const std::string& index);
-            long long getLongLong(int index = 1);
+            long long getLongLong(int index = 0);
             long long getLongLong(const std::string& index);
-            long double getLongDouble(int index = 1);
+            long double getLongDouble(int index = 0);
             long double getLongDouble(const std::string& index);
-            unsigned getUnsigned(int index = 1);
+            unsigned getUnsigned(int index = 0);
             unsigned getUnsigned(const std::string& index);
-            unsigned long getUnsignedLong(int index = 1);
+            unsigned long getUnsignedLong(int index = 0);
             unsigned long getUnsignedLong(const std::string& index);
-            unsigned long long getUnsignedLongLong(int index = 1);
+            unsigned long long getUnsignedLongLong(int index = 0);
             unsigned long long getUnsignedLongLong(const std::string& index);
 
             // Pushers //
@@ -120,5 +120,9 @@ namespace Vital::Type::Stack {
             void push(const std::string& index, unsigned long value);
             void push(unsigned long long value);
             void push(const std::string& index, unsigned long long value);
+
+            // Poppers //
+            void pop(int index = 0);
+            void pop(const std::string& index);
     };
 }
