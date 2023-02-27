@@ -35,6 +35,5 @@ namespace Vital::Type::Timer {
     }
     Instance::~Instance() {
         isUnloaded = true;
-        delete thread;
     }
 }

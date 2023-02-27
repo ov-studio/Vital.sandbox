@@ -25,6 +25,10 @@
 //////////
 
 int main() {
+    Vital::Type::Timer:Instance([](Vital::Type::Timer:Instance* self) -> void {
+        std::cout << "\n C++ timer executed!";
+    }, 1000, 5);
+
     Vital::System::setPlatform("client");
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
