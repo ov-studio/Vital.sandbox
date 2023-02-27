@@ -278,6 +278,6 @@ namespace Vital::Type::Stack {
     void Instance::push(const std::string& index, unsigned long long value) { rwMap.emplace(index, Value(value)); }
 
     // Poppers //
-    void Instance::pop(int index) { rwVector.erase(rwVector.begin() + index); }
+    void Instance::pop(int index) { rwVector.erase(rwVector.begin() + index - 1); }
     void Instance::pop(const std::string& index) { rwMap.erase(index); }
 }
