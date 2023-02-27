@@ -18,6 +18,7 @@
 * Completely Safe & Secure
 * Lightweight & Straightforward
 * Completely Embeddable
+* Built-In Types
 * Built-In VM Modules
 * Built-in Lua APIs
 * Built-in JS APIs
