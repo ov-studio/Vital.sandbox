@@ -24,7 +24,9 @@
 namespace Vital::Type::Timer {
     class Instance {
         private:
-            Vital::Type::Thread::Instance* thread;
+            bool isUnloaded = false;
+            int currentExecutions = 0;
+            int targetInterval, targetExecutions;
         public:
             // Instantiators //
             Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval = 0, int executions = 1);
