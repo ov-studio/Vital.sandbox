@@ -29,6 +29,8 @@ namespace Vital::Type::Thread {
     }
     Instance::Instance(std::function<void(Vital::Type::Thread::Instance*)> exec) {
         thread = std::thread([=]() -> void {
+            std::thread::id threadID = std::this_thread::get_id();
+            instance.emplace(threadID, this);
             exec(this);
         });
     }
