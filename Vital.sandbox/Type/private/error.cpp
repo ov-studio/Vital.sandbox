@@ -21,7 +21,7 @@
 /////////////////////////
 
 std::map<std::string, std::string> Vital::ErrorCode = {
-    {"invalid-values", "Invalid value list"},
+    {"invalid-result", "Invalid result"},
     {"invalid-arguments", "Invalid argument list"},
     {"invalid-thread", "Invalid thread entity"},
     {"invalid-entities", "Invalid entity list"},

@@ -51,11 +51,11 @@ namespace Vital::Type::Stack {
 
     // Getters //
     std::string Value::getString() {
-        if (!isString()) throw ErrorCode["invalid-values"];
+        if (!isString()) throw ErrorCode["invalid-result"];
         return rwString;
     }
     int Value::getInt() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<int>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<int>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<int>(rwDouble);
@@ -67,7 +67,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<int>(rwUnsignedLongLong);
     }
     float Value::getFloat() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<float>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<float>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<float>(rwDouble);
@@ -79,7 +79,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<float>(rwUnsignedLongLong);
     }
     double Value::getDouble() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<double>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<double>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<double>(rwDouble);
@@ -91,7 +91,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<double>(rwUnsignedLongLong);
     }
     long Value::getLong() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<long>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<long>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<long>(rwDouble);
@@ -103,7 +103,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<long>(rwUnsignedLongLong);
     }
     long long Value::getLongLong() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<long long>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<long long>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<long long>(rwDouble);
@@ -115,7 +115,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<long long>(rwUnsignedLongLong);
     }
     long double Value::getLongDouble() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<long double>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<long double>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<long double>(rwDouble);
@@ -127,7 +127,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<long double>(rwUnsignedLongLong);
     }
     unsigned Value::getUnsigned() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<unsigned>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<unsigned>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<unsigned>(rwDouble);
@@ -139,7 +139,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<unsigned>(rwUnsignedLongLong);
     }
     unsigned long Value::getUnsignedLong() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<unsigned long>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<unsigned long>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<unsigned long>(rwDouble);
@@ -151,7 +151,7 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long long).name()) return static_cast<unsigned long>(rwUnsignedLongLong);
     }
     unsigned long long Value::getUnsignedLongLong() {
-        if (!isNumber()) throw ErrorCode["invalid-values"];
+        if (!isNumber()) throw ErrorCode["invalid-result"];
         if (rwType == typeid(int).name()) return static_cast<unsigned long long>(rwInt);
         else if (rwType == typeid(float).name()) return static_cast<unsigned long long>(rwFloat);
         else if (rwType == typeid(double).name()) return static_cast<unsigned long long>(rwDouble);
@@ -172,43 +172,43 @@ namespace Vital::Type::Stack {
 
     // Getters //
     std::string Handle::getString(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getString();
     }
     int Handle::getInt(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getInt();
     }
     float Handle::getFloat(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getFloat();
     }
     double Handle::getDouble(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getDouble();
     }
     long Handle::getLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getLong();
     }
     long long Handle::getLongLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getLongLong();
     }
     long double Handle::getLongDouble(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getLongDouble();
     }
     unsigned Handle::getUnsigned(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getUnsigned();
     }
     unsigned long Handle::getUnsignedLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getUnsignedLong();
     }
     unsigned long long Handle::getUnsignedLongLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-values"];
+        if (isNil(index)) throw ErrorCode["invalid-result"];
         return arguments.at(index).getUnsignedLongLong();
     }
 
