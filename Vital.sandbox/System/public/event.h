@@ -22,5 +22,5 @@
 
 namespace Vital::System::Event {
     extern Vital::Type::Event::Handle bind(const std::string& identifier, Vital::Type::Event::Handler exec);
-    extern bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments = {});
+    extern bool emit(const std::string& identifier, Vital::Type::Stack::Unordered arguments = {});
 }

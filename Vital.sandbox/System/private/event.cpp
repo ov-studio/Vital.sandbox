@@ -37,7 +37,7 @@ namespace Vital::System::Event {
             }
         };
     }
-    bool emit(const std::string& identifier, Vital::Type::Event::Arguments arguments) {
+    bool emit(const std::string& identifier, Vital::Type::Stack::Unordered arguments) {
         if (isInstance(identifier)) {
             for (const auto i : instance.at(identifier)) {
                 (i.second)(arguments); 
