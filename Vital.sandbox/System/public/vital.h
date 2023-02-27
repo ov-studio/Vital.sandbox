@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Type/public/index.h>
+#include <Type/public/stack.h>
 #include <Type/public/inspect.h>
 #include <Type/public/event.h>
 #include <Type/public/network.h>
