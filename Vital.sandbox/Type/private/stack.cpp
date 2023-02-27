@@ -166,7 +166,7 @@ namespace Vital::Type::Stack {
 
 namespace Vital::Type::Stack {
     // Checkers //
-    bool Ordered::isNil(int index) { return values.size() <= index; };
+    bool Ordered::isNil(int index) { return ((index < 0) || values.empty() || (index >= values.size()) && true) || false; };
     bool Ordered::isString(int index) { return (!isNil(index) && values.at(index).isString() && true) || false; }
     bool Ordered::isNumber(int index) { return (!isNil(index) && values.at(index).isNumber() && true) || false; }
 
