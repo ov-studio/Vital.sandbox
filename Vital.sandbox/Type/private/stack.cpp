@@ -213,16 +213,16 @@ namespace Vital::Type::Stack {
     }
 
     // Pushers //
-    void Ordered::push(int index, const std::string& value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, int value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, float value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, double value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, long value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, long long value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, long double value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, unsigned value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, unsigned long value) { values.emplace(index, Value(value)); }
-    void Ordered::push(int index, unsigned long long value) { values.emplace(index, Value(value)); }
+    void Ordered::push(const std::string& value) { values.push_back(Value(value)); }
+    void Ordered::push(int value) { values.push_back(Value(value)); }
+    void Ordered::push(float value) { values.push_back(Value(value)); }
+    void Ordered::push(double value) { values.push_back(Value(value)); }
+    void Ordered::push(long value) { values.push_back(Value(value)); }
+    void Ordered::push(long long value) { values.push_back(Value(value)); }
+    void Ordered::push(long double value) { values.push_back(Value(value)); }
+    void Ordered::push(unsigned value) { values.push_back(Value(value)); }
+    void Ordered::push(unsigned long value) { values.push_back(Value(value)); }
+    void Ordered::push(unsigned long long value) { values.push_back(Value(value)); }
 }
 
 namespace Vital::Type::Stack {

@@ -87,16 +87,16 @@ namespace Vital::Type::Stack {
             unsigned long long getUnsignedLongLong(int index = 1);
 
             // Pushers //
-            void push(int index = 1, const std::string& value);
-            void push(int index = 1, int value);
-            void push(int index = 1, float value);
-            void push(int index = 1, double value);
-            void push(int index = 1, long value);
-            void push(int index = 1, long long value);
-            void push(int index = 1, long double value);
-            void push(int index = 1, unsigned value);
-            void push(int index = 1, unsigned long value);
-            void push(int index = 1, unsigned long long value);
+            void push(const std::string& value);
+            void push(int value);
+            void push(float value);
+            void push(double value);
+            void push(long value);
+            void push(long long value);
+            void push(long double value);
+            void push(unsigned value);
+            void push(unsigned long value);
+            void push(unsigned long long value);
     };
 
     class Unordered {
