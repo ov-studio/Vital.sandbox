@@ -25,7 +25,7 @@
 //////////
 
 int main() {
-    Vital::Type::Timer:Instance([](Vital::Type::Timer:Instance* self) -> void {
+    Vital::Type::Timer::Instance([](Vital::Type::Timer::Instance* self) -> void {
         std::cout << "\n C++ timer executed!";
     }, 1000, 5);
 
