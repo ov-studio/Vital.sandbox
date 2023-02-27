@@ -166,61 +166,122 @@ namespace Vital::Type::Stack {
 
 namespace Vital::Type::Stack {
     // Checkers //
-    bool Handle::isNil(const std::string& index) { return arguments.find(index) == arguments.end(); };
-    bool Handle::isString(const std::string& index) { return (!isNil(index) && arguments.at(index).isString() && true) || false; }
-    bool Handle::isNumber(const std::string& index) { return (!isNil(index) && arguments.at(index).isNumber() && true) || false; }
+    bool Ordered::isNil(int index) { return values.find(index) == values.end(); };
+    bool Ordered::isString(int index) { return (!isNil(index) && values.at(index).isString() && true) || false; }
+    bool Ordered::isNumber(int index) { return (!isNil(index) && values.at(index).isNumber() && true) || false; }
 
     // Getters //
-    std::string Handle::getString(const std::string& index) {
+    std::string Ordered::getString(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getString();
+        return values.at(index).getString();
     }
-    int Handle::getInt(const std::string& index) {
+    int Ordered::getInt(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getInt();
+        return values.at(index).getInt();
     }
-    float Handle::getFloat(const std::string& index) {
+    float Ordered::getFloat(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getFloat();
+        return values.at(index).getFloat();
     }
-    double Handle::getDouble(const std::string& index) {
+    double Ordered::getDouble(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getDouble();
+        return values.at(index).getDouble();
     }
-    long Handle::getLong(const std::string& index) {
+    long Ordered::getLong(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getLong();
+        return values.at(index).getLong();
     }
-    long long Handle::getLongLong(const std::string& index) {
+    long long Ordered::getLongLong(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getLongLong();
+        return values.at(index).getLongLong();
     }
-    long double Handle::getLongDouble(const std::string& index) {
+    long double Ordered::getLongDouble(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getLongDouble();
+        return values.at(index).getLongDouble();
     }
-    unsigned Handle::getUnsigned(const std::string& index) {
+    unsigned Ordered::getUnsigned(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getUnsigned();
+        return values.at(index).getUnsigned();
     }
-    unsigned long Handle::getUnsignedLong(const std::string& index) {
+    unsigned long Ordered::getUnsignedLong(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getUnsignedLong();
+        return values.at(index).getUnsignedLong();
     }
-    unsigned long long Handle::getUnsignedLongLong(const std::string& index) {
+    unsigned long long Ordered::getUnsignedLongLong(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return arguments.at(index).getUnsignedLongLong();
+        return values.at(index).getUnsignedLongLong();
     }
 
     // Pushers //
-    void Handle::push(const std::string& index, const std::string& value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, int value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, float value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, double value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, long value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, long long value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, long double value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, unsigned value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, unsigned long value) { arguments.emplace(index, Value(value)); }
-    void Handle::push(const std::string& index, unsigned long long value) { arguments.emplace(index, Value(value)); }
+    void Ordered::push(int index, const std::string& value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, int value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, float value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, double value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, long value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, long long value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, long double value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, unsigned value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, unsigned long value) { values.emplace(index, Value(value)); }
+    void Ordered::push(int index, unsigned long long value) { values.emplace(index, Value(value)); }
+}
+
+namespace Vital::Type::Stack {
+    // Checkers //
+    bool Unordered::isNil(const std::string& index) { return values.find(index) == values.end(); };
+    bool Unordered::isString(const std::string& index) { return (!isNil(index) && values.at(index).isString() && true) || false; }
+    bool Unordered::isNumber(const std::string& index) { return (!isNil(index) && values.at(index).isNumber() && true) || false; }
+
+    // Getters //
+    std::string Unordered::getString(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getString();
+    }
+    int Unordered::getInt(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getInt();
+    }
+    float Unordered::getFloat(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getFloat();
+    }
+    double Unordered::getDouble(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getDouble();
+    }
+    long Unordered::getLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getLong();
+    }
+    long long Unordered::getLongLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getLongLong();
+    }
+    long double Unordered::getLongDouble(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getLongDouble();
+    }
+    unsigned Unordered::getUnsigned(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getUnsigned();
+    }
+    unsigned long Unordered::getUnsignedLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getUnsignedLong();
+    }
+    unsigned long long Unordered::getUnsignedLongLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return values.at(index).getUnsignedLongLong();
+    }
+
+    // Pushers //
+    void Unordered::push(const std::string& index, const std::string& value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, int value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, float value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, double value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, long value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, long long value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, long double value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, unsigned value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, unsigned long value) { values.emplace(index, Value(value)); }
+    void Unordered::push(const std::string& index, unsigned long long value) { values.emplace(index, Value(value)); }
 }

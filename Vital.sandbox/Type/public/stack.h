@@ -64,9 +64,44 @@ namespace Vital::Type::Stack {
             unsigned long long getUnsignedLongLong();
     };
 
-    class Handle {
+
+    class Ordered {
         private:
-            std::map<std::string, Value> arguments;
+            std::vector<Value> values;
+        public:
+            // Checkers //
+            bool isNil(int index = 1);
+            bool isString(int index = 1);
+            bool isNumber(int index = 1);
+
+            // Getters //
+            std::string getString(int index = 1);
+            int getInt(int index = 1);
+            float getFloat(int index = 1);
+            double getDouble(int index = 1);
+            long getLong(int index = 1);
+            long long getLongLong(int index = 1);
+            long double getLongDouble(int index = 1);
+            unsigned getUnsigned(int index = 1);
+            unsigned long getUnsignedLong(int index = 1);
+            unsigned long long getUnsignedLongLong(int index = 1);
+
+            // Pushers //
+            void push(int index = 1, const std::string& value);
+            void push(int index = 1, int value);
+            void push(int index = 1, float value);
+            void push(int index = 1, double value);
+            void push(int index = 1, long value);
+            void push(int index = 1, long long value);
+            void push(int index = 1, long double value);
+            void push(int index = 1, unsigned value);
+            void push(int index = 1, unsigned long value);
+            void push(int index = 1, unsigned long long value);
+    };
+
+    class Unordered {
+        private:
+            std::map<std::string, Value> values;
         public:
             // Checkers //
             bool isNil(const std::string& index);

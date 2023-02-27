@@ -30,7 +30,7 @@ int main() {
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
 
 
-    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Handle stack) -> void {
+    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Unordered stack) -> void {
         std::cout << "\nEXECUTED SUBSCRIBED EVENT 1!";
         auto arg = stack.getString("message");
         std::cout << "\nMessage is: " << arg;
