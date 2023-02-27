@@ -25,7 +25,7 @@ namespace Vital::Type::Timer {
     Instance::Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval, int executions) {
         targetInterval = interval, targetExecutions = executions;
         Vital::Type::Thread::Instance([=](Vital::Type::Thread::Instance* thread) -> void {
-            while (!isUnloaded && ((targetExecutions == 0) or (currentExecutions < targetExecutions))) {
+            while (!isUnloaded && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
                 thread -> sleep(interval);
                 currentExecutions++;
                 exec(this);
