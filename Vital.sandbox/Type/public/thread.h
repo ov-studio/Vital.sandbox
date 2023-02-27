@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: thread.h
+     Script: Type: public: thread.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Thread System
+     Desc: Thread Types
 ----------------------------------------------------------------*/
 
 
@@ -13,27 +13,25 @@
 //////////////
 
 #pragma once
-#include <System/public/vital.h>
+#include <Type/public/index.h>
 
 
-////////////////////////////
-// Vital: System: Thread //
-////////////////////////////
+//////////////////////////
+// Vital: Type: Thread //
+//////////////////////////
 
-namespace Vital::System::Thread {
-    class create {
+namespace Vital::Type::Thread {
+    class Instance {
         private:
             std::thread thread;
         public:
             // Instantiators //
-            create(std::function<void()> exec);
-            ~create();
+            Instance(std::function<void(Vital::Type::Thread::Instance*)> exec);
+            ~Instance();
 
             // Utils//
             void sleep(int duration);
             void join();
     };
-    typedef create vital_thread;
-    extern bool isInstance(vital_thread* ref);
-    extern vital_thread* fetchThread();
+    extern Vital::Type::Thread::Instance* fetchThread();
 }
