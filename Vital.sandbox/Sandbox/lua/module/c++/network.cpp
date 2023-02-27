@@ -42,7 +42,7 @@ namespace Vital::Sandbox::Lua::API {
                     else if (vm -> isNumber(i)) networkArgs.push(vm -> getInt(i));
                     else throw ErrorCode["invalid-arguments"];
                 }
-                Vital::System::Network::emit(networkName, peerID, networkArgs);
+                //Vital::System::Network::emit(networkName, peerID, networkArgs);
                 vm -> setBool(true);
                 return 1;
             });
