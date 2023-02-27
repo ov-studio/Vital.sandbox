@@ -42,7 +42,7 @@ namespace Vital::Type::Thread {
     void Instance::sleep(int duration) {
         if (duration < 0) return;
         auto thread = fetchThread();
-        if (!thread || (thread != this)) return;
+        if (!thread) return;
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
     void Instance::join() { thread.join(); }
