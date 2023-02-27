@@ -166,122 +166,114 @@ namespace Vital::Type::Stack {
 
 namespace Vital::Type::Stack {
     // Checkers //
-    bool Ordered::isNil(int index) { return ((index < 0) || values.empty() || (index >= values.size()) && true) || false; };
-    bool Ordered::isString(int index) { return (!isNil(index) && values.at(index).isString() && true) || false; }
-    bool Ordered::isNumber(int index) { return (!isNil(index) && values.at(index).isNumber() && true) || false; }
+    bool Instance::isNil(int index) { return ((index < 0) || rwVector.empty() || (index >= rwVector.size()) && true) || false; };
+    bool Instance::isNil(const std::string& index) { return rwMap.find(index) == rwMap.end(); };
+    bool Instance::isString(int index) { return (!isNil(index) && rwVector.at(index).isString() && true) || false; }
+    bool Instance::isString(const std::string& index) { return (!isNil(index) && rwMap.at(index).isString() && true) || false; }
+    bool Instance::isNumber(int index) { return (!isNil(index) && rwVector.at(index).isNumber() && true) || false; }
+    bool Instance::isNumber(const std::string& index) { return (!isNil(index) && rwMap.at(index).isNumber() && true) || false; }
 
     // Getters //
-    std::string Ordered::getString(int index) {
+    std::string Instance::getString(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getString();
+        return rwVector.at(index).getString();
     }
-    int Ordered::getInt(int index) {
+    std::string Instance::getString(const std::string& index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getInt();
+        return rwMap.at(index).getString();
     }
-    float Ordered::getFloat(int index) {
+    int Instance::getInt(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getFloat();
+        return rwVector.at(index).getInt();
     }
-    double Ordered::getDouble(int index) {
+    int Instance::getInt(const std::string& index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getDouble();
+        return rwMap.at(index).getInt();
     }
-    long Ordered::getLong(int index) {
+    float Instance::getFloat(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getLong();
+        return rwVector.at(index).getFloat();
     }
-    long long Ordered::getLongLong(int index) {
+    float Instance::getFloat(const std::string& index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getLongLong();
+        return rwMap.at(index).getFloat();
     }
-    long double Ordered::getLongDouble(int index) {
+    double Instance::getDouble(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getLongDouble();
+        return rwVector.at(index).getDouble();
     }
-    unsigned Ordered::getUnsigned(int index) {
+    double Instance::getDouble(const std::string& index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getUnsigned();
+        return rwMap.at(index).getDouble();
     }
-    unsigned long Ordered::getUnsignedLong(int index) {
+    long Instance::getLong(int index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getUnsignedLong();
+        return rwVector.at(index).getLong();
     }
-    unsigned long long Ordered::getUnsignedLongLong(int index) {
+    long Instance::getLong(const std::string& index) {
         if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getUnsignedLongLong();
+        return rwMap.at(index).getLong();
+    }
+    long long Instance::getLongLong(int index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwVector.at(index).getLongLong();
+    }
+    long long Instance::getLongLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwMap.at(index).getLongLong();
+    }
+    long double Instance::getLongDouble(int index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwVector.at(index).getLongDouble();
+    }
+    long double Instance::getLongDouble(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwMap.at(index).getLongDouble();
+    }
+    unsigned Instance::getUnsigned(int index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwVector.at(index).getUnsigned();
+    }
+    unsigned Instance::getUnsigned(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwMap.at(index).getUnsigned();
+    }
+    unsigned long Instance::getUnsignedLong(int index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwVector.at(index).getUnsignedLong();
+    }
+    unsigned long Instance::getUnsignedLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwMap.at(index).getUnsignedLong();
+    }
+    unsigned long long Instance::getUnsignedLongLong(int index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwVector.at(index).getUnsignedLongLong();
+    }
+    unsigned long long Instance::getUnsignedLongLong(const std::string& index) {
+        if (isNil(index)) throw ErrorCode["invalid-result"];
+        return rwMap.at(index).getUnsignedLongLong();
     }
 
     // Pushers //
-    void Ordered::push(const std::string& value) { values.push_back(Value(value)); }
-    void Ordered::push(int value) { values.push_back(Value(value)); }
-    void Ordered::push(float value) { values.push_back(Value(value)); }
-    void Ordered::push(double value) { values.push_back(Value(value)); }
-    void Ordered::push(long value) { values.push_back(Value(value)); }
-    void Ordered::push(long long value) { values.push_back(Value(value)); }
-    void Ordered::push(long double value) { values.push_back(Value(value)); }
-    void Ordered::push(unsigned value) { values.push_back(Value(value)); }
-    void Ordered::push(unsigned long value) { values.push_back(Value(value)); }
-    void Ordered::push(unsigned long long value) { values.push_back(Value(value)); }
-}
-
-namespace Vital::Type::Stack {
-    // Checkers //
-    bool Unordered::isNil(const std::string& index) { return values.find(index) == values.end(); };
-    bool Unordered::isString(const std::string& index) { return (!isNil(index) && values.at(index).isString() && true) || false; }
-    bool Unordered::isNumber(const std::string& index) { return (!isNil(index) && values.at(index).isNumber() && true) || false; }
-
-    // Getters //
-    std::string Unordered::getString(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getString();
-    }
-    int Unordered::getInt(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getInt();
-    }
-    float Unordered::getFloat(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getFloat();
-    }
-    double Unordered::getDouble(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getDouble();
-    }
-    long Unordered::getLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getLong();
-    }
-    long long Unordered::getLongLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getLongLong();
-    }
-    long double Unordered::getLongDouble(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getLongDouble();
-    }
-    unsigned Unordered::getUnsigned(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getUnsigned();
-    }
-    unsigned long Unordered::getUnsignedLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getUnsignedLong();
-    }
-    unsigned long long Unordered::getUnsignedLongLong(const std::string& index) {
-        if (isNil(index)) throw ErrorCode["invalid-result"];
-        return values.at(index).getUnsignedLongLong();
-    }
-
-    // Pushers //
-    void Unordered::push(const std::string& index, const std::string& value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, int value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, float value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, double value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, long value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, long long value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, long double value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, unsigned value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, unsigned long value) { values.emplace(index, Value(value)); }
-    void Unordered::push(const std::string& index, unsigned long long value) { values.emplace(index, Value(value)); }
+    void Instance::push(const std::string& value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, const std::string& value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(int value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, int value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(float value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, float value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(double value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, double value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(long value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, long value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(long long value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, long long value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(long double value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, long double value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(unsigned value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, unsigned value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(unsigned long value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, unsigned long value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(unsigned long long value) { rwVector.push_back(Value(value)); }
+    void Instance::push(const std::string& index, unsigned long long value) { rwMap.emplace(index, Value(value)); }
 }
