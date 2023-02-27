@@ -68,7 +68,6 @@ namespace Vital::System::Network {
                     Vital::Type::Stack::Instance eventArguments;
                     eventArguments.push("peerID", getPeerID(networkEvent.peer));
                     Vital::System::Event::emit("Network:@PeerConnection", eventArguments);
-                    emit("Hello From Server", getPeerID(networkEvent.peer));
                     peerID++;
                 }
                 break;
@@ -79,7 +78,6 @@ namespace Vital::System::Network {
                 if (Vital::System::getPlatform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 eventArguments.push("message", message);
                 Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
-                if (Vital::System::getPlatform() == "client") emit("Hello From Client");
                 enet_packet_destroy(networkEvent.packet);
                 break;
             }
