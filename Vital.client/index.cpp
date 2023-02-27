@@ -30,19 +30,13 @@ int main() {
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
 
 
-    Vital::System::Event::bind("Network:@PeerMessage", []() -> void {
-        std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
-            //std::cout << "\nMessage: " << args.at("message").value(void);
+    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Handle stack) -> void {
+        std::cout << "\nEXECUTED SUBSCRIBED EVENT 1!";
+        auto arg = stack.getString("message");
+        std::cout << "\nMessage is: " << arg;
+        //auto result = arg.testvalue();
+        //std::cout << "\nMessage: " << stack.at("message").value();
     });
-    auto test2 = Vital::System::Event::bind("Network:@PeerMessage", []() -> void {
-        std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
-            //std::cout << "\nMessage: " << args.at("message").value(void);
-    });
-    Vital::System::Event::bind("Network:@PeerMessage", []() -> void {
-        std::cout << "EXECUTED SUBSCRIBED EVENT 1!";
-            //std::cout << "\nMessage: " << args.at("message").value(void);
-    });
-    test2.unbind();
     Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
 
     Vital::System::Audio::start();
