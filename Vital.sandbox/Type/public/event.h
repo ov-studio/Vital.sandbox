@@ -26,5 +26,5 @@ namespace Vital::Type::Event {
     typedef struct {
         const std::function<void()> unbind;
     } Handle;
-    typedef std::function<void(Vital::Type::Stack::Handle)> Handler;
+    typedef std::function<void(Vital::Type::Stack::Unordered)> Handler;
 }
