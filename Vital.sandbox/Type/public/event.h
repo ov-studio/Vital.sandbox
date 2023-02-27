@@ -33,7 +33,7 @@ namespace Vital::Type::Event {
             unsigned rwUnsigned;
             unsigned long rwUnsignedLong;
             unsigned long long rwUnsignedLongLong;
-            std::string rwType;
+            const char* rwType;
         public:
             // Instantiators //
             Argument(const std::string& argument);
