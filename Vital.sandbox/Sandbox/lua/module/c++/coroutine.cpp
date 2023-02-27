@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#include <System/public/thread.h>
 #include <Sandbox/lua/public/api.h>
 #include <Vendor/lua/lauxlib.h>
 #include <Vendor/lua/lualib.h>
@@ -68,8 +67,8 @@ namespace Vital::Sandbox::Lua::API {
                 if (!vm -> isVirtualThread()) throw ErrorCode["invalid-thread"];
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
                 auto duration = vm -> getInt(1);
-                auto thread = Vital::System::Thread::create([=]() -> void {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+                Vital::Type::Thread::Instance([=](Vital::Type::Thread::Instance* self) -> void {
+                    self -> sleep(duration);
                     vm -> resume();
                 });
                 vm -> pause();
