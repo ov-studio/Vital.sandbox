@@ -50,8 +50,8 @@ namespace Vital::Sandbox::JS::API {
     // Booter //
     bool boot() {
         vSandbox_Engine();
-        vSandbox_Crypto();
         vSandbox_File();
+        vSandbox_Crypto();
         return true;
     }
 }

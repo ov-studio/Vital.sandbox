@@ -50,9 +50,10 @@ namespace Vital::Sandbox::Lua::API {
     // Booter //
     bool boot() {
         vSandbox_Engine();
-        vSandbox_Crypto();
         vSandbox_Coroutine();
         vSandbox_File();
+        vSandbox_Crypto();
+        vSandbox_Network();
         vSandbox_Audio();
         return true;
     }
