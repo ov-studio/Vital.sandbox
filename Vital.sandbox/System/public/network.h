@@ -34,5 +34,5 @@ namespace Vital::System::Network {
     extern Vital::Type::Network::Bandwidth getBandwidthLimit();
 
     // Utils //
-    extern bool emit(const std::string& message, Vital::Type::Network::PeerID peer = 0);
+    extern bool emit(const std::string& message, Vital::Type::Network::PeerID peer = 0, Vital::Type::Stack::Instance arguments = {});
 }

@@ -111,8 +111,9 @@ namespace Vital::System::Network {
     Vital::Type::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
 
     // Utils //
-    bool emit(const std::string& message, Vital::Type::Network::PeerID peer) {
+    bool emit(const std::string& message, Vital::Type::Network::PeerID peer, Vital::Type::Stack::Instance arguments) {
         if (!isConnected()) return false;
+        // TODO: Add argument support to emit
         const std::string buffer = Vital::System::Crypto::encode(message);
         if ((Vital::System::getPlatform() == "client") || (peer <= 0)) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
         else {

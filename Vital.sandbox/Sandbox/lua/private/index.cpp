@@ -48,8 +48,9 @@ namespace Vital::Sandbox::Lua {
         "thread.lua",
         "timer.lua",
         "engine.lua",
-        "crypto.lua",
         "file.lua",
+        "crypto.lua",
+        "network.lua",
         "resource.lua"
     };
 }
