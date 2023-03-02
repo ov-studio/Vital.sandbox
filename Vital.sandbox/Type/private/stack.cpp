@@ -187,15 +187,15 @@ namespace Vital::Type::Stack {
         if (isTypeString(rwType)) return Value(serial.second);
         else if (isTypeNumber(rwType)) {
             std::string rwValue = serial.second;
-            if (rwType == typeid(int).name()) return std::stoi(rwValue);
-            else if (rwType == typeid(float).name()) return std::stof(rwValue);
-            else if (rwType == typeid(double).name()) return std::stod(rwValue);
-            else if (rwType == typeid(long).name()) return std::stol(rwValue);
-            else if (rwType == typeid(long long).name()) return std::stoll(rwValue);
-            else if (rwType == typeid(long double).name()) return std::stold(rwValue);
-            else if (rwType == typeid(unsigned).name()) return std::stoul(rwValue);
-            else if (rwType == typeid(unsigned long).name()) return std::stoul(rwValue);
-            else if (rwType == typeid(unsigned long long).name()) return std::stoull(rwValue);
+            if (rwType == typeid(int).name()) return Value(std::stoi(rwValue));
+            else if (rwType == typeid(float).name()) return Value(std::stof(rwValue));
+            else if (rwType == typeid(double).name()) return Value(std::stod(rwValue));
+            else if (rwType == typeid(long).name()) return Value(std::stol(rwValue));
+            else if (rwType == typeid(long long).name()) return Value(std::stoll(rwValue));
+            else if (rwType == typeid(long double).name()) return Value(std::stold(rwValue));
+            else if (rwType == typeid(unsigned).name()) return Value(std::stoul(rwValue));
+            else if (rwType == typeid(unsigned long).name()) return Value(std::stoul(rwValue));
+            else if (rwType == typeid(unsigned long long).name()) return Value(std::stoull(rwValue));
         }
     }
 }
