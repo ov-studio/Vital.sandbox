@@ -365,20 +365,21 @@ namespace Vital::Type::Stack {
             delete[] valueType;
             delete[] value;
         }
-        /*
         for (int i = 0; i < rwMapSize; i++) {
-            size_t indexSize, valueSize;
+            size_t indexSize, valueTypeSize, valueSize;
             stream.read(reinterpret_cast<char*>(&indexSize), typeSize);
+            stream.read(reinterpret_cast<char*>(&valueTypeSize), typeSize);
             stream.read(reinterpret_cast<char*>(&valueSize), typeSize);
             char* index = new char[indexSize];
+            char* valueType = new char[valueTypeSize];
             char* value = new char[valueSize];
             stream.read(index, indexSize);
+            stream.read(valueType, valueTypeSize);
             stream.read(value, valueSize);
-            stack.push(std::string(index, indexSize), std::string(value, valueSize));
-            delete[] index;
+            stack.pushValue(std::string(index, indexSize), Value::deserialize({std::string(valueType, valueTypeSize), std::string(value, valueSize)}));
+            delete[] valueType;
             delete[] value;
         }
-        */
         return stack;
     }
 }
