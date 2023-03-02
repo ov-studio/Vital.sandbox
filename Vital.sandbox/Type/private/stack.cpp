@@ -193,7 +193,7 @@ namespace Vital::Type::Stack {
             else if (rwType == typeid(long).name()) return Value(std::stol(rwValue));
             else if (rwType == typeid(long long).name()) return Value(std::stoll(rwValue));
             else if (rwType == typeid(long double).name()) return Value(std::stold(rwValue));
-            else if (rwType == typeid(unsigned).name()) return Value(std::stoul(rwValue));
+            else if (rwType == typeid(unsigned).name()) return Value(static_cast<unsigned>(std::stoul(rwValue)));
             else if (rwType == typeid(unsigned long).name()) return Value(std::stoul(rwValue));
             else if (rwType == typeid(unsigned long long).name()) return Value(std::stoull(rwValue));
         }
