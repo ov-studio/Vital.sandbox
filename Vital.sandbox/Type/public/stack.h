@@ -133,5 +133,6 @@ namespace Vital::Type::Stack {
 
             // Utils //
             std::string serialize();
+            Instance deserialize(const std::string& serial);
     };
 }

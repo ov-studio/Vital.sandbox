@@ -344,24 +344,26 @@ namespace Vital::Type::Stack {
         }
         return stream.str();
     }
-    /*
-    Instance::Instance(const std::string& serial) {
+    Instance Instance::deserialize(const std::string& serial) {
         std::istringstream stream(serial);
-        std::vector<std::string> rwVector;
-        std::map<std::string, std::string> rwMap;
+        Instance stack;
         const auto typeSize = sizeof(size_t);
         size_t rwVectorSize, rwMapSize;
         stream.read(reinterpret_cast<char*>(&rwVectorSize), typeSize);
         stream.read(reinterpret_cast<char*>(&rwMapSize), typeSize);
-        rwVector.resize(rwVectorSize);
         for (int i = 0; i < rwVectorSize; i++) {
-            size_t valueSize;
+            size_t valueTypeSize, valueSize;
+            stream.read(reinterpret_cast<char*>(&valueTypeSize), typeSize);
             stream.read(reinterpret_cast<char*>(&valueSize), typeSize);
+            char* valueType = new char[valueTypeSize];
             char* value = new char[valueSize];
+            stream.read(valueType, valueTypeSize);
             stream.read(value, valueSize);
-            rwVector.at(i) = value;
+            stack.push(std::string(value, valueSize));
+            delete[] valueType;
             delete[] value;
         }
+        /*
         for (int i = 0; i < rwMapSize; i++) {
             size_t indexSize, valueSize;
             stream.read(reinterpret_cast<char*>(&indexSize), typeSize);
@@ -370,10 +372,10 @@ namespace Vital::Type::Stack {
             char* value = new char[valueSize];
             stream.read(index, indexSize);
             stream.read(value, valueSize);
-            rwMap.emplace(std::string(index, indexSize), std::string(value, valueSize));
+            stack.push(std::string(index, indexSize), std::string(value, valueSize));
             delete[] index;
             delete[] value;
         }
+        */
     }
-    */
 }
