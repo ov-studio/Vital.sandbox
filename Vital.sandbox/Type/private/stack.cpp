@@ -184,12 +184,9 @@ namespace Vital::Type::Stack {
     }
     Value Value::deserialize(std::pair<std::string, std::string> serial) {
         auto rwType = serial.first.c_str();
-        if (isTypeString(rwType)) {
-            std::cout <<"\n\nYes executed 1"; return Value(serial.second);
-        }
+        auto rwValue = serial.second;
+        if (isTypeString(rwType)) return Value(rwValue);
         else if (isTypeNumber(rwType)) {
-            std::cout <<"\n\nYes executed 2";
-            std::string rwValue = serial.second;
             if (!strcmp(rwType, typeid(int).name())) return Value(std::stoi(rwValue));
             else if (!strcmp(rwType, typeid(float).name())) return Value(std::stof(rwValue));
             else if (!strcmp(rwType, typeid(double).name())) return Value(std::stod(rwValue));
@@ -199,9 +196,6 @@ namespace Vital::Type::Stack {
             else if (!strcmp(rwType, typeid(unsigned).name())) return Value(static_cast<unsigned>(std::stoul(rwValue)));
             else if (!strcmp(rwType, typeid(unsigned long).name())) return Value(std::stoul(rwValue));
             else if (!strcmp(rwType, typeid(unsigned long long).name())) return Value(std::stoull(rwValue));
-        }
-        else {
-            std::cout <<"\n\nYes executed 3"; 
         }
     }
 }
@@ -385,5 +379,6 @@ namespace Vital::Type::Stack {
             delete[] value;
         }
         */
+        return stack;
     }
 }
