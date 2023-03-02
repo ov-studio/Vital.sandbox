@@ -132,6 +132,8 @@ namespace Vital::Type::Stack {
             void pop(const std::string& index);
 
             // Utils //
+            void pushValue(Value value);
+            void pushValue(const std::string& index, Value value);
             std::string serialize();
             static Instance deserialize(const std::string& serial);
     };

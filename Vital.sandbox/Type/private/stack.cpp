@@ -292,32 +292,34 @@ namespace Vital::Type::Stack {
     }
 
     // Pushers //
-    void Instance::push(const std::string& value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, const std::string& value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(int value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, int value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(float value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, float value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(double value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, double value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(long value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, long value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(long long value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, long long value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(long double value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, long double value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(unsigned value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, unsigned value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(unsigned long value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, unsigned long value) { rwMap.emplace(index, Value(value)); }
-    void Instance::push(unsigned long long value) { rwVector.push_back(Value(value)); }
-    void Instance::push(const std::string& index, unsigned long long value) { rwMap.emplace(index, Value(value)); }
+    void Instance::push(const std::string& value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, const std::string& value) { pushValue(index, Value(value)); }
+    void Instance::push(int value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, int value) { pushValue(index, Value(value)); }
+    void Instance::push(float value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, float value) { pushValue(index, Value(value)); }
+    void Instance::push(double value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, double value) { pushValue(index, Value(value)); }
+    void Instance::push(long value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, long value) { pushValue(index, Value(value)); }
+    void Instance::push(long long value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, long long value) { pushValue(index, Value(value)); }
+    void Instance::push(long double value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, long double value) { pushValue(index, Value(value)); }
+    void Instance::push(unsigned value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, unsigned value) { pushValue(index, Value(value)); }
+    void Instance::push(unsigned long value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, unsigned long value) { pushValue(index, Value(value)); }
+    void Instance::push(unsigned long long value) { pushValue(Value(value)); }
+    void Instance::push(const std::string& index, unsigned long long value) { pushValue(index, Value(value)); }
 
     // Poppers //
     void Instance::pop(int index) { rwVector.erase(rwVector.begin() + index - 1); }
     void Instance::pop(const std::string& index) { rwMap.erase(index); }
 
     // Utils //
+    void Instance::pushValue(Value value) { rwVector.push_back(value); }
+    void Instance::pushValue(const std::string& index, Value value) { rwVector.emplace(index, value); }
     std::string Instance::serialize() {
         std::ostringstream stream;
         const auto typeSize = sizeof(size_t);
@@ -359,7 +361,7 @@ namespace Vital::Type::Stack {
             char* value = new char[valueSize];
             stream.read(valueType, valueTypeSize);
             stream.read(value, valueSize);
-            stack.push(std::string(value, valueSize));
+            stack.pushValue(Value::deserialize({valueType, valueSize}));
             delete[] valueType;
             delete[] value;
         }
