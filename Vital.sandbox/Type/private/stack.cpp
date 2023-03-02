@@ -44,126 +44,126 @@ namespace Vital::Type::Stack {
     }
     int Value::getInt() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<int>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<int>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<int>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<int>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<int>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<int>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<int>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<int>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<int>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<int>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<int>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<int>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<int>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<int>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<int>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<int>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<int>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<int>(rwUnsignedLongLong);
     }
     float Value::getFloat() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<float>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<float>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<float>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<float>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<float>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<float>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<float>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<float>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<float>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<float>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<float>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<float>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<float>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<float>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<float>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<float>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<float>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<float>(rwUnsignedLongLong);
     }
     double Value::getDouble() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<double>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<double>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<double>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<double>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<double>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<double>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<double>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<double>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<double>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<double>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<double>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<double>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<double>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<double>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<double>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<double>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<double>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<double>(rwUnsignedLongLong);
     }
     long Value::getLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<long>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<long>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<long>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<long>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<long>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<long>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<long>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<long>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<long>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<long>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<long>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<long>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<long>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<long>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<long>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<long>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<long>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<long>(rwUnsignedLongLong);
     }
     long long Value::getLongLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<long long>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<long long>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<long long>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<long long>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<long long>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<long long>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<long long>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<long long>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<long long>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<long long>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<long long>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<long long>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<long long>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<long long>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<long long>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<long long>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<long long>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<long long>(rwUnsignedLongLong);
     }
     long double Value::getLongDouble() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<long double>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<long double>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<long double>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<long double>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<long double>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<long double>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<long double>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<long double>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<long double>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<long double>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<long double>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<long double>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<long double>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<long double>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<long double>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<long double>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<long double>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<long double>(rwUnsignedLongLong);
     }
     unsigned Value::getUnsigned() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<unsigned>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<unsigned>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<unsigned>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<unsigned>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<unsigned>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<unsigned>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<unsigned>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<unsigned>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<unsigned>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<unsigned>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<unsigned>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<unsigned>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<unsigned>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<unsigned>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<unsigned>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<unsigned>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<unsigned>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<unsigned>(rwUnsignedLongLong);
     }
     unsigned long Value::getUnsignedLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<unsigned long>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<unsigned long>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<unsigned long>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<unsigned long>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<unsigned long>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<unsigned long>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<unsigned long>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<unsigned long>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<unsigned long>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<unsigned long>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<unsigned long>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<unsigned long>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<unsigned long>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<unsigned long>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<unsigned long>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<unsigned long>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<unsigned long>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<unsigned long>(rwUnsignedLongLong);
     }
     unsigned long long Value::getUnsignedLongLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
-        if (rwType == typeid(int).name()) return static_cast<unsigned long long>(rwInt);
-        else if (rwType == typeid(float).name()) return static_cast<unsigned long long>(rwFloat);
-        else if (rwType == typeid(double).name()) return static_cast<unsigned long long>(rwDouble);
-        else if (rwType == typeid(long).name()) return static_cast<unsigned long long>(rwLong);
-        else if (rwType == typeid(long long).name()) return static_cast<unsigned long long>(rwLongLong);
-        else if (rwType == typeid(long double).name()) return static_cast<unsigned long long>(rwLongDouble);
-        else if (rwType == typeid(unsigned).name()) return static_cast<unsigned long long>(rwUnsigned);
-        else if (rwType == typeid(unsigned long).name()) return static_cast<unsigned long long>(rwUnsignedLong);
-        else if (rwType == typeid(unsigned long long).name()) return static_cast<unsigned long long>(rwUnsignedLongLong);
+        if (!strcmp(rwType, typeid(int).name())) return static_cast<unsigned long long>(rwInt);
+        else if (!strcmp(rwType, typeid(float).name())) return static_cast<unsigned long long>(rwFloat);
+        else if (!strcmp(rwType, typeid(double).name())) return static_cast<unsigned long long>(rwDouble);
+        else if (!strcmp(rwType, typeid(long).name())) return static_cast<unsigned long long>(rwLong);
+        else if (!strcmp(rwType, typeid(long long).name())) return static_cast<unsigned long long>(rwLongLong);
+        else if (!strcmp(rwType, typeid(long double).name())) return static_cast<unsigned long long>(rwLongDouble);
+        else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<unsigned long long>(rwUnsigned);
+        else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<unsigned long long>(rwUnsignedLong);
+        else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<unsigned long long>(rwUnsignedLongLong);
     }
 
     // Utils //
-    bool Value::isTypeString(const char* rwType) { return (rwType == typeid(const std::string&).name()); }
+    bool Value::isTypeString(const char* rwType) { return !strcmp(rwType, typeid(const std::string&).name()); }
     bool Value::isTypeNumber(const char* rwType) {
         return ((
-            (rwType == typeid(int).name()) ||
-            (rwType == typeid(float).name()) ||
-            (rwType == typeid(double).name()) ||
-            (rwType == typeid(long).name()) ||
-            (rwType == typeid(long long).name()) ||
-            (rwType == typeid(long double).name()) ||
-            (rwType == typeid(unsigned).name()) ||
-            (rwType == typeid(unsigned long).name()) ||
-            (rwType == typeid(unsigned long long).name())
+            (!strcmp(rwType, typeid(int).name())) ||
+            (!strcmp(rwType, typeid(float).name())) ||
+            (!strcmp(rwType, typeid(double).name())) ||
+            (!strcmp(rwType, typeid(long).name())) ||
+            (!strcmp(rwType, typeid(long long).name())) ||
+            (!strcmp(rwType, typeid(long double).name())) ||
+            (!strcmp(rwType, typeid(unsigned).name())) ||
+            (!strcmp(rwType, typeid(unsigned long).name())) ||
+            (!strcmp(rwType, typeid(unsigned long long).name()))
         ) && true) || false;
     }
 
@@ -171,31 +171,37 @@ namespace Vital::Type::Stack {
         if (isString()) return {rwType, rwString};
         else if (isNumber()) {
             std::string rwValue;
-            if (rwType == typeid(float).name()) rwValue = std::to_string(rwFloat);
-            else if (rwType == typeid(double).name()) rwValue = std::to_string(rwDouble);
-            else if (rwType == typeid(long).name()) rwValue = std::to_string(rwLong);
-            else if (rwType == typeid(long long).name()) rwValue = std::to_string(rwLongLong);
-            else if (rwType == typeid(long double).name()) rwValue = std::to_string(rwLongDouble);
-            else if (rwType == typeid(unsigned).name()) rwValue = std::to_string(rwUnsigned);
-            else if (rwType == typeid(unsigned long).name()) rwValue = std::to_string(rwUnsignedLong);
-            else if (rwType == typeid(unsigned long long).name()) rwValue = std::to_string(rwUnsignedLongLong);
+            if (!strcmp(rwType, typeid(float).name())) rwValue = std::to_string(rwFloat);
+            else if (!strcmp(rwType, typeid(double).name())) rwValue = std::to_string(rwDouble);
+            else if (!strcmp(rwType, typeid(long).name())) rwValue = std::to_string(rwLong);
+            else if (!strcmp(rwType, typeid(long long).name())) rwValue = std::to_string(rwLongLong);
+            else if (!strcmp(rwType, typeid(long double).name())) rwValue = std::to_string(rwLongDouble);
+            else if (!strcmp(rwType, typeid(unsigned).name())) rwValue = std::to_string(rwUnsigned);
+            else if (!strcmp(rwType, typeid(unsigned long).name())) rwValue = std::to_string(rwUnsignedLong);
+            else if (!strcmp(rwType, typeid(unsigned long long).name())) rwValue = std::to_string(rwUnsignedLongLong);
             return {rwType, rwValue};
         }
     }
     Value Value::deserialize(std::pair<std::string, std::string> serial) {
         auto rwType = serial.first.c_str();
-        if (isTypeString(rwType)) return Value(serial.second);
+        if (isTypeString(rwType)) {
+            std::cout <<"\n\nYes executed 1"; return Value(serial.second);
+        }
         else if (isTypeNumber(rwType)) {
+            std::cout <<"\n\nYes executed 2";
             std::string rwValue = serial.second;
-            if (rwType == typeid(int).name()) return Value(std::stoi(rwValue));
-            else if (rwType == typeid(float).name()) return Value(std::stof(rwValue));
-            else if (rwType == typeid(double).name()) return Value(std::stod(rwValue));
-            else if (rwType == typeid(long).name()) return Value(std::stol(rwValue));
-            else if (rwType == typeid(long long).name()) return Value(std::stoll(rwValue));
-            else if (rwType == typeid(long double).name()) return Value(std::stold(rwValue));
-            else if (rwType == typeid(unsigned).name()) return Value(static_cast<unsigned>(std::stoul(rwValue)));
-            else if (rwType == typeid(unsigned long).name()) return Value(std::stoul(rwValue));
-            else if (rwType == typeid(unsigned long long).name()) return Value(std::stoull(rwValue));
+            if (!strcmp(rwType, typeid(int).name())) return Value(std::stoi(rwValue));
+            else if (!strcmp(rwType, typeid(float).name())) return Value(std::stof(rwValue));
+            else if (!strcmp(rwType, typeid(double).name())) return Value(std::stod(rwValue));
+            else if (!strcmp(rwType, typeid(long).name())) return Value(std::stol(rwValue));
+            else if (!strcmp(rwType, typeid(long long).name())) return Value(std::stoll(rwValue));
+            else if (!strcmp(rwType, typeid(long double).name())) return Value(std::stold(rwValue));
+            else if (!strcmp(rwType, typeid(unsigned).name())) return Value(static_cast<unsigned>(std::stoul(rwValue)));
+            else if (!strcmp(rwType, typeid(unsigned long).name())) return Value(std::stoul(rwValue));
+            else if (!strcmp(rwType, typeid(unsigned long long).name())) return Value(std::stoull(rwValue));
+        }
+        else {
+            std::cout <<"\n\nYes executed 3"; 
         }
     }
 }
@@ -361,9 +367,11 @@ namespace Vital::Type::Stack {
             char* value = new char[valueSize];
             stream.read(valueType, valueTypeSize);
             stream.read(value, valueSize);
-            stack.pushValue(Value::deserialize({std::string(valueType, valueTypeSize), std::string(value, valueSize)}));
+            Value::deserialize({std::string(valueType, valueTypeSize), std::string(value, valueSize)});
+            //stack.pushValue();
             delete[] valueType;
             delete[] value;
+            break; // TODO: REMOVE LATER
         }
         /*
         for (int i = 0; i < rwMapSize; i++) {
