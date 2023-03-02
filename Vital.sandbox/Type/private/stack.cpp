@@ -182,24 +182,22 @@ namespace Vital::Type::Stack {
             return {rwType, rwValue};
         }
     }
-    /*
     Value Value::deserialize(std::pair<std::string, std::string> serial) {
-        if (isString()) return Value(serial.second)
-        if (isString()) return {rwType, rwString};
-        else if (isNumber()) {
-            std::string rwValue;
-            if (rwType == typeid(float).name()) rwValue = std::to_string(rwFloat);
-            else if (rwType == typeid(double).name()) rwValue = std::to_string(rwDouble);
-            else if (rwType == typeid(long).name()) rwValue = std::to_string(rwLong);
-            else if (rwType == typeid(long long).name()) rwValue = std::to_string(rwLongLong);
-            else if (rwType == typeid(long double).name()) rwValue = std::to_string(rwLongDouble);
-            else if (rwType == typeid(unsigned).name()) rwValue = std::to_string(rwUnsigned);
-            else if (rwType == typeid(unsigned long).name()) rwValue = std::to_string(rwUnsignedLong);
-            else if (rwType == typeid(unsigned long long).name()) rwValue = std::to_string(rwUnsignedLongLong);
-            return {rwType, rwValue};
+        auto rwType = serial.first.c_str();
+        if (isTypeString(rwType)) return Value(serial.second);
+        else if (isTypeNumber(rwType)) {
+            std::string rwValue = serial.second;
+            if (rwType == typeid(int).name()) return std::stoi(rwValue);
+            else if (rwType == typeid(float).name()) return std::stof(rwValue);
+            else if (rwType == typeid(double).name()) return std::stod(rwValue);
+            else if (rwType == typeid(long).name()) return std::stol(rwValue);
+            else if (rwType == typeid(long long).name()) return std::stoll(rwValue);
+            else if (rwType == typeid(long double).name()) return std::stold(rwValue);
+            else if (rwType == typeid(unsigned).name()) return std::stoul(rwValue);
+            else if (rwType == typeid(unsigned long).name()) return std::stoul(rwValue);
+            else if (rwType == typeid(unsigned long long).name()) return std::stoull(rwValue);
         }
     }
-    */
 }
 
 namespace Vital::Type::Stack {
