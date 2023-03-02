@@ -67,7 +67,7 @@ namespace Vital::Type::Stack {
             static bool isTypeString(const char* rwType);
             static bool isTypeNumber(const char* rwType);
             std::pair<std::string, std::string> serialize();
-            Value deserialize(std::pair<std::string, std::string> serial);
+            static Value deserialize(std::pair<std::string, std::string> serial);
     };
 
     class Instance {
@@ -133,6 +133,6 @@ namespace Vital::Type::Stack {
 
             // Utils //
             std::string serialize();
-            Instance deserialize(const std::string& serial);
+            static Instance deserialize(const std::string& serial);
     };
 }
