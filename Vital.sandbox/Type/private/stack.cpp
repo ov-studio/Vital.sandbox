@@ -319,7 +319,7 @@ namespace Vital::Type::Stack {
 
     // Utils //
     void Instance::pushValue(Value value) { rwVector.push_back(value); }
-    void Instance::pushValue(const std::string& index, Value value) { rwVector.emplace(index, value); }
+    void Instance::pushValue(const std::string& index, Value value) { rwMap.emplace(index, value); }
     std::string Instance::serialize() {
         std::ostringstream stream;
         const auto typeSize = sizeof(size_t);
