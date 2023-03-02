@@ -162,6 +162,23 @@ namespace Vital::Type::Stack {
         else if (rwType == typeid(unsigned long).name()) return static_cast<unsigned long long>(rwUnsignedLong);
         else if (rwType == typeid(unsigned long long).name()) return static_cast<unsigned long long>(rwUnsignedLongLong);
     }
+
+    // Utils //
+    std::pair<std::string, std::string> Value::serialize() {
+        if (isString()) return {rwType, rwString};
+        else if (isNumber()) {
+            std::string rwValue;
+            if (rwType == typeid(float).name()) rwValue = std::to_string(rwFloat);
+            else if (rwType == typeid(double).name()) rwValue = std::to_string(rwDouble);
+            else if (rwType == typeid(long).name()) rwValue = std::to_string(rwLong);
+            else if (rwType == typeid(long long).name()) rwValue = std::to_string(rwLongLong);
+            else if (rwType == typeid(long double).name()) rwValue = std::to_string(rwLongDouble);
+            else if (rwType == typeid(unsigned).name()) rwValue = std::to_string(rwUnsigned);
+            else if (rwType == typeid(unsigned long).name()) rwValue = std::to_string(rwUnsignedLong);
+            else if (rwType == typeid(unsigned long long).name()) rwValue = std::to_string(rwUnsignedLongLong);
+            return {rwType, rwValue};
+        }
+    }
 }
 
 namespace Vital::Type::Stack {
@@ -280,4 +297,64 @@ namespace Vital::Type::Stack {
     // Poppers //
     void Instance::pop(int index) { rwVector.erase(rwVector.begin() + index - 1); }
     void Instance::pop(const std::string& index) { rwMap.erase(index); }
+
+    // Utils //
+    std::string Instance::serialize() {
+        std::ostringstream stream;
+        const auto typeSize = sizeof(size_t);
+        const size_t rwVectorSize = rwVector.size(), rwMapSize = rwMap.size();
+        stream.write(reinterpret_cast<const char*>(&rwVectorSize), typeSize);
+        stream.write(reinterpret_cast<const char*>(&rwMapSize), typeSize);
+        for (int i = 0; i < rwVectorSize; i++) {
+            auto value = rwVector.at(i).serialize();
+            const size_t valueTypeSize = value.first.size(), valueSize = value.second.size();
+            stream.write(reinterpret_cast<const char*>(&valueTypeSize), typeSize);
+            stream.write(reinterpret_cast<const char*>(&valueSize), typeSize);
+            stream.write(value.first.c_str(), valueTypeSize);
+            stream.write(value.second.c_str(), valueSize);
+        }
+        for (auto& i : rwMap) {
+            auto value = i.second.serialize();
+            const size_t indexSize = i.first.size(), valueTypeSize = value.first.size(), valueSize = value.second.size();
+            stream.write(reinterpret_cast<const char*>(&indexSize), typeSize);
+            stream.write(reinterpret_cast<const char*>(&valueTypeSize), typeSize);
+            stream.write(reinterpret_cast<const char*>(&valueSize), typeSize);
+            stream.write(i.first.c_str(), indexSize);
+            stream.write(value.first.c_str(), valueTypeSize);
+            stream.write(value.second.c_str(), valueSize);
+        }
+        return stream.str();
+    }
+    /*
+    Instance::Instance(const std::string& serial) {
+        std::istringstream stream(serial);
+        std::vector<std::string> rwVector;
+        std::map<std::string, std::string> rwMap;
+        const auto typeSize = sizeof(size_t);
+        size_t rwVectorSize, rwMapSize;
+        stream.read(reinterpret_cast<char*>(&rwVectorSize), typeSize);
+        stream.read(reinterpret_cast<char*>(&rwMapSize), typeSize);
+        rwVector.resize(rwVectorSize);
+        for (int i = 0; i < rwVectorSize; i++) {
+            size_t valueSize;
+            stream.read(reinterpret_cast<char*>(&valueSize), typeSize);
+            char* value = new char[valueSize];
+            stream.read(value, valueSize);
+            rwVector.at(i) = value;
+            delete[] value;
+        }
+        for (int i = 0; i < rwMapSize; i++) {
+            size_t indexSize, valueSize;
+            stream.read(reinterpret_cast<char*>(&indexSize), typeSize);
+            stream.read(reinterpret_cast<char*>(&valueSize), typeSize);
+            char* index = new char[indexSize];
+            char* value = new char[valueSize];
+            stream.read(index, indexSize);
+            stream.read(value, valueSize);
+            rwMap.emplace(std::string(index, indexSize), std::string(value, valueSize));
+            delete[] index;
+            delete[] value;
+        }
+    }
+    */
 }

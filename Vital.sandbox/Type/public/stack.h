@@ -62,6 +62,10 @@ namespace Vital::Type::Stack {
             unsigned getUnsigned();
             unsigned long getUnsignedLong();
             unsigned long long getUnsignedLongLong();
+
+            // Utils //
+            std::pair<std::string, std::string> serialize();
+            //Value deserialize();
     };
 
     class Instance {
@@ -124,5 +128,8 @@ namespace Vital::Type::Stack {
             // Poppers //
             void pop(int index = 0);
             void pop(const std::string& index);
+
+            // Utils //
+            std::string serialize();
     };
 }
