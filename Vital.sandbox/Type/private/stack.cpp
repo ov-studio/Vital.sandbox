@@ -361,7 +361,7 @@ namespace Vital::Type::Stack {
             char* value = new char[valueSize];
             stream.read(valueType, valueTypeSize);
             stream.read(value, valueSize);
-            stack.pushValue(Value::deserialize({valueType, valueSize}));
+            stack.pushValue(Value::deserialize({std::string(valueType, valueTypeSize), std::string(value, valueSize)}));
             delete[] valueType;
             delete[] value;
         }
