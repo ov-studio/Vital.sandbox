@@ -34,20 +34,8 @@ namespace Vital::Type::Stack {
     Value::Value(unsigned long long argument) { rwUnsignedLongLong = argument, rwType = typeid(argument).name(); }
 
     // Checkers //
-    bool Value::isString() { return (rwType == typeid(const std::string&).name()); }
-    bool Value::isNumber() {
-        return ((
-            (rwType == typeid(int).name()) ||
-            (rwType == typeid(float).name()) ||
-            (rwType == typeid(double).name()) ||
-            (rwType == typeid(long).name()) ||
-            (rwType == typeid(long long).name()) ||
-            (rwType == typeid(long double).name()) ||
-            (rwType == typeid(unsigned).name()) ||
-            (rwType == typeid(unsigned long).name()) ||
-            (rwType == typeid(unsigned long long).name())
-        ) && true) || false;
-    }
+    bool Value::isString() { return isTypeString(rwType); }
+    bool Value::isNumber() { return isTypeNumber(rwType); }
 
     // Getters //
     std::string Value::getString() {
@@ -164,6 +152,21 @@ namespace Vital::Type::Stack {
     }
 
     // Utils //
+    bool Value::isTypeString(const char* rwType) { return (rwType == typeid(const std::string&).name()); }
+    bool Value::isTypeNumber(const char* rwType) {
+        return ((
+            (rwType == typeid(int).name()) ||
+            (rwType == typeid(float).name()) ||
+            (rwType == typeid(double).name()) ||
+            (rwType == typeid(long).name()) ||
+            (rwType == typeid(long long).name()) ||
+            (rwType == typeid(long double).name()) ||
+            (rwType == typeid(unsigned).name()) ||
+            (rwType == typeid(unsigned long).name()) ||
+            (rwType == typeid(unsigned long long).name())
+        ) && true) || false;
+    }
+
     std::pair<std::string, std::string> Value::serialize() {
         if (isString()) return {rwType, rwString};
         else if (isNumber()) {
@@ -179,6 +182,24 @@ namespace Vital::Type::Stack {
             return {rwType, rwValue};
         }
     }
+    /*
+    Value Value::deserialize(std::pair<std::string, std::string> serial) {
+        if (isString()) return Value(serial.second)
+        if (isString()) return {rwType, rwString};
+        else if (isNumber()) {
+            std::string rwValue;
+            if (rwType == typeid(float).name()) rwValue = std::to_string(rwFloat);
+            else if (rwType == typeid(double).name()) rwValue = std::to_string(rwDouble);
+            else if (rwType == typeid(long).name()) rwValue = std::to_string(rwLong);
+            else if (rwType == typeid(long long).name()) rwValue = std::to_string(rwLongLong);
+            else if (rwType == typeid(long double).name()) rwValue = std::to_string(rwLongDouble);
+            else if (rwType == typeid(unsigned).name()) rwValue = std::to_string(rwUnsigned);
+            else if (rwType == typeid(unsigned long).name()) rwValue = std::to_string(rwUnsignedLong);
+            else if (rwType == typeid(unsigned long long).name()) rwValue = std::to_string(rwUnsignedLongLong);
+            return {rwType, rwValue};
+        }
+    }
+    */
 }
 
 namespace Vital::Type::Stack {
