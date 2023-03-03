@@ -37,7 +37,7 @@ namespace Vital::Type::Thread {
     Instance::~Instance() {
         std::thread::id threadID = std::this_thread::get_id();
         instance.erase(threadID);
-        if (thread.joinable()) thread.detach();
+        if (thread.joinable()) detach();
     }
 
     // Utils //
@@ -48,4 +48,5 @@ namespace Vital::Type::Thread {
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
     void Instance::join() { thread.join(); }
+    void Instance::detach() { thread.detach(); }
 }

@@ -32,6 +32,7 @@ namespace Vital::Type::Thread {
             // Utils//
             void sleep(int duration);
             void join();
+            void detach();
     };
     extern Vital::Type::Thread::Instance* fetchThread();
 }
