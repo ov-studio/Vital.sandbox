@@ -73,10 +73,8 @@ namespace Vital::System::Network {
                 break;
             }
             case ENET_EVENT_TYPE_RECEIVE: {
-                auto message = Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength));
-                Vital::Type::Stack::Instance eventArguments;
+                Vital::Type::Stack::Instance eventArguments = Vital::Type::Stack::Instance::deserialize(Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
                 if (Vital::System::getPlatform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
-                eventArguments.push("message", message);
                 Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
                 enet_packet_destroy(networkEvent.packet);
                 break;
@@ -111,16 +109,16 @@ namespace Vital::System::Network {
     Vital::Type::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
 
     // Utils //
-    bool emit(const std::string& message, Vital::Type::Network::PeerID peer, bool isLatent) {
+    bool emit(Vital::Type::Stack::Instance buffer, Vital::Type::Network::PeerID peer, bool isLatent) {
         // TODO: ADD LATENT MODE
         if (!isConnected()) return false;
-        const std::string buffer = Vital::System::Crypto::encode(message);
+        const std::string bufferSerial = Vital::System::Crypto::encode(buffer.serialize());
         if ((Vital::System::getPlatform() == "client") || (peer <= 0)) {
-            if (!isLatent) enet_host_broadcast(networkInstance, 0, enet_packet_create(buffer.c_str(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+            if (!isLatent) enet_host_broadcast(networkInstance, 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), ENET_PACKET_FLAG_RELIABLE));
         }
         else {
             if (!networkPeers.at(peer)) return false;
-            if (!isLatent) enet_peer_send(networkPeers.at(peer), 0, enet_packet_create(buffer.c_str(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+            if (!isLatent) enet_peer_send(networkPeers.at(peer), 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), ENET_PACKET_FLAG_RELIABLE));
         }
         return true;
     }

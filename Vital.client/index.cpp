@@ -54,7 +54,9 @@ int main() {
 
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Server]: " << arguments.getString("message");
-        Vital::System::Network::emit("Hello From Client");
+        Vital::Type::Stack::Instance buffer;
+        buffer.push("message", "Hello From Client");
+        Vital::System::Network::emit(buffer);
     });
     Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Server]: Disconnected";
