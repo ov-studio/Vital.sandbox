@@ -29,7 +29,6 @@ namespace Vital::Type::Timer {
         Vital::Type::Thread::Instance([=](Vital::Type::Thread::Instance* thread) -> void {
             int currentExecutions = 0;
             int targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
-            std::cout << targetExecutions << " : " << currentExecutions;
             while (isInstance(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
                 thread -> sleep(interval);
                 currentExecutions++;

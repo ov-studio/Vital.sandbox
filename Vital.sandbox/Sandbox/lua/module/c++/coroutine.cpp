@@ -67,10 +67,9 @@ namespace Vital::Sandbox::Lua::API {
                 if (!vm -> isVirtualThread()) throw ErrorCode["invalid-thread"];
                 if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw ErrorCode["invalid-arguments"];
                 auto duration = vm -> getInt(1);
-                Vital::Type::Thread::Instance([=](Vital::Type::Thread::Instance* self) -> void {
-                    self -> sleep(duration);
+                Vital::Type::Timer::Instance([=](Vital::Type::Timer::Instance* self) -> void {
                     vm -> resume();
-                });
+                }, duration, 1);
                 vm -> pause();
                 vm -> setBool(true);
                 return 1;
