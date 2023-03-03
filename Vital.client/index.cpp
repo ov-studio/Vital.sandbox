@@ -29,31 +29,12 @@ int main() {
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
 
-    /*
-    Vital::Type::Stack::Instance stack;
-    stack.push("A");
-    stack.push("B");
-    stack.push("C");
-    stack.push("Name", "Anisa");
-    stack.push("Country", "RU");
-    auto serial = stack.serialize();
-    std::cout << "\nSerial: " << serial;
-
-    auto newstack = Vital::Type::Stack::Instance::deserialize(serial);
-    std::cout << "\n\nDeserialized!";
-    std::cout << "\n" << newstack.getString(0);
-    std::cout << "\n" << newstack.getString(1);
-    std::cout << "\n" << newstack.getString(2);
-    std::cout << "\n" << newstack.getString("Name");
-    std::cout << "\n" << newstack.getString("Country");
-    */
-
     Vital::Type::Timer::Instance([](Vital::Type::Timer::Instance* self) -> void {
         std::cout << "\nC++ Timer executed!";
     }, 1000, 5);
 
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
-        std::cout << "\n[Server]: " << arguments.getString("message");
+        std::cout << "\n[Server]: " << arguments.getString("message") << " " << arguments.getString("message2");
         Vital::Type::Stack::Instance buffer;
         buffer.push("message", "Hello From Client");
         Vital::System::Network::emit(buffer);

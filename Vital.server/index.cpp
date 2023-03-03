@@ -33,6 +33,7 @@ int main() {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Connected";
         Vital::Type::Stack::Instance buffer;
         buffer.push("message", "Hello From Server");
+        buffer.push("message2", "Wavin'");
         Vital::System::Network::emit(buffer, arguments.getUnsignedLong("peerID"), false);
     });
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
