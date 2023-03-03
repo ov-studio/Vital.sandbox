@@ -22,12 +22,15 @@
 
 namespace Vital::Type::Timer {
     // Instantiators //
+    std::map<Instance*, bool> instance;
+    bool isInstance(Instance* identifier) { return instance.find(identifier) != instance.end(); }
     Instance::Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval, int executions) {
+        instance.emplace(this, true);
         Vital::Type::Thread::Instance([=](Vital::Type::Thread::Instance* thread) -> void {
             int currentExecutions = 0;
             int targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
             std::cout << targetExecutions << " : " << currentExecutions;
-            while ((isUnloaded != true) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
+            while (isInstance(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
                 thread -> sleep(interval);
                 currentExecutions++;
                 exec(this);
@@ -35,5 +38,5 @@ namespace Vital::Type::Timer {
             destroy();
         }).detach();
     }
-    void Instance::destroy() { isUnloaded = true; }
+    void Instance::destroy() { instance.erase(this); }
 }

@@ -23,8 +23,6 @@
 
 namespace Vital::Type::Timer {
     class Instance {
-        private:
-            bool isUnloaded = false;
         public:
             // Instantiators //
             Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval = 0, int executions = 1);
