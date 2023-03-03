@@ -26,13 +26,14 @@ namespace Vital::Type::Timer {
         targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
         Vital::Type::Thread::Instance([&](Vital::Type::Thread::Instance* thread) -> void {
             while (!isUnloaded && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
+                std::cout << "\nexecuting...";
                 thread -> sleep(interval);
                 currentExecutions++;
                 exec(this);
             }
             isUnloaded = true;
         });
-        while (!isUnloaded) { isUnloaded = isUnloaded; }
+        // TODO: FIX THIS TIMER MAYBE USE A SHARED POINTER?
     }
     Instance::~Instance() {
         isUnloaded = true;
