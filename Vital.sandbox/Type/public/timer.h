@@ -30,6 +30,6 @@ namespace Vital::Type::Timer {
         public:
             // Instantiators //
             Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval = 0, int executions = 1);
-            ~Instance();
+            void destroy();
     };
 }
