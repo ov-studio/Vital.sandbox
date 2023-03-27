@@ -17,7 +17,6 @@ local imports = {
     pairs = pairs,
     tostring = tostring,
     tonumber = tonumber,
-    loadstring = loadstring,
     string = string
 }
 
