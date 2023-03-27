@@ -57,6 +57,7 @@ namespace Vital::System::File {
 
     bool write(std::string& path, const std::string& buffer) {
         resolve(path);
+        std::filesystem::create_directories(std::filesystem::path(path).parent_path().string());
         std::fstream handle(path, std::ios::out | std::ios::binary | std::ios::trunc);
         handle.write(buffer.data(), buffer.size());
         handle.close();
