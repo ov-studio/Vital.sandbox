@@ -84,7 +84,7 @@ namespace Vital::Sandbox::Lua::API {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw ErrorCode["invalid-arguments"];
                 std::string path = vm -> getString(1);
                 std::string buffer = vm -> getString(2);
-                vm -> setBool(Vital::System::File::write(path, reinterpret_cast<char*>(&buffer)));
+                vm -> setBool(Vital::System::File::write(path, buffer));
                 return 1;
             });
         });

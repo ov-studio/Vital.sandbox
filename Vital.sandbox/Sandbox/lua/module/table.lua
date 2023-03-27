@@ -21,8 +21,7 @@ local imports = {
     vcl = vcl,
     select = select,
     print = print,
-    getmetatable = getmetatable,
-    loadstring = loadstring
+    getmetatable = getmetatable
 }
 json, vcl = nil, nil
 
