@@ -13,18 +13,14 @@
 //////////////
 
 #pragma once
-#include <System/public/event.h>
-#include <System/public/network.h>
-#include <System/public/audio.h>
+#include <System/public/file.h>
 #include <Sandbox/lua/public/api.h>
-#include <Sandbox/js/public/api.h>
 
 
 ///////////
 // Root //
 //////////
 
-int main() {
     Vital::System::setPlatform("client");
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
@@ -77,18 +73,16 @@ int main() {
     std::string rwString = R"(
     test = function() {
         return Duktape;
+    std::string rootPath = "index.lua";
+    if (!Vital::System::File::exists(rootPath)) printError("'" + rootPath + "' non-existent");
+    else {
+        Vital::Sandbox::Lua::API::boot();
+        Vital::Sandbox::Lua::API::onErrorHandle(printError);
+        auto vm = new Vital::Sandbox::Lua::create();
+        vm -> loadString(Vital::System::File::read(rootPath));
     }
-    test()
-    )";
-    auto testVM = new Vital::Sandbox::JS::create();
-    testVM -> loadString(rwString);
-    std::string result = testVM -> getString(-1);
-    std::cout << "\n" << "RESULT: " << result;
-    */
-
     do {
-        Vital::System::Network::update();
-        Vital::System::Audio::update();
+
     } while (true);
     return 1;
 }

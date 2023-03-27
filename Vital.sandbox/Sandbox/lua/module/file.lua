@@ -8,17 +8,8 @@
 ----------------------------------------------------------------
 
 
------------------
---[[ Imports ]]--
------------------
-
-local imports = {
-    file = file
-}
-
-
 ---------------------
 --[[ Class: File ]]--
 ---------------------
 
-local file = class:create("file")
+local file = class:create("file", file)

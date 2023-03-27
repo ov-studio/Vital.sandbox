@@ -8,17 +8,8 @@
 ----------------------------------------------------------------
 
 
------------------
---[[ Imports ]]--
------------------
-
-local imports = {
-    crypto = crypto
-}
-
-
 -----------------------
 --[[ Class: Crypto ]]--
 -----------------------
 
-local crypto = class:create("crypto")
+local crypto = class:create("crypto", crypto)
