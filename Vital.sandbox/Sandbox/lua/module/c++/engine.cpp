@@ -49,5 +49,16 @@ namespace Vital::Sandbox::Lua::API {
                 return 1;
             });
         });
+
+        bind("engine", "loadString", [](vital_ref* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
+                std::string rwString = vm -> getString(1);
+                auto result = vm -> loadString(rwString);
+                vm -> setBool(result);
+                return 1;
+            });
+        });
     }
 }
