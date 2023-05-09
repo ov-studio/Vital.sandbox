@@ -17,7 +17,6 @@ local imports = {
     pairs = pairs,
     tostring = tostring,
     tonumber = tonumber,
-    loadstring = loadstring,
     string = string
 }
 
@@ -90,6 +89,6 @@ function string.public.minify(baseString)
     return [[
     local b, __b = string.split("]]..result..[[", "]]..(string.private.minifier)..[["), ""
     for i = 1, table.length(b), 1 do __b = __b..(string.char(b[i]) or "") end
-    loadstring(__b)()
+    engine.loadString(__b)()
     ]]
 end
