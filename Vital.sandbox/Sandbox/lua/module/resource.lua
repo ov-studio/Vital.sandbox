@@ -15,7 +15,6 @@
 local imports = {
     type = type,
     pairs = pairs,
-    loadstring = loadstring,
     debug = debug
 }
 debug = nil
@@ -89,15 +88,17 @@ function resource.public:load(name)
         manifest = table.decode(file.read("resources/"..name.."/manifest.vcl")),
         entity = {}
     }
+    --iprint(self.rw.manifest)
     if self.rw.manifest and self.rw.manifest.scripts and (imports.type(self.rw.manifest.scripts) == "table") then
         self.rw.isLoaded = true
         for i, j in imports.pairs(self.rw.manifest.scripts) do
             local isValid = false
-            local vHandler = file.read(self.rw.manifest.scripts)
-            if vHandler then
-                resource.private.setENV(imports.loadstring(vHandler), self.rw.env)
-                local status, error = assetify.imports.pcall(vHandler)
-                isValid = status
+            local rwScript = file.read(self.rw.manifest.scripts)
+            if rwScript then
+                --TODO: ADD ENV SUPPORT..
+                resource.private.setENV(engine.loadString(rwScript), self.rw.env)
+                --local status, error = assetify.imports.pcall(rwScript)
+                --isValid = status
             end
             if not isValid then
                 self.rw.isLoaded = false
