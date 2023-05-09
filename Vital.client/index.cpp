@@ -61,6 +61,9 @@ int main() {
         --print("IS 3D: "..tostring(sound.is3D(testSound)))
         --table.print(sound.getMixMatrix(testSound))
 
+        local rwBuffer = [[print('\nHurray, You ran me via `engine.loadString` successfully!')]]
+        engine.loadString(rwBuffer)
+
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
