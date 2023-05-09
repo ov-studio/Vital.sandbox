@@ -14,7 +14,11 @@
 
 #pragma once
 #include <System/public/file.h>
+#include <System/public/audio.h>
+#include <System/public/event.h>
+#include <System/public/network.h>
 #include <Sandbox/lua/public/api.h>
+#include <Sandbox/js/public/api.h>
 
 
 ///////////
