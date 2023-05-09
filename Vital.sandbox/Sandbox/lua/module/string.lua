@@ -17,6 +17,7 @@ local imports = {
     pairs = pairs,
     tostring = tostring,
     tonumber = tonumber,
+    loadstring = loadstring,
     string = string
 }
 
@@ -62,7 +63,7 @@ end
 
 function string.public.split(baseString, separator)
     if not baseString or (imports.type(baseString) ~= "string") or not separator or (imports.type(separator) ~= "string") then return false end
-    baseString = baseString..separator
+    baseString = baseString..string.public.match(separator, separator)
     local result = {}
     for matchValue in string.public.gmatch(baseString, "(.-)"..separator) do
         table.insert(result, matchValue)
@@ -83,12 +84,12 @@ end
 function string.public.minify(baseString)
     if not baseString or (imports.type(baseString) ~= "string") then return false end
     local result = ""
-    for i = 1, #baseString, 1 do
+    for i = 1, string.public.len(baseString), 1 do
         result = result..(string.private.minifier)..string.public.byte(baseString, i)
     end
     return [[
     local b, __b = string.split("]]..result..[[", "]]..(string.private.minifier)..[["), ""
-    for i = 1, #b, 1 do __b = __b..(string.char(b[i]) or "") end
+    for i = 1, table.length(b), 1 do __b = __b..(string.char(b[i]) or "") end
     loadstring(__b)()
     ]]
 end
