@@ -21,6 +21,7 @@
 // Root //
 //////////
 
+int main() {
     Vital::System::setPlatform("client");
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
     std::cout << "\nPlatform Serial: " << Vital::System::getSystemSerial();
@@ -81,6 +82,7 @@
         auto vm = new Vital::Sandbox::Lua::create();
         vm -> loadString(Vital::System::File::read(rootPath));
     }
+    */
     do {
 
     } while (true);

@@ -23,8 +23,6 @@
 // Root //
 //////////
 
-
-
 int main() {
     Vital::System::setPlatform("server");
     std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
