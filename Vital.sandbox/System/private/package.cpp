@@ -25,7 +25,7 @@
 namespace Vital::System::Package {
     bool create(std::string& path, std::vector<std::pair<std::string, char>> modules, bool isDebugMode) {
         Vital::System::File::resolve(path);
-        std::string result = "std::string fetchPackage(const std::string& path) {";
+        std::string result = "std::string fetchPackageModule(const std::string& path) {";
         result += "\nstd::string result;";
         if (isDebugMode) std::cout << "\nPackaging: " << path << "...";
         for (const auto& i : modules) {
@@ -45,7 +45,7 @@ namespace Vital::System::Package {
         result += "\n}";
         Vital::System::File::write(path, result);
         if (isDebugMode) std::cout << "\nPackaged: " << path;
-        return true
+        return true;
     }
 }
 
