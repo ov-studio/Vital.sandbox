@@ -29,6 +29,7 @@ namespace Vital::System::Package {
         result += "\n#include <System/public/package.h>";
         result += "\nstd::string fetchPackageModule(const std::string& path) {";
         result += "\nstd::string result;";
+        result += "\nstd::vector<std::string> module;";
         if (isDebugMode) std::cout << "\nPackaging: " << path;
         for (const auto& i : modules) {
             auto module = i.first;
@@ -39,11 +40,12 @@ namespace Vital::System::Package {
             else {
                 result += "\nif (path == \"" + i.first + "\") {\n";
                 result += Vital::System::Package::Module::write(Vital::System::File::read(module), i.second);
+                result += "module = buffer;";
                 result += "\n}";
                 if (isDebugMode) std::cout << "\nBundled Module: " << module;
             }
         }
-        result += "\nreturn Vital::System::Package::Module::read(buffer);";
+        result += "\nreturn Vital::System::Package::Module::read(module);";
         result += "\n}";
         Vital::System::File::write(path, result);
         if (isDebugMode) std::cout << "\nPackaged: " << path;
