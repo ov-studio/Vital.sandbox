@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <System/public/file.h>
+#include <System/public/package.h>
 #include <Sandbox/lua/public/index.h>
 #include <Sandbox/js/public/index.h>
 
@@ -22,29 +22,16 @@
 // Bundler //
 //////////////
 
-void outputConsole(const std::string& message) { std::cout << "\nVital.bundler | " << message; }
-void genPackage(const std::string& name, const std::string& entry, std::vector<std::string> modules) {
-    std::string rwBundle = "namespace Vital::Sandbox::" + name + " {\nstd::vector<std::string> rwBundle = {";
-    outputConsole("Packaging " + name + "...");
-    for (auto i : modules) {
-        std::string path = entry + i;
-        if (!Vital::System::File::exists(path)) {
-            outputConsole("Invalid File: " + path);
-            throw 0;
-        }
-        else {
-            rwBundle += "\nR\"" + Vital::Signature + "(\n" + Vital::System::File::read(path) + "\n)" + Vital::Signature + "\",";
-            outputConsole("Bundled File: " + path);
-        }
+void genPackage(const std::string& entry, std::vector<std::string> modules) {
+    std::vector<Vital::Type::Package::Module> rwModules;
+    for (const auto& i : modules) {
+        rwModules.push_back({i, entry + i, '\n'});
     }
-    rwBundle += "\n};\n}";
-    std::string path = entry + "bundle.h";
-    Vital::System::File::write(path, rwBundle);
-    outputConsole("Packaged " + name + " successfully!");
+    Vital::System::Package::create(entry + "bundle.h", rwModules, true);
 }
 
 int main() {
-    genPackage("Lua", "../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::module);
-    genPackage("JS", "../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::module);
+    genPackage("../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::module);
+    genPackage("../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::module);
     return 1;
 }
