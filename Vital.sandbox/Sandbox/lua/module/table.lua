@@ -40,6 +40,11 @@ table.private.inspectTypes = {
     }
 }
 
+function table.public.length(baseTable)
+    if not baseTable or (imports.type(baseTable) ~= "table") then return false end
+    return (baseTable.__T and baseTable.__T.length) or #baseTable
+end
+
 function table.public.pack(...)
     return {__T = {
         length = imports.select("#", ...)
