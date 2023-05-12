@@ -64,6 +64,13 @@ int main() {
         local rwBuffer = [[print('\nHurray, You ran me via `engine.loadString` successfully!')]]
         engine.loadString(rwBuffer)
 
+        local vclBuffer = [[
+            UI:
+                Login:
+                    "Background:Overlay": "SomethingInHere"
+        ]]
+        iprint(table.decode(vclBuffer))
+
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
