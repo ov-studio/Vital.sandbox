@@ -31,18 +31,17 @@ namespace Vital::System::Package {
         result += "\nstd::string result;";
         result += "\nstd::vector<std::string> module;";
         if (isDebugMode) std::cout << "\nPackaging: " << path;
-        for (const auto& i : modules) {
-            auto module = i.first;
-            if (!Vital::System::File::exists(module)) {
-                if (isDebugMode) std::cout << "\nInvalid Module: " << module;
+        for (auto& i : modules) {
+            if (!Vital::System::File::exists(i.path)) {
+                if (isDebugMode) std::cout << "\nInvalid Module: " << i.path;
                 return false;
             }
             else {
-                result += "\nif (path == \"" + i.first + "\") {\n";
-                result += Vital::System::Package::Module::write(Vital::System::File::read(module), i.second);
+                result += "\nif (path == \"" + i.identifier + "\") {\n";
+                result += Vital::System::Package::Module::write(Vital::System::File::read(i.path), i.delimiter);
                 result += "module = buffer;";
                 result += "\n}";
-                if (isDebugMode) std::cout << "\nBundled Module: " << module;
+                if (isDebugMode) std::cout << "\nBundled Module: " << i.path;
             }
         }
         result += "\nreturn Vital::System::Package::Module::read(module);";
