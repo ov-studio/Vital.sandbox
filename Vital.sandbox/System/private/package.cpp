@@ -23,7 +23,7 @@
 /////////////////////////////
 
 namespace Vital::System::Package {
-    bool create(std::string& path, std::vector<std::pair<std::string, char>> modules, bool isDebugMode) {
+    bool create(std::string& path, std::vector<Vital::Type::Package::Module> modules, bool isDebugMode) {
         Vital::System::File::resolve(path);
         std::string result = "\n#pragma once";
         result += "\n#include <System/public/package.h>";

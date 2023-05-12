@@ -21,7 +21,7 @@
 /////////////////////////////
 
 namespace Vital::System::Package {
-    extern bool create(std::string& path, std::vector<std::pair<std::string, char>> modules, bool isDebugMode = false);
+    extern bool create(std::string& path, std::vector<Vital::Type::Package::Module> modules, bool isDebugMode = false);
 }
 
 
