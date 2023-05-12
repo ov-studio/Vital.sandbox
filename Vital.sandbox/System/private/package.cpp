@@ -27,7 +27,7 @@ namespace Vital::System::Package {
         Vital::System::File::resolve(path);
         std::string result = "std::string fetchPackageModule(const std::string& path) {";
         result += "\nstd::string result;";
-        if (isDebugMode) std::cout << "\nPackaging: " << path << "...";
+        if (isDebugMode) std::cout << "\nPackaging: " << path;
         for (const auto& i : modules) {
             auto module = i.first;
             if (!Vital::System::File::exists(module)) {
