@@ -39,7 +39,7 @@ namespace Vital::System::Package {
             else {
                 result += "\nif (path == \"" + i.identifier + "\") {\n";
                 result += Vital::System::Package::Module::write(Vital::System::File::read(i.path), i.delimiter);
-                result += "module = buffer;";
+                result += "\nmodule = buffer;";
                 result += "\n}";
                 if (isDebugMode) std::cout << "\nBundled Module: " << i.path;
             }
