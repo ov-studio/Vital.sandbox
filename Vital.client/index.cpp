@@ -69,7 +69,7 @@ int main() {
                 Login:
                     "Background:Overlay": "SomethingInHere"
         ]]
-        iprint(table.decode(vclBuffer))
+        table.print(table.decode(vclBuffer))
 
         timer:create(function()
             print("EXECUTED TIMER")
