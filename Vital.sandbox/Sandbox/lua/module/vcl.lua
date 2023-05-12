@@ -218,7 +218,7 @@ function vcl.private.parseReturn(parser, buffer)
         parser.value = false
         if not parser.isErrored or (parser.isErrored == 1) then
             parser.errorMsg = string.format(parser.errorMsg, vcl.private.fetchLine(buffer, parser.ref), (parser.isType and ("Malformed "..parser.isType)) or "Invalid declaration")
-            imports.outputDebugString(parser.errorMsg)
+            imports.print(parser.errorMsg)
         end
     end
     return parser.value, parser.ref, not parser.isParsed, parser.root
