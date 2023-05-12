@@ -25,8 +25,8 @@ debug = nil
 -------------------------
 
 local resource = class:create("resource")
-resource,private.buffer = {}
-resource,private.globals = {
+resource.private.buffer = {}
+resource.private.globals = {
     namespace = namespace,
     thread = thread,
     timer = timer,
@@ -40,7 +40,7 @@ resource,private.globals = {
 }
 
 function resource.private.fetch(name)
-    return resource,private.buffer[name] or false
+    return resource.private.buffer[name] or false
 end
 
 function resource.private.setENV(exec, env)
@@ -84,7 +84,7 @@ end
 function resource.public:load(name)
     if not resource.public:isInstance(self) then return false end
     self.rw = {
-        env = table.clone(resource,private.globals, true),
+        env = table.clone(resource.private.globals, true),
         manifest = table.decode(file.read("resources/"..name.."/manifest.vcl")),
         entity = {}
     }
@@ -111,7 +111,7 @@ end
 
 function resource.public:unload()
     if not resource.public:isInstance(self) then return false end
-    resource,private.buffer[(self.name)] = nil
+    resource.private.buffer[(self.name)] = nil
     self:destroyInstance()
     return true
 end
