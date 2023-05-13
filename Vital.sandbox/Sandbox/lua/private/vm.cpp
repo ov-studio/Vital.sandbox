@@ -246,14 +246,16 @@ namespace Vital::Sandbox::Lua {
     }
     bool create::loadString(const std::string& buffer, bool isAutoLoad) {
         if (buffer.empty()) return false;
-        luaL_loadstring(vm, buffer.data());
-        if (isAutoLoad) {
-            bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
-            if (!status) {
-                API::error(getString(-1));
-                pop();
-                return false;
-            }
+        if (!isAutoLoad) {
+            const std::string __buffer = "function() " + buffer + " end";
+            luaL_loadstring(vm, __buffer.data());
+        }
+        else luaL_loadstring(vm, buffer.data());
+        bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
+        if (!status) {
+            API::error(getString(-1));
+            pop();
+            return false;
         }
         return true;
     }
