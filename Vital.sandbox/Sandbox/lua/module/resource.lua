@@ -96,7 +96,7 @@ function resource.public:load(name)
             local rwScript = file.read(self.rw.manifest.scripts)
             if rwScript then
                 --TODO: ADD ENV SUPPORT..
-                resource.private.setENV(engine.loadString(rwScript), self.rw.env)
+                resource.private.setENV(engine.loadString(rwScript, false), self.rw.env)
                 --local status, error = assetify.imports.pcall(rwScript)
                 --isValid = status
             end
