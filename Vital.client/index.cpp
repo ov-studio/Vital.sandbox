@@ -75,6 +75,14 @@ int main() {
             print("EXECUTED TIMER")
         end, 5000, 3)
         print("Tail stack reached")
+
+
+        local loadBuffer = [[
+            print("I AM LOADED!")
+        ]]
+        local result = engine.loadString(loadBuffer, false)
+        print(result)
+        result()
     )";
     //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
     auto testVM = new Vital::Sandbox::Lua::create();
