@@ -116,7 +116,7 @@ namespace Vital::Sandbox::Lua {
             void resume();
             void pause();
             int execute(std::function<int()> exec);
-            bool loadString(const std::string& buffer);
+            bool loadString(const std::string& buffer, bool isAutoLoad = true);
             bool throwError(const std::string& error = "");
     };
     typedef create vital_vm;
