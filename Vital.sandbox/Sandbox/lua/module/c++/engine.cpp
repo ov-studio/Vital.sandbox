@@ -55,10 +55,11 @@ namespace Vital::Sandbox::Lua::API {
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
                 std::string rwString = vm -> getString(1);
-                bool result;
+                bool result = false;
                 if (vm -> isBool(2)) {
                     bool isAutoLoad = vm -> getBool(2);
                     result = vm -> loadString(rwString, isAutoLoad);
+                    if (result) return 1;
                 }
                 else result = vm -> loadString(rwString);
                 vm -> setBool(result);
