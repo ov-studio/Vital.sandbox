@@ -95,10 +95,9 @@ function resource.public:load(name)
             local isValid = false
             local rwScript = file.read(self.rw.manifest.scripts)
             if rwScript then
-                --TODO: ADD ENV SUPPORT..
-                resource.private.setENV(engine.loadString(rwScript, false), self.rw.env)
-                --local status, error = assetify.imports.pcall(rwScript)
-                --isValid = status
+                local rwHandle = engine.loadString(rwScript, false)
+                isValid = (rwHandler and true) or false
+                if  isValid then resource.private.setENV(rwHandle, self.rw.env) end
             end
             if not isValid then
                 self.rw.isLoaded = false
