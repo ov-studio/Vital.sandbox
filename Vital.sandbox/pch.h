@@ -13,9 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(WINDOWS)
-    #include <Windows.h>
-#endif
 #include <iostream>
 #include <algorithm>
 #include <chrono>

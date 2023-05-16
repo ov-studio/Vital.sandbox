@@ -15,6 +15,9 @@
 #pragma once
 #include <System/public/inspect.h>
 #include <System/public/crypto.h>
+#if defined(WINDOWS)
+    #include <Windows.h>
+#endif
 
 
 ////////////////////
