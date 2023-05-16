@@ -31,6 +31,7 @@ namespace Vital::System {
         }
         else if (platform != "server") return false;
         systemPlatform = platform;
+        SetConsoleOutputCP(CP_UTF8);
         return true;
     }
     std::string getPlatform() { return systemPlatform; }
