@@ -2,6 +2,7 @@ workspace "Vital.sandbox"
     configurations { "Debug", "Release" }
     location ".solution"
     platforms { "x86", "x64" }
+    buildoptions { "/utf-8" }
     outputdir = "%{cfg.system}-%{cfg.platform}-%{cfg.buildcfg}"
 
     filter "system:windows"
