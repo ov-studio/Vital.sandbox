@@ -45,7 +45,7 @@ namespace Vital::Sandbox::Lua {
         "math/quat.lua",
         "math/matrix.lua",
         "string.lua",
-        "thread.lua",
+        "threader.lua",
         "timer.lua",
         "engine.lua",
         "file.lua",
