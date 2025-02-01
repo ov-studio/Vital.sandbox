@@ -20,6 +20,7 @@ local imports = {
     json = json,
     vcl = vcl,
     select = select,
+    unpack = unpack,
     print = print,
     getmetatable = getmetatable
 }
@@ -51,22 +52,22 @@ function table.public.pack(...)
     }, ...}
 end
 
-local __table_unpack = table.public.unpack
-function table.public.unpack(baseTable)
+function table.public.unpack(baseTable, length)
+    length = tonumber(length)
     if not baseTable or (imports.type(baseTable) ~= "table") then return false end
-    return __table_unpack(baseTable, 1, (baseTable.__T and baseTable.__T.length) or #baseTable)
+    return imports.unpack(baseTable, 1, length or table.public.length(baseTable))
 end
 
-function table.public.encode(baseTable, encoding)
+function table.public.encode(baseTable, format, ...)
     if not baseTable or (imports.type(baseTable) ~= "table") then return false end
-    if encoding == "json" then return imports.json.encode(baseTable)
-    else return imports.vcl.encode(baseTable) end
+    if format == "json" then return imports.json.encode(baseTable, ...)
+    else return imports.vcl.encode(baseTable, ...) end
 end
 
-function table.public.decode(baseString, encoding)
+function table.public.decode(baseString, format, ...)
     if not baseString or (imports.type(baseString) ~= "string") then return false end
-    if encoding == "json" then return imports.json.decode(baseString)
-    else return imports.vcl.decode(baseString) end
+    if format == "json" then return imports.json.decode(baseString, ...)
+    else return imports.vcl.decode(baseString, ...) end
 end
 
 function table.public.clone(baseTable, isRecursive)
@@ -85,7 +86,7 @@ end
 function table.private.inspect(baseTable, showHidden, limit, level, buffer, skipTrim)
     local dataType = imports.type(baseTable)
     showHidden, limit, level, buffer = (showHidden and true) or false, math.max(1, imports.tonumber(limit) or 0) + 1, math.max(1, imports.tonumber(level) or 0), buffer or table.public.pack()
-    if (dataType ~= "table") then
+    if dataType ~= "table" then
         table.public.insert(buffer, ((table.private.inspectTypes.raw[dataType] and (((dataType == "string") and string.format("%q", baseTable)) or imports.tostring(baseTable))) or ("<"..imports.tostring(baseTable)..">")).."\n")
     elseif level > limit then
         table.public.insert(buffer, "{...}\n")
@@ -124,7 +125,7 @@ function table.public.keys(baseTable)
             table.public.insert(__baseTable, i)
         end
     end
-    for i = 1, (baseTable.__T and baseTable.__T.length) or #baseTable, 1 do
+    for i = 1, table.public.length(baseTable), 1 do
         if not indexCache[i] then
             table.public.insert(__baseTable, i)
         end
@@ -141,7 +142,7 @@ function table.public.insert(baseTable, index, value, isForced)
         value, index = index, nil
     end
     baseTable.__T = baseTable.__T or {}
-    baseTable.__T.length = baseTable.__T.length or #baseTable
+    baseTable.__T.length = table.public.length(baseTable)
     index = index or (baseTable.__T.length + 1)
     if (index <= 0) or (index > (baseTable.__T.length + 1)) then return false end
     if index <= baseTable.__T.length then
@@ -159,8 +160,9 @@ function table.public.remove(baseTable, index)
     index = imports.tonumber(index)
     if not baseTable or (imports.type(baseTable) ~= "table") or not index then return false end
     baseTable.__T = baseTable.__T or {}
-    baseTable.__T.length = baseTable.__T.length or #baseTable
+    baseTable.__T.length = table.public.length(baseTable)
     if (index <= 0) or (index > baseTable.__T.length) then return false end
+    local value = baseTable[index]
     baseTable[index] = nil
     if index < baseTable.__T.length then
         for i = index + 1, baseTable.__T.length, 1 do
@@ -169,13 +171,17 @@ function table.public.remove(baseTable, index)
         end
     end
     baseTable.__T.length = baseTable.__T.length - 1
-    return true
+    return value
 end
 
 function table.public.forEach(baseTable, exec)
     if not baseTable or (imports.type(baseTable) ~= "table") or not exec or (imports.type(exec) ~= "function") then return false end
-    for i = 1, (baseTable.__T and baseTable.__T.length) or #baseTable, 1 do
+    for i = 1, table.public.length(baseTable), 1 do
         exec(i, baseTable[i])
     end
     return true
 end
+
+unpack = function(...) return table.public.unpack(...) end
+inspect = function(...) return table.public.inspect(...) end
+iprint = function(...) return imports.print(table.public.inspect(...)) end
