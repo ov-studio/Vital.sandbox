@@ -20,7 +20,7 @@ local imports = {
     json = json,
     vcl = vcl,
     select = select,
-    unpack = unpack,
+    unpack = table.unpack,
     print = print,
     getmetatable = getmetatable
 }
