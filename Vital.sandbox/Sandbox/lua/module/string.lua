@@ -27,6 +27,7 @@ local imports = {
 
 local module = {
     ["stringn"] = class:create("stringn", string),
+    ["utf8n"] = class:create("utf8n", utf8),
     ["string"] = class:create("string", table.clone(utf8))
 }
 utf8 = nil
@@ -88,8 +89,8 @@ for i, j in pairs(module) do
             table.insert(result, j.public.sub(baseString, index, ref - 1))
             index = ref + length
         end 
+        return result
     end
-end
 
     function j.public.kern(baseString, kerner)
         if not baseString or (imports.type(baseString) ~= "string") then return false end
@@ -141,6 +142,6 @@ end
         baseString = j.public.gsub(baseString, "\n", " ") --Removes newlines
         baseString = j.public.gsub(baseString, "%s+$", "") --Removes trailing spaces
         baseString = j.public.gsub(baseString, "%s+", " ") --Removes trailing spaces
+        return baseString
     end
-    ]]
 end
