@@ -84,16 +84,14 @@ function thread.public:createPromise(callback, config)
                 thread.private.resolve(i, isResolver, ...)
             end
             thread.private.promises[cPromise] = nil
-            imports.collectgarbage()
+            imports.collectgarbage("collect")
         end, 1, 1, ...)
         return true
     end
     thread.private.promises[cPromise] = {}
     if not config.isAsync then execFunction(callback, cPromise.resolve, cPromise.reject)
     else thread.public:create(function(self) execFunction(callback, self, cPromise.resolve, cPromise.reject) end):resume() end
-    if config.timeout then
-        cTimer = timer:create(function() cPromise.reject("Promise - Timed Out") end, config.timeout, 1)
-    end
+    if config.timeout then cTimer = timer:create(function() cPromise.reject("Promise - Timed Out") end, config.timeout, 1) end
     return cPromise
 end
 
@@ -113,6 +111,7 @@ function thread.public:status()
 end
 
 function thread.public:pause()
+    if not thread.public:getThread() then return false end
     return imports.coroutine.yield()
 end
 
