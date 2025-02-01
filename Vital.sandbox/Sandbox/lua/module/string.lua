@@ -31,8 +31,6 @@ local module = {
     ["string"] = class:create("string", table.clone(utf8))
 }
 utf8 = nil
-
-function string.public.parseHex(baseString)
 for i, j in imports.pairs(imports.string) do
     module.string.public[i] = (not module.string.public[i] and j) or module.string.public[i]
 end
