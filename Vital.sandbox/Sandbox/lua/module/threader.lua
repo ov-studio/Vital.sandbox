@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
---[[ Resource: Vital.sandbox
-     Script: Sandbox: lua: module: thread.lua
+--[[ Resource: Assetify Library
+     Script: utilities: sandbox: threader.lua
      Author: vStudio
-     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     DOC: 14/09/2022
-     Desc: Thread Utilities ]]--
+     Developer(s): Aviril, Tron, Mario, Аниса
+     DOC: 19/10/2021
+     Desc: Threader Utilities ]]--
 ----------------------------------------------------------------
 
 
