@@ -253,7 +253,7 @@ function network.public:emit(...)
     else
         if not payload.isReceiver then
             --TODO: FINALIZE LATER
-            imports.network.emit("Assetify:Networker:API", payload.isLatent, "testarg1", "testarg2")
+            imports.network.emit("Assetify:Networker:API", payload.isLatent, table.encode(payload))
             --[[
             if not payload.isLatent then
                 imports.network.emit("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
@@ -263,9 +263,9 @@ function network.public:emit(...)
             ]]
         else
             if not payload.isLatent then
-                imports.network.emit(payload.isReceiver, "Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
+                imports.network.emit(payload.isReceiver, "Assetify:Networker:API", resourceRoot, network.public.identifier, table.encode(payload))
             else
-                imports.network.emitLatent(payload.isReceiver, "Assetify:Networker:API", network.public.bandwidth, false, resourceRoot, network.public.identifier, payload)
+                imports.network.emitLatent(payload.isReceiver, "Assetify:Networker:API", network.public.bandwidth, false, resourceRoot, network.public.identifier, table.encode(payload))
             end
         end
     end
