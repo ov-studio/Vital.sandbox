@@ -87,6 +87,7 @@ namespace Vital::System {
         clientTick = clientTick ? clientTick : getApplicationTick();
         return getSystemTick() - clientTick;
     }
+
     bool resetClientTick() {
         clientTick = getApplicationTick();
         return true;
