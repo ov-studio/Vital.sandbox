@@ -32,7 +32,7 @@ namespace Vital::Sandbox::Lua::API {
                 bool isPlatformClient = Vital::System::getPlatform() == "client";
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isPlatformClient && (!vm -> isNumber(2)))) throw ErrorCode["invalid-arguments"];
                 int stackArgCount = vm -> getArgCount();
-                int queryArgCount = isPlatformClient ? stackArgCount - 1 : stackArgCount - 2;
+                int queryArgCount = stackArgCount - (isPlatformClient ? 1 : 2);
                 std::string networkName = vm -> getString(1);
                 int peerID = isPlatformClient ? 0 : vm -> getInt(2);
                 Vital::Type::Stack::Instance networkArgs;
