@@ -190,6 +190,7 @@ namespace Vital::Type::Stack {
             else if (!strcmp(rwType, typeid(unsigned long long).name())) rwValue = std::to_string(rwUnsignedLongLong);
             return {rwType, rwValue};
         }
+        throw ErrorCode["invalid-result"];
     }
     Value Value::deserialize(std::pair<std::string, std::string> serial) {
         auto rwType = serial.first.c_str();
@@ -206,6 +207,7 @@ namespace Vital::Type::Stack {
             else if (!strcmp(rwType, typeid(unsigned long).name())) return Value(std::stoul(rwValue));
             else if (!strcmp(rwType, typeid(unsigned long long).name())) return Value(std::stoull(rwValue));
         }
+        throw ErrorCode["invalid-result"];
     }
 }
 
