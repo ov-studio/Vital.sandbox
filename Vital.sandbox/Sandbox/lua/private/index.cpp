@@ -51,6 +51,7 @@ namespace Vital::Sandbox::Lua {
         "file.lua",
         "crypto.lua",
         "network.lua",
+        "rest.lua",
         "resource.lua"
     };
 }
