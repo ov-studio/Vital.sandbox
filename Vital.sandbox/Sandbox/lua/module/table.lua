@@ -95,7 +95,9 @@ function table.private.inspect(baseTable, showHidden, limit, level, buffer, skip
         local indent = string.rep(" ", 2*level)
         for k, v in imports.pairs(baseTable) do
             table.public.insert(buffer, indent..imports.tostring(k)..": ")
-            table.private.inspect(v, showHidden, limit, level + 1, buffer, true)
+            if k ~= "__index" then
+                table.private.inspect(v, showHidden, limit, level + 1, buffer, true)
+            end
         end
         if showHidden then
             local metadata = imports.getmetatable(baseTable)
