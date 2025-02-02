@@ -40,7 +40,7 @@ int main() {
         buffer.push("message", "Hello From Client");
         Vital::System::Network::emit(buffer);
     });
-    Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
+    Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Server]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
@@ -76,6 +76,8 @@ int main() {
         local result = engine.loadString(loadBuffer, false)
         print(result)
         result()
+
+        network:emit("mynetwork", true, false, "test1", "test2")
     )";
     //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
     auto testVM = new Vital::Sandbox::Lua::create();

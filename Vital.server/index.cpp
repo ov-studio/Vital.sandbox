@@ -27,7 +27,7 @@ int main() {
     Vital::System::setPlatform("server");
     std::cout << "Launched Platform: " << Vital::System::getPlatform() << std::endl;
 
-    Vital::System::Event::bind("Network:@PeerConnection", [](Vital::Type::Stack::Instance arguments) -> void {
+    Vital::System::Event::bind("Network:@PeerConnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Connected";
         Vital::Type::Stack::Instance buffer;
         buffer.push("message", "Hello From Server");
@@ -37,7 +37,7 @@ int main() {
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("message");
     });
-    Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
+    Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});

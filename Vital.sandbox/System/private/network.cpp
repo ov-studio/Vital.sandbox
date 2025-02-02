@@ -67,7 +67,7 @@ namespace Vital::System::Network {
                     networkPeers.emplace(peerID, networkEvent.peer);
                     Vital::Type::Stack::Instance eventArguments;
                     eventArguments.push("peerID", getPeerID(networkEvent.peer));
-                    Vital::System::Event::emit("Network:@PeerConnection", eventArguments);
+                    Vital::System::Event::emit("Network:@PeerConnect", eventArguments);
                     peerID++;
                 }
                 break;
@@ -82,7 +82,7 @@ namespace Vital::System::Network {
             case ENET_EVENT_TYPE_DISCONNECT: {
                 Vital::Type::Stack::Instance eventArguments;
                 if (Vital::System::getPlatform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
-                Vital::System::Event::emit("Network:@PeerDisconnection", eventArguments);
+                Vital::System::Event::emit("Network:@PeerDisconnect", eventArguments);
                 if (Vital::System::getPlatform() == "client") stop();
                 else {
                     networkPeers.erase(getPeerID(networkEvent.peer));
@@ -109,15 +109,15 @@ namespace Vital::System::Network {
     Vital::Type::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
 
     // Utils //
-    bool emit(Vital::Type::Stack::Instance buffer, Vital::Type::Network::PeerID peer, bool isLatent) {
+    bool emit(Vital::Type::Stack::Instance buffer, Vital::Type::Network::PeerID peerID, bool isLatent) {
         if (!isConnected()) return false;
         const std::string bufferSerial = Vital::System::Crypto::encode(buffer.serialize());
-        if ((Vital::System::getPlatform() == "client") || (peer <= 0)) {
+        if ((Vital::System::getPlatform() == "client") || (peerID <= 0)) {
             enet_host_broadcast(networkInstance, 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
         }
         else {
-            if (!networkPeers.at(peer)) return false;
-            enet_peer_send(networkPeers.at(peer), 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
+            if (!networkPeers.at(peerID)) return false;
+            enet_peer_send(networkPeers.at(peerID), 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
         }
         return true;
     }

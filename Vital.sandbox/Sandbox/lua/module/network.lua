@@ -100,7 +100,8 @@ function network.private.execNetwork(cNetwork, exec, cThread, serial, payload)
     else
         if cThread then payload.processArgs = table.pack(exec(cThread, table.unpack(payload.processArgs)))
         else payload.processArgs = table.pack(exec(table.unpack(payload.processArgs))) end
-        if not payload.isRemote then imports.triggerEvent("Assetify:Networker:API", resourceRoot, serial, payload)
+        if not payload.isRemote then
+            --imports.triggerEvent("Assetify:Networker:API", resourceRoot, serial, payload)
         else
             if not payload.isReceiver or not network.public.isServerInstance then
                 if not payload.isLatent then
@@ -248,14 +249,18 @@ function network.public:emit(...)
     end
     payload.processArgs = cArgs
     if not payload.isRemote then
-        imports.triggerEvent("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
+        --imports.triggerEvent("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
     else
         if not payload.isReceiver then
+            --TODO: FINALIZE LATER
+            imports.network.emit("Assetify:Networker:API", payload.isLatent, "testarg1", "testarg2")
+            --[[
             if not payload.isLatent then
                 imports.network.emit("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
             else
                 imports.network.emitLatent("Assetify:Networker:API", network.public.bandwidth, false, resourceRoot, network.public.identifier, payload)
             end
+            ]]
         else
             if not payload.isLatent then
                 imports.network.emit(payload.isReceiver, "Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
@@ -296,14 +301,18 @@ function network.public:emitCallback(...)
     end
     payload.processArgs = cArgs
     if not payload.isRemote then
-        imports.triggerEvent("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
+        ---imports.triggerEvent("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
     else
         if not network.public.isServerInstance then
+            --imports.network.emit("Assetify:Networker:API", payload.isLatent, network.public.identifier, payload)
+            imports.network.emit("Assetify:Networker:API", payload.isLatent, "testarg1", "testarg2")
+            --[[
             if not payload.isLatent then
-                imports.network.emit("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
+                imports.network.emit("Assetify:Networker:API", payload.isLatent, network.public.identifier, payload)
             else
                 imports.network.emitLatent("Assetify:Networker:API", network.public.bandwidth, false, resourceRoot, network.public.identifier, payload)
             end
+            ]]
         else
             if not payload.isLatent then
                 imports.network.emit(payload.isReceiver, "Assetify:Networker:API", resourceRoot, network.public.identifier, payload)

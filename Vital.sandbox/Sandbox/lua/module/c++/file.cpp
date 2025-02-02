@@ -23,6 +23,7 @@
 
 namespace Vital::Sandbox::Lua::API {
     static bool isBound = false;
+
     void vSandbox_File() {
         if (isBound) return; isBound = true;
 
