@@ -27,17 +27,22 @@ int main() {
     Vital::System::setPlatform("server");
     std::cout << "Launched Platform: " << Vital::System::getPlatform() << std::endl;
 
+    auto testVM = new Vital::Sandbox::Lua::create();
+
     Vital::System::Event::bind("Network:@PeerConnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Connected";
         Vital::Type::Stack::Instance buffer;
-        buffer.push("message", "Hello From Server");
-        buffer.push("message2", "Wavin'");
+        buffer.push("Network:message", "Hello From Server");
         Vital::System::Network::emit(buffer, arguments.getUnsignedLong("peerID"), false);
     });
-    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
-        // TODO: Handle exceptions!!
-        //std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("message");
-        if (arguments.isString("Network:name")) std::cout << "\n Received Network:name - " << arguments.getString("Network:name");
+    Vital::System::Event::bind("Network:@PeerMessage", [=](Vital::Type::Stack::Instance arguments) -> void {
+        //if (arguments.isString("Network:message")) std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("Network:message");
+        if (arguments.isString("Network:name")) {
+            std::cout << "\n Received Network:name - " << arguments.getString("Network:name");
+            // TODO: Handle it better  to avoid injection/hacky solutions; store a ref in memory somehow....
+            std::string rw = "network.execNetwork([[" + arguments.getString("Network:payload") + "]])";
+            testVM -> loadString(rw);
+        }
     });
     Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Disconnected";
@@ -64,7 +69,6 @@ int main() {
         ]]
         iprint(table.decode(test))
     )";
-    auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
 
     do {

@@ -34,9 +34,11 @@ network.private.cache = {
     execSerials = {}
 }
 
---[[
-imports.addEvent("Assetify:Networker:API", true)
-imports.addEventHandler("Assetify:Networker:API", root, function(serial, payload)
+--TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
+function network.public.execNetwork(payload)
+    payload = table.decode(payload)
+    iprint(payload)
+    --[[
     if not serial or not payload or not payload.processType or (payload.isRestricted and (serial ~= network.public.identifier)) then return false end
     if payload.processType == "emit" then
         local cNetwork = network.public:fetch(payload.networkName)
@@ -76,8 +78,8 @@ imports.addEventHandler("Assetify:Networker:API", root, function(serial, payload
             end
         end
     end
-end)
-]]
+    ]]
+end
 
 function network.private.fetchArg(index, pool)
     index = imports.tonumber(index) or 1
