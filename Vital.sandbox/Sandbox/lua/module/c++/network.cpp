@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua::API {
                 for (int i = stackArgCount - queryArgCount; i <= stackArgCount; i++) {
                     if (vm -> isString(i)) networkArgs.push(vm -> getString(i));
                     else if (vm -> isNumber(i)) networkArgs.push(vm -> getInt(i));
-                    else throw ErrorCode["invalid-arguments"];
+                    throw ErrorCode["invalid-arguments"];
                 }
                 std::cout << "trying to emit data" << std::endl;
                 //Vital::System::Network::emit(networkName, peerID, networkArgs);
