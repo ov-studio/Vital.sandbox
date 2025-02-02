@@ -43,7 +43,7 @@ int main() {
     Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Server]: Disconnected";
     });
-    Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
+    Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
 
     Vital::System::Audio::start();
     Vital::Sandbox::Lua::API::boot();
@@ -99,7 +99,7 @@ int main() {
     }
     */
     do {
-
+        Vital::System::Network::update();
     } while (true);
     return 1;
 }

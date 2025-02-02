@@ -40,7 +40,7 @@ int main() {
     Vital::System::Event::bind("Network:@PeerDisconnection", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Disconnected";
     });
-    Vital::System::Network::start(Vital::Type::Network::Address{"127.0.0.1", 22003});
+    Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
 
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
