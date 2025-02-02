@@ -52,6 +52,15 @@ int main() {
             print("EXECUTED TIMER")
         end, 5000, 3)
         print("Tail stack reached")
+
+        --iprint(string) causes crash
+        local test = {
+            test = "testing1",
+            test2 = {
+                test3 = "testing2"
+            }
+        }
+        iprint(test)
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
