@@ -60,7 +60,10 @@ int main() {
                 test3 = "testing2"
             }
         }
-        iprint(test)
+        for i, j in pairs(string) do
+            print(i, j)
+        end
+        --iprint(test)
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
