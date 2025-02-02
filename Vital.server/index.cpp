@@ -52,7 +52,15 @@ int main() {
             print("EXECUTED TIMER")
         end, 5000, 3)
         print("Tail stack reached")
-        iprint(string)
+
+        --vcl test
+        local test = [[
+            a: "hello"
+            b:
+                c: "world"
+                d: "!"
+        ]]
+        iprint(table.decode(test))
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
