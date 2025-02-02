@@ -53,6 +53,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<int>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<int>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<int>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     float Value::getFloat() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -65,6 +66,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<float>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<float>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<float>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     double Value::getDouble() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -77,6 +79,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<double>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<double>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<double>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     long Value::getLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -89,6 +92,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<long>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<long>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<long>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     long long Value::getLongLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -101,6 +105,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<long long>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<long long>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<long long>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     long double Value::getLongDouble() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -113,6 +118,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<long double>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<long double>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<long double>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     unsigned Value::getUnsigned() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -125,6 +131,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<unsigned>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<unsigned>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<unsigned>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     unsigned long Value::getUnsignedLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -137,6 +144,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<unsigned long>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<unsigned long>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<unsigned long>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
     unsigned long long Value::getUnsignedLongLong() {
         if (!isNumber()) throw ErrorCode["invalid-result"];
@@ -149,6 +157,7 @@ namespace Vital::Type::Stack {
         else if (!strcmp(rwType, typeid(unsigned).name())) return static_cast<unsigned long long>(rwUnsigned);
         else if (!strcmp(rwType, typeid(unsigned long).name())) return static_cast<unsigned long long>(rwUnsignedLong);
         else if (!strcmp(rwType, typeid(unsigned long long).name())) return static_cast<unsigned long long>(rwUnsignedLongLong);
+        throw ErrorCode["invalid-result"];
     }
 
     // Utils //
