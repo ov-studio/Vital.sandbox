@@ -25,7 +25,7 @@
 
 int main() {
     Vital::System::setPlatform("server");
-    std::cout << "\nLaunched Platform: " << Vital::System::getPlatform();
+    std::cout << "Launched Platform: " << Vital::System::getPlatform() << std::endl;
 
     Vital::System::Event::bind("Network:@PeerConnection", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Connected";
