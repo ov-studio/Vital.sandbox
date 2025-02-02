@@ -54,16 +54,17 @@ int main() {
         print("Tail stack reached")
 
         --iprint(string) causes crash
+        for i, j in pairs(string) do
+            print(i, j)
+        end
+
         local test = {
             test = "testing1",
             test2 = {
                 test3 = "testing2"
             }
         }
-        for i, j in pairs(string) do
-            print(i, j)
-        end
-        --iprint(test)
+        iprint(test)
     )";
     auto testVM = new Vital::Sandbox::Lua::create();
     testVM -> loadString(rwString);
