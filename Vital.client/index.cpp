@@ -64,13 +64,10 @@ int main() {
         local rwBuffer = [[print('\nHurray, You ran me via `engine.loadString` successfully!')]]
         engine.loadString(rwBuffer)
 
-        --[[
-        --TODO: 2 timers cause crash
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
         print("Tail stack reached")
-        ]]
 
         local loadBuffer = [[
             print("I AM LOADED!")
