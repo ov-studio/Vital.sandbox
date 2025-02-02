@@ -110,15 +110,14 @@ namespace Vital::System::Network {
 
     // Utils //
     bool emit(Vital::Type::Stack::Instance buffer, Vital::Type::Network::PeerID peer, bool isLatent) {
-        // TODO: ADD LATENT MODE
         if (!isConnected()) return false;
         const std::string bufferSerial = Vital::System::Crypto::encode(buffer.serialize());
         if ((Vital::System::getPlatform() == "client") || (peer <= 0)) {
-            if (!isLatent) enet_host_broadcast(networkInstance, 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), ENET_PACKET_FLAG_RELIABLE));
+            if (!isLatent) enet_host_broadcast(networkInstance, 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
         }
         else {
             if (!networkPeers.at(peer)) return false;
-            if (!isLatent) enet_peer_send(networkPeers.at(peer), 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), ENET_PACKET_FLAG_RELIABLE));
+            if (!isLatent) enet_peer_send(networkPeers.at(peer), 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
         }
         return true;
     }
