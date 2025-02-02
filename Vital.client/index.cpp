@@ -64,11 +64,13 @@ int main() {
         local rwBuffer = [[print('\nHurray, You ran me via `engine.loadString` successfully!')]]
         engine.loadString(rwBuffer)
 
+        --[[
+        --TODO: 2 timers cause crash
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
         print("Tail stack reached")
-
+        ]]
 
         local loadBuffer = [[
             print("I AM LOADED!")
@@ -77,7 +79,9 @@ int main() {
         print(result)
         result()
 
-        network:emit("mynetwork", true, false, "test1", "test2")
+        timer:create(function()
+            network:emit("mynetwork", true, false, "test1", "test2")
+        end, 5000, 1)
     )";
     //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
     auto testVM = new Vital::Sandbox::Lua::create();

@@ -35,7 +35,9 @@ int main() {
         Vital::System::Network::emit(buffer, arguments.getUnsignedLong("peerID"), false);
     });
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
-        std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("message");
+        // TODO: Handle exceptions!!
+        //std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("message");
+        if (arguments.isString("Network:name")) std::cout << "\n Received Network:name - " << arguments.getString("Network:name");
     });
     Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Disconnected";
