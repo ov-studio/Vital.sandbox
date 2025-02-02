@@ -30,21 +30,16 @@ namespace Vital::Sandbox::Lua::API {
         bind("network", "emit", [](vital_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                bool isPlatformClient = Vital::System::getPlatform() == "client";
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isPlatformClient && (!vm -> isNumber(2)))) throw ErrorCode["invalid-arguments"];
-                int stackArgCount = vm -> getArgCount();
-                int queryArgCount = stackArgCount - (isPlatformClient ? 2 : 3);
-                std::string networkName = vm -> getString(1);
-                int peerID = isPlatformClient ? 0 : vm -> getInt(2);
-                bool isLatent = vm -> isBool(stackArgCount - queryArgCount - 1) ? vm -> getBool(stackArgCount - queryArgCount - 1) : false;
+                bool isClient = Vital::System::getPlatform() == "client";
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isClient && (!vm -> isNumber(2)))) throw ErrorCode["invalid-arguments"];
+                int queryArg = isClient ? 3 : 4;
+                std::string name = vm -> getString(1);
+                int peerID = isClient ? 0 : vm -> getInt(2);
+                bool isLatent = vm -> isBool(queryArg - 1) ? vm -> getBool(queryArg - 1) : false;
+                std::string payload = vm -> isString(queryArg) ? vm -> getString(queryArg) : "";
                 Vital::Type::Stack::Instance networkArgs;
-                std::cout << "Network name: " << networkName << std::endl;
-                networkArgs.push("Network:name", networkName);
-                for (int i = stackArgCount - queryArgCount + 1; i <= stackArgCount; i++) {
-                    if (vm -> isString(i)) networkArgs.push(vm -> getString(i));
-                    else if (vm -> isNumber(i)) networkArgs.push(vm -> getInt(i));
-                    else throw ErrorCode["invalid-arguments"];
-                }
+                networkArgs.push("Network:name", name);
+                networkArgs.push("Network:payload", payload);
                 Vital::System::Network::emit(networkArgs, peerID, isLatent);
                 vm -> setBool(true);
                 return 1;
