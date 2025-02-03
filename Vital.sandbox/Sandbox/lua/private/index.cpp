@@ -34,7 +34,8 @@ namespace Vital::Sandbox::Lua {
         {"math", luaopen_math},
         {"debug", luaopen_debug},
         {"coroutine", luaopen_coroutine},
-        {"utf8", luaopen_utf8}
+        {"utf8", luaopen_utf8},
+        {"json", luaopen_rapidjson}
     };
 
     std::vector<std::string> module = {

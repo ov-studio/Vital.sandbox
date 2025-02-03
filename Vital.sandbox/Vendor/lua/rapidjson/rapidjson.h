@@ -1,0 +1,1 @@
+LUALIB_API int luaopen_rapidjson(lua_State* L);
