@@ -62,10 +62,6 @@ int main() {
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
-
-        timer:create(function()
-            print("EXECUTED TIMER")
-        end, 1000, 3)
     )";
     luaVM -> loadString(rwString);
 
