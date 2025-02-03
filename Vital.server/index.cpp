@@ -27,6 +27,11 @@ int main() {
     Vital::System::setPlatform("server");
     std::cout << "Launched Platform: " << Vital::System::getPlatform() << std::endl;
 
+    Vital::Sandbox::Lua::API::boot();
+    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
+        std::cout << "\n" << err;
+    });
+
     auto testVM = new Vital::Sandbox::Lua::create();
 
     Vital::System::Event::bind("Network:@PeerConnect", [](Vital::Type::Stack::Instance arguments) -> void {
@@ -49,25 +54,15 @@ int main() {
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
 
-    Vital::Sandbox::Lua::API::boot();
-    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
-        std::cout << "\n" << err;
-    });
-
     std::string rwString = R"(
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
-        print("Tail stack reached")
 
-        --vcl test
-        local test = [[
-            a: "hello"
-            b:
-                c: "world"
-                d: "!"
-        ]]
-        iprint(table.decode(test))
+        timer:create(function()
+            print("EXECUTED TIMER")
+        end, 1000, 3)
+        print("Tail stack reached")
     )";
     testVM -> loadString(rwString);
 
