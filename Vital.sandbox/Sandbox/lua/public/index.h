@@ -14,11 +14,7 @@
 
 #pragma once
 #include <System/public/vital.h>
-extern "C" {
-    #include <Vendor/lua/lua.h>
-    #include <Vendor/lua/lauxlib.h>
-    #include <Vendor/lua/lualib.h>
-}
+#include <Vendor/lua/lua.hpp>
 
 
 /////////////////////
