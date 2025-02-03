@@ -25,14 +25,16 @@
 
 int main() {
     Vital::System::setPlatform("server");
-    std::cout << "Launched Platform: " << Vital::System::getPlatform() << std::endl;
+    std::cout << "Instantiated Platform: " << Vital::System::getPlatform() << std::endl;
+
 
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
+    auto luaVM = new Vital::Sandbox::Lua::create();
+    std::cout << "Instantiated VM: Lua" << std::endl;
 
-    auto testVM = new Vital::Sandbox::Lua::create();
 
     Vital::System::Event::bind("Network:@PeerConnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Connected";
@@ -46,13 +48,15 @@ int main() {
             std::cout << "\n Received Network:name - " << arguments.getString("Network:name");
             // TODO: Handle it better  to avoid injection/hacky solutions; store a ref in memory somehow....
             std::string rw = "network.execNetwork([[" + arguments.getString("Network:payload") + "]])";
-            testVM -> loadString(rw);
+            luaVM -> loadString(rw);
         }
     });
     Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack::Instance arguments) -> void {
         std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
+    std::cout << "Instantiated Network" << std::endl;
+
 
     std::string rwString = R"(
         timer:create(function()
@@ -62,9 +66,8 @@ int main() {
         timer:create(function()
             print("EXECUTED TIMER")
         end, 1000, 3)
-        print("Tail stack reached")
     )";
-    testVM -> loadString(rwString);
+    luaVM -> loadString(rwString);
 
     do {
         Vital::System::Network::update();

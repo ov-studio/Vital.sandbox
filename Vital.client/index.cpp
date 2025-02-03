@@ -27,12 +27,17 @@
 
 int main() {
     Vital::System::setPlatform("client");
-    std::cout << "Launched Platform: " << Vital::System::getPlatform() << std::endl;
+    std::cout << "Instantiated Platform: " << Vital::System::getPlatform() << std::endl;
     std::cout << "Platform Serial: " << Vital::System::getSystemSerial() << std::endl;
 
-    Vital::Type::Timer::Instance([](Vital::Type::Timer::Instance* self) -> void {
-        std::cout << "\nC++ Timer executed!";
-    }, 1000, 5);
+
+    Vital::Sandbox::Lua::API::boot();
+    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
+        std::cout << "\n" << err;
+    });
+    auto luaVM = new Vital::Sandbox::Lua::create();
+    std::cout << "Instantiated VM: Lua" << std::endl;
+
 
     Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
         /**
@@ -46,12 +51,16 @@ int main() {
         std::cout << "\n[Server]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
+    std::cout << "Instantiated Network" << std::endl;
+
 
     Vital::System::Audio::start();
-    Vital::Sandbox::Lua::API::boot();
-    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
-        std::cout << "\n" << err;
-    });
+    std::cout << "Instantiated Audio" << std::endl;
+
+
+    Vital::Type::Timer::Instance([](Vital::Type::Timer::Instance* self) -> void {
+        std::cout << "\nC++ Timer executed!";
+    }, 1000, 5);
 
     std::string rwString = R"(
         local buffer = "test"
