@@ -1,4 +1,4 @@
-set vendor=C:\Users\Tron\Documents\GITs\Vital.sandbox\Vendor\openssl
+set vendor=%cd%
 cpan -i Text::Template
 cpan -i Test::More
 
