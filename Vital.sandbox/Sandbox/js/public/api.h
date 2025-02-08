@@ -22,7 +22,6 @@
 
 namespace Vital::Sandbox::JS::API {
     // Handlers //
-    extern std::map<vital_bind, vital_exec> vmBind;
     extern bool onErrorHandle(std::function<void(const std::string&)> exec);
 
     // Helpers //
