@@ -22,7 +22,7 @@
 
 namespace Vital::Sandbox::Lua::API {
     // Handlers //
-    std::map<vital_bind, vital_exec> vmBind;
+    std::map<vital_bind, vital_exec> vital_binds;
     std::function<void(const std::string&)> onErrorHandler = NULL;
     bool onErrorHandle(std::function<void(const std::string&)> exec) {
         onErrorHandler = exec;
@@ -38,12 +38,12 @@ namespace Vital::Sandbox::Lua::API {
 
     bool bind(const std::string& parent, const std::string& name, vital_exec exec) {
         vital_bind ref = {parent, name};
-        vmBind.emplace(ref, exec);
+        vital_binds.emplace(ref, exec);
         return true;
     }
     bool unbind(const std::string& parent, const std::string& name) {
         vital_bind ref = {parent, name};
-        vmBind.erase(ref);
+        vital_binds.erase(ref);
         return true;
     }
 
