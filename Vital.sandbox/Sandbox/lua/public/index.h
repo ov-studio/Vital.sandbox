@@ -22,7 +22,7 @@
 /////////////////////
 
 namespace Vital::Sandbox::Lua {
-    extern std::vector<std::string> blacklist;
-    extern std::vector<luaL_Reg> library;
-    extern std::vector<std::string> module;
+    extern std::vector<luaL_Reg> vsdk_libraries;
+    extern std::vector<std::string> vsdk_modules;
+    extern std::vector<std::string> vsdk_blacklist;
 }

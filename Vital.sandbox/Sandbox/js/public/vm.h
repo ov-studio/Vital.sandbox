@@ -21,12 +21,12 @@
 /////////////
 
 namespace Vital::Sandbox::JS {
-    typedef duk_context vital_ref;
-    typedef duk_c_function vital_exec;
-    typedef std::pair<std::string, std::string> vital_bind;
+    typedef duk_context vsdk_ref;
+    typedef duk_c_function vsdk_exec;
+    typedef std::pair<std::string, std::string> vsdk_bind;
     class create {
         private:
-            vital_ref* vm = nullptr;
+            vsdk_ref* vm = nullptr;
         public:
             // Instantiators //
             create();
@@ -59,7 +59,7 @@ namespace Vital::Sandbox::JS {
             void setObjectField(const std::string& value, int index = 1);
             void createNamespace(const std::string& parent);
             void setUserData(void* value);
-            void setFunction(vital_exec& value);
+            void setFunction(vsdk_exec& value);
 
             // Getters //
             int getArgCount();
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::JS {
             void pushNumber(int value);
             void pushNumber(float value);
             void pushNumber(double value);
-            void pushFunction(vital_exec& exec);
+            void pushFunction(vsdk_exec& exec);
 
             // Registerers //
             void registerBool(const std::string& index, bool value);
@@ -95,8 +95,8 @@ namespace Vital::Sandbox::JS {
             void registerNumber(const std::string& index, float value, const std::string& parent);
             void registerNumber(const std::string& index, double value);
             void registerNumber(const std::string& index, double value, const std::string& parent);
-            void registerFunction(const std::string& index, vital_exec& exec);
-            void registerFunction(const std::string& index, vital_exec& exec, const std::string& parent);
+            void registerFunction(const std::string& index, vsdk_exec& exec);
+            void registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent);
 
             // Utils //
             void pop(int count = 1);
@@ -104,6 +104,6 @@ namespace Vital::Sandbox::JS {
             bool loadString(const std::string& buffer);
             bool throwError(const std::string& error = "");
     };
-    typedef create vital_vm;
-    extern vital_vm* fetchVM(vital_ref* vm);
+    typedef create vsdk_vm;
+    extern vsdk_vm* fetchVM(vsdk_ref* vm);
 }

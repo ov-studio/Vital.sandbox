@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua::API {
     void vSandbox_File() {
         if (isBound) return; isBound = true;
 
-        bind("file", "resolve", [](vital_ref* ref) -> int {
+        bind("file", "resolve", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "exists", [](vital_ref* ref) -> int {
+        bind("file", "exists", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "size", [](vital_ref* ref) -> int {
+        bind("file", "size", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "delete", [](vital_ref* ref) -> int {
+        bind("file", "delete", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "read", [](vital_ref* ref) -> int {
+        bind("file", "read", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "write", [](vital_ref* ref) -> int {
+        bind("file", "write", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw ErrorCode["invalid-arguments"];
@@ -90,7 +90,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "contents", [](vital_ref* ref) -> int {
+        bind("file", "contents", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];

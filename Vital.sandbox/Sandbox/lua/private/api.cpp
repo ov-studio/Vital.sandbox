@@ -21,29 +21,31 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
+    // Variables //
+    std::map<vsdk_bind, vsdk_exec> vsdk_binds;
+    std::function<void(const std::string&)> vsdk_errorhandle = NULL;
+
     // Handlers //
-    std::map<vital_bind, vital_exec> vital_binds;
-    std::function<void(const std::string&)> onErrorHandler = NULL;
     bool onErrorHandle(std::function<void(const std::string&)> exec) {
-        onErrorHandler = exec;
+        vsdk_errorhandle = exec;
         return true;
     }
 
     // Helpers //
     bool error(const std::string& error) {
-        if (!onErrorHandler) return false;
-        onErrorHandler(error);
+        if (!vsdk_errorhandle) return false;
+        vsdk_errorhandle(error);
         return true;
     }
 
-    bool bind(const std::string& parent, const std::string& name, vital_exec exec) {
-        vital_bind ref = {parent, name};
-        vital_binds.emplace(ref, exec);
+    bool bind(const std::string& parent, const std::string& name, vsdk_exec exec) {
+        vsdk_bind ref = {parent, name};
+        vsdk_binds.emplace(ref, exec);
         return true;
     }
     bool unbind(const std::string& parent, const std::string& name) {
-        vital_bind ref = {parent, name};
-        vital_binds.erase(ref);
+        vsdk_bind ref = {parent, name};
+        vsdk_binds.erase(ref);
         return true;
     }
 

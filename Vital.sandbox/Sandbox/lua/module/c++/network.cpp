@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua::API {
     void vSandbox_Network() {
         if (isBound) return; isBound = true;
 
-        bind("network", "emit", [](vital_ref* ref) -> int {
+        bind("network", "emit", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 bool isClient = Vital::System::getPlatform() == "client";

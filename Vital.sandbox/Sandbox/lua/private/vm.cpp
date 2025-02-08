@@ -26,42 +26,42 @@
 
 namespace Vital::Sandbox::Lua {
     // Variables //
-    std::map<vital_ref*, vital_vm*> vital_vms;
+    std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
 
     // Instantiators //
     create::create() {
         vm = luaL_newstate();
-        vital_vms.emplace(vm, this);
-        for (luaL_Reg i : library) {
+        vsdk_vms.emplace(vm, this);
+        for (luaL_Reg i : vsdk_libraries) {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
         }
-        for (const std::string& i : blacklist) {
+        for (const std::string& i : vsdk_blacklist) {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vital_binds) {
+        for (auto& i : API::vsdk_binds) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/lua/module/bundle.h>)
-            for (const std::string& i : module) {
+            for (const std::string& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
     }
-    create::create(vital_ref* thread) {
+    create::create(vsdk_ref* thread) {
         vm = thread;
         this -> thread = true;
-        vital_vms.emplace(vm, this);
+        vsdk_vms.emplace(vm, this);
     }
     create::~create() {
         if (!vm) return;
-        vital_vms.erase(vm);
+        vsdk_vms.erase(vm);
         if (!isVirtualThread()) lua_close(vm);
         vm = nullptr;
     }
-    vital_vm* fetchVM(vital_ref* vm) {
-        return vital_vms.find(vm) != vital_vms.end() ? vital_vms.at(vm) : nullptr;
+    vsdk_vm* fetchVM(vsdk_ref* vm) {
+        return vsdk_vms.find(vm) != vsdk_vms.end() ? vsdk_vms.at(vm) : nullptr;
     }
     bool create::isVirtualThread() { return thread; }
 
@@ -105,7 +105,7 @@ namespace Vital::Sandbox::Lua {
         *userdata = value;
     }
     void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
-    void create::setFunction(vital_exec& value) { lua_pushcfunction(vm, value); }
+    void create::setFunction(vsdk_exec& value) { lua_pushcfunction(vm, value); }
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
@@ -120,7 +120,7 @@ namespace Vital::Sandbox::Lua {
     bool create::getTableField(const std::string& value, int index) { return lua_getfield(vm, index, value.data()); }
     bool create::getMetaTable(int index) { return lua_getmetatable(vm, index); }
     bool create::getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.data()); }
-    vital_ref* create::getThread(int index) { return lua_tothread(vm, index); }
+    vsdk_ref* create::getThread(int index) { return lua_tothread(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
     int create::getLength(int index) {
         lua_len(vm, index);
@@ -154,7 +154,7 @@ namespace Vital::Sandbox::Lua {
         if (!isTable(-1)) return;
         setTableField(getLength(-2) + 1, -2);
     }
-    void create::pushFunction(vital_exec& exec) {
+    void create::pushFunction(vsdk_exec& exec) {
         setFunction(exec);
         setTableField(getLength(-2) + 1, -2);
     }
@@ -215,11 +215,11 @@ namespace Vital::Sandbox::Lua {
         registerTable(index);
         pop();
     }
-    void create::registerFunction(const std::string& index, vital_exec& exec) {
+    void create::registerFunction(const std::string& index, vsdk_exec& exec) {
         setFunction(exec);
         setTableField(index.data(), -2);
     }
-    void create::registerFunction(const std::string& index, vital_exec& exec, const std::string& parent) {
+    void create::registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent) {
         createNamespace(parent);
         registerFunction(index, exec);
         pop();
@@ -232,7 +232,7 @@ namespace Vital::Sandbox::Lua {
     // Utils //
     void create::push(int index) { lua_pushvalue(vm, index); }
     void create::pop(int count) { lua_pop(vm, count); }
-    void create::move(vital_vm* target, int count) { lua_xmove(vm, target -> vm, count); }
+    void create::move(vsdk_vm* target, int count) { lua_xmove(vm, target -> vm, count); }
     void create::resume() {
         if (!isVirtualThread()) return;
         int ncount;

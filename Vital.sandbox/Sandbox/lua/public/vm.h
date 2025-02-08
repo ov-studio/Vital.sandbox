@@ -21,17 +21,17 @@
 //////////////
 
 namespace Vital::Sandbox::Lua {
-    typedef lua_State vital_ref;
-    typedef lua_CFunction vital_exec;
-    typedef std::pair<std::string, std::string> vital_bind;
+    typedef lua_State vsdk_ref;
+    typedef lua_CFunction vsdk_exec;
+    typedef std::pair<std::string, std::string> vsdk_bind;
     class create {
         private:
-            vital_ref* vm = nullptr;
+            vsdk_ref* vm = nullptr;
             bool thread = false;
         public:
             // Instantiators //
             create();
-            create(vital_ref* thread);
+            create(vsdk_ref* thread);
             ~create();
             bool isVirtualThread();
 
@@ -64,7 +64,7 @@ namespace Vital::Sandbox::Lua {
             create* createThread();
             void createUserData(void* value);
             void setUserData(void* value);
-            void setFunction(vital_exec& value);
+            void setFunction(vsdk_exec& value);
 
             // Getters //
             int getArgCount();
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::Lua {
             bool getTableField(const std::string& value, int index = 1);
             bool getMetaTable(int index = 1);
             bool getMetaTable(const std::string& index);
-            vital_ref* getThread(int index = 1);
+            vsdk_ref* getThread(int index = 1);
             void* getUserData(int index = 1);
             int getLength(int index = 1);
 
@@ -90,7 +90,7 @@ namespace Vital::Sandbox::Lua {
             void pushNumber(float value);
             void pushNumber(double value);
             void pushTable();
-            void pushFunction(vital_exec& exec);
+            void pushFunction(vsdk_exec& exec);
 
             // Registerers //
             void registerBool(const std::string& index, bool value);
@@ -105,8 +105,8 @@ namespace Vital::Sandbox::Lua {
             void registerNumber(const std::string& index, double value, const std::string& parent);
             void registerTable(const std::string& index);
             void registerTable(const std::string& index, const std::string& parent);
-            void registerFunction(const std::string& index, vital_exec& exec);
-            void registerFunction(const std::string& index, vital_exec& exec, const std::string& parent);
+            void registerFunction(const std::string& index, vsdk_exec& exec);
+            void registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent);
             void registerObject(const std::string& index, void* value);
 
             // Utils //
@@ -119,6 +119,6 @@ namespace Vital::Sandbox::Lua {
             bool loadString(const std::string& buffer, bool isAutoLoad = true);
             bool throwError(const std::string& error = "");
     };
-    typedef create vital_vm;
-    extern vital_vm* fetchVM(vital_ref* vm);
+    typedef create vsdk_vm;
+    extern vsdk_vm* fetchVM(vsdk_ref* vm);
 }

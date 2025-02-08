@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua::API {
     void vSandbox_Crypto() {
         if (isBound) return; isBound = true;
 
-        bind("crypto", "hash", [](vital_ref* ref) -> int {
+        bind("crypto", "hash", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw ErrorCode["invalid-arguments"];
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "encode", [](vital_ref* ref) -> int {
+        bind("crypto", "encode", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "decode", [](vital_ref* ref) -> int {
+        bind("crypto", "decode", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "encrypt", [](vital_ref* ref) -> int {
+        bind("crypto", "encrypt", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3))) throw ErrorCode["invalid-arguments"];
@@ -72,7 +72,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "decrypt", [](vital_ref* ref) -> int {
+        bind("crypto", "decrypt", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 4) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3)) || (!vm -> isString(4))) throw ErrorCode["invalid-arguments"];

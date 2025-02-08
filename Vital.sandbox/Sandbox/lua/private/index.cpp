@@ -21,13 +21,7 @@
 /////////////////////
 
 namespace Vital::Sandbox::Lua {
-    std::vector<std::string> blacklist = {
-        "dofile",
-        "load",
-        "loadfile"
-    };
-
-    std::vector<luaL_Reg> library = {
+    std::vector<luaL_Reg> vsdk_libraries = {
         {"_G", luaopen_base},
         {"table", luaopen_table},
         {"string", luaopen_string},
@@ -38,7 +32,7 @@ namespace Vital::Sandbox::Lua {
         {"json", luaopen_rapidjson}
     };
 
-    std::vector<std::string> module = {
+    std::vector<std::string> vsdk_modules = {
         "namespace.lua",
         "vcl.lua",
         "table.lua",
@@ -54,5 +48,11 @@ namespace Vital::Sandbox::Lua {
         "network.lua",
         "rest.lua",
         "resource.lua"
+    };
+
+    std::vector<std::string> vsdk_blacklist = {
+        "dofile",
+        "load",
+        "loadfile"
     };
 }

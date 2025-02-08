@@ -26,33 +26,33 @@
 
 namespace Vital::Sandbox::JS {
     // Variables //
-    std::map<vital_ref*, vital_vm*> vital_vms;
+    std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
 
     // Instantiators //
     create::create() {
         vm = duk_create_heap_default();
-        vital_vms.emplace(vm, this);
-        for (const std::string& i : blacklist) {
+        vsdk_vms.emplace(vm, this);
+        for (const std::string& i : vsdk_blacklist) {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vital_binds) {
+        for (auto& i : API::vsdk_binds) {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/js/module/bundle.h>)
-            for (const std::string& i : module) {
+            for (const std::string& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
     }
     create::~create() {
         if (!vm) return;
-        vital_vms.erase(vm);
+        vsdk_vms.erase(vm);
         duk_destroy_heap(vm);
         vm = nullptr;
     }
-    vital_vm* fetchVM(vital_ref* vm) {
-        return vital_vms.find(vm) != vital_vms.end() ? vital_vms.at(vm) : nullptr;
+    vsdk_vm* fetchVM(vsdk_ref* vm) {
+        return vsdk_vms.find(vm) != vsdk_vms.end() ? vsdk_vms.at(vm) : nullptr;
     }
 
     // Checkers //
@@ -90,7 +90,7 @@ namespace Vital::Sandbox::JS {
         }
     }
     void create::setUserData(void* value) { duk_push_pointer(vm, value); }
-    void create::setFunction(vital_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
+    void create::setFunction(vsdk_exec& value) { duk_push_c_function(vm, value, DUK_VARARGS); }
 
     // Getters //
     int create::getArgCount() { return duk_get_top(vm); }
@@ -133,7 +133,7 @@ namespace Vital::Sandbox::JS {
         setNumber(value);
         setArrayField(getLength(-2) + 1, -2);
     }
-    void create::pushFunction(vital_exec& exec) {
+    void create::pushFunction(vsdk_exec& exec) {
         setFunction(exec);
         setArrayField(getLength(-2) + 1, -2);
     }
@@ -184,11 +184,11 @@ namespace Vital::Sandbox::JS {
         registerNumber(index, value);
         pop();
     }
-    void create::registerFunction(const std::string& index, vital_exec& exec) {
+    void create::registerFunction(const std::string& index, vsdk_exec& exec) {
         setFunction(exec);
         setObjectField(index.data(), -2);
     }
-    void create::registerFunction(const std::string& index, vital_exec& exec, const std::string& parent) {
+    void create::registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent) {
         createNamespace(parent);
         registerFunction(index, exec);
         pop();
