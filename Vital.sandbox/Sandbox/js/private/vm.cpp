@@ -25,12 +25,13 @@
 /////////////
 
 namespace Vital::Sandbox::JS {
+    // Variables //
+    std::map<vital_ref*, vital_vm*> vital_vms;
+
     // Instantiators //
-    std::map<vital_ref*, vital_vm*> instance;
-    vital_vm* fetchVM(vital_ref* vm) { return instance.find(vm) != instance.end() ? instance.at(vm) : nullptr; }
     create::create() {
         vm = duk_create_heap_default();
-        instance.emplace(vm, this);
+        vital_vms.emplace(vm, this);
         for (const std::string& i : blacklist) {
             setNil();
             setGlobal(i);
@@ -46,9 +47,12 @@ namespace Vital::Sandbox::JS {
     }
     create::~create() {
         if (!vm) return;
-        instance.erase(vm);
+        vital_vms.erase(vm);
         duk_destroy_heap(vm);
         vm = nullptr;
+    }
+    vital_vm* fetchVM(vital_ref* vm) {
+        return vital_vms.find(vm) != vital_vms.end() ? vital_vms.at(vm) : nullptr;
     }
 
     // Checkers //

@@ -25,12 +25,13 @@
 //////////////
 
 namespace Vital::Sandbox::Lua {
+    // Variables //
+    std::map<vital_ref*, vital_vm*> vital_vms;
+
     // Instantiators //
-    std::map<lua_State*, vital_vm*> instance;
-    vital_vm* fetchVM(vital_ref* vm) { return instance.find(vm) != instance.end() ? instance.at(vm) : nullptr; }
     create::create() {
         vm = luaL_newstate();
-        instance.emplace(vm, this);
+        vital_vms.emplace(vm, this);
         for (luaL_Reg i : library) {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
@@ -51,13 +52,16 @@ namespace Vital::Sandbox::Lua {
     create::create(vital_ref* thread) {
         vm = thread;
         this -> thread = true;
-        instance.emplace(vm, this);
+        vital_vms.emplace(vm, this);
     }
     create::~create() {
         if (!vm) return;
-        instance.erase(vm);
+        vital_vms.erase(vm);
         if (!isVirtualThread()) lua_close(vm);
         vm = nullptr;
+    }
+    vital_vm* fetchVM(vital_ref* vm) {
+        return vital_vms.find(vm) != vital_vms.end() ? vital_vms.at(vm) : nullptr;
     }
     bool create::isVirtualThread() { return thread; }
 
