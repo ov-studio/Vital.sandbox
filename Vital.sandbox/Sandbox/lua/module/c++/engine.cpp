@@ -35,10 +35,10 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("engine", "getApplicationTick", [](vsdk_ref* ref) -> int {
+        bind("engine", "getAppTick", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                vm -> setNumber(static_cast<int>(Vital::System::getApplicationTick()));
+                vm -> setNumber(static_cast<int>(Vital::System::getAppTick()));
                 return 1;
             });
         });

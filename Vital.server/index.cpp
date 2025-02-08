@@ -24,8 +24,8 @@
 //////////
 
 int main() {
-    Vital::System::setPlatform("server");
-    std::cout << "Instantiated Platform: " << Vital::System::getPlatform() << std::endl;
+    Vital::System::setSystemPlatform("server");
+    std::cout << "Instantiated Platform: " << Vital::System::getSystemPlatform() << std::endl;
 
 
     Vital::Sandbox::Lua::API::boot();

@@ -30,11 +30,11 @@
 ////////////////////
 
 namespace Vital::System {
-    extern bool setPlatform(const std::string& platform);
-    extern std::string getPlatform();
+    extern bool setSystemPlatform(const std::string& platform);
+    extern std::string getSystemPlatform();
     extern std::string getSystemSerial();
     extern unsigned int getSystemTick();
-    extern unsigned int getApplicationTick();
+    extern unsigned int getAppTick();
     extern unsigned int getClientTick();
     extern bool resetClientTick();
 }

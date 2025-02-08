@@ -25,25 +25,30 @@
 ////////////////////
 
 namespace Vital::System {
-    std::string systemPlatform = "server";
-    bool setPlatform(const std::string& platform) {
+    // Variables //
+    std::string vsdk_platform = "server";
+    std::string vsdk_serial = "";
+    unsigned int vsdk_apptick;
+    unsigned int vsdk_clienttick;
+
+    // APIs //
+    bool setSystemPlatform(const std::string& platform) {
         if (platform == "client") {
             #if !defined(WINDOWS)
                 return false;
             #endif
         }
         else if (platform != "server") return false;
-        systemPlatform = platform;
+        vsdk_platform = platform;
         #if defined(WINDOWS)
             SetConsoleOutputCP(CP_UTF8);
         #endif
         return true;
     }
-    std::string getPlatform() { return systemPlatform; }
+    std::string getSystemPlatform() { return vsdk_platform; }
 
-    std::string systemSerial = "";
     std::string getSystemSerial() {
-        if (systemSerial.empty() && (getPlatform() == "client")) {
+        if (vsdk_serial.empty() && (getSystemPlatform() == "client")) {
             auto system = Vital::System::Inspect::system();
             auto smbios = Vital::System::Inspect::smbios();
             auto cpu = Vital::System::Inspect::cpu();
@@ -51,45 +56,43 @@ namespace Vital::System {
             auto memory = Vital::System::Inspect::memory();
             auto network = Vital::System::Inspect::network();
             auto disk = Vital::System::Inspect::disk();
-            systemSerial = "[";
-            systemSerial += "\n\t\"System: " + Vital::System::Crypto::hash("SHA256", std::string(system.hardware_id.begin(), system.hardware_id.end())) + "\",";
-            systemSerial += "\n\t\"OS: " + Vital::System::Crypto::hash("SHA256", std::string(system.os_serial.begin(), system.os_serial.end())) + "\",";
-            systemSerial += "\n\t\"SMBIOS: " + Vital::System::Crypto::hash("SHA256", std::string(smbios.serial.begin(), smbios.serial.end())) + "\",";
-            systemSerial += "\n\t\"CPU: " + Vital::System::Crypto::hash("SHA256", std::string(cpu.id.begin(), cpu.id.end())) + "\",";
+            vsdk_serial = "[";
+            vsdk_serial += "\n\t\"System: " + Vital::System::Crypto::hash("SHA256", std::string(system.hardware_id.begin(), system.hardware_id.end())) + "\",";
+            vsdk_serial += "\n\t\"OS: " + Vital::System::Crypto::hash("SHA256", std::string(system.os_serial.begin(), system.os_serial.end())) + "\",";
+            vsdk_serial += "\n\t\"SMBIOS: " + Vital::System::Crypto::hash("SHA256", std::string(smbios.serial.begin(), smbios.serial.end())) + "\",";
+            vsdk_serial += "\n\t\"CPU: " + Vital::System::Crypto::hash("SHA256", std::string(cpu.id.begin(), cpu.id.end())) + "\",";
             for (int i = 0; i < memory.size(); i++) {
-                systemSerial += "\n\t\"Memory: " + Vital::System::Crypto::hash("SHA256", std::string(memory.at(i).serial.begin(), memory.at(i).serial.end())) + "\",";
+                vsdk_serial += "\n\t\"Memory: " + Vital::System::Crypto::hash("SHA256", std::string(memory.at(i).serial.begin(), memory.at(i).serial.end())) + "\",";
             }
             for (int i = 0; i < network.size(); i++) {
-                if (network.at(i).mac != L"-") systemSerial += "\n\t\"Network: " + Vital::System::Crypto::hash("SHA256", std::string(network.at(i).mac.begin(), network.at(i).mac.end())) + "\",";
+                if (network.at(i).mac != L"-") vsdk_serial += "\n\t\"Network: " + Vital::System::Crypto::hash("SHA256", std::string(network.at(i).mac.begin(), network.at(i).mac.end())) + "\",";
             }
             for (int i = 0; i < disk.size(); i++) {
-                systemSerial += "\n\t\"Disk: " + Vital::System::Crypto::hash("SHA256", std::string(disk.at(i).serial.begin(), disk.at(i).serial.end())) + "\",";
+                vsdk_serial += "\n\t\"Disk: " + Vital::System::Crypto::hash("SHA256", std::string(disk.at(i).serial.begin(), disk.at(i).serial.end())) + "\",";
             }
-            systemSerial = systemSerial.substr(0, systemSerial.size() - 1);
-            systemSerial += "\n]";
+            vsdk_serial = vsdk_serial.substr(0, vsdk_serial.size() - 1);
+            vsdk_serial += "\n]";
         }
-        if (systemSerial.empty()) throw ErrorCode["serial-nonexistent"];
-        return systemSerial;
+        if (vsdk_serial.empty()) throw ErrorCode["serial-nonexistent"];
+        return vsdk_serial;
     }
 
     unsigned int getSystemTick() {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }
 
-    unsigned int applicationTick;
-    unsigned int getApplicationTick() {
-        applicationTick = applicationTick ? applicationTick : getSystemTick();
-        return getSystemTick() - applicationTick;
+    unsigned int getAppTick() {
+        vsdk_apptick = vsdk_apptick ? vsdk_apptick : getSystemTick();
+        return getSystemTick() - vsdk_apptick;
     }
 
-    unsigned int clientTick;
     unsigned int getClientTick() {
-        clientTick = clientTick ? clientTick : getApplicationTick();
-        return getSystemTick() - clientTick;
+        vsdk_clienttick = vsdk_clienttick ? vsdk_clienttick : getAppTick();
+        return getSystemTick() - vsdk_clienttick;
     }
 
     bool resetClientTick() {
-        clientTick = getApplicationTick();
+        vsdk_clienttick = getAppTick();
         return true;
     }
 }

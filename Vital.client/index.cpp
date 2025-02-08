@@ -26,8 +26,8 @@
 //////////
 
 int main() {
-    Vital::System::setPlatform("client");
-    std::cout << "Instantiated Platform: " << Vital::System::getPlatform() << std::endl;
+    Vital::System::setSystemPlatform("client");
+    std::cout << "Instantiated Platform: " << Vital::System::getSystemPlatform() << std::endl;
     std::cout << "Platform Serial: " << Vital::System::getSystemSerial() << std::endl;
 
 
