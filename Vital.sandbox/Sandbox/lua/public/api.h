@@ -24,8 +24,6 @@ namespace Vital::Sandbox::Lua::API {
     // Handlers //
     extern std::map<vsdk_bind, vsdk_exec> vsdk_binds;
     extern bool createErrorHandle(std::function<void(const std::string&)> exec);
-
-    // Helpers //
     extern bool error(const std::string& error);
     extern bool bind(const std::string& parent, const std::string& name, vsdk_exec exec);
     extern bool unbind(const std::string& parent, const std::string& name);

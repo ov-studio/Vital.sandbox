@@ -30,14 +30,11 @@ namespace Vital::Sandbox::Lua::API {
         vsdk_errorhandle = exec;
         return true;
     }
-
-    // Helpers //
     bool error(const std::string& error) {
         if (!vsdk_errorhandle) return false;
         vsdk_errorhandle(error);
         return true;
     }
-
     bool bind(const std::string& parent, const std::string& name, vsdk_exec exec) {
         vsdk_bind ref = {parent, name};
         vsdk_binds.emplace(ref, exec);
