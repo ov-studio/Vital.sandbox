@@ -23,7 +23,7 @@
 namespace Vital::Sandbox::JS {
     typedef duk_context vital_ref;
     typedef duk_c_function vital_exec;
-    typedef std::pair<std::string, std::string> vital_exec_ref;
+    typedef std::pair<std::string, std::string> vital_bind;
     class create {
         private:
             vital_ref* vm = nullptr;

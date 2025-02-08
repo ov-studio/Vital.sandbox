@@ -23,7 +23,7 @@
 namespace Vital::Sandbox::Lua {
     typedef lua_State vital_ref;
     typedef lua_CFunction vital_exec;
-    typedef std::pair<std::string, std::string> vital_exec_ref;
+    typedef std::pair<std::string, std::string> vital_bind;
     class create {
         private:
             vital_ref* vm = nullptr;
