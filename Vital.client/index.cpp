@@ -32,7 +32,7 @@ int main() {
 
 
     Vital::Sandbox::Lua::API::boot();
-    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
+    Vital::Sandbox::Lua::API::createErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
     auto luaVM = new Vital::Sandbox::Lua::create();
@@ -97,7 +97,7 @@ int main() {
 
     /*
     Vital::Sandbox::JS::API::boot();
-    Vital::Sandbox::JS::API::onErrorHandle([](const std::string& err) -> void {
+    Vital::Sandbox::JS::API::createErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
     std::string rwString = R"(
@@ -107,7 +107,7 @@ int main() {
     if (!Vital::System::File::exists(rootPath)) printError("'" + rootPath + "' non-existent");
     else {
         Vital::Sandbox::Lua::API::boot();
-        Vital::Sandbox::Lua::API::onErrorHandle(printError);
+        Vital::Sandbox::Lua::API::createErrorHandle(printError);
         auto vm = new Vital::Sandbox::Lua::create();
         vm -> loadString(Vital::System::File::read(rootPath));
     }

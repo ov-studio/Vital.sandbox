@@ -23,7 +23,7 @@
 namespace Vital::Sandbox::JS::API {
     // Handlers //
     extern std::map<vsdk_bind, vsdk_exec> vsdk_binds;
-    extern bool onErrorHandle(std::function<void(const std::string&)> exec);
+    extern bool createErrorHandle(std::function<void(const std::string&)> exec);
 
     // Helpers //
     extern bool error(const std::string& error);

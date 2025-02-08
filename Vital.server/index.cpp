@@ -29,7 +29,7 @@ int main() {
 
 
     Vital::Sandbox::Lua::API::boot();
-    Vital::Sandbox::Lua::API::onErrorHandle([](const std::string& err) -> void {
+    Vital::Sandbox::Lua::API::createErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
     auto luaVM = new Vital::Sandbox::Lua::create();

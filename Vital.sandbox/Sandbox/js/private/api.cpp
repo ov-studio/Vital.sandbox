@@ -26,7 +26,7 @@ namespace Vital::Sandbox::JS::API {
     std::function<void(const std::string&)> vsdk_errorhandle = NULL;
 
     // Handlers //
-    bool onErrorHandle(std::function<void(const std::string&)> exec) {
+    bool createErrorHandle(std::function<void(const std::string&)> exec) {
         vsdk_errorhandle = exec;
         return true;
     }
