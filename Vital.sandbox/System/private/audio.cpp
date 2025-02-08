@@ -21,9 +21,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio::Sound {
-    // Instantiators //
     std::map<vital_sound*, bool> instance;
-    bool isInstance(vital_sound* ref) { return instance.find(ref) != instance.end(); }
 }
 
 namespace Vital::System::Audio {
@@ -71,6 +69,9 @@ namespace Vital::System::Audio::Sound {
         sound -> release();
         sound = nullptr;
         channel = nullptr;
+    }
+    bool isInstance(vital_sound* ref) {
+        return instance.find(ref) != instance.end();
     }
 
     // Checkers //
