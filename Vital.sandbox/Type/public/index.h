@@ -21,7 +21,7 @@
 ////////////
 
 namespace Vital {
-    static const std::string Signature = "VitalSDK";
+    static const std::string Signature = "vsdk";
     extern std::map<std::string, std::string> ErrorCode;
 }
 
