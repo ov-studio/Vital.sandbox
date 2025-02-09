@@ -148,7 +148,7 @@ namespace Vital::Type {
             template <typename T>
             T get(const std::string& index) {
                 if (isNil(index)) throw ErrorCode["invalid-result"];
-                return map.at(index).get<int>();
+                return map.at(index).get<T>();
             }
 
             // Pushers //
