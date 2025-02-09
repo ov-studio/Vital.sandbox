@@ -58,7 +58,7 @@ int main() {
     std::cout << "Instantiated Audio" << std::endl;
 
 
-    Vital::Type::Timer::create([](Vital::Type::Timer::vsdk_timer* self) -> void {
+    Vital::Type::Timer([](Vital::Type::Timer* self) -> void {
         std::cout << "\nC++ Timer executed!";
     }, 1000, 5);
 

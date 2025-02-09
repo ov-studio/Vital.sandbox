@@ -21,13 +21,16 @@
 // Vital: Type: Timer //
 /////////////////////////
 
-namespace Vital::Type::Timer {
-    class create {
+namespace Vital::Type {
+    class Timer {
+        private:
+            static std::map<Timer*, bool> vsdk_timers;
         public:
             // Instantiators //
-            create(std::function<void(create*)> exec, int interval = 0, int executions = 1);
+            Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1);
+
+            // Utils //
             void destroy();
+            static bool isInstance(Timer*);
     };
-    typedef create vsdk_timer;
-    extern bool isTimer(vsdk_timer*);
 }
