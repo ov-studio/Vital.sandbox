@@ -54,7 +54,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("engine", "loadString", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 std::string rwString = vm -> getString(1);
                 bool result = false;
                 if (vm -> isBool(2)) {

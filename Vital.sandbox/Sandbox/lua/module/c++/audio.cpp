@@ -26,7 +26,7 @@ namespace Vital::Sandbox::Lua::API {
     static bool isBound = false;
     Vital::System::Audio::Sound::vital_sound* fetchSound(void* userdata) {
         auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(userdata);
-        if (!Vital::System::Audio::Sound::isInstance(sound)) throw ErrorCode["invalid-entities"];
+        if (!Vital::System::Audio::Sound::isInstance(sound)) throw std::runtime_error(ErrorCode["invalid-entities"]);
         return sound;
     }
 
@@ -36,9 +36,9 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "create", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 std::string path = vm -> getString(1);
-                if (!Vital::System::File::exists(path)) throw ErrorCode["file-nonexistent"];
+                if (!Vital::System::File::exists(path)) throw std::runtime_error(ErrorCode["file-nonexistent"]);
                 vm -> setUserData(static_cast<void*>(new Vital::System::Audio::Sound::create(path)));
                 return 1;
             });
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "destroy", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 delete sound;
                 vm -> setBool(true);
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "isPlaying", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isPlaying());
                 return 1;
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "isPaused", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isPaused());
                 return 1;
@@ -78,7 +78,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "isLooped", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isLooped());
                 return 1;
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "isVolumeRamped", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isVolumeRamped());
                 return 1;
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "isMuted", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> isMuted());
                 return 1;
@@ -108,7 +108,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "is3D", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> is3D());
                 return 1;
@@ -118,7 +118,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setPriority", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 int value = vm -> getInt(2);
                 vm -> setBool(sound -> setPriority(value));
@@ -129,7 +129,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setPaused", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 int state = vm -> getBool(2);
                 vm -> setBool(sound -> setPaused(state));
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setLooped", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 int state = vm -> getBool(2);
                 vm -> setBool(sound -> setLooped(state));
@@ -151,7 +151,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setLoopCount", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 int value = vm -> getInt(2);
                 vm -> setBool(sound -> setLoopCount(value));
@@ -162,7 +162,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setLoopPoint", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isNumber(2)) || (!vm -> isNumber(3))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isNumber(2)) || (!vm -> isNumber(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::LoopPoint point;
                 point.start = vm -> getInt(2);
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setPitch", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> setPitch(value));
@@ -186,7 +186,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setFrequency", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> setFrequency(value));
@@ -197,7 +197,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setVolume", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> setVolume(value));
@@ -208,7 +208,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setVolumeRamped", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 bool state = vm -> getBool(2);
                 vm -> setBool(sound -> setVolumeRamped(state));
@@ -219,7 +219,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setMuted", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 bool state = vm -> getBool(2);
                 vm -> setBool(sound -> setMuted(state));
@@ -230,7 +230,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setPosition", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 int value = vm -> getInt(2);
                 vm -> setBool(sound -> setPosition(value));
@@ -241,7 +241,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setPan", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> setPan(value));
@@ -252,16 +252,16 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setMixInputLevels", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixInputLevel level;
                 level.count = vm -> getLength(2);
-                if (level.count < 1) throw ErrorCode["invalid-arguments"];
+                if (level.count < 1) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 level.level = new float[(level.count - 1)];
                 try {
                     for(int i = 1; i <= level.count; i++) {
                         vm -> getTableField(i, 2);
-                        if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
+                        if (!vm -> isNumber(-1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                         int index = i - 1;
                         level.level[index] = vm -> getFloat(-1);
                     }
@@ -279,7 +279,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setMixOutputLevels", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixOutputLevel level;
                 vm -> getTableField("frontLeft", 2);
@@ -291,7 +291,7 @@ namespace Vital::Sandbox::Lua::API {
                 vm -> getTableField("backLeft", 2);
                 vm -> getTableField("backRight", 2);
                 for(int i = -1; i >= -8; i--) {
-                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
                 level.frontLeft = vm -> getFloat(-8);
                 level.frontRight = vm -> getFloat(-7);
@@ -309,24 +309,24 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "setMixMatrix", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixMatrix matrix;
                 matrix.countOut = vm -> getLength(2);
-                if (matrix.countOut < 1) throw ErrorCode["invalid-arguments"];
+                if (matrix.countOut < 1) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 try {
                     for(int i = 1; i <= matrix.countOut; i++) {
                         vm -> getTableField(i, 2);
-                        if (!vm -> isTable(-1)) throw ErrorCode["invalid-arguments"];
+                        if (!vm -> isTable(-1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                         if (i == 1) {
                             matrix.countIn = vm -> getLength(-1);
-                            if (matrix.countIn < 1) throw ErrorCode["invalid-arguments"];
+                            if (matrix.countIn < 1) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                             int size = matrix.countIn*matrix.countOut;
                             matrix.matrix = new float[(size - 1)];
                         }
                         for(int j = 1; j <= matrix.countIn; j++) {
                             vm -> getTableField(i, 3);
-                            if (!vm -> isNumber(-1)) throw ErrorCode["invalid-arguments"];
+                            if (!vm -> isNumber(-1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                             int index = (i - 1) + (j - 1);
                             matrix.matrix[index] = vm -> getFloat(-1);
                         }
@@ -346,7 +346,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3D", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 bool state = vm -> getBool(2);
                 vm -> setBool(sound -> set3D(state));
@@ -357,7 +357,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DAttributes", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isTable(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isTable(2)) || (!vm -> isTable(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Math::Vector3D position, velocity;
                 vm -> getTableField("x", 2);
@@ -367,7 +367,7 @@ namespace Vital::Sandbox::Lua::API {
                 vm -> getTableField("y", 3);
                 vm -> getTableField("z", 3);
                 for(int i = -1; i >= -6; i--) {
-                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
                 position.x = vm -> getFloat(-6);
                 position.y = vm -> getFloat(-5);
@@ -383,14 +383,14 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DConeSettings", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::ConeSetting3D setting;
                 vm -> getTableField("insideAngle", 2);
                 vm -> getTableField("outsideAngle", 2);
                 vm -> getTableField("outsideVolume", 2);
                 for(int i = -1; i >= -3; i--) {
-                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
                 setting.insideAngle = vm -> getFloat(-3);
                 setting.outsideAngle = vm -> getFloat(-2);
@@ -403,14 +403,14 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DConeOrientation", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Math::Vector3D orientation;
                 vm -> getTableField("x", 2);
                 vm -> getTableField("y", 2);
                 vm -> getTableField("z", 2);
                 for(int i = -1; i >= -3; i--) {
-                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
                 orientation.x = vm -> getFloat(-3);
                 orientation.y = vm -> getFloat(-2);
@@ -423,13 +423,13 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DDistanceFilter", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isBool(2)) || (!vm -> isTable(3))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isBool(2)) || (!vm -> isTable(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::DistanceFilter3D filter;
                 vm -> getTableField("customLevel", 3);
                 vm -> getTableField("centerFrequency", 3);
                 for(int i = -1; i >= -2; i--) {
-                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
                 filter.isEnabled = vm -> getBool(2);
                 filter.customLevel = vm -> getFloat(-2);
@@ -442,7 +442,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DDopplerLevel", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> set3DDopplerLevel(value));
@@ -453,7 +453,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DLevel", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> set3DLevel(value));
@@ -464,7 +464,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DRange", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isNumber(2)) || (!vm -> isNumber(3))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isNumber(2)) || (!vm -> isNumber(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::Range3D range;
                 range.minDistance = vm -> getFloat(2);
@@ -477,13 +477,13 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DOcclusion", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::Occlusion3D occlusion;
                 vm -> getTableField("directOcclusion", 2);
                 vm -> getTableField("reverbOcclusion", 2);
                 for(int i = -1; i >= -2; i--) {
-                    if (!vm -> isNumber(i)) throw ErrorCode["invalid-arguments"];
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
                 occlusion.directOcclusion = vm -> getFloat(-2);
                 occlusion.reverbOcclusion = vm -> getFloat(-1);
@@ -496,7 +496,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "set3DSpread", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 float value = vm -> getFloat(2);
                 vm -> setBool(sound -> set3DSpread(value));
@@ -507,7 +507,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "play", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> play());
                 return 1;
@@ -517,7 +517,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "stop", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setBool(sound -> stop());
                 return 1;
@@ -527,7 +527,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getPriority", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> getPriority());
                 return 1;
@@ -537,7 +537,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getLoopCount", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> getLoopCount());
                 return 1;
@@ -547,7 +547,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getLoopPoint", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::LoopPoint point;
                 sound -> getLoopPoint(point);
@@ -560,7 +560,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getPitch", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> getPitch());
                 return 1;
@@ -570,7 +570,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getFrequency", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> getFrequency());
                 return 1;
@@ -580,7 +580,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getVolume", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> getVolume());
                 return 1;
@@ -590,7 +590,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getAudibility", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> getAudibility());
                 return 1;
@@ -600,7 +600,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getPosition", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(static_cast<int>(sound -> getPosition()));
                 return 1;
@@ -610,7 +610,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "getMixMatrix", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::MixMatrix matrix;
                 sound -> getMixMatrix(matrix);
@@ -629,7 +629,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DAttributes", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Math::Vector3D position, velocity;
                 sound -> get3DAttributes(position, velocity);
@@ -648,7 +648,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DConeSettings", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::ConeSetting3D setting;
                 sound -> get3DConeSettings(setting);
@@ -663,7 +663,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DConeOrientation", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Math::Vector3D orientation;
                 sound -> get3DConeOrientation(orientation);
@@ -678,7 +678,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DDistanceFilter", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::DistanceFilter3D filter;
                 sound -> get3DDistanceFilter(filter);
@@ -693,7 +693,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DDopplerLevel", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> get3DDopplerLevel());
                 return 1;
@@ -703,7 +703,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DLevel", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> get3DLevel());
                 return 1;
@@ -713,7 +713,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DRange", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::Range3D range;
                 sound -> get3DRange(range);
@@ -726,7 +726,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DOcclusion", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 Vital::Type::Audio::Occlusion3D occlusion;
                 sound -> get3DOcclusion(occlusion);
@@ -740,7 +740,7 @@ namespace Vital::Sandbox::Lua::API {
         bind("sound", "get3DSpread", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                if ((vm -> getArgCount() < 1)) throw ErrorCode["invalid-arguments"];
+                if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 auto sound = fetchSound(vm -> getUserData(1));
                 vm -> setNumber(sound -> get3DSpread());
                 return 1;

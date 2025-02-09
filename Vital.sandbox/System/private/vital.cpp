@@ -71,7 +71,7 @@ namespace Vital::System {
             vsdk_serial = vsdk_serial.substr(0, vsdk_serial.size() - 1);
             vsdk_serial += "\n]";
         }
-        if (vsdk_serial.empty()) throw ErrorCode["serial-nonexistent"];
+        if (vsdk_serial.empty()) throw std::runtime_error(ErrorCode["serial-nonexistent"]);
         return vsdk_serial;
     }
 
