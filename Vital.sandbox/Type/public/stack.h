@@ -28,10 +28,9 @@ namespace Vital::Type {
             std::vector<Value> rwVector;
             std::map<std::string, Value> rwMap;
         public:
-            using ValueType = std::variant<std::string, int, float, double, long, long long, long double, unsigned, unsigned long, unsigned long long>;
             class Value {
                 private:
-                    ValueType value;
+                    std::variant<std::string, int, float, double, long, long long, long double, unsigned, unsigned long, unsigned long long> value;
                 public:
                     // Instantiators //
                     template <typename T>
