@@ -27,7 +27,6 @@ int main() {
     Vital::System::setSystemPlatform("server");
     std::cout << "Instantiated Platform: " << Vital::System::getSystemPlatform() << std::endl;
 
-
     Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::createErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;

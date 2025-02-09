@@ -60,8 +60,8 @@ namespace Vital::Type {
                     std::pair<std::string, std::string> serialize() {
                         if (isString()) return {"std::string", get<std::string>()};
                         if (isNumber()) {
-                            std::ostringstream oss;
                             std::string type;
+                            std::ostringstream oss;
                             if (std::holds_alternative<int>(value)) {
                                 type = "int";
                                 oss << get<int>();
@@ -95,38 +95,18 @@ namespace Vital::Type {
                         throw std::runtime_error("invalid-result");
                     }
                     static Value deserialize(const std::pair<std::string, std::string>& serial) {
-                        const auto& rwType = serial.first;
-                        const auto& rwValue = serial.second;
-                        if (rwType == "std::string") {
-                            return Value(rwValue);
-                        } 
-                        if (rwType == "int") {
-                            return Value(std::stoi(rwValue));
-                        } 
-                        if (rwType == "float") {
-                            return Value(std::stof(rwValue));
-                        } 
-                        if (rwType == "double") {
-                            return Value(std::stod(rwValue));
-                        } 
-                        if (rwType == "long") {
-                            return Value(std::stol(rwValue));
-                        } 
-                        if (rwType == "long long") {
-                            return Value(std::stoll(rwValue));
-                        } 
-                        if (rwType == "long double") {
-                            return Value(std::stold(rwValue));
-                        } 
-                        if (rwType == "unsigned int") {
-                            return Value(static_cast<unsigned int>(std::stoul(rwValue)));
-                        } 
-                        if (rwType == "unsigned long") {
-                            return Value(std::stoul(rwValue));
-                        } 
-                        if (rwType == "unsigned long long") {
-                            return Value(std::stoull(rwValue));
-                        } 
+                        const auto& type = serial.first;
+                        const auto& value = serial.second;
+                        if (type == "std::string") return Value(value);
+                        if (type == "int") return Value(std::stoi(value));
+                        if (type == "float") return Value(std::stof(value));
+                        if (type == "double") return Value(std::stod(value));
+                        if (type == "long") return Value(std::stol(value));
+                        if (type == "long long") return Value(std::stoll(value));
+                        if (type == "long double") return Value(std::stold(value));
+                        if (type == "unsigned int") return Value(static_cast<unsigned int>(std::stoul(value)));
+                        if (type == "unsigned long") return Value(std::stoul(value));
+                        if (type == "unsigned long long") return Value(std::stoull(value));
                         throw std::runtime_error("invalid-result");
                     }
             };
