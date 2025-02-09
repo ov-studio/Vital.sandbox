@@ -24,7 +24,7 @@
 namespace Vital::Type {
     class Timer {
         private:
-            static std::map<Timer*, bool> vsdk_timers;
+            static std::map<Timer*, bool> buffer;
         public:
             // Instantiators //
             Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1);

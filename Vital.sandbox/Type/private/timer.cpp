@@ -21,11 +21,11 @@
 /////////////////////////
 
 namespace Vital::Type {
-    std::map<Timer*, bool> Timer::vsdk_timers;
+    std::map<Timer*, bool> Timer::buffer;
 
     // Instantiators //
     Timer::Timer(std::function<void(Timer*)> exec, int interval, int executions) {
-        vsdk_timers.emplace(this, true);
+        buffer.emplace(this, true);
         Vital::Type::Thread::create([=](Vital::Type::Thread::create* thread) -> void {
             int currentExecutions = 0;
             int targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
@@ -38,11 +38,11 @@ namespace Vital::Type {
         }).detach();
     }
     void Timer::destroy() {
-        vsdk_timers.erase(this);
+        buffer.erase(this);
     }
 
     // Utils //
     bool Timer::isInstance(Timer* identifier) {
-        return vsdk_timers.find(identifier) != vsdk_timers.end();
+        return buffer.find(identifier) != buffer.end();
     }
 }
