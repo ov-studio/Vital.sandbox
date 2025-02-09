@@ -25,13 +25,11 @@
 ////////////////////
 
 namespace Vital::System {
-    // Variables //
     std::string vsdk_platform = "server";
     std::string vsdk_serial = "";
     unsigned int vsdk_apptick;
     unsigned int vsdk_clienttick;
 
-    // APIs //
     bool setSystemPlatform(const std::string& platform) {
         if (platform == "client") {
             #if !defined(WINDOWS)

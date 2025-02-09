@@ -25,7 +25,6 @@
 /////////////
 
 namespace Vital::Sandbox::JS {
-    // Variables //
     std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
 
     // Instantiators //

@@ -21,7 +21,6 @@
 //////////////
 
 namespace Vital::Sandbox::JS::API {
-    // Variables //
     std::map<vsdk_bind, vsdk_exec> vsdk_binds;
     std::function<void(const std::string&)> vsdk_errorhandle = NULL;
 

@@ -21,25 +21,29 @@
 /////////////////////////
 
 namespace Vital::System::Event {
-    Vital::Type::Event::HandleID handleID = 0;
-    std::map<std::string, std::map<Vital::Type::Event::HandleID, Vital::Type::Event::Handler>> instance;
-    bool isInstance(const std::string& identifier) { return instance.find(identifier) != instance.end(); }
+    Vital::Type::Event::ID vsdk_id = 0;
+    std::map<std::string, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler>> vsdk_events;
+
+    bool isInstance(const std::string& identifier) {
+        return vsdk_events.find(identifier) != vsdk_events.end();
+    }
 
     Vital::Type::Event::Handle bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
-        if (!isInstance(identifier)) instance.emplace(identifier, std::map<Vital::Type::Event::HandleID, Vital::Type::Event::Handler> {});
-        handleID++;
-        instance.at(identifier).emplace(handleID, exec);
-        auto __handleID = handleID;
+        if (!isInstance(identifier)) vsdk_events.emplace(identifier, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler> {});
+        vsdk_id++;
+        vsdk_events.at(identifier).emplace(vsdk_id, exec);
+        auto id = vsdk_id;
         return {
             [=]() -> void {
-                instance.at(identifier).erase(__handleID);
-                if (instance.at(identifier).empty()) instance.erase(identifier);
+                vsdk_events.at(identifier).erase(id);
+                if (vsdk_events.at(identifier).empty()) vsdk_events.erase(identifier);
             }
         };
     }
+
     bool emit(const std::string& identifier, Vital::Type::Stack::Instance arguments) {
         if (isInstance(identifier)) {
-            for (const auto i : instance.at(identifier)) {
+            for (const auto i : vsdk_events.at(identifier)) {
                 (i.second)(arguments); 
             }
         }

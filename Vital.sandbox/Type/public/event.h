@@ -22,9 +22,11 @@
 /////////////////////////
 
 namespace Vital::Type::Event {
-    typedef unsigned long HandleID;
+    typedef unsigned long ID;
+
     typedef struct {
         const std::function<void()> unbind;
     } Handle;
+
     typedef std::function<void(Vital::Type::Stack::Instance)> Handler;
 }
