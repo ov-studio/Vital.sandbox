@@ -20,6 +20,28 @@
 // Vital: Type: Stack //
 /////////////////////////
 
+/*----------------------------------------------------------------
+     Resource: Vital.sandbox
+     Script: Type: public: stack.h
+     Author: vStudio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Stack Types
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
+#include <Type/public/index.h>
+
+
+/////////////////////////
+// Vital: Type: Stack //
+/////////////////////////
+
 namespace Vital::Type {
     class Stack {
         public:
@@ -28,53 +50,38 @@ namespace Vital::Type {
             std::vector<Value> rwVector;
             std::map<std::string, Value> rwMap;
         public:
+            using ValueType = std::variant<std::string, int, float, double, long, long long, long double, unsigned, unsigned long, unsigned long long>;
             class Value {
                 private:
-                    std::string rwString;
-                    int rwInt;
-                    float rwFloat;
-                    double rwDouble;
-                    long rwLong;
-                    long long rwLongLong;
-                    long double rwLongDouble;
-                    unsigned rwUnsigned;
-                    unsigned long rwUnsignedLong;
-                    unsigned long long rwUnsignedLongLong;
-                    const char* rwType;
+                    ValueType value;
                 public:
                     // Instantiators //
-                    Value(const std::string& argument);
-                    Value(int argument);
-                    Value(float argument);
-                    Value(double argument);
-                    Value(long argument);
-                    Value(long long argument);
-                    Value(long double argument);
-                    Value(unsigned argument);
-                    Value(unsigned long argument);
-                    Value(unsigned long long argument);
-        
+                    template <typename T>
+                    Value(T argument) : value(argument) {}
+
                     // Checkers //
-                    bool isString();
-                    bool isNumber();
-        
+                    bool isString() { return std::holds_alternative<std::string>(value); }
+                    bool isNumber() {
+                        return (
+                            std::holds_alternative<int>(value) || 
+                            std::holds_alternative<float>(value) || 
+                            std::holds_alternative<double>(value) || 
+                            std::holds_alternative<long>(value) || 
+                            std::holds_alternative<long long>(value) || 
+                            std::holds_alternative<long double>(value) || 
+                            std::holds_alternative<unsigned>(value) || 
+                            std::holds_alternative<unsigned long>(value) || 
+                            std::holds_alternative<unsigned long long>(value)
+                        );
+                    }
+
                     // Getters //
-                    std::string getString();
-                    int getInt();
-                    float getFloat();
-                    double getDouble();
-                    long getLong();
-                    long long getLongLong();
-                    long double getLongDouble();
-                    unsigned getUnsigned();
-                    unsigned long getUnsignedLong();
-                    unsigned long long getUnsignedLongLong();
-        
-                    // Utils //
-                    static bool isTypeString(const char* rwType);
-                    static bool isTypeNumber(const char* rwType);
+                    template <typename T>
+                    T get() const { return std::get<T>(value); }
+
+                    // Utils
                     std::pair<std::string, std::string> serialize();
-                    static Value deserialize(std::pair<std::string, std::string> serial);
+                    static Value deserialize(const std::pair<std::string, std::string>& serial);
             };
 
             // Checkers //
@@ -86,57 +93,24 @@ namespace Vital::Type {
             bool isNumber(const std::string& index);
 
             // Getters //
-            std::string getString(int index = 0);
-            std::string getString(const std::string& index);
-            int getInt(int index = 0);
-            int getInt(const std::string& index);
-            float getFloat(int index = 0);
-            float getFloat(const std::string& index);
-            double getDouble(int index = 0);
-            double getDouble(const std::string& index);
-            long getLong(int index = 0);
-            long getLong(const std::string& index);
-            long long getLongLong(int index = 0);
-            long long getLongLong(const std::string& index);
-            long double getLongDouble(int index = 0);
-            long double getLongDouble(const std::string& index);
-            unsigned getUnsigned(int index = 0);
-            unsigned getUnsigned(const std::string& index);
-            unsigned long getUnsignedLong(int index = 0);
-            unsigned long getUnsignedLong(const std::string& index);
-            unsigned long long getUnsignedLongLong(int index = 0);
-            unsigned long long getUnsignedLongLong(const std::string& index);
+            template <typename T>
+            T get(int index = 0);
+            template <typename T>
+            T get(const std::string& index);
 
             // Pushers //
-            void push(const std::string& value);
-            void push(const std::string& index, const std::string& value);
-            void push(int value);
-            void push(const std::string& index, int value);
-            void push(float value);
-            void push(const std::string& index, float value);
-            void push(double value);
-            void push(const std::string& index, double value);
-            void push(long value);
-            void push(const std::string& index, long value);
-            void push(long long value);
-            void push(const std::string& index, long long value);
-            void push(long double value);
-            void push(const std::string& index, long double value);
-            void push(unsigned value);
-            void push(const std::string& index, unsigned value);
-            void push(unsigned long value);
-            void push(const std::string& index, unsigned long value);
-            void push(unsigned long long value);
-            void push(const std::string& index, unsigned long long value);
+            template <typename T>
+            void push(T& value);
+            template <typename T>
+            void push(const std::string& index, T& value);
 
-            // Poppers //
+            // Poppers
             void pop(int index = 0);
             void pop(const std::string& index);
 
             // Utils //
-            void pushValue(Value value);
-            void pushValue(const std::string& index, Value value);
             std::string serialize();
             static Stack deserialize(const std::string& serial);
     };
+
 }

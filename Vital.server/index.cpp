@@ -37,22 +37,22 @@ int main() {
 
 
     Vital::System::Event::bind("Network:@PeerConnect", [](Vital::Type::Stack arguments) -> void {
-        std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Connected";
+        std::cout << "\n[Client - " << arguments.get<unsigned long>("peerID") << "]: Connected";
         Vital::Type::Stack buffer;
         buffer.push("Network:message", "Hello From Server");
-        Vital::System::Network::emit(buffer, arguments.getUnsignedLong("peerID"), false);
+        Vital::System::Network::emit(buffer, arguments.get<unsigned long>("peerID"), false);
     });
     Vital::System::Event::bind("Network:@PeerMessage", [=](Vital::Type::Stack arguments) -> void {
         //if (arguments.isString("Network:message")) std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("Network:message");
         if (arguments.isString("Network:name")) {
-            std::cout << "\n Received Network:name - " << arguments.getString("Network:name");
+            std::cout << "\n Received Network:name - " << arguments.get<std::string>("Network:name");
             // TODO: Handle it better  to avoid injection/hacky solutions; store a ref in memory somehow....
-            std::string rw = "network.execNetwork([[" + arguments.getString("Network:payload") + "]])";
+            std::string rw = "network.execNetwork([[" + arguments.get<std::string>("Network:payload") + "]])";
             luaVM -> loadString(rw);
         }
     });
     Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack arguments) -> void {
-        std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: Disconnected";
+        std::cout << "\n[Client - " << arguments.get<unsigned long>("peerID") << "]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
     std::cout << "Instantiated Network" << std::endl;

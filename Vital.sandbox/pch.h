@@ -23,5 +23,7 @@
 #include <exception>
 #include <vector>
 #include <map>
+#include <variant>
+#include <utility>
 #include <string>
 #include <sstream>
