@@ -37,7 +37,6 @@ namespace Vital::Type::Timer {
             destroy();
         }).detach();
     }
-
     void create::destroy() {
         vsdk_timers.erase(this);
     }

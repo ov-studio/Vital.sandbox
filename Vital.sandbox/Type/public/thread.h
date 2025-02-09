@@ -21,18 +21,19 @@
 //////////////////////////
 
 namespace Vital::Type::Thread {
-    class Instance {
+    class create {
         private:
             std::thread thread;
         public:
             // Instantiators //
-            Instance(std::function<void(Vital::Type::Thread::Instance*)> exec);
-            ~Instance();
+            create(std::function<void(Vital::Type::Thread::create*)> exec);
+            ~create();
 
             // Utils//
             void sleep(int duration);
             void join();
             void detach();
     };
-    extern Vital::Type::Thread::Instance* fetchThread();
+    typedef create vsdk_thread;
+    extern vsdk_thread* fetchThread();
 }
