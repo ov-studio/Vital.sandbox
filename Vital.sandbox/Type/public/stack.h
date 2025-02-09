@@ -20,28 +20,6 @@
 // Vital: Type: Stack //
 /////////////////////////
 
-/*----------------------------------------------------------------
-     Resource: Vital.sandbox
-     Script: Type: public: stack.h
-     Author: vStudio
-     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     DOC: 14/09/2022
-     Desc: Stack Types
-----------------------------------------------------------------*/
-
-
-//////////////
-// Imports //
-//////////////
-
-#pragma once
-#include <Type/public/index.h>
-
-
-/////////////////////////
-// Vital: Type: Stack //
-/////////////////////////
-
 namespace Vital::Type {
     class Stack {
         public:
