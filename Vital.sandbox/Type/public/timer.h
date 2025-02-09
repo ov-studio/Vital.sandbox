@@ -25,7 +25,7 @@ namespace Vital::Type::Timer {
     class create {
         public:
             // Instantiators //
-            Instance(std::function<void(Vital::Type::Timer::vsdk_timer*)> exec, int interval = 0, int executions = 1);
+            create(std::function<void(create*)> exec, int interval = 0, int executions = 1);
             void destroy();
     };
     typedef create vsdk_timer;
