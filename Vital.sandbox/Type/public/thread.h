@@ -20,20 +20,20 @@
 // Vital: Type: Thread //
 //////////////////////////
 
-namespace Vital::Type::Thread {
-    class create {
+namespace Vital::Type {
+    class Thread {
         private:
+            static std::map<std::thread::id, Thread*> buffer;
             std::thread thread;
         public:
             // Instantiators //
-            create(std::function<void(Vital::Type::Thread::create*)> exec);
-            ~create();
+            Thread(std::function<void(Thread*)> exec);
+            ~Thread();
 
             // Utils//
+            static Thread* fetchThread();
             void sleep(int duration);
             void join();
             void detach();
     };
-    typedef create vsdk_thread;
-    extern vsdk_thread* fetchThread();
 }

@@ -20,34 +20,35 @@
 // Vital: Type: Thread //
 //////////////////////////
 
-namespace Vital::Type::Thread {
-    std::map<std::thread::id, vsdk_thread*> vsdk_threads;
+namespace Vital::Type {
+    std::map<std::thread::id, Thread*> Thread::buffer;
 
     // Instantiators //
-    create::create(std::function<void(vsdk_thread*)> exec) {
+    Thread::Thread(std::function<void(Thread*)> exec) {
         thread = std::thread([=]() -> void {
             std::thread::id id = std::this_thread::get_id();
-            vsdk_threads.emplace(id, this);
+            buffer.emplace(id, this);
             exec(this);
         });
     }
-    create::~create() {
+    Thread::~Thread() {
         std::thread::id id = std::this_thread::get_id();
-        vsdk_threads.erase(id);
+        buffer.erase(id);
         if (thread.joinable()) detach();
     }
-    vsdk_thread* fetchThread() {
-        std::thread::id id = std::this_thread::get_id();
-        return vsdk_threads.find(id) != vsdk_threads.end() ? vsdk_threads.at(id) : nullptr;
-    }
+
 
     // Utils //
-    void create::sleep(int duration) {
+    void Thread::sleep(int duration) {
         if (duration < 0) return;
         auto thread = fetchThread();
         if ((!thread) || (thread != this)) return;
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
-    void create::join() { thread.join(); }
-    void create::detach() { thread.detach(); }
+    void Thread::join() { thread.join(); }
+    void Thread::detach() { thread.detach(); }
+    Thread* Thread::fetchThread() {
+        std::thread::id id = std::this_thread::get_id();
+        return buffer.find(id) != buffer.end() ? buffer.at(id) : nullptr;
+    }
 }

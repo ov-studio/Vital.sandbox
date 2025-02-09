@@ -26,7 +26,7 @@ namespace Vital::Type {
     // Instantiators //
     Timer::Timer(std::function<void(Timer*)> exec, int interval, int executions) {
         buffer.emplace(this, true);
-        Vital::Type::Thread::create([=](Vital::Type::Thread::create* thread) -> void {
+        Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
             int currentExecutions = 0;
             int targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
             while (Timer::isInstance(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {

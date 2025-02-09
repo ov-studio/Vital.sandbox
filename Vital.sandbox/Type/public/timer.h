@@ -28,9 +28,9 @@ namespace Vital::Type {
         public:
             // Instantiators //
             Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1);
+            void destroy();
 
             // Utils //
-            void destroy();
             static bool isInstance(Timer*);
     };
 }
