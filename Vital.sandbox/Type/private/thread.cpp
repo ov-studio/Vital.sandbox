@@ -38,14 +38,14 @@ namespace Vital::Type {
     }
 
     // Utils //
+    void Thread::join() { thread.join(); }
+    void Thread::detach() { thread.detach(); }
     void Thread::sleep(int duration) {
         if (duration < 0) return;
         auto thread = fetchThread();
         if ((!thread) || (thread != this)) return;
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
-    void Thread::join() { thread.join(); }
-    void Thread::detach() { thread.detach(); }
     Thread* Thread::fetchThread() {
         std::thread::id id = std::this_thread::get_id();
         return buffer.find(id) != buffer.end() ? buffer.at(id) : nullptr;
