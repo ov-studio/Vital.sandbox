@@ -28,5 +28,5 @@ namespace Vital::Type::Event {
         const std::function<void()> unbind;
     } Handle;
 
-    typedef std::function<void(Vital::Type::Stack::Instance)> Handler;
+    typedef std::function<void(Vital::Type::Stack)> Handler;
 }

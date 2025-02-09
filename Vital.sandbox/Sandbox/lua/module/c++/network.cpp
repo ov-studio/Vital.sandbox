@@ -37,7 +37,7 @@ namespace Vital::Sandbox::Lua::API {
                 int peerID = isClient ? 0 : vm -> getInt(2);
                 bool isLatent = vm -> isBool(queryArg - 1) ? vm -> getBool(queryArg - 1) : false;
                 std::string payload = vm -> isString(queryArg) ? vm -> getString(queryArg) : "";
-                Vital::Type::Stack::Instance networkArgs;
+                Vital::Type::Stack networkArgs;
                 networkArgs.push("Network:name", name);
                 networkArgs.push("Network:payload", payload);
                 Vital::System::Network::emit(networkArgs, peerID, isLatent);

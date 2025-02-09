@@ -37,7 +37,6 @@ namespace Vital::Type {
         if (thread.joinable()) detach();
     }
 
-
     // Utils //
     void Thread::sleep(int duration) {
         if (duration < 0) return;

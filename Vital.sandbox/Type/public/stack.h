@@ -20,61 +20,63 @@
 // Vital: Type: Stack //
 /////////////////////////
 
-namespace Vital::Type::Stack {
-    class Value {
-        private:
-            std::string rwString;
-            int rwInt;
-            float rwFloat;
-            double rwDouble;
-            long rwLong;
-            long long rwLongLong;
-            long double rwLongDouble;
-            unsigned rwUnsigned;
-            unsigned long rwUnsignedLong;
-            unsigned long long rwUnsignedLongLong;
-            const char* rwType;
+namespace Vital::Type {
+    class Stack {
         public:
-            // Instantiators //
-            Value(const std::string& argument);
-            Value(int argument);
-            Value(float argument);
-            Value(double argument);
-            Value(long argument);
-            Value(long long argument);
-            Value(long double argument);
-            Value(unsigned argument);
-            Value(unsigned long argument);
-            Value(unsigned long long argument);
-
-            // Checkers //
-            bool isString();
-            bool isNumber();
-
-            // Getters //
-            std::string getString();
-            int getInt();
-            float getFloat();
-            double getDouble();
-            long getLong();
-            long long getLongLong();
-            long double getLongDouble();
-            unsigned getUnsigned();
-            unsigned long getUnsignedLong();
-            unsigned long long getUnsignedLongLong();
-
-            // Utils //
-            static bool isTypeString(const char* rwType);
-            static bool isTypeNumber(const char* rwType);
-            std::pair<std::string, std::string> serialize();
-            static Value deserialize(std::pair<std::string, std::string> serial);
-    };
-
-    class Instance {
+            class Value;
         private:
             std::vector<Value> rwVector;
             std::map<std::string, Value> rwMap;
         public:
+            class Value {
+                private:
+                    std::string rwString;
+                    int rwInt;
+                    float rwFloat;
+                    double rwDouble;
+                    long rwLong;
+                    long long rwLongLong;
+                    long double rwLongDouble;
+                    unsigned rwUnsigned;
+                    unsigned long rwUnsignedLong;
+                    unsigned long long rwUnsignedLongLong;
+                    const char* rwType;
+                public:
+                    // Instantiators //
+                    Value(const std::string& argument);
+                    Value(int argument);
+                    Value(float argument);
+                    Value(double argument);
+                    Value(long argument);
+                    Value(long long argument);
+                    Value(long double argument);
+                    Value(unsigned argument);
+                    Value(unsigned long argument);
+                    Value(unsigned long long argument);
+        
+                    // Checkers //
+                    bool isString();
+                    bool isNumber();
+        
+                    // Getters //
+                    std::string getString();
+                    int getInt();
+                    float getFloat();
+                    double getDouble();
+                    long getLong();
+                    long long getLongLong();
+                    long double getLongDouble();
+                    unsigned getUnsigned();
+                    unsigned long getUnsignedLong();
+                    unsigned long long getUnsignedLongLong();
+        
+                    // Utils //
+                    static bool isTypeString(const char* rwType);
+                    static bool isTypeNumber(const char* rwType);
+                    std::pair<std::string, std::string> serialize();
+                    static Value deserialize(std::pair<std::string, std::string> serial);
+            };
+
             // Checkers //
             bool isNil(int index = 0);
             bool isNil(const std::string& index);
@@ -135,6 +137,6 @@ namespace Vital::Type::Stack {
             void pushValue(Value value);
             void pushValue(const std::string& index, Value value);
             std::string serialize();
-            static Instance deserialize(const std::string& serial);
+            static Stack deserialize(const std::string& serial);
     };
 }

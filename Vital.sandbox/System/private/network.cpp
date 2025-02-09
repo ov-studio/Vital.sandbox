@@ -65,7 +65,7 @@ namespace Vital::System::Network {
                 if (Vital::System::getSystemPlatform() == "server") {
                     networkEvent.peer -> data = reinterpret_cast<void*>(peerID);
                     networkPeers.emplace(peerID, networkEvent.peer);
-                    Vital::Type::Stack::Instance eventArguments;
+                    Vital::Type::Stack eventArguments;
                     eventArguments.push("peerID", getPeerID(networkEvent.peer));
                     Vital::System::Event::emit("Network:@PeerConnect", eventArguments);
                     peerID++;
@@ -73,14 +73,14 @@ namespace Vital::System::Network {
                 break;
             }
             case ENET_EVENT_TYPE_RECEIVE: {
-                Vital::Type::Stack::Instance eventArguments = Vital::Type::Stack::Instance::deserialize(Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
+                Vital::Type::Stack eventArguments = Vital::Type::Stack::deserialize(Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
                 if (Vital::System::getSystemPlatform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
                 enet_packet_destroy(networkEvent.packet);
                 break;
             }
             case ENET_EVENT_TYPE_DISCONNECT: {
-                Vital::Type::Stack::Instance eventArguments;
+                Vital::Type::Stack eventArguments;
                 if (Vital::System::getSystemPlatform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerDisconnect", eventArguments);
                 if (Vital::System::getSystemPlatform() == "client") stop();
@@ -109,7 +109,7 @@ namespace Vital::System::Network {
     Vital::Type::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
 
     // Utils //
-    bool emit(Vital::Type::Stack::Instance buffer, Vital::Type::Network::PeerID peerID, bool isLatent) {
+    bool emit(Vital::Type::Stack buffer, Vital::Type::Network::PeerID peerID, bool isLatent) {
         if (!isConnected()) return false;
         const std::string bufferSerial = Vital::System::Crypto::encode(buffer.serialize());
         if ((Vital::System::getSystemPlatform() == "client") || (peerID <= 0)) {

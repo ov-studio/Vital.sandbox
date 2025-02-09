@@ -39,15 +39,15 @@ int main() {
     std::cout << "Instantiated VM: Lua" << std::endl;
 
 
-    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack::Instance arguments) -> void {
+    Vital::System::Event::bind("Network:@PeerMessage", [](Vital::Type::Stack arguments) -> void {
         /**
         if (arguments.isString("Network:message")) std::cout << "\n[Server]: " << arguments.getString("Network:message");
-        Vital::Type::Stack::Instance buffer;
+        Vital::Type::Stack buffer;
         buffer.push("Network:message", "Hello From Client");
         Vital::System::Network::emit(buffer);
         */
     });
-    Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack::Instance arguments) -> void {
+    Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack arguments) -> void {
         std::cout << "\n[Server]: Disconnected";
     });
     Vital::System::Network::start(Vital::Type::Network::Address {"127.0.0.1", 22003});
