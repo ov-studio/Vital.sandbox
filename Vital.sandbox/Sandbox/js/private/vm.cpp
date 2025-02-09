@@ -197,7 +197,7 @@ namespace Vital::Sandbox::JS {
     void create::pop(int count) { duk_pop_n(vm, count); }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
-        catch(const std::string& error) { throwError(error); }
+        catch(const std::runtime_error& error) { throwError(error.what()); }
         catch(...) { throwError(); }
         return 1;
     }

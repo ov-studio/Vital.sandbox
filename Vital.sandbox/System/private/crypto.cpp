@@ -51,7 +51,7 @@ namespace Vital::System::Crypto {
             delete[] iv;
             return result;
         }
-        catch(std::string error) { throw error; }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 
     std::string CipherHandle(const std::string& mode, bool isEncrypt, const std::string& buffer, const std::string& key, const std::string& iv) {
@@ -77,7 +77,7 @@ namespace Vital::System::Crypto {
             EVP_CIPHER_CTX_free(ctx);
             return result;
         }
-        catch(std::string error) { throw error; }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 
     std::string hash(const std::string& mode, const std::string& buffer) {
@@ -91,7 +91,7 @@ namespace Vital::System::Crypto {
             delete[] output;
             return result;
         }
-        catch(std::string error) { throw error; }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 
     std::string encode(const std::string& buffer) {
@@ -121,13 +121,13 @@ namespace Vital::System::Crypto {
             std::string result = CipherHandle(mode, true, buffer, key, iv);
             return {encode(result), encode(iv)};
         }
-        catch(std::string error) { throw error; }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 
     std::string decrypt(const std::string& mode, const std::string& buffer, const std::string& key, const std::string& iv) {
         try {
             return CipherHandle(mode, false, decode(buffer), key, decode(iv));
         }
-        catch(std::string error) { throw error; }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 }

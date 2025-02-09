@@ -243,7 +243,7 @@ namespace Vital::Sandbox::Lua {
     }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
-        catch(const std::string& error) { throwError(error); }
+        catch(const std::runtime_error& error) { throwError(error.what()); }
         catch(...) { throwError(); }
         return 1;
     }
