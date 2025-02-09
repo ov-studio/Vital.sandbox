@@ -37,20 +37,8 @@ namespace Vital::Type {
                     Value(T argument) : value(argument) {}
 
                     // Checkers //
-                    bool isString() { return std::holds_alternative<std::string>(value); }
-                    bool isNumber() {
-                        return (
-                            std::holds_alternative<int>(value) || 
-                            std::holds_alternative<float>(value) || 
-                            std::holds_alternative<double>(value) || 
-                            std::holds_alternative<long>(value) || 
-                            std::holds_alternative<long long>(value) || 
-                            std::holds_alternative<long double>(value) || 
-                            std::holds_alternative<unsigned>(value) || 
-                            std::holds_alternative<unsigned long>(value) || 
-                            std::holds_alternative<unsigned long long>(value)
-                        );
-                    }
+                    bool isString();
+                    bool isNumber();
 
                     // Getters //
                     template <typename T>

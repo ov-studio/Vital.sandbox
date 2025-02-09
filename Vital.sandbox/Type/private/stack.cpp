@@ -117,6 +117,23 @@ namespace Vital::Type {
 }
 
 namespace Vital::Type {
+    // Checkers //
+    bool Stack::Value::isString() { return std::holds_alternative<std::string>(value); }
+    bool Stack::Value::isNumber() {
+        return (
+            std::holds_alternative<int>(value) || 
+            std::holds_alternative<float>(value) || 
+            std::holds_alternative<double>(value) || 
+            std::holds_alternative<long>(value) || 
+            std::holds_alternative<long long>(value) || 
+            std::holds_alternative<long double>(value) || 
+            std::holds_alternative<unsigned>(value) || 
+            std::holds_alternative<unsigned long>(value) || 
+            std::holds_alternative<unsigned long long>(value)
+        );
+    }
+
+    // Utils
     std::pair<std::string, std::string> Stack::Value::serialize() {
         if (isString()) return {"std::string", get<std::string>()};
         if (isNumber()) {
