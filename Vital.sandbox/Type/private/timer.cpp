@@ -21,15 +21,15 @@
 /////////////////////////
 
 namespace Vital::Type::Timer {
+    std::map<vsdk_timer*, bool> vsdk_timers;
+
     // Instantiators //
-    std::map<Instance*, bool> instance;
-    bool isInstance(Instance* identifier) { return instance.find(identifier) != instance.end(); }
-    Instance::Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval, int executions) {
-        instance.emplace(this, true);
-        Vital::Type::Thread::Instance([=](Vital::Type::Thread::Instance* thread) -> void {
+    create::create(std::function<void(Vital::Type::Timer::vsdk_timer*)> exec, int interval, int executions) {
+        vsdk_timers.emplace(this, true);
+        Vital::Type::Thread::create([=](Vital::Type::Thread::create* thread) -> void {
             int currentExecutions = 0;
             int targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
-            while (isInstance(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
+            while (isTimer(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
                 thread -> sleep(interval);
                 currentExecutions++;
                 exec(this);
@@ -37,5 +37,9 @@ namespace Vital::Type::Timer {
             destroy();
         }).detach();
     }
-    void Instance::destroy() { instance.erase(this); }
+    void create::destroy() { vsdk_timers.erase(this); }
+
+    bool isTimer(vsdk_timer* identifier) {
+        return vsdk_timers.find(identifier) != vsdk_timers.end();
+    }
 }

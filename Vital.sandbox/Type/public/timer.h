@@ -22,10 +22,12 @@
 /////////////////////////
 
 namespace Vital::Type::Timer {
-    class Instance {
+    class create {
         public:
             // Instantiators //
-            Instance(std::function<void(Vital::Type::Timer::Instance*)> exec, int interval = 0, int executions = 1);
+            Instance(std::function<void(Vital::Type::Timer::vsdk_timer*)> exec, int interval = 0, int executions = 1);
             void destroy();
     };
+    typedef create vsdk_timer;
+    extern bool isTimer(vsdk_timer*);
 }
