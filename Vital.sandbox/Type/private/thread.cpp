@@ -21,24 +21,24 @@
 //////////////////////////
 
 namespace Vital::Type::Thread {
-    std::map<std::thread::id, vsdk_thread*> instance;
+    std::map<std::thread::id, vsdk_thread*> vsdk_threads;
 
     // Instantiators //
     create::create(std::function<void(vsdk_thread*)> exec) {
         thread = std::thread([=]() -> void {
             std::thread::id id = std::this_thread::get_id();
-            instance.emplace(id, this);
+            vsdk_threads.emplace(id, this);
             exec(this);
         });
     }
     create::~create() {
         std::thread::id id = std::this_thread::get_id();
-        instance.erase(id);
+        vsdk_threads.erase(id);
         if (thread.joinable()) detach();
     }
     vsdk_thread* fetchThread() {
         std::thread::id id = std::this_thread::get_id();
-        return instance.find(id) != instance.end() ? instance.at(id) : nullptr;
+        return vsdk_threads.find(id) != vsdk_threads.end() ? vsdk_threads.at(id) : nullptr;
     }
 
     // Utils //
