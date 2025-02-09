@@ -132,13 +132,13 @@ namespace Vital::Type {
             };
 
             // Checkers //
-            bool isNil(int index = 0);
-            bool isNil(const std::string& index);
-            bool isString(int index = 0);
-            bool isString(const std::string& index);
-            bool isNumber(int index = 0);
-            bool isNumber(const std::string& index);
-
+            bool isNil(int index) { return ((index < 0) || vector.empty() || (index >= vector.size()) && true) || false; };
+            bool isNil(const std::string& index) { return map.find(index) == map.end(); };
+            bool isString(int index) { return (!isNil(index) && vector.at(index).isString() && true) || false; }
+            bool isString(const std::string& index) { return (!isNil(index) && map.at(index).isString() && true) || false; }
+            bool isNumber(int index) { return (!isNil(index) && vector.at(index).isNumber() && true) || false; }
+            bool isNumber(const std::string& index) { return (!isNil(index) && map.at(index).isNumber() && true) || false; }
+        
             // Getters //
             template <typename T>
             T get(int index = 0) {
@@ -158,12 +158,68 @@ namespace Vital::Type {
             void push(const std::string& index, T value) { map.emplace(index, Value(value)); }
 
             // Poppers
-            void pop(int index = 0);
-            void pop(const std::string& index);
+            void pop(int index) { vector.erase(vector.begin() + index - 1); }
+            void pop(const std::string& index) { map.erase(index); }
 
             // Utils //
-            std::string serialize();
-            static Stack deserialize(const std::string& serial);
+            std::string serialize() {
+                std::ostringstream stream;
+                const auto size = sizeof(size_t);
+                const size_t size_vector = vector.size(), size_map = map.size();
+                stream.write(reinterpret_cast<const char*>(&size_vector), size);
+                stream.write(reinterpret_cast<const char*>(&size_map), size);
+                for (int i = 0; i < size_vector; i++) {
+                    auto value = vector.at(i).serialize();
+                    const size_t size_value_type = value.first.size(), size_value = value.second.size();
+                    stream.write(reinterpret_cast<const char*>(&size_value_type), size);
+                    stream.write(reinterpret_cast<const char*>(&size_value), size);
+                    stream.write(value.first.c_str(), size_value_type);
+                    stream.write(value.second.c_str(), size_value);
+                }
+                for (auto& i : map) {
+                    auto value = i.second.serialize();
+                    const size_t size_index = i.first.size(), size_value_type = value.first.size(), size_value = value.second.size();
+                    stream.write(reinterpret_cast<const char*>(&size_index), size);
+                    stream.write(reinterpret_cast<const char*>(&size_value_type), size);
+                    stream.write(reinterpret_cast<const char*>(&size_value), size);
+                    stream.write(i.first.c_str(), size_index);
+                    stream.write(value.first.c_str(), size_value_type);
+                    stream.write(value.second.c_str(), size_value);
+                }
+                return stream.str();
+            }
+            static Stack deserialize(const std::string& serial) {
+                std::istringstream stream(serial);
+                Stack stack;
+                const auto size = sizeof(size_t);
+                size_t size_vector, size_map;
+                stream.read(reinterpret_cast<char*>(&size_vector), size);
+                stream.read(reinterpret_cast<char*>(&size_map), size);
+                for (int i = 0; i < size_vector; i++) {
+                    size_t size_value_type, size_value;
+                    stream.read(reinterpret_cast<char*>(&size_value_type), size);
+                    stream.read(reinterpret_cast<char*>(&size_value), size);
+                    std::vector<char> value_type(size_value_type);
+                    std::vector<char> value(size_value);
+                    stream.read(value_type.data(), size_value_type);
+                    stream.read(value.data(), size_value);
+                    stack.push(Value::deserialize({std::string(value_type.data(), size_value_type), std::string(value.data(), size_value)}));
+                }
+                for (int i = 0; i < size_map; i++) {
+                    size_t size_index, size_value_type, size_value;
+                    stream.read(reinterpret_cast<char*>(&size_index), size);
+                    stream.read(reinterpret_cast<char*>(&size_value_type), size);
+                    stream.read(reinterpret_cast<char*>(&size_value), size);
+                    std::vector<char> index(size_index);
+                    std::vector<char> value_type(size_value_type);
+                    std::vector<char> value(size_value);
+                    stream.read(index.data(), size_index);
+                    stream.read(value_type.data(), size_value_type);
+                    stream.read(value.data(), size_value);
+                    stack.push(std::string(index.data(), size_index), Value::deserialize({std::string(value_type.data(), size_value_type), std::string(value.data(), size_value)}));
+                }
+                return stack;
+            }
     };
 
 }
