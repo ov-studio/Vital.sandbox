@@ -31,9 +31,9 @@ namespace Vital::Type {
             ~Thread();
 
             // Utils//
-            static Thread* fetchThread();
             void sleep(int duration);
             void join();
             void detach();
+            static Thread* fetchThread();
     };
 }
