@@ -24,12 +24,12 @@ namespace Vital::System::Event {
     Vital::Type::Event::ID vsdk_id = 0;
     std::map<std::string, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler>> vsdk_events;
 
-    bool isInstance(const std::string& identifier) {
+    bool isEvent(const std::string& identifier) {
         return vsdk_events.find(identifier) != vsdk_events.end();
     }
 
     Vital::Type::Event::Handle bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
-        if (!isInstance(identifier)) vsdk_events.emplace(identifier, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler> {});
+        if (!isEvent(identifier)) vsdk_events.emplace(identifier, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler> {});
         vsdk_id++;
         vsdk_events.at(identifier).emplace(vsdk_id, exec);
         auto id = vsdk_id;
@@ -42,7 +42,7 @@ namespace Vital::System::Event {
     }
 
     bool emit(const std::string& identifier, Vital::Type::Stack::Instance arguments) {
-        if (isInstance(identifier)) {
+        if (isEvent(identifier)) {
             for (const auto i : vsdk_events.at(identifier)) {
                 (i.second)(arguments); 
             }
