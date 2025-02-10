@@ -31,7 +31,7 @@ void genPackage(const std::string& entry, std::vector<std::string> modules) {
 }
 
 int main() {
-    genPackage("../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::module);
-    genPackage("../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::module);
+    genPackage("../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::vsdk_modules);
+    genPackage("../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::vsdk_modules);
     return 1;
 }
