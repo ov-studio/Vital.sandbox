@@ -29,7 +29,7 @@ namespace Vital::System::Package {
         result += "\n#include <System/public/package.h>";
         result += "\nstd::string fetchPackageModule(const std::string& path) {";
         result += "\n\tstd::string result;";
-        result += "\n\tstd::vector<std::string> module;";
+        result += "\n\tstd::vector<std::string> buffer;";
         if (isDebugMode) std::cout << "\nPackaging: " << path;
         for (auto& i : modules) {
             if (!Vital::System::File::exists(i.path)) {
@@ -38,13 +38,12 @@ namespace Vital::System::Package {
             }
             else {
                 result += "\n\tif (path == \"" + i.identifier + "\") {";
-                result += "\n" + Vital::System::Package::Module::write(Vital::System::File::read(i.path));
-                result += "\n\t\tmodule = buffer;";
+                result += Vital::System::Package::Module::write(Vital::System::File::read(i.path));
                 result += "\n\t}";
                 if (isDebugMode) std::cout << "\nBundled Module: " << i.path;
             }
         }
-        result += "\n\treturn Vital::System::Package::Module::read(module);";
+        result += "\n\treturn Vital::System::Package::Module::read(buffer);";
         result += "\n}";
         Vital::System::File::write(path, result);
         if (isDebugMode) std::cout << "\nPackaged: " << path;
@@ -67,7 +66,7 @@ namespace Vital::System::Package::Module {
     }
 
     std::string write(const std::string& buffer) {
-        std::string result = "\t\tstd::vector<std::string> buffer;";
+        std::string result = "";
         const size_t inputLimit = 16380 - 1;
         size_t start = 0;
         size_t bufferSize = buffer.size();
