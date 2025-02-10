@@ -16,6 +16,8 @@
 #include <System/public/crypto.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
 
 
 ////////////////////////////
@@ -95,27 +97,28 @@ namespace Vital::System::Crypto {
     }
 
     std::string encode(const std::string& buffer) {
-        EVP_ENCODE_CTX* ctx = EVP_ENCODE_CTX_new();
-        int outputLength = buffer.size()*2;
-        std::string result(outputLength, '\0');
-        EVP_EncodeInit(ctx);
-        EVP_EncodeUpdate(ctx, reinterpret_cast<unsigned char*>(&result[0]), &outputLength, reinterpret_cast<const unsigned char*>(buffer.c_str()), buffer.size());
-        EVP_EncodeFinal(ctx, reinterpret_cast<unsigned char*>(&result[outputLength]), &outputLength);
-        EVP_ENCODE_CTX_free(ctx);
-        result.resize(outputLength);
+        BIO* bio = BIO_new(BIO_f_base64());
+        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+        BIO* bmem = BIO_new(BIO_s_mem());
+        bio = BIO_push(bio, bmem);
+        BIO_write(bio, buffer.c_str(), buffer.size());
+        BIO_flush(bio);
+        BUF_MEM* bptr;
+        BIO_get_mem_ptr(bio, &bptr);
+        std::string result(bptr->data, bptr->length);
+        BIO_free_all(bio);
         return result;
     }
-
+    
     std::string decode(const std::string& buffer) {
-        EVP_ENCODE_CTX* ctx = EVP_ENCODE_CTX_new();
-        int outputLength = buffer.size();
-        std::string result(outputLength, '\0');
-        int finalLength = 0;
-        EVP_DecodeInit(ctx);
-        EVP_DecodeUpdate(ctx, reinterpret_cast<unsigned char*>(&result[0]), &outputLength, reinterpret_cast<const unsigned char*>(buffer.c_str()), buffer.size());
-        EVP_DecodeFinal(ctx, reinterpret_cast<unsigned char*>(&result[outputLength]), &finalLength);
-        EVP_ENCODE_CTX_free(ctx);
-        result.resize(outputLength + finalLength);
+        BIO* bio = BIO_new(BIO_f_base64());
+        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+        BIO* bmem = BIO_new_mem_buf(buffer.c_str(), buffer.size());
+        bio = BIO_push(bio, bmem);
+        std::string result(buffer.size(), '\0');
+        int decodedLength = BIO_read(bio, &result[0], buffer.size());
+        BIO_free_all(bio);
+        result.resize(decodedLength);
         return result;
     }
 
