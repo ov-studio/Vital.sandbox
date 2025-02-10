@@ -38,7 +38,7 @@ namespace Vital::System::Package {
             }
             else {
                 result += "\nif (path == \"" + i.identifier + "\") {\n";
-                result += Vital::System::Package::Module::write(Vital::System::File::read(i.path), i.delimiter);
+                result += Vital::System::Package::Module::write(Vital::System::File::read(i.path));
                 result += "\nmodule = buffer;";
                 result += "\n}";
                 if (isDebugMode) std::cout << "\nBundled Module: " << i.path;
@@ -66,7 +66,7 @@ namespace Vital::System::Package::Module {
         return result;
     }
 
-    std::string write(const std::string& buffer, const char delimiter) {
+    std::string write(const std::string& buffer) {
         std::string result = "std::vector<std::string> buffer;";
         const size_t inputLimit = 16380 - 1;
         size_t start = 0;

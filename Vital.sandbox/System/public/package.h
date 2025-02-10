@@ -31,5 +31,5 @@ namespace Vital::System::Package {
 
 namespace Vital::System::Package::Module {
     extern std::string read(std::vector<std::string> buffer);
-    extern std::string write(const std::string& buffer, const char delimiter);
+    extern std::string write(const std::string& buffer);
 }

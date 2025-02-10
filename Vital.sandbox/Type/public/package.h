@@ -24,6 +24,5 @@ namespace Vital::Type::Package {
     typedef struct Module {
         std::string identifier;
         std::string path;
-        char delimiter;
     } Module;
 }

@@ -22,7 +22,7 @@
 // Bundler //
 //////////////
 
-void genPackage(const std::string& entry, std::vector<std::string> modules) {
+void createPackage(const std::string& entry, std::vector<std::string> modules) {
     std::vector<Vital::Type::Package::Module> rwModules;
     for (const auto& i : modules) {
         rwModules.push_back({i, entry + i, '\n'});
@@ -31,7 +31,7 @@ void genPackage(const std::string& entry, std::vector<std::string> modules) {
 }
 
 int main() {
-    genPackage("../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::vsdk_modules);
-    genPackage("../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::vsdk_modules);
+    createPackage("../Vital.sandbox/Sandbox/lua/module/", Vital::Sandbox::Lua::vsdk_modules);
+    createPackage("../Vital.sandbox/Sandbox/js/module/", Vital::Sandbox::JS::vsdk_modules);
     return 1;
 }
