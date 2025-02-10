@@ -75,8 +75,9 @@ namespace Vital::System::Crypto {
             outputSize += currentSize;
             EVP_Final(ctx, output + currentSize, &currentSize);
             outputSize += currentSize;
-            std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
             EVP_CIPHER_CTX_free(ctx);
+            std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
+            delete[] output;
             return result;
         }
         catch(...) { std::rethrow_exception(std::current_exception()); }
