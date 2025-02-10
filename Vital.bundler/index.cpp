@@ -25,7 +25,7 @@
 void createPackage(const std::string& entry, std::vector<std::string> modules) {
     std::vector<Vital::Type::Package::Module> rwModules;
     for (const auto& i : modules) {
-        rwModules.push_back({i, entry + i, '\n'});
+        rwModules.push_back({i, entry + i});
     }
     Vital::System::Package::create(entry + "bundle.h", rwModules, true);
 }
