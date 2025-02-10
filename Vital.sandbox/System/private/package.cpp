@@ -28,7 +28,6 @@ namespace Vital::System::Package {
         std::string result = "\n#pragma once";
         result += "\n#include <System/public/package.h>";
         result += "\nstd::string fetchPackageModule(const std::string& path) {";
-        result += "\n\tstd::string result;";
         result += "\n\tstd::vector<std::string> buffer;";
         if (isDebugMode) std::cout << "\nPackaging: " << path;
         for (auto& i : modules) {
