@@ -1,38 +1,47 @@
-# ━ S Y N O P S I S
+# » Synopsis
 
 ![](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
 
-###### **Made with :heart: from 🇺🇸, 🇷🇺, 🇧🇭 & 🇱🇹**
-**━ Maintainer(s):** [**Aviril**](https://github.com/Aviril), [**Mario**](https://github.com/OvileAmriam), [**Tron**](https://github.com/OvileAmriam), [**Anisa**](https://github.com/Anisa-Nur), [**A-Variakojiene**](https://github.com/A-Variakojiene)
+###### *» Maintainer(s): [**Aviril**](https://github.com/Aviril), **Mario**, [**Tron**](https://github.com/OvileAmriam), [**Anisa**](https://github.com/Anisa-Nur), [**A-Variakojiene**](https://github.com/A-Variakojiene)*
 
-**Vital.sandbox** is an official Sandbox-SDK to power sandbox projects being incorporated by **vStudio**.
+**Vital.sandbox** is an official Sandbox-SDK designed to empower sandbox projects developed by **vStudio**. This comprehensive toolkit is built to facilitate the creation of high-performance, modular applications with integrated sandboxing environments, robust threading, and extensive networking capabilities.
 
-## ━ Features
+## » Features
 
 💎**CONSIDER** [**SPONSORING**](https://ko-fi.com/ovstudio) **US TO SUPPORT THE DEVELOPMENT.**
 
-* Completely Open-Source
-* Modular Programming
-* C++17 Oriented
-* Completely Performance-Friendly
-* Completely Safe & Secure
-* Lightweight & Straightforward
-* Completely Embeddable
-* Built-In Types
-* Built-In VM Modules
-* Built-in Lua APIs
-* Built-in JS APIs
-* Built-In File System
-* Built-In Crypto System
-* Built-In Inspect System
-* Built-In Event System
-* Built-In Network System
-* Built-In Audio System
-* Necessary Integration APIs
+* Fully Open-Source
+* Highly Performance-Friendly
+* Modular Programming Architecture (C++17)
+* Integrated Sandboxing Environment (Lua, JS)
+* Integrated Robust Threader (Includes async/await, heartbeats, promises and much more!)
+* Integrated Robust Networking, Scheduling and Rendering Solutions
+* Integrated Scalable Global and Entity Data System
+* Integrated Asset Encrypter (Supports `aes128` apparently)
+* Integrated Asset Downloader and Broadcaster
+* Comprehensive Built-In Libraries ft:
+  * [Table](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Table)
+  * [Math](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Math)
+    * [Quat](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Math:-Quat)
+    * [Matrix](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Math:-Matrix)
+  * [String](https://github.com/ov-sa/Assetify-Library/wiki/Library:-String)
+  * [Namespace](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Namespace)
+  * [File System](https://github.com/ov-sa/Assetify-Library/wiki/Library:-File-System)
+  * [Timer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Timer)
+  * [Threader](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Threader)
+  * [Networker](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Networker)
+  * [Rest](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Rest)
+  * [Scheduler](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Scheduler)
+  * [Renderer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Renderer)
+  * [Syncer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Syncer)
+* Integrated Asset Dependency
+* Integrated Asset Streamer
+* Essential Integration APIs
 
-## ━ Contents
+## » Contents
 
 * [**Official Releases**](https://github.com/ov-studio/Vital.sandbox/releases)
 * [**Installation Guide**](https://github.com/ov-studio/Vital.sandbox/wiki)
 * [**Vendors**](https://github.com/ov-studio/Vital.sandbox/blob/main/VENDOR.md)
 * [**Discord Community**](http://discord.gg/sVCnxPW)
+
