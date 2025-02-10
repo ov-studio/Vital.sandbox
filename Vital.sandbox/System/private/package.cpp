@@ -68,7 +68,7 @@ namespace Vital::System::Package::Module {
 
     std::string write(const std::string& buffer, const char delimiter) {
         std::string result = "std::vector<std::string> buffer;";
-        const size_t inputLimit = 16380 - 1; // Before adjacent strings get concatenated, a string can't be longer than 16380 single-byte characters.
+        const size_t inputLimit = 16380 - 1;
         size_t start = 0;
         size_t bufferSize = buffer.size();
         while (start < bufferSize) {
