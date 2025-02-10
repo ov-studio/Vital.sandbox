@@ -28,8 +28,8 @@ namespace Vital::System::Package {
         std::string result = "\n#pragma once";
         result += "\n#include <System/public/package.h>";
         result += "\nstd::string fetchPackageModule(const std::string& path) {";
-        result += "\nstd::string result;";
-        result += "\nstd::vector<std::string> module;";
+        result += "\n\tstd::string result;";
+        result += "\n\tstd::vector<std::string> module;";
         if (isDebugMode) std::cout << "\nPackaging: " << path;
         for (auto& i : modules) {
             if (!Vital::System::File::exists(i.path)) {
@@ -37,14 +37,14 @@ namespace Vital::System::Package {
                 return false;
             }
             else {
-                result += "\nif (path == \"" + i.identifier + "\") {\n";
-                result += Vital::System::Package::Module::write(Vital::System::File::read(i.path));
-                result += "\nmodule = buffer;";
-                result += "\n}";
+                result += "\n\tif (path == \"" + i.identifier + "\") {";
+                result += "\n" + Vital::System::Package::Module::write(Vital::System::File::read(i.path));
+                result += "\n\t\tmodule = buffer;";
+                result += "\n\t}";
                 if (isDebugMode) std::cout << "\nBundled Module: " << i.path;
             }
         }
-        result += "\nreturn Vital::System::Package::Module::read(module);";
+        result += "\n\treturn Vital::System::Package::Module::read(module);";
         result += "\n}";
         Vital::System::File::write(path, result);
         if (isDebugMode) std::cout << "\nPackaged: " << path;
@@ -67,7 +67,7 @@ namespace Vital::System::Package::Module {
     }
 
     std::string write(const std::string& buffer) {
-        std::string result = "std::vector<std::string> buffer;";
+        std::string result = "\t\tstd::vector<std::string> buffer;";
         const size_t inputLimit = 16380 - 1;
         size_t start = 0;
         size_t bufferSize = buffer.size();
@@ -80,7 +80,7 @@ namespace Vital::System::Package::Module {
                 chunk = buffer.substr(start, maxSize);
                 encodedChunk = Vital::System::Crypto::encode(chunk);
             }
-            result += "\nbuffer.push_back(\"" + encodedChunk + "\");";
+            result += "\n\t\tbuffer.push_back(\"" + encodedChunk + "\");";
             start += maxSize;
         }
         return result;
