@@ -68,10 +68,20 @@ namespace Vital::System::Package::Module {
 
     std::string write(const std::string& buffer, const char delimiter) {
         std::string result = "std::vector<std::string> buffer;";
-        std::string chunk;
-        std::stringstream stream(buffer);
-        while (std::getline(stream, chunk, delimiter)) {
-            result += "\nbuffer.push_back(\"" + Vital::System::Crypto::encode(chunk + delimiter) + "\");";
+        const size_t inputLimit = 16380 - 1; // Before adjacent strings get concatenated, a string can't be longer than 16380 single-byte characters.
+        size_t start = 0;
+        size_t bufferSize = buffer.size();
+        while (start < bufferSize) {
+            size_t maxSize = std::min(bufferSize - start, inputLimit);
+            std::string chunk = buffer.substr(start, maxSize);
+            std::string encodedChunk = Vital::System::Crypto::encode(chunk);
+            while (encodedChunk.size() > inputLimit && maxSize > 0) {
+                maxSize--;
+                chunk = buffer.substr(start, maxSize);
+                encodedChunk = Vital::System::Crypto::encode(chunk);
+            }
+            result += "\nbuffer.push_back(\"" + encodedChunk + "\");";
+            start += maxSize;
         }
         return result;
     }
