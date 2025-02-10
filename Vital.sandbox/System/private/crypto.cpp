@@ -95,24 +95,28 @@ namespace Vital::System::Crypto {
     }
 
     std::string encode(const std::string& buffer) {
-        std::stringstream result;
-        for (unsigned char i : buffer) {
-            result << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(i);
-        }
-        return result.str();
+        EVP_ENCODE_CTX* ctx = EVP_ENCODE_CTX_new();
+        int outputLength = buffer.size()*2;
+        std::string result(outputLength, '\0');
+        EVP_EncodeInit(ctx);
+        EVP_EncodeUpdate(ctx, reinterpret_cast<unsigned char*>(&result[0]), &outputLength, reinterpret_cast<const unsigned char*>(buffer.c_str()), buffer.size());
+        EVP_EncodeFinal(ctx, reinterpret_cast<unsigned char*>(&result[outputLength]), &outputLength);
+        EVP_ENCODE_CTX_free(ctx);
+        result.resize(outputLength);
+        return result;
     }
 
     std::string decode(const std::string& buffer) {
-        try {
-            int bufferSize = static_cast<int>(buffer.size());
-            std::string result;
-            result.reserve(bufferSize/2);
-            for (std::string::const_iterator i = buffer.begin(); i < buffer.end(); i += 2) {
-                result.push_back(std::stoi(std::string(i, i + 2), nullptr, 16));
-            }
-            return result;
-        }
-        catch(...) { throw std::runtime_error(ErrorCode["decode-failed"]); }
+        EVP_ENCODE_CTX* ctx = EVP_ENCODE_CTX_new();
+        int outputLength = buffer.size();
+        std::string result(outputLength, '\0');
+        int finalLength = 0;
+        EVP_DecodeInit(ctx);
+        EVP_DecodeUpdate(ctx, reinterpret_cast<unsigned char*>(&result[0]), &outputLength, reinterpret_cast<const unsigned char*>(buffer.c_str()), buffer.size());
+        EVP_DecodeFinal(ctx, reinterpret_cast<unsigned char*>(&result[outputLength]), &finalLength);
+        EVP_ENCODE_CTX_free(ctx);
+        result.resize(outputLength + finalLength);
+        return result;
     }
 
     std::pair<std::string, std::string> encrypt(const std::string& mode, const std::string& buffer, const std::string& key) {
