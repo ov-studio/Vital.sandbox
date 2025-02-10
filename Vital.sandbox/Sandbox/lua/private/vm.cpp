@@ -56,7 +56,7 @@ namespace Vital::Sandbox::Lua {
     create::~create() {
         if (!vm) return;
         vsdk_vms.erase(vm);
-        if (!isVirtualThread()) lua_close(vm);
+        lua_close(vm);
         vm = nullptr;
     }
     vsdk_vm* fetchVM(vsdk_ref* vm) {
@@ -236,6 +236,7 @@ namespace Vital::Sandbox::Lua {
         if (!isVirtualThread()) return;
         int ncount;
         lua_resume(vm, nullptr, 0, &ncount);
+        if (lua_status(vm) == LUA_OK) delete this;
     }
     void create::pause() {
         if (!isVirtualThread()) return;
