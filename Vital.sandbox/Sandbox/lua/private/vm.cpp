@@ -242,6 +242,12 @@ namespace Vital::Sandbox::Lua {
         if (!isVirtualThread()) return;
         lua_yield(vm, 0);
     }
+    int create::ref(int index) {
+        push(index);
+        int result = luaL_ref(vm, LUA_REGISTRYINDEX);
+        pop();
+        return result;
+    }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
         catch(const std::runtime_error& error) { throwError(error.what()); }
