@@ -248,6 +248,10 @@ namespace Vital::Sandbox::Lua {
         pop();
         return result;
     }
+    bool create::unref(int index) {
+        luaL_unref(vm, LUA_REGISTRYINDEX, index);
+        return true;
+    }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
         catch(const std::runtime_error& error) { throwError(error.what()); }
