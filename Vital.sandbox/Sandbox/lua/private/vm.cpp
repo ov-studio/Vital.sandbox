@@ -243,6 +243,11 @@ namespace Vital::Sandbox::Lua {
     void create::push(int index) { lua_pushvalue(vm, index); }
     void create::pop(int count) { lua_pop(vm, count); }
     void create::move(vsdk_vm* target, int count) { lua_xmove(vm, target -> vm, count); }
+    void create::removeReference(const std::string& name) {
+        if (!isReference(name)) return;
+        luaL_unref(vm, LUA_REGISTRYINDEX, getReference(name));
+        reference.erase(name);
+    }
     void create::resume() {
         if (!isVirtualThread()) return;
         int ncount;
@@ -252,10 +257,6 @@ namespace Vital::Sandbox::Lua {
     void create::pause() {
         if (!isVirtualThread()) return;
         lua_yield(vm, 0);
-    }
-    bool create::unref(int index) {
-        luaL_unref(vm, LUA_REGISTRYINDEX, index);
-        return true;
     }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
