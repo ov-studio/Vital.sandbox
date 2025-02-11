@@ -32,11 +32,11 @@ namespace Vital::Sandbox::Lua {
         vm = luaL_newstate();
         vsdk_reference reference;
         vsdk_vms.emplace(vm, this);
-        for (luaL_Reg i : vsdk_libraries) {
+        for (auto& i : vsdk_libraries) {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
         }
-        for (const std::string& i : vsdk_blacklist) {
+        for (auto& i : vsdk_blacklist) {
             setNil();
             setGlobal(i);
         }
@@ -44,7 +44,7 @@ namespace Vital::Sandbox::Lua {
             registerFunction(i.first.second, i.second, i.first.first);
         }
         #if __has_include(<Sandbox/lua/module/bundle.h>)
-            for (const std::string& i : vsdk_modules) {
+            for (auto& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
