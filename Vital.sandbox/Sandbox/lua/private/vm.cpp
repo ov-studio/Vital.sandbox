@@ -30,6 +30,7 @@ namespace Vital::Sandbox::Lua {
     // Instantiators //
     create::create() {
         vm = luaL_newstate();
+        vsdk_reference reference;
         vsdk_vms.emplace(vm, this);
         for (luaL_Reg i : vsdk_libraries) {
             luaL_requiref(vm, i.name, i.func, 1);
@@ -50,6 +51,7 @@ namespace Vital::Sandbox::Lua {
     }
     create::create(vsdk_ref* thread) {
         vm = thread;
+        vsdk_reference reference;
         this -> thread = true;
         vsdk_vms.emplace(vm, this);
     }
@@ -59,10 +61,12 @@ namespace Vital::Sandbox::Lua {
         lua_close(vm);
         vm = nullptr;
     }
+    bool create::isVirtualThread() {
+        return thread;
+    }
     vsdk_vm* fetchVM(vsdk_ref* vm) {
         return vsdk_vms.find(vm) != vsdk_vms.end() ? vsdk_vms.at(vm) : nullptr;
     }
-    bool create::isVirtualThread() { return thread; }
 
     // Checkers //
     bool create::isNil(int index) { return lua_isnoneornil(vm, index); }
@@ -73,6 +77,7 @@ namespace Vital::Sandbox::Lua {
     bool create::isThread(int index) { return lua_isthread(vm, index); }
     bool create::isUserData(int index) { return lua_isuserdata(vm, index); }
     bool create::isFunction(int index) { return lua_isfunction(vm, index); }
+    bool create::isReference(const std::string& name) { return reference.at(name) ? true : false; }
 
     // Setters //
     void create::setGlobal(const std::string& index) { lua_setglobal(vm, index.data()); }
@@ -105,6 +110,11 @@ namespace Vital::Sandbox::Lua {
     }
     void create::setUserData(void* value) { lua_pushlightuserdata(vm, value); }
     void create::setFunction(vsdk_exec& value) { lua_pushcfunction(vm, value); }
+    void create::setReference(const std::string& name, int index) {
+        push(index);
+        reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
+        pop();
+    }
 
     // Getters //
     int create::getArgCount() { return lua_gettop(vm); }
@@ -121,6 +131,7 @@ namespace Vital::Sandbox::Lua {
     bool create::getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.data()); }
     vsdk_ref* create::getThread(int index) { return lua_tothread(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
+    int create::getReference(const std::string& name) { return reference.at(name); }
     int create::getLength(int index) {
         lua_len(vm, index);
         int result = getInt(-1);
@@ -241,12 +252,6 @@ namespace Vital::Sandbox::Lua {
     void create::pause() {
         if (!isVirtualThread()) return;
         lua_yield(vm, 0);
-    }
-    int create::ref(int index) {
-        push(index);
-        int result = luaL_ref(vm, LUA_REGISTRYINDEX);
-        pop();
-        return result;
     }
     bool create::unref(int index) {
         luaL_unref(vm, LUA_REGISTRYINDEX, index);

@@ -23,10 +23,12 @@
 namespace Vital::Sandbox::Lua {
     typedef lua_State vsdk_ref;
     typedef lua_CFunction vsdk_exec;
+    typedef std::map<std::string, int> vsdk_reference;
     typedef std::pair<std::string, std::string> vsdk_bind;
     class create {
         private:
             vsdk_ref* vm = nullptr;
+            vsdk_reference reference;
             bool thread = false;
         public:
             // Instantiators //
@@ -44,6 +46,7 @@ namespace Vital::Sandbox::Lua {
             bool isThread(int index = 1);
             bool isUserData(int index = 1);
             bool isFunction(int index = 1);
+            bool isReference(const std::string& name);
 
             // Setters //
             void setGlobal(const std::string& index);
@@ -65,6 +68,7 @@ namespace Vital::Sandbox::Lua {
             void createUserData(void* value);
             void setUserData(void* value);
             void setFunction(vsdk_exec& value);
+            void setReference(const std::string& name, int index = 1);
 
             // Getters //
             int getArgCount();
@@ -81,6 +85,7 @@ namespace Vital::Sandbox::Lua {
             bool getMetaTable(const std::string& index);
             vsdk_ref* getThread(int index = 1);
             void* getUserData(int index = 1);
+            int getReference(const std::string& name);
             int getLength(int index = 1);
 
             // Pushers //
@@ -115,7 +120,6 @@ namespace Vital::Sandbox::Lua {
             void move(create* target, int count = 1);
             void resume();
             void pause();
-            int ref(int index = 1);
             bool unref(int index = 1);
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer, bool isAutoLoad = true);
