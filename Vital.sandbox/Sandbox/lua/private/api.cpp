@@ -14,6 +14,8 @@
 
 #pragma once
 #include <Sandbox/lua/public/api.h>
+#include <Sandbox/lua/module/public/engine.h>
+#include <Sandbox/lua/module/public/coroutine.h>
 
 
 ///////////////
@@ -47,8 +49,8 @@ namespace Vital::Sandbox::Lua::API {
 
     // Booter //
     bool boot() {
-        vSandbox_Engine();
-        vSandbox_Coroutine();
+        Engine::boot();
+        Coroutine::boot();
         vSandbox_File();
         vSandbox_Crypto();
         vSandbox_Network();
