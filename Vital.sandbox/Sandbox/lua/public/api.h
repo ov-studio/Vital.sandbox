@@ -30,7 +30,4 @@ namespace Vital::Sandbox::Lua::API {
 
     // Booter //
     extern bool boot();
-
-    // Binds //
-    extern void vSandbox_Network();
 }
