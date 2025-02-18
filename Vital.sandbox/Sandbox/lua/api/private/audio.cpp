@@ -34,7 +34,7 @@ namespace Vital::Sandbox::Lua::API {
         if (bound) return;
         bound = true;
 
-        bind("sound", "create", [](vsdk_ref* ref) -> int {
+        bind("sound", "create", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -45,7 +45,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "destroy", [](vsdk_ref* ref) -> int {
+        bind("sound", "destroy", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -56,7 +56,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "isPlaying", [](vsdk_ref* ref) -> int {
+        bind("sound", "isPlaying", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "isPaused", [](vsdk_ref* ref) -> int {
+        bind("sound", "isPaused", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "isLooped", [](vsdk_ref* ref) -> int {
+        bind("sound", "isLooped", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -86,7 +86,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "isVolumeRamped", [](vsdk_ref* ref) -> int {
+        bind("sound", "isVolumeRamped", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -96,7 +96,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "isMuted", [](vsdk_ref* ref) -> int {
+        bind("sound", "isMuted", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -106,7 +106,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "is3D", [](vsdk_ref* ref) -> int {
+        bind("sound", "is3D", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -116,7 +116,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setPriority", [](vsdk_ref* ref) -> int {
+        bind("sound", "setPriority", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -127,7 +127,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setPaused", [](vsdk_ref* ref) -> int {
+        bind("sound", "setPaused", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -138,7 +138,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setLooped", [](vsdk_ref* ref) -> int {
+        bind("sound", "setLooped", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -149,7 +149,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setLoopCount", [](vsdk_ref* ref) -> int {
+        bind("sound", "setLoopCount", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -160,7 +160,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setLoopPoint", [](vsdk_ref* ref) -> int {
+        bind("sound", "setLoopPoint", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isNumber(2)) || (!vm -> isNumber(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -173,7 +173,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setPitch", [](vsdk_ref* ref) -> int {
+        bind("sound", "setPitch", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -184,7 +184,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setFrequency", [](vsdk_ref* ref) -> int {
+        bind("sound", "setFrequency", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -195,7 +195,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setVolume", [](vsdk_ref* ref) -> int {
+        bind("sound", "setVolume", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -206,7 +206,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setVolumeRamped", [](vsdk_ref* ref) -> int {
+        bind("sound", "setVolumeRamped", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -217,7 +217,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setMuted", [](vsdk_ref* ref) -> int {
+        bind("sound", "setMuted", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -228,7 +228,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setPosition", [](vsdk_ref* ref) -> int {
+        bind("sound", "setPosition", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -239,7 +239,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setPan", [](vsdk_ref* ref) -> int {
+        bind("sound", "setPan", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -250,7 +250,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setMixInputLevels", [](vsdk_ref* ref) -> int {
+        bind("sound", "setMixInputLevels", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -277,7 +277,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setMixOutputLevels", [](vsdk_ref* ref) -> int {
+        bind("sound", "setMixOutputLevels", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -307,7 +307,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "setMixMatrix", [](vsdk_ref* ref) -> int {
+        bind("sound", "setMixMatrix", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -344,7 +344,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3D", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3D", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isBool(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -355,7 +355,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DAttributes", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DAttributes", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isTable(2)) || (!vm -> isTable(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -381,7 +381,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DConeSettings", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DConeSettings", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -401,7 +401,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DConeOrientation", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DConeOrientation", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -421,7 +421,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DDistanceFilter", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DDistanceFilter", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isBool(2)) || (!vm -> isTable(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -440,7 +440,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DDopplerLevel", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DDopplerLevel", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -451,7 +451,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DLevel", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DLevel", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -462,7 +462,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DRange", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DRange", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isUserData(1)) || (!vm -> isNumber(2)) || (!vm -> isNumber(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -475,7 +475,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "set3DOcclusion", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DOcclusion", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isTable(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -494,7 +494,7 @@ namespace Vital::Sandbox::Lua::API {
         });
 
 
-        bind("sound", "set3DSpread", [](vsdk_ref* ref) -> int {
+        bind("sound", "set3DSpread", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isUserData(1)) || (!vm -> isNumber(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -505,7 +505,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "play", [](vsdk_ref* ref) -> int {
+        bind("sound", "play", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -515,7 +515,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
     
-        bind("sound", "stop", [](vsdk_ref* ref) -> int {
+        bind("sound", "stop", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isUserData(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -525,7 +525,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getPriority", [](vsdk_ref* ref) -> int {
+        bind("sound", "getPriority", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -535,7 +535,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getLoopCount", [](vsdk_ref* ref) -> int {
+        bind("sound", "getLoopCount", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -545,7 +545,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getLoopPoint", [](vsdk_ref* ref) -> int {
+        bind("sound", "getLoopPoint", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -558,7 +558,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getPitch", [](vsdk_ref* ref) -> int {
+        bind("sound", "getPitch", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -568,7 +568,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getFrequency", [](vsdk_ref* ref) -> int {
+        bind("sound", "getFrequency", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -578,7 +578,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getVolume", [](vsdk_ref* ref) -> int {
+        bind("sound", "getVolume", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -588,7 +588,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getAudibility", [](vsdk_ref* ref) -> int {
+        bind("sound", "getAudibility", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -598,7 +598,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getPosition", [](vsdk_ref* ref) -> int {
+        bind("sound", "getPosition", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -608,7 +608,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "getMixMatrix", [](vsdk_ref* ref) -> int {
+        bind("sound", "getMixMatrix", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -627,7 +627,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "get3DAttributes", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DAttributes", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -646,7 +646,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "get3DConeSettings", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DConeSettings", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -661,7 +661,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "get3DConeOrientation", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DConeOrientation", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -676,7 +676,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "get3DDistanceFilter", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DDistanceFilter", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -691,7 +691,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "get3DDopplerLevel", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DDopplerLevel", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -701,7 +701,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
     
-        bind("sound", "get3DLevel", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DLevel", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -711,7 +711,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
     
-        bind("sound", "get3DRange", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DRange", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -724,7 +724,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
     
-        bind("sound", "get3DOcclusion", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DOcclusion", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -738,7 +738,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("sound", "get3DSpread", [](vsdk_ref* ref) -> int {
+        bind("sound", "get3DSpread", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1)) throw std::runtime_error(ErrorCode["invalid-arguments"]);

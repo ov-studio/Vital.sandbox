@@ -28,7 +28,7 @@ namespace Vital::Sandbox::Lua::API {
         if (bound) return;
         bound = true;
 
-        bind("crypto", "hash", [](vsdk_ref* ref) -> int {
+        bind("crypto", "hash", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -39,7 +39,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "encode", [](vsdk_ref* ref) -> int {
+        bind("crypto", "encode", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -49,7 +49,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "decode", [](vsdk_ref* ref) -> int {
+        bind("crypto", "decode", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -59,7 +59,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "encrypt", [](vsdk_ref* ref) -> int {
+        bind("crypto", "encrypt", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("crypto", "decrypt", [](vsdk_ref* ref) -> int {
+        bind("crypto", "decrypt", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 4) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3)) || (!vm -> isString(4))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
