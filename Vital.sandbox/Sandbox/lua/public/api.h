@@ -32,8 +32,6 @@ namespace Vital::Sandbox::Lua::API {
     extern bool boot();
 
     // Binds //
-    extern void vSandbox_Engine();
-    extern void vSandbox_Coroutine();
     extern void vSandbox_File();
     extern void vSandbox_Crypto();
     extern void vSandbox_Network();
