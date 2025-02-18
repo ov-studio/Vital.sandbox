@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: c++: network.cpp
+     Script: Sandbox: lua: module: private: network.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Network Utilities
+     Desc: Network APIs
 ----------------------------------------------------------------*/
 
 
@@ -13,19 +13,20 @@
 //////////////
 
 #pragma once
+#include <Sandbox/lua/module/public/network.h>
 #include <System/public/network.h>
-#include <Sandbox/lua/public/api.h>
 
 
-//////////////////////////
-// Lua: Network Binder //
-//////////////////////////
+///////////////
+// Lua: API //
+///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    static bool isBound = false;
+    bool Network::bound = false;
 
-    void vSandbox_Network() {
-        if (isBound) return; isBound = true;
+    void Network::boot() {
+        if (bound) return;
+        bound = true;
 
         bind("network", "emit", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
