@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: c++: file.cpp
+     Script: Sandbox: lua: module: private: file.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: File Utilities
+     Desc: File APIs
 ----------------------------------------------------------------*/
 
 
@@ -13,19 +13,20 @@
 //////////////
 
 #pragma once
+#include <Sandbox/lua/module/public/file.h>
 #include <System/public/file.h>
-#include <Sandbox/lua/public/api.h>
 
 
-///////////////////////
-// Lua: File Binder //
-///////////////////////
+///////////////
+// Lua: API //
+///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    static bool isBound = false;
+    bool File::bound = false;
 
-    void vSandbox_File() {
-        if (isBound) return; isBound = true;
+    void File::boot() {
+        if (bound) return;
+        bound = true;
 
         bind("file", "resolve", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
