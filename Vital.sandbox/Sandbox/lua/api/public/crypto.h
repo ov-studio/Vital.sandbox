@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: public: coroutine.h
+     Script: Sandbox: lua: api: public: crypto.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Coroutine APIs
+     Desc: Crypto APIs
 ----------------------------------------------------------------*/
 
 
@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class Coroutine : public Vital::Type::Module {
+    class Crypto : public Vital::Type::Module {
         private:
             static bool bound;
         public:

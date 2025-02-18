@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: private: audio.cpp
+     Script: Sandbox: lua: api: private: audio.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/module/public/audio.h>
+#include <Sandbox/lua/api/public/audio.h>
 #include <System/public/file.h>
 #include <System/public/audio.h>
 

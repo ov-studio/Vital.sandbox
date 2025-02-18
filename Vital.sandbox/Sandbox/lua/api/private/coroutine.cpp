@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: private: coroutine.cpp
+     Script: Sandbox: lua: api: private: coroutine.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/module/public/coroutine.h>
+#include <Sandbox/lua/api/public/coroutine.h>
 #include <Vendor/lua/lauxlib.h>
 #include <Vendor/lua/lualib.h>
 

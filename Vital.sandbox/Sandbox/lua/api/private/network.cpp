@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: private: network.cpp
+     Script: Sandbox: lua: api: private: network.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/module/public/network.h>
+#include <Sandbox/lua/api/public/network.h>
 #include <System/public/network.h>
 
 

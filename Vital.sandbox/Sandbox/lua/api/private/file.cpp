@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: private: file.cpp
+     Script: Sandbox: lua: api: private: file.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/module/public/file.h>
+#include <Sandbox/lua/api/public/file.h>
 #include <System/public/file.h>
 
 

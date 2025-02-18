@@ -14,12 +14,12 @@
 
 #pragma once
 #include <Sandbox/lua/public/api.h>
-#include <Sandbox/lua/module/public/engine.h>
-#include <Sandbox/lua/module/public/coroutine.h>
-#include <Sandbox/lua/module/public/file.h>
-#include <Sandbox/lua/module/public/crypto.h>
-#include <Sandbox/lua/module/public/network.h>
-#include <Sandbox/lua/module/public/audio.h>
+#include <Sandbox/lua/api/public/engine.h>
+#include <Sandbox/lua/api/public/coroutine.h>
+#include <Sandbox/lua/api/public/file.h>
+#include <Sandbox/lua/api/public/crypto.h>
+#include <Sandbox/lua/api/public/network.h>
+#include <Sandbox/lua/api/public/audio.h>
 
 
 ///////////////

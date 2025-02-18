@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: public: file.h
+     Script: Sandbox: lua: api: public: coroutine.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: File APIs
+     Desc: Coroutine APIs
 ----------------------------------------------------------------*/
 
 
@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class File : public Vital::Type::Module {
+    class Coroutine : public Vital::Type::Module {
         private:
             static bool bound;
         public:

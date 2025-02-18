@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: public: network.h
+     Script: Sandbox: lua: api: public: engine.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Network APIs
+     Desc: Engine APIs
 ----------------------------------------------------------------*/
 
 
@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class Network : public Vital::Type::Module {
+    class Engine : public Vital::Type::Module {
         private:
             static bool bound;
         public:

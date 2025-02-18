@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: public: crypto.h
+     Script: Sandbox: lua: api: public: network.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Crypto APIs
+     Desc: Network APIs
 ----------------------------------------------------------------*/
 
 
@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class Crypto : public Vital::Type::Module {
+    class Network : public Vital::Type::Module {
         private:
             static bool bound;
         public:

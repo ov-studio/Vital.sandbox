@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: private: crypto.cpp
+     Script: Sandbox: lua: api: private: crypto.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/module/public/crypto.h>
+#include <Sandbox/lua/api/public/crypto.h>
 #include <System/public/crypto.h>
 
 
