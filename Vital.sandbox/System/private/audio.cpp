@@ -21,7 +21,7 @@
 ///////////////////////////
 
 namespace Vital::System::Audio::Sound {
-    std::map<vital_sound*, bool> instance;
+    std::map<vsdk_sound*, bool> instance;
 }
 
 namespace Vital::System::Audio {
@@ -70,7 +70,7 @@ namespace Vital::System::Audio::Sound {
         sound = nullptr;
         channel = nullptr;
     }
-    bool isInstance(vital_sound* ref) {
+    bool isInstance(vsdk_sound* ref) {
         return instance.find(ref) != instance.end();
     }
 

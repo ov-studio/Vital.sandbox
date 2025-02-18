@@ -24,8 +24,8 @@
 namespace Vital::Sandbox::Lua::API {
     bool Audio::bound = false;
 
-    Vital::System::Audio::Sound::vital_sound* Audio::fetchSound(void* userdata) {
-        auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(userdata);
+    Vital::System::Audio::Sound::vsdk_sound* Audio::fetchSound(void* userdata) {
+        auto sound = static_cast<Vital::System::Audio::Sound::vsdk_sound*>(userdata);
         if (!Vital::System::Audio::Sound::isInstance(sound)) throw std::runtime_error(ErrorCode["invalid-entities"]);
         return sound;
     }

@@ -26,7 +26,7 @@ namespace Vital::Sandbox::Lua::API {
         private:
             static bool bound;
         public:
-            static Vital::System::Audio::Sound::vital_sound* fetchSound(void* userdata);
+            static Vital::System::Audio::Sound::vsdk_sound* fetchSound(void* userdata);
             static void boot();
     };
 }

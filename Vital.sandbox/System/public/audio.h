@@ -106,6 +106,6 @@ namespace Vital::System::Audio::Sound {
             bool play(FMOD::ChannelGroup* channelGroup);
             bool stop();
     };
-    typedef create vital_sound;
-    extern bool isInstance(vital_sound* ref);
+    typedef create vsdk_sound;
+    extern bool isInstance(vsdk_sound* ref);
 }
