@@ -30,8 +30,4 @@ namespace Vital::Sandbox::JS::API {
 
     // Booter //
     extern bool boot();
-
-    // Binds //
-    extern void vSandbox_Engine();
-    extern void vSandbox_Crypto();
 }
