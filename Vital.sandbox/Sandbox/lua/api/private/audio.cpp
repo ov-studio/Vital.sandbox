@@ -15,7 +15,6 @@
 #pragma once
 #include <Sandbox/lua/api/public/audio.h>
 #include <System/public/file.h>
-#include <System/public/audio.h>
 
 
 ///////////////
@@ -25,7 +24,7 @@
 namespace Vital::Sandbox::Lua::API {
     bool Audio::bound = false;
 
-    Vital::System::Audio::Sound::vital_sound* fetchSound(void* userdata) {
+    Vital::System::Audio::Sound::vital_sound* Audio::fetchSound(void* userdata) {
         auto sound = static_cast<Vital::System::Audio::Sound::vital_sound*>(userdata);
         if (!Vital::System::Audio::Sound::isInstance(sound)) throw std::runtime_error(ErrorCode["invalid-entities"]);
         return sound;

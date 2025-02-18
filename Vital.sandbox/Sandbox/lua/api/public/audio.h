@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Sandbox/lua/public/api.h>
+#include <System/public/audio.h>
 
 
 ///////////////
@@ -25,6 +26,7 @@ namespace Vital::Sandbox::Lua::API {
         private:
             static bool bound;
         public:
+            static Vital::System::Audio::Sound::vital_sound* fetchSound(void* userdata);
             static void boot();
     };
 }
