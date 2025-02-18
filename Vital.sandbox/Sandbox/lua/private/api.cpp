@@ -18,6 +18,7 @@
 #include <Sandbox/lua/module/public/coroutine.h>
 #include <Sandbox/lua/module/public/file.h>
 #include <Sandbox/lua/module/public/crypto.h>
+#include <Sandbox/lua/module/public/audio.h>
 
 
 ///////////////
@@ -56,7 +57,7 @@ namespace Vital::Sandbox::Lua::API {
         File::boot();
         Crypto::boot();
         vSandbox_Network();
-        vSandbox_Audio();
+        Audio::boot();
         return true;
     }
 }

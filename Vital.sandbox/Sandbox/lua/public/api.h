@@ -33,5 +33,4 @@ namespace Vital::Sandbox::Lua::API {
 
     // Binds //
     extern void vSandbox_Network();
-    extern void vSandbox_Audio();
 }
