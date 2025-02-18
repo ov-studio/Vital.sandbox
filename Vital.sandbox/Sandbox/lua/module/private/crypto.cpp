@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: module: c++: crypto.cpp
+     Script: Sandbox: lua: module: private: crypto.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Crypto Utilities
+     Desc: Crypto APIs
 ----------------------------------------------------------------*/
 
 
@@ -13,19 +13,20 @@
 //////////////
 
 #pragma once
+#include <Sandbox/lua/module/public/crypto.h>
 #include <System/public/crypto.h>
-#include <Sandbox/lua/public/api.h>
 
 
-/////////////////////////
-// Lua: Crypto Binder //
-/////////////////////////
+///////////////
+// Lua: API //
+///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    static bool isBound = false;
+    bool Crypto::bound = false;
 
-    void vSandbox_Crypto() {
-        if (isBound) return; isBound = true;
+    void Crypto::boot() {
+        if (bound) return;
+        bound = true;
 
         bind("crypto", "hash", [](vsdk_ref* ref) -> int {
             auto vm = fetchVM(ref);
