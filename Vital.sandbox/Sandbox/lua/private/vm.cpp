@@ -171,6 +171,15 @@ namespace Vital::Sandbox::Lua {
     }
 
     // Registerers //
+    void create::registerNil(const std::string& index) {
+        setNil();
+        setTableField(index.data(), -2);
+    }
+    void create::registerNil(const std::string& index, const std::string& parent) {
+        createNamespace(parent);
+        registerNil(index);
+        pop();
+    }
     void create::registerBool(const std::string& index, bool value) {
         setBool(value);
         setTableField(index.data(), -2);

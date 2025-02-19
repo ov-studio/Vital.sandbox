@@ -98,6 +98,8 @@ namespace Vital::Sandbox::Lua {
             void pushFunction(vsdk_exec& exec);
 
             // Registerers //
+            void registerNil(const std::string& index);
+            void registerNil(const std::string& index, const std::string& parent);
             void registerBool(const std::string& index, bool value);
             void registerBool(const std::string& index, bool value, const std::string& parent);
             void registerString(const std::string& index, const std::string& value);
