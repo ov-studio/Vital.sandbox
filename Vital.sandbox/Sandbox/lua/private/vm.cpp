@@ -25,9 +25,8 @@
 //////////////
 
 namespace Vital::Sandbox::Lua {
-    vsdk_vms vms;
-
     // Instantiators //
+    vsdk_vms vms;
     create::create() {
         vm = luaL_newstate();
         vsdk_reference reference;

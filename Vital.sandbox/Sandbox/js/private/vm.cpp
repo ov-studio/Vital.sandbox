@@ -25,9 +25,8 @@
 /////////////
 
 namespace Vital::Sandbox::JS {
-    vsdk_vms vms;
-
     // Instantiators //
+    vsdk_vms vms;
     create::create() {
         vm = duk_create_heap_default();
         vms.emplace(vm, this);
