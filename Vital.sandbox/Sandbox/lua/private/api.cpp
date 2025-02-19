@@ -50,8 +50,6 @@ namespace Vital::Sandbox::Lua::API {
         vsdk_binds.erase(ref);
         return true;
     }
-
-    // Booter //
     bool boot() {
         Engine::boot();
         Coroutine::boot();
@@ -59,6 +57,11 @@ namespace Vital::Sandbox::Lua::API {
         Crypto::boot();
         Network::boot();
         Audio::boot();
+        return true;
+    }
+    bool inject(vsdk_vm* vm) {
+        auto instance = static_cast<void*>(vm);
+        Network::inject(instance);
         return true;
     }
 }

@@ -26,5 +26,6 @@ namespace Vital::Sandbox::Lua::API {
             static bool bound;
         public:
             static void boot();
+            static void inject(void* instance);
     };
 }

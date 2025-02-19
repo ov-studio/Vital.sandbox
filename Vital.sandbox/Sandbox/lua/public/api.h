@@ -30,4 +30,5 @@ namespace Vital::Sandbox::Lua::API {
 
     // Booter //
     extern bool boot();
+    extern bool inject(vsdk_vm* vm);
 }

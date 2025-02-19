@@ -25,6 +25,7 @@ namespace Vital::Type {
         public:
             virtual ~Module() = default;
             static void boot() {};
+            static void inject(void* entity) {};
     };
 }
 

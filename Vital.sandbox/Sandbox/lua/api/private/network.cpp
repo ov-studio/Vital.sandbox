@@ -47,4 +47,18 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
     }
+
+    void Network::inject(void* instance) {
+        auto vm = static_cast<vsdk_vm*>(instance);
+        vm -> getGlobal("network");
+        vm -> getTableField("execNetwork", -1);
+        vm -> setReference("execNetwork", -1);
+    }
+
+    void Network::execute(void* instance) {
+        auto vm = static_cast<vsdk_vm*>(instance);
+        vm -> getGlobal("network");
+        vm -> getTableField("execNetwork", -1);
+        vm -> setReference("execNetwork", -1);
+    }
 }
