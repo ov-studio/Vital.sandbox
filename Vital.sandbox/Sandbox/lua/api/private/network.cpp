@@ -22,13 +22,10 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    bool Network::bound = false;
+    void Network::bind(void* instance) {
+        auto vm = static_cast<vsdk_vm*>(instance);
 
-    void Network::boot() {
-        if (bound) return;
-        bound = true;
-
-        bind("network", "emit", [](auto* ref) -> int {
+        API::bind(vm, "network", "emit", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 bool isClient = Vital::System::getSystemPlatform() == "client";
@@ -54,11 +51,12 @@ namespace Vital::Sandbox::Lua::API {
         vm -> getTableField("execNetwork", -1);
         vm -> setReference("execNetwork", -1);
     }
-
+    /*
     void Network::execute(void* instance) {
         auto vm = static_cast<vsdk_vm*>(instance);
         vm -> getGlobal("network");
         vm -> getTableField("execNetwork", -1);
         vm -> setReference("execNetwork", -1);
     }
+    */
 }

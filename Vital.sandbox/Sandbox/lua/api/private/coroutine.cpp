@@ -24,7 +24,9 @@
 
 namespace Vital::Sandbox::Lua::API {
     void Coroutine::bind(void* instance) {
-        API::bind("coroutine", "create", [](auto* ref) -> int {
+        auto vm = static_cast<vsdk_vm*>(instance);
+
+        API::bind(vm, "coroutine", "create", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isFunction(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -35,7 +37,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("coroutine", "resume", [](auto* ref) -> int {
+        API::bind(vm, "coroutine", "resume", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -48,7 +50,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("coroutine", "pause", [](auto* ref) -> int {
+        API::bind(vm, "coroutine", "pause", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
@@ -58,7 +60,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("coroutine", "sleep", [](auto* ref) -> int {
+        API::bind(vm, "coroutine", "sleep", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);

@@ -22,7 +22,9 @@
 
 namespace Vital::Sandbox::Lua::API {
     void Engine::bind(void* instance) {
-        API::bind("engine", "getSystemTick", [](auto* ref) -> int {
+        auto vm = static_cast<vsdk_vm*>(instance);
+
+        API::bind(vm, "engine", "getSystemTick", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 vm -> setNumber(static_cast<int>(Vital::System::getSystemTick()));
@@ -30,7 +32,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("engine", "getAppTick", [](auto* ref) -> int {
+        API::bind(vm, "engine", "getAppTick", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 vm -> setNumber(static_cast<int>(Vital::System::getAppTick()));
@@ -38,7 +40,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("engine", "getClientTick", [](auto* ref) -> int {
+        API::bind(vm, "engine", "getClientTick", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 vm -> setNumber(static_cast<int>(Vital::System::getClientTick()));
@@ -46,7 +48,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("engine", "loadString", [](auto* ref) -> int {
+        API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);

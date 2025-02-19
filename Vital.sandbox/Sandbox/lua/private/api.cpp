@@ -27,41 +27,28 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    std::map<vsdk_bind, vsdk_exec> vsdk_binds;
     std::function<void(const std::string&)> vsdk_errorhandle = NULL;
-
-    // Handlers //
-    bool createErrorHandle(std::function<void(const std::string&)> exec) {
+    void createErrorHandle(std::function<void(const std::string&)> exec) {
         vsdk_errorhandle = exec;
-        return true;
     }
-    bool error(const std::string& error) {
-        if (!vsdk_errorhandle) return false;
+    void error(const std::string& error) {
+        if (!vsdk_errorhandle) return;
         vsdk_errorhandle(error);
-        return true;
     }
-    bool bind(const std::string& parent, const std::string& name, vsdk_exec exec) {
-        vsdk_bind ref = {parent, name};
-        vsdk_binds.emplace(ref, exec);
-        return true;
+    void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec) {
+        vm -> registerFunction(name, exec, parent);
     }
-    bool unbind(const std::string& parent, const std::string& name) {
-        vsdk_bind ref = {parent, name};
-        vsdk_binds.erase(ref);
-        return true;
+    void boot(vsdk_vm* vm) {
+        auto instance = static_cast<void*>(vm);
+        Engine::bind(instance);
+        Coroutine::bind(instance);
+        File::bind(instance);
+        Crypto::bind(instance);
+        Network::bind(instance);
+        Audio::bind(instance);
     }
-    bool boot() {
-        Engine::boot();
-        Coroutine::boot();
-        File::boot();
-        Crypto::boot();
-        Network::boot();
-        Audio::boot();
-        return true;
-    }
-    bool inject(vsdk_vm* vm) {
+    void inject(vsdk_vm* vm) {
         auto instance = static_cast<void*>(vm);
         Network::inject(instance);
-        return true;
     }
 }

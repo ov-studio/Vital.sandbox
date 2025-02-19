@@ -23,7 +23,9 @@
 
 namespace Vital::Sandbox::Lua::API {
     void Crypto::bind(void* instance) {
-        API::bind("crypto", "hash", [](auto* ref) -> int {
+        auto vm = static_cast<vsdk_vm*>(instance);
+
+        API::bind(vm, "crypto", "hash", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -34,7 +36,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("crypto", "encode", [](auto* ref) -> int {
+        API::bind(vm, "crypto", "encode", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -44,7 +46,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("crypto", "decode", [](auto* ref) -> int {
+        API::bind(vm, "crypto", "decode", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -54,7 +56,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("crypto", "encrypt", [](auto* ref) -> int {
+        API::bind(vm, "crypto", "encrypt", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -68,7 +70,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind("crypto", "decrypt", [](auto* ref) -> int {
+        API::bind(vm, "crypto", "decrypt", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 4) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3)) || (!vm -> isString(4))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
