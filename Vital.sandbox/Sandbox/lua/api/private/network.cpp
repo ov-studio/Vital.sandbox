@@ -51,12 +51,18 @@ namespace Vital::Sandbox::Lua::API {
         vm -> getTableField("execNetwork", -1);
         vm -> setReference("execNetwork", -1);
     }
+    
     /*
     void Network::execute(void* instance) {
         auto vm = static_cast<vsdk_vm*>(instance);
-        vm -> getGlobal("network");
-        vm -> getTableField("execNetwork", -1);
-        vm -> setReference("execNetwork", -1);
+        //auto testref = getReference("execNetwork");
+        //lua_rawgeti(vm, LUA_REGISTRYINDEX, testref);
+        //setNil();
+        //lua_pcall // 1 arg, 1 return
+        //lua_pcall(vm, 1, 1, 0);
+        //pop(2);
+        //std::cout << "IS FUNCTION: " << testref << std::endl;
+        //std::cout << "ARGS: " << getArgCount() << std::endl;
     }
     */
 }
