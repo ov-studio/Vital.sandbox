@@ -25,6 +25,4 @@ namespace Vital::Sandbox::JS::API {
     extern void createErrorHandle(std::function<void(const std::string&)> exec);
     extern void error(const std::string& error);
     extern void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec);
-    extern void boot(vsdk_vm* vm);
-    extern void inject(vsdk_vm* vm);
 }

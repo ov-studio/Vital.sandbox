@@ -99,9 +99,11 @@ namespace Vital::Sandbox::JS {
 
             // Utils //
             void pop(int count = 1);
+            void bindAPI();
+            void injectAPI();
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer);
-            bool throwError(const std::string& error = "");
+            void throwError(const std::string& error = "");
     };
     typedef create vsdk_vm;
     extern vsdk_vm* fetchVM(vsdk_ref* vm);

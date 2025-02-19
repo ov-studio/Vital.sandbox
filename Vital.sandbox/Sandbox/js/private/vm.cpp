@@ -35,12 +35,13 @@ namespace Vital::Sandbox::JS {
             setNil();
             setGlobal(i);
         }
-        API::boot(this);
+        this -> bindAPI();
         #if __has_include(<Sandbox/js/module/bundle.h>)
             for (const std::string& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
+        this -> injectAPI();
     }
     create::~create() {
         if (!vm) return;
@@ -210,11 +211,10 @@ namespace Vital::Sandbox::JS {
         }
         return true;
     }
-    bool create::throwError(const std::string& error) {
+    void create::throwError(const std::string& error) {
         duk_inspect_callstack_entry(vm, -2);
         getObjectField("lineNumber", -1);
         API::error("[ERROR - L" + std::to_string(getInt(-1)) + "] | Reason: " + (error.empty() ? "N/A" : error));
         setBool(false);
-        return true;
     }
 }
