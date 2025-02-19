@@ -35,8 +35,9 @@ network.private.cache = {
 }
 
 --TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
-function network.public.execNetwork(payload)
+function network.public.execNetwork(name, payload)
     payload = table.decode(payload)
+    iprint(name)
     iprint(payload)
     --[[
     if not serial or not payload or not payload.processType or (payload.isRestricted and (serial ~= network.public.identifier)) then return false end
