@@ -22,13 +22,8 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    bool File::bound = false;
-
-    void File::boot() {
-        if (bound) return;
-        bound = true;
-
-        bind("file", "resolve", [](auto* ref) -> int {
+    void File::bind(void* instance) {
+        API::bind("file", "resolve", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -39,7 +34,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "exists", [](auto* ref) -> int {
+        API::bind("file", "exists", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -49,7 +44,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "size", [](auto* ref) -> int {
+        API::bind("file", "size", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -59,7 +54,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "delete", [](auto* ref) -> int {
+        API::bind("file", "delete", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -69,7 +64,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "read", [](auto* ref) -> int {
+        API::bind("file", "read", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -80,7 +75,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "write", [](auto* ref) -> int {
+        API::bind("file", "write", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -91,7 +86,7 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        bind("file", "contents", [](auto* ref) -> int {
+        API::bind("file", "contents", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);

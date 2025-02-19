@@ -23,10 +23,8 @@
 
 namespace Vital::Sandbox::Lua::API {
     class Audio : public Vital::Type::Module {
-        private:
-            static bool bound;
         public:
+            static void bind(void* instance);
             static Vital::System::Audio::Sound::vsdk_sound* fetchSound(void* userdata);
-            static void boot();
     };
 }
