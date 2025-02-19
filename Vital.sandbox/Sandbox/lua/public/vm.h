@@ -88,6 +88,7 @@ namespace Vital::Sandbox::Lua {
             int getLength(int index = 1);
 
             // Pushers //
+            void pushNil();
             void pushBool(bool value);
             void pushString(const std::string& value);
             void pushNumber(int value);

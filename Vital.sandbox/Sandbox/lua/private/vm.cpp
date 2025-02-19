@@ -137,6 +137,10 @@ namespace Vital::Sandbox::Lua {
     }
 
     // Pushers //
+    void create::pushNil() {
+        setNil();
+        setTableField(getLength(-2) + 1, -2);
+    }
     void create::pushBool(bool value) {
         setBool(value);
         setTableField(getLength(-2) + 1, -2);
