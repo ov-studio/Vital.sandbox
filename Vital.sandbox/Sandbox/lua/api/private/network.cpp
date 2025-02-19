@@ -52,6 +52,7 @@ namespace Vital::Sandbox::Lua::API {
         vm -> setReference("execNetwork", -1);
     }
     
+    void Network::execute(void* instance) {}
     /*
     void Network::execute(void* instance) {
         auto vm = static_cast<vsdk_vm*>(instance);
