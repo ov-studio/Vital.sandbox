@@ -54,15 +54,17 @@ namespace Vital::Sandbox::Lua::API {
     
     void Network::execute() {
         for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
-            auto reference = vm.second -> getReference("execNetwork");
-            std::cout << "Network exec ref: " << reference << std::endl;
-            //lua_rawgeti(vm, LUA_REGISTRYINDEX, reference); // TODO: ADD WAY TO GET REGISTRY FUNCTION...
-            //setNil();
-            //lua_pcall // 1 arg, 1 return
-            //lua_pcall(vm, 1, 1, 0);
-            //pop(2);
-            //std::cout << "IS FUNCTION: " << reference << std::endl;
-            //std::cout << "ARGS: " << getArgCount() << std::endl;
+            if (!vm.second -> isVirtualThread()) {
+                auto reference = vm.second -> getReference("execNetwork");
+                std::cout << "Network exec ref: " << reference << std::endl;
+                //lua_rawgeti(vm, LUA_REGISTRYINDEX, reference); // TODO: ADD WAY TO GET REGISTRY FUNCTION...
+                //setNil();
+                //lua_pcall // 1 arg, 1 return
+                //lua_pcall(vm, 1, 1, 0);
+                //pop(2);
+                //std::cout << "IS FUNCTION: " << reference << std::endl;
+                //std::cout << "ARGS: " << getArgCount() << std::endl;
+            }
         }
     }
 }
