@@ -49,13 +49,13 @@ namespace Vital::Sandbox::Lua::API {
         auto vm = static_cast<vsdk_vm*>(instance);
         vm -> getGlobal("network");
         vm -> getTableField("execNetwork", -1);
-        vm -> setReference("execNetwork", -1);
+        vm -> setReference("network.execNetwork", -1);
     }
     
     void Network::execute(const std::string& name, const std::string& payload) {
         for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
             if (!vm.second -> isVirtualThread()) {
-                auto reference = vm.second -> getReference("execNetwork");
+                auto reference = vm.second -> getReference("network.execNetwork");
                 std::cout << "Network exec ref: " << reference << std::endl;
                 //lua_rawgeti(vm, LUA_REGISTRYINDEX, reference); // TODO: ADD WAY TO GET REGISTRY FUNCTION...
                 //setNil();
