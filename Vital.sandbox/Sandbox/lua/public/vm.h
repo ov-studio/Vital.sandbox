@@ -24,7 +24,6 @@ namespace Vital::Sandbox::Lua {
     typedef lua_State vsdk_ref;
     typedef lua_CFunction vsdk_exec;
     typedef std::map<std::string, int> vsdk_reference;
-    typedef std::pair<std::string, std::string> vsdk_bind;
     class create {
         private:
             vsdk_ref* vm = nullptr;

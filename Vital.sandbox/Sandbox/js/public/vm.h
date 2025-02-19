@@ -23,7 +23,6 @@
 namespace Vital::Sandbox::JS {
     typedef duk_context vsdk_ref;
     typedef duk_c_function vsdk_exec;
-    typedef std::pair<std::string, std::string> vsdk_bind;
     class create {
         private:
             vsdk_ref* vm = nullptr;
