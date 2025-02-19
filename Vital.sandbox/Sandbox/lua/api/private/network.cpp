@@ -50,7 +50,7 @@ namespace Vital::Sandbox::Lua::API {
         auto vm = static_cast<vsdk_vm*>(instance);
         vm -> getGlobal("network");
         vm -> getTableField("execNetwork", -1);
-        vm -> setReference("network.execNetwork", -1);
+        vm -> setReference(Vital::System::Crypto::hash("SHA256", "network.execNetwork"), -1);
     }
     
     void Network::execute(const std::string& name, const std::string& payload) {
