@@ -30,6 +30,13 @@ thread.private.coroutines = {}
 thread.private.promises = {}
 thread.private.exceptions = {}
 
+function execFunction(exec, ...)
+    if not exec or (imports.type(exec) ~= "function") then
+        return false
+    end
+    return exec(...)
+end
+
 function thread.public:getThread()
     local currentThread = imports.coroutine.running()
     return (currentThread and thread.private.coroutines[currentThread]) or false
