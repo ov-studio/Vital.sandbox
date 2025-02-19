@@ -39,9 +39,9 @@ function network.private.fetchArg(index, pool)
     index = imports.tonumber(index) or 1
     index = (((index - math.floor(index)) == 0) and index) or 1
     if not pool or (imports.type(pool) ~= "table") then return false end
-    local argValue = pool[index]
+    local value = pool[index]
     table.remove(pool, index)
-    return argValue
+    return value
 end
 
 function network.private.execNetwork(cNetwork, exec, payload)
