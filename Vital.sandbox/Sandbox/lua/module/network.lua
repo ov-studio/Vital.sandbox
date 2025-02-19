@@ -92,8 +92,8 @@ function network.private.fetchArg(index, pool)
 end
 
 function network.private.execNetwork(cNetwork, exec, payload)
+    local cThread = thread:getThread()
     if not cNetwork.isCallback then
-        iprint(payload.arguments)
         if cThread then exec(cThread, table.unpack(payload.arguments))
         else exec(table.unpack(payload.arguments)) end
         local execData = cNetwork.priority.handlers[exec] or cNetwork.handlers[exec]
