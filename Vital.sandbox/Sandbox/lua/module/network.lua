@@ -45,16 +45,16 @@ function network.public.execNetwork(name, payload)
                 for i = 1, table.length(cNetwork.priority.index), 1 do
                     local j = cNetwork.priority.index[i]
                     if not cNetwork.priority.handlers[j].config.isAsync then
-                        network.private.execNetwork(cNetwork, j, false, payload)
+                        network.private.execNetwork(cNetwork, j, payload)
                     else
-                        thread:create(function(self) network.private.execNetwork(cNetwork, j, self, payload) end):resume()
+                        thread:create(function() network.private.execNetwork(cNetwork, j, payload) end):resume()
                     end
                 end
                 for i, j in imports.pairs(cNetwork.handlers) do
                     if not j.config.isAsync then
                         network.private.execNetwork(cNetwork, i, false, payload)
                     else
-                        thread:create(function(self) network.private.execNetwork(cNetwork, i, self, payload) end):resume()
+                        thread:create(function() network.private.execNetwork(cNetwork, i, payload) end):resume()
                     end
                 end
             end
@@ -66,9 +66,9 @@ function network.public.execNetwork(name, payload)
                     payload.isSignal = true
                     payload.isRestricted = true
                     if not cNetwork.handler.config.isAsync then
-                        network.private.execNetwork(cNetwork, cNetwork.handler.exec, false, payload)
+                        network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload)
                     else
-                        thread:create(function(self) network.private.execNetwork(cNetwork, cNetwork.handler.exec, self, payload) end):resume()
+                        thread:create(function() network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload) end):resume()
                     end
                 end
             else
@@ -91,7 +91,7 @@ function network.private.fetchArg(index, pool)
     return argValue
 end
 
-function network.private.execNetwork(cNetwork, exec, cThread, payload)
+function network.private.execNetwork(cNetwork, exec, payload)
     if not cNetwork.isCallback then
         iprint(payload.arguments)
         if cThread then exec(cThread, table.unpack(payload.arguments))
