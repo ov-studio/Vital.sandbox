@@ -120,9 +120,9 @@ function network.public.execNetwork(name, payload)
                     end
                 end
             else
-                if network.private.exec[(payload.execSerial)] then
-                    network.private.exec[(payload.execSerial)](table.unpack(payload.arguments))
-                    network.private.deserializeExec(payload.execSerial)
+                if network.private.exec[(payload.exec)] then
+                    network.private.exec[(payload.exec)](table.unpack(payload.arguments))
+                    network.private.deserializeExec(payload.exec)
                 end
             end
             ]]
@@ -275,7 +275,7 @@ function network.public:emitCallback(...)
         type = "emitCallback",
         isRemote = false,
         isRestricted = false,
-        execSerial = network.private.serializeExec(cExec)
+        exec = network.private.serializeExec(cExec)
     }
     if self == network.public then
         payload.name, payload.isRemote = network.private.fetchArg(false, cArgs), network.private.fetchArg(false, cArgs)
