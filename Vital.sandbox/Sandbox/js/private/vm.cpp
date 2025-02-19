@@ -35,9 +35,7 @@ namespace Vital::Sandbox::JS {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vsdk_binds) {
-            registerFunction(i.first.second, i.second, i.first.first);
-        }
+        API::boot(this);
         #if __has_include(<Sandbox/js/module/bundle.h>)
             for (const std::string& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
