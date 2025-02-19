@@ -125,7 +125,11 @@ namespace Vital::Sandbox::Lua {
     bool create::getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.data()); }
     vsdk_ref* create::getThread(int index) { return lua_tothread(vm, index); }
     void* create::getUserData(int index) { return lua_touserdata(vm, index); }
-    int create::getReference(const std::string& name) { return reference.at(name); }
+    int create::getReference(const std::string& name, bool pushValue) {
+        if (!pushValue) return reference.at(name);
+        lua_rawgeti(vm, LUA_REGISTRYINDEX, reference.at(name));
+        return 0;
+    }
     int create::getLength(int index) {
         lua_len(vm, index);
         int result = getInt(-1);

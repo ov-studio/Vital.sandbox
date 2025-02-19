@@ -84,7 +84,7 @@ namespace Vital::Sandbox::Lua {
             bool getMetaTable(const std::string& index);
             vsdk_ref* getThread(int index = 1);
             void* getUserData(int index = 1);
-            int getReference(const std::string& name);
+            int getReference(const std::string& name, bool pushValue = false);
             int getLength(int index = 1);
 
             // Pushers //
