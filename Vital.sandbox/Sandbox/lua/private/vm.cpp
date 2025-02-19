@@ -237,6 +237,7 @@ namespace Vital::Sandbox::Lua {
     void create::push(int index) { lua_pushvalue(vm, index); }
     void create::pop(int count) { lua_pop(vm, count); }
     void create::move(vsdk_vm* target, int count) { lua_xmove(vm, target -> vm, count); }
+    bool create::pcall(int arguments, int returns) { lua_pcall(vm, arguments, returns, 0); }
     void create::removeReference(const std::string& name) {
         if (!isReference(name)) return;
         luaL_unref(vm, LUA_REGISTRYINDEX, getReference(name));
@@ -265,7 +266,7 @@ namespace Vital::Sandbox::Lua {
             luaL_loadstring(vm, __buffer.data());
         }
         else luaL_loadstring(vm, buffer.data());
-        bool status = !lua_pcall(vm, 0, LUA_MULTRET, 0);
+        bool status = !pcall(vm, 0, LUA_MULTRET);
         if (!status) {
             API::error(getString(-1));
             pop();

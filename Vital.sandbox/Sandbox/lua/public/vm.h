@@ -117,6 +117,7 @@ namespace Vital::Sandbox::Lua {
             void push(int index = 1);
             void pop(int count = 1);
             void move(create* target, int count = 1);
+            void pcall(int arguments, int returns);
             void removeReference(const std::string& name);
             void resume();
             void pause();
