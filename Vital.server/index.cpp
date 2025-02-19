@@ -16,6 +16,7 @@
 #include <System/public/event.h>
 #include <System/public/network.h>
 #include <Sandbox/lua/public/api.h>
+#include <Sandbox/lua/api/public/network.h>
 #include <Sandbox/js/public/api.h>
 
 
@@ -42,12 +43,7 @@ int main() {
     });
     Vital::System::Event::bind("Network:@PeerMessage", [=](Vital::Type::Stack arguments) -> void {
         //if (arguments.isString("Network:message")) std::cout << "\n[Client - " << arguments.getUnsignedLong("peerID") << "]: " << arguments.getString("Network:message");
-        if (arguments.isString("Network:name")) {
-            std::cout << "\n Received Network:name - " << arguments.get<std::string>("Network:name");
-            // TODO: Handle it better  to avoid injection/hacky solutions; store a ref in memory somehow....
-            std::string rw = "network.execNetwork([[" + arguments.get<std::string>("Network:payload") + "]])";
-            luaVM -> loadString(rw);
-        }
+        if (arguments.isString("Network:name")) Vital::Sandbox::Lua::API::Network::execute(arguments.get<std::string>("Network:name"), arguments.get<std::string>("Network:payload"));
     });
     Vital::System::Event::bind("Network:@PeerDisconnect", [](Vital::Type::Stack arguments) -> void {
         std::cout << "\n[Client - " << arguments.get<unsigned long>("peerID") << "]: Disconnected";
