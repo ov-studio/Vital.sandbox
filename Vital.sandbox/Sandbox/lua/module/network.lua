@@ -31,18 +31,23 @@ local network = class:create("network", {
 })
 network.private.buffer = {}
 network.private.cache = {
-    execSerials = {}
+    exec = {}
 }
 
 --TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
 function network.public.execNetwork(name, payload)
     payload = table.decode(payload)
+    if name == "vsdk.network:main" then
+        print("yes execute!")
+    else
+
+    end
     iprint(name)
     iprint(payload)
     --[[
-    if not serial or not payload or not payload.processType or (payload.isRestricted and (serial ~= network.public.identifier)) then return false end
-    if payload.processType == "emit" then
-        local cNetwork = network.public:fetch(payload.networkName)
+    if not serial or not payload or not payload.type or (payload.isRestricted and (serial ~= network.public.identifier)) then return false end
+    if payload.type == "emit" then
+        local cNetwork = network.public:fetch(payload.name)
         if cNetwork and not cNetwork.isCallback then
             for i = 1, table.length(cNetwork.priority.index), 1 do
                 local j = cNetwork.priority.index[i]
@@ -60,9 +65,9 @@ function network.public.execNetwork(name, payload)
                 end
             end
         end
-    elseif payload.processType == "emitCallback" then
+    elseif payload.type == "emitCallback" then
         if not payload.isSignal then
-            local cNetwork = network.public:fetch(payload.networkName)
+            local cNetwork = network.public:fetch(payload.name)
             if cNetwork and cNetwork.isCallback and cNetwork.handler then
                 payload.isSignal = true
                 payload.isRestricted = true
@@ -73,8 +78,8 @@ function network.public.execNetwork(name, payload)
                 end
             end
         else
-            if network.private.cache.execSerials[(payload.execSerial)] then
-                network.private.cache.execSerials[(payload.execSerial)](table.unpack(payload.processArgs))
+            if network.private.cache.exec[(payload.execSerial)] then
+                network.private.cache.exec[(payload.execSerial)](table.unpack(payload.arguments))
                 network.private.deserializeExec(payload.execSerial)
             end
         end
@@ -93,30 +98,30 @@ end
 
 function network.private.execNetwork(cNetwork, exec, cThread, serial, payload)
     if not cNetwork.isCallback then
-        if cThread then exec(cThread, table.unpack(payload.processArgs))
-        else exec(table.unpack(payload.processArgs)) end
+        if cThread then exec(cThread, table.unpack(payload.arguments))
+        else exec(table.unpack(payload.arguments)) end
         local execData = cNetwork.priority.handlers[exec] or cNetwork.handlers[exec]
         execData.config.subscriptionCount = (execData.config.subscriptionLimit and (execData.config.subscriptionCount + 1)) or false
         if execData.config.subscriptionLimit and (execData.config.subscriptionCount >= execData.config.subscriptionLimit) then
             cNetwork:off(exec)
         end
     else
-        if cThread then payload.processArgs = table.pack(exec(cThread, table.unpack(payload.processArgs)))
-        else payload.processArgs = table.pack(exec(table.unpack(payload.processArgs))) end
+        if cThread then payload.arguments = table.pack(exec(cThread, table.unpack(payload.arguments)))
+        else payload.arguments = table.pack(exec(table.unpack(payload.arguments))) end
         if not payload.isRemote then
-            --imports.triggerEvent("Assetify:Networker:API", resourceRoot, serial, payload)
+            --imports.triggerEvent("vsdk.network:main", resourceRoot, serial, payload)
         else
             if not payload.isReceiver or not network.public.isServerInstance then
                 if not payload.isLatent then
-                    imports.network.emit("Assetify:Networker:API", serial, payload)
+                    imports.network.emit("vsdk.network:main", serial, payload)
                 else
-                    imports.network.emitLatent("Assetify:Networker:API", network.public.bandwidth, false, resourceRoot, serial, payload)
+                    imports.network.emitLatent("vsdk.network:main", network.public.bandwidth, false, resourceRoot, serial, payload)
                 end
             else
                 if not payload.isLatent then
-                    imports.network.emit(payload.isReceiver, "Assetify:Networker:API", resourceRoot, serial, payload)
+                    imports.network.emit(payload.isReceiver, "vsdk.network:main", resourceRoot, serial, payload)
                 else
-                    imports.network.emitLatent(payload.isReceiver, "Assetify:Networker:API", network.public.bandwidth, false, resourceRoot, serial, payload)
+                    imports.network.emitLatent(payload.isReceiver, "vsdk.network:main", network.public.bandwidth, false, resourceRoot, serial, payload)
                 end
             end
         end
@@ -126,13 +131,13 @@ end
 
 function network.private.serializeExec(exec)
     if not exec or (imports.type(exec) ~= "function") then return false end
-    local cSerial = crypto.hash("SHA256", network.public.identifier..":"..imports.tostring(exec))
-    network.private.cache.execSerials[cSerial] = exec
-    return cSerial
+    local serial = crypto.hash("SHA256", network.public.identifier..":"..imports.tostring(exec))
+    network.private.cache.exec[serial] = exec
+    return serial
 end
 
 function network.private.deserializeExec(serial)
-    network.private.cache.execSerials[serial] = nil
+    network.private.cache.exec[serial] = nil
     return true
 end
 
@@ -232,13 +237,13 @@ function network.public:emit(...)
     if not self then return false end
     local cArgs = table.pack(...)
     local payload = {
+        type = "emit",
+        name = false,
         isRemote = false,
-        isRestricted = false,
-        processType = "emit",
-        networkName = false
+        isRestricted = false
     }
     if self == network.public then
-        payload.networkName, payload.isRemote = network.private.fetchArg(_, cArgs), network.private.fetchArg(_, cArgs)
+        payload.name, payload.isRemote = network.private.fetchArg(_, cArgs), network.private.fetchArg(_, cArgs)
         if payload.isRemote then
             payload.isLatent = network.private.fetchArg(_, cArgs)
             if network.public.isServerInstance then
@@ -247,15 +252,16 @@ function network.public:emit(...)
             end
         end
     else
+        payload.name = self.name
         payload.isRestricted = true
-        payload.networkName = self.name
     end
-    payload.processArgs = cArgs
+    payload.arguments = cArgs
     if not payload.isRemote then
-        --imports.triggerEvent("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
+        --TODO: FIGURE OUT SOMEHOW!!
+        --imports.triggerEvent("vsdk.network:main", resourceRoot, network.public.identifier, payload)
     else
-        if not payload.isReceiver then imports.network.emit("Assetify:Networker:API", payload.isLatent, table.encode(payload))
-        else imports.network.emit("Assetify:Networker:API", payload.isReceiver, payload.isLatent, table.encode(payload)) end
+        if not payload.isReceiver then imports.network.emit("vsdk.network:main", payload.isLatent, table.encode(payload))
+        else imports.network.emit("vsdk.network:main", payload.isReceiver, payload.isLatent, table.encode(payload)) end
     end
     return true
 end
@@ -265,14 +271,14 @@ function network.public:emitCallback(...)
     local cPromise = thread:createPromise()
     local cArgs, cExec = table.pack(...), cPromise.resolve
     local payload = {
+        name = false,
+        type = "emitCallback",
         isRemote = false,
         isRestricted = false,
-        processType = "emitCallback",
-        networkName = false,
         execSerial = network.private.serializeExec(cExec)
     }
     if self == network.public then
-        payload.networkName, payload.isRemote = network.private.fetchArg(_, cArgs), network.private.fetchArg(_, cArgs)
+        payload.name, payload.isRemote = network.private.fetchArg(_, cArgs), network.private.fetchArg(_, cArgs)
         if payload.isRemote then
             payload.isLatent = network.private.fetchArg(_, cArgs)
             if not network.public.isServerInstance then
@@ -284,15 +290,16 @@ function network.public:emitCallback(...)
             end
         end
     else
+        payload.name = self.name
         payload.isRestricted = true
-        payload.networkName = self.name
     end
-    payload.processArgs = cArgs
+    payload.arguments = cArgs
     if not payload.isRemote then
-        ---imports.triggerEvent("Assetify:Networker:API", resourceRoot, network.public.identifier, payload)
+        --TODO: FIGURE OUT SOMEHOW!!
+        ---imports.triggerEvent("vsdk.network:main", resourceRoot, network.public.identifier, payload)
     else
-        if not network.public.isServerInstance then imports.network.emit("Assetify:Networker:API", payload.isLatent, table.encode(payload))
-        else imports.network.emit("Assetify:Networker:API", payload.isReceiver, payload.isLatent, table.encode(payload)) end
+        if not network.public.isServerInstance then imports.network.emit("vsdk.network:main", payload.isLatent, table.encode(payload))
+        else imports.network.emit("vsdk.network:main", payload.isReceiver, payload.isLatent, table.encode(payload)) end
     end
     return cPromise
 end
