@@ -53,9 +53,8 @@ namespace Vital::Sandbox::Lua::API {
     }
     
     void Network::execute() {
-        for (auto vm : Vital::Sandbox::Lua::create::fetchVms()) {
-            auto vm = static_cast<vsdk_vm*>(instance);
-            auto reference = vm -> getReference("execNetwork");
+        for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
+            auto reference = vm.second -> getReference("execNetwork");
             std::cout << "Network exec ref: " << reference << std::endl;
             //lua_rawgeti(vm, LUA_REGISTRYINDEX, reference); // TODO: ADD WAY TO GET REGISTRY FUNCTION...
             //setNil();
