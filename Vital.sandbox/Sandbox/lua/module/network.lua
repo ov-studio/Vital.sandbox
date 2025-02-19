@@ -60,21 +60,8 @@ function network.private.execNetwork(cNetwork, exec, payload)
         if not payload.isRemote then
             --imports.triggerEvent("vsdk.network:main", resourceRoot, payload)
         else
-            --[[
-            if not payload.isReceiver or not network.public.isServerInstance then
-                if not payload.isLatent then
-                    imports.network.emit("vsdk.network:main", payload)
-                else
-                    imports.network.emitLatent("vsdk.network:main", network.public.bandwidth, false, resourceRoot, payload)
-                end
-            else
-                if not payload.isLatent then
-                    imports.network.emit(payload.isReceiver, "vsdk.network:main", resourceRoot, payload)
-                else
-                    imports.network.emitLatent(payload.isReceiver, "vsdk.network:main", network.public.bandwidth, false, resourceRoot, payload)
-                end
-            end
-            ]]
+            if not network.public.isServerInstance then imports.network.emit("vsdk.network:main", payload.isLatent, table.encode(payload))
+            else imports.network.emit("vsdk.network:main", payload.isReceiver, payload.isLatent, table.encode(payload)) end
         end
     end
     return true
