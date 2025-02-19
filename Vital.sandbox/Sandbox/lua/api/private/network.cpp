@@ -62,7 +62,6 @@ namespace Vital::Sandbox::Lua::API {
                 vm.second -> setString(name);
                 vm.second -> setString(payload);
                 vm.second -> pcall(2, 0);
-                //vm.second -> pop(3);
             }
         }
     }
