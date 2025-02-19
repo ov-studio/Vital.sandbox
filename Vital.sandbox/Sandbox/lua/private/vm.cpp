@@ -25,13 +25,13 @@
 //////////////
 
 namespace Vital::Sandbox::Lua {
-    std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
+    vsdk_vms vms;
 
     // Instantiators //
     create::create() {
         vm = luaL_newstate();
         vsdk_reference reference;
-        vsdk_vms.emplace(vm, this);
+        vms.emplace(vm, this);
         for (auto& i : vsdk_libraries) {
             luaL_requiref(vm, i.name, i.func, 1);
             pop();
@@ -52,22 +52,19 @@ namespace Vital::Sandbox::Lua {
         vm = thread;
         vsdk_reference reference;
         this -> thread = true;
-        vsdk_vms.emplace(vm, this);
+        vms.emplace(vm, this);
     }
     create::~create() {
         if (!vm) return;
-        vsdk_vms.erase(vm);
+        vms.erase(vm);
         lua_close(vm);
         vm = nullptr;
     }
-    bool create::isVirtualThread() {
-        return thread;
-    }
-    vsdk_vm* fetchVM(vsdk_ref* vm) {
-        return vsdk_vms.find(vm) != vsdk_vms.end() ? vsdk_vms.at(vm) : nullptr;
-    }
+    vsdk_vms fetchVMs() { return vms; }
+    vsdk_vm* fetchVM(vsdk_ref* vm) { return vms.find(vm) != vms.end() ? vms.at(vm) : nullptr; }
 
     // Checkers //
+    bool create::isVirtualThread() { return thread; }
     bool create::isNil(int index) { return lua_isnoneornil(vm, index); }
     bool create::isBool(int index) { return lua_isboolean(vm, index); }
     bool create::isString(int index) { return lua_isstring(vm, index); }

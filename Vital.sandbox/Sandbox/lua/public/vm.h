@@ -34,9 +34,9 @@ namespace Vital::Sandbox::Lua {
             create();
             create(vsdk_ref* thread);
             ~create();
-            bool isVirtualThread();
 
             // Checkers //
+            bool isVirtualThread();
             bool isNil(int index = 1);
             bool isBool(int index = 1);
             bool isString(int index = 1);
@@ -127,5 +127,7 @@ namespace Vital::Sandbox::Lua {
             void throwError(const std::string& error = "");
     };
     typedef create vsdk_vm;
+    typedef std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
+    extern vsdk_vms fetchVMs();
     extern vsdk_vm* fetchVM(vsdk_ref* vm);
 }
