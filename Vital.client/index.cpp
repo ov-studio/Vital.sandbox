@@ -88,7 +88,7 @@ int main() {
 
         timer:create(function()
             network:emit("mynetwork", true, false, "test1", "test2")
-        end, 5000, 1)
+        end, 1000, 1)
     )";
     //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
     auto testVM = new Vital::Sandbox::Lua::create();
