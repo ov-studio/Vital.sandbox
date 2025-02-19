@@ -31,7 +31,6 @@ int main() {
     std::cout << "Platform Serial: " << Vital::System::getSystemSerial() << std::endl;
 
 
-    Vital::Sandbox::Lua::API::boot();
     Vital::Sandbox::Lua::API::createErrorHandle([](const std::string& err) -> void {
         std::cout << "\n" << err;
     });
