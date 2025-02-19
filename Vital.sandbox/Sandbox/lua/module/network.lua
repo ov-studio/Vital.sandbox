@@ -94,7 +94,6 @@ function network.public.execNetwork(name, payload)
                 end
             end
         elseif payload.type == "emitCallback" then
-            --[[
             if not payload.isSignal then
                 local cNetwork = network.public:fetch(payload.name)
                 if cNetwork and cNetwork.isCallback and cNetwork.handler then
@@ -112,7 +111,6 @@ function network.public.execNetwork(name, payload)
                     network.private.deserializeExec(payload.exec)
                 end
             end
-            ]]
         end
     end
 end
@@ -224,8 +222,9 @@ function network.public:emit(...)
     if not self then return false end
     local cArgs = table.pack(...)
     local payload = {
-        type = "emit",
         name = false,
+        type = "emit",
+        identifier = network.private.fetchIdentifier(),
         isRemote = false,
         isRestricted = false
     }
@@ -260,9 +259,10 @@ function network.public:emitCallback(...)
     local payload = {
         name = false,
         type = "emitCallback",
+        identifier = network.private.fetchIdentifier(),
+        exec = network.private.serializeExec(cExec),
         isRemote = false,
         isRestricted = false,
-        exec = network.private.serializeExec(cExec)
     }
     if self == network.public then
         payload.name, payload.isRemote = network.private.fetchArg(false, cArgs), network.private.fetchArg(false, cArgs)
