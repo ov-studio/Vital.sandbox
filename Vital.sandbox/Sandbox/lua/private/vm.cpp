@@ -40,26 +40,12 @@ namespace Vital::Sandbox::Lua {
             setNil();
             setGlobal(i);
         }
-        for (auto& i : API::vsdk_binds) {
-            registerFunction(i.first.second, i.second, i.first.first);
-        }
         #if __has_include(<Sandbox/lua/module/bundle.h>)
             for (auto& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
-            std::cout << "ARGS: " << getArgCount() << std::endl;
-            //getGlobal("network");
-            //getTableField("execNetwork", -1);
-            //setReference("execNetwork", -1);
-            //auto testref = getReference("execNetwork");
-            //lua_rawgeti(vm, LUA_REGISTRYINDEX, testref);
-            //setNil();
-            //lua_pcall // 1 arg, 1 return
-            //lua_pcall(vm, 1, 1, 0);
-            //pop(2);
-            //std::cout << "IS FUNCTION: " << testref << std::endl;
-            //std::cout << "ARGS: " << getArgCount() << std::endl;
         #endif
+        API::boot(this);
         API::inject(this);
     }
     create::create(vsdk_ref* thread) {
