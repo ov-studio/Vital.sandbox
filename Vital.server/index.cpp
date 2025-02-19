@@ -57,9 +57,14 @@ int main() {
             print("EXECUTED TIMER")
         end, 5000, 3)
 
-        network:create("testthisnetwork"):on(function(a, b)
-            print("received values", a, b)
-        end)
+        network:create("testthisnetwork"):on(function(self, a, b)
+            print(self)
+            print("VALUE A", a)
+            print("Sleeping for 5 seconds!")
+            self:sleep(5000)
+            print("Wokeup!")
+            print("VALUE B", b)
+        end, {isAsync = true})
     )";
     luaVM -> loadString(rwString);
 
