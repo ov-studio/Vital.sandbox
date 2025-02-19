@@ -55,8 +55,8 @@ namespace Vital::Sandbox::Lua::API {
                 std::string rwString = vm -> getString(1);
                 bool result = false;
                 if (vm -> isBool(2)) {
-                    bool isAutoLoad = vm -> getBool(2);
-                    result = vm -> loadString(rwString, isAutoLoad);
+                    bool autoload = vm -> getBool(2);
+                    result = vm -> loadString(rwString, autoload);
                     if (result) return 1;
                 }
                 else result = vm -> loadString(rwString);

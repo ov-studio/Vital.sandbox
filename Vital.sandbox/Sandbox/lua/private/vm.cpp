@@ -263,9 +263,9 @@ namespace Vital::Sandbox::Lua {
         catch(...) { throwError(); }
         return 1;
     }
-    bool create::loadString(const std::string& buffer, bool isAutoLoad) {
+    bool create::loadString(const std::string& buffer, bool autoload) {
         if (buffer.empty()) return false;
-        if (!isAutoLoad) {
+        if (!autoload) {
             const std::string __buffer = "return (function() " + buffer + " end)";
             luaL_loadstring(vm, __buffer.data());
         }
