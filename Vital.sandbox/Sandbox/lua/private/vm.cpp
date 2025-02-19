@@ -40,13 +40,13 @@ namespace Vital::Sandbox::Lua {
             setNil();
             setGlobal(i);
         }
-        API::boot(this);
+        this -> bindAPI();
         #if __has_include(<Sandbox/lua/module/bundle.h>)
             for (auto& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
-        API::inject(this);
+        this -> injectAPI();
     }
     create::create(vsdk_ref* thread) {
         vm = thread;
@@ -278,12 +278,11 @@ namespace Vital::Sandbox::Lua {
         }
         return true;
     }
-    bool create::throwError(const std::string& error) {
+    void create::throwError(const std::string& error) {
         lua_Debug debug;
         lua_getstack(vm, 1, &debug);
         lua_getinfo(vm, "nSl", &debug);
         API::error("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
         setBool(false);
-        return true;
     }
 }

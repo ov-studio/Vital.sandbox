@@ -120,9 +120,11 @@ namespace Vital::Sandbox::Lua {
             void removeReference(const std::string& name);
             void resume();
             void pause();
+            void bindAPI();
+            void injectAPI();
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer, bool autoload = true);
-            bool throwError(const std::string& error = "");
+            void throwError(const std::string& error = "");
     };
     typedef create vsdk_vm;
     extern vsdk_vm* fetchVM(vsdk_ref* vm);
