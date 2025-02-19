@@ -107,7 +107,6 @@ namespace Vital::Sandbox::Lua {
     void create::setReference(const std::string& name, int index) {
         push(index);
         reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
-        pop();
     }
 
     // Getters //
