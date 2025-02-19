@@ -52,7 +52,7 @@ namespace Vital::Sandbox::Lua::API {
         vm -> setReference("execNetwork", -1);
     }
     
-    void Network::execute() {
+    void Network::execute(const std::string& name, const std::string& payload) {
         for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
             if (!vm.second -> isVirtualThread()) {
                 auto reference = vm.second -> getReference("execNetwork");
