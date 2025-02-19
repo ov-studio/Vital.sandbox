@@ -56,6 +56,7 @@ namespace Vital::Sandbox::Lua {
     create::~create() {
         if (!vm) return;
         vms.erase(vm);
+        //lua_close(vm);
         vm = nullptr;
     }
     vsdk_vms fetchVMs() { return vms; }
