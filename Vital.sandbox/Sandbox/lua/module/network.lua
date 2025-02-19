@@ -30,9 +30,7 @@ local network = class:create("network", {
     --isServerInstance = (not localPlayer and true) or false --TODO: WIP
 })
 network.private.buffer = {}
-network.private.cache = {
-    exec = {}
-}
+network.private.exec = {}
 
 --TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
 function network.public.execNetwork(name, payload)
@@ -78,8 +76,8 @@ function network.public.execNetwork(name, payload)
                 end
             end
         else
-            if network.private.cache.exec[(payload.execSerial)] then
-                network.private.cache.exec[(payload.execSerial)](table.unpack(payload.arguments))
+            if network.private.exec[(payload.execSerial)] then
+                network.private.exec[(payload.execSerial)](table.unpack(payload.arguments))
                 network.private.deserializeExec(payload.execSerial)
             end
         end
@@ -132,12 +130,12 @@ end
 function network.private.serializeExec(exec)
     if not exec or (imports.type(exec) ~= "function") then return false end
     local serial = crypto.hash("SHA256", network.public.identifier..":"..imports.tostring(exec))
-    network.private.cache.exec[serial] = exec
+    network.private.exec[serial] = exec
     return serial
 end
 
 function network.private.deserializeExec(serial)
-    network.private.cache.exec[serial] = nil
+    network.private.exec[serial] = nil
     return true
 end
 
