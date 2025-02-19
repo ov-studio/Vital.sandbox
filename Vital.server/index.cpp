@@ -56,6 +56,10 @@ int main() {
         timer:create(function()
             print("EXECUTED TIMER")
         end, 5000, 3)
+
+        network:create("testthisnetwork"):on(function(a, b)
+            print("received values", a, b)
+        end)
     )";
     luaVM -> loadString(rwString);
 

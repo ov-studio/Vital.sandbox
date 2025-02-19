@@ -87,7 +87,7 @@ int main() {
         result()
 
         timer:create(function()
-            network:emit("mynetwork", true, false, "test1", "test2")
+            network:emit("testthisnetwork", true, false, 5, 7)
         end, 1000, 1)
     )";
     //std::cout<<"\n Main Thread : " << std::this_thread::get_id();
