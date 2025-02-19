@@ -25,6 +25,6 @@ namespace Vital::Sandbox::Lua::API {
         public:
             static void bind(void* instance);
             static void inject(void* instance);
-            static void execute(void* instance);
+            static void execute();
     };
 }
