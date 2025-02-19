@@ -65,6 +65,11 @@ int main() {
             print("Wokeup!")
             print("VALUE B", b)
         end, {isAsync = true})
+
+        network:create("testthiscbnetwork", true):on(function(a, b)
+            print("yep", a, b)
+            return a + b
+        end)
     )";
     luaVM -> loadString(rwString);
 
