@@ -106,5 +106,7 @@ namespace Vital::Sandbox::JS {
             void throwError(const std::string& error = "");
     };
     typedef create vsdk_vm;
+    typedef std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
+    extern vsdk_vms fetchVMs();
     extern vsdk_vm* fetchVM(vsdk_ref* vm);
 }

@@ -25,12 +25,12 @@
 /////////////
 
 namespace Vital::Sandbox::JS {
-    std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
+    vsdk_vms vms;
 
     // Instantiators //
     create::create() {
         vm = duk_create_heap_default();
-        vsdk_vms.emplace(vm, this);
+        vms.emplace(vm, this);
         for (const std::string& i : vsdk_blacklist) {
             setNil();
             setGlobal(i);
@@ -45,13 +45,12 @@ namespace Vital::Sandbox::JS {
     }
     create::~create() {
         if (!vm) return;
-        vsdk_vms.erase(vm);
+        vms.erase(vm);
         duk_destroy_heap(vm);
         vm = nullptr;
     }
-    vsdk_vm* fetchVM(vsdk_ref* vm) {
-        return vsdk_vms.find(vm) != vsdk_vms.end() ? vsdk_vms.at(vm) : nullptr;
-    }
+    vsdk_vms fetchVMs() { return vms; }
+    vsdk_vm* fetchVM(vsdk_ref* vm) { return vms.find(vm) != vms.end() ? vms.at(vm) : nullptr; }
 
     // Checkers //
     bool create::isNil(int index) { return duk_is_null_or_undefined(vm, index); }
