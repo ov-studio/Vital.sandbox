@@ -15,6 +15,7 @@
 #pragma once
 #include <Sandbox/lua/api/public/network.h>
 #include <System/public/network.h>
+#include <System/public/crypto.h>
 
 
 ///////////////
@@ -55,7 +56,7 @@ namespace Vital::Sandbox::Lua::API {
     void Network::execute(const std::string& name, const std::string& payload) {
         for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
             if (!vm.second -> isVirtualThread()) {
-                auto reference = vm.second -> getReference("network.execNetwork");
+                auto reference = vm.second -> getReference(Vital::System::Crypto::hash("SHA256", "network.execNetwork"));
                 std::cout << "Network exec ref: " << reference << std::endl;
                 //lua_rawgeti(vm, LUA_REGISTRYINDEX, reference); // TODO: ADD WAY TO GET REGISTRY FUNCTION...
                 //setNil();
