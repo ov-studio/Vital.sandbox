@@ -40,12 +40,12 @@ namespace Vital::Sandbox::Lua {
             setNil();
             setGlobal(i);
         }
+        API::boot(this);
         #if __has_include(<Sandbox/lua/module/bundle.h>)
             for (auto& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
-        API::boot(this);
         API::inject(this);
     }
     create::create(vsdk_ref* thread) {
