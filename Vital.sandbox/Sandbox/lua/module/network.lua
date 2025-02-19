@@ -26,60 +26,13 @@ local imports = {
 ------------------------
 
 local network = class:create("network", {
-    --identifier = imports.md5(imports.getResourceName(imports.getThisResource())), --TODO: ..
     --isServerInstance = (not localPlayer and true) or false --TODO: WIP
 })
 network.private.buffer = {}
 network.private.exec = {}
 
---TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
-function network.public.execNetwork(name, payload)
-    if not string.find(name, "vsdk.network") then return false end
-    payload = table.decode(payload)
-    if not payload or not payload.type then return false end
-    --if not serial or (payload.isRestricted and (serial ~= network.public.identifier)) then return false end
-    if name == "vsdk.network:main" then
-        if payload.type == "emit" then
-            local cNetwork = network.public:fetch(payload.name)
-            if cNetwork and not cNetwork.isCallback then
-                for i = 1, table.length(cNetwork.priority.index), 1 do
-                    local j = cNetwork.priority.index[i]
-                    if not cNetwork.priority.handlers[j].config.isAsync then
-                        network.private.execNetwork(cNetwork, j, payload)
-                    else
-                        thread:create(function() network.private.execNetwork(cNetwork, j, payload) end):resume()
-                    end
-                end
-                for i, j in imports.pairs(cNetwork.handlers) do
-                    if not j.config.isAsync then
-                        network.private.execNetwork(cNetwork, i, false, payload)
-                    else
-                        thread:create(function() network.private.execNetwork(cNetwork, i, payload) end):resume()
-                    end
-                end
-            end
-        elseif payload.type == "emitCallback" then
-            --[[
-            if not payload.isSignal then
-                local cNetwork = network.public:fetch(payload.name)
-                if cNetwork and cNetwork.isCallback and cNetwork.handler then
-                    payload.isSignal = true
-                    payload.isRestricted = true
-                    if not cNetwork.handler.config.isAsync then
-                        network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload)
-                    else
-                        thread:create(function() network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload) end):resume()
-                    end
-                end
-            else
-                if network.private.exec[(payload.execSerial)] then
-                    network.private.exec[(payload.execSerial)](table.unpack(payload.arguments))
-                    network.private.deserializeExec(payload.execSerial)
-                end
-            end
-            ]]
-        end
-    end
+function network.private.fetchIdentifier()
+    return 123
 end
 
 function network.private.fetchArg(index, pool)
@@ -127,9 +80,59 @@ function network.private.execNetwork(cNetwork, exec, payload)
     return true
 end
 
+--TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
+function network.public.execNetwork(name, payload)
+    if not string.find(name, "vsdk.network") then return false end
+    payload = table.decode(payload)
+    if not payload or not payload.type or not payload.identifier then return false end
+    if payload.isRestricted and (payload.identifier ~= network.private.fetchIdentifier()) then return false end
+    if name == "vsdk.network:main" then
+        if payload.type == "emit" then
+            local cNetwork = network.public:fetch(payload.name)
+            if cNetwork and not cNetwork.isCallback then
+                for i = 1, table.length(cNetwork.priority.index), 1 do
+                    local j = cNetwork.priority.index[i]
+                    if not cNetwork.priority.handlers[j].config.isAsync then
+                        network.private.execNetwork(cNetwork, j, payload)
+                    else
+                        thread:create(function() network.private.execNetwork(cNetwork, j, payload) end):resume()
+                    end
+                end
+                for i, j in imports.pairs(cNetwork.handlers) do
+                    if not j.config.isAsync then
+                        network.private.execNetwork(cNetwork, i, false, payload)
+                    else
+                        thread:create(function() network.private.execNetwork(cNetwork, i, payload) end):resume()
+                    end
+                end
+            end
+        elseif payload.type == "emitCallback" then
+            --[[
+            if not payload.isSignal then
+                local cNetwork = network.public:fetch(payload.name)
+                if cNetwork and cNetwork.isCallback and cNetwork.handler then
+                    payload.isSignal = true
+                    payload.isRestricted = true
+                    if not cNetwork.handler.config.isAsync then
+                        network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload)
+                    else
+                        thread:create(function() network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload) end):resume()
+                    end
+                end
+            else
+                if network.private.exec[(payload.execSerial)] then
+                    network.private.exec[(payload.execSerial)](table.unpack(payload.arguments))
+                    network.private.deserializeExec(payload.execSerial)
+                end
+            end
+            ]]
+        end
+    end
+end
+
 function network.private.serializeExec(exec)
     if not exec or (imports.type(exec) ~= "function") then return false end
-    local serial = crypto.hash("SHA256", network.public.identifier..":"..imports.tostring(exec))
+    local serial = crypto.hash("SHA256", network.private.fetchIdentifier()..":"..imports.tostring(exec))
     network.private.exec[serial] = exec
     return serial
 end
@@ -158,7 +161,6 @@ function network.public:load(name, isCallback)
     if not network.public:isInstance(self) then return false end
     if not name or (imports.type(name) ~= "string") or network.private.buffer[name] then return false end
     self.name = name
-    self.owner = network.public.identifier
     self.isCallback = (isCallback and true) or false
     if not self.isCallback then self.priority, self.handlers = {index = {}, handlers = {}}, {} end
     network.private.buffer[name] = self
@@ -256,7 +258,7 @@ function network.public:emit(...)
     payload.arguments = cArgs
     if not payload.isRemote then
         --TODO: FIGURE OUT SOMEHOW!!
-        --imports.triggerEvent("vsdk.network:main", resourceRoot, network.public.identifier, payload)
+        --imports.triggerEvent("vsdk.network:main", resourceRoot, network.private.fetchIdentifier(), payload)
     else
         if not payload.isReceiver then imports.network.emit("vsdk.network:main", payload.isLatent, table.encode(payload))
         else imports.network.emit("vsdk.network:main", payload.isReceiver, payload.isLatent, table.encode(payload)) end
@@ -294,7 +296,7 @@ function network.public:emitCallback(...)
     payload.arguments = cArgs
     if not payload.isRemote then
         --TODO: FIGURE OUT SOMEHOW!!
-        ---imports.triggerEvent("vsdk.network:main", resourceRoot, network.public.identifier, payload)
+        ---imports.triggerEvent("vsdk.network:main", resourceRoot, network.private.fetchIdentifier(), payload)
     else
         if not network.public.isServerInstance then imports.network.emit("vsdk.network:main", payload.isLatent, table.encode(payload))
         else imports.network.emit("vsdk.network:main", payload.isReceiver, payload.isLatent, table.encode(payload)) end
