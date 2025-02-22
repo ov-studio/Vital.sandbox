@@ -24,6 +24,22 @@ namespace Vital::Sandbox::Lua::API {
     void Engine::bind(void* instance) {
         auto vm = static_cast<vsdk_vm*>(instance);
 
+        API::bind(vm, "engine", "getSystemPlatform", [](auto* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                vm -> setString(Vital::System::getSystemPlatform());
+                return 1;
+            });
+        });
+    
+        API::bind(vm, "engine", "getSystemSerial", [](auto* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                vm -> setString(Vital::System::getSystemSerial());
+                return 1;
+            });
+        });
+
         API::bind(vm, "engine", "getSystemTick", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
