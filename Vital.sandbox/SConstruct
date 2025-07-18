@@ -1,0 +1,37 @@
+# Imports
+from utils import *
+
+
+# Environments
+cwd = os.path.abspath(os.getcwd())
+env = Environment(tools=["default", "msvc"], PLATFORM="")
+env.MergeFlags(SConscript('./test/SConscript_conandeps')["conandeps"])
+env.sources = env.RGlob('Vendor', '*.cpp') + env.RGlob('Vendor', '*.c')
+env.Append(CPPPATH=[
+    cwd,
+    os.path.join(cwd, "Vital.sandbox"),
+    os.path.join(cwd, "Vendor"),
+    os.path.join(cwd, "Vendor/rapidjson"),
+    os.path.join(cwd, "Vendor/lua"),
+    os.path.join(cwd, "Vendor/duktape")
+])
+
+
+# Dependencies
+platform = sys.platform
+if platform.startswith("win"):
+    env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
+elif platform == "darwin":
+    env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
+elif platform.startswith("ios"):
+    env.Append(CPPDEFINES=["LUA_USE_IOS", "DUK_F_APPLE"])
+elif platform.startswith("linux"):
+    env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
+elif platform.startswith("android"):
+    env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_ANDROID"])
+elif platform.startswith("web"):
+    env.Append(CPPDEFINES=["LUA_USE_POSIX", "DUK_F_POSIX"])
+
+
+# Returns
+Return("env")

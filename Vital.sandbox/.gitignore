@@ -1,0 +1,28 @@
+# Builds
+*.gen.*
+.godot/
+.build/
+.bin/
+
+# Binaries
+*.o
+*.os
+*.so
+*.obj
+*.bc
+*.pyc
+*.dblite
+*.pdb
+*.lib
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+*.idb
+*.exp
+
+# IDE
+.vs/*
+.vscode/*
+*.log
