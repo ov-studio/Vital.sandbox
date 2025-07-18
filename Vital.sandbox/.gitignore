@@ -1,6 +1,5 @@
 # Builds
 *.gen.*
-.godot/
 .build/
 .bin/
 
