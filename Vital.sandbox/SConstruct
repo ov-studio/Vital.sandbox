@@ -11,10 +11,18 @@ cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=["default", "msvc"], PLATFORM="")
 env.BuildConan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
-env.sources = env.RGlob("Vendor", "*.cpp") + env.RGlob("Vendor", "*.c")
+env.sources = (
+    env.RGlob("Type", "*.cpp") + 
+    env.RGlob("System", "*.cpp") + 
+    env.RGlob("Sandbox", "*.cpp") + 
+    env.RGlob("Vendor", "*.cpp") + 
+    env.RGlob("Vendor", "*.c")
+)
 env.Append(CPPPATH=[
     cwd,
-    os.path.join(cwd, "Vital.sandbox"),
+    os.path.join(cwd, "Type"),
+    os.path.join(cwd, "System"),
+    os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor"),
     os.path.join(cwd, "Vendor/rapidjson"),
     os.path.join(cwd, "Vendor/lua"),
