@@ -1,4 +1,5 @@
 import os
+import sys
 import fnmatch
 import subprocess
 from SCons.Environment import Base as BaseEnvironment
