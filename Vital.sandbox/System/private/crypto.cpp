@@ -83,16 +83,17 @@ namespace Vital::System::Crypto {
         catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 
-    std::string hash(const std::string& mode, const std::string& buffer) {
+	std::string hash(const std::string& mode, const std::string& buffer) {
         try {
             auto algorithm = HashMode(mode);
             int outputSize = algorithm.second;
-            unsigned char* output = new unsigned char[outputSize];
-            algorithm.first(reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), buffer.size(), output);
-            std::string result = std::string(reinterpret_cast<char*>(output), outputSize);
-            result = encode(result);
-            delete[] output;
-            return result;
+            std::vector<unsigned char> output(outputSize);
+            algorithm.first(reinterpret_cast<const unsigned char*>(buffer.data()), buffer.size(), output.data());
+            std::stringstream ss;
+            for (const auto& byte : output) {
+                ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+            }
+            return ss.str();
         }
         catch(...) { std::rethrow_exception(std::current_exception()); }
     }
