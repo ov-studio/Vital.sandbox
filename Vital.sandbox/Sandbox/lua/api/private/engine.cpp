@@ -48,22 +48,6 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
 
-        API::bind(vm, "engine", "getAppTick", [](auto* ref) -> int {
-            auto vm = fetchVM(ref);
-            return vm -> execute([&]() -> int {
-                vm -> setNumber(static_cast<int>(Vital::System::getAppTick()));
-                return 1;
-            });
-        });
-
-        API::bind(vm, "engine", "getClientTick", [](auto* ref) -> int {
-            auto vm = fetchVM(ref);
-            return vm -> execute([&]() -> int {
-                vm -> setNumber(static_cast<int>(Vital::System::getClientTick()));
-                return 1;
-            });
-        });
-
         API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {

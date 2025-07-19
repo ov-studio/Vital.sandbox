@@ -27,8 +27,6 @@
 
 namespace Vital::System {
     std::string vsdk_serial = "";
-    unsigned int vsdk_apptick;
-    unsigned int vsdk_clienttick;
 
     std::string getSystemPlatform() { 
         #ifdef Vital_SDK_Client
@@ -67,20 +65,5 @@ namespace Vital::System {
 
     unsigned int getSystemTick() {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
-    }
-
-    unsigned int getAppTick() {
-        vsdk_apptick = vsdk_apptick ? vsdk_apptick : getSystemTick();
-        return getSystemTick() - vsdk_apptick;
-    }
-
-    unsigned int getClientTick() {
-        vsdk_clienttick = vsdk_clienttick ? vsdk_clienttick : getAppTick();
-        return getSystemTick() - vsdk_clienttick;
-    }
-
-    bool resetClientTick() {
-        vsdk_clienttick = getAppTick();
-        return true;
     }
 }

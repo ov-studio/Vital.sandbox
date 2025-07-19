@@ -33,7 +33,4 @@ namespace Vital::System {
     extern std::string getSystemPlatform();
     extern std::string getSystemSerial();
     extern unsigned int getSystemTick();
-    extern unsigned int getAppTick();
-    extern unsigned int getClientTick();
-    extern bool resetClientTick();
 }
