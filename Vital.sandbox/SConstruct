@@ -3,11 +3,13 @@ from utils import *
 
 
 # Arguments
+ARGUMENTS["platform_type"] = ARGUMENTS.get("platform_type", "Server")
 ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 
 
 # Environments
 cwd = os.path.abspath(os.getcwd())
+platform = sys.platform
 env = Environment(tools=["default", "msvc"], PLATFORM="")
 env.BuildConan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
@@ -30,10 +32,14 @@ env.Append(CPPPATH=[
 ])
 
 
+# Flags
+if ARGUMENTS["platform_type"] == "Client":
+    env.Append(CPPFLAGS=["-DVital_SDK_Client"])
+
+
 # Dependencies
-platform = sys.platform
 if platform.startswith("win"):
-    env.Append(CPPFLAGS=['-DWINDOWS'])
+    env.Append(CPPFLAGS=["-DWINDOWS"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
 elif platform == "darwin":
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
