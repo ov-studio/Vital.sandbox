@@ -29,7 +29,7 @@ namespace Vital::Sandbox::Lua::API {
         API::bind(vm, "network", "emit", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
-                bool isClient = Vital::System::getSystemPlatform() == "client";
+                bool isClient = Vital::System::getPlatform() == "client";
                 if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isClient && (!vm -> isNumber(2)))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 int queryArg = isClient ? 3 : 4;
                 std::string name = vm -> getString(1);

@@ -23,7 +23,7 @@
 
 namespace Vital::System {
 
-    std::string getSystemPlatform() { 
+    std::string getPlatform() { 
         #if defined(Vital_SDK_Client)
             return "client";
         #else
@@ -31,14 +31,14 @@ namespace Vital::System {
         #endif
     }
 
-    unsigned int getSystemTick() {
+    unsigned int getTick() {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }
 
     #if defined(Vital_SDK_Client)
         std::string vsdk_serial = "";
         #if defined(Vital_SDK_WINDOWS)
-            std::string getSystemSerial() {
+            std::string getSerial() {
                 if (vsdk_serial.empty()) {
                     auto system = Vital::System::Inspect::system();
                     auto smbios = Vital::System::Inspect::smbios();

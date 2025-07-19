@@ -15,7 +15,7 @@ ExampleClass::ExampleClass() {
 
 	UtilityFunctions::print("init");
 
-    auto serial = Vital::System::getSystemSerial();
+    auto serial = Vital::System::getSerial();
 	UtilityFunctions::print(serial.c_str());
 
     luaVM = new Vital::Sandbox::Lua::create();
