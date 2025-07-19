@@ -39,17 +39,22 @@ if ARGUMENTS["platform_type"] == "Client":
 
 # Dependencies
 if platform.startswith("win"):
-    env.Append(CPPFLAGS=["-DWINDOWS"])
+    env.Append(CPPFLAGS=["-DVital_SDK_WINDOWS"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
 elif platform == "darwin":
+    env.Append(CPPFLAGS=["-DVital_SDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
 elif platform.startswith("ios"):
+    env.Append(CPPFLAGS=["-DVital_SDK_IOS"])
     env.Append(CPPDEFINES=["LUA_USE_IOS", "DUK_F_APPLE"])
 elif platform.startswith("linux"):
+    env.Append(CPPFLAGS=["-DVital_SDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
 elif platform.startswith("android"):
+    env.Append(CPPFLAGS=["-DVital_SDK_ANDROID"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_ANDROID"])
 elif platform.startswith("web"):
+    env.Append(CPPFLAGS=["-DVital_SDK_WEB"])
     env.Append(CPPDEFINES=["LUA_USE_POSIX", "DUK_F_POSIX"])
 
 
