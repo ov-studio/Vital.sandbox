@@ -10,4 +10,3 @@
 * [**Lua**](https://www.lua.org) - Delivering runtime scripting sandboxing capabilities.
 * [**Duktape**](https://duktape.org) - Delivering runtime scripting sandboxing capabilities.
 * [**Lua-RapidJSON**](https://github.com/xpol/lua-rapidjson) - Providing Lua bindings for RapidJSON.
-* [**FMOD**](https://www.fmod.com) - Supporting audio playback and management.
