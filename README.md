@@ -18,7 +18,6 @@
 * Integrated Package System
 * Integrated Inspect System
 * Integrated Event System
-* Integrated Audio Engine
 * Integrated Sandboxing Environments (Lua, JS)
 * Integrated Robust Threader (Includes async/await, heartbeats, promises and much more!)
 * Integrated Robust Networking, Scheduling and Rendering Solutions
