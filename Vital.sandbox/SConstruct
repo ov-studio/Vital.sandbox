@@ -33,6 +33,7 @@ env.Append(CPPPATH=[
 # Dependencies
 platform = sys.platform
 if platform.startswith("win"):
+    env.Append(CPPFLAGS=['-DWINDOWS'])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
 elif platform == "darwin":
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])

@@ -2,78 +2,10 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <../Vital.sandbox/Vendor/lua/lua.hpp>
 
-#include <openssl/rand.h>
-#include <openssl/sha.h>
-#include <openssl/bio.h>
-#include <openssl/buffer.h>
-
-#include <iostream>
-#include <algorithm>
-#include <chrono>
-#include <functional>
-#include <filesystem>
-#include <fstream>
-#include <thread>
-#include <exception>
-#include <vector>
-#include <map>
-#include <variant>
-#include <utility>
-#include <string>
-#include <sstream>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/viewport.hpp>
-
-    std::string encode(const std::string& buffer) {
-        BIO* bio = BIO_new(BIO_f_base64());
-        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-        BIO* bmem = BIO_new(BIO_s_mem());
-        bio = BIO_push(bio, bmem);
-        BIO_write(bio, buffer.c_str(), buffer.size());
-        BIO_flush(bio);
-        BUF_MEM* bptr;
-        BIO_get_mem_ptr(bio, &bptr);
-        std::string result(bptr->data, bptr->length);
-        BIO_free_all(bio);
-        return result;
-    }
-    
-    std::string decode(const std::string& buffer) {
-        BIO* bio = BIO_new(BIO_f_base64());
-        BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-        BIO* bmem = BIO_new_mem_buf(buffer.c_str(), buffer.size());
-        bio = BIO_push(bio, bmem);
-        std::string result(buffer.size(), '\0');
-        int decodedLength = BIO_read(bio, &result[0], buffer.size());
-        BIO_free_all(bio);
-        result.resize(decodedLength);
-        return result;
-    }
-	
-	std::pair<std::function<unsigned char* (const unsigned char*, size_t, unsigned char*)>, int> HashMode(const std::string& mode) {
-        if (mode == "SHA1") return {::SHA1, SHA_DIGEST_LENGTH};
-        else if (mode == "SHA224") return {::SHA224, SHA224_DIGEST_LENGTH};
-        else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
-        else if (mode == "SHA384") return {::SHA384, SHA384_DIGEST_LENGTH};
-        else if (mode == "SHA512") return {::SHA512, SHA512_DIGEST_LENGTH};
-        else throw std::runtime_error("idk");
-    }
-
-	std::string hash(const std::string& mode, const std::string& buffer) {
-        try {
-            auto algorithm = HashMode(mode);
-            int outputSize = algorithm.second;
-            std::vector<unsigned char> output(outputSize);
-            algorithm.first(reinterpret_cast<const unsigned char*>(buffer.data()), buffer.size(), output.data());
-            std::stringstream ss;
-            for (const auto& byte : output) {
-                ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
-            }
-            return ss.str();
-        }
-        catch(...) { std::rethrow_exception(std::current_exception()); }
-    }
-
+#include <../Vital.sandbox/System/public/vital.h>
+#include <../Vital.sandbox/System/public/crypto.h>
 
 lua_State *L = nullptr;
 
@@ -82,6 +14,11 @@ ExampleClass::ExampleClass() {
 
 
 	UtilityFunctions::print("init");
+
+    Vital::System::setSystemPlatform("client");
+    auto serial = Vital::System::getSystemSerial();
+	UtilityFunctions::print(serial.c_str());
+
 
 	L = luaL_newstate();
 
@@ -108,7 +45,7 @@ ExampleClass::ExampleClass() {
 		UtilityFunctions::print("unexpected result");
 	}
 
-	auto stuff = hash("SHA256", "hello");
+	auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	
 	UtilityFunctions::print(stuff.c_str());
 
