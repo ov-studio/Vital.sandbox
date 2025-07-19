@@ -25,7 +25,7 @@ ExampleClass::ExampleClass() {
 	std::string rwString = R"(
         local a = 10
         local b = 20
-        print("Can you see this")
+        engine.print("Can you see this", "again")
         return a + b
     )";
 
@@ -35,6 +35,7 @@ ExampleClass::ExampleClass() {
 	
 	auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	UtilityFunctions::print(stuff.c_str());
+    UtilityFunctions::print("Hello", "world", 123);
 	//ClassDB::register_abstract_class<ExampleClass>();
 
 }
@@ -47,7 +48,7 @@ void ExampleClass::print_type(const Variant &p_variant) const {
 	print_line(vformat("Type: %d", p_variant.get_type()));
 }
 
-using namespace godot;
+//using namespace godot;
 
 void ExampleClass::_process(double delta) {
 	//UtilityFunctions::print("rendered");
