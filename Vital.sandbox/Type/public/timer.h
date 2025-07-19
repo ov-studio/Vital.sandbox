@@ -31,6 +31,6 @@ namespace Vital::Type {
             void destroy();
 
             // Utils //
-            static bool isInstance(Timer*);
+            static bool valid(Timer*);
     };
 }

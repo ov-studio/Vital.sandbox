@@ -28,8 +28,9 @@ namespace Vital::Type {
         buffer.emplace(this, true);
         Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
             int currentExecutions = 0;
-            int targetInterval = std::max(0, interval), targetExecutions = std::max(0, executions);
-            while (Timer::isInstance(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
+            int targetInterval = std::max(0, interval);
+            int targetExecutions = std::max(0, executions);
+            while (Timer::valid(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
                 thread -> sleep(interval);
                 currentExecutions++;
                 exec(this);
@@ -42,7 +43,5 @@ namespace Vital::Type {
     }
 
     // Utils //
-    bool Timer::isInstance(Timer* identifier) {
-        return buffer.find(identifier) != buffer.end();
-    }
+    bool Timer::valid(Timer* identifier) { return buffer.find(identifier) != buffer.end(); }
 }

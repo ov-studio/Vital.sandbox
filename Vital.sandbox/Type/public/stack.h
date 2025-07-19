@@ -56,7 +56,7 @@ namespace Vital::Type {
                     template <typename T>
                     T get() const { return std::get<T>(value); }
 
-                    // Utils
+                    // Utils //
                     std::pair<std::string, std::string> serialize() {
                         if (isString()) return {"std::string", get<std::string>()};
                         if (isNumber()) {
