@@ -200,7 +200,9 @@ namespace Vital::System::Inspect {
                     media_typename = L"SCM";
                     break;
             }
-            GetDiskFreeSpaceEx(toString(device_id_sorted, i).c_str(), nullptr, &diskCapacity, nullptr);
+            devices.reserve(device_id_sorted.capacity());
+            std::wstring devicePath = toString(device_id_sorted, i);
+            GetDiskFreeSpaceExA(std::string(devicePath.begin(), devicePath.end()).c_str(), nullptr, &diskCapacity, nullptr);
             devices.push_back({ toString(device_id_sorted, i), toString(model, i), toString(serial, i, true), toString(interface_type, i), media_typename, static_cast<const unsigned long long>(diskCapacity.QuadPart/pow(1024, 3)) });
         }
         return devices;
