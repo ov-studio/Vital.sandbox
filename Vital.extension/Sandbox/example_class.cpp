@@ -3,9 +3,9 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 
-#include <Vital.sandbox/Sandbox/lua/public/api.h>
-#include <Vital.sandbox/System/public/vital.h>
-#include <Vital.sandbox/System/public/crypto.h>
+#include <../Vital.sandbox/Sandbox/lua/public/api.h>
+#include <../Vital.sandbox/System/public/vital.h>
+#include <../Vital.sandbox/System/public/crypto.h>
 
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
@@ -15,7 +15,6 @@ ExampleClass::ExampleClass() {
 
 	UtilityFunctions::print("init");
 
-    Vital::System::setSystemPlatform("client");
     auto serial = Vital::System::getSystemSerial();
 	UtilityFunctions::print(serial.c_str());
 

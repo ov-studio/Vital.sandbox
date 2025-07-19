@@ -15,6 +15,7 @@
 #pragma once
 #include <System/public/inspect.h>
 #include <System/public/crypto.h>
+
 #if defined(WINDOWS)
     #include <Windows.h>
 #endif
@@ -25,25 +26,17 @@
 ////////////////////
 
 namespace Vital::System {
-    std::string vsdk_platform = "server";
     std::string vsdk_serial = "";
     unsigned int vsdk_apptick;
     unsigned int vsdk_clienttick;
 
-    bool setSystemPlatform(const std::string& platform) {
-        if (platform == "client") {
-            #if !defined(WINDOWS)
-                return false;
-            #endif
-        }
-        else if (platform != "server") return false;
-        vsdk_platform = platform;
-        #if defined(WINDOWS)
-            SetConsoleOutputCP(CP_UTF8);
+    std::string getSystemPlatform() { 
+        #ifdef Vital_SDK_Client
+            return "client";
+        #else
+            return "server";
         #endif
-        return true;
     }
-    std::string getSystemPlatform() { return vsdk_platform; }
 
     std::string getSystemSerial() {
         if (vsdk_serial.empty() && (getSystemPlatform() == "client")) {
