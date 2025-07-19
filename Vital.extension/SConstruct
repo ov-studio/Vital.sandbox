@@ -1,0 +1,21 @@
+# Metas
+name = "vital.sdk"
+ARGUMENTS["target"] = f'template_{ARGUMENTS["build_type"].lower()}' 
+
+
+# Environments
+env = SConscript("../Vital.sandbox/SConstruct")
+env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
+env.sources += env.RGlob('Sandbox', '*.cpp') + env.RGlob('Sandbox', '*.c')
+env.Append(LINKFLAGS=['/NODEFAULTLIB:LIBCMTD'])
+
+
+# Build
+build_dir = ".build/{}".format(name)
+build_platform = "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))
+build = env.SharedLibrary(
+    ".bin/{}/{}".format(env['platform'], build_platform),
+    source = env.sources
+)
+
+Default(*[build, env.Install("{}/{}/".format(build_dir, env["platform"]), build)])
