@@ -1,0 +1,4 @@
+[submodule "Vital.extension/Vendor/godot"]
+	path = Vital.extension/Vendor/godot
+	url = https://github.com/godotengine/godot-cpp.git
+	branch = 4.3
