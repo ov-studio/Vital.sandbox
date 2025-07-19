@@ -10,12 +10,10 @@ env.sources += env.RGlob('Sandbox', '*.cpp') + env.RGlob('Sandbox', '*.c')
 env.Append(LINKFLAGS=['/NODEFAULTLIB:LIBCMTD'])
 
 
-# Build
+# Builds
 build_dir = ".build/{}".format(name)
-build_platform = "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))
 build = env.SharedLibrary(
-    ".bin/{}/{}".format(env['platform'], build_platform),
+    ".bin/{}/{}".format(env['platform'], "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),
     source = env.sources
 )
-
 Default(*[build, env.Install("{}/{}/".format(build_dir, env["platform"]), build)])
