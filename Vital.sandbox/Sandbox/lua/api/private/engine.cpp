@@ -41,13 +41,13 @@ namespace Vital::Sandbox::Lua::API {
         });
     
         #if defined(Vital_SDK_Client)
-            API::bind(vm, "engine", "getSystemSerial", [](auto* ref) -> int {
-                auto vm = fetchVM(ref);
-                return vm -> execute([&]() -> int {
-                    vm -> setString(Vital::System::getSystemSerial());
-                    return 1;
-                });
+        API::bind(vm, "engine", "getSystemSerial", [](auto* ref) -> int {
+            auto vm = fetchVM(ref);
+            return vm -> execute([&]() -> int {
+                vm -> setString(Vital::System::getSystemSerial());
+                return 1;
             });
+        });
         #endif
     
         API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
