@@ -19,7 +19,6 @@
 #include <Sandbox/lua/api/public/file.h>
 #include <Sandbox/lua/api/public/crypto.h>
 #include <Sandbox/lua/api/public/network.h>
-#include <Sandbox/lua/api/public/audio.h>
 
 
 ///////////////
@@ -34,7 +33,6 @@ namespace Vital::Sandbox::Lua {
         API::File::bind(instance);
         API::Crypto::bind(instance);
         API::Network::bind(instance);
-        API::Audio::bind(instance);
     }
 
     void create::injectAPI() {
@@ -44,7 +42,6 @@ namespace Vital::Sandbox::Lua {
         API::File::inject(instance);
         API::Crypto::inject(instance);
         API::Network::inject(instance);
-        API::Audio::inject(instance);
     }
 
     namespace API {
