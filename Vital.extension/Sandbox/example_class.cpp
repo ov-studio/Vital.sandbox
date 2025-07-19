@@ -3,9 +3,9 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 
-#include <../Vital.sandbox/Sandbox/lua/public/api.h>
-#include <../Vital.sandbox/System/public/vital.h>
-#include <../Vital.sandbox/System/public/crypto.h>
+#include <Vital.sandbox/Sandbox/lua/public/api.h>
+#include <Vital.sandbox/System/public/vital.h>
+#include <Vital.sandbox/System/public/crypto.h>
 
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
@@ -26,6 +26,7 @@ ExampleClass::ExampleClass() {
 	std::string rwString = R"(
         local a = 10
         local b = 20
+        print("Can you see this")
         return a + b
     )";
 
