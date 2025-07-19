@@ -5,6 +5,7 @@ from utils import *
 # Arguments
 ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 
+
 # Environments
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=["default", "msvc"], PLATFORM="")
