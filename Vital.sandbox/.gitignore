@@ -2,6 +2,7 @@
 *.gen.*
 .build/
 .bin/
+.conan/
 
 # Binaries
 *.o

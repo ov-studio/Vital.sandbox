@@ -1,6 +1,6 @@
 from conan import ConanFile
 
-class MyBin(ConanFile):
+class BuildConan(ConanFile):
     settings = "os", "arch","build_type", "compiler"
     generators = "SConsDeps"
 

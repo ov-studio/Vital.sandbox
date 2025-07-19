@@ -1,6 +1,6 @@
 import os
-import sys
 import fnmatch
+import subprocess
 from SCons.Environment import Base as BaseEnvironment
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
@@ -24,3 +24,12 @@ def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, ex
     filtered_nodes = [node for node in result_nodes if fnmatch.fnmatch(os.path.basename(node), pattern)]
     return sorted(filtered_nodes)
 BaseEnvironment.RGlob = RGlob
+
+def BuildConan(self, build_type):
+    subprocess.run((
+        "conan", "install", ".",
+        "--build=missing",
+        "--output-folder=.conan",
+        f"--settings=build_type={build_type}"
+    ))
+BaseEnvironment.BuildConan = BuildConan
