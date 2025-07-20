@@ -21,12 +21,13 @@
 //////////////
 
 namespace Vital::Sandbox::JS {
-    void create::bind() {
+    void create::hook(const std::string& mode) {
         auto instance = static_cast<void*>(this);
-    }
-
-    void create::inject() {
-        auto instance = static_cast<void*>(this);
+        std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> apis = {};    
+        for (auto& i : apis) {
+            if (mode == "bind") i.first(instance);
+            else if (mode == "inject") i.second(instance);
+        }
     }
 
     namespace API {

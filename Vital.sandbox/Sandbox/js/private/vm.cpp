@@ -34,13 +34,13 @@ namespace Vital::Sandbox::JS {
             setNil();
             setGlobal(i);
         }
-        this -> bind();
+        this -> hook("bind");
         #if __has_include(<Sandbox/js/module/bundle.h>)
             for (const std::string& i : vsdk_modules) {
                 loadString(fetchPackageModule(i));
             }
         #endif
-        this -> inject();
+        this -> hook("inject");
     }
     create::~create() {
         if (!vm) return;
