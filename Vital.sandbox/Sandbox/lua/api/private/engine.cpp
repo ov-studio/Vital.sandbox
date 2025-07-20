@@ -26,7 +26,7 @@
 void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     auto vm = static_cast<vsdk_vm*>(instance);
 
-    API::bind(vm, "engine", "getSystemPlatform", [](auto* ref) -> int {
+    API::bind(vm, "engine", "getPlatform", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setString(Vital::System::getPlatform());
@@ -34,7 +34,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
         });
     });
 
-    API::bind(vm, "engine", "getSystemTick", [](auto* ref) -> int {
+    API::bind(vm, "engine", "getTick", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(static_cast<int>(Vital::System::getTick()));
@@ -43,7 +43,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     });
 
     #if defined(Vital_SDK_Client)
-    API::bind(vm, "engine", "getSystemSerial", [](auto* ref) -> int {
+    API::bind(vm, "engine", "getSerial", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setString(Vital::System::getSerial());
