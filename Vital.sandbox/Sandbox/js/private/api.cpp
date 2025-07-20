@@ -21,11 +21,11 @@
 //////////////
 
 namespace Vital::Sandbox::JS {
-    void create::bindAPI() {
+    void create::bind() {
         auto instance = static_cast<void*>(this);
     }
 
-    void create::injectAPI() {
+    void create::inject() {
         auto instance = static_cast<void*>(this);
     }
 

@@ -19,8 +19,6 @@ ExampleClass::ExampleClass() {
 	UtilityFunctions::print(serial.c_str());
 
     luaVM = new Vital::Sandbox::Lua::create();
-	luaVM -> bindAPI();
-	luaVM -> injectAPI();
 
 	std::string rwString = R"(
         local a = 10

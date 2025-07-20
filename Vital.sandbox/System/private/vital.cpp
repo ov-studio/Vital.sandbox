@@ -22,7 +22,6 @@
 ////////////////////
 
 namespace Vital::System {
-
     std::string getPlatform() { 
         #if defined(Vital_SDK_Client)
             return "client";

@@ -26,7 +26,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua {
-    void create::bindAPI() {
+    void create::bind() {
         auto instance = static_cast<void*>(this);
         API::Engine::bind(instance);
         API::Coroutine::bind(instance);
@@ -35,7 +35,7 @@ namespace Vital::Sandbox::Lua {
         API::Network::bind(instance);
     }
 
-    void create::injectAPI() {
+    void create::inject() {
         auto instance = static_cast<void*>(this);
         API::Engine::inject(instance);
         API::Coroutine::inject(instance);

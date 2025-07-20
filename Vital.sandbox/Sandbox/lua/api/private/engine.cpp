@@ -52,11 +52,12 @@ namespace Vital::Sandbox::Lua::API {
             });
         });
         #endif
-    
+
         #if defined(Vital_SDK_Client)
         API::bind(vm, "engine", "print", [](auto* ref) -> int {
             auto vm = fetchVM(ref);
             return vm -> execute([&]() -> int {
+                godot::UtilityFunctions::print("YESS!!! WORKS");
                 std::vector<std::string> args;
                 std::ostringstream buffer;
                 for (int i = 0; i < vm -> getArgCount(); ++i) {

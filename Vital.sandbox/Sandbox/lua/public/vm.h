@@ -124,8 +124,8 @@ namespace Vital::Sandbox::Lua {
             void removeReference(const std::string& name);
             void resume();
             void pause();
-            void bindAPI();
-            void injectAPI();
+            void bind();
+            void inject();
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer, bool autoload = true);
             void throwError(const std::string& error = "");
