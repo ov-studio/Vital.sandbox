@@ -10,9 +10,6 @@
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
 ExampleClass::ExampleClass() {
-	UtilityFunctions::print("works?");
-
-
 	UtilityFunctions::print("init");
 
     auto serial = Vital::System::getSerial();
@@ -34,12 +31,9 @@ ExampleClass::ExampleClass() {
 	
 	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	//UtilityFunctions::print(stuff.c_str());
+
 	//ClassDB::register_abstract_class<ExampleClass>();
 
-}
-
-void ExampleClass::_bind_methods() {
-	godot::ClassDB::bind_method(D_METHOD("print_type", "variant"), &ExampleClass::print_type);
 }
 
 void ExampleClass::print_type(const Variant &p_variant) const {
