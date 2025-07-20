@@ -16,6 +16,5 @@ public:
 	ExampleClass();
 	~ExampleClass() override = default;
 
-	void print_type(const Variant &p_variant) const;
 	void _process(double delta);
 };
