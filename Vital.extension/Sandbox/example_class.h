@@ -9,6 +9,9 @@ using namespace godot;
 class ExampleClass : public Node {
 	GDCLASS(ExampleClass, Node)
 
+protected:
+	static void _bind_methods();
+
 public:
 	ExampleClass();
 	~ExampleClass() override = default;
