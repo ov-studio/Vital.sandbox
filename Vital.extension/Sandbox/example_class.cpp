@@ -24,6 +24,7 @@ ExampleClass::ExampleClass() {
         local a = 10
         local b = 20
         print("Can you see this", "again")
+        print("SHA256 of Hello", crypto.hash("SHA256", "hello"))
         return a + b
     )";
 
@@ -31,9 +32,8 @@ ExampleClass::ExampleClass() {
 	double result = luaVM -> getInt(-1);
 	UtilityFunctions::print(result);
 	
-	auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
-	UtilityFunctions::print(stuff.c_str());
-    UtilityFunctions::print("Hello", "world", 123);
+	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
+	//UtilityFunctions::print(stuff.c_str());
 	//ClassDB::register_abstract_class<ExampleClass>();
 
 }
