@@ -26,22 +26,19 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua {
-    void create::bind() {
+    void create::hook(const std::string& mode) {
         auto instance = static_cast<void*>(this);
-        API::Engine::bind(instance);
-        API::Coroutine::bind(instance);
-        API::File::bind(instance);
-        API::Crypto::bind(instance);
-        API::Network::bind(instance);
-    }
-
-    void create::inject() {
-        auto instance = static_cast<void*>(this);
-        API::Engine::inject(instance);
-        API::Coroutine::inject(instance);
-        API::File::inject(instance);
-        API::Crypto::inject(instance);
-        API::Network::inject(instance);
+        std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> apis = {
+            {API::Engine::bind, API::Engine::inject},
+            {API::Coroutine::bind, API::Coroutine::inject},
+            {API::File::bind, API::File::inject},
+            {API::Crypto::bind, API::Crypto::inject},
+            {API::Network::bind, API::Network::inject}
+        };    
+        for (auto& i : apis) {
+            if (mode == "bind") i.first(instance);
+            else if (mode == "inject") i.second(instance);
+        }
     }
 
     namespace API {
