@@ -45,7 +45,7 @@ void Vital::Sandbox::Lua::API::Network::bind(void* instance) {
     });
 }
 
-void Network::inject(void* instance) {
+void Vital::Sandbox::Lua::API::Network::inject(void* instance) {
     auto vm = static_cast<vsdk_vm*>(instance);
     vm -> getGlobal("network");
     vm -> getTableField("execNetwork", -1);
@@ -54,7 +54,7 @@ void Network::inject(void* instance) {
     vm -> registerNil("execNetwork", "network");
 }
 
-void Network::execute(const std::string& name, const std::string& payload) {
+void Vital::Sandbox::Lua::API::Network::execute(const std::string& name, const std::string& payload) {
     for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
         if (!vm.second -> isVirtualThread()) {
             vm.second -> getReference(Vital::System::Crypto::hash("SHA256", "network.execNetwork"), true);
