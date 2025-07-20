@@ -23,7 +23,7 @@ ExampleClass::ExampleClass() {
 	std::string rwString = R"(
         local a = 10
         local b = 20
-        engine.print("Can you see this", "again")
+        print("Can you see this", "again")
         return a + b
     )";
 

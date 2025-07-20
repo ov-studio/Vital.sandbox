@@ -24,5 +24,6 @@ namespace Vital::Sandbox::Lua::API {
     class Engine : public Vital::Type::Module {
         public:
             static void bind(void* instance);
+            static void inject(void* instance);
     };
 }

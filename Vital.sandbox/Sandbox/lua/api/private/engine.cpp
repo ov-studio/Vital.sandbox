@@ -90,3 +90,13 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
         });
     });
 }
+
+void Vital::Sandbox::Lua::API::Engine::inject(void* instance) {
+    auto vm = static_cast<vsdk_vm*>(instance);
+    #if defined(Vital_SDK_Client)
+    vm -> getGlobal("engine");
+    vm -> getTableField("print", -1);
+    vm -> setGlobal("print");
+    vm -> pop(1);
+    #endif
+}
