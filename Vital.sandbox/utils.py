@@ -31,7 +31,6 @@ def BuildConan(self, build_type):
         "conan", "install", ".",
         "--build=missing",
         "--output-folder=.conan",
-        f"--settings=build_type={build_type}",
-        "-s", "compiler.cppstd=17"
+        f"--settings=build_type={build_type}"
     ))
 BaseEnvironment.BuildConan = BuildConan

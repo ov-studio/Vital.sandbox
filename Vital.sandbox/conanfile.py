@@ -12,4 +12,5 @@ class BuildConan(ConanFile):
     def configure(self):
         self.options["openssl"].shared = False
         self.options["libcurl"].shared = False
+        self.settings.compiler.cppstd = "17"
         self.settings.compiler.runtime = "static"
