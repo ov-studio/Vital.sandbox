@@ -29,19 +29,22 @@ namespace Vital::System::REST {
     }
 
     std::string get(std::string& url) {
-        std::string buffer;
-        curl_global_init(CURL_GLOBAL_DEFAULT);
-        CURL* curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "vital.sdk/1.0");
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        CURLcode result = curl_easy_perform(curl);
-        if (result != CURLE_OK) throw std::runtime_error(curl_easy_strerror(result));
-        curl_easy_cleanup(curl);
-        curl_global_cleanup();
-        return buffer;
+        try {
+            std::string buffer;
+            curl_global_init(CURL_GLOBAL_DEFAULT);
+            CURL* curl = curl_easy_init();
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+            curl_easy_setopt(curl, CURLOPT_USERAGENT, "vital.sdk/1.0");
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            CURLcode result = curl_easy_perform(curl);
+            if (result != CURLE_OK) throw std::runtime_error(fmt::format(ErrorCode["request-failed"], curl_easy_strerror(result)));
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return buffer;
+        }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 }
