@@ -31,14 +31,14 @@ namespace Vital::System::Crypto {
         else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
         else if (mode == "SHA384") return {::SHA384, SHA384_DIGEST_LENGTH};
         else if (mode == "SHA512") return {::SHA512, SHA512_DIGEST_LENGTH};
-        else throw std::runtime_error(ErrorCode["hash-mode-nonexistent"]);
+        else throw std::runtime_error(fmt::format(ErrorCode["hash-mode-nonexistent"], mode));
     }
 
     const EVP_CIPHER* CipherMode(const std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
         else if (mode == "AES192") return EVP_aes_192_cbc();
         else if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw std::runtime_error(ErrorCode["cipher-mode-nonexistent"]);
+        else throw std::runtime_error(fmt::format(ErrorCode["cipher-mode-nonexistent"], mode));
     }
 
     std::string CipherIV(const std::string& mode) {
