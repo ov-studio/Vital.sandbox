@@ -6,6 +6,7 @@
 #include <../Vital.sandbox/Sandbox/lua/public/api.h>
 #include <../Vital.sandbox/System/public/vital.h>
 #include <../Vital.sandbox/System/public/crypto.h>
+#include <../Vital.sandbox/System/public/rest.h>
 
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
@@ -32,6 +33,17 @@ ExampleClass::ExampleClass() {
 	double result = luaVM -> getInt(-1);
 	UtilityFunctions::print(result);
 	
+
+    try {
+        std::string url = "https://jsonplaceholder.typicode.com/posts/1";
+        std::string response = Vital::System::REST::get(url);
+    	UtilityFunctions::print(response.c_str());
+    } catch (const std::exception& e) {
+        std::string status = std::string("error ") + e.what();
+    	UtilityFunctions::print(status.c_str());
+        //std::cerr << "Error during GET request: " << e.what() << std::endl;
+    }
+
 	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	//UtilityFunctions::print(stuff.c_str());
 	//ClassDB::register_abstract_class<ExampleClass>();

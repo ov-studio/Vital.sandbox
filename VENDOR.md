@@ -6,6 +6,7 @@
 
 * [**OpenSSL**](https://www.openssl.org) - Offers secure cryptographic functionalities.
 * [**Libcurl**](https://curl.se/libcurl) - Offers data transfer across various protocols.
+* [**FMT**](https://fmt.dev) - Offers flexible formatting capabilities.
 * [**RapidJSON**](https://rapidjson.org) - Offers efficient parsing and generation of JSON.
 * [**ENet**](http://enet.bespin.org) - Offers reliable network communication.
 * [**Lua**](https://www.lua.org) - Offers runtime scripting and sandboxing capabilities.
