@@ -4,9 +4,10 @@
 
 ###### We would like to express our sincere appreciation to the following vendors for their invaluable contributions that have enabled the success of this project:
 
-* [**OpenSSL**](https://www.openssl.org) - Providing secure cryptographic operations.
-* [**RapidJSON**](https://rapidjson.org) - Facilitating efficient JSON parsing and generation.
-* [**ENet**](http://enet.bespin.org) - Ensuring reliable network communication.
-* [**Lua**](https://www.lua.org) - Delivering runtime scripting sandboxing capabilities.
-* [**Duktape**](https://duktape.org) - Delivering runtime scripting sandboxing capabilities.
-* [**Lua-RapidJSON**](https://github.com/xpol/lua-rapidjson) - Providing Lua bindings for RapidJSON.
+* [**OpenSSL**](https://www.openssl.org) - Offers secure cryptographic functionalities.
+* [**Libcurl**](https://curl.se/libcurl) - Offers data transfer across various protocols.
+* [**RapidJSON**](https://rapidjson.org) - Offers efficient parsing and generation of JSON.
+* [**ENet**](http://enet.bespin.org) - Offers reliable network communication.
+* [**Lua**](https://www.lua.org) - Offers runtime scripting and sandboxing capabilities.
+* [**Duktape**](https://duktape.org) - Offers runtime scripting and sandboxing capabilities.
+* [**Lua-RapidJSON**](https://github.com/xpol/lua-rapidjson) - Offers Lua bindings for RapidJSON.
