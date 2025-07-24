@@ -29,17 +29,15 @@ namespace Vital::System::REST {
     }
 
     std::string get(const std::string& url) {
-        CURL* curl;
-        CURLcode res;
         std::string buffer;
         curl_global_init(CURL_GLOBAL_DEFAULT);
-        curl = curl_easy_init();
+        CURL* curl = curl_easy_init();
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-        res = curl_easy_perform(curl);
-        if (res != CURLE_OK) throw std::runtime_error(curl_easy_strerror(res))
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "vital.sdk/1.0");
+        CURLcode result = curl_easy_perform(curl);
+        if (result != CURLE_OK) throw std::runtime_error(curl_easy_strerror(result))
         curl_easy_cleanup(curl);
         curl_global_cleanup();
         return buffer;
