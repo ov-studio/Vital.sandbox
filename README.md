@@ -17,6 +17,7 @@
 * Integrated Stack System
 * Integrated Package System
 * Integrated Inspect System
+* Integrated REST System
 * Integrated Event System
 * Integrated Sandboxing Environments (Lua, JS)
 * Integrated Robust Threader (Includes async/await, heartbeats, promises and much more!)
