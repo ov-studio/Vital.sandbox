@@ -29,9 +29,9 @@ ExampleClass::ExampleClass() {
         local b = 20
         print("Can you see this", "again")
         print("SHA256 of Hello", crypto.hash("SHA256", "hello"))
-        --timer:create(function()
-            --print("Executing timer")
-        --end, 2500, 5)
+        timer:create(function()
+            print("Executing timer")
+        end, 2500, 5)
         return a + b
     )";
 
@@ -39,9 +39,11 @@ ExampleClass::ExampleClass() {
 	double result = luaVM -> getInt(-1);
 	UtilityFunctions::print(result);
 
+    /*
     Vital::Type::Timer([](auto self) -> void {
         UtilityFunctions::print("executed c++ timer");
     }, 5000, 0);
+    */
 
     // Run in another thread
     Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
