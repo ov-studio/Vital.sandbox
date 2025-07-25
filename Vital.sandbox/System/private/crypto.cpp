@@ -68,8 +68,8 @@ namespace Vital::System::Crypto {
             int bufferSize = inputSize + blockSize - 1;
             unsigned char* output = new unsigned char[bufferSize];
             EVP_Init(ctx, algorithm, NULL, NULL);
-            if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw std::runtime_error(ErrorCode["cipher-invalid-key"]);
-            if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw std::runtime_error(ErrorCode["cipher-invalid-iv"]);
+            if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw std::runtime_error(fmt::format(ErrorCode["cipher-invalid-key"], key));
+            if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw std::runtime_error(fmt::format(ErrorCode["cipher-invalid-iv"], iv));
             EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.data())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.data())));
             EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), inputSize);
             outputSize += currentSize;
