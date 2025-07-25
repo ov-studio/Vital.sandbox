@@ -21,6 +21,5 @@
 ////////////////////
 
 namespace Vital::Sandbox::JS {
-    std::vector<std::string> vsdk_modules = {};
     std::vector<std::string> vsdk_blacklist = {};
 }

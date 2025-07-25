@@ -13,13 +13,8 @@
 //////////////
 
 #pragma once
-#include <System/public/rest.h>
 #include <System/public/file.h>
 #include <Sandbox/lua/public/api.h>
-#include <Vendor/rapidjson/document.h>
-
-
-
 #include <godot_cpp/variant/utility_functions.hpp>
 
 
@@ -43,16 +38,8 @@ namespace Vital::Sandbox::Lua {
             setGlobal(i);
         }
         this -> hook("bind");
-
-        std::string base_url = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
-        std::string response = Vital::System::REST::get(fmt::format(base_url, "manifest.json"));
-        rapidjson::Document manifest;
-        manifest.Parse(response.c_str());
-        if (!manifest.HasParseError() && manifest.HasMember("lua")) {
-            for (auto& i : manifest["lua"]["sources"].GetArray()) {
-                std::string response = Vital::System::REST::get(fmt::format(base_url, std::string("lua/") + std::string(i.GetString())));
-                godot::UtilityFunctions::print(response.c_str());
-            }
+        for (auto& i : Vital::Sandbox::fetchModules("lua")) {
+            loadString(i);
         }
         this -> hook("inject");
     }

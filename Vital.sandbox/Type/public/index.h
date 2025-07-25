@@ -27,4 +27,6 @@ namespace Vital {
 
 namespace Vital::Type {}
 namespace Vital::System {}
-namespace Vital::Sandbox {}
+namespace Vital::Sandbox {
+    extern std::vector<std::string> fetchModules(const std::string& name);
+}

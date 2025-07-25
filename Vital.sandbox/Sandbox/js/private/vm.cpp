@@ -15,9 +15,6 @@
 #pragma once
 #include <System/public/file.h>
 #include <Sandbox/js/public/api.h>
-#if __has_include(<Sandbox/js/module/bundle.h>)
-    #include <Sandbox/js/module/bundle.h>
-#endif
 
 
 /////////////
@@ -35,11 +32,9 @@ namespace Vital::Sandbox::JS {
             setGlobal(i);
         }
         this -> hook("bind");
-        #if __has_include(<Sandbox/js/module/bundle.h>)
-            for (const std::string& i : vsdk_modules) {
-                loadString(fetchPackageModule(i));
-            }
-        #endif
+        for (auto& i : Vital::Sandbox::fetchModules("js")) {
+            loadString(i);
+        }
         this -> hook("inject");
     }
     create::~create() {
