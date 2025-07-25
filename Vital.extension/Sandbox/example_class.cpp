@@ -28,6 +28,9 @@ ExampleClass::ExampleClass() {
         local b = 20
         print("Can you see this", "again")
         print("SHA256 of Hello", crypto.hash("SHA256", "hello"))
+        timer:create(function()
+            print("Executing timer")
+        end, 2500, 0)
         return a + b
     )";
 
