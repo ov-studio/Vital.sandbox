@@ -22,10 +22,10 @@
 /////////////////////////
 
 namespace Vital::System::REST {
-    size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
-        size_t totalSize = size*nmemb;
-        userp -> append((char*)contents, totalSize);
-        return totalSize;
+    size_t CallbackHandle(void* contents, size_t size, size_t nmemb, std::string* userp) {
+        size_t totalsize = size*nmemb;
+        userp -> append((char*)contents, size*nmemb);
+        return totalsize;
     }
 
     std::string get(std::string& url) {
@@ -34,7 +34,7 @@ namespace Vital::System::REST {
             curl_global_init(CURL_GLOBAL_DEFAULT);
             CURL* curl = curl_easy_init();
             curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CallbackHandle);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "vital.sdk/1.0");
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);

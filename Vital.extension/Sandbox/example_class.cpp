@@ -35,13 +35,15 @@ ExampleClass::ExampleClass() {
 	double result = luaVM -> getInt(-1);
 	UtilityFunctions::print(result);
 
-    try {
-        std::string url = "https://jsonplaceholder.typicode.com/posts/1";
-        std::string response = Vital::System::REST::get(url);
-    	UtilityFunctions::print(response.c_str());
-    }
-    catch(const std::runtime_error& error) { UtilityFunctions::print(error.what()); }
-
+    // Run in another thread
+    Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
+        try {
+            std::string url = "https://jsonplaceholder.typicode.com/posts/1";
+            std::string response = Vital::System::REST::get(url);
+            UtilityFunctions::print(response.c_str());
+        }
+        catch(const std::runtime_error& error) { UtilityFunctions::print(error.what()); }
+    }).detach();
 
 	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	//UtilityFunctions::print(stuff.c_str());
