@@ -19,6 +19,8 @@
     #include <Sandbox/lua/module/bundle.h>
 #endif
 
+#include <godot_cpp/variant/utility_functions.hpp>
+
 
 //////////////
 // Lua: VM //
@@ -40,11 +42,10 @@ namespace Vital::Sandbox::Lua {
             setGlobal(i);
         }
         this -> hook("bind");
-        #if __has_include(<Sandbox/lua/module/bundle.h>)
-            for (auto& i : vsdk_modules) {
-                loadString(fetchPackageModule(i));
-            }
-        #endif
+        for (auto& i : vsdk_modules) {
+            godot::UtilityFunctions::print(i.c_str());
+            //loadString(fetchPackageModule(i));
+        }
         this -> hook("inject");
     }
     create::create(vsdk_ref* thread) {
