@@ -1,0 +1,28 @@
+{
+    "lua": {
+        "version": "1.0.0",
+        "sources": [
+            "namespace.lua",
+            "vcl.lua",
+            "table.lua",
+            "math/index.lua",
+            "math/quat.lua",
+            "math/matrix.lua",
+            "string.lua",
+            "threader.lua",
+            "timer.lua",
+            "engine.lua",
+            "file.lua",
+            "crypto.lua",
+            "network.lua",
+            "rest.lua",
+            "resource.lua"
+        ]
+    },
+
+    "js": {
+        "version": "1.0.0",
+        "sources": []
+    }
+
+}
