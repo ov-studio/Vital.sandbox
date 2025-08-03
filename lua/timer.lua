@@ -17,7 +17,7 @@ local imports = {
     tonumber = tonumber,
     coroutine = coroutine
 }
---coroutine = nil
+coroutine = nil
 
 
 ----------------------
