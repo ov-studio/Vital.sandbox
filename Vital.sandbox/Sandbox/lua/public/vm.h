@@ -123,7 +123,7 @@ namespace Vital::Sandbox::Lua {
             bool pcall(int arguments, int returns);
             void removeReference(const std::string& name);
             void resume(int count = 0);
-            void pause();
+            void pause(int count = 0);
             void hook(const std::string& mode);
             int execute(std::function<int()> exec);
             bool loadString(const std::string& buffer, bool autoload = true);

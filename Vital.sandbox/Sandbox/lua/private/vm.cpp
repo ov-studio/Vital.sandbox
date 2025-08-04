@@ -257,12 +257,13 @@ namespace Vital::Sandbox::Lua {
     }
     void create::resume(int count) {
         if (!isVirtualThread()) return;
-        lua_resume(vm, nullptr, count);
+        int ncount;
+        lua_resume(vm, nullptr, 0, &ncount);
         if (lua_status(vm) != LUA_YIELD) delete this;
     }
-    void create::pause() {
+    void create::pause(int count) {
         if (!isVirtualThread()) return;
-        lua_yield(vm, 0);
+        lua_yield(vm, count);
     }
     int create::execute(std::function<int()> exec) {
         try { return exec(); }
