@@ -38,16 +38,10 @@ ExampleClass::ExampleClass() {
     */
 
     std::string rwString = R"(
-        timer:create(function()
-            print("Executing timer")
-        end, 1, 0)
-        
         thread:create(function(self)
-            print("executed wow")
+            print("initiated GET request")
             print(rest.get("https://jsonplaceholder.typicode.com/posts/1"))
-            print("processed")
-            local something = {}
-            print(false)
+            print("processed GET rest")
         end):resume()
     )";
 	luaVM -> loadString(rwString);
