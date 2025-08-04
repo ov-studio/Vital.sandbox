@@ -258,7 +258,7 @@ namespace Vital::Sandbox::Lua {
     void create::resume(int count) {
         if (!isVirtualThread()) return;
         int ncount;
-        lua_resume(vm, nullptr, 0, &ncount);
+        lua_resume(vm, nullptr, count, &ncount);
         if (lua_status(vm) != LUA_YIELD) delete this;
     }
     void create::pause(int count) {
