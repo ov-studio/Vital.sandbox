@@ -17,6 +17,7 @@
 #include <Vendor/lua/lauxlib.h>
 #include <Vendor/lua/lualib.h>
 
+#include <godot_cpp/variant/utility_functions.hpp>
 
 ///////////////
 // Lua: API //
@@ -66,11 +67,11 @@ void Vital::Sandbox::Lua::API::Coroutine::bind(void* instance) {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto duration = vm -> getInt(1);
             Vital::Type::Timer([=](Vital::Type::Timer* self) -> void {
-                vm -> resume();
+                vm -> setBool(true);
+                vm -> resume(1);
             }, duration, 1);
             vm -> pause();
-            vm -> setBool(true);
-            return 1;
+            return 0;
         });
     });
 }
