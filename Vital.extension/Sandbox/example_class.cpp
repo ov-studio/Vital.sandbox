@@ -44,7 +44,7 @@ ExampleClass::ExampleClass() {
         
         thread:create(function(self)
             print("executed wow")
-            print(rest2.get("https://jsonplaceholder.typicode.com/posts/1"))
+            print(rest.get("https://jsonplaceholder.typicode.com/posts/1"))
             print("processed")
             local something = {}
             print(false)
