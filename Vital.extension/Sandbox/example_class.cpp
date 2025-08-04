@@ -14,16 +14,14 @@ Vital::Sandbox::Lua::create* luaVM = nullptr;
 
 
 ExampleClass::ExampleClass() {
-	UtilityFunctions::print("works?");
-
-
 	UtilityFunctions::print("init");
 
-    auto serial = Vital::System::getSerial();
-	UtilityFunctions::print(serial.c_str());
+    //auto serial = Vital::System::getSerial();
+	//UtilityFunctions::print(serial.c_str());
 
     luaVM = new Vital::Sandbox::Lua::create();
 
+    /*
 	std::string rwString = R"(
         local a = 10
         local b = 20
@@ -32,17 +30,27 @@ ExampleClass::ExampleClass() {
         timer:create(function()
             print("Executing timer")
         end, 2500, 5)
-
-        thread:create(function(self)
-            print("executed wow")
-            rest.get('https://jsonplaceholder.typicode.com/posts/1')
-        end):resume()
         return a + b
     )";
-
 	luaVM -> loadString(rwString);
 	double result = luaVM -> getInt(-1);
 	UtilityFunctions::print(result);
+    */
+
+    std::string rwString = R"(
+        timer:create(function()
+            print("Executing timer")
+        end, 1, 0)
+        
+        thread:create(function(self)
+            print("executed wow")
+            print(rest2.get("https://jsonplaceholder.typicode.com/posts/1"))
+            print("processed")
+            local something = {}
+            print(false)
+        end):resume()
+    )";
+	luaVM -> loadString(rwString);
 
     /*
     Vital::Type::Timer([](auto self) -> void {
