@@ -25,26 +25,25 @@
 void Vital::Sandbox::Lua::API::REST::bind(void* instance) {
     auto vm = static_cast<vsdk_vm*>(instance);
 
-    API::bind(vm, "rest", "get", [](auto* ref) -> int {
+    API::bind(vm, "rest2", "get", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            godot::UtilityFunctions::print("executing 1!");
             if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
-            godot::UtilityFunctions::print("executing 2!");
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             std::string url = vm -> getString(1);
-            godot::UtilityFunctions::print("executing 3!");
-
             Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
                 try {
-                    std::string response = Vital::System::REST::get(std::string(url));
-                    godot::UtilityFunctions::print(response.c_str());
+                    vm -> setString(Vital::System::REST::get(std::string(url)));
+                    vm -> setBool(false);
                 }
-                catch(const std::runtime_error& error) { godot::UtilityFunctions::print(error.what()); }
-                vm -> resume();
+                catch(const std::runtime_error& error) {
+                    vm -> setBool(false);
+                    vm -> setString(error.what());
+                }
+                vm -> resume(2);
             }).detach();
-            vm -> pause();
-            return 2;
+            vm -> pause(0);
+            return 0;
         });
     });
 }
