@@ -56,15 +56,13 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "print", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            godot::UtilityFunctions::print("YESS!!! WORKS");
-            std::vector<std::string> args;
             std::ostringstream buffer;
             for (int i = 0; i < vm -> getArgCount(); ++i) {
-                args.push_back(vm -> getString(i + 1));
-            }
-            for (size_t i = 0; i < args.size(); ++i) {
+                size_t length;
+                const char* value = luaL_tolstring(ref, i + 1, &length);
                 if (i != 0) buffer << " ";
-                buffer << args[i];
+                buffer << std::string(value, length);
+                vm -> pop(1);
             }
             godot::UtilityFunctions::print(buffer.str().c_str());
             vm -> setBool(true);
