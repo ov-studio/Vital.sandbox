@@ -18,6 +18,7 @@
 #include <Sandbox/lua/api/public/coroutine.h>
 #include <Sandbox/lua/api/public/file.h>
 #include <Sandbox/lua/api/public/crypto.h>
+#include <Sandbox/lua/api/public/rest.h>
 #include <Sandbox/lua/api/public/network.h>
 
 
@@ -33,6 +34,7 @@ namespace Vital::Sandbox::Lua {
             {API::Coroutine::bind, API::Coroutine::inject},
             {API::File::bind, API::File::inject},
             {API::Crypto::bind, API::Crypto::inject},
+            {API::REST::bind, API::REST::inject},
             {API::Network::bind, API::Network::inject}
         };    
         for (auto& i : apis) {

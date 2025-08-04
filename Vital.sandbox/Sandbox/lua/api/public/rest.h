@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: rest.h
+     Script: Sandbox: lua: api: public: rest.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: REST System
+     Desc: REST APIs
 ----------------------------------------------------------------*/
 
 
@@ -13,13 +13,16 @@
 //////////////
 
 #pragma once
-#include <System/public/vital.h>
+#include <Sandbox/lua/public/api.h>
 
 
-/////////////////////////////
-// Vital: System: Package //
-/////////////////////////////
+///////////////
+// Lua: API //
+///////////////
 
-namespace Vital::System::REST {
-    extern std::string get(std::string& url);
+namespace Vital::Sandbox::Lua::API {
+    class REST : public Vital::Type::Module {
+        public:
+            static void bind(void* instance);
+    };
 }
