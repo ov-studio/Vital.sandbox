@@ -25,7 +25,7 @@
 void Vital::Sandbox::Lua::API::REST::bind(void* instance) {
     auto vm = static_cast<vsdk_vm*>(instance);
 
-    API::bind(vm, "rest2", "get", [](auto* ref) -> int {
+    API::bind(vm, "rest", "get", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
