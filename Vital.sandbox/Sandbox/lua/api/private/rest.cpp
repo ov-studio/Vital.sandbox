@@ -42,7 +42,7 @@ void Vital::Sandbox::Lua::API::REST::bind(void* instance) {
                 }
                 vm -> resume(2);
             }).detach();
-            vm -> pause(0);
+            vm -> pause();
             return 0;
         });
     });

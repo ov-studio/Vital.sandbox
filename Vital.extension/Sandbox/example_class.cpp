@@ -14,7 +14,7 @@ Vital::Sandbox::Lua::create* luaVM = nullptr;
 
 
 ExampleClass::ExampleClass() {
-	UtilityFunctions::print("Initialized LUA VM");
+	UtilityFunctions::print("Initialized Lua vm");
 
     //auto serial = Vital::System::getSerial();
 	//UtilityFunctions::print(serial.c_str());
