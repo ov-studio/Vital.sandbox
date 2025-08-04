@@ -255,10 +255,9 @@ namespace Vital::Sandbox::Lua {
         luaL_unref(vm, LUA_REGISTRYINDEX, getReference(name));
         reference.erase(name);
     }
-    void create::resume() {
+    void create::resume(int count) {
         if (!isVirtualThread()) return;
-        int ncount;
-        lua_resume(vm, nullptr, 0, &ncount);
+        lua_resume(vm, nullptr, count);
         if (lua_status(vm) != LUA_YIELD) delete this;
     }
     void create::pause() {
