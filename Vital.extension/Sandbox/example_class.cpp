@@ -14,7 +14,7 @@ Vital::Sandbox::Lua::create* luaVM = nullptr;
 
 
 ExampleClass::ExampleClass() {
-	UtilityFunctions::print("init");
+	UtilityFunctions::print("Initialized LUA VM");
 
     //auto serial = Vital::System::getSerial();
 	//UtilityFunctions::print(serial.c_str());
@@ -39,9 +39,9 @@ ExampleClass::ExampleClass() {
 
     std::string rwString = R"(
         thread:create(function(self)
-            print("initiated GET request")
+            print("Initiated GET request")
             print(rest.get("https://jsonplaceholder.typicode.com/posts/1"))
-            print("processed GET rest")
+            print("Processed GET rest")
         end):resume()
     )";
 	luaVM -> loadString(rwString);
