@@ -24,9 +24,9 @@ local imports = {
 --[[ Class: REST ]]--
 ---------------------
 
+--[[
 local rest = class:create("rest")
 
---[[
 function rest.public:get(route, timeout, headers, credentials)
     if self ~= rest.public then return false end
     if not route or (imports.type(route) ~= "string") then return false end
