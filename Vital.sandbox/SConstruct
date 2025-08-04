@@ -41,7 +41,7 @@ if ARGUMENTS["platform_type"] == "Client":
 
 # Dependencies
 if platform.startswith("win"):
-    env.Append(CPPFLAGS=["-DVital_SDK_WINDOWS"])
+    env.Append(CPPFLAGS=["-DVital_SDK_WINDOWS", "/EHsc"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
 elif platform == "darwin":
     env.Append(CPPFLAGS=["-DVital_SDK_MACOS"])
