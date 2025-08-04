@@ -32,6 +32,11 @@ ExampleClass::ExampleClass() {
         timer:create(function()
             print("Executing timer")
         end, 2500, 5)
+
+        thread:create(function(self)
+            print("executed wow")
+            rest.get('https://jsonplaceholder.typicode.com/posts/1')
+        end):resume()
         return a + b
     )";
 
@@ -46,6 +51,7 @@ ExampleClass::ExampleClass() {
     */
 
     // Run in another thread
+    /*
     Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
         try {
             std::string url = "https://jsonplaceholder.typicode.com/posts/1";
@@ -54,7 +60,8 @@ ExampleClass::ExampleClass() {
         }
         catch(const std::runtime_error& error) { UtilityFunctions::print(error.what()); }
     }).detach();
-
+    */
+    
 	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	//UtilityFunctions::print(stuff.c_str());
 	//ClassDB::register_abstract_class<ExampleClass>();
