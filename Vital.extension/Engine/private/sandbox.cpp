@@ -22,7 +22,6 @@
 //////////////
 
 Sandbox::Sandbox() {
-	godot::UtilityFunctions::print("Initialized example class");
     ExampleLUA::fetch();
 }
 

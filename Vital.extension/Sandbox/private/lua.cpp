@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------
+     Resource: Vital.extension
+     Script: Engine: private: lua.cpp
+     Author: vStudio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Lua Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
 #include <Sandbox/public/lua.h>
 #include <../Vital.sandbox/Sandbox/lua/public/api.h>
 #include <../Vital.sandbox/System/public/vital.h>
@@ -5,14 +20,10 @@
 #include <../Vital.sandbox/System/public/rest.h>
 #include <../Vital.sandbox/Type/public/timer.h>
 
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/environment.hpp>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/window.hpp>
+
+/////////////////
+// ExampleLUA //
+/////////////////
 
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
