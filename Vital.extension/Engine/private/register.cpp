@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include "register.h"
-#include "sandbox.h"
+#include <Engine/public/register.h>
+#include <Engine/public/sandbox.h>
 #include <godot_cpp/godot.hpp>
 
 
