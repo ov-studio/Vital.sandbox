@@ -22,7 +22,7 @@ Vital::Sandbox::Lua::create* luaVM = nullptr;
 ExampleLUA* ExampleLUA::singleton_instance = nullptr;
 
 ExampleLUA* ExampleLUA::fetch() {
-    UtilityFunctions::print("called");
+    godot::UtilityFunctions::print("called");
     if (!singleton_instance) {
         UtilityFunctions::print("intializing");
         singleton_instance = memnew(ExampleLUA());
@@ -31,10 +31,10 @@ ExampleLUA* ExampleLUA::fetch() {
 }
 
 ExampleLUA::ExampleLUA() {
-	UtilityFunctions::print("Initialized Lua vm");
+	godot::UtilityFunctions::print("Initialized Lua vm");
 
     //auto serial = Vital::System::getSerial();
-	//UtilityFunctions::print(serial.c_str());
+	//godot::UtilityFunctions::print(serial.c_str());
 
     luaVM = new Vital::Sandbox::Lua::create();
 
@@ -51,7 +51,7 @@ ExampleLUA::ExampleLUA() {
     )";
 	luaVM -> loadString(rwString);
 	double result = luaVM -> getInt(-1);
-	UtilityFunctions::print(result);
+	godot::UtilityFunctions::print(result);
     */
 
     std::string rwString = R"(
@@ -74,15 +74,15 @@ ExampleLUA::ExampleLUA() {
 
     //Environment env;
     //auto stuff = env.get_ssao_intensity();
-    //UtilityFunctions::print(stuff);
+    //godot::UtilityFunctions::print(stuff);
 
     //Ref<Environment> env = get_viewport()->get_environment();
     //auto stuff = Environment::get_ssao_intensity();
-    //UtilityFunctions::print(stuff);
+    //godot::UtilityFunctions::print(stuff);
 
     /*
     Vital::Type::Timer([](auto self) -> void {
-        UtilityFunctions::print("executed c++ timer");
+        godot::UtilityFunctions::print("executed c++ timer");
     }, 5000, 0);
     */
 
@@ -92,20 +92,20 @@ ExampleLUA::ExampleLUA() {
         try {
             std::string url = "https://jsonplaceholder.typicode.com/posts/1";
             std::string response = Vital::System::REST::get(url);
-            UtilityFunctions::print(response.c_str());
+            godot::UtilityFunctions::print(response.c_str());
         }
-        catch(const std::runtime_error& error) { UtilityFunctions::print(error.what()); }
+        catch(const std::runtime_error& error) { godot::UtilityFunctions::print(error.what()); }
     }).detach();
     */
     
 	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
-	//UtilityFunctions::print(stuff.c_str());
+	//godot::UtilityFunctions::print(stuff.c_str());
 	//ClassDB::register_abstract_class<ExampleLUA>();
 
 }
 
 void ExampleLUA::process(double delta) {
-	//UtilityFunctions::print("rendered");
+	//godot::UtilityFunctions::print("rendered");
 	
 	// Lua script to run
 	std::string rwString = R"(
@@ -126,9 +126,9 @@ void ExampleLUA::process(double delta) {
             if (my_node3d) {
                 // Successfully retrieved the Node3D, you can now use it
                 auto node_path = my_node3d->get_path();
-                UtilityFunctions::print("Node3D found!", node_path);
+                godot::UtilityFunctions::print("Node3D found!", node_path);
             } else {
-                UtilityFunctions::print("Node3D not found at specified path.");
+                godot::UtilityFunctions::print("Node3D not found at specified path.");
             }
         }
     }
@@ -136,9 +136,9 @@ void ExampleLUA::process(double delta) {
     /*
         auto *root_node = get_tree()->get_root()->get_node("ExampleLUA"); // Gets the root of the scene tree
         if (root_node) {
-            UtilityFunctions::print("yes")
+            godot::UtilityFunctions::print("yes")
         } else {
-            UtilityFunctions::print("Node not found");
+            godot::UtilityFunctions::print("Node not found");
         }
     */
 }
