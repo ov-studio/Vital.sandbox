@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: public: register.h
+     Script: Engine: public: inject.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Register Utilities
+     Desc: Inject Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Engine/public/singleton.h>
+#include <Engine/public/index.h>
 
 
-//////////////////
-// Registerers //
-//////////////////
+//////////////
+// Injects //
+//////////////
 
 void initialize_gdextension_types();
 void uninitialize_gdextension_types();

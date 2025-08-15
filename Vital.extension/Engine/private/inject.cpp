@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: private: register.cpp
+     Script: Engine: private: inject.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Register Utilities
+     Desc: Inject Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,16 +13,16 @@
 //////////////
 
 #pragma once
-#include <Engine/public/register.h>
+#include <Engine/public/inject.h>
 
 
-//////////////////
-// Registerers //
-//////////////////
+//////////////
+// Injects //
+//////////////
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
-	godot::ClassDB::register_class<Vital::Godot::Singleton>();
+	godot::ClassDB::register_class<Vital::Godot::Engine::Singleton>();
 }
 
 void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {

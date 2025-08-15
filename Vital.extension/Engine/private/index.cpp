@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: private: singleton.cpp
+     Script: Engine: private: index.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Singleton Utilities
+     Desc: Engine Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,24 +13,24 @@
 //////////////
 
 #pragma once
-#include <Engine/public/singleton.h>
+#include <Engine/public/index.h>
 #include <Sandbox/public/lua.h>
 
 
-//////////////////////////////
-// Vital: Godot: Singleton //
-//////////////////////////////
+///////////////////////////
+// Vital: Godot: Engine //
+///////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Godot::Engine {
     Singleton::Singleton() {
-        ExampleLUA::fetch();
+        Vital::Godot::Sandbox::Lua::fetch();
     }
     
     void Singleton::_bind_methods() {
-    
+
     }
     
     void Singleton::_process(double delta) {
-    
+        Vital::Godot::Sandbox::Lua::fetch() -> process(delta);
     }
 }

@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: public: singleton.h
+     Script: Engine: public: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Sandbox Utilities
+     Desc: Engine Utilities
 ----------------------------------------------------------------*/
 
 
@@ -25,11 +25,13 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 
-//////////////////////////////
-// Vital: Godot: Singleton //
-//////////////////////////////
+///////////////////////////
+// Vital: Godot: Engine //
+///////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Godot {}
+namespace Vital::Godot::Sandbox {}
+namespace Vital::Godot::Engine {
 	class Singleton : public godot::Node {
 		GDCLASS(Singleton, godot::Node)
 		protected:
