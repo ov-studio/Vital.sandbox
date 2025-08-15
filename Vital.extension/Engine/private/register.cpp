@@ -1,7 +1,26 @@
+/*----------------------------------------------------------------
+     Resource: Vital.extension
+     Script: Engine: private: register.cpp
+     Author: vStudio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Register Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
 #pragma once
 #include "register.h"
 #include "sandbox.h"
 #include <godot_cpp/godot.hpp>
+
+
+//////////////////
+// Registerers //
+//////////////////
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;

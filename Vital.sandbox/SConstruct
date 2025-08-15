@@ -2,7 +2,7 @@
 from utils import *
 
 
-# Arguments
+# Metadatas
 ARGUMENTS["platform_type"] = ARGUMENTS.get("platform_type", "Server")
 ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 
