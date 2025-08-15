@@ -107,8 +107,8 @@ namespace Vital::Godot::Sandbox {
 
         vm -> loadString(rwString);
 
-        //auto environment = Vital::Godot::Engine::Singleton::get_environment();
-        //float ssao_intensity = environment -> get_ssao_intensity();
-        //godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
+        auto environment = Vital::Godot::Engine::Singleton::get_environment();
+        float ssao_intensity = environment -> get_ssao_intensity();
+        godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
     }
 }
