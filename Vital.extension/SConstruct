@@ -22,7 +22,7 @@ env.sources += (
 )
 env.Append(CPPPATH=[
     cwd,
-    os.path.join(cwd, "../../Vital.sandbox"),
+    os.path.join(cwd, "../"),
     os.path.join(cwd, "Engine"),
     os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor")
