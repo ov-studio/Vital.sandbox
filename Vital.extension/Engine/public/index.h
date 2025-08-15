@@ -43,15 +43,15 @@ namespace Vital::Godot::Engine {
 			~Singleton() override = default;
 			void _process(double delta);
 
-
 			// Utils //
 			template <typename T>
-			static void find_nodes_by_type(godot::Node *node, std::vector<T*> &result) {
-				if (!node) return;
+			static void find_nodes_by_type(godot::Node *node, std::vector<T*> &result, int limit = -1) {
+				if (!node || (limit == 0)) return;
 				T* typed_node = godot::Object::cast_to<T>(node);
-				if (typed_node) result.push_back(typed_node);    
-				for (int i = 0; i < node->get_child_count(); ++i) {
-					find_nodes_by_type(node->get_child(i), result);
+				if (typed_node) result.push_back(typed_node);
+				for (int i = 0; i < node -> get_child_count(); ++i) {
+					if (result.size() < limit) find_nodes_by_type(node -> get_child(i), result);
+					else break;
 				}
 			}
 	};	
