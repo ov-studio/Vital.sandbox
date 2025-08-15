@@ -26,8 +26,8 @@
 /////////////////////////////////
 
 namespace Vital::Godot::Sandbox {
-    Vital::Sandbox::Lua::create* vm = nullptr;
     Lua* instance = nullptr;
+    Vital::Sandbox::Lua::create* vm = nullptr;
 
     Lua* Lua::fetch() {
         instance = instance ? instance : memnew(Lua());
