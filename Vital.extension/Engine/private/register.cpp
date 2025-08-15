@@ -22,7 +22,7 @@
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
-	godot::ClassDB::register_class<Sandbox>();
+	godot::ClassDB::register_class<Vital::Godot::Singleton>();
 }
 
 void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
