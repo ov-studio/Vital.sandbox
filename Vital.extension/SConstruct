@@ -6,7 +6,7 @@ ARGUMENTS["target"] = f'template_{ARGUMENTS["build_type"].lower()}'
 # Environments
 env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
-env.sources += env.RGlob('Sandbox', '*.cpp') + env.RGlob('Sandbox', '*.c')
+env.sources += env.RGlob('Engine', '*.cpp') + env.RGlob('Engine', '*.c') + env.RGlob('Sandbox', '*.cpp') + env.RGlob('Sandbox', '*.c')
 env.Append(LINKFLAGS=['/NODEFAULTLIB:LIBCMTD'])
 
 

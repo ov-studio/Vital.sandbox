@@ -1,4 +1,4 @@
-#include "example_class.h"
+#include "lua.h"
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/viewport.hpp>
@@ -9,11 +9,36 @@
 #include <../Vital.sandbox/System/public/rest.h>
 #include <../Vital.sandbox/Type/public/timer.h>
 
+#include <godot_cpp/classes/environment.hpp>
+#include <godot_cpp/core/error_macros.hpp>
+
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/window.hpp>
+
+#include "godot_cpp/classes/ref_counted.hpp"
+#include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
+#include <godot_cpp/classes/object.hpp>
+
+using namespace godot;
 
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
+ExampleLUA* ExampleLUA::singleton_instance = nullptr;
 
-ExampleClass::ExampleClass() {
+ExampleLUA* ExampleLUA::fetch() {
+    UtilityFunctions::print("called");
+    if (!singleton_instance) {
+        UtilityFunctions::print("intializing");
+        singleton_instance = memnew(ExampleLUA());
+    }
+    return singleton_instance;
+}
+
+ExampleLUA::ExampleLUA() {
 	UtilityFunctions::print("Initialized Lua vm");
 
     //auto serial = Vital::System::getSerial();
@@ -46,6 +71,23 @@ ExampleClass::ExampleClass() {
     )";
 	luaVM -> loadString(rwString);
 
+    //Ref<Environment> environment = viewport->get_environment();
+    //if (environment.is_valid()) {
+        // You can now call methods on environment
+    //}
+
+
+    //auto env = get_viewport()->get_environment();
+
+
+    //Environment env;
+    //auto stuff = env.get_ssao_intensity();
+    //UtilityFunctions::print(stuff);
+
+    //Ref<Environment> env = get_viewport()->get_environment();
+    //auto stuff = Environment::get_ssao_intensity();
+    //UtilityFunctions::print(stuff);
+
     /*
     Vital::Type::Timer([](auto self) -> void {
         UtilityFunctions::print("executed c++ timer");
@@ -66,15 +108,11 @@ ExampleClass::ExampleClass() {
     
 	//auto stuff = Vital::System::Crypto::hash("SHA256", "hello");
 	//UtilityFunctions::print(stuff.c_str());
-	//ClassDB::register_abstract_class<ExampleClass>();
+	//ClassDB::register_abstract_class<ExampleLUA>();
 
 }
 
-void ExampleClass::_bind_methods() {
-
-}
-
-void ExampleClass::_process(double delta) {
+void ExampleLUA::process(double delta) {
 	//UtilityFunctions::print("rendered");
 	
 	// Lua script to run
@@ -86,8 +124,25 @@ void ExampleClass::_process(double delta) {
 
 	luaVM -> loadString(rwString);
 
+    SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    if (scene_tree) {
+        auto root = scene_tree->get_root();
+        if (root) {
+            // Replace "Path/To/Your/Node3D" with the actual path in your scene tree
+            auto my_node3d = root->find_child("test", true, false);
+
+            if (my_node3d) {
+                // Successfully retrieved the Node3D, you can now use it
+                auto node_path = my_node3d->get_path();
+                UtilityFunctions::print("Node3D found!", node_path);
+            } else {
+                UtilityFunctions::print("Node3D not found at specified path.");
+            }
+        }
+    }
+    
     /*
-        auto *root_node = get_tree()->get_root()->get_node("ExampleClass"); // Gets the root of the scene tree
+        auto *root_node = get_tree()->get_root()->get_node("ExampleLUA"); // Gets the root of the scene tree
         if (root_node) {
             UtilityFunctions::print("yes")
         } else {
