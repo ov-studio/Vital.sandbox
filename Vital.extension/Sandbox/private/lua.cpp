@@ -1,4 +1,4 @@
-#include <Sandbox/lua.h>
+#include <Sandbox/public/lua.h>
 #include <../Vital.sandbox/Sandbox/lua/public/api.h>
 #include <../Vital.sandbox/System/public/vital.h>
 #include <../Vital.sandbox/System/public/crypto.h>
