@@ -26,16 +26,12 @@
 /////////////////////////////////
 
 namespace Vital::Godot::Sandbox {
-    Vital::Sandbox::Lua::create* luaVM = nullptr;
-    Lua* Lua::singleton_instance = nullptr;
+    Vital::Sandbox::Lua::create* vm = nullptr;
+    Lua* instance = nullptr;
 
     Lua* Lua::fetch() {
-        godot::UtilityFunctions::print("called");
-        if (!singleton_instance) {
-            godot::UtilityFunctions::print("intializing");
-            singleton_instance = memnew(Lua());
-        }
-        return singleton_instance;
+        instance = instance ? instance : memnew(Lua());
+        return instance;
     }
 
     Lua::Lua() {
@@ -44,7 +40,7 @@ namespace Vital::Godot::Sandbox {
         //auto serial = Vital::System::getSerial();
         //godot::UtilityFunctions::print(serial.c_str());
 
-        luaVM = new Vital::Sandbox::Lua::create();
+        vm = new Vital::Sandbox::Lua::create();
 
         /*
         std::string rwString = R"(
@@ -57,8 +53,8 @@ namespace Vital::Godot::Sandbox {
             end, 2500, 5)
             return a + b
         )";
-        luaVM -> loadString(rwString);
-        double result = luaVM -> getInt(-1);
+        vm -> loadString(rwString);
+        double result = vm -> getInt(-1);
         godot::UtilityFunctions::print(result);
         */
 
@@ -69,7 +65,7 @@ namespace Vital::Godot::Sandbox {
                 print("Processed GET rest")
             end):resume()
         )";
-        luaVM -> loadString(rwString);
+        vm -> loadString(rwString);
 
         //Ref<Environment> environment = viewport->get_environment();
         //if (environment.is_valid()) {
@@ -122,7 +118,7 @@ namespace Vital::Godot::Sandbox {
             return a * b
         )";
 
-        luaVM -> loadString(rwString);
+        vm -> loadString(rwString);
 
         auto scene_tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
         if (scene_tree) {
