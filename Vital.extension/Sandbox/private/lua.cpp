@@ -67,19 +67,6 @@ namespace Vital::Godot::Sandbox {
         )";
         vm -> loadString(rwString);
 
-        //Ref<Environment> environment = viewport->get_environment();
-        //if (environment.is_valid()) {
-            // You can now call methods on environment
-        //}
-
-
-        //auto env = get_viewport()->get_environment();
-
-
-        //Environment env;
-        //auto stuff = env.get_ssao_intensity();
-        //godot::UtilityFunctions::print(stuff);
-
         //Ref<Environment> env = get_viewport()->get_environment();
         //auto stuff = Environment::get_ssao_intensity();
         //godot::UtilityFunctions::print(stuff);
@@ -124,15 +111,26 @@ namespace Vital::Godot::Sandbox {
         if (scene_tree) {
             auto root = scene_tree->get_root();
             if (root) {
-                // Replace "Path/To/Your/Node3D" with the actual path in your scene tree
-                auto my_node3d = root->find_child("test", true, false);
-
-                if (my_node3d) {
-                    // Successfully retrieved the Node3D, you can now use it
-                    auto node_path = my_node3d->get_path();
-                    godot::UtilityFunctions::print("Node3D found!", node_path);
+                auto env_node = root->find_child("WorldEnvironment", true, false);
+                if (env_node) {
+                    auto world_env = godot::Object::cast_to<godot::WorldEnvironment>(env_node);
+                    if (world_env) {
+                        auto environment = world_env->get_environment();
+                        if (environment.is_valid()) {
+                            // Access the SSAO properties
+                            //bool ssao_enabled = environment->get_ssao_enabled();
+                            float ssao_intensity = environment->get_ssao_intensity();
+    
+                            //godot::UtilityFunctions::print("SSAO Enabled: ", ssao_enabled ? "Yes" : "No");
+                            godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
+                        } else {
+                            godot::UtilityFunctions::print("Environment resource is null");
+                        }
+                    } else {
+                        godot::UtilityFunctions::print("Node is not a WorldEnvironment");
+                    }
                 } else {
-                    godot::UtilityFunctions::print("Node3D not found at specified path.");
+                    godot::UtilityFunctions::print("WorldEnvironment node not found");
                 }
             }
         }
