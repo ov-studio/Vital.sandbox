@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/public/lua.h>
+#include <Vital.extension/Sandbox/lua/public/index.h>
 #include <Vital.sandbox/Sandbox/lua/public/api.h>
 #include <Vital.sandbox/System/public/vital.h>
 #include <Vital.sandbox/System/public/crypto.h>
@@ -107,8 +107,8 @@ namespace Vital::Godot::Sandbox {
 
         vm -> loadString(rwString);
 
-        auto environment = Vital::Godot::Engine::Singleton::get_environment();
-        float ssao_intensity = environment -> get_ssao_intensity();
-        godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
+        //auto environment = Vital::Godot::Engine::Singleton::get_environment();
+        //float ssao_intensity = environment -> get_ssao_intensity();
+        //godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
     }
 }
