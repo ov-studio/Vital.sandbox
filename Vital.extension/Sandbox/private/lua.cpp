@@ -112,7 +112,7 @@ namespace Vital::Godot::Sandbox {
             auto root = scene_tree->get_root();
             if (root) {
                 std::vector<godot::WorldEnvironment*> nodes;
-                Vital::Godot::Engine::Singleton::find_nodes_by_type(root, nodes);
+                Vital::Godot::Engine::Singleton::find_nodes_by_type(root, nodes, 1);
                 auto env_node = nodes.at(0);
                 if (env_node) {
                     auto world_env = godot::Object::cast_to<godot::WorldEnvironment>(env_node);
