@@ -14,11 +14,11 @@
 
 #pragma once
 #include <Sandbox/public/lua.h>
-#include <../Vital.sandbox/Sandbox/lua/public/api.h>
-#include <../Vital.sandbox/System/public/vital.h>
-#include <../Vital.sandbox/System/public/crypto.h>
-#include <../Vital.sandbox/System/public/rest.h>
-#include <../Vital.sandbox/Type/public/timer.h>
+#include <Vital.sandbox/Sandbox/lua/public/api.h>
+#include <Vital.sandbox/System/public/vital.h>
+#include <Vital.sandbox/System/public/crypto.h>
+#include <Vital.sandbox/System/public/rest.h>
+#include <Vital.sandbox/Type/public/timer.h>
 
 
 /////////////////
