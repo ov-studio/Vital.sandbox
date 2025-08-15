@@ -1,3 +1,4 @@
+#pragma once
 #include "register.h"
 #include "sandbox.h"
 #include <godot_cpp/godot.hpp>
