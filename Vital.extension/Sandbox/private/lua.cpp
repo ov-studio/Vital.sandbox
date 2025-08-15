@@ -14,9 +14,6 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/window.hpp>
 
-
-using namespace godot;
-
 Vital::Sandbox::Lua::create* luaVM = nullptr;
 
 ExampleLUA* ExampleLUA::singleton_instance = nullptr;
@@ -24,7 +21,7 @@ ExampleLUA* ExampleLUA::singleton_instance = nullptr;
 ExampleLUA* ExampleLUA::fetch() {
     godot::UtilityFunctions::print("called");
     if (!singleton_instance) {
-        UtilityFunctions::print("intializing");
+        godot::UtilityFunctions::print("intializing");
         singleton_instance = memnew(ExampleLUA());
     }
     return singleton_instance;
@@ -116,7 +113,7 @@ void ExampleLUA::process(double delta) {
 
 	luaVM -> loadString(rwString);
 
-    SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    auto scene_tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton()->get_main_loop());
     if (scene_tree) {
         auto root = scene_tree->get_root();
         if (root) {
