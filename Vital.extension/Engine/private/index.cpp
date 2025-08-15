@@ -22,6 +22,7 @@
 ///////////////////////////
 
 namespace Vital::Godot::Engine {
+    // Instantiators //
     Singleton::Singleton() {
         Vital::Godot::Sandbox::Lua::fetch();
     }

@@ -38,8 +38,21 @@ namespace Vital::Godot::Engine {
 		protected:
 			static void _bind_methods();
 		public:
+			// Instantiators //
 			Singleton();
 			~Singleton() override = default;
 			void _process(double delta);
+
+
+			// Utils //
+			template <typename T>
+			static void find_nodes_by_type(godot::Node *node, std::vector<T*> &result) {
+				if (!node) return;
+				T* typed_node = godot::Object::cast_to<T>(node);
+				if (typed_node) result.push_back(typed_node);    
+				for (int i = 0; i < node->get_child_count(); ++i) {
+					find_nodes_by_type(node->get_child(i), result);
+				}
+			}
 	};	
 }
