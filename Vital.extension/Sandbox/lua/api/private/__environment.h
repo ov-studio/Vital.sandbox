@@ -134,10 +134,10 @@ public:
 	//float get_ssao_direct_light_affect() const;
 	//void set_ssao_ao_channel_affect(float p_amount);
 	//float get_ssao_ao_channel_affect() const;
-	void set_ssil_enabled(bool p_enabled);
-	bool is_ssil_enabled() const;
-	void set_ssil_radius(float p_radius);
-	float get_ssil_radius() const;
+	//void set_ssil_enabled(bool p_enabled);
+	//bool is_ssil_enabled() const;
+	//void set_ssil_radius(float p_radius);
+	//float get_ssil_radius() const;
 	void set_ssil_intensity(float p_intensity);
 	float get_ssil_intensity() const;
 	void set_ssil_sharpness(float p_sharpness);
