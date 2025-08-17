@@ -47,8 +47,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto cascades = vm -> getInt(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_cascades(cascades);
+            auto amount = vm -> getInt(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_cascades(amount);
             vm -> setBool(true);
             return 1;
         });
