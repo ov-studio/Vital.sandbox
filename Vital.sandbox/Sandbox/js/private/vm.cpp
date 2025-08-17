@@ -24,8 +24,9 @@
 namespace Vital::Sandbox::JS {
     // Instantiators //
     vsdk_vms vms;
-    create::create() {
+    create::create(vsdk_api api) {
         vm = duk_create_heap_default();
+        this -> api = api;
         vms.emplace(vm, this);
         for (const std::string& i : vsdk_blacklist) {
             setNil();
