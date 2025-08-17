@@ -116,8 +116,8 @@ public:
 	float get_ssr_fade_out() const;
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
 	float get_ssr_depth_tolerance() const;
-	void set_ssao_enabled(bool p_enabled);
-	bool is_ssao_enabled() const;
+	//void set_ssao_enabled(bool p_enabled);
+	//bool is_ssao_enabled() const;
 	//void set_ssao_radius(float p_radius);
 	//float get_ssao_radius() const;
 	//void set_ssao_intensity(float p_intensity);
