@@ -20,13 +20,13 @@
 // Vital: Godot: Sandbox: Lua //
 /////////////////////////////////
 
-namespace Vital::Godot::Sandbox {
-	class Lua {
+namespace Vital::Godot::Sandbox::Lua {
+	class Singleton {
 		protected:
-			Lua();
-			~Lua();
+			Singleton();
+			~Singleton();
 		public:
-			static Lua* fetch();
+			static Singleton* fetch();
 			void process(double delta);
 	};	
 }

@@ -24,7 +24,7 @@
 namespace Vital::Godot::Engine {
     // Instantiators //
     Singleton::Singleton() {
-        Vital::Godot::Sandbox::Lua::fetch();
+        Vital::Godot::Sandbox::Lua::Singleton::fetch();
     }
     
     void Singleton::_bind_methods() {
@@ -32,7 +32,7 @@ namespace Vital::Godot::Engine {
     }
     
     void Singleton::_process(double delta) {
-        Vital::Godot::Sandbox::Lua::fetch() -> process(delta);
+        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 
 

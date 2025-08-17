@@ -25,23 +25,23 @@
 // Vital: Godot: Sandbox: Lua //
 /////////////////////////////////
 
-namespace Vital::Godot::Sandbox {
-    Lua* instance = nullptr;
+namespace Vital::Godot::Sandbox::Lua {
+    Singleton* instance = nullptr;
     Vital::Sandbox::Lua::create* vm = nullptr;
 
-    Lua* Lua::fetch() {
-        instance = instance ? instance : memnew(Lua());
+    Singleton* Singleton::fetch() {
+        instance = instance ? instance : memnew(Singleton());
         return instance;
     }
 
-    Lua::Lua() {
+    Singleton::Singleton() {
         godot::UtilityFunctions::print("Initialized Lua vm");
 
         //auto serial = Vital::System::getSerial();
         //godot::UtilityFunctions::print(serial.c_str());
 
         vm = new Vital::Sandbox::Lua::create({
-            
+
         });
 
         /*
@@ -97,7 +97,7 @@ namespace Vital::Godot::Sandbox {
 
     }
 
-    void Lua::process(double delta) {
+    void Singleton::process(double delta) {
         //godot::UtilityFunctions::print("rendered");
         
         // Lua script to run
