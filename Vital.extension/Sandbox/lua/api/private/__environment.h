@@ -128,8 +128,8 @@ public:
 	//float get_ssao_detail() const;
 	//void set_ssao_horizon(float p_horizon);
 	//float get_ssao_horizon() const;
-	void set_ssao_sharpness(float p_sharpness);
-	float get_ssao_sharpness() const;
+	//void set_ssao_sharpness(float p_sharpness);
+	//float get_ssao_sharpness() const;
 	void set_ssao_direct_light_affect(float p_amount);
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_amount);
