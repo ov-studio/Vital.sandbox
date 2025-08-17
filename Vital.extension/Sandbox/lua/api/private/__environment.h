@@ -148,8 +148,8 @@ public:
 	//bool is_sdfgi_enabled() const;
 	//void set_sdfgi_cascades(int32_t p_amount);
 	//int32_t get_sdfgi_cascades() const;
-	void set_sdfgi_min_cell_size(float p_size);
-	float get_sdfgi_min_cell_size() const;
+	//void set_sdfgi_min_cell_size(float p_size);
+	//float get_sdfgi_min_cell_size() const;
 	void set_sdfgi_max_distance(float p_distance);
 	float get_sdfgi_max_distance() const;
 	void set_sdfgi_cascade0_distance(float p_distance);
