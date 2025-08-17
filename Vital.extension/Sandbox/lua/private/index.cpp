@@ -40,7 +40,9 @@ namespace Vital::Godot::Sandbox {
         //auto serial = Vital::System::getSerial();
         //godot::UtilityFunctions::print(serial.c_str());
 
-        vm = new Vital::Sandbox::Lua::create();
+        vm = new Vital::Sandbox::Lua::create({
+            
+        });
 
         /*
         std::string rwString = R"(
