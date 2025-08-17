@@ -140,8 +140,8 @@ public:
 	//float get_ssil_radius() const;
 	//void set_ssil_intensity(float p_intensity);
 	//float get_ssil_intensity() const;
-	void set_ssil_sharpness(float p_sharpness);
-	float get_ssil_sharpness() const;
+	//void set_ssil_sharpness(float p_sharpness);
+	//float get_ssil_sharpness() const;
 	void set_ssil_normal_rejection(float p_normal_rejection);
 	float get_ssil_normal_rejection() const;
 	void set_sdfgi_enabled(bool p_enabled);
