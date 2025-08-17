@@ -150,8 +150,8 @@ public:
 	//int32_t get_sdfgi_cascades() const;
 	//void set_sdfgi_min_cell_size(float p_size);
 	//float get_sdfgi_min_cell_size() const;
-	void set_sdfgi_max_distance(float p_distance);
-	float get_sdfgi_max_distance() const;
+	//void set_sdfgi_max_distance(float p_distance);
+	//float get_sdfgi_max_distance() const;
 	void set_sdfgi_cascade0_distance(float p_distance);
 	float get_sdfgi_cascade0_distance() const;
 	void set_sdfgi_y_scale(Environment::SDFGIYScale p_scale);
