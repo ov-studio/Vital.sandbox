@@ -20,7 +20,7 @@
 // Vital: Godot: Sandbox: Lua: API: SSAO //
 ////////////////////////////////////////////
 
-void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
+void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
     auto vm = static_cast<Vital::Sandbox::Lua::vsdk_vm*>(instance);
 
     Vital::Sandbox::Lua::API::bind(vm, "ssao", "setEnabled", [](auto* ref) -> int {
