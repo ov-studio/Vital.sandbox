@@ -160,8 +160,8 @@ public:
 	//bool is_sdfgi_using_occlusion() const;
 	//void set_sdfgi_bounce_feedback(float p_amount);
 	//float get_sdfgi_bounce_feedback() const;
-	void set_sdfgi_read_sky_light(bool p_enable);
-	bool is_sdfgi_reading_sky_light() const;
+	//void set_sdfgi_read_sky_light(bool p_enable);
+	//bool is_sdfgi_reading_sky_light() const;
 	void set_sdfgi_energy(float p_amount);
 	float get_sdfgi_energy() const;
 	void set_sdfgi_normal_bias(float p_bias);
