@@ -164,8 +164,8 @@ public:
 	//bool is_sdfgi_reading_sky_light() const;
 	//void set_sdfgi_energy(float p_amount);
 	//float get_sdfgi_energy() const;
-	void set_sdfgi_normal_bias(float p_bias);
-	float get_sdfgi_normal_bias() const;
+	//void set_sdfgi_normal_bias(float p_bias);
+	//float get_sdfgi_normal_bias() const;
 	void set_sdfgi_probe_bias(float p_bias);
 	float get_sdfgi_probe_bias() const;
 	void set_glow_enabled(bool p_enabled);
