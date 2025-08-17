@@ -25,9 +25,10 @@
 namespace Vital::Sandbox::Lua {
     // Instantiators //
     vsdk_vms vms;
-    create::create() {
+    create::create(std::vector<vsdk_api> apis) {
         vm = luaL_newstate();
         vsdk_reference reference;
+        this -> apis = apis;
         vms.emplace(vm, this);
         for (auto& i : vsdk_libraries) {
             luaL_requiref(vm, i.name, i.func, 1);
