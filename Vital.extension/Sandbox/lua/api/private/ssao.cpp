@@ -157,7 +157,6 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-
     Vital::Sandbox::Lua::API::bind(vm, "ssao", "setDirectLightAffect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
