@@ -144,8 +144,8 @@ public:
 	//float get_ssil_sharpness() const;
 	//void set_ssil_normal_rejection(float p_normal_rejection);
 	//float get_ssil_normal_rejection() const;
-	void set_sdfgi_enabled(bool p_enabled);
-	bool is_sdfgi_enabled() const;
+	//void set_sdfgi_enabled(bool p_enabled);
+	//bool is_sdfgi_enabled() const;
 	void set_sdfgi_cascades(int32_t p_amount);
 	int32_t get_sdfgi_cascades() const;
 	void set_sdfgi_min_cell_size(float p_size);
