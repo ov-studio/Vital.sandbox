@@ -99,5 +99,24 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setUseOcclusion", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto state = vm -> getBool(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_use_occlusion(state);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "isUsingOcclusion", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setBool(Vital::Godot::Engine::Singleton::get_environment() -> is_sdfgi_using_occlusion());
+            return 1;
+        });
+    });
     #endif
 }
