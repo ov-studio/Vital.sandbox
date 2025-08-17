@@ -194,5 +194,24 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setProbeBias", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto bias = vm -> getInt(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_probe_bias(bias);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getProbeBias", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_sdfgi_probe_bias());
+            return 1;
+        });
+    });
     #endif
 }
