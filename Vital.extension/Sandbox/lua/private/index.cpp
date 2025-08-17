@@ -20,6 +20,7 @@
 #include <Vital.sandbox/System/public/rest.h>
 #include <Vital.sandbox/Type/public/timer.h>
 
+#include <Vital.extension/Sandbox/lua/api/public/ssr.h>
 #include <Vital.extension/Sandbox/lua/api/public/ssao.h>
 
 
@@ -43,6 +44,7 @@ namespace Vital::Godot::Sandbox::Lua {
         //godot::UtilityFunctions::print(serial.c_str());
 
         vm = new Vital::Sandbox::Lua::create({
+            {API::SSR::bind, API::SSR::inject},
             {API::SSAO::bind, API::SSAO::inject},
         });
 
