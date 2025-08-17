@@ -26,12 +26,12 @@ namespace Vital::Sandbox::JS {
     vsdk_vms vms;
     create::create(vsdk_apis apis) {
         vm = duk_create_heap_default();
-        this -> apis = apis;
         vms.emplace(vm, this);
         for (const std::string& i : vsdk_blacklist) {
             setNil();
             setGlobal(i);
         }
+        this -> apis = apis;
         this -> hook("bind");
         for (auto& i : Vital::Sandbox::fetchModules("js")) {
             loadString(i);
