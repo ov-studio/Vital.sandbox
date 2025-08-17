@@ -137,5 +137,24 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setReadSkyLight", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto state = vm -> getBool(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_read_sky_light(state);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setReadingSkyLight", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setBool(Vital::Godot::Engine::Singleton::get_environment() -> is_sdfgi_reading_sky_light());
+            return 1;
+        });
+    });
     #endif
 }
