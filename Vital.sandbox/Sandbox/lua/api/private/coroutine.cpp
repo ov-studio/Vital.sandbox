@@ -17,7 +17,6 @@
 #include <Vendor/lua/lauxlib.h>
 #include <Vendor/lua/lualib.h>
 
-#include <godot_cpp/variant/utility_functions.hpp>
 
 ///////////////
 // Lua: API //
