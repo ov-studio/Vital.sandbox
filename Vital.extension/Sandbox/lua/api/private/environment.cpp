@@ -26,12 +26,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "environment", "get_ssao_intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            auto environment = Vital::Godot::Engine::Singleton::get_environment();
-            float ssao_intensity = environment -> get_ssao_intensity();
-            godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
-            //if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            //std::string path = vm -> getString(1);
-            //vm -> setString(path);
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_ssao_intensity());
             return 1;
         });
     });
