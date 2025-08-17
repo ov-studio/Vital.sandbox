@@ -22,9 +22,9 @@
 #include <Sandbox/lua/api/public/network.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+///////////////////////////////
+// Vital: Sandbox: Lua: API //
+///////////////////////////////
 
 namespace Vital::Sandbox::Lua {
     void create::hook(const std::string& mode) {

@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Sandbox Utilities
+     Desc: API Utilities
 ----------------------------------------------------------------*/
 
 
@@ -14,19 +14,11 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/index.h>
+#include <Vital.sandbox/Sandbox/lua/public/api.h>
 
 
-/////////////////////////////////
-// Vital: Godot: Sandbox: Lua //
-/////////////////////////////////
+//////////////////////////////////////
+// Vital: Godot: Sandbox: Lua: API //
+//////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua {
-	class Singleton {
-		protected:
-			Singleton();
-			~Singleton();
-		public:
-			static Singleton* fetch();
-			void process(double delta);
-	};	
-}
+namespace Vital::Godot::Sandbox::Lua::API {}

@@ -16,9 +16,9 @@
 #include <Sandbox/js/public/api.h>
 
 
-//////////////
-// JS: API //
-//////////////
+//////////////////////////////
+// Vital: Sandbox: JS: API //
+//////////////////////////////
 
 namespace Vital::Sandbox::JS {
     void create::hook(const std::string& mode) {

@@ -16,9 +16,9 @@
 #include <Sandbox/lua/public/api.h>
 
 
-/////////////////////
-// Namespace: Lua //
-/////////////////////
+//////////////////////////
+// Vital: Sandbox: Lua //
+//////////////////////////
 
 namespace Vital::Sandbox::Lua {
     std::vector<luaL_Reg> vsdk_libraries = {

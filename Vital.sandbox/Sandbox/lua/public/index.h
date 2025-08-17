@@ -17,9 +17,9 @@
 #include <Vendor/lua/lua.hpp>
 
 
-/////////////////////
-// Namespace: Lua //
-/////////////////////
+//////////////////////////
+// Vital: Sandbox: Lua //
+//////////////////////////
 
 namespace Vital::Sandbox::Lua {
     extern std::vector<luaL_Reg> vsdk_libraries;

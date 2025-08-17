@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/lua/public/api.h>
+#include <Vital.extension/Sandbox/lua/public/api.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+///////////////////////////////////////////////////
+// Vital: Godot: Sandbox: Lua: API: Environment //
+///////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
     class Environment : public Vital::Type::Module {

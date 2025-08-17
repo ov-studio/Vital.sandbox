@@ -16,9 +16,9 @@
 #include <Sandbox/js/public/vm.h>
 
 
-//////////////
-// JS: API //
-//////////////
+//////////////////////////////
+// Vital: Sandbox: JS: API //
+//////////////////////////////
 
 namespace Vital::Sandbox::JS::API {
     // Handlers //

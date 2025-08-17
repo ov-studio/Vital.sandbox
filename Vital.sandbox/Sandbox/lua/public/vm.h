@@ -16,9 +16,9 @@
 #include <Sandbox/lua/public/index.h>
 
 
-//////////////
-// Lua: VM //
-//////////////
+//////////////////////////
+// Vital: Sandbox: Lua //
+//////////////////////////
 
 namespace Vital::Sandbox::Lua {
     typedef lua_State vsdk_ref;

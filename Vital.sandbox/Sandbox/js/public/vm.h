@@ -16,9 +16,9 @@
 #include <Sandbox/js/public/index.h>
 
 
-/////////////
-// JS: VM //
-/////////////
+/////////////////////////
+// Vital: Sandbox: JS //
+/////////////////////////
 
 namespace Vital::Sandbox::JS {
     typedef duk_context vsdk_ref;

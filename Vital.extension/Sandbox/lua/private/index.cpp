@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Lua Utilities
+     Desc: Sandbox Utilities
 ----------------------------------------------------------------*/
 
 
@@ -109,8 +109,10 @@ namespace Vital::Godot::Sandbox::Lua {
 
         vm -> loadString(rwString);
 
+        /*
         auto environment = Vital::Godot::Engine::Singleton::get_environment();
         float ssao_intensity = environment -> get_ssao_intensity();
         godot::UtilityFunctions::print("SSAO Intensity: ", ssao_intensity);
+        */
     }
 }

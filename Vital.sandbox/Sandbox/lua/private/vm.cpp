@@ -18,9 +18,9 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 
-//////////////
-// Lua: VM //
-//////////////
+//////////////////////////
+// Vital: Sandbox: Lua //
+//////////////////////////
 
 namespace Vital::Sandbox::Lua {
     // Instantiators //

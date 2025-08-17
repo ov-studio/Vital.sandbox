@@ -16,9 +16,9 @@
 #include <Sandbox/lua/public/vm.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+///////////////////////////////
+// Vital: Sandbox: Lua: API //
+///////////////////////////////
 
 namespace Vital::Sandbox::Lua::API {
     extern void createErrorHandle(std::function<void(const std::string&)> exec);

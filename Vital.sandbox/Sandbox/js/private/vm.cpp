@@ -17,9 +17,9 @@
 #include <Sandbox/js/public/api.h>
 
 
-/////////////
-// JS: VM //
-/////////////
+/////////////////////////
+// Vital: Sandbox: JS //
+/////////////////////////
 
 namespace Vital::Sandbox::JS {
     // Instantiators //

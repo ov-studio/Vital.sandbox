@@ -16,9 +16,9 @@
 #include <Sandbox/js/public/index.h>
 
 
-////////////////////
-// Namespace: JS //
-////////////////////
+/////////////////////////
+// Vital: Sandbox: JS //
+/////////////////////////
 
 namespace Vital::Sandbox::JS {
     std::vector<std::string> vsdk_blacklist = {};
