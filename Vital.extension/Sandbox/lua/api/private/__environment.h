@@ -110,8 +110,8 @@ public:
 	//bool is_ssr_enabled() const;
 	void set_ssr_max_steps(int32_t p_max_steps);
 	int32_t get_ssr_max_steps() const;
-	void set_ssr_fade_in(float p_fade_in);
-	float get_ssr_fade_in() const;
+	//void set_ssr_fade_in(float p_fade_in);
+	//float get_ssr_fade_in() const;
 	void set_ssr_fade_out(float p_fade_out);
 	float get_ssr_fade_out() const;
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
