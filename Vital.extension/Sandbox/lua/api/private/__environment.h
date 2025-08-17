@@ -106,8 +106,8 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
-	void set_ssr_enabled(bool p_enabled);
-	bool is_ssr_enabled() const;
+	//void set_ssr_enabled(bool p_enabled);
+	//bool is_ssr_enabled() const;
 	void set_ssr_max_steps(int32_t p_max_steps);
 	int32_t get_ssr_max_steps() const;
 	void set_ssr_fade_in(float p_fade_in);
