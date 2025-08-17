@@ -20,7 +20,7 @@
 #include <Vital.sandbox/System/public/rest.h>
 #include <Vital.sandbox/Type/public/timer.h>
 
-#include <Vital.extension/Sandbox/lua/api/public/environment.h>
+#include <Vital.extension/Sandbox/lua/api/public/ssao.h>
 
 
 /////////////////////////////////
@@ -43,7 +43,7 @@ namespace Vital::Godot::Sandbox::Lua {
         //godot::UtilityFunctions::print(serial.c_str());
 
         vm = new Vital::Sandbox::Lua::create({
-            {API::Environment::bind, API::Environment::inject},
+            {API::SSAO::bind, API::SSAO::inject},
         });
 
         /*
@@ -70,10 +70,6 @@ namespace Vital::Godot::Sandbox::Lua {
             end):resume()
         )";
         vm -> loadString(rwString);
-
-        //Ref<Environment> env = get_viewport()->get_environment();
-        //auto stuff = Environment::get_ssao_intensity();
-        //godot::UtilityFunctions::print(stuff);
 
         /*
         Vital::Type::Timer([](auto self) -> void {
@@ -104,8 +100,8 @@ namespace Vital::Godot::Sandbox::Lua {
         
         // Lua script to run
         std::string rwString = R"(
-            print("SSAO Enabled: ", environment.setEnabled(true))
-            print("SSAO Intensity: ", environment.getIntensity())
+            print("SSAO Enabled: ", ssao.setEnabled(true))
+            print("SSAO Intensity: ", ssao.getIntensity())
         )";
         vm -> loadString(rwString);
     }
