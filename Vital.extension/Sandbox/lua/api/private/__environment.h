@@ -124,8 +124,8 @@ public:
 	//float get_ssao_intensity() const;
 	//void set_ssao_power(float p_power);
 	//float get_ssao_power() const;
-	void set_ssao_detail(float p_detail);
-	float get_ssao_detail() const;
+	//void set_ssao_detail(float p_detail);
+	//float get_ssao_detail() const;
 	void set_ssao_horizon(float p_horizon);
 	float get_ssao_horizon() const;
 	void set_ssao_sharpness(float p_sharpness);
