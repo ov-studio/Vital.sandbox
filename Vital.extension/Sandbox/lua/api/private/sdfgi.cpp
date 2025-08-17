@@ -61,5 +61,24 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setMinCellSize", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto size = vm -> getInt(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_min_cell_size(size);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getMinCellSize", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_sdfgi_min_cell_size());
+            return 1;
+        });
+    });
     #endif
 }
