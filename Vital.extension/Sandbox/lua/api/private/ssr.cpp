@@ -23,7 +23,7 @@
 void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     auto vm = static_cast<Vital::Sandbox::Lua::vsdk_vm*>(instance);
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssr", "set_ssr_enabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssr", "setEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -34,7 +34,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssr", "is_ssr_enabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssr", "isEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Engine::Singleton::get_environment() -> is_ssr_enabled());
