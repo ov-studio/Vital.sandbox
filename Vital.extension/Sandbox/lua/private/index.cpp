@@ -22,6 +22,8 @@
 
 #include <Vital.extension/Sandbox/lua/api/public/ssr.h>
 #include <Vital.extension/Sandbox/lua/api/public/ssao.h>
+#include <Vital.extension/Sandbox/lua/api/public/ssil.h>
+#include <Vital.extension/Sandbox/lua/api/public/sdfgi.h>
 
 
 /////////////////////////////////
@@ -46,6 +48,8 @@ namespace Vital::Godot::Sandbox::Lua {
         vm = new Vital::Sandbox::Lua::create({
             {API::SSR::bind, API::SSR::inject},
             {API::SSAO::bind, API::SSAO::inject},
+            {API::SSIL::bind, API::SSIL::inject},
+            {API::SDFGI::bind, API::SDFGI::inject}
         });
 
         /*
