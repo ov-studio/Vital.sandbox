@@ -118,8 +118,8 @@ public:
 	float get_ssr_depth_tolerance() const;
 	void set_ssao_enabled(bool p_enabled);
 	bool is_ssao_enabled() const;
-	void set_ssao_radius(float p_radius);
-	float get_ssao_radius() const;
+	//void set_ssao_radius(float p_radius);
+	//float get_ssao_radius() const;
 	//void set_ssao_intensity(float p_intensity);
 	//float get_ssao_intensity() const;
 	//void set_ssao_power(float p_power);
