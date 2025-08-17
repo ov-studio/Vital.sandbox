@@ -156,5 +156,24 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setEnergy", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto energy = vm -> getInt(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_energy(energy);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getEnergy", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_sdfgi_energy());
+            return 1;
+        });
+    });
     #endif
 }
