@@ -24,16 +24,16 @@ namespace Vital::Sandbox::Lua {
     typedef lua_State vsdk_ref;
     typedef lua_CFunction vsdk_exec;
     typedef std::map<std::string, int> vsdk_reference;
-    typedef std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> vsdk_api;
+    typedef std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> vsdk_apis;
     class create {
         private:
             vsdk_ref* vm = nullptr;
             vsdk_reference reference = {};
-            vsdk_api api = {};
+            vsdk_apis apis = {};
             bool thread = false;
         public:
             // Instantiators //
-            create(vsdk_api api = {});
+            create(vsdk_apis apis = {});
             create(vsdk_ref* thread);
             ~create();
 

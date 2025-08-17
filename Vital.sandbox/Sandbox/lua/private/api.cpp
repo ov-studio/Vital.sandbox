@@ -29,7 +29,7 @@
 namespace Vital::Sandbox::Lua {
     void create::hook(const std::string& mode) {
         auto instance = static_cast<void*>(this);
-        vsdk_api natives = {
+        vsdk_apis natives = {
             {API::Engine::bind, API::Engine::inject},
             {API::Coroutine::bind, API::Coroutine::inject},
             {API::File::bind, API::File::inject},
@@ -37,7 +37,7 @@ namespace Vital::Sandbox::Lua {
             {API::REST::bind, API::REST::inject},
             {API::Network::bind, API::Network::inject}
         };
-        for (auto& i : api) natives.push_back(i);
+        for (auto& i : apis) natives.push_back(i);
         for (auto& i : natives) {
             if (mode == "bind") i.first(instance);
             else if (mode == "inject") i.second(instance);

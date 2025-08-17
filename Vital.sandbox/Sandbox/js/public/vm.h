@@ -23,14 +23,14 @@
 namespace Vital::Sandbox::JS {
     typedef duk_context vsdk_ref;
     typedef duk_c_function vsdk_exec;
-    typedef std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> vsdk_api;
+    typedef std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> vsdk_apis;
     class create {
         private:
             vsdk_ref* vm = nullptr;
-            vsdk_api api = {};
+            vsdk_apis apis = {};
         public:
             // Instantiators //
-            create(vsdk_api api = {});
+            create(vsdk_apis apis = {});
             ~create();
 
             // Checkers //
