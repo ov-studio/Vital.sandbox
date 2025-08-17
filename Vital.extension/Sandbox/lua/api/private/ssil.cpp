@@ -100,7 +100,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "set_ssil_normal_rejection", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "setNormalRejection", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
@@ -111,7 +111,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "get_ssil_normal_rejection", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "getNormalRejection", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_ssil_normal_rejection());
