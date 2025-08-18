@@ -190,8 +190,8 @@ public:
 	//float get_glow_hdr_bleed_scale() const;
 	//void set_glow_hdr_luminance_cap(float p_amount);
 	//float get_glow_hdr_luminance_cap() const;
-	void set_glow_map_strength(float p_strength);
-	float get_glow_map_strength() const;
+	//void set_glow_map_strength(float p_strength);
+	//float get_glow_map_strength() const;
 	void set_glow_map(const Ref<Texture> &p_mode);
 	Ref<Texture> get_glow_map() const;
 	void set_fog_enabled(bool p_enabled);
