@@ -47,7 +47,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto radius = vm -> getInt(1);
+            auto radius = vm -> getFloat(1);
             Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_radius(radius);
             vm -> setBool(true);
             return 1;
@@ -66,7 +66,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto intensity = vm -> getInt(1);
+            auto intensity = vm -> getFloat(1);
             Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_intensity(intensity);
             vm -> setBool(true);
             return 1;
@@ -85,7 +85,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto sharpness = vm -> getInt(1);
+            auto sharpness = vm -> getFloat(1);
             Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_sharpness(sharpness);
             vm -> setBool(true);
             return 1;
@@ -104,7 +104,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto rejection = vm -> getInt(1);
+            auto rejection = vm -> getFloat(1);
             Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_normal_rejection(rejection);
             vm -> setBool(true);
             return 1;
