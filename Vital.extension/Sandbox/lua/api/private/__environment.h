@@ -176,8 +176,8 @@ public:
 	//bool is_glow_normalized() const;
 	//void set_glow_intensity(float p_intensity);
 	//float get_glow_intensity() const;
-	void set_glow_strength(float p_strength);
-	float get_glow_strength() const;
+	//void set_glow_strength(float p_strength);
+	//float get_glow_strength() const;
 	void set_glow_mix(float p_mix);
 	float get_glow_mix() const;
 	void set_glow_bloom(float p_amount);
