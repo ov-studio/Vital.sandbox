@@ -172,8 +172,8 @@ public:
 	//bool is_glow_enabled() const;
 	//void set_glow_level(int32_t p_idx, float p_intensity);
 	//float get_glow_level(int32_t p_idx) const;
-	void set_glow_normalized(bool p_normalize);
-	bool is_glow_normalized() const;
+	//void set_glow_normalized(bool p_normalize);
+	//bool is_glow_normalized() const;
 	void set_glow_intensity(float p_intensity);
 	float get_glow_intensity() const;
 	void set_glow_strength(float p_strength);
