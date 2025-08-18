@@ -159,5 +159,43 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "emissive", "setHDRBleedThreshold", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto amount = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_glow_hdr_bleed_threshold(amount);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "emissive", "getHDRBleedThreshold", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_glow_hdr_bleed_threshold());
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "emissive", "setHDRBleedScale", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto amount = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_glow_hdr_bleed_scale(amount);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "emissive", "getHDRBleedScale", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_glow_hdr_bleed_scale());
+            return 1;
+        });
+    });
     #endif
 }
