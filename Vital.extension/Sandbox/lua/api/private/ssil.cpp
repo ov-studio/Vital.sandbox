@@ -47,8 +47,8 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_radius(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_radius(value);
             vm -> setBool(true);
             return 1;
         });
@@ -66,8 +66,8 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_intensity(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_intensity(value);
             vm -> setBool(true);
             return 1;
         });
@@ -85,8 +85,8 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_sharpness(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_sharpness(value);
             vm -> setBool(true);
             return 1;
         });
@@ -104,8 +104,8 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_normal_rejection(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_ssil_normal_rejection(value);
             vm -> setBool(true);
             return 1;
         });

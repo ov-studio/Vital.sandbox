@@ -47,8 +47,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getInt(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_cascades(amount);
+            auto value = vm -> getInt(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_cascades(value);
             vm -> setBool(true);
             return 1;
         });
@@ -66,8 +66,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_min_cell_size(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_min_cell_size(value);
             vm -> setBool(true);
             return 1;
         });
@@ -85,8 +85,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_max_distance(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_max_distance(value);
             vm -> setBool(true);
             return 1;
         });
@@ -96,6 +96,29 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_sdfgi_max_distance());
+            return 1;
+        });
+    });
+
+
+
+    /*
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setYScale", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_y_scale(value);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+    */
+
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getYScale", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_sdfgi_y_scale());
             return 1;
         });
     });
@@ -123,8 +146,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_bounce_feedback(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_bounce_feedback(value);
             vm -> setBool(true);
             return 1;
         });
@@ -161,8 +184,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_energy(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_energy(value);
             vm -> setBool(true);
             return 1;
         });
@@ -180,8 +203,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_normal_bias(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_normal_bias(value);
             vm -> setBool(true);
             return 1;
         });
@@ -199,8 +222,8 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_probe_bias(amount);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_probe_bias(value);
             vm -> setBool(true);
             return 1;
         });
