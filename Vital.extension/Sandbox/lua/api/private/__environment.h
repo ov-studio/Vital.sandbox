@@ -182,7 +182,7 @@ public:
 	//float get_glow_mix() const;
 	//void set_glow_bloom(float p_amount);
 	//float get_glow_bloom() const;
-	void set_glow_blend_mode(Environment::GlowBlendMode p_mode);
+	//void set_glow_blend_mode(Environment::GlowBlendMode p_mode);
 	//Environment::GlowBlendMode get_glow_blend_mode() const;
 	//void set_glow_hdr_bleed_threshold(float p_threshold);
 	//float get_glow_hdr_bleed_threshold() const;
