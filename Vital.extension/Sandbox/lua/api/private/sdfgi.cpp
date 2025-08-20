@@ -100,20 +100,17 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-
-
-    /*
     Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setYScale", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_y_scale(value);
+            auto value = vm -> getInt(1);
+            if ((value < godot::Environment::SDFGI_Y_SCALE_50_PERCENT) || (value > godot::Environment::SDFGI_Y_SCALE_100_PERCENT)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_sdfgi_y_scale(static_cast<godot::Environment::SDFGIYScale>(value));
             vm -> setBool(true);
             return 1;
         });
     });
-    */
 
     Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getYScale", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
