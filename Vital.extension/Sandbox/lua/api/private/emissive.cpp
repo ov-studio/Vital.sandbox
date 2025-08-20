@@ -160,18 +160,17 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
         });
     });
 
-    /*
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setBlendMode", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto amount = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_glow_hdr_bleed_threshold(amount);
+            auto mode = vm -> getInt(1);
+            if ((mode < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (mode > godot::Environment::GLOW_BLEND_MODE_MIX)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(mode));
             vm -> setBool(true);
             return 1;
         });
     });
-    */
 
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "getBlendMode", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
