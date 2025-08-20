@@ -154,7 +154,7 @@ public:
 	//float get_sdfgi_max_distance() const;
 	//void set_sdfgi_cascade0_distance(float p_distance);
 	//float get_sdfgi_cascade0_distance() const;
-	void set_sdfgi_y_scale(Environment::SDFGIYScale p_scale);
+	//void set_sdfgi_y_scale(Environment::SDFGIYScale p_scale);
 	//Environment::SDFGIYScale get_sdfgi_y_scale() const;
 	//void set_sdfgi_use_occlusion(bool p_enable);
 	//bool is_sdfgi_using_occlusion() const;
