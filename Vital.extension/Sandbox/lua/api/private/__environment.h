@@ -214,8 +214,8 @@ public:
 	//float get_fog_aerial_perspective() const;
 	//void set_fog_sky_affect(float p_sky_affect);
 	//float get_fog_sky_affect() const;
-	void set_fog_depth_curve(float p_curve);
-	float get_fog_depth_curve() const;
+	//void set_fog_depth_curve(float p_curve);
+	//float get_fog_depth_curve() const;
 	void set_fog_depth_begin(float p_begin);
 	float get_fog_depth_begin() const;
 	void set_fog_depth_end(float p_end);
