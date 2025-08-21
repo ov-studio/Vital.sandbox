@@ -236,8 +236,8 @@ public:
 	//float get_volumetric_fog_length() const;
 	//void set_volumetric_fog_detail_spread(float p_detail_spread);
 	//float get_volumetric_fog_detail_spread() const;
-	void set_volumetric_fog_gi_inject(float p_gi_inject);
-	float get_volumetric_fog_gi_inject() const;
+	//void set_volumetric_fog_gi_inject(float p_gi_inject);
+	//float get_volumetric_fog_gi_inject() const;
 	void set_volumetric_fog_ambient_inject(float p_enabled);
 	float get_volumetric_fog_ambient_inject() const;
 	void set_volumetric_fog_sky_affect(float p_sky_affect);
