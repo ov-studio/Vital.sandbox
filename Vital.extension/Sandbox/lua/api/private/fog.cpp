@@ -43,6 +43,31 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         });
     });
 
+    /*
+    Vital::Sandbox::Lua::API::bind(vm, "fog", "setLightColor", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(value);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+    */
+
+    Vital::Sandbox::Lua::API::bind(vm, "fog", "getLightColor", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            auto value = Vital::Godot::Engine::Singleton::get_environment() -> get_fog_light_color();
+            vm -> setNumber(value.r);
+            vm -> setNumber(value.g);
+            vm -> setNumber(value.b);
+            vm -> setNumber(value.a);
+            return 4;
+        });
+    });
+
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setLightEnergy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
