@@ -117,27 +117,23 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-
-
-    /*
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setLightEnergy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_energy(value);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_volumetric_fog_density(value);
             vm -> setBool(true);
             return 1;
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getLightEnergy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_light_energy());
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_volumetric_fog_density());
             return 1;
         });
     });
-    */
     #endif
 }
