@@ -47,9 +47,9 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
-                auto value = vm -> getString(1);
-                //if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-                //Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(godot::Color::html(value));
+                godot::String value(vm -> getString(1).c_str());
+                if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(godot::Color::html(value));
             }
             else {
                 if (vm -> getArgCount() < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
