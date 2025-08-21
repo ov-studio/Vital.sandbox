@@ -199,7 +199,7 @@ public:
 	void set_fog_mode(Environment::FogMode p_mode);
 	Environment::FogMode get_fog_mode() const;
 	void set_fog_light_color(const Color &p_light_color);
-	Color get_fog_light_color() const;
+	//Color get_fog_light_color() const;
 	//void set_fog_light_energy(float p_light_energy);
 	//float get_fog_light_energy() const;
 	//void set_fog_sun_scatter(float p_sun_scatter);
