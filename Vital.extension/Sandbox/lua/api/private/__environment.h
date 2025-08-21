@@ -248,8 +248,8 @@ public:
 	//float get_volumetric_fog_temporal_reprojection_amount() const;
 	//void set_adjustment_enabled(bool p_enabled);
 	//bool is_adjustment_enabled() const;
-	void set_adjustment_brightness(float p_brightness);
-	float get_adjustment_brightness() const;
+	//void set_adjustment_brightness(float p_brightness);
+	//float get_adjustment_brightness() const;
 	void set_adjustment_contrast(float p_contrast);
 	float get_adjustment_contrast() const;
 	void set_adjustment_saturation(float p_saturation);
