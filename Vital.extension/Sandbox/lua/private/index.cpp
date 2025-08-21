@@ -24,6 +24,10 @@
 #include <Vital.extension/Sandbox/lua/api/public/ssao.h>
 #include <Vital.extension/Sandbox/lua/api/public/ssil.h>
 #include <Vital.extension/Sandbox/lua/api/public/sdfgi.h>
+#include <Vital.extension/Sandbox/lua/api/public/emissive.h>
+#include <Vital.extension/Sandbox/lua/api/public/fog.h>
+#include <Vital.extension/Sandbox/lua/api/public/volumetric_fog.h>
+
 
 
 /////////////////////////////////
@@ -49,7 +53,10 @@ namespace Vital::Godot::Sandbox::Lua {
             {API::SSR::bind, API::SSR::inject},
             {API::SSAO::bind, API::SSAO::inject},
             {API::SSIL::bind, API::SSIL::inject},
-            {API::SDFGI::bind, API::SDFGI::inject}
+            {API::SDFGI::bind, API::SDFGI::inject},
+            {API::Emissive::bind, API::Emissive::inject},
+            {API::Fog::bind, API::Fog::inject},
+            {API::VolumetricFog::bind, API::VolumetricFog::inject}
         });
 
         /*
