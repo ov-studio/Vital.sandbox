@@ -198,7 +198,7 @@ public:
 	//bool is_fog_enabled() const;
 	void set_fog_mode(Environment::FogMode p_mode);
 	Environment::FogMode get_fog_mode() const;
-	void set_fog_light_color(const Color &p_light_color);
+	//void set_fog_light_color(const Color &p_light_color);
 	//Color get_fog_light_color() const;
 	//void set_fog_light_energy(float p_light_energy);
 	//float get_fog_light_energy() const;
