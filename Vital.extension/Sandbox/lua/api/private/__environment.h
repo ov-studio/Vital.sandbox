@@ -204,8 +204,8 @@ public:
 	//float get_fog_light_energy() const;
 	//void set_fog_sun_scatter(float p_sun_scatter);
 	//float get_fog_sun_scatter() const;
-	void set_fog_density(float p_density);
-	float get_fog_density() const;
+	//void set_fog_density(float p_density);
+	//float get_fog_density() const;
 	void set_fog_height(float p_height);
 	float get_fog_height() const;
 	void set_fog_height_density(float p_height_density);
