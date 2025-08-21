@@ -232,8 +232,8 @@ public:
 	//float get_volumetric_fog_emission_energy() const;
 	//void set_volumetric_fog_anisotropy(float p_anisotropy);
 	//float get_volumetric_fog_anisotropy() const;
-	void set_volumetric_fog_length(float p_length);
-	float get_volumetric_fog_length() const;
+	//void set_volumetric_fog_length(float p_length);
+	//float get_volumetric_fog_length() const;
 	void set_volumetric_fog_detail_spread(float p_detail_spread);
 	float get_volumetric_fog_detail_spread() const;
 	void set_volumetric_fog_gi_inject(float p_gi_inject);
