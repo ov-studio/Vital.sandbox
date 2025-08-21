@@ -268,5 +268,24 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setTemporalReprojectionEnabled", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto state = vm -> getBool(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_volumetric_fog_temporal_reprojection_enabled(state);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getTemporalReprojectionEnabled", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setBool(Vital::Godot::Engine::Singleton::get_environment() -> is_volumetric_fog_temporal_reprojection_enabled());
+            return 1;
+        });
+    });
     #endif
 }
