@@ -43,18 +43,30 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         });
     });
 
-    /*
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setLightColor", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(value);
+            if (vm -> isString(1)) {
+                auto value = vm -> getString(1);
+                //if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                //Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(godot::Color::html(value));
+            }
+            else {
+                if (vm -> getArgCount() < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                for (int i = 1; i <= 4; i++) {
+                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                }
+                Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(godot::Color(
+                    vm -> getFloat(1), 
+                    vm -> getFloat(2), 
+                    vm -> getFloat(3), 
+                    vm -> getFloat(4)
+                ));
+            }
             vm -> setBool(true);
             return 1;
         });
     });
-    */
 
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getLightColor", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
