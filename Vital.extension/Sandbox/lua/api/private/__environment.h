@@ -250,8 +250,8 @@ public:
 	//bool is_adjustment_enabled() const;
 	//void set_adjustment_brightness(float p_brightness);
 	//float get_adjustment_brightness() const;
-	void set_adjustment_contrast(float p_contrast);
-	float get_adjustment_contrast() const;
+	//void set_adjustment_contrast(float p_contrast);
+	//float get_adjustment_contrast() const;
 	void set_adjustment_saturation(float p_saturation);
 	float get_adjustment_saturation() const;
 	void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
