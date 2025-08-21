@@ -228,8 +228,8 @@ public:
 	//Color get_volumetric_fog_albedo() const;
 	//void set_volumetric_fog_density(float p_density);
 	//float get_volumetric_fog_density() const;
-	void set_volumetric_fog_emission_energy(float p_begin);
-	float get_volumetric_fog_emission_energy() const;
+	//void set_volumetric_fog_emission_energy(float p_begin);
+	//float get_volumetric_fog_emission_energy() const;
 	void set_volumetric_fog_anisotropy(float p_anisotropy);
 	float get_volumetric_fog_anisotropy() const;
 	void set_volumetric_fog_length(float p_length);
