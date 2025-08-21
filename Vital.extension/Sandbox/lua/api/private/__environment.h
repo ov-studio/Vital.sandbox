@@ -218,8 +218,8 @@ public:
 	//float get_fog_depth_curve() const;
 	//void set_fog_depth_begin(float p_begin);
 	//float get_fog_depth_begin() const;
-	void set_fog_depth_end(float p_end);
-	float get_fog_depth_end() const;
+	//void set_fog_depth_end(float p_end);
+	//float get_fog_depth_end() const;
 	void set_volumetric_fog_enabled(bool p_enabled);
 	bool is_volumetric_fog_enabled() const;
 	void set_volumetric_fog_emission(const Color &p_color);
