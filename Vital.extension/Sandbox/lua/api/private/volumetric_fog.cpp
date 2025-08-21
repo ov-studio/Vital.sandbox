@@ -249,5 +249,24 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setSkyAffect", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto value = vm -> getFloat(1);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_volumetric_fog_sky_affect(value);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
+
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getSkyAffect", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_volumetric_fog_sky_affect());
+            return 1;
+        });
+    });
     #endif
 }
