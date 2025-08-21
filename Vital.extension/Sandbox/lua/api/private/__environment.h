@@ -196,8 +196,8 @@ public:
 	Ref<Texture> get_glow_map() const;
 	//void set_fog_enabled(bool p_enabled);
 	//bool is_fog_enabled() const;
-	void set_fog_mode(Environment::FogMode p_mode);
-	Environment::FogMode get_fog_mode() const;
+	//void set_fog_mode(Environment::FogMode p_mode);
+	//Environment::FogMode get_fog_mode() const;
 	//void set_fog_light_color(const Color &p_light_color);
 	//Color get_fog_light_color() const;
 	//void set_fog_light_energy(float p_light_energy);
