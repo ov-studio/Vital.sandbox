@@ -242,8 +242,8 @@ public:
 	//float get_volumetric_fog_ambient_inject() const;
 	//void set_volumetric_fog_sky_affect(float p_sky_affect);
 	//float get_volumetric_fog_sky_affect() const;
-	void set_volumetric_fog_temporal_reprojection_enabled(bool p_enabled);
-	bool is_volumetric_fog_temporal_reprojection_enabled() const;
+	//void set_volumetric_fog_temporal_reprojection_enabled(bool p_enabled);
+	//bool is_volumetric_fog_temporal_reprojection_enabled() const;
 	void set_volumetric_fog_temporal_reprojection_amount(float p_temporal_reprojection_amount);
 	float get_volumetric_fog_temporal_reprojection_amount() const;
 	void set_adjustment_enabled(bool p_enabled);
