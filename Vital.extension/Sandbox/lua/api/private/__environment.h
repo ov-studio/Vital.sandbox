@@ -210,8 +210,8 @@ public:
 	//float get_fog_height() const;
 	//void set_fog_height_density(float p_height_density);
 	//float get_fog_height_density() const;
-	void set_fog_aerial_perspective(float p_aerial_perspective);
-	float get_fog_aerial_perspective() const;
+	//void set_fog_aerial_perspective(float p_aerial_perspective);
+	//float get_fog_aerial_perspective() const;
 	void set_fog_sky_affect(float p_sky_affect);
 	float get_fog_sky_affect() const;
 	void set_fog_depth_curve(float p_curve);
