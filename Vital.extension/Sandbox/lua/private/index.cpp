@@ -82,6 +82,8 @@ namespace Vital::Godot::Sandbox::Lua {
                 print("Initiated GET request")
                 print(rest.get("https://jsonplaceholder.typicode.com/posts/1"))
                 print("Processed GET rest")
+
+                print("ADJUSTMENT TEXTUR:", adjustment.setColorCorrection("res://test.png"))
             end):resume()
         )";
         vm -> loadString(rwString);
