@@ -99,5 +99,19 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
             return 1;
         });
     });
+
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setColorCorrection", [](auto* ref) -> int {
+        auto vm = Vital::Sandbox::Lua::fetchVM(ref);
+        return vm -> execute([&]() -> int {
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            auto path = vm -> getString(1);
+            if (!Vital::Godot::Engine::Singleton::get_resource_loader() -> exists(path.c_str())) throw std::runtime_error(ErrorCode["file-nonexistent"]);
+            const auto texture = Vital::Godot::Engine::Singleton::get_resource_loader() -> load(path.c_str(), "Texture");
+            if (!texture.is_valid()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            Vital::Godot::Engine::Singleton::get_environment() -> set_adjustment_color_correction(texture);
+            vm -> setBool(true);
+            return 1;
+        });
+    });
     #endif
 }
