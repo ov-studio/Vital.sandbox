@@ -254,7 +254,7 @@ public:
 	//float get_adjustment_contrast() const;
 	//void set_adjustment_saturation(float p_saturation);
 	//float get_adjustment_saturation() const;
-	void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
+	//void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
 	Ref<Texture> get_adjustment_color_correction() const;
 protected:
 	template <typename T, typename B>
