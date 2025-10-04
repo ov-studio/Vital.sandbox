@@ -41,6 +41,10 @@ namespace Vital::Godot::Engine {
         return godot::Engine::get_singleton() -> is_editor_hint() ? godot::EditorInterface::get_singleton() -> get_edited_scene_root() : godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop()) -> get_root();
     }
 
+    godot::ResourceLoader* Singleton::get_resource_loader() {
+        return godot::ResourceLoader::get_singleton();
+    }
+
     godot::Ref<godot::Environment> Singleton::get_environment() {
         godot::Node* root = get_root();
         godot::WorldEnvironment* env = nullptr;

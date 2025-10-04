@@ -15,15 +15,17 @@
 #pragma once
 #include <Vital.sandbox/System/public/vital.h>
 #include <godot_cpp/godot.hpp>
-#include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/environment.hpp>
-#include <godot_cpp/classes/world_environment.hpp>
+#include <godot_cpp/classes/window.hpp>
+#include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/texture.hpp>
+#include <godot_cpp/classes/environment.hpp>
+#include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 
@@ -47,6 +49,7 @@ namespace Vital::Godot::Engine {
 
 			// Getters //
 			static godot::Node* get_root();
+			static godot::ResourceLoader* get_resource_loader();
 			static godot::Ref<godot::Environment> get_environment();
 
 	
