@@ -102,7 +102,6 @@ namespace Vital::Godot::Sandbox::Lua {
     }
 
     void Singleton::ready() {
-        godot::UtilityFunctions::print("VM IS READY NOW");
         std::string rwString = R"(
             print("SSAO Enabled: ", ssao.setEnabled(true))
             print("SSAO Intensity: ", ssao.getIntensity())
