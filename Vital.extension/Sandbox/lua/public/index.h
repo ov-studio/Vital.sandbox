@@ -27,6 +27,7 @@ namespace Vital::Godot::Sandbox::Lua {
 			~Singleton();
 		public:
 			static Singleton* fetch();
+			void ready();
 			void process(double delta);
 	};	
 }
