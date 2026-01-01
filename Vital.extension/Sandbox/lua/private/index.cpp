@@ -112,6 +112,20 @@ namespace Vital::Godot::Sandbox::Lua {
 
     }
 
+    void Singleton::ready() {
+        godot::UtilityFunctions::print("VM IS READY NOW");
+        std::string rwString = R"(
+            print("SSAO Enabled: ", ssao.setEnabled(true))
+            print("SSAO Intensity: ", ssao.getIntensity())
+            print("Adjustment Enabled:", adjustment.setEnabled(true))
+            print("ADJUSTMENT TEXTUR:", adjustment.setColorCorrectionTex("res://Berlin Sky.png"))
+            print("SSAO Enabled: ", ssao.setEnabled(true))
+            print("SSAO Intensity: ", ssao.setIntensity(5))
+
+        )";
+        vm -> loadString(rwString);
+    }
+
     void Singleton::process(double delta) {
         //godot::UtilityFunctions::print("rendered");
         
