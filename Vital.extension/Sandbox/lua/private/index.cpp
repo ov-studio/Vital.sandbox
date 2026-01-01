@@ -77,17 +77,6 @@ namespace Vital::Godot::Sandbox::Lua {
         godot::UtilityFunctions::print(result);
         */
 
-        std::string rwString = R"(
-            thread:create(function(self)
-                print("Initiated GET request")
-                print(rest.get("https://jsonplaceholder.typicode.com/posts/1"))
-                print("Processed GET rest")
-
-                print("ADJUSTMENT TEXTUR:", adjustment.setColorCorrection("res://test.png"))
-            end):resume()
-        )";
-        vm -> loadString(rwString);
-
         /*
         Vital::Type::Timer([](auto self) -> void {
             godot::UtilityFunctions::print("executed c++ timer");
