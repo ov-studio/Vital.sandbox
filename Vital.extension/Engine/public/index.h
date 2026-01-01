@@ -44,8 +44,8 @@ namespace Vital::Godot::Engine {
 			// Instantiators //
 			Singleton();
 			~Singleton() override = default;
-			void _ready();
-			void _process(double delta);
+			void _ready() override;
+			void _process(double delta) override;
 
 
 			// Getters //
