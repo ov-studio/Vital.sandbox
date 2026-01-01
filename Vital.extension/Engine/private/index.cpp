@@ -31,6 +31,10 @@ namespace Vital::Godot::Engine {
 
     }
     
+    void Singleton::_ready() {
+        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
+    }
+
     void Singleton::_process(double delta) {
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
