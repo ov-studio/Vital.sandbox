@@ -117,9 +117,9 @@ namespace Vital::Godot::Sandbox::Lua {
         
         // Lua script to run
         std::string rwString = R"(
-            print("SSAO Enabled: ", ssao.setEnabled(true))
-            print("SSAO Intensity: ", ssao.getIntensity())
+        
         )";
-        vm -> loadString(rwString);
+        //vm -> loadString(rwString);
+
     }
 }
