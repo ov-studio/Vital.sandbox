@@ -25,6 +25,11 @@
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/texture.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/variant/color.hpp>
+#include <godot_cpp/variant/rect2.hpp>
+#include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
