@@ -21,7 +21,6 @@
 ///////////////////////////
 
 namespace Vital::Godot::Engine {
-
     enum class DrawType {
         IMAGE,
         TEXT
@@ -46,33 +45,33 @@ namespace Vital::Godot::Engine {
 
     class Canvas : public godot::Node2D {
         GDCLASS(Canvas, godot::Node2D)
+        protected:
+            static void _bind_methods() {}
+        private:
+            std::vector<DrawCommand> queue;
+        public:
+            // Instantiators //
+            Canvas() {};
+            ~Canvas() override = default;
+            void _ready() override;
+            void _clean();
+            void _process(double delta) override;
+            void _draw() override;
 
-    protected:
-        static void _bind_methods() {}
+            
+			// Utils //
+            void dx_draw_image(
+                const godot::Ref<godot::Texture2D>& texture,
+                float x, float y, float w, float h,
+                const godot::Color& color = godot::Color(1,1,1,1)
+            );
 
-    private:
-        std::vector<DrawCommand> queue;
-
-    public:
-        Canvas();
-        ~Canvas() override = default;
-        void _ready() override;
-        void _process(double delta) override;
-        void _draw() override;
-        inline void clear() { queue.clear(); }
-
-        void dx_draw_image(
-            const godot::Ref<godot::Texture2D>& texture,
-            float x, float y, float w, float h,
-            const godot::Color& color = godot::Color(1,1,1,1)
-        );
-
-        void dx_draw_text(
-            const godot::String& text,
-            float x, float y,
-            const godot::Ref<godot::Font>& font,
-            int font_size,
-            const godot::Color& color = godot::Color(1,1,1,1)
-        );
+            void dx_draw_text(
+                const godot::String& text,
+                float x, float y,
+                const godot::Ref<godot::Font>& font,
+                int font_size,
+                const godot::Color& color = godot::Color(1,1,1,1)
+            );
     };
 }

@@ -22,9 +22,7 @@
 ///////////////////////////
 
 namespace Vital::Godot::Engine {
-    // Instantiators //
-    Canvas::Canvas() {}
-    
+    // Instantiators //    
     void Canvas::_ready() {
         queue.reserve(256);
         set_z_index(9999);
@@ -35,11 +33,47 @@ namespace Vital::Godot::Engine {
         set_scale(godot::Vector2(1, 1));
     }
     
+    void Canvas::_clean() {
+        queue.clear();
+    }
+
     void Canvas::_process(double delta) {
         set_position(get_viewport() -> get_visible_rect().position);
         queue_redraw();
     }
-    
+
+    void Canvas::_draw() {
+        for (const DrawCommand& cmd : queue) {
+            switch (cmd.type) {
+                case DrawType::IMAGE: {    
+                    draw_texture_rect(
+                        cmd.texture,
+                        cmd.rect,
+                        false,
+                        cmd.color
+                    );
+                    break;
+                }
+                case DrawType::TEXT: {
+                    draw_string(
+                        cmd.font,
+                        cmd.position,
+                        cmd.text,
+                        godot::HORIZONTAL_ALIGNMENT_LEFT,
+                        -1,
+                        cmd.font_size,
+                        cmd.color
+                    );
+                    break;
+                }
+            }
+        }
+        _clean();
+        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
+    }
+
+
+    // Utils //
     void Canvas::dx_draw_image(
         const godot::Ref<godot::Texture2D>& texture,
         float x, float y, float w, float h,
@@ -70,48 +104,5 @@ namespace Vital::Godot::Engine {
         cmd.font_size = font_size;
         cmd.color = color;
         queue.push_back(cmd);
-    }
-    
-    void Canvas::_draw() {
-        godot::Viewport* viewport = get_viewport();
-        if (!viewport) return;
-
-        // THIS is the correct fix
-        const godot::Transform2D inv_canvas_xform =
-            viewport->get_global_canvas_transform().affine_inverse();
-    
-        for (const DrawCommand& cmd : queue) {
-            switch (cmd.type) {
-                case DrawType::IMAGE: {
-                    godot::Rect2 rect = cmd.rect;
-                    rect.position = inv_canvas_xform.xform(rect.position);
-    
-                    draw_texture_rect(
-                        cmd.texture,
-                        rect,
-                        false,
-                        cmd.color
-                    );
-                    break;
-                }
-                case DrawType::TEXT: {
-                    godot::Vector2 pos =
-                        inv_canvas_xform.xform(cmd.position);
-    
-                    draw_string(
-                        cmd.font,
-                        pos,
-                        cmd.text,
-                        godot::HORIZONTAL_ALIGNMENT_LEFT,
-                        -1,
-                        cmd.font_size,
-                        cmd.color
-                    );
-                    break;
-                }
-            }
-        }
-        clear();
-        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
     }
 }
