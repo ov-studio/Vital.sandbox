@@ -39,6 +39,9 @@ namespace Vital::Godot::Sandbox::Lua {
     Singleton* instance = nullptr;
     Vital::Sandbox::Lua::create* vm = nullptr;
 
+    godot::Ref<godot::Texture2D> tex;
+
+
     Singleton* Singleton::fetch() {
         instance = instance ? instance : memnew(Singleton());
         return instance;
@@ -111,6 +114,14 @@ namespace Vital::Godot::Sandbox::Lua {
 
         )";
         vm -> loadString(rwString);
+
+        tex = godot::ResourceLoader::get_singleton()->load("res://flower.jpg");
+    
+        if (tex.is_valid()) {
+            godot::UtilityFunctions::print("loaded tex");
+        } else {
+            godot::UtilityFunctions::print("failed to load tex");
+        }
     }
 
     void Singleton::process(double delta) {
@@ -120,6 +131,20 @@ namespace Vital::Godot::Sandbox::Lua {
         std::string rwString = R"(
             print("processing")
         )";
+        //vm -> loadString(rwString);
+    }
+
+    void Singleton::draw(Vital::Godot::Engine::Canvas* canvas) {
+        //godot::UtilityFunctions::print("rendered");
+        
+        // Lua script to run
+        std::string rwString = R"(
+            print("drawing")
+        )";
+
+        canvas -> dx_draw_image(tex, 20, 20, 300, 300);
+        canvas -> dx_draw_image(tex, 100, 500, 150, 150);
+
         //vm -> loadString(rwString);
 
     }
