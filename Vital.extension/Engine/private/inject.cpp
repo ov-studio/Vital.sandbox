@@ -22,7 +22,8 @@
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
-	godot::ClassDB::register_class<Vital::Godot::Engine::Singleton>();
+	godot::ClassDB::register_class<Vital::Godot::Engine::Singleton>(true);
+	godot::ClassDB::register_class<Vital::Godot::Engine::Canvas>(true);
 }
 
 void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
