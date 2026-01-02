@@ -21,26 +21,22 @@
 ///////////////////////////
 
 namespace Vital::Godot::Engine {
-    enum class DrawType {
+    enum class CanvasType {
         IMAGE,
         TEXT
     };
 
-    struct DrawCommand {
-        DrawType type;
-
-        // common
-        godot::Color color{1, 1, 1, 1};
-
-        // image
-        godot::Ref<godot::Texture2D> texture;
-        godot::Rect2 rect;
-
-        // text
-        godot::String text;
+    struct CanvasCommand {
+        CanvasType type;
         godot::Vector2 position;
+        godot::Rect2 rect;
+        godot::String text;
+        godot::Ref<godot::Texture2D> texture;
         godot::Ref<godot::Font> font;
-        int font_size = 16;
+        float rotation = 0.0f; // radians
+        godot::Vector2 pivot {0, 0};
+        godot::Color color {1, 1, 1, 1};
+        int font_size = 1;
     };
 
     class Canvas : public godot::Node2D {
@@ -48,7 +44,7 @@ namespace Vital::Godot::Engine {
         protected:
             static void _bind_methods() {}
         private:
-            std::vector<DrawCommand> queue;
+            std::vector<CanvasCommand> queue;
         public:
             // Instantiators //
             Canvas() {};
@@ -62,16 +58,13 @@ namespace Vital::Godot::Engine {
 			// Utils //
             void drawImage(
                 const godot::Ref<godot::Texture2D>& texture,
-                float x, float y, float w, float h,
-                const godot::Color& color = godot::Color(1,1,1,1)
-            );
-
-            void drawText(
-                const godot::String& text,
                 float x, float y,
-                const godot::Ref<godot::Font>& font,
-                int font_size,
-                const godot::Color& color = godot::Color(1,1,1,1)
+                float w, float h,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
             );
+            void drawText(const godot::String& text, float x, float y, const godot::Ref<godot::Font>& font, int font_size, const godot::Color& color = godot::Color(1, 1, 1, 1));
     };
 }

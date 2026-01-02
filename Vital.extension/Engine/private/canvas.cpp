@@ -43,18 +43,21 @@ namespace Vital::Godot::Engine {
     }
 
     void Canvas::_draw() {
-        for (const DrawCommand& cmd : queue) {
+        for (const CanvasCommand& cmd : queue) {
             switch (cmd.type) {
-                case DrawType::IMAGE: {    
+                case CanvasType::IMAGE: {
+                    godot::Vector2 center = cmd.rect.size*0.5f;
+                    godot::Vector2 pivot = center + cmd.pivot;
+                    draw_set_transform(cmd.rect.position + pivot, cmd.rotation, godot::Vector2(1, 1));
                     draw_texture_rect(
                         cmd.texture,
-                        cmd.rect,
+                        godot::Rect2(-pivot, cmd.rect.size),
                         false,
                         cmd.color
                     );
                     break;
                 }
-                case DrawType::TEXT: {
+                case CanvasType::TEXT: {
                     draw_string(
                         cmd.font,
                         cmd.position,
@@ -76,14 +79,20 @@ namespace Vital::Godot::Engine {
     // Utils //
     void Canvas::drawImage(
         const godot::Ref<godot::Texture2D>& texture,
-        float x, float y, float w, float h,
+        float x, float y,
+        float w, float h,
+        float rotation,
+        float pivot_x,
+        float pivot_y,
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;
-        DrawCommand cmd;
-        cmd.type = DrawType::IMAGE;
+        CanvasCommand cmd;
+        cmd.type = CanvasType::IMAGE;
         cmd.texture = texture;
         cmd.rect = godot::Rect2(x, y, w, h);
+        cmd.rotation = godot::Math::deg_to_rad(rotation);
+        cmd.pivot = godot::Vector2(pivot_x, pivot_y);
         cmd.color = color;
         queue.push_back(cmd);
     }
@@ -96,8 +105,8 @@ namespace Vital::Godot::Engine {
         const godot::Color& color
     ) {
         if (!font.is_valid()) return;
-        DrawCommand cmd;
-        cmd.type = DrawType::TEXT;
+        CanvasCommand cmd;
+        cmd.type = CanvasType::TEXT;
         cmd.text = text;
         cmd.position = godot::Vector2(x, y);
         cmd.font = font;
