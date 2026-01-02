@@ -29,11 +29,6 @@ namespace Vital::Godot::Engine {
     
     void Singleton::_ready() {
         godot::Node* root = get_root();
-        if (!root) {
-            godot::UtilityFunctions::print("ERROR: root is nullptr!");
-            return;
-        }
-        
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
         canvas = memnew(Canvas);
