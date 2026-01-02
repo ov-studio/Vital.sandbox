@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: private: index.cpp
+     Script: Engine: private: singleton.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Engine Utilities
+     Desc: Singleton Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Engine/public/index.h>
+#include <Vital.extension/Engine/public/singleton.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
 
@@ -54,11 +54,11 @@ namespace Vital::Godot::Engine {
         auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree->get_root() : nullptr;
     }
-
+    
     godot::ResourceLoader* Singleton::get_resource_loader() {
         return godot::ResourceLoader::get_singleton();
     }
-
+    
     godot::Ref<godot::Environment> Singleton::get_environment() {
         godot::Node* root = get_root();
         godot::WorldEnvironment* parent = nullptr;
@@ -73,24 +73,5 @@ namespace Vital::Godot::Engine {
             parent -> set_environment(env);
         }
         return parent -> get_environment();
-    }
-
-
-    // Instantiators //
-    Canvas::Canvas() {
-        godot::UtilityFunctions::print("Initialized canvas ye");
-    }
-    
-    void Canvas::_ready() {
-    }
-
-    void Canvas::_process(double delta) {
-        godot::UtilityFunctions::print("Processing canvas");
-        queue_redraw();
-    }
-
-    void Canvas::_draw() {
-        godot::UtilityFunctions::print("Drawing canvas");
-        //Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 }
