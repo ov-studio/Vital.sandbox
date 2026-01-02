@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/singleton.h>
+#include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
 
@@ -31,12 +32,12 @@ namespace Vital::Godot::Engine {
         godot::Node* root = get_root();
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
-        canvas = memnew(Canvas);
+        auto canvas = memnew(Canvas);
         godot::UtilityFunctions::print("Singleton _ready, editor_hint=", godot::Engine::get_singleton()->is_editor_hint());
-        canvas->set_name("_EngineCanvas");
-        canvas->set_z_index(9999); // always on top
-        canvas->set_visible(true);
-        root->call_deferred("add_child", canvas);
+        canvas -> set_name("_EngineCanvas");
+        canvas -> set_z_index(9999); // always on top
+        canvas -> set_visible(true);
+        root -> call_deferred("add_child", canvas);
     }
 
     void Singleton::_process(double delta) {
@@ -46,8 +47,8 @@ namespace Vital::Godot::Engine {
 
     // Getters //
     godot::Node* Singleton::get_root() {
-        auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
-        return tree ? tree->get_root() : nullptr;
+        auto* scenetree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        return scenetree ? scenetree -> get_root() : nullptr;
     }
     
     godot::ResourceLoader* Singleton::get_resource_loader() {

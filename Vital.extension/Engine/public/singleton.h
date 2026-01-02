@@ -26,7 +26,7 @@ namespace Vital::Godot::Engine {
 		protected:
 			static void _bind_methods() {};
 		private:
-			Canvas* canvas = nullptr;
+			void* canvas = nullptr;
 		public:
 			// Instantiators //
 			Singleton();
