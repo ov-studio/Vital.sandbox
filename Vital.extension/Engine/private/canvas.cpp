@@ -31,7 +31,7 @@ namespace Vital::Godot::Engine {
     }
     
     void Canvas::_process(double delta) {
-        godot::UtilityFunctions::print("Processing canvas");
+        set_position(get_viewport() -> get_visible_rect().position);
         queue_redraw();
     }
     
