@@ -118,7 +118,7 @@ namespace Vital::Godot::Sandbox::Lua {
         
         // Lua script to run
         std::string rwString = R"(
-        
+            print("processing")
         )";
         //vm -> loadString(rwString);
 
