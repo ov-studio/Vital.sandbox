@@ -23,11 +23,16 @@
 
 namespace Vital::Godot::Engine {
     // Instantiators //
-    Canvas::Canvas() {
-        godot::UtilityFunctions::print("Initialized canvas ye");
-    }
+    Canvas::Canvas() {}
     
     void Canvas::_ready() {
+        queue.reserve(256);
+        set_z_index(9999);
+        set_visible(true);
+        set_as_top_level(true);
+        set_position(godot::Vector2(0, 0));
+        set_rotation(0);
+        set_scale(godot::Vector2(1, 1));
     }
     
     void Canvas::_process(double delta) {
@@ -35,8 +40,78 @@ namespace Vital::Godot::Engine {
         queue_redraw();
     }
     
+    void Canvas::dx_draw_image(
+        const godot::Ref<godot::Texture2D>& texture,
+        float x, float y, float w, float h,
+        const godot::Color& color
+    ) {
+        if (!texture.is_valid()) return;
+        DrawCommand cmd;
+        cmd.type = DrawType::IMAGE;
+        cmd.texture = texture;
+        cmd.rect = godot::Rect2(x, y, w, h);
+        cmd.color = color;
+        queue.push_back(cmd);
+    }
+    
+    void Canvas::dx_draw_text(
+        const godot::String& text,
+        float x, float y,
+        const godot::Ref<godot::Font>& font,
+        int font_size,
+        const godot::Color& color
+    ) {
+        if (!font.is_valid()) return;
+        DrawCommand cmd;
+        cmd.type = DrawType::TEXT;
+        cmd.text = text;
+        cmd.position = godot::Vector2(x, y);
+        cmd.font = font;
+        cmd.font_size = font_size;
+        cmd.color = color;
+        queue.push_back(cmd);
+    }
+    
     void Canvas::_draw() {
-        godot::UtilityFunctions::print("Drawing canvas");
-        //Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
+        godot::Viewport* viewport = get_viewport();
+        if (!viewport) return;
+
+        // THIS is the correct fix
+        const godot::Transform2D inv_canvas_xform =
+            viewport->get_global_canvas_transform().affine_inverse();
+    
+        for (const DrawCommand& cmd : queue) {
+            switch (cmd.type) {
+                case DrawType::IMAGE: {
+                    godot::Rect2 rect = cmd.rect;
+                    rect.position = inv_canvas_xform.xform(rect.position);
+    
+                    draw_texture_rect(
+                        cmd.texture,
+                        rect,
+                        false,
+                        cmd.color
+                    );
+                    break;
+                }
+                case DrawType::TEXT: {
+                    godot::Vector2 pos =
+                        inv_canvas_xform.xform(cmd.position);
+    
+                    draw_string(
+                        cmd.font,
+                        pos,
+                        cmd.text,
+                        godot::HORIZONTAL_ALIGNMENT_LEFT,
+                        -1,
+                        cmd.font_size,
+                        cmd.color
+                    );
+                    break;
+                }
+            }
+        }
+        clear();
+        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
     }
 }
