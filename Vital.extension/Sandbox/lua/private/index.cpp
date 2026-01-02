@@ -106,7 +106,6 @@ namespace Vital::Godot::Sandbox::Lua {
             print("SSAO Enabled: ", ssao.setEnabled(true))
             print("SSAO Intensity: ", ssao.getIntensity())
             print("Adjustment Enabled:", adjustment.setEnabled(true))
-            print("ADJUSTMENT TEXTUR:", adjustment.setColorCorrectionTex("res://Berlin Sky.png"))
             print("SSAO Enabled: ", ssao.setEnabled(true))
             print("SSAO Intensity: ", ssao.setIntensity(5))
 

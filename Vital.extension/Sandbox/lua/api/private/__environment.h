@@ -192,8 +192,8 @@ public:
 	//float get_glow_hdr_luminance_cap() const;
 	//void set_glow_map_strength(float p_strength);
 	//float get_glow_map_strength() const;
-	void set_glow_map(const Ref<Texture> &p_mode);
-	Ref<Texture> get_glow_map() const;
+	//XXXX void set_glow_map(const Ref<Texture> &p_mode);
+	//XXXX Ref<Texture> get_glow_map() const;
 	//void set_fog_enabled(bool p_enabled);
 	//bool is_fog_enabled() const;
 	//void set_fog_mode(Environment::FogMode p_mode);
@@ -254,8 +254,8 @@ public:
 	//float get_adjustment_contrast() const;
 	//void set_adjustment_saturation(float p_saturation);
 	//float get_adjustment_saturation() const;
-	//void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
-	Ref<Texture> get_adjustment_color_correction() const;
+	//XXXX void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
+	//XXXX Ref<Texture> get_adjustment_color_correction() const;
 protected:
 	template <typename T, typename B>
 	static void register_virtuals() {

@@ -32,6 +32,7 @@ namespace Vital::Godot::Engine {
     }
     
     void Singleton::_ready() {
+        get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
     }
 
