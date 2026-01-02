@@ -22,6 +22,7 @@
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/environment.hpp>
@@ -65,5 +66,5 @@ namespace Vital::Godot::Engine {
 					else break;
 				}
 			}
-	};	
+	};
 }
