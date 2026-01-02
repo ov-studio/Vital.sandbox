@@ -60,13 +60,13 @@ namespace Vital::Godot::Engine {
 
             
 			// Utils //
-            void dx_draw_image(
+            void drawImage(
                 const godot::Ref<godot::Texture2D>& texture,
                 float x, float y, float w, float h,
                 const godot::Color& color = godot::Color(1,1,1,1)
             );
 
-            void dx_draw_text(
+            void drawText(
                 const godot::String& text,
                 float x, float y,
                 const godot::Ref<godot::Font>& font,

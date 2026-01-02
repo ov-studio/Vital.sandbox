@@ -142,8 +142,8 @@ namespace Vital::Godot::Sandbox::Lua {
             print("drawing")
         )";
 
-        canvas -> dx_draw_image(tex, 20, 20, 300, 300);
-        canvas -> dx_draw_image(tex, 100, 500, 150, 150);
+        canvas -> drawImage(tex, 20, 20, 300, 300);
+        canvas -> drawImage(tex, 100, 500, 150, 150);
 
         //vm -> loadString(rwString);
 

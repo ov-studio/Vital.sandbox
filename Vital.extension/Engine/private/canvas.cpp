@@ -74,7 +74,7 @@ namespace Vital::Godot::Engine {
 
 
     // Utils //
-    void Canvas::dx_draw_image(
+    void Canvas::drawImage(
         const godot::Ref<godot::Texture2D>& texture,
         float x, float y, float w, float h,
         const godot::Color& color
@@ -88,7 +88,7 @@ namespace Vital::Godot::Engine {
         queue.push_back(cmd);
     }
     
-    void Canvas::dx_draw_text(
+    void Canvas::drawText(
         const godot::String& text,
         float x, float y,
         const godot::Ref<godot::Font>& font,
