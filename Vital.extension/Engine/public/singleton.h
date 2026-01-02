@@ -21,12 +21,14 @@
 ///////////////////////////
 
 namespace Vital::Godot::Engine {
+	class Canvas;
+
 	class Singleton : public godot::Node {
 		GDCLASS(Singleton, godot::Node)
 		protected:
 			static void _bind_methods() {};
 		private:
-			void* canvas = nullptr;
+			Canvas* canvas = nullptr;
 		public:
 			// Instantiators //
 			Singleton();
