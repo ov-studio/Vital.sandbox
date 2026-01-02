@@ -29,13 +29,13 @@ namespace Vital::Godot::Engine {
     }
     
     void Singleton::_ready() {
-        godot::Node* root = get_root();
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
-        canvas = memnew(Canvas);
-        canvas -> set_z_index(9999);
-        canvas -> set_visible(true);
-        root -> add_child(canvas);
+        if (!godot::Engine::get_singleton() -> is_editor_hint()) {
+            canvas = memnew(Canvas);
+            godot::Node* root = get_tree() -> get_root();
+            root -> call_deferred("add_child", canvas);
+        }
     }
 
     void Singleton::_process(double delta) {
@@ -61,7 +61,7 @@ namespace Vital::Godot::Engine {
         if (!nodes.empty()) parent = nodes[0];
         else {
             parent = memnew(godot::WorldEnvironment);
-            root -> add_child(parent);
+            root -> call_deferred("add_child", parent);
             godot::Ref<godot::Environment> env;
             env.instantiate();
             parent -> set_environment(env);
