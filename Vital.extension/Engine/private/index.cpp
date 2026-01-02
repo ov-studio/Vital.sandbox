@@ -28,8 +28,20 @@ namespace Vital::Godot::Engine {
     }
     
     void Singleton::_ready() {
+        godot::Node* root = get_root();
+        if (!root) {
+            godot::UtilityFunctions::print("ERROR: root is nullptr!");
+            return;
+        }
+        
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
+        canvas = memnew(Canvas);
+        godot::UtilityFunctions::print("Singleton _ready, editor_hint=", godot::Engine::get_singleton()->is_editor_hint());
+        canvas->set_name("_EngineCanvas");
+        canvas->set_z_index(9999); // always on top
+        canvas->set_visible(true);
+        root->call_deferred("add_child", canvas);
     }
 
     void Singleton::_process(double delta) {
@@ -39,7 +51,8 @@ namespace Vital::Godot::Engine {
 
     // Getters //
     godot::Node* Singleton::get_root() {
-        return godot::Engine::get_singleton() -> is_editor_hint() ? godot::EditorInterface::get_singleton() -> get_edited_scene_root() : godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop()) -> get_root();
+        auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        return tree ? tree->get_root() : nullptr;
     }
 
     godot::ResourceLoader* Singleton::get_resource_loader() {
@@ -60,5 +73,24 @@ namespace Vital::Godot::Engine {
             parent -> set_environment(env);
         }
         return parent -> get_environment();
+    }
+
+
+    // Instantiators //
+    Canvas::Canvas() {
+        godot::UtilityFunctions::print("Initialized canvas ye");
+    }
+    
+    void Canvas::_ready() {
+    }
+
+    void Canvas::_process(double delta) {
+        godot::UtilityFunctions::print("Processing canvas");
+        queue_redraw();
+    }
+
+    void Canvas::_draw() {
+        godot::UtilityFunctions::print("Drawing canvas");
+        //Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 }
