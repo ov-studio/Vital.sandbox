@@ -106,9 +106,7 @@ namespace Vital::Godot::Canvas {
         float pivot_x, float pivot_y, 
         const godot::Color& color
     ) {
-        godot::Ref<godot::Texture2D> texture = get_texture_from_path(path);
-        if (!texture.is_valid()) return;
-        drawImage(texture, x, y, w, h, rotation, pivot_x, pivot_y, color);
+        drawImage(get_texture_from_path(path), x, y, w, h, rotation, pivot_x, pivot_y, color);
     }
 
     void Singleton::drawImage(
