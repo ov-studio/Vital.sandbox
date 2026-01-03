@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////
 
 void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
-    auto vm = static_cast<Vital::Sandbox::Lua::vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     Vital::Sandbox::Lua::API::bind(vm, "environment", "set_sky_custom_fov", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);

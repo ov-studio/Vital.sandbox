@@ -21,7 +21,7 @@
 ///////////////////////////////////////////
 
 void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
-    auto vm = static_cast<Vital::Sandbox::Lua::vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     #if defined(Vital_SDK_Client)
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "setEnabled", [](auto* ref) -> int {
