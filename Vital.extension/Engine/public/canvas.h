@@ -42,11 +42,9 @@ namespace Vital::Godot::Canvas {
         godot::Color color {1, 1, 1, 1};
     };
 
-    using CommandPayload = std::variant<ImageCommand, TextCommand>;
-
     struct Command {
         Type type;
-        CommandPayload payload;
+        std::variant<ImageCommand, TextCommand> payload;
     };
 
     class Singleton : public godot::Node2D {
