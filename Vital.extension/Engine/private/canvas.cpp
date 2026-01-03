@@ -35,6 +35,7 @@ namespace Vital::Godot::Engine {
     
     void Canvas::_clean() {
         queue.clear();
+        cache.clear();
     }
 
     void Canvas::_process(double delta) {
@@ -77,6 +78,46 @@ namespace Vital::Godot::Engine {
 
 
     // Utils //
+    godot::Ref<godot::Texture2D> Canvas::get_texture_from_path(const std::string& path) {
+        auto it = cache.find(path);
+        if (it != cache.end())
+            return it->second;
+    
+        godot::Ref<godot::Texture2D> tex =
+            godot::ResourceLoader::get_singleton()
+                ->load(path.c_str(), "Texture2D");
+    
+        if (!tex.is_valid()) {
+            godot::UtilityFunctions::printerr("dxDrawImage: failed to load ", path.c_str());
+            return nullptr;
+        }
+    
+        cache[path] = tex;
+        return tex;
+    }
+
+    void Canvas::drawImage(
+        const std::string& path,
+        float x, float y,
+        float w, float h,
+        float rotation,
+        float pivot_x,
+        float pivot_y,
+        const godot::Color& color
+    ) {
+        godot::Ref<godot::Texture2D> texture = get_texture_from_path(path);
+        if (!texture.is_valid()) return;
+        CanvasCommand cmd;
+        cmd.type = CanvasType::IMAGE;
+        cmd.texture = texture;
+        cmd.rect = godot::Rect2(x, y, w, h);
+        cmd.rotation = godot::Math::deg_to_rad(rotation);
+        cmd.pivot = godot::Vector2(pivot_x, pivot_y);
+        cmd.color = color;
+    
+        queue.push_back(cmd);
+    }
+
     void Canvas::drawImage(
         const godot::Ref<godot::Texture2D>& texture,
         float x, float y,

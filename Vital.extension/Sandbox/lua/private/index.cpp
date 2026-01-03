@@ -115,7 +115,7 @@ namespace Vital::Godot::Sandbox::Lua {
         )";
         vm -> loadString(rwString);
 
-        tex = godot::ResourceLoader::get_singleton()->load("res://flower.jpg");
+        tex = godot::ResourceLoader::get_singleton()->load("res://flower.jpg", "Texture2D");
     
         if (tex.is_valid()) {
             godot::UtilityFunctions::print("loaded tex");
@@ -143,7 +143,7 @@ namespace Vital::Godot::Sandbox::Lua {
         )";
 
         float rotation = std::sin(Vital::System::getTick()*0.0001)*360.0f;
-        canvas -> drawImage(tex, 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.25));
+        canvas -> drawImage("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.25));
         canvas -> drawImage(tex, 100, 500, 150, 150);
         //vm -> loadString(rwString);
 

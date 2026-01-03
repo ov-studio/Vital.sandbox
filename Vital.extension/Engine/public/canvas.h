@@ -45,6 +45,7 @@ namespace Vital::Godot::Engine {
             static void _bind_methods() {}
         private:
             std::vector<CanvasCommand> queue;
+            std::unordered_map<std::string, godot::Ref<godot::Texture2D>> cache;
         public:
             // Instantiators //
             Canvas() {};
@@ -55,7 +56,18 @@ namespace Vital::Godot::Engine {
             void _draw() override;
 
             
-			// Utils //
+            // Utils //
+            godot::Ref<godot::Texture2D> get_texture_from_path(const std::string& path);
+
+            void drawImage(
+                const std::string& path,
+                float x, float y,
+                float w, float h,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
             void drawImage(
                 const godot::Ref<godot::Texture2D>& texture,
                 float x, float y,
@@ -65,6 +77,7 @@ namespace Vital::Godot::Engine {
                 float pivot_y = 0.0f,
                 const godot::Color& color = godot::Color(1, 1, 1, 1)
             );
+
             void drawText(const godot::String& text, float x, float y, const godot::Ref<godot::Font>& font, int font_size, const godot::Color& color = godot::Color(1, 1, 1, 1));
     };
 }
