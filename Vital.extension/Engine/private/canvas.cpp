@@ -35,7 +35,7 @@ namespace Vital::Godot::Canvas {
     
     void Singleton::_clean() {
         queue.clear();
-        cache.clear();
+        textures.clear();
     }
 
     void Singleton::_process(double delta) {
@@ -79,8 +79,8 @@ namespace Vital::Godot::Canvas {
 
     // Utils //
     godot::Ref<godot::Texture2D> Singleton::get_texture_from_path(const std::string& path) {
-        auto it = cache.find(path);
-        if (it != cache.end())
+        auto it = textures.find(path);
+        if (it != textures.end())
             return it->second;
     
         godot::Ref<godot::Texture2D> tex =
@@ -92,7 +92,7 @@ namespace Vital::Godot::Canvas {
             return nullptr;
         }
     
-        cache[path] = tex;
+        textures[path] = tex;
         return tex;
     }
 

@@ -45,7 +45,7 @@ namespace Vital::Godot::Canvas {
             static void _bind_methods() {}
         private:
             std::vector<Command> queue;
-            std::unordered_map<std::string, godot::Ref<godot::Texture2D>> cache;
+            std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
         public:
             // Instantiators //
             Singleton() {};
