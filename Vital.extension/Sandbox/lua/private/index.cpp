@@ -143,18 +143,51 @@ namespace Vital::Godot::Sandbox::Lua {
             print("drawing")
         )";
 
+        std::string text = "Hello from Anisa\nfrom\nNetherland";
         float rotation = std::sin(Vital::System::getTick()*0.0001)*360.0f;
-        //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.25));
-        canvas -> draw_image("res://flower.jpg", 100, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.25));
+        //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_image("res://flower.jpg", 100 + (310)*0, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
-            "Hello from Anisa ))",
-            100, 20,
-            100 + 300, 20 + 300,
+            text.c_str(),
+            100 + (310)*0, 20,
+            100 + (310)*0 + 300, 20 + 300,
             font,
             20,
             godot::Color(1, 1, 1, 1),
             godot::HORIZONTAL_ALIGNMENT_CENTER,
             godot::VERTICAL_ALIGNMENT_TOP,
+            false,
+            false,
+            0.0f,
+            0.0f, 0.0f
+        );
+
+        canvas -> draw_image("res://flower.jpg", 100 + (310)*1, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_text(
+            text.c_str(),
+            100 + (310)*1, 20,
+            100 + (310)*1 + 300, 20 + 300,
+            font,
+            20,
+            godot::Color(1, 1, 1, 1),
+            godot::HORIZONTAL_ALIGNMENT_CENTER,
+            godot::VERTICAL_ALIGNMENT_CENTER,
+            false,
+            false,
+            0.0f,
+            0.0f, 0.0f
+        );
+
+        canvas -> draw_image("res://flower.jpg", 100 + (310)*2, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_text(
+            text.c_str(),
+            100 + (310)*2, 20,
+            100 + (310)*2 + 300, 20 + 300,
+            font,
+            20,
+            godot::Color(1, 1, 1, 1),
+            godot::HORIZONTAL_ALIGNMENT_CENTER,
+            godot::VERTICAL_ALIGNMENT_BOTTOM,
             false,
             false,
             0.0f,
