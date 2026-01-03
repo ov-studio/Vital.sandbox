@@ -33,7 +33,7 @@ namespace Vital::Godot::Engine {
         godot::String text;
         godot::Ref<godot::Texture2D> texture;
         godot::Ref<godot::Font> font;
-        float rotation = 0.0f; // radians
+        float rotation = 0.0f;
         godot::Vector2 pivot {0, 0};
         godot::Color color {1, 1, 1, 1};
         int font_size = 1;
