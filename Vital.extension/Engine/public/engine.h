@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: public: singleton.h
+     Script: Engine: public: engine.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Singleton Utilities
+     Desc: Engine Utilities
 ----------------------------------------------------------------*/
 
 

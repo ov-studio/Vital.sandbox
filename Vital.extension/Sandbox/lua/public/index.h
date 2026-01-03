@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Engine/public/singleton.h>
+#include <Vital.extension/Engine/public/engine.h>
 #include <Vital.extension/Engine/public/canvas.h>
 
 

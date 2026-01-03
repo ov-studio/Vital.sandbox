@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: private: singleton.cpp
+     Script: Engine: private: engine.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Singleton Utilities
+     Desc: Engine Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Engine/public/singleton.h>
+#include <Vital.extension/Engine/public/engine.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
