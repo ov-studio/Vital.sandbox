@@ -44,9 +44,10 @@ namespace Vital::Godot::Canvas {
     }
 
     void Singleton::_draw() {
-        for (const Command& cmd : queue) {
-            switch (cmd.type) {
+        for (const Command& i : queue) {
+            switch (i.type) {
                 case Type::IMAGE: {
+                    const auto& cmd = std::get<ImageCommand>(i.payload);
                     godot::Vector2 center = cmd.rect.size*0.5f;
                     godot::Vector2 pivot = center + cmd.pivot;
                     draw_set_transform(cmd.rect.position + pivot, cmd.rotation, godot::Vector2(1, 1));
@@ -59,6 +60,7 @@ namespace Vital::Godot::Canvas {
                     break;
                 }
                 case Type::TEXT: {
+                    const auto& cmd = std::get<TextCommand>(i.payload);
                     draw_string(
                         cmd.font,
                         cmd.position,
@@ -107,15 +109,16 @@ namespace Vital::Godot::Canvas {
     ) {
         godot::Ref<godot::Texture2D> texture = get_texture_from_path(path);
         if (!texture.is_valid()) return;
-        Command cmd;
-        cmd.type = Type::IMAGE;
+        ImageCommand cmd;
         cmd.texture = texture;
         cmd.rect = godot::Rect2(x, y, w, h);
         cmd.rotation = godot::Math::deg_to_rad(rotation);
         cmd.pivot = godot::Vector2(pivot_x, pivot_y);
         cmd.color = color;
-    
-        queue.push_back(cmd);
+        queue.push_back(Command {
+            Type::IMAGE,
+            std::move(cmd)
+        });
     }
 
     void Singleton::drawImage(
@@ -128,14 +131,16 @@ namespace Vital::Godot::Canvas {
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;
-        Command cmd;
-        cmd.type = Type::IMAGE;
+        ImageCommand cmd;
         cmd.texture = texture;
         cmd.rect = godot::Rect2(x, y, w, h);
         cmd.rotation = godot::Math::deg_to_rad(rotation);
         cmd.pivot = godot::Vector2(pivot_x, pivot_y);
         cmd.color = color;
-        queue.push_back(cmd);
+        queue.push_back(Command {
+            Type::IMAGE,
+            std::move(cmd)
+        });
     }
     
     void Singleton::drawText(
@@ -146,13 +151,15 @@ namespace Vital::Godot::Canvas {
         const godot::Color& color
     ) {
         if (!font.is_valid()) return;
-        Command cmd;
-        cmd.type = Type::TEXT;
+        TextCommand cmd;
         cmd.text = text;
         cmd.position = godot::Vector2(x, y);
         cmd.font = font;
         cmd.font_size = font_size;
         cmd.color = color;
-        queue.push_back(cmd);
+        queue.push_back(Command {
+            Type::TEXT,
+            std::move(cmd)
+        });
     }
 }

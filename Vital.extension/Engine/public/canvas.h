@@ -26,17 +26,27 @@ namespace Vital::Godot::Canvas {
         TEXT
     };
 
-    struct Command {
-        Type type;
-        godot::Vector2 position;
-        godot::Rect2 rect;
-        godot::String text;
+    struct ImageCommand {
         godot::Ref<godot::Texture2D> texture;
-        godot::Ref<godot::Font> font;
+        godot::Rect2 rect;
         float rotation = 0.0f;
         godot::Vector2 pivot {0, 0};
         godot::Color color {1, 1, 1, 1};
-        int font_size = 1;
+    };
+
+    struct TextCommand {
+        godot::String text;
+        godot::Vector2 position;
+        godot::Ref<godot::Font> font;
+        int font_size = 16;
+        godot::Color color {1, 1, 1, 1};
+    };
+
+    using CommandPayload = std::variant<ImageCommand, TextCommand>;
+
+    struct Command {
+        Type type;
+        CommandPayload payload;
     };
 
     class Singleton : public godot::Node2D {
