@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/index.h>
+#include <Vital.extension/Engine/public/canvas.h>
 
 
 ///////////////////////////
@@ -26,7 +27,7 @@ namespace Vital::Godot::Engine {
 		protected:
 			static void _bind_methods() {};
 		private:
-			void* canvas = nullptr;
+			Vital::Godot::Canvas::Singleton* canvas = nullptr;
 		public:
 			// Instantiators //
 			Singleton();
