@@ -44,7 +44,7 @@ namespace Vital::Godot::Canvas {
     }
 
     void Singleton::_draw() {
-        for (const Command& command : queue) {
+        for (const auto& command : queue) {
             switch (command.type) {
                 case Type::IMAGE: {
                     const auto &payload = std::get<ImageCommand>(command.payload);
@@ -115,10 +115,7 @@ namespace Vital::Godot::Canvas {
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = godot::Vector2(pivot_x, pivot_y);
         payload.color = color;
-        queue.push_back(Command {
-            Type::IMAGE,
-            std::move(payload)
-        });
+        queue.push_back(Command {Type::IMAGE, std::move(payload)});
     }
 
     void Singleton::drawImage(
@@ -137,10 +134,7 @@ namespace Vital::Godot::Canvas {
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = godot::Vector2(pivot_x, pivot_y);
         payload.color = color;
-        queue.push_back(Command {
-            Type::IMAGE,
-            std::move(payload)
-        });
+        queue.push_back(Command {Type::IMAGE, std::move(payload)});
     }
     
     void Singleton::drawText(
@@ -157,9 +151,6 @@ namespace Vital::Godot::Canvas {
         payload.font = font;
         payload.font_size = font_size;
         payload.color = color;
-        queue.push_back(Command {
-            Type::TEXT,
-            std::move(payload)
-        });
+        queue.push_back(Command {Type::TEXT, std::move(payload)});
     }
 }
