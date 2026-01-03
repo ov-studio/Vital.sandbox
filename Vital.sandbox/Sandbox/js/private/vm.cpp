@@ -46,6 +46,7 @@ namespace Vital::Sandbox::JS {
     }
     vsdk_vms fetchVMs() { return vms; }
     vsdk_vm* fetchVM(vsdk_ref* vm) { return vms.find(vm) != vms.end() ? vms.at(vm) : nullptr; }
+    vsdk_vm* toVM(void* vm) { return static_cast<vsdk_vm*>(vm); }
 
     // Checkers //
     bool create::isNil(int index) { return duk_is_null_or_undefined(vm, index); }

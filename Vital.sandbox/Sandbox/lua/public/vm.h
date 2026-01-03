@@ -135,4 +135,5 @@ namespace Vital::Sandbox::Lua {
     typedef std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
     extern vsdk_vms fetchVMs();
     extern vsdk_vm* fetchVM(vsdk_ref* vm);
+    extern vsdk_vm* toVM(void* vm);
 }
