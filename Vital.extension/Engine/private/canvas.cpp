@@ -25,7 +25,7 @@ namespace Vital::Godot::Canvas {
     // Instantiators //    
     void Singleton::_ready() {
         queue.reserve(256);
-        set_z_index(9999);
+        set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
         set_visible(true);
         set_as_top_level(true);
         set_position(godot::Vector2(0, 0));
