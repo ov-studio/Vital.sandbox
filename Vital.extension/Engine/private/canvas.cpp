@@ -99,23 +99,16 @@ namespace Vital::Godot::Canvas {
     }
 
     void Singleton::drawImage(
-        const std::string& path,
-        float x, float y,
-        float w, float h,
-        float rotation,
-        float pivot_x,
-        float pivot_y,
+        const std::string& path, 
+        float x, float y, 
+        float w, float h, 
+        float rotation, 
+        float pivot_x, float pivot_y, 
         const godot::Color& color
     ) {
         godot::Ref<godot::Texture2D> texture = get_texture_from_path(path);
         if (!texture.is_valid()) return;
-        ImageCommand payload;
-        payload.texture = texture;
-        payload.rect = godot::Rect2(x, y, w, h);
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = godot::Vector2(pivot_x, pivot_y);
-        payload.color = color;
-        queue.push_back(Command {Type::IMAGE, std::move(payload)});
+        drawImage(texture, x, y, w, h, rotation, pivot_x, pivot_y, color);
     }
 
     void Singleton::drawImage(
@@ -123,8 +116,7 @@ namespace Vital::Godot::Canvas {
         float x, float y,
         float w, float h,
         float rotation,
-        float pivot_x,
-        float pivot_y,
+        float pivot_x, float pivot_y,
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;

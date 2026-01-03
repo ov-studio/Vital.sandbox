@@ -72,8 +72,7 @@ namespace Vital::Godot::Canvas {
                 float x, float y,
                 float w, float h,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                float pivot_x = 0.0f, float pivot_y = 0.0f,
                 const godot::Color& color = godot::Color(1, 1, 1, 1)
             );
             void drawImage(
@@ -81,8 +80,7 @@ namespace Vital::Godot::Canvas {
                 float x, float y,
                 float w, float h,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                float pivot_x = 0.0f, float pivot_y = 0.0f,
                 const godot::Color& color = godot::Color(1, 1, 1, 1)
             );
 
