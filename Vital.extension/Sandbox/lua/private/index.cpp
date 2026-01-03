@@ -143,8 +143,8 @@ namespace Vital::Godot::Sandbox::Lua {
         )";
 
         float rotation = std::sin(Vital::System::getTick()*0.0001)*360.0f;
-        canvas -> drawImage("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.25));
-        canvas -> drawImage(tex, 100, 500, 150, 150);
+        canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.25));
+        canvas -> draw_image(tex, 100, 500, 150, 150);
         //vm -> loadString(rwString);
 
     }

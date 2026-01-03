@@ -65,17 +65,9 @@ namespace Vital::Godot::Canvas {
 
             
             // Utils //
-            godot::Ref<godot::Texture2D> get_texture_from_path(const std::string& path);
-
-            void drawImage(
-                const std::string& path,
-                float x, float y,
-                float w, float h,
-                float rotation = 0.0f,
-                float pivot_x = 0.0f, float pivot_y = 0.0f,
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
-            );
-            void drawImage(
+            godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
+        
+            void draw_image(
                 const godot::Ref<godot::Texture2D>& texture,
                 float x, float y,
                 float w, float h,
@@ -84,6 +76,21 @@ namespace Vital::Godot::Canvas {
                 const godot::Color& color = godot::Color(1, 1, 1, 1)
             );
 
-            void drawText(const godot::String& text, float x, float y, const godot::Ref<godot::Font>& font, int font_size, const godot::Color& color = godot::Color(1, 1, 1, 1));
+            void draw_image(
+                const std::string& path,
+                float x, float y,
+                float w, float h,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f, float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
+        
+            void draw_text(
+                const godot::String& text, 
+                float x, float y, 
+                const godot::Ref<godot::Font>& font, 
+                int font_size, 
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
     };
 }

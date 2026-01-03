@@ -80,36 +80,16 @@ namespace Vital::Godot::Canvas {
 
 
     // Utils //
-    godot::Ref<godot::Texture2D> Singleton::get_texture_from_path(const std::string& path) {
-        auto it = textures.find(path);
-        if (it != textures.end())
-            return it->second;
-    
-        godot::Ref<godot::Texture2D> tex =
-            godot::ResourceLoader::get_singleton()
-                ->load(path.c_str(), "Texture2D");
-    
-        if (!tex.is_valid()) {
-            godot::UtilityFunctions::printerr("dxDrawImage: failed to load ", path.c_str());
-            return nullptr;
-        }
-    
-        textures[path] = tex;
+    godot::Ref<godot::Texture2D> Singleton::fetch_texture(const std::string& path) {
+        auto match = textures.find(path);
+        if (match != textures.end()) return match -> second;
+        godot::Ref<godot::Texture2D> tex = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
+        if (!tex.is_valid()) return nullptr;    
+        textures.emplace(path, tex);
         return tex;
     }
 
-    void Singleton::drawImage(
-        const std::string& path, 
-        float x, float y, 
-        float w, float h, 
-        float rotation, 
-        float pivot_x, float pivot_y, 
-        const godot::Color& color
-    ) {
-        drawImage(get_texture_from_path(path), x, y, w, h, rotation, pivot_x, pivot_y, color);
-    }
-
-    void Singleton::drawImage(
+    void Singleton::draw_image(
         const godot::Ref<godot::Texture2D>& texture,
         float x, float y,
         float w, float h,
@@ -126,8 +106,19 @@ namespace Vital::Godot::Canvas {
         payload.color = color;
         queue.push_back(Command {Type::IMAGE, std::move(payload)});
     }
-    
-    void Singleton::drawText(
+
+    void Singleton::draw_image(
+        const std::string& path, 
+        float x, float y, 
+        float w, float h, 
+        float rotation, 
+        float pivot_x, float pivot_y, 
+        const godot::Color& color
+    ) {
+        draw_image(fetch_texture(path), x, y, w, h, rotation, pivot_x, pivot_y, color);
+    }
+
+    void Singleton::draw_text(
         const godot::String& text,
         float x, float y,
         const godot::Ref<godot::Font>& font,
