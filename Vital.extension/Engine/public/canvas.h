@@ -30,10 +30,11 @@ namespace Vital::Godot::Canvas {
         godot::Ref<godot::Texture2D> texture;
         godot::Rect2 rect;
         float rotation = 0.0f;
-        godot::Vector2 pivot {0, 0};
-        godot::Color color {1, 1, 1, 1};
+        godot::Vector2 pivot = {0, 0};
+        godot::Color color = {1, 1, 1, 1};
     };
 
+    /*
     struct TextCommand {
         godot::String text;
         godot::Vector2 position;
@@ -41,7 +42,40 @@ namespace Vital::Godot::Canvas {
         int font_size = 16;
         godot::Color color {1, 1, 1, 1};
     };
+    */
 
+    struct TextCommand {
+        // Text content
+        godot::String text;
+    
+        // Font
+        godot::Ref<godot::Font> font;
+        int font_size = 16;
+    
+        // Drawing position (BASELINE-CORRECTED)
+        godot::Vector2 position = {0, 0};
+    
+        // Bounding rectangle (MTA left_x, top_y, right_x, bottom_y)
+        godot::Rect2 rect;
+    
+        // Color
+        godot::Color color = {1, 1, 1, 1};
+    
+        // Alignment (already resolved before enqueue, kept for debug/future)
+        godot::HorizontalAlignment align_x;
+        godot::VerticalAlignment align_y;
+    
+        // Rotation
+        float rotation = 0.0f;                // radians
+        godot::Vector2 pivot = {0, 0};
+    
+        // Behavior flags
+        bool clip = false;
+        bool word_break = false;
+        bool color_coded = false;
+    };
+    
+    
     struct Command {
         Type type;
         std::variant<ImageCommand, TextCommand> payload;
@@ -87,12 +121,19 @@ namespace Vital::Godot::Canvas {
                 const godot::Color& color = godot::Color(1, 1, 1, 1)
             );
         
-            void draw_text(
-                const godot::String& text, 
-                float x, float y, 
-                const godot::Ref<godot::Font>& font, 
-                int font_size, 
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            void Singleton::draw_text(
+                const godot::String& text,
+                float left_x, float top_y,
+                float right_x, float bottom_y,
+                const godot::Ref<godot::Font>& font,
+                int font_size,
+                const godot::Color& color,
+                godot::HorizontalAlignment alignment_x,
+                godot::VerticalAlignment alignment_y,
+                bool clip = false,
+                bool wordbreak = false,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f, float pivot_y = 0.0f
             );
     };
 }

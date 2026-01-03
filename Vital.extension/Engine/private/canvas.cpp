@@ -60,18 +60,41 @@ namespace Vital::Godot::Canvas {
                     break;
                 }
                 case Type::TEXT: {
-                    const auto &payload = std::get<TextCommand>(command.payload);
-                    draw_string(
+                    const TextCommand &payload = std::get<TextCommand>(command.payload);
+                    godot::Vector2 center = payload.rect.size*0.5f;
+                    godot::Vector2 pivot = center + payload.pivot;
+                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
+
+
+                    // -----------------------------
+                    // 1. Rotation (optional)
+                    // -----------------------------
+                    if (payload.rotation != 0.0f) {
+                        draw_set_transform(
+                            payload.rect.position + payload.pivot,
+                            payload.rotation,
+                            godot::Vector2(1, 1)
+                        );
+                    }
+                    else {
+                        draw_set_transform(
+                            godot::Vector2(),
+                            0.0f,
+                            godot::Vector2(1, 1)
+                        );
+                    }
+                
+                    draw_multiline_string(
                         payload.font,
-                        payload.position,
+                        payload.rect.position,
                         payload.text,
-                        godot::HORIZONTAL_ALIGNMENT_LEFT,
-                        -1,
-                        payload.font_size,
-                        payload.color
+                        payload.align_x,
+                        payload.rect.size.x,
+                        payload.font_size
                     );
                     break;
-                }
+                }                
+                
             }
         }
         _clean();
@@ -122,18 +145,43 @@ namespace Vital::Godot::Canvas {
 
     void Singleton::draw_text(
         const godot::String& text,
-        float x, float y,
+        float left_x, float top_y,
+        float right_x, float bottom_y,
         const godot::Ref<godot::Font>& font,
         int font_size,
-        const godot::Color& color
+        const godot::Color& color,
+        godot::HorizontalAlignment alignment_x, godot::VerticalAlignment alignment_y,
+        bool clip,
+        bool wordbreak,
+        float rotation,
+        float pivot_x, float pivot_y
     ) {
-        if (!font.is_valid()) return;
+        if (!font.is_valid() || text.is_empty()) return;
         TextCommand payload;
         payload.text = text;
-        payload.position = godot::Vector2(x, y);
         payload.font = font;
         payload.font_size = font_size;
         payload.color = color;
-        queue.push_back(Command {Type::TEXT, std::move(payload)});
+        payload.rect = godot::Rect2(left_x, top_y, right_x - left_x, bottom_y - top_y);
+        payload.align_x = alignment_x;
+        payload.align_y = alignment_y;
+        payload.position = godot::Vector2(left_x, top_y);
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = godot::Vector2(pivot_x, pivot_y);
+        payload.clip = clip;
+        payload.word_break = wordbreak;
+
+        const float ascent = payload.font -> get_ascent(payload.font_size);
+        payload.rect.position.y += ascent;
+    
+        godot::Vector2 text_size = payload.font -> get_multiline_string_size(
+            payload.text,
+            payload.align_x,
+            payload.rect.size.x,
+            payload.font_size
+        );
+        if (payload.align_y == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - text_size.y) * 0.5f;
+        else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - text_size.y;
+        queue.push_back(Command{Type::TEXT, std::move(payload)});
     }
 }
