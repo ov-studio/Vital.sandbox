@@ -18,12 +18,12 @@
 
 
 ///////////////////////////
-// Vital: Godot: Engine //
+// Vital: Godot: Canvas //
 ///////////////////////////
 
-namespace Vital::Godot::Engine {
+namespace Vital::Godot::Canvas {
     // Instantiators //    
-    void Canvas::_ready() {
+    void Singleton::_ready() {
         queue.reserve(256);
         set_z_index(9999);
         set_visible(true);
@@ -33,20 +33,20 @@ namespace Vital::Godot::Engine {
         set_scale(godot::Vector2(1, 1));
     }
     
-    void Canvas::_clean() {
+    void Singleton::_clean() {
         queue.clear();
         cache.clear();
     }
 
-    void Canvas::_process(double delta) {
+    void Singleton::_process(double delta) {
         set_position(get_viewport() -> get_visible_rect().position);
         queue_redraw();
     }
 
-    void Canvas::_draw() {
-        for (const CanvasCommand& cmd : queue) {
+    void Singleton::_draw() {
+        for (const Command& cmd : queue) {
             switch (cmd.type) {
-                case CanvasType::IMAGE: {
+                case Type::IMAGE: {
                     godot::Vector2 center = cmd.rect.size*0.5f;
                     godot::Vector2 pivot = center + cmd.pivot;
                     draw_set_transform(cmd.rect.position + pivot, cmd.rotation, godot::Vector2(1, 1));
@@ -58,7 +58,7 @@ namespace Vital::Godot::Engine {
                     );
                     break;
                 }
-                case CanvasType::TEXT: {
+                case Type::TEXT: {
                     draw_string(
                         cmd.font,
                         cmd.position,
@@ -78,7 +78,7 @@ namespace Vital::Godot::Engine {
 
 
     // Utils //
-    godot::Ref<godot::Texture2D> Canvas::get_texture_from_path(const std::string& path) {
+    godot::Ref<godot::Texture2D> Singleton::get_texture_from_path(const std::string& path) {
         auto it = cache.find(path);
         if (it != cache.end())
             return it->second;
@@ -96,7 +96,7 @@ namespace Vital::Godot::Engine {
         return tex;
     }
 
-    void Canvas::drawImage(
+    void Singleton::drawImage(
         const std::string& path,
         float x, float y,
         float w, float h,
@@ -107,8 +107,8 @@ namespace Vital::Godot::Engine {
     ) {
         godot::Ref<godot::Texture2D> texture = get_texture_from_path(path);
         if (!texture.is_valid()) return;
-        CanvasCommand cmd;
-        cmd.type = CanvasType::IMAGE;
+        Command cmd;
+        cmd.type = Type::IMAGE;
         cmd.texture = texture;
         cmd.rect = godot::Rect2(x, y, w, h);
         cmd.rotation = godot::Math::deg_to_rad(rotation);
@@ -118,7 +118,7 @@ namespace Vital::Godot::Engine {
         queue.push_back(cmd);
     }
 
-    void Canvas::drawImage(
+    void Singleton::drawImage(
         const godot::Ref<godot::Texture2D>& texture,
         float x, float y,
         float w, float h,
@@ -128,8 +128,8 @@ namespace Vital::Godot::Engine {
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;
-        CanvasCommand cmd;
-        cmd.type = CanvasType::IMAGE;
+        Command cmd;
+        cmd.type = Type::IMAGE;
         cmd.texture = texture;
         cmd.rect = godot::Rect2(x, y, w, h);
         cmd.rotation = godot::Math::deg_to_rad(rotation);
@@ -138,7 +138,7 @@ namespace Vital::Godot::Engine {
         queue.push_back(cmd);
     }
     
-    void Canvas::drawText(
+    void Singleton::drawText(
         const godot::String& text,
         float x, float y,
         const godot::Ref<godot::Font>& font,
@@ -146,8 +146,8 @@ namespace Vital::Godot::Engine {
         const godot::Color& color
     ) {
         if (!font.is_valid()) return;
-        CanvasCommand cmd;
-        cmd.type = CanvasType::TEXT;
+        Command cmd;
+        cmd.type = Type::TEXT;
         cmd.text = text;
         cmd.position = godot::Vector2(x, y);
         cmd.font = font;

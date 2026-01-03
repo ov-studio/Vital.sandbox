@@ -17,17 +17,17 @@
 
 
 ///////////////////////////
-// Vital: Godot: Engine //
+// Vital: Godot: Canvas //
 ///////////////////////////
 
-namespace Vital::Godot::Engine {
-    enum class CanvasType {
+namespace Vital::Godot::Canvas {
+    enum class Type {
         IMAGE,
         TEXT
     };
 
-    struct CanvasCommand {
-        CanvasType type;
+    struct Command {
+        Type type;
         godot::Vector2 position;
         godot::Rect2 rect;
         godot::String text;
@@ -39,17 +39,17 @@ namespace Vital::Godot::Engine {
         int font_size = 1;
     };
 
-    class Canvas : public godot::Node2D {
-        GDCLASS(Canvas, godot::Node2D)
+    class Singleton : public godot::Node2D {
+        GDCLASS(Singleton, godot::Node2D)
         protected:
             static void _bind_methods() {}
         private:
-            std::vector<CanvasCommand> queue;
+            std::vector<Command> queue;
             std::unordered_map<std::string, godot::Ref<godot::Texture2D>> cache;
         public:
             // Instantiators //
-            Canvas() {};
-            ~Canvas() override = default;
+            Singleton() {};
+            ~Singleton() override = default;
             void _ready() override;
             void _clean();
             void _process(double delta) override;

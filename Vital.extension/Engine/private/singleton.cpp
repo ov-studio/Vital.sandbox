@@ -32,7 +32,7 @@ namespace Vital::Godot::Engine {
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
         if (!godot::Engine::get_singleton() -> is_editor_hint()) {
-            canvas = memnew(Canvas);
+            canvas = memnew(Vital::Godot::Canvas::Singleton);
             godot::Node* root = get_tree() -> get_root();
             root -> call_deferred("add_child", canvas);
         }
