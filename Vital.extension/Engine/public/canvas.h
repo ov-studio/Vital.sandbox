@@ -63,10 +63,12 @@ namespace Vital::Godot::Canvas {
             void _process(double delta) override;
             void _draw() override;
 
-            
+
             // Utils //
             godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
         
+
+            // APIs //
             void draw_image(
                 const godot::Ref<godot::Texture2D>& texture,
                 float x, float y,

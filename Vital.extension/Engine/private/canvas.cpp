@@ -89,6 +89,8 @@ namespace Vital::Godot::Canvas {
         return tex;
     }
 
+
+    // APIs //
     void Singleton::draw_image(
         const godot::Ref<godot::Texture2D>& texture,
         float x, float y,
