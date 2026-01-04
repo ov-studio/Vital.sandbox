@@ -47,9 +47,10 @@ namespace Vital::Godot::Canvas {
     struct TextCommand {
         godot::String text;
         godot::Vector2 text_size;
-        int text_lines;
+        int text_lines = -1;
         godot::Ref<godot::Font> font;
         int font_size = 16;
+        float font_height;
         float font_ascent;
         godot::Vector2 position = {0, 0};
         godot::Rect2 rect;
