@@ -45,36 +45,22 @@ namespace Vital::Godot::Canvas {
     */
 
     struct TextCommand {
-        // Text content
         godot::String text;
-    
-        // Font
+        godot::Vector2 text_size;
+        int text_lines;
         godot::Ref<godot::Font> font;
         int font_size = 16;
-    
-        // Drawing position (BASELINE-CORRECTED)
+        float font_ascent;
         godot::Vector2 position = {0, 0};
-    
-        // Bounding rectangle (MTA left_x, top_y, right_x, bottom_y)
         godot::Rect2 rect;
-    
-        // Color
         godot::Color color = {1, 1, 1, 1};
-    
-        // Alignment (already resolved before enqueue, kept for debug/future)
         godot::HorizontalAlignment align_x;
         godot::VerticalAlignment align_y;
-    
-        // Rotation
-        float rotation = 0.0f;                // radians
+        float rotation = 0.0f;
         godot::Vector2 pivot = {0, 0};
-    
-        // Behavior flags
         bool clip = false;
-        bool word_break = false;
-        bool color_coded = false;
+        bool wordwrap = false;
     };
-    
     
     struct Command {
         Type type;
@@ -131,7 +117,7 @@ namespace Vital::Godot::Canvas {
                 godot::HorizontalAlignment alignment_x,
                 godot::VerticalAlignment alignment_y,
                 bool clip = false,
-                bool wordbreak = false,
+                bool wordwrap = false,
                 float rotation = 0.0f,
                 float pivot_x = 0.0f, float pivot_y = 0.0f
             );

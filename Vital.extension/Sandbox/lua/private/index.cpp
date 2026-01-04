@@ -143,7 +143,7 @@ namespace Vital::Godot::Sandbox::Lua {
             print("drawing")
         )";
 
-        std::string text = "Hello from Anisa\nfrom\nNetherland";
+        std::string text = "Hello from Anisa from Netherland Hello from Anisa from Netherland 2";
         float rotation = std::sin(Vital::System::getTick()*0.0001)*360.0f;
         //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_image("res://flower.jpg", 100 + (310)*0, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));

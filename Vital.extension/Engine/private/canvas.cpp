@@ -152,36 +152,36 @@ namespace Vital::Godot::Canvas {
         const godot::Color& color,
         godot::HorizontalAlignment alignment_x, godot::VerticalAlignment alignment_y,
         bool clip,
-        bool wordbreak,
+        bool wordwrap,
         float rotation,
         float pivot_x, float pivot_y
     ) {
         if (!font.is_valid() || text.is_empty()) return;
         TextCommand payload;
         payload.text = text;
-        payload.font = font;
-        payload.font_size = font_size;
-        payload.color = color;
         payload.rect = godot::Rect2(left_x, top_y, right_x - left_x, bottom_y - top_y);
-        payload.align_x = alignment_x;
-        payload.align_y = alignment_y;
         payload.position = godot::Vector2(left_x, top_y);
         payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.font = font;
+        payload.font_size = font_size;
+        payload.font_ascent = payload.font -> get_ascent(payload.font_size);
+        payload.color = color;
+        payload.align_x = alignment_x;
+        payload.align_y = alignment_y;
         payload.pivot = godot::Vector2(pivot_x, pivot_y);
         payload.clip = clip;
-        payload.word_break = wordbreak;
-
-        const float ascent = payload.font -> get_ascent(payload.font_size);
-        payload.rect.position.y += ascent;
-    
-        godot::Vector2 text_size = payload.font -> get_multiline_string_size(
+        payload.wordwrap = wordwrap;
+        payload.rect.position.y += payload.font_ascent;
+        payload.text_size = payload.font -> get_multiline_string_size(
             payload.text,
             payload.align_x,
-            payload.rect.size.x,
+            payload.wordwrap ? payload.rect.size.x : -1,
             payload.font_size
         );
-        if (payload.align_y == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - text_size.y) * 0.5f;
-        else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - text_size.y;
+        payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
+        payload.text_lines = payload.rect.size.y/(payload.text_size.y + payload.font_ascent);
+        if (payload.align_y == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - payload.text_size.y)*0.5f;
+        else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
         queue.push_back(Command{Type::TEXT, std::move(payload)});
     }
 }
