@@ -2,11 +2,27 @@
      Resource: Vital.extension
      Script: Engine: public: canvas.h
      Author: vStudio
-     Desc: Canvas Utilities (with MTA-like RenderTargets)
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Canvas Utilities
 ----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
 
 #pragma once
 #include <Vital.extension/Engine/public/index.h>
+
+
+///////////////////////////
+// Vital: Godot: Canvas //
+///////////////////////////
+
+namespace Vital::Godot::RenderTarget {
+    class Singleton2;
+}
 
 namespace Vital::Godot::Canvas {
     enum class Type {
@@ -46,105 +62,94 @@ namespace Vital::Godot::Canvas {
         std::variant<ImageCommand, TextCommand> payload;
     };
 
-
-    struct RenderTarget {
-        godot::SubViewport *viewport = nullptr;
-        godot::Node2D *canvas = nullptr; // <-- IMPORTANT
-        godot::Ref<godot::ViewportTexture> texture;
-        godot::Vector2i size;
-    };
-    
-
-    class RTCanvas : public godot::Node2D {
-        GDCLASS(RTCanvas, godot::Node2D)
-
-    protected:
-        static void _bind_methods() {}
-
-    public:
-        RTCanvas() = default;
-        ~RTCanvas() override = default;
-        std::vector<Command> queue;
-
-        void clear() { queue.clear(); }
-
-        void _draw() override;
-
-    };
-
-
     class Singleton : public godot::Node2D {
         GDCLASS(Singleton, godot::Node2D)
-
-    protected:
-        static void _bind_methods() {}
-
-    private:
-        std::vector<Command> queue;
-        std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
-
-        RenderTarget *current_rt = nullptr;
-        std::vector<RenderTarget*> owned_rts;
-
-    public:
-        Singleton() = default;
-        ~Singleton() override = default;
-
-        void _ready() override;
-        void _process(double delta) override;
-        void _draw() override;
-
-        RenderTarget* dx_create_rendertarget(int w, int h, bool transparent);
-        void dx_set_rendertarget(RenderTarget *rt = nullptr, bool clear = false, bool reload = false);
+        protected:
+            static void _bind_methods() {}
+        private:
+            std::vector<Command> queue;
+            std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
+            Vital::Godot::RenderTarget::Singleton2* current_rt = nullptr;
+            std::vector<Vital::Godot::RenderTarget::Singleton2*> owned_rts;
+        public:
+            // Instantiators //
+            Singleton() = default;
+            ~Singleton() override = default;
+            void _ready() override;
+            void _process(double delta) override;
+            void clean() { queue.clear(); }
+            void _draw() override;
 
 
-        godot::Ref<godot::Texture2D> fetch_texture(const std::string &path);
+            // Utils //
+            godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
+            Vital::Godot::RenderTarget::Singleton2* dx_create_rendertarget(int w, int h, bool transparent);
+            void dx_set_rendertarget(Vital::Godot::RenderTarget::Singleton2* rt = nullptr, bool clear = false, bool reload = false);
 
 
-        void draw_image(
-            const godot::Ref<godot::Texture2D> &texture,
-            float x, float y,
-            float w, float h,
-            float rotation = 0.0f,
-            float pivot_x = 0.0f,
-            float pivot_y = 0.0f,
-            const godot::Color &color = godot::Color(1,1,1,1)
-        );
+            // APIs //
+            void draw_image(
+                float x, float y,
+                float w, float h,
+                const godot::Ref<godot::Texture2D>& texture,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
 
-        void draw_image(
-            const std::string &path,
-            float x, float y,
-            float w, float h,
-            float rotation = 0.0f,
-            float pivot_x = 0.0f,
-            float pivot_y = 0.0f,
-            const godot::Color &color = godot::Color(1,1,1,1)
-        );
+            void draw_image(
+                float x, float y,
+                float w, float h,
+                const std::string& path,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
 
-        void draw_image(
-            RenderTarget *rt,
-            float x, float y,
-            float w, float h,
-            float rotation = 0.0f,
-            float pivot_x = 0.0f,
-            float pivot_y = 0.0f,
-            const godot::Color &color = godot::Color(1,1,1,1)
-        );
+            void draw_image(
+                float x, float y,
+                float w, float h,
+                Vital::Godot::RenderTarget::Singleton2* rt,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
 
-        void draw_text(
-            const godot::String &text,
-            float left_x, float top_y,
-            float right_x, float bottom_y,
-            const godot::Ref<godot::Font> &font,
-            int font_size,
-            const godot::Color &color,
-            godot::HorizontalAlignment align_x,
-            godot::VerticalAlignment align_y,
-            bool clip = false,
-            bool wordwrap = false,
-            float rotation = 0.0f,
-            float pivot_x = 0.0f,
-            float pivot_y = 0.0f
-        );
+            void draw_text(
+                const godot::String& text,
+                float left_x, float top_y,
+                float right_x, float bottom_y,
+                const godot::Ref<godot::Font> &font,
+                int font_size,
+                const godot::Color& color = godot::Color(1, 1, 1, 1),
+                godot::HorizontalAlignment align_x = godot::HORIZONTAL_ALIGNMENT_LEFT,
+                godot::VerticalAlignment align_y = godot::VERTICAL_ALIGNMENT_CENTER,
+                bool clip = false,
+                bool wordwrap = false,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f
+            );
     };
+}
+
+namespace Vital::Godot::RenderTarget {
+    class Singleton2 : public godot::Node2D {
+        GDCLASS(Singleton2, godot::Node2D)
+        protected:
+            static void _bind_methods() {}
+        public:
+            godot::SubViewport* viewport = nullptr;
+            godot::Ref<godot::ViewportTexture> texture;
+            godot::Vector2i size;
+            Singleton2() = default;
+            ~Singleton2() override = default;
+            std::vector<Vital::Godot::Canvas::Command> queue;
+            void clean() { queue.clear(); }
+            void _draw() override;
+    };
+
 }
