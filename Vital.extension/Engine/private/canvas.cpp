@@ -14,40 +14,57 @@
 namespace Vital::Godot::Canvas {
 
     void RTCanvas::_draw() {
-        for (const auto &cmd : queue) {
-            switch (cmd.type) {
+        for (const auto &command : queue) {
+            switch (command.type) {
 
                 case Type::IMAGE: {
-                    const auto &p = std::get<ImageCommand>(cmd.payload);
-
-                    draw_set_transform(
-                        p.rect.position + p.pivot,
-                        p.rotation,
-                        godot::Vector2(1, 1)
-                    );
-
+                    const auto &payload = std::get<ImageCommand>(command.payload);
+                    godot::Vector2 center = payload.rect.size*0.5f;
+                    godot::Vector2 pivot = center + payload.pivot;
+                    draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
                     draw_texture_rect(
-                        p.texture,
-                        godot::Rect2(-p.pivot, p.rect.size),
+                        payload.texture,
+                        godot::Rect2(-pivot, payload.rect.size),
                         false,
-                        p.color
+                        payload.color
                     );
-                } break;
-
+                    break;
+                }
                 case Type::TEXT: {
-                    const auto &p = std::get<TextCommand>(cmd.payload);
+                    const TextCommand &payload = std::get<TextCommand>(command.payload);
+                    godot::Vector2 center = payload.rect.size*0.5f;
+                    godot::Vector2 pivot = center + payload.pivot;
+                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
 
+
+                    // -----------------------------
+                    // 1. Rotation (optional)
+                    // -----------------------------
+                    if (payload.rotation != 0.0f) {
+                        draw_set_transform(
+                            payload.rect.position + payload.pivot,
+                            payload.rotation,
+                            godot::Vector2(1, 1)
+                        );
+                    }
+                    else {
+                        draw_set_transform(
+                            godot::Vector2(),
+                            0.0f,
+                            godot::Vector2(1, 1)
+                        );
+                    }
+                
                     draw_multiline_string(
-                        p.font,
-                        p.rect.position,
-                        p.text,
-                        p.align_x,
-                        p.wordwrap ? p.rect.size.x : -1,
-                        p.font_size,
-                        -1,
-                        p.color
+                        payload.font,
+                        payload.rect.position,
+                        payload.text,
+                        payload.align_x,
+                        payload.rect.size.x,
+                        payload.font_size
                     );
-                } break;
+                    break;
+                } 
             }
         }
     }
@@ -77,7 +94,6 @@ namespace Vital::Godot::Canvas {
         vp->set_size({ w, h });
         vp->set_disable_3d(true);
         vp->set_transparent_background(transparent);
-        vp->set_clear_mode(godot::SubViewport::CLEAR_MODE_ALWAYS);
 
         // 🔥 REQUIRED
         vp->set_update_mode(
@@ -98,7 +114,7 @@ namespace Vital::Godot::Canvas {
         return rt;
     }
 
-    void Singleton::dx_set_rendertarget(RenderTarget *rt, bool clear) {
+    void Singleton::dx_set_rendertarget(RenderTarget *rt, bool clear, bool reload) {
         current_rt = rt;
 
         if (!rt)
@@ -106,7 +122,7 @@ namespace Vital::Godot::Canvas {
 
         rt->viewport->set_clear_mode(
             clear
-                ? godot::SubViewport::CLEAR_MODE_ALWAYS
+                ? godot::SubViewport::CLEAR_MODE_ONCE
                 : godot::SubViewport::CLEAR_MODE_NEVER
         );
 
@@ -120,41 +136,58 @@ namespace Vital::Godot::Canvas {
     // SCREEN DRAW
     // ============================================================
     void Singleton::_draw() {
-        for (const auto &cmd : queue) {
-            switch (cmd.type) {
-
+        for (const auto &command : queue) {
+            switch (command.type) {
                 case Type::IMAGE: {
-                    const auto &p = std::get<ImageCommand>(cmd.payload);
-
-                    draw_set_transform(
-                        p.rect.position + p.pivot,
-                        p.rotation,
-                        godot::Vector2(1, 1)
-                    );
-
+                    const auto &payload = std::get<ImageCommand>(command.payload);
+                    godot::Vector2 center = payload.rect.size*0.5f;
+                    godot::Vector2 pivot = center + payload.pivot;
+                    
+                    draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
                     draw_texture_rect(
-                        p.texture,
-                        godot::Rect2(-p.pivot, p.rect.size),
+                        payload.texture,
+                        godot::Rect2(-pivot, payload.rect.size),
                         false,
-                        p.color
+                        payload.color
                     );
-                } break;
-
+                    break;
+                }
                 case Type::TEXT: {
-                    const auto &p = std::get<TextCommand>(cmd.payload);
+                    const TextCommand &payload = std::get<TextCommand>(command.payload);
+                    godot::Vector2 center = payload.rect.size*0.5f;
+                    godot::Vector2 pivot = center + payload.pivot;
+                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
 
+
+                    // -----------------------------
+                    // 1. Rotation (optional)
+                    // -----------------------------
+                    if (payload.rotation != 0.0f) {
+                        draw_set_transform(
+                            payload.rect.position + payload.pivot,
+                            payload.rotation,
+                            godot::Vector2(1, 1)
+                        );
+                    }
+                    else {
+                        draw_set_transform(
+                            godot::Vector2(),
+                            0.0f,
+                            godot::Vector2(1, 1)
+                        );
+                    }
+                
                     draw_multiline_string(
-                        p.font,
-                        p.rect.position,
-                        p.text,
-                        p.align_x,
-                        p.wordwrap ? p.rect.size.x : -1,
-                        p.font_size,
-                        -1,
-                        p.color
+                        payload.font,
+                        payload.rect.position,
+                        payload.text,
+                        payload.align_x,
+                        payload.rect.size.x,
+                        payload.font_size
                     );
-                } break;
-            }
+                    break;
+                } 
+            } 
         }
 
         queue.clear();
@@ -192,19 +225,19 @@ namespace Vital::Godot::Canvas {
     ) {
         if (!texture.is_valid()) return;
 
-        ImageCommand cmd;
-        cmd.texture = texture;
-        cmd.rect = { x, y, w, h };
-        cmd.rotation = godot::Math::deg_to_rad(rotation);
-        cmd.pivot = { pivot_x, pivot_y };
-        cmd.color = color;
+        ImageCommand payload;
+        payload.texture = texture;
+        payload.rect = { x, y, w, h };
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = { pivot_x, pivot_y };
+        payload.color = color;
 
         if (current_rt) {
             auto *rtc = static_cast<RTCanvas*>(current_rt->canvas);
-            rtc->queue.push_back({ Type::IMAGE, cmd });
+            rtc->queue.push_back({ Type::IMAGE, payload });
             rtc->queue_redraw();
         } else {
-            queue.push_back({ Type::IMAGE, cmd });
+            queue.push_back({ Type::IMAGE, payload });
         }
     }
 
@@ -228,42 +261,55 @@ namespace Vital::Godot::Canvas {
         const godot::Color &color
     ) {
         if (!rt) return;
-        draw_image(rt->texture, x, y, w, h, rotation, pivot_x, pivot_y, color);
+        draw_image(rt -> texture, x, y, w, h, rotation, pivot_x, pivot_y, color);
     }
 
     void Singleton::draw_text(
-        const godot::String &text,
+        const godot::String& text,
         float left_x, float top_y,
         float right_x, float bottom_y,
-        const godot::Ref<godot::Font> &font,
+        const godot::Ref<godot::Font>& font,
         int font_size,
-        const godot::Color &color,
-        godot::HorizontalAlignment align_x,
-        godot::VerticalAlignment align_y,
+        const godot::Color& color,
+        godot::HorizontalAlignment alignment_x, godot::VerticalAlignment alignment_y,
         bool clip,
         bool wordwrap,
         float rotation,
         float pivot_x, float pivot_y
     ) {
         if (!font.is_valid() || text.is_empty()) return;
-
-        TextCommand cmd;
-        cmd.text = text;
-        cmd.font = font;
-        cmd.font_size = font_size;
-        cmd.color = color;
-        cmd.align_x = align_x;
-        cmd.align_y = align_y;
-        cmd.wordwrap = wordwrap;
-        cmd.rect = { left_x, top_y, right_x - left_x, bottom_y - top_y };
+        TextCommand payload;
+        payload.text = text;
+        payload.rect = godot::Rect2(left_x, top_y, right_x - left_x, bottom_y - top_y);
+        payload.position = godot::Vector2(left_x, top_y);
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.font = font;
+        payload.font_size = font_size;
+        payload.font_ascent = payload.font -> get_ascent(payload.font_size);
+        payload.color = color;
+        payload.align_x = alignment_x;
+        payload.align_y = alignment_y;
+        payload.pivot = godot::Vector2(pivot_x, pivot_y);
+        payload.clip = clip;
+        payload.wordwrap = wordwrap;
+        payload.rect.position.y += payload.font_ascent;
+        payload.text_size = payload.font -> get_multiline_string_size(
+            payload.text,
+            payload.align_x,
+            payload.wordwrap ? payload.rect.size.x : -1,
+            payload.font_size
+        );
+        payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
+        payload.text_lines = payload.rect.size.y/(payload.text_size.y + payload.font_ascent);
+        if (payload.align_y == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - payload.text_size.y)*0.5f;
+        else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
 
         if (current_rt) {
             auto *rtc = static_cast<RTCanvas*>(current_rt->canvas);
-            rtc->queue.push_back({ Type::TEXT, cmd });
+            rtc->queue.push_back({ Type::TEXT, payload });
             rtc->queue_redraw();
         } else {
-            queue.push_back({ Type::TEXT, cmd });
+            queue.push_back({ Type::TEXT, payload });
         }
     }
-
-} // namespace Vital::Godot::Canvas
+}

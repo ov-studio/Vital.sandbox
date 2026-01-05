@@ -6,24 +6,9 @@
 ----------------------------------------------------------------*/
 
 #pragma once
-
 #include <Vital.extension/Engine/public/index.h>
 
-#include <godot_cpp/classes/node2d.hpp>
-#include <godot_cpp/classes/sub_viewport.hpp>
-#include <godot_cpp/classes/viewport_texture.hpp>
-#include <godot_cpp/classes/texture2d.hpp>
-#include <godot_cpp/classes/font.hpp>
-
-#include <variant>
-#include <vector>
-#include <unordered_map>
-
 namespace Vital::Godot::Canvas {
-
-    // ------------------------------------------------------------
-    // Command Types
-    // ------------------------------------------------------------
     enum class Type {
         IMAGE,
         TEXT
@@ -61,9 +46,7 @@ namespace Vital::Godot::Canvas {
         std::variant<ImageCommand, TextCommand> payload;
     };
 
-    // ------------------------------------------------------------
-    // RenderTarget (dxRenderTarget)
-    // ------------------------------------------------------------
+
     struct RenderTarget {
         godot::SubViewport *viewport = nullptr;
         godot::Node2D *canvas = nullptr; // <-- IMPORTANT
@@ -90,9 +73,6 @@ namespace Vital::Godot::Canvas {
     };
 
 
-    // ------------------------------------------------------------
-    // Canvas Singleton
-    // ------------------------------------------------------------
     class Singleton : public godot::Node2D {
         GDCLASS(Singleton, godot::Node2D)
 
@@ -114,20 +94,13 @@ namespace Vital::Godot::Canvas {
         void _process(double delta) override;
         void _draw() override;
 
-        // --------------------------------------------------------
-        // RenderTarget API (MTA-like)
-        // --------------------------------------------------------
         RenderTarget* dx_create_rendertarget(int w, int h, bool transparent);
-        void dx_set_rendertarget(RenderTarget *rt = nullptr, bool clear = false);
+        void dx_set_rendertarget(RenderTarget *rt = nullptr, bool clear = false, bool reload = false);
 
-        // --------------------------------------------------------
-        // Utils
-        // --------------------------------------------------------
+
         godot::Ref<godot::Texture2D> fetch_texture(const std::string &path);
 
-        // --------------------------------------------------------
-        // Draw APIs
-        // --------------------------------------------------------
+
         void draw_image(
             const godot::Ref<godot::Texture2D> &texture,
             float x, float y,
