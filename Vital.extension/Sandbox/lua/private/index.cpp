@@ -29,6 +29,7 @@
 #include <Vital.extension/Sandbox/lua/api/public/volumetric_fog.h>
 #include <Vital.extension/Sandbox/lua/api/public/adjustment.h>
 
+#include <Vital.extension/Engine/public/canvas.h>
 
 
 /////////////////////////////////
@@ -41,6 +42,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
     godot::Ref<godot::Texture2D> tex;
     godot::Ref<godot::Font> font;
+    Vital::Godot::RenderTarget::Singleton* rt = nullptr;
 
     Singleton* Singleton::fetch() {
         instance = instance ? instance : memnew(Singleton());
@@ -146,7 +148,7 @@ namespace Vital::Godot::Sandbox::Lua {
         std::string text = "Hello from Anisa from Netherland Hello from Anisa from Netherland 2";
         float rotation = std::sin(Vital::System::getTick()*0.0001)*360.0f;
         //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
-        canvas -> draw_image("res://flower.jpg", 100 + (310)*0, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_image(100 + (310)*0, 20, 300, 300, "res://flower.jpg", 0, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
             text.c_str(),
             100 + (310)*0, 20,
@@ -162,7 +164,7 @@ namespace Vital::Godot::Sandbox::Lua {
             0.0f, 0.0f
         );
 
-        canvas -> draw_image("res://flower.jpg", 100 + (310)*1, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_image(100 + (310)*1, 20, 300, 300, "res://flower.jpg", 0, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
             text.c_str(),
             100 + (310)*1, 20,
@@ -178,23 +180,30 @@ namespace Vital::Godot::Sandbox::Lua {
             0.0f, 0.0f
         );
 
-        canvas -> draw_image("res://flower.jpg", 100 + (310)*2, 20, 300, 300, 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        if (!rt) {
+            godot::UtilityFunctions::print("created rt");
+            rt = canvas -> dx_create_rendertarget(512, 512, false);
+        }
+
+        canvas -> dx_set_rendertarget(rt, true);
+        canvas -> draw_image(0, 20, 300, 300, "res://flower.jpg", rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
             text.c_str(),
-            100 + (310)*2, 20,
-            100 + (310)*2 + 300, 20 + 300,
+            0, 20,
+            0 + 300, 20 + 300,
             font,
             20,
             godot::Color(1, 1, 1, 1),
             godot::HORIZONTAL_ALIGNMENT_CENTER,
             godot::VERTICAL_ALIGNMENT_BOTTOM,
-            false,
+            true,
             false,
             0.0f,
             0.0f, 0.0f
         );
+        canvas -> dx_set_rendertarget();
 
-        canvas -> draw_image(tex, 100, 500, 150, 150);
+        canvas -> draw_image(100, 500, 512, 512, rt);
         //vm -> loadString(rwString);
 
     }
