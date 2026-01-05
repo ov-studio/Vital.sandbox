@@ -42,7 +42,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
     godot::Ref<godot::Texture2D> tex;
     godot::Ref<godot::Font> font;
-    Vital::Godot::RenderTarget::Singleton* rt = nullptr;
+    Vital::Godot::RenderTarget::Singleton2* rt = nullptr;
 
     Singleton* Singleton::fetch() {
         instance = instance ? instance : memnew(Singleton());
