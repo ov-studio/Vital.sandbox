@@ -162,7 +162,7 @@ namespace Vital::Godot {
         return tex;
     }
 
-    Vital::Godot::RenderTarget* Canvas::dx_create_rendertarget(int w, int h, bool transparent) {
+    Vital::Godot::RenderTarget* Canvas::create_rendertarget(int w, int h, bool transparent) {
         Vital::Godot::RenderTarget* rt = memnew(Vital::Godot::RenderTarget);
         godot::SubViewport *vp = memnew(godot::SubViewport);
         vp->set_size({ w, h });
@@ -181,7 +181,7 @@ namespace Vital::Godot {
         return rt;
     }
 
-    void Canvas::dx_set_rendertarget(Vital::Godot::RenderTarget* rt, bool clear, bool reload) {
+    void Canvas::set_rendertarget(Vital::Godot::RenderTarget* rt, bool clear, bool reload) {
         current_rt = rt;
         if (!rt) return;
         rt->viewport->set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);

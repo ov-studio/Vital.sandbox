@@ -83,8 +83,8 @@ namespace Vital::Godot {
 
             // Utils //
             godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
-            Vital::Godot::RenderTarget* dx_create_rendertarget(int w, int h, bool transparent);
-            void dx_set_rendertarget(Vital::Godot::RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
+            Vital::Godot::RenderTarget* create_rendertarget(int w, int h, bool transparent);
+            void set_rendertarget(Vital::Godot::RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
 
 
             // APIs //
