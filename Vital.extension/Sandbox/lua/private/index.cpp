@@ -205,6 +205,8 @@ namespace Vital::Godot::Sandbox::Lua {
         Vital::Godot::RenderTarget::set_rendertarget();
 
         canvas -> draw_image(100, 500, 512, 512, rt);
+
+        canvas -> draw_rectangle(0, 20 + 300 + 10, 300, 300, true, 0, 0, 0, 0, godot::Color(0, 0, 1, 1));
         //vm -> loadString(rwString);
 
     }

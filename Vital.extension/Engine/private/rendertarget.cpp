@@ -58,6 +58,12 @@ namespace Vital::Godot {
         return rt;
     }
 
+    void RenderTarget::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
+        rendertarget = rt;
+        if (!rt) return;
+        rt -> clear(clear, reload);
+    }
+
     void RenderTarget::clear(bool clear, bool reload) {
         get_viewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         if (clear) {
@@ -69,11 +75,5 @@ namespace Vital::Godot {
     void RenderTarget::push(Canvas::Command command) {
         queue.push_back(command);
         queue_redraw();
-    }
-
-    void RenderTarget::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
-        rendertarget = rt;
-        if (!rt) return;
-        rt -> clear(clear, reload);
     }
 }

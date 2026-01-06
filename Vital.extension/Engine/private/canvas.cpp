@@ -64,12 +64,24 @@ namespace Vital::Godot {
     void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {
         for (const auto &command : queue) {
             switch (command.type) {
+                case Type::Rectangle: {
+                    const auto &payload = std::get<RectangleCommand>(command.payload);
+                    auto center = payload.rect.size*0.5f;
+                    auto pivot = center + payload.pivot;
+                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
+                    node -> draw_rect(
+                        godot::Rect2(-pivot, payload.rect.size),
+                        payload.color,
+                        payload.filled,
+                        payload.stroke
+                    );
+                    break;
+                }
                 case Type::IMAGE: {
                     const auto &payload = std::get<ImageCommand>(command.payload);
-                    godot::Vector2 center = payload.rect.size*0.5f;
-                    godot::Vector2 pivot = center + payload.pivot;
-                    
-                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
+                    auto center = payload.rect.size*0.5f;
+                    auto pivot = center + payload.pivot;
+                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_texture_rect(
                         payload.texture,
                         godot::Rect2(-pivot, payload.rect.size),
@@ -80,9 +92,9 @@ namespace Vital::Godot {
                 }
                 case Type::TEXT: {
                     const TextCommand &payload = std::get<TextCommand>(command.payload);
-                    godot::Vector2 center = payload.rect.size*0.5f;
-                    godot::Vector2 pivot = center + payload.pivot;
-                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
+                    auto center = payload.rect.size*0.5f;
+                    auto pivot = center + payload.pivot;
+                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
 
 
                     // -----------------------------
@@ -92,14 +104,14 @@ namespace Vital::Godot {
                         node -> draw_set_transform(
                             payload.rect.position + payload.pivot,
                             payload.rotation,
-                            godot::Vector2(1, 1)
+                            {1, 1}
                         );
                     }
                     else {
                         node -> draw_set_transform(
                             godot::Vector2(),
                             0.0f,
-                            godot::Vector2(1, 1)
+                            {1, 1}
                         );
                     }
                 
@@ -125,6 +137,26 @@ namespace Vital::Godot {
 
 
     // APIs //
+    void Canvas::draw_rectangle(
+        float x, float y,
+        float width, float height,
+        bool filled,
+        float stroke,
+        float rotation,
+        float pivot_x,
+        float pivot_y,
+        const godot::Color& color
+    ) {
+        RectangleCommand payload;
+        payload.rect = {x, y, width, height};
+        payload.filled = filled;
+        payload.stroke = stroke;
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = {pivot_x, pivot_y};
+        payload.color = color;
+        push({Type::Rectangle, payload});
+    }
+
     void Canvas::draw_image(
         float x, float y,
         float width, float height,
@@ -183,8 +215,8 @@ namespace Vital::Godot {
         if (!font.is_valid() || text.is_empty()) return;
         TextCommand payload;
         payload.text = text;
-        payload.rect = godot::Rect2(left_x, top_y, right_x - left_x, bottom_y - top_y);
-        payload.position = godot::Vector2(left_x, top_y);
+        payload.rect = {left_x, top_y, right_x - left_x, bottom_y - top_y};
+        payload.position = {left_x, top_y};
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.font = font;
         payload.font_size = font_size;
@@ -192,7 +224,7 @@ namespace Vital::Godot {
         payload.color = color;
         payload.align_x = alignment_x;
         payload.align_y = alignment_y;
-        payload.pivot = godot::Vector2(pivot_x, pivot_y);
+        payload.pivot = {pivot_x, pivot_y};
         payload.clip = clip;
         payload.wordwrap = wordwrap;
         payload.rect.position.y += payload.font_ascent;

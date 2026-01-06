@@ -27,10 +27,20 @@ namespace Vital::Godot {
         GDCLASS(Canvas, godot::Node2D)
         public:
             enum class Type {
+                Rectangle,
                 IMAGE,
                 TEXT
             };
         
+            struct RectangleCommand {
+                godot::Rect2 rect;
+                godot::Color color;
+                bool filled;
+                float stroke;
+                float rotation;
+                godot::Vector2 pivot;
+            };
+
             struct ImageCommand {
                 godot::Ref<godot::Texture2D> texture;
                 godot::Rect2 rect;
@@ -60,7 +70,7 @@ namespace Vital::Godot {
         
             struct Command {
                 Type type;
-                std::variant<ImageCommand, TextCommand> payload;
+                std::variant<RectangleCommand, ImageCommand, TextCommand> payload;
             };
         private:
             std::vector<Command> queue;
@@ -86,6 +96,17 @@ namespace Vital::Godot {
 
 
             // APIs //
+            void draw_rectangle(
+                float x, float y,
+                float width, float height,
+                bool filled = true,
+                float stroke = 0.0f,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
+
             void draw_image(
                 float x, float y,
                 float width, float height,
