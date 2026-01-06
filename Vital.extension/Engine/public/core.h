@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: public: engine.h
+     Script: Engine: public: core.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Engine Utilities
+     Desc: Core Utilities
 ----------------------------------------------------------------*/
 
 
@@ -22,16 +22,16 @@
 ///////////////////////////
 
 namespace Vital::Godot {
-	class Engine2 : public godot::Node {
-		GDCLASS(Engine2, godot::Node)
+	class Core : public godot::Node {
+		GDCLASS(Core, godot::Node)
 		protected:
 			static void _bind_methods() {};
 		private:
 			Vital::Godot::Canvas* canvas = nullptr;
 		public:
 			// Instantiators //
-			Engine2();
-			~Engine2() override = default;
+			Core();
+			~Core() override = default;
 			void _ready() override;
 			void _process(double delta) override;
 

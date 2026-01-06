@@ -28,7 +28,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto fov = vm -> getFloat(1);
-            Vital::Godot::Engine2::get_environment() -> set_sky_custom_fov(fov);
+            Vital::Godot::Core::get_environment() -> set_sky_custom_fov(fov);
             vm -> setBool(true);
             return 1;
         });
@@ -37,7 +37,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "environment", "get_sky_custom_fov", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine2::get_environment() -> get_sky_custom_fov());
+            vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sky_custom_fov());
             return 1;
         });
     });
@@ -47,7 +47,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto energy = vm -> getFloat(1);
-            Vital::Godot::Engine2::get_environment() -> set_bg_energy_multiplier(energy);
+            Vital::Godot::Core::get_environment() -> set_bg_energy_multiplier(energy);
             vm -> setBool(true);
             return 1;
         });
@@ -56,7 +56,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "environment", "get_bg_energy_multiplier", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine2::get_environment() -> get_bg_energy_multiplier());
+            vm -> setNumber(Vital::Godot::Core::get_environment() -> get_bg_energy_multiplier());
             return 1;
         });
     });

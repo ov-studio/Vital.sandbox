@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: private: engine.cpp
+     Script: Engine: private: core.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Engine Utilities
+     Desc: Core Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Engine/public/engine.h>
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
@@ -24,11 +24,11 @@
 
 namespace Vital::Godot {
     // Instantiators //
-    Engine2::Engine2() {
+    Core::Core() {
         Vital::Godot::Sandbox::Lua::Singleton::fetch();
     }
     
-    void Engine2::_ready() {
+    void Core::_ready() {
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
         //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
@@ -38,22 +38,22 @@ namespace Vital::Godot {
         //}
     }
 
-    void Engine2::_process(double delta) {
+    void Core::_process(double delta) {
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 
 
     // Getters //
-    godot::Node* Engine2::get_root() {
+    godot::Node* Core::get_root() {
         auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree -> get_root() : nullptr;
     }
     
-    godot::ResourceLoader* Engine2::get_resource_loader() {
+    godot::ResourceLoader* Core::get_resource_loader() {
         return godot::ResourceLoader::get_singleton();
     }
     
-    godot::Ref<godot::Environment> Engine2::get_environment() {
+    godot::Ref<godot::Environment> Core::get_environment() {
         auto* root = get_root();
         godot::WorldEnvironment* parent = nullptr;
         std::vector<godot::WorldEnvironment*> nodes;
