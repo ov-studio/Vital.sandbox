@@ -15,8 +15,6 @@
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
-//#include <godot_cpp/core/math.hpp>
-
 
 ///////////////////////////
 // Vital: Godot: Canvas //
