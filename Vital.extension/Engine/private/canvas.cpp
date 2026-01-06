@@ -22,8 +22,8 @@
 // Vital: Godot: Canvas //
 ///////////////////////////
 
-namespace Vital::Godot::RenderTarget {
-    void Singleton2::_draw() {
+namespace Vital::Godot {
+    void RenderTarget::_draw() {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Vital::Godot::Canvas::Type::IMAGE: {
@@ -162,8 +162,8 @@ namespace Vital::Godot::Canvas {
         return tex;
     }
 
-    Vital::Godot::RenderTarget::Singleton2* Singleton::dx_create_rendertarget(int w, int h, bool transparent) {
-        Vital::Godot::RenderTarget::Singleton2* rt = memnew(Vital::Godot::RenderTarget::Singleton2);
+    Vital::Godot::RenderTarget* Singleton::dx_create_rendertarget(int w, int h, bool transparent) {
+        Vital::Godot::RenderTarget* rt = memnew(Vital::Godot::RenderTarget);
         godot::SubViewport *vp = memnew(godot::SubViewport);
         vp->set_size({ w, h });
         vp->set_disable_3d(true);
@@ -181,7 +181,7 @@ namespace Vital::Godot::Canvas {
         return rt;
     }
 
-    void Singleton::dx_set_rendertarget(Vital::Godot::RenderTarget::Singleton2* rt, bool clear, bool reload) {
+    void Singleton::dx_set_rendertarget(Vital::Godot::RenderTarget* rt, bool clear, bool reload) {
         current_rt = rt;
         if (!rt) return;
         rt->viewport->set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
@@ -231,7 +231,7 @@ namespace Vital::Godot::Canvas {
     void Singleton::draw_image(
         float x, float y,
         float w, float h,
-        Vital::Godot::RenderTarget::Singleton2* rt,
+        Vital::Godot::RenderTarget* rt,
         float rotation,
         float pivot_x, float pivot_y,
         const godot::Color& color

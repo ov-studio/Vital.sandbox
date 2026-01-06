@@ -20,8 +20,8 @@
 // Vital: Godot: Canvas //
 ///////////////////////////
 
-namespace Vital::Godot::RenderTarget {
-    class Singleton2;
+namespace Vital::Godot {
+    class RenderTarget;
 }
 
 namespace Vital::Godot::Canvas {
@@ -69,8 +69,8 @@ namespace Vital::Godot::Canvas {
         private:
             std::vector<Command> queue;
             std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
-            Vital::Godot::RenderTarget::Singleton2* current_rt = nullptr;
-            std::vector<Vital::Godot::RenderTarget::Singleton2*> owned_rts;
+            Vital::Godot::RenderTarget* current_rt = nullptr;
+            std::vector<Vital::Godot::RenderTarget*> owned_rts;
         public:
             // Instantiators //
             Singleton() = default;
@@ -83,8 +83,8 @@ namespace Vital::Godot::Canvas {
 
             // Utils //
             godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
-            Vital::Godot::RenderTarget::Singleton2* dx_create_rendertarget(int w, int h, bool transparent);
-            void dx_set_rendertarget(Vital::Godot::RenderTarget::Singleton2* rt = nullptr, bool clear = false, bool reload = false);
+            Vital::Godot::RenderTarget* dx_create_rendertarget(int w, int h, bool transparent);
+            void dx_set_rendertarget(Vital::Godot::RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
 
 
             // APIs //
@@ -111,7 +111,7 @@ namespace Vital::Godot::Canvas {
             void draw_image(
                 float x, float y,
                 float w, float h,
-                Vital::Godot::RenderTarget::Singleton2* rt,
+                Vital::Godot::RenderTarget* rt,
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f,
@@ -136,20 +136,19 @@ namespace Vital::Godot::Canvas {
     };
 }
 
-namespace Vital::Godot::RenderTarget {
-    class Singleton2 : public godot::Node2D {
-        GDCLASS(Singleton2, godot::Node2D)
+namespace Vital::Godot {
+    class RenderTarget : public godot::Node2D {
+        GDCLASS(RenderTarget, godot::Node2D)
         protected:
             static void _bind_methods() {}
         public:
             godot::SubViewport* viewport = nullptr;
             godot::Ref<godot::ViewportTexture> texture;
             godot::Vector2i size;
-            Singleton2() = default;
-            ~Singleton2() override = default;
+            RenderTarget() = default;
+            ~RenderTarget() override = default;
             std::vector<Vital::Godot::Canvas::Command> queue;
             void clean() { queue.clear(); }
             void _draw() override;
     };
-
 }
