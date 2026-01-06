@@ -22,38 +22,38 @@
 // Vital: Godot: Engine //
 ///////////////////////////
 
-namespace Vital::Godot::Engine {
+namespace Vital::Godot {
     // Instantiators //
-    Singleton::Singleton() {
+    Engine::Engine() {
         Vital::Godot::Sandbox::Lua::Singleton::fetch();
     }
     
-    void Singleton::_ready() {
+    void Engine::_ready() {
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
-        if (!godot::Engine::get_singleton() -> is_editor_hint()) {
+        //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
             godot::Node* root = get_tree() -> get_root();
-            canvas = memnew(Vital::Godot::Canvas::Singleton);
+            canvas = memnew(Vital::Godot::Canvas);
             root -> call_deferred("add_child", canvas);
-        }
+        //}
     }
 
-    void Singleton::_process(double delta) {
+    void Engine::_process(double delta) {
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 
 
     // Getters //
-    godot::Node* Singleton::get_root() {
-        auto* scenetree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
-        return scenetree ? scenetree -> get_root() : nullptr;
+    godot::Node* Engine::get_root() {
+        auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        return tree ? tree -> get_root() : nullptr;
     }
     
-    godot::ResourceLoader* Singleton::get_resource_loader() {
+    godot::ResourceLoader* Engine::get_resource_loader() {
         return godot::ResourceLoader::get_singleton();
     }
     
-    godot::Ref<godot::Environment> Singleton::get_environment() {
+    godot::Ref<godot::Environment> Engine::get_environment() {
         godot::Node* root = get_root();
         godot::WorldEnvironment* parent = nullptr;
         std::vector<godot::WorldEnvironment*> nodes;
