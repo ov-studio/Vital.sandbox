@@ -116,11 +116,7 @@ namespace Vital::Godot {
     void Canvas::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
         current_rt = rt;
         if (!rt) return;
-        rt -> getViewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
-        if (clear) {
-            rt -> _clean();
-            rt -> queue_redraw();
-        }
+        rt -> clear(clear, reload);
     }
 
 

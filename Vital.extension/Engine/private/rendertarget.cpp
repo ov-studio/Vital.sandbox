@@ -52,4 +52,12 @@ namespace Vital::Godot {
         rt -> viewport -> add_child(rt);
         return rt;
     }
+
+    void RenderTarget::clear(bool clear, bool reload) {
+        getViewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
+        if (clear) {
+            _clean();
+            queue_redraw();
+        }
+    }
 }

@@ -43,5 +43,6 @@ namespace Vital::Godot {
 
             // APIs //
             static RenderTarget* create2D(int width, int height, bool transparent);
+            void RenderTarget::clear(bool clear, bool reload);
     };
 }
