@@ -13,19 +13,13 @@
 //////////////
 
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
 
 ///////////////////////////
 // Vital: Godot: Canvas //
 ///////////////////////////
-
-namespace Vital::Godot {
-    void RenderTarget::_draw() {
-        Canvas::_execute(static_cast<godot::Node2D*>(this), queue);
-        _clean();
-    }
-}
 
 namespace Vital::Godot {
     // Instantiators //
@@ -113,8 +107,8 @@ namespace Vital::Godot {
         return tex;
     }
 
-    Vital::Godot::RenderTarget* Canvas::create_rendertarget(int w, int h, bool transparent) {
-        Vital::Godot::RenderTarget* rt = memnew(Vital::Godot::RenderTarget);
+    RenderTarget* Canvas::create_rendertarget(int w, int h, bool transparent) {
+        RenderTarget* rt = memnew(RenderTarget);
         godot::SubViewport *vp = memnew(godot::SubViewport);
         vp->set_size({ w, h });
         vp->set_disable_3d(true);
@@ -132,7 +126,7 @@ namespace Vital::Godot {
         return rt;
     }
 
-    void Canvas::set_rendertarget(Vital::Godot::RenderTarget* rt, bool clear, bool reload) {
+    void Canvas::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
         current_rt = rt;
         if (!rt) return;
         rt->viewport->set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
@@ -182,7 +176,7 @@ namespace Vital::Godot {
     void Canvas::draw_image(
         float x, float y,
         float w, float h,
-        Vital::Godot::RenderTarget* rt,
+        RenderTarget* rt,
         float rotation,
         float pivot_x, float pivot_y,
         const godot::Color& color
