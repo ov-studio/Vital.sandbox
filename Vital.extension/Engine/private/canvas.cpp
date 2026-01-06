@@ -96,6 +96,23 @@ namespace Vital::Godot {
                     auto center = payload.rect.size*0.5f;
                     auto pivot = center + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
+
+                    /*
+                    node -> draw_set_transform(
+                        godot::Vector2(),
+                        0.0f,
+                        {1, 1}
+                    );
+                    node -> draw_multiline_string(
+                        payload.font,
+                        payload.rect.position,
+                        payload.text,
+                        payload.align_x,
+                        payload.rect.size.x,
+                        payload.font_size
+                    );
+                    */
+
                     node -> draw_multiline_string(
                         payload.font,
                         -pivot,
@@ -215,10 +232,10 @@ namespace Vital::Godot {
             payload.wordwrap ? payload.rect.size.x : -1,
             payload.font_size
         );
-        payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
-        payload.text_lines = payload.rect.size.y/(payload.text_size.y + payload.font_ascent);
         if (payload.align_y == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - payload.text_size.y)*0.5f;
         else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
+        payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
+        payload.text_lines = payload.rect.size.y/(payload.text_size.y + payload.font_ascent);
         push({Type::TEXT, payload});
     }
 }
