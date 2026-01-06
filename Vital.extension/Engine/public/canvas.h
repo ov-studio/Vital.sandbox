@@ -41,6 +41,15 @@ namespace Vital::Godot {
                 godot::Vector2 pivot;
             };
 
+            struct CircleCommand {
+                godot::Rect2 rect;
+                godot::Color color;
+                bool filled;
+                float stroke;
+                float rotation;
+                godot::Vector2 pivot;
+            };
+
             struct ImageCommand {
                 godot::Ref<godot::Texture2D> texture;
                 godot::Rect2 rect;
@@ -69,7 +78,7 @@ namespace Vital::Godot {
         
             struct Command {
                 Type type;
-                std::variant<RectangleCommand, ImageCommand, TextCommand> payload;
+                std::variant<RectangleCommand, CircleCommand, ImageCommand, TextCommand> payload;
             };
         private:
             std::vector<Command> queue;
@@ -98,6 +107,17 @@ namespace Vital::Godot {
             void draw_rectangle(
                 float x, float y,
                 float width, float height,
+                bool filled = true,
+                float stroke = 0.0f,
+                float rotation = 0.0f,
+                float pivot_x = 0.0f,
+                float pivot_y = 0.0f,
+                const godot::Color& color = godot::Color(1, 1, 1, 1)
+            );
+
+            void draw_circle(
+                float x, float y,
+                float radius,
                 bool filled = true,
                 float stroke = 0.0f,
                 float rotation = 0.0f,
