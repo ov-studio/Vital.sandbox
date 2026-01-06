@@ -25,6 +25,7 @@ namespace Vital::Godot {
         GDCLASS(RenderTarget, godot::Node2D)
         private:
             std::vector<Canvas::Command> queue;
+            bool instant = false;
         protected:
             godot::SubViewport* viewport = nullptr;
             static inline RenderTarget* rendertarget = nullptr;
@@ -46,8 +47,8 @@ namespace Vital::Godot {
 
             // APIs //
             static RenderTarget* create(int width, int height, bool transparent);
-            static void set_rendertarget(RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
+            static void set_rendertarget(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
             void push(Canvas::Command command);
-            void clear(bool clear, bool reload);
+            void clear(bool clear, bool instant);
     };
 }
