@@ -186,7 +186,7 @@ namespace Vital::Godot::Sandbox::Lua {
             rt = Vital::Godot::RenderTarget::create(512, 512, false);
         }
 
-        Vital::Godot::RenderTarget::set_rendertarget(rt, true);
+        Vital::Godot::RenderTarget::set_rendertarget(rt, true, true);
         canvas -> draw_image(0, 20, 300, 300, "res://flower.jpg", rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
             text.c_str(),
