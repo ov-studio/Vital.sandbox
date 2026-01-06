@@ -183,7 +183,7 @@ namespace Vital::Godot::Sandbox::Lua {
         );
 
         if (!rt) {
-            rt = canvas -> create_rendertarget(512, 512, false);
+            rt = Vital::Godot::RenderTarget::create(512, 512, false);
         }
 
         Vital::Godot::RenderTarget::set_rendertarget(rt, true);

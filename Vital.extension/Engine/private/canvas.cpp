@@ -53,12 +53,6 @@ namespace Vital::Godot {
         return singleton;
     }
 
-    RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
-        auto* rt = RenderTarget::create_2d(width, height, transparent);
-        add_child(rt -> get_viewport());
-        return rt;
-    }
-
     godot::Ref<godot::Texture2D> Canvas::get_texture(const std::string& path) {
         auto it = textures.find(path);
         if (it != textures.end()) return it -> second;

@@ -46,7 +46,7 @@ namespace Vital::Godot {
 
 
     // APIs //
-    RenderTarget* RenderTarget::create_2d(int width, int height, bool transparent) {
+    RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
         auto* rt = memnew(RenderTarget);
         rt -> viewport = memnew(godot::SubViewport);
         rt -> viewport -> set_size({width, height});
@@ -54,6 +54,7 @@ namespace Vital::Godot {
         rt -> viewport -> set_transparent_background(transparent);
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
         rt -> viewport -> add_child(rt);
+        Canvas::get_singleton() -> add_child(rt -> viewport);
         return rt;
     }
 
