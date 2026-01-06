@@ -95,30 +95,10 @@ namespace Vital::Godot {
                     const TextCommand &payload = std::get<TextCommand>(command.payload);
                     auto center = payload.rect.size*0.5f;
                     auto pivot = center + payload.pivot;
-                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
-
-
-                    // -----------------------------
-                    // 1. Rotation (optional)
-                    // -----------------------------
-                    if (payload.rotation != 0.0f) {
-                        node -> draw_set_transform(
-                            payload.rect.position + payload.pivot,
-                            payload.rotation,
-                            {1, 1}
-                        );
-                    }
-                    else {
-                        node -> draw_set_transform(
-                            godot::Vector2(),
-                            0.0f,
-                            {1, 1}
-                        );
-                    }
-                
+                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_multiline_string(
                         payload.font,
-                        payload.rect.position,
+                        -pivot,
                         payload.text,
                         payload.align_x,
                         payload.rect.size.x,
