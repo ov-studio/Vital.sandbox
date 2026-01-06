@@ -38,6 +38,7 @@ namespace Vital::Godot {
 			// Getters //
 			static Core* get_singleton();
 			static godot::Node* get_root();
+			static godot::RenderingServer* get_rendering_server();
 			static godot::ResourceLoader* get_resource_loader();
 			static godot::Ref<godot::Environment> get_environment();
 
