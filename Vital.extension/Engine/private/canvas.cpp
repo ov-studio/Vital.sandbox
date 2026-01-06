@@ -42,6 +42,17 @@ namespace Vital::Godot {
 
 
     // Utils //
+    Canvas* Canvas::get_singleton() {
+        if (!singleton) {
+            //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
+                auto* root = Vital::Godot::Core::get_singleton() -> get_tree() -> get_root();
+                singleton = memnew(Canvas);
+                root -> call_deferred("add_child", singleton);
+            //}
+        }
+        return singleton;
+    }
+
     RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
         auto* rt = RenderTarget::create_2d(width, height, transparent);
         add_child(rt -> get_viewport());

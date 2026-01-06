@@ -22,6 +22,7 @@
 
 namespace Vital::Godot {
     class RenderTarget;
+    class Canvas;
     class Canvas : public godot::Node2D {
         GDCLASS(Canvas, godot::Node2D)
         public:
@@ -65,6 +66,7 @@ namespace Vital::Godot {
             std::vector<Command> queue;
             std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
         protected:
+            static inline Canvas* singleton = nullptr;
             static void _bind_methods() {}
         public:
             // Instantiators //
@@ -77,6 +79,7 @@ namespace Vital::Godot {
 
 
             // Utils //
+            Canvas* get_singleton();
             RenderTarget* create_rendertarget(int width, int height, bool transparent);
             godot::Ref<godot::Texture2D> get_texture(const std::string& path);
             static void execute(godot::Node2D* node, std::vector<Command> queue);
