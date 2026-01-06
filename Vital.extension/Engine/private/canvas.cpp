@@ -81,6 +81,20 @@ namespace Vital::Godot {
                     );
                     break;
                 }
+                case Type::Circle: {
+                    const auto &payload = std::get<CircleCommand>(command.payload);
+                    auto pivot = payload.rect.size*0.5f + payload.pivot;
+                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
+                    node -> draw_circle(
+                        payload.rect.position,
+                        payload.rect.size.x,
+                        payload.color,
+                        payload.filled,
+                        payload.filled ? -1 : payload.stroke,
+                        true
+                    );
+                    break;
+                }
                 case Type::IMAGE: {
                     const auto &payload = std::get<ImageCommand>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
@@ -138,6 +152,26 @@ namespace Vital::Godot {
         payload.pivot = {pivot_x, pivot_y};
         payload.color = color;
         push({Type::Rectangle, payload});
+    }
+
+    void Canvas::draw_circle(
+        float x, float y,
+        float radius,
+        bool filled,
+        float stroke,
+        float rotation,
+        float pivot_x,
+        float pivot_y,
+        const godot::Color& color
+    ) {
+        CircleCommand payload;
+        payload.rect = {x, y, radius, radius};
+        payload.filled = filled;
+        payload.stroke = stroke;
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = {pivot_x, pivot_y};
+        payload.color = color;
+        push({Type::Circle, payload});
     }
 
     void Canvas::draw_image(

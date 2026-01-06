@@ -28,6 +28,7 @@ namespace Vital::Godot {
         public:
             enum class Type {
                 Rectangle,
+                Circle,
                 IMAGE,
                 TEXT
             };
