@@ -22,11 +22,13 @@
 /////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua {
+	class Singleton;
 	class Singleton {
 		protected:
+			static inline Singleton* instance = nullptr;
+		public:
 			Singleton();
 			~Singleton();
-		public:
 			static Singleton* fetch();
 			void ready();
 			void process(double delta);

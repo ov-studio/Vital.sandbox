@@ -38,13 +38,14 @@
 /////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua {
-    Singleton* instance = nullptr;
     Vital::Sandbox::Lua::create* vm = nullptr;
 
+    // TODO: REMOVE LATER
     godot::Ref<godot::Texture2D> tex;
     godot::Ref<godot::Font> font;
     Vital::Godot::RenderTarget* rt = nullptr;
-
+    //
+    
     Singleton* Singleton::fetch() {
         instance = instance ? instance : memnew(Singleton());
         return instance;

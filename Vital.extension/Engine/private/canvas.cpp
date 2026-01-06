@@ -43,7 +43,7 @@ namespace Vital::Godot {
 
     // Utils //
     RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
-        auto* rt = RenderTarget::create2D(width, height, transparent);
+        auto* rt = RenderTarget::create_2d(width, height, transparent);
         add_child(rt -> get_viewport());
         return rt;
     }

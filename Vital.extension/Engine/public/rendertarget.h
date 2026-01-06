@@ -45,7 +45,7 @@ namespace Vital::Godot {
 
 
             // APIs //
-            static RenderTarget* create2D(int width, int height, bool transparent);
+            static RenderTarget* create_2d(int width, int height, bool transparent);
             void push(Canvas::Command command);
             void clear(bool clear, bool reload);
             static void set_rendertarget(RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
