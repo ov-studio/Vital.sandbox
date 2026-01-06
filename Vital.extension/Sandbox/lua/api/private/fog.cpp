@@ -29,7 +29,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto state = vm -> getBool(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_enabled(state);
+            Vital::Godot::Engine::get_environment() -> set_fog_enabled(state);
             vm -> setBool(true);
             return 1;
         });
@@ -38,7 +38,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "isEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setBool(Vital::Godot::Engine::Singleton::get_environment() -> is_fog_enabled());
+            vm -> setBool(Vital::Godot::Engine::get_environment() -> is_fog_enabled());
             return 1;
         });
     });
@@ -49,7 +49,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getInt(1);
             if ((value < godot::Environment::FOG_MODE_EXPONENTIAL) || (value > godot::Environment::FOG_MODE_DEPTH)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
+            Vital::Godot::Engine::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
             vm -> setBool(true);
             return 1;
         });
@@ -58,7 +58,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getMode", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_mode());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_mode());
             return 1;
         });
     });
@@ -69,14 +69,14 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
             if (vm -> isString(1)) {
                 godot::String value(vm -> getString(1).c_str());
                 if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-                Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(godot::Color::html(value));
+                Vital::Godot::Engine::get_environment() -> set_fog_light_color(godot::Color::html(value));
             }
             else {
                 if (vm -> getArgCount() < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 for (int i = 1; i <= 4; i++) {
                     if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
                 }
-                Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_color(godot::Color(
+                Vital::Godot::Engine::get_environment() -> set_fog_light_color(godot::Color(
                     vm -> getFloat(1), 
                     vm -> getFloat(2), 
                     vm -> getFloat(3), 
@@ -91,7 +91,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getLightColor", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            auto value = Vital::Godot::Engine::Singleton::get_environment() -> get_fog_light_color();
+            auto value = Vital::Godot::Engine::get_environment() -> get_fog_light_color();
             vm -> setNumber(value.r);
             vm -> setNumber(value.g);
             vm -> setNumber(value.b);
@@ -105,7 +105,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_light_energy(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_light_energy(value);
             vm -> setBool(true);
             return 1;
         });
@@ -114,7 +114,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getLightEnergy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_light_energy());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_light_energy());
             return 1;
         });
     });
@@ -124,7 +124,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_sun_scatter(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_sun_scatter(value);
             vm -> setBool(true);
             return 1;
         });
@@ -133,7 +133,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getSunScatter", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_sun_scatter());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_sun_scatter());
             return 1;
         });
     });
@@ -143,7 +143,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_density(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_density(value);
             vm -> setBool(true);
             return 1;
         });
@@ -152,7 +152,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_density());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_density());
             return 1;
         });
     });
@@ -162,7 +162,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_height(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_height(value);
             vm -> setBool(true);
             return 1;
         });
@@ -171,7 +171,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getHeight", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_height());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_height());
             return 1;
         });
     });
@@ -181,7 +181,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_height_density(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_height_density(value);
             vm -> setBool(true);
             return 1;
         });
@@ -190,7 +190,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getHeightDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_height_density());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_height_density());
             return 1;
         });
     });
@@ -200,7 +200,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_aerial_perspective(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_aerial_perspective(value);
             vm -> setBool(true);
             return 1;
         });
@@ -209,7 +209,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getAerialPerspective", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_aerial_perspective());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_aerial_perspective());
             return 1;
         });
     });
@@ -219,7 +219,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_sky_affect(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_sky_affect(value);
             vm -> setBool(true);
             return 1;
         });
@@ -228,7 +228,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getSkyAffect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_sky_affect());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_sky_affect());
             return 1;
         });
     });
@@ -238,7 +238,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_depth_curve(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_depth_curve(value);
             vm -> setBool(true);
             return 1;
         });
@@ -247,7 +247,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getDepthCurve", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_depth_curve());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_depth_curve());
             return 1;
         });
     });
@@ -257,7 +257,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_depth_begin(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_depth_begin(value);
             vm -> setBool(true);
             return 1;
         });
@@ -266,7 +266,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getDepthBegin", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_depth_begin());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_depth_begin());
             return 1;
         });
     });
@@ -276,7 +276,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_fog_depth_end(value);
+            Vital::Godot::Engine::get_environment() -> set_fog_depth_end(value);
             vm -> setBool(true);
             return 1;
         });
@@ -285,7 +285,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "getDepthEnd", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_fog_depth_end());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_fog_depth_end());
             return 1;
         });
     });

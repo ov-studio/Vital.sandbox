@@ -29,7 +29,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto state = vm -> getBool(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_adjustment_enabled(state);
+            Vital::Godot::Engine::get_environment() -> set_adjustment_enabled(state);
             vm -> setBool(true);
             return 1;
         });
@@ -38,7 +38,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "isEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setBool(Vital::Godot::Engine::Singleton::get_environment() -> is_adjustment_enabled());
+            vm -> setBool(Vital::Godot::Engine::get_environment() -> is_adjustment_enabled());
             return 1;
         });
     });
@@ -48,7 +48,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_adjustment_brightness(value);
+            Vital::Godot::Engine::get_environment() -> set_adjustment_brightness(value);
             vm -> setBool(true);
             return 1;
         });
@@ -57,7 +57,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "getBrightness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_adjustment_brightness());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_adjustment_brightness());
             return 1;
         });
     });
@@ -67,7 +67,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_adjustment_contrast(value);
+            Vital::Godot::Engine::get_environment() -> set_adjustment_contrast(value);
             vm -> setBool(true);
             return 1;
         });
@@ -76,7 +76,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "getContrast", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_adjustment_contrast());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_adjustment_contrast());
             return 1;
         });
     });
@@ -86,7 +86,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
             auto value = vm -> getFloat(1);
-            Vital::Godot::Engine::Singleton::get_environment() -> set_adjustment_saturation(value);
+            Vital::Godot::Engine::get_environment() -> set_adjustment_saturation(value);
             vm -> setBool(true);
             return 1;
         });
@@ -95,7 +95,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "getSaturation", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(Vital::Godot::Engine::Singleton::get_environment() -> get_adjustment_saturation());
+            vm -> setNumber(Vital::Godot::Engine::get_environment() -> get_adjustment_saturation());
             return 1;
         });
     });

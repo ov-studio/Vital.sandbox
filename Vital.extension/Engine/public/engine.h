@@ -21,17 +21,17 @@
 // Vital: Godot: Engine //
 ///////////////////////////
 
-namespace Vital::Godot::Engine {
-	class Singleton : public godot::Node {
-		GDCLASS(Singleton, godot::Node)
+namespace Vital::Godot {
+	class Engine : public godot::Node {
+		GDCLASS(Engine, godot::Node)
 		protected:
 			static void _bind_methods() {};
 		private:
 			Vital::Godot::Canvas* canvas = nullptr;
 		public:
 			// Instantiators //
-			Singleton();
-			~Singleton() override = default;
+			Engine();
+			~Engine() override = default;
 			void _ready() override;
 			void _process(double delta) override;
 

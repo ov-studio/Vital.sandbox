@@ -44,4 +44,3 @@
 
 namespace Vital::Godot {}
 namespace Vital::Godot::Sandbox {}
-namespace Vital::Godot::Engine {}
