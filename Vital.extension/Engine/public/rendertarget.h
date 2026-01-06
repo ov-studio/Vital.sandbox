@@ -35,6 +35,7 @@ namespace Vital::Godot {
             RenderTarget() = default;
             ~RenderTarget() override = default;
             void _clean();
+            void _update();
             void _draw() override;
 
 
