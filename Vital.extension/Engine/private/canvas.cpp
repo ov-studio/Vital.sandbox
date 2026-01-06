@@ -37,7 +37,7 @@ namespace Vital::Godot {
     void Canvas::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         _clean();
-        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
+        Sandbox::Lua::Singleton::fetch() -> draw(this);
     }
 
 
@@ -45,7 +45,7 @@ namespace Vital::Godot {
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
-                auto* root = Vital::Godot::Core::get_singleton() -> get_tree() -> get_root();
+                auto* root = Core::get_singleton() -> get_tree() -> get_root();
                 singleton = memnew(Canvas);
                 root -> call_deferred("add_child", singleton);
             //}

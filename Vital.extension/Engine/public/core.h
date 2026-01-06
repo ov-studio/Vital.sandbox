@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/index.h>
 
 
 ///////////////////////////
@@ -21,12 +21,12 @@
 ///////////////////////////
 
 namespace Vital::Godot {
+	class Core;
 	class Core : public godot::Node {
 		GDCLASS(Core, godot::Node)
 		protected:
+			static inline Core* singleton = nullptr;
 			static void _bind_methods() {};
-		private:
-			Vital::Godot::Canvas* canvas = nullptr;
 		public:
 			// Instantiators //
 			Core();
@@ -36,6 +36,7 @@ namespace Vital::Godot {
 
 
 			// Getters //
+			static Core* get_singleton();
 			static godot::Node* get_root();
 			static godot::ResourceLoader* get_resource_loader();
 			static godot::Ref<godot::Environment> get_environment();
@@ -43,7 +44,7 @@ namespace Vital::Godot {
 	
 			// Utils //
 			template <typename T>
-			static void fetch_nodes_by_type(godot::Node *node, std::vector<T*> &result, int limit = -1) {
+			static void fetch_nodes_by_type(godot::Node* node, std::vector<T*> &result, int limit = -1) {
 				if (!node || (limit == 0)) return;
 				T* typed_node = godot::Object::cast_to<T>(node);
 				if (typed_node) result.push_back(typed_node);

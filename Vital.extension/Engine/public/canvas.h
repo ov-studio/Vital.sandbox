@@ -79,7 +79,7 @@ namespace Vital::Godot {
 
 
             // Utils //
-            Canvas* get_singleton();
+            static Canvas* get_singleton();
             RenderTarget* create_rendertarget(int width, int height, bool transparent);
             godot::Ref<godot::Texture2D> get_texture(const std::string& path);
             static void execute(godot::Node2D* node, std::vector<Command> queue);

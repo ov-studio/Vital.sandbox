@@ -25,25 +25,26 @@
 namespace Vital::Godot {
     // Instantiators //
     Core::Core() {
-        Vital::Godot::Sandbox::Lua::Singleton::fetch();
+        Sandbox::Lua::Singleton::fetch();
     }
     
     void Core::_ready() {
+        singleton = singleton ? singleton : this;
         get_environment();
-        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
-        //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
-            auto* root = get_tree() -> get_root();
-            canvas = memnew(Vital::Godot::Canvas);
-            root -> call_deferred("add_child", canvas);
-        //}
+        Canvas::get_singleton();
+        Sandbox::Lua::Singleton::fetch() -> ready();
     }
 
     void Core::_process(double delta) {
-        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
+        Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 
 
     // Getters //
+    Core* Core::get_singleton() {
+        return singleton;
+    }
+
     godot::Node* Core::get_root() {
         auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree -> get_root() : nullptr;
