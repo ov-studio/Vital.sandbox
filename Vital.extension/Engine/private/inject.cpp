@@ -22,7 +22,7 @@
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
-	godot::ClassDB::register_class<Vital::Godot::Engine>(true);
+	godot::ClassDB::register_class<Vital::Godot::Engine2>();
 	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
 }

@@ -24,37 +24,37 @@
 
 namespace Vital::Godot {
     // Instantiators //
-    Engine::Engine() {
+    Engine2::Engine2() {
         Vital::Godot::Sandbox::Lua::Singleton::fetch();
     }
     
-    void Engine::_ready() {
+    void Engine2::_ready() {
         get_environment();
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
         //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
-            godot::Node* root = get_tree() -> get_root();
+            auto* root = get_tree() -> get_root();
             canvas = memnew(Vital::Godot::Canvas);
             root -> call_deferred("add_child", canvas);
         //}
     }
 
-    void Engine::_process(double delta) {
+    void Engine2::_process(double delta) {
         Vital::Godot::Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 
 
     // Getters //
-    godot::Node* Engine::get_root() {
+    godot::Node* Engine2::get_root() {
         auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree -> get_root() : nullptr;
     }
     
-    godot::ResourceLoader* Engine::get_resource_loader() {
+    godot::ResourceLoader* Engine2::get_resource_loader() {
         return godot::ResourceLoader::get_singleton();
     }
     
-    godot::Ref<godot::Environment> Engine::get_environment() {
-        godot::Node* root = get_root();
+    godot::Ref<godot::Environment> Engine2::get_environment() {
+        auto* root = get_root();
         godot::WorldEnvironment* parent = nullptr;
         std::vector<godot::WorldEnvironment*> nodes;
         fetch_nodes_by_type(root, nodes, 1);

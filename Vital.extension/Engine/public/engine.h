@@ -22,16 +22,16 @@
 ///////////////////////////
 
 namespace Vital::Godot {
-	class Engine : public godot::Node {
-		GDCLASS(Engine, godot::Node)
+	class Engine2 : public godot::Node {
+		GDCLASS(Engine2, godot::Node)
 		protected:
 			static void _bind_methods() {};
 		private:
 			Vital::Godot::Canvas* canvas = nullptr;
 		public:
 			// Instantiators //
-			Engine();
-			~Engine() override = default;
+			Engine2();
+			~Engine2() override = default;
 			void _ready() override;
 			void _process(double delta) override;
 
