@@ -103,7 +103,7 @@ namespace Vital::Godot {
                         payload.font_size
                     );
                     break;
-                } 
+                }
             }
         }
     };
