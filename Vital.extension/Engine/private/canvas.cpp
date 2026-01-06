@@ -73,7 +73,7 @@ namespace Vital::Godot {
                         godot::Rect2(-pivot, payload.rect.size),
                         payload.color,
                         payload.filled,
-                        payload.stroke,
+                        payload.filled ? -1 : payload.stroke,
                         true
                     );
                     break;
