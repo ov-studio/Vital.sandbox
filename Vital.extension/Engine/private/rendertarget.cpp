@@ -13,6 +13,7 @@
 //////////////
 
 #include <Vital.extension/Engine/public/rendertarget.h>
+#include <Vital.extension/Engine/public/core.h>
 
 
 /////////////////////////////////
@@ -26,7 +27,12 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::_update() {
-        
+        auto* rs = Core::get_rendering_server();
+        auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
+        rs -> viewport_set_active(viewport_main, false);
+        rs -> force_draw();
+        rs -> viewport_set_active(viewport_main, true);
+        godot::UtilityFunctions::print("force updated");
     }
 
     void RenderTarget::_draw() {
@@ -81,10 +87,12 @@ namespace Vital::Godot {
             _clean();
             queue_redraw();
         }
+        if (instant) _update();
     }
 
     void RenderTarget::push(Canvas::Command command) {
         queue.push_back(command);
         queue_redraw();
+        if (instant) _update();
     }
 }
