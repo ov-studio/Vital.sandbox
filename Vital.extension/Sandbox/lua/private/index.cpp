@@ -30,6 +30,7 @@
 #include <Vital.extension/Sandbox/lua/api/public/adjustment.h>
 
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/rendertarget.h>
 
 
 /////////////////////////////////
@@ -184,7 +185,7 @@ namespace Vital::Godot::Sandbox::Lua {
             rt = canvas -> create_rendertarget(512, 512, false);
         }
 
-        canvas -> set_rendertarget(rt, true);
+        Vital::Godot::RenderTarget::set_rendertarget(rt, true);
         canvas -> draw_image(0, 20, 300, 300, "res://flower.jpg", rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
             text.c_str(),
@@ -200,7 +201,7 @@ namespace Vital::Godot::Sandbox::Lua {
             0.0f,
             0.0f, 0.0f
         );
-        canvas -> set_rendertarget();
+        Vital::Godot::RenderTarget::set_rendertarget();
 
         canvas -> draw_image(100, 500, 512, 512, rt);
         //vm -> loadString(rwString);

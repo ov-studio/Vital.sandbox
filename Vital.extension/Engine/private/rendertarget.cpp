@@ -28,16 +28,20 @@ namespace Vital::Godot {
 
 
     // Getters //
-    godot::Vector2i RenderTarget::getSize() {
+    godot::Vector2i RenderTarget::get_size() {
         return viewport -> get_size();
     }
 
-    godot::SubViewport* RenderTarget::getViewport() {
+    godot::SubViewport* RenderTarget::get_viewport() {
         return viewport;
     }
 
-    godot::Ref<godot::ViewportTexture> RenderTarget::getTexture() {
+    godot::Ref<godot::ViewportTexture> RenderTarget::get_texture() {
         return viewport -> get_texture();
+    }
+
+    RenderTarget* RenderTarget::get_rendertarget() {
+        return rendertarget;
     }
 
 
@@ -54,10 +58,21 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::clear(bool clear, bool reload) {
-        getViewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
+        get_viewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         if (clear) {
             _clean();
             queue_redraw();
         }
+    }
+
+    void RenderTarget::push(Canvas::Command command) {
+        queue.push_back(command);
+        queue_redraw();
+    }
+
+    void RenderTarget::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
+        rendertarget = rt;
+        if (!rt) return;
+        rt -> clear(clear, reload);
     }
 }

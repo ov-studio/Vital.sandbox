@@ -98,8 +98,14 @@ namespace Vital::Godot {
     }
 
 
-    // Utils //
-    godot::Ref<godot::Texture2D> Canvas::fetch_texture(const std::string& path) {
+    // Getters //
+    RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
+        auto* rt = RenderTarget::create2D(width, height, transparent);
+        add_child(rt -> get_viewport());
+        return rt;
+    }
+
+    godot::Ref<godot::Texture2D> Canvas::get_texture(const std::string& path) {
         auto it = textures.find(path);
         if (it != textures.end()) return it -> second;
         auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
@@ -107,16 +113,10 @@ namespace Vital::Godot {
         return texture;
     }
 
-    RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
-        auto* rt = RenderTarget::create2D(width, height, transparent);
-        add_child(rt -> getViewport());
-        return rt;
-    }
-
-    void Canvas::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
-        current_rt = rt;
-        if (!rt) return;
-        rt -> clear(clear, reload);
+    void Canvas::push(Command command) {
+        auto* rt = RenderTarget::get_rendertarget();
+        if (rt) rt -> push(command);
+        queue.push_back(command);
     }
 
 
@@ -132,17 +132,12 @@ namespace Vital::Godot {
         if (!texture.is_valid()) return;
         ImageCommand payload;
         payload.texture = texture;
-        payload.rect = { x, y, width, height };
+        payload.rect = {x, y, width, height};
         payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = { pivot_x, pivot_y };
+        payload.pivot = {pivot_x, pivot_y};
         payload.color = color;
+        push({Type::IMAGE, payload});
 
-        if (current_rt) {
-            current_rt -> queue.push_back({ Type::IMAGE, payload });
-            current_rt -> queue_redraw();
-        } else {
-            queue.push_back({ Type::IMAGE, payload });
-        }
     }
 
     void Canvas::draw_image(
@@ -153,7 +148,7 @@ namespace Vital::Godot {
         float pivot_x, float pivot_y,
         const godot::Color& color
     ) {
-        draw_image(x, y, width, height, fetch_texture(path), rotation, pivot_x, pivot_y, color);
+        draw_image(x, y, width, height, get_texture(path), rotation, pivot_x, pivot_y, color);
     }
 
     void Canvas::draw_image(
@@ -165,7 +160,7 @@ namespace Vital::Godot {
         const godot::Color& color
     ) {
         if (!rt) return;
-        draw_image(x, y, width, height, rt -> getTexture(), rotation, pivot_x, pivot_y, color);
+        draw_image(x, y, width, height, rt -> get_texture(), rotation, pivot_x, pivot_y, color);
     }
 
     void Canvas::draw_text(
@@ -207,12 +202,6 @@ namespace Vital::Godot {
         payload.text_lines = payload.rect.size.y/(payload.text_size.y + payload.font_ascent);
         if (payload.align_y == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - payload.text_size.y)*0.5f;
         else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
-
-        if (current_rt) {
-            current_rt -> queue.push_back({ Type::TEXT, payload });
-            current_rt -> queue_redraw();
-        } else {
-            queue.push_back({ Type::TEXT, payload });
-        }
+        push({Type::TEXT, payload});
     }
 }

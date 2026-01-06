@@ -61,12 +61,11 @@ namespace Vital::Godot {
                 Type type;
                 std::variant<ImageCommand, TextCommand> payload;
             };
-        protected:
-            static void _bind_methods() {}
         private:
             std::vector<Command> queue;
             std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
-            RenderTarget* current_rt = nullptr;
+        protected:
+            static void _bind_methods() {}
         public:
             // Instantiators //
             Canvas() = default;
@@ -78,10 +77,10 @@ namespace Vital::Godot {
             static void _execute(godot::Node2D* node, std::vector<Command> queue);
 
 
-            // Utils //
-            godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
+            // Getters //
             RenderTarget* create_rendertarget(int width, int height, bool transparent);
-            void set_rendertarget(RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
+            godot::Ref<godot::Texture2D> get_texture(const std::string& path);
+            void push(Command command);
 
 
             // APIs //
