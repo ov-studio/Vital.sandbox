@@ -115,7 +115,7 @@ namespace Vital::Godot {
 
     void Canvas::push(Command command) {
         auto* rt = RenderTarget::get_rendertarget();
-        if (rt) rt -> push(command);
+        if (rt) return rt -> push(command);
         queue.push_back(command);
     }
 
