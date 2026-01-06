@@ -24,15 +24,24 @@ namespace Vital::Godot {
     class RenderTarget : public godot::Node2D {
         GDCLASS(RenderTarget, godot::Node2D)
         protected:
+            godot::SubViewport* viewport = nullptr;
             static void _bind_methods() {}
         public:
-            godot::SubViewport* viewport = nullptr;
-            godot::Ref<godot::ViewportTexture> texture;
-            godot::Vector2i size;
+            // Instantiators //
             RenderTarget() = default;
             ~RenderTarget() override = default;
             std::vector<Canvas::Command> queue;
             void _clean() { queue.clear(); }
             void _draw() override;
+
+
+            // Getters //
+            godot::Vector2i getSize();
+            godot::SubViewport* getViewport();
+            godot::Ref<godot::ViewportTexture> getTexture();
+
+
+            // APIs //
+            static RenderTarget* create2D(int width, int height, bool transparent);
     };
 }

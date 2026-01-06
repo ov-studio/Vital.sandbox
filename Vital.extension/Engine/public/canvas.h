@@ -33,28 +33,28 @@ namespace Vital::Godot {
             struct ImageCommand {
                 godot::Ref<godot::Texture2D> texture;
                 godot::Rect2 rect;
-                float rotation = 0.0f;
-                godot::Vector2 pivot = {0, 0};
-                godot::Color color = {1, 1, 1, 1};
+                float rotation;
+                godot::Vector2 pivot;
+                godot::Color color;
             };
         
             struct TextCommand {
                 godot::String text;
                 godot::Vector2 text_size;
-                int text_lines = -1;
+                int text_lines;
                 godot::Ref<godot::Font> font;
-                int font_size = 16;
+                int font_size;
                 float font_height;
                 float font_ascent;
-                godot::Vector2 position = {0, 0};
+                godot::Vector2 position;
                 godot::Rect2 rect;
-                godot::Color color = {1, 1, 1, 1};
+                godot::Color color;
                 godot::HorizontalAlignment align_x;
                 godot::VerticalAlignment align_y;
-                float rotation = 0.0f;
-                godot::Vector2 pivot = {0, 0};
-                bool clip = false;
-                bool wordwrap = false;
+                float rotation;
+                godot::Vector2 pivot;
+                bool clip;
+                bool wordwrap;
             };
         
             struct Command {
@@ -67,7 +67,6 @@ namespace Vital::Godot {
             std::vector<Command> queue;
             std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
             RenderTarget* current_rt = nullptr;
-            std::vector<RenderTarget*> owned_rts;
         public:
             // Instantiators //
             Canvas() = default;
@@ -81,14 +80,14 @@ namespace Vital::Godot {
 
             // Utils //
             godot::Ref<godot::Texture2D> fetch_texture(const std::string& path);
-            RenderTarget* create_rendertarget(int w, int h, bool transparent);
+            RenderTarget* create_rendertarget(int width, int height, bool transparent);
             void set_rendertarget(RenderTarget* rt = nullptr, bool clear = false, bool reload = false);
 
 
             // APIs //
             void draw_image(
                 float x, float y,
-                float w, float h,
+                float width, float height,
                 const godot::Ref<godot::Texture2D>& texture,
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
@@ -98,7 +97,7 @@ namespace Vital::Godot {
 
             void draw_image(
                 float x, float y,
-                float w, float h,
+                float width, float height,
                 const std::string& path,
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
@@ -108,7 +107,7 @@ namespace Vital::Godot {
 
             void draw_image(
                 float x, float y,
-                float w, float h,
+                float width, float height,
                 RenderTarget* rt,
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,

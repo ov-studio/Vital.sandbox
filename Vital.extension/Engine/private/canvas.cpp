@@ -101,35 +101,22 @@ namespace Vital::Godot {
     // Utils //
     godot::Ref<godot::Texture2D> Canvas::fetch_texture(const std::string& path) {
         auto it = textures.find(path);
-        if (it != textures.end()) return it->second;
-        auto tex = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
-        if (tex.is_valid()) textures[path] = tex;
-        return tex;
+        if (it != textures.end()) return it -> second;
+        auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
+        if (texture.is_valid()) textures[path] = texture;
+        return texture;
     }
 
-    RenderTarget* Canvas::create_rendertarget(int w, int h, bool transparent) {
-        RenderTarget* rt = memnew(RenderTarget);
-        godot::SubViewport *vp = memnew(godot::SubViewport);
-        vp->set_size({ w, h });
-        vp->set_disable_3d(true);
-        vp->set_transparent_background(transparent);
-        // 🔥 REQUIRED
-        vp->set_update_mode(
-            godot::SubViewport::UPDATE_ALWAYS
-        );
-        add_child(vp);
-        vp->add_child(rt);
-        rt->viewport = vp;
-        rt->texture = vp->get_texture();
-        rt->size = { w, h };
-        owned_rts.push_back(rt);
+    RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
+        auto* rt = RenderTarget::create2D(width, height, transparent);
+        add_child(rt -> getViewport());
         return rt;
     }
 
     void Canvas::set_rendertarget(RenderTarget* rt, bool clear, bool reload) {
         current_rt = rt;
         if (!rt) return;
-        rt->viewport->set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
+        rt -> getViewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         if (clear) {
             rt -> _clean();
             rt -> queue_redraw();
@@ -140,7 +127,7 @@ namespace Vital::Godot {
     // APIs //
     void Canvas::draw_image(
         float x, float y,
-        float w, float h,
+        float width, float height,
         const godot::Ref<godot::Texture2D>& texture,
         float rotation,
         float pivot_x, float pivot_y,
@@ -149,14 +136,14 @@ namespace Vital::Godot {
         if (!texture.is_valid()) return;
         ImageCommand payload;
         payload.texture = texture;
-        payload.rect = { x, y, w, h };
+        payload.rect = { x, y, width, height };
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = { pivot_x, pivot_y };
         payload.color = color;
 
         if (current_rt) {
-            current_rt->queue.push_back({ Type::IMAGE, payload });
-            current_rt->queue_redraw();
+            current_rt -> queue.push_back({ Type::IMAGE, payload });
+            current_rt -> queue_redraw();
         } else {
             queue.push_back({ Type::IMAGE, payload });
         }
@@ -164,25 +151,25 @@ namespace Vital::Godot {
 
     void Canvas::draw_image(
         float x, float y,
-        float w, float h,
+        float width, float height,
         const std::string& path,
         float rotation,
         float pivot_x, float pivot_y,
         const godot::Color& color
     ) {
-        draw_image(x, y, w, h, fetch_texture(path), rotation, pivot_x, pivot_y, color);
+        draw_image(x, y, width, height, fetch_texture(path), rotation, pivot_x, pivot_y, color);
     }
 
     void Canvas::draw_image(
         float x, float y,
-        float w, float h,
+        float width, float height,
         RenderTarget* rt,
         float rotation,
         float pivot_x, float pivot_y,
         const godot::Color& color
     ) {
         if (!rt) return;
-        draw_image(x, y, w, h, rt -> texture, rotation, pivot_x, pivot_y, color);
+        draw_image(x, y, width, height, rt -> getTexture(), rotation, pivot_x, pivot_y, color);
     }
 
     void Canvas::draw_text(
@@ -226,8 +213,8 @@ namespace Vital::Godot {
         else if (payload.align_y == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
 
         if (current_rt) {
-            current_rt->queue.push_back({ Type::TEXT, payload });
-            current_rt->queue_redraw();
+            current_rt -> queue.push_back({ Type::TEXT, payload });
+            current_rt -> queue_redraw();
         } else {
             queue.push_back({ Type::TEXT, payload });
         }
