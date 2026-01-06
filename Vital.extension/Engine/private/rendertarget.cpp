@@ -22,6 +22,7 @@
 namespace Vital::Godot {
     // Instantiators //
     void RenderTarget::_draw() {
+        draw_rect(godot::Rect2({0, 0}, get_size()), godot::Color(1, 0, 0, 1), true, 0.0f, false);
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         _clean();
     }
