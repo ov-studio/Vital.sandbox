@@ -77,8 +77,9 @@ namespace Vital::Godot {
             ~Canvas() override = default;
             void _ready() override;
             void _process(double delta) override;
-            void clean() { queue.clear(); }
+            void _clean() { queue.clear(); }
             void _draw() override;
+            static void _execute(godot::Node2D* node, std::vector<Command> queue);
 
 
             // Utils //
@@ -148,7 +149,7 @@ namespace Vital::Godot {
             RenderTarget() = default;
             ~RenderTarget() override = default;
             std::vector<Vital::Godot::Canvas::Command> queue;
-            void clean() { queue.clear(); }
+            void _clean() { queue.clear(); }
             void _draw() override;
     };
 }

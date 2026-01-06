@@ -24,59 +24,8 @@
 
 namespace Vital::Godot {
     void RenderTarget::_draw() {
-        for (const auto &command : queue) {
-            switch (command.type) {
-                case Vital::Godot::Canvas::Type::IMAGE: {
-                    const auto &payload = std::get<Vital::Godot::Canvas::ImageCommand>(command.payload);
-                    godot::Vector2 center = payload.rect.size*0.5f;
-                    godot::Vector2 pivot = center + payload.pivot;
-                    draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
-                    draw_texture_rect(
-                        payload.texture,
-                        godot::Rect2(-pivot, payload.rect.size),
-                        false,
-                        payload.color
-                    );
-                    break;
-                }
-                case Vital::Godot::Canvas::Type::TEXT: {
-                    const Vital::Godot::Canvas::TextCommand &payload = std::get<Vital::Godot::Canvas::TextCommand>(command.payload);
-                    godot::Vector2 center = payload.rect.size*0.5f;
-                    godot::Vector2 pivot = center + payload.pivot;
-                    //draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
-
-
-                    // -----------------------------
-                    // 1. Rotation (optional)
-                    // -----------------------------
-                    if (payload.rotation != 0.0f) {
-                        draw_set_transform(
-                            payload.rect.position + payload.pivot,
-                            payload.rotation,
-                            godot::Vector2(1, 1)
-                        );
-                    }
-                    else {
-                        draw_set_transform(
-                            godot::Vector2(),
-                            0.0f,
-                            godot::Vector2(1, 1)
-                        );
-                    }
-                
-                    draw_multiline_string(
-                        payload.font,
-                        payload.rect.position,
-                        payload.text,
-                        payload.align_x,
-                        payload.rect.size.x,
-                        payload.font_size
-                    );
-                    break;
-                } 
-            }
-        }
-        clean();
+        Canvas::_execute(static_cast<godot::Node2D*>(this), queue);
+        _clean();
     }
 }
 
@@ -93,7 +42,7 @@ namespace Vital::Godot {
         queue_redraw();
     }
 
-    void Canvas::_draw() {
+    void Canvas::_execute(godot::Node2D* node, std::vector<Command> queue) {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Type::IMAGE: {
@@ -101,8 +50,8 @@ namespace Vital::Godot {
                     godot::Vector2 center = payload.rect.size*0.5f;
                     godot::Vector2 pivot = center + payload.pivot;
                     
-                    draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
-                    draw_texture_rect(
+                    node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, godot::Vector2(1, 1));
+                    node -> draw_texture_rect(
                         payload.texture,
                         godot::Rect2(-pivot, payload.rect.size),
                         false,
@@ -121,21 +70,21 @@ namespace Vital::Godot {
                     // 1. Rotation (optional)
                     // -----------------------------
                     if (payload.rotation != 0.0f) {
-                        draw_set_transform(
+                        node -> draw_set_transform(
                             payload.rect.position + payload.pivot,
                             payload.rotation,
                             godot::Vector2(1, 1)
                         );
                     }
                     else {
-                        draw_set_transform(
+                        node -> draw_set_transform(
                             godot::Vector2(),
                             0.0f,
                             godot::Vector2(1, 1)
                         );
                     }
                 
-                    draw_multiline_string(
+                    node -> draw_multiline_string(
                         payload.font,
                         payload.rect.position,
                         payload.text,
@@ -145,11 +94,15 @@ namespace Vital::Godot {
                     );
                     break;
                 } 
-            } 
+            }
         }
+    };
 
-        clean();
-        Vital::Godot::Sandbox::Lua::Singleton::fetch()->draw(this);
+
+    void Canvas::_draw() {
+        Canvas::_execute(static_cast<godot::Node2D*>(this), queue);
+        _clean();
+        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
     }
 
 
@@ -186,7 +139,7 @@ namespace Vital::Godot {
         if (!rt) return;
         rt->viewport->set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         if (clear) {
-            rt -> clean();
+            rt -> _clean();
             rt -> queue_redraw();
         }
     }
