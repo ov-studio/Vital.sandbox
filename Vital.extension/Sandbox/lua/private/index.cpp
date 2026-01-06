@@ -181,7 +181,6 @@ namespace Vital::Godot::Sandbox::Lua {
         );
 
         if (!rt) {
-            godot::UtilityFunctions::print("created rt");
             rt = canvas -> create_rendertarget(512, 512, false);
         }
 
