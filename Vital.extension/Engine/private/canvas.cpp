@@ -34,7 +34,29 @@ namespace Vital::Godot {
         queue_redraw();
     }
 
-    void Canvas::_execute(godot::Node2D* node, std::vector<Command> queue) {
+    void Canvas::_draw() {
+        Canvas::execute(static_cast<godot::Node2D*>(this), queue);
+        _clean();
+        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
+    }
+
+
+    // Utils //
+    RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
+        auto* rt = RenderTarget::create2D(width, height, transparent);
+        add_child(rt -> get_viewport());
+        return rt;
+    }
+
+    godot::Ref<godot::Texture2D> Canvas::get_texture(const std::string& path) {
+        auto it = textures.find(path);
+        if (it != textures.end()) return it -> second;
+        auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
+        if (texture.is_valid()) textures[path] = texture;
+        return texture;
+    }
+
+    void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Type::IMAGE: {
@@ -89,29 +111,6 @@ namespace Vital::Godot {
             }
         }
     };
-
-
-    void Canvas::_draw() {
-        Canvas::_execute(static_cast<godot::Node2D*>(this), queue);
-        _clean();
-        Vital::Godot::Sandbox::Lua::Singleton::fetch() -> draw(this);
-    }
-
-
-    // Getters //
-    RenderTarget* Canvas::create_rendertarget(int width, int height, bool transparent) {
-        auto* rt = RenderTarget::create2D(width, height, transparent);
-        add_child(rt -> get_viewport());
-        return rt;
-    }
-
-    godot::Ref<godot::Texture2D> Canvas::get_texture(const std::string& path) {
-        auto it = textures.find(path);
-        if (it != textures.end()) return it -> second;
-        auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
-        if (texture.is_valid()) textures[path] = texture;
-        return texture;
-    }
 
     void Canvas::push(Command command) {
         auto* rt = RenderTarget::get_rendertarget();

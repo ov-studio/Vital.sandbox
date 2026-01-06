@@ -74,12 +74,12 @@ namespace Vital::Godot {
             void _process(double delta) override;
             void _clean() { queue.clear(); }
             void _draw() override;
-            static void _execute(godot::Node2D* node, std::vector<Command> queue);
 
 
-            // Getters //
+            // Utils //
             RenderTarget* create_rendertarget(int width, int height, bool transparent);
             godot::Ref<godot::Texture2D> get_texture(const std::string& path);
+            static void execute(godot::Node2D* node, std::vector<Command> queue);
             void push(Command command);
 
 

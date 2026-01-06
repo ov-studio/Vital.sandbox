@@ -22,7 +22,7 @@
 namespace Vital::Godot {
     // Instantiators //
     void RenderTarget::_draw() {
-        Canvas::_execute(static_cast<godot::Node2D*>(this), queue);
+        Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         _clean();
     }
 
