@@ -148,7 +148,7 @@ namespace Vital::Godot::Sandbox::Lua {
         )";
 
         std::string text = "Hello from Anisa from Netherland Hello from Anisa from Netherland 2";
-        float rotation = std::sin(Vital::System::getTick()*0.0001)*360.0f;
+        float rotation = std::sin(Vital::System::getTick()*0.0005)*360.0f;
         //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_image(100 + (310)*0, 20, 300, 300, "res://flower.jpg", 0, 0, 0, godot::Color(1, 1, 1, 0.35));
         canvas -> draw_text(
@@ -161,7 +161,7 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::HORIZONTAL_ALIGNMENT_CENTER,
             godot::VERTICAL_ALIGNMENT_TOP,
             false,
-            false,
+            true,
             0.0f,
             0.0f, 0.0f
         );
@@ -177,8 +177,8 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::HORIZONTAL_ALIGNMENT_CENTER,
             godot::VERTICAL_ALIGNMENT_CENTER,
             false,
-            false,
-            0.0f,
+            true,
+            rotation,
             0.0f, 0.0f
         );
 
@@ -208,6 +208,5 @@ namespace Vital::Godot::Sandbox::Lua {
 
         canvas -> draw_rectangle(100 + (310)*3, 20, 300, 300, true, 0, rotation, 0, 0, godot::Color(0, 0, 1, 1));
         //vm -> loadString(rwString);
-
     }
 }
