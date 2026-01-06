@@ -51,14 +51,13 @@ namespace Vital::Godot {
         
             struct TextCommand {
                 godot::String text;
+                godot::Rect2 rect;
                 godot::Vector2 text_size;
                 int text_lines;
                 godot::Ref<godot::Font> font;
                 int font_size;
                 float font_height;
                 float font_ascent;
-                godot::Vector2 position;
-                godot::Rect2 rect;
                 godot::Color color;
                 godot::HorizontalAlignment align_x;
                 godot::VerticalAlignment align_y;

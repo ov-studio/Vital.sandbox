@@ -66,8 +66,7 @@ namespace Vital::Godot {
             switch (command.type) {
                 case Type::Rectangle: {
                     const auto &payload = std::get<RectangleCommand>(command.payload);
-                    auto center = payload.rect.size*0.5f;
-                    auto pivot = center + payload.pivot;
+                    auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_rect(
                         godot::Rect2(-pivot, payload.rect.size),
@@ -80,8 +79,7 @@ namespace Vital::Godot {
                 }
                 case Type::IMAGE: {
                     const auto &payload = std::get<ImageCommand>(command.payload);
-                    auto center = payload.rect.size*0.5f;
-                    auto pivot = center + payload.pivot;
+                    auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_texture_rect(
                         payload.texture,
@@ -92,27 +90,10 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::TEXT: {
-                    const TextCommand &payload = std::get<TextCommand>(command.payload);
-                    auto center = payload.rect.size*0.5f;
-                    auto pivot = center + payload.pivot;
+                    const auto &payload = std::get<TextCommand>(command.payload);
+                    auto pivot = payload.rect.size*0.5f + payload.pivot;
+                    pivot.y -= payload.font_ascent;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
-
-                    /*
-                    node -> draw_set_transform(
-                        godot::Vector2(),
-                        0.0f,
-                        {1, 1}
-                    );
-                    node -> draw_multiline_string(
-                        payload.font,
-                        payload.rect.position,
-                        payload.text,
-                        payload.align_x,
-                        payload.rect.size.x,
-                        payload.font_size
-                    );
-                    */
-
                     node -> draw_multiline_string(
                         payload.font,
                         -pivot,
@@ -214,7 +195,6 @@ namespace Vital::Godot {
         TextCommand payload;
         payload.text = text;
         payload.rect = {left_x, top_y, right_x - left_x, bottom_y - top_y};
-        payload.position = {left_x, top_y};
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.font = font;
         payload.font_size = font_size;
