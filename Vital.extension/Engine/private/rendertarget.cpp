@@ -32,7 +32,6 @@ namespace Vital::Godot {
         rs -> viewport_set_active(viewport_main, false);
         rs -> force_draw();
         rs -> viewport_set_active(viewport_main, true);
-        godot::UtilityFunctions::print("force updated");
     }
 
     void RenderTarget::_draw() {
