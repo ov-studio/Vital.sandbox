@@ -24,46 +24,46 @@ namespace Vital::Godot {
     class RenderTarget;
 }
 
-namespace Vital::Godot::Canvas {
-    enum class Type {
-        IMAGE,
-        TEXT
-    };
-
-    struct ImageCommand {
-        godot::Ref<godot::Texture2D> texture;
-        godot::Rect2 rect;
-        float rotation = 0.0f;
-        godot::Vector2 pivot = {0, 0};
-        godot::Color color = {1, 1, 1, 1};
-    };
-
-    struct TextCommand {
-        godot::String text;
-        godot::Vector2 text_size;
-        int text_lines = -1;
-        godot::Ref<godot::Font> font;
-        int font_size = 16;
-        float font_height;
-        float font_ascent;
-        godot::Vector2 position = {0, 0};
-        godot::Rect2 rect;
-        godot::Color color = {1, 1, 1, 1};
-        godot::HorizontalAlignment align_x;
-        godot::VerticalAlignment align_y;
-        float rotation = 0.0f;
-        godot::Vector2 pivot = {0, 0};
-        bool clip = false;
-        bool wordwrap = false;
-    };
-
-    struct Command {
-        Type type;
-        std::variant<ImageCommand, TextCommand> payload;
-    };
-
-    class Singleton : public godot::Node2D {
-        GDCLASS(Singleton, godot::Node2D)
+namespace Vital::Godot {
+    class Canvas : public godot::Node2D {
+        GDCLASS(Canvas, godot::Node2D)
+        public:
+            enum class Type {
+                IMAGE,
+                TEXT
+            };
+        
+            struct ImageCommand {
+                godot::Ref<godot::Texture2D> texture;
+                godot::Rect2 rect;
+                float rotation = 0.0f;
+                godot::Vector2 pivot = {0, 0};
+                godot::Color color = {1, 1, 1, 1};
+            };
+        
+            struct TextCommand {
+                godot::String text;
+                godot::Vector2 text_size;
+                int text_lines = -1;
+                godot::Ref<godot::Font> font;
+                int font_size = 16;
+                float font_height;
+                float font_ascent;
+                godot::Vector2 position = {0, 0};
+                godot::Rect2 rect;
+                godot::Color color = {1, 1, 1, 1};
+                godot::HorizontalAlignment align_x;
+                godot::VerticalAlignment align_y;
+                float rotation = 0.0f;
+                godot::Vector2 pivot = {0, 0};
+                bool clip = false;
+                bool wordwrap = false;
+            };
+        
+            struct Command {
+                Type type;
+                std::variant<ImageCommand, TextCommand> payload;
+            };
         protected:
             static void _bind_methods() {}
         private:
@@ -73,8 +73,8 @@ namespace Vital::Godot::Canvas {
             std::vector<Vital::Godot::RenderTarget*> owned_rts;
         public:
             // Instantiators //
-            Singleton() = default;
-            ~Singleton() override = default;
+            Canvas() = default;
+            ~Canvas() override = default;
             void _ready() override;
             void _process(double delta) override;
             void clean() { queue.clear(); }

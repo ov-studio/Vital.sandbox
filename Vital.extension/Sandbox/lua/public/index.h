@@ -30,6 +30,6 @@ namespace Vital::Godot::Sandbox::Lua {
 			static Singleton* fetch();
 			void ready();
 			void process(double delta);
-			void draw(Vital::Godot::Canvas::Singleton* canvas);
+			void draw(Vital::Godot::Canvas* canvas);
 	};	
 }

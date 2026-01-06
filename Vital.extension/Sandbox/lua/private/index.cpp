@@ -137,7 +137,7 @@ namespace Vital::Godot::Sandbox::Lua {
         //vm -> loadString(rwString);
     }
 
-    void Singleton::draw(Vital::Godot::Canvas::Singleton* canvas) {
+    void Singleton::draw(Vital::Godot::Canvas* canvas) {
         //godot::UtilityFunctions::print("rendered");
         
         // Lua script to run

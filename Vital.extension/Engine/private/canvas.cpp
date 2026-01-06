@@ -80,20 +80,20 @@ namespace Vital::Godot {
     }
 }
 
-namespace Vital::Godot::Canvas {
+namespace Vital::Godot {
     // Instantiators //
-    void Singleton::_ready() {
+    void Canvas::_ready() {
         queue.reserve(256);
         set_as_top_level(true);
         set_visible(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
     }
 
-    void Singleton::_process(double) {
+    void Canvas::_process(double) {
         queue_redraw();
     }
 
-    void Singleton::_draw() {
+    void Canvas::_draw() {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Type::IMAGE: {
@@ -154,7 +154,7 @@ namespace Vital::Godot::Canvas {
 
 
     // Utils //
-    godot::Ref<godot::Texture2D> Singleton::fetch_texture(const std::string& path) {
+    godot::Ref<godot::Texture2D> Canvas::fetch_texture(const std::string& path) {
         auto it = textures.find(path);
         if (it != textures.end()) return it->second;
         auto tex = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
@@ -162,7 +162,7 @@ namespace Vital::Godot::Canvas {
         return tex;
     }
 
-    Vital::Godot::RenderTarget* Singleton::dx_create_rendertarget(int w, int h, bool transparent) {
+    Vital::Godot::RenderTarget* Canvas::dx_create_rendertarget(int w, int h, bool transparent) {
         Vital::Godot::RenderTarget* rt = memnew(Vital::Godot::RenderTarget);
         godot::SubViewport *vp = memnew(godot::SubViewport);
         vp->set_size({ w, h });
@@ -181,7 +181,7 @@ namespace Vital::Godot::Canvas {
         return rt;
     }
 
-    void Singleton::dx_set_rendertarget(Vital::Godot::RenderTarget* rt, bool clear, bool reload) {
+    void Canvas::dx_set_rendertarget(Vital::Godot::RenderTarget* rt, bool clear, bool reload) {
         current_rt = rt;
         if (!rt) return;
         rt->viewport->set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
@@ -193,7 +193,7 @@ namespace Vital::Godot::Canvas {
 
 
     // APIs //
-    void Singleton::draw_image(
+    void Canvas::draw_image(
         float x, float y,
         float w, float h,
         const godot::Ref<godot::Texture2D>& texture,
@@ -217,7 +217,7 @@ namespace Vital::Godot::Canvas {
         }
     }
 
-    void Singleton::draw_image(
+    void Canvas::draw_image(
         float x, float y,
         float w, float h,
         const std::string& path,
@@ -228,7 +228,7 @@ namespace Vital::Godot::Canvas {
         draw_image(x, y, w, h, fetch_texture(path), rotation, pivot_x, pivot_y, color);
     }
 
-    void Singleton::draw_image(
+    void Canvas::draw_image(
         float x, float y,
         float w, float h,
         Vital::Godot::RenderTarget* rt,
@@ -240,7 +240,7 @@ namespace Vital::Godot::Canvas {
         draw_image(x, y, w, h, rt -> texture, rotation, pivot_x, pivot_y, color);
     }
 
-    void Singleton::draw_text(
+    void Canvas::draw_text(
         const godot::String& text,
         float left_x, float top_y,
         float right_x, float bottom_y,
