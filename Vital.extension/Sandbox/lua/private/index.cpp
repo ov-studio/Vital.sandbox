@@ -120,7 +120,7 @@ namespace Vital::Godot::Sandbox::Lua {
         vm -> loadString(rwString);
 
         tex = godot::ResourceLoader::get_singleton()->load("res://flower.jpg", "Texture2D");
-        font = godot::ResourceLoader::get_singleton() -> load("res://fonts/Arial.ttf", "Font");
+        font = godot::ResourceLoader::get_singleton() -> load("res://fonts/Roboto-Bold.ttf", "Font");
 
         if (tex.is_valid()) {
             godot::UtilityFunctions::print("loaded tex");
@@ -162,7 +162,7 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::VERTICAL_ALIGNMENT_TOP,
             false,
             true,
-            2,
+            3,
             {0, 0, 0, 1},
             0.0f,
             0.0f, 0.0f
@@ -180,7 +180,7 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::VERTICAL_ALIGNMENT_CENTER,
             false,
             true,
-            2,
+            3,
             {0, 0, 0, 1},
             rotation,
             0.0f, 0.0f
@@ -203,7 +203,7 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::VERTICAL_ALIGNMENT_BOTTOM,
             true,
             false,
-            2,
+            3,
             {0, 0, 0, 1},
             0.0f,
             0.0f, 0.0f
