@@ -213,11 +213,11 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_circle(
             {100 + (310)*4 + 300*0.5, 20 + 300*0.5},
             300*0.5,
-            true,
+            {1, 0, 0, 1},
+            4,
+            {0, 0, 0, 1},
             0.0f,
-            0.0f,
-            {0.0f, 0.0f},
-            {1, 0, 0, 1}
+            {0.0f, 0.0f}
         );
 
         canvas -> draw_line(

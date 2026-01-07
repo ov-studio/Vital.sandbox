@@ -46,11 +46,11 @@ namespace Vital::Godot {
             struct CircleCommand {
                 godot::Vector2 position;
                 float radius;
-                bool filled;
+                godot::Color color;
                 float stroke;
+                godot::Color stroke_color;
                 float rotation;
                 godot::Vector2 pivot;
-                godot::Color color;
             };
 
             struct LineCommand {
@@ -126,11 +126,11 @@ namespace Vital::Godot {
             void draw_circle(
                 godot::Vector2 position,
                 float radius,
-                bool filled = true,
+                const godot::Color& color = {1, 1, 1, 1},
                 float stroke = 0.0f,
+                const godot::Color& stroke_color = {1, 1, 1, 1},
                 float rotation = 0.0f,
-                godot::Vector2 pivot = {0.0f, 0.0f},
-                const godot::Color& color = {1, 1, 1, 1}
+                godot::Vector2 pivot = {0.0f, 0.0f}
             );
 
             void draw_line(
