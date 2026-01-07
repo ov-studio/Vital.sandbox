@@ -80,7 +80,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Polygon: {
-                    const auto &payload = std::get<Line>(command.payload);
+                    const auto &payload = std::get<Polygon>(command.payload);
                     node -> draw_set_transform({0, 0}, 0, {1, 1});
                     node -> draw_colored_polygon(
                         payload.points,
