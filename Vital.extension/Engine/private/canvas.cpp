@@ -69,7 +69,7 @@ namespace Vital::Godot {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Type::Rectangle: {
-                    const auto &payload = std::get<RectangleCommand>(command.payload);
+                    const auto &payload = std::get<Rectangle>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
@@ -91,7 +91,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Circle: {
-                    const auto &payload = std::get<CircleCommand>(command.payload);
+                    const auto &payload = std::get<Circle>(command.payload);
                     auto pivot = payload.pivot;
                     node -> draw_set_transform(payload.position + pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
@@ -115,7 +115,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Line: {
-                    const auto &payload = std::get<LineCommand>(command.payload);
+                    const auto &payload = std::get<Line>(command.payload);
                     node -> draw_set_transform({0, 0}, 0, {1, 1});
                     node -> draw_polyline(
                         payload.points,
@@ -126,7 +126,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::IMAGE: {
-                    const auto &payload = std::get<ImageCommand>(command.payload);
+                    const auto &payload = std::get<Image>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_texture_rect(
@@ -138,7 +138,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::TEXT: {
-                    const auto &payload = std::get<TextCommand>(command.payload);
+                    const auto &payload = std::get<Text>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     pivot.y -= payload.font_ascent;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
@@ -179,6 +179,28 @@ namespace Vital::Godot {
 
 
     // APIs //
+    void Canvas::draw_line(
+        godot::PackedVector2Array points,
+        float stroke,
+        const godot::Color& color
+    ) {
+        Line payload;
+        payload.points = points;
+        payload.stroke = stroke;
+        payload.color = color;
+        push({Type::Line, payload});
+    }
+
+    void Canvas::draw_polygon(
+        godot::PackedVector2Array points,
+        const godot::Color& color
+    ) {
+        Polygon payload;
+        payload.points = points;
+        payload.color = color;
+        push({Type::Polygon, payload}); 
+    }
+
     void Canvas::draw_rectangle(
         godot::Vector2 position,
         godot::Vector2 size,
@@ -188,7 +210,7 @@ namespace Vital::Godot {
         float rotation,
         godot::Vector2 pivot
     ) {
-        RectangleCommand payload;
+        Rectangle payload;
         payload.rect = {position, size};
         payload.color = color;
         payload.stroke = stroke;
@@ -207,7 +229,7 @@ namespace Vital::Godot {
         float rotation,
         godot::Vector2 pivot
     ) {
-        CircleCommand payload;
+        Circle payload;
         payload.position = position;
         payload.radius = radius;
         payload.color = color;
@@ -216,18 +238,6 @@ namespace Vital::Godot {
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = pivot;
         push({Type::Circle, payload});
-    }
-
-    void Canvas::draw_line(
-        godot::PackedVector2Array points,
-        float stroke,
-        const godot::Color& color
-    ) {
-        LineCommand payload;
-        payload.points = points;
-        payload.stroke = stroke;
-        payload.color = color;
-        push({Type::Line, payload});
     }
 
     void Canvas::draw_image(
@@ -239,7 +249,7 @@ namespace Vital::Godot {
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;
-        ImageCommand payload;
+        Image payload;
         payload.texture = texture;
         payload.rect = {position, size};
         payload.rotation = godot::Math::deg_to_rad(rotation);
@@ -288,7 +298,7 @@ namespace Vital::Godot {
         godot::Vector2 pivot
     ) {
         if (!font.is_valid() || text.is_empty()) return;
-        TextCommand payload;
+        Text payload;
         payload.text = text;
         payload.rect = {start_at, {end_at.x - start_at.x, end_at.y - start_at.y}};
         payload.font = font;

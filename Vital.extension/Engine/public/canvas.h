@@ -27,14 +27,26 @@ namespace Vital::Godot {
         GDCLASS(Canvas, godot::Node2D)
         public:
             enum class Type {
+                Line,
+                Polygon,
                 Rectangle,
                 Circle,
-                Line,
                 IMAGE,
                 TEXT
             };
         
-            struct RectangleCommand {
+            struct Line {
+                godot::PackedVector2Array points;
+                float stroke;
+                godot::Color color;
+            };
+
+            struct Polygon {
+                godot::PackedVector2Array points;
+                godot::Color color;
+            };
+
+            struct Rectangle {
                 godot::Rect2 rect;
                 godot::Color color;
                 float stroke;
@@ -43,7 +55,7 @@ namespace Vital::Godot {
                 godot::Vector2 pivot;
             };
 
-            struct CircleCommand {
+            struct Circle {
                 godot::Vector2 position;
                 float radius;
                 godot::Color color;
@@ -53,13 +65,7 @@ namespace Vital::Godot {
                 godot::Vector2 pivot;
             };
 
-            struct LineCommand {
-                godot::PackedVector2Array points;
-                float stroke;
-                godot::Color color;
-            };
-
-            struct ImageCommand {
+            struct Image {
                 godot::Ref<godot::Texture2D> texture;
                 godot::Rect2 rect;
                 float rotation;
@@ -67,7 +73,7 @@ namespace Vital::Godot {
                 godot::Color color;
             };
         
-            struct TextCommand {
+            struct Text {
                 godot::String text;
                 godot::Rect2 rect;
                 godot::Vector2 text_size;
@@ -87,7 +93,7 @@ namespace Vital::Godot {
         
             struct Command {
                 Type type;
-                std::variant<RectangleCommand, CircleCommand, LineCommand, ImageCommand, TextCommand> payload;
+                std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
             };
         private:
             std::vector<Command> queue;
@@ -113,6 +119,17 @@ namespace Vital::Godot {
 
 
             // APIs //
+            void draw_line(
+                godot::PackedVector2Array points,
+                float stroke,
+                const godot::Color& color = {1, 1, 1, 1}
+            );
+    
+            void draw_polygon(
+                godot::PackedVector2Array points,
+                const godot::Color& color = {1, 1, 1, 1}
+            );
+
             void draw_rectangle(
                 godot::Vector2 position,
                 godot::Vector2 size,
@@ -131,12 +148,6 @@ namespace Vital::Godot {
                 const godot::Color& stroke_color = {1, 1, 1, 1},
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f}
-            );
-
-            void draw_line(
-                godot::PackedVector2Array points,
-                float stroke,
-                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_image(
