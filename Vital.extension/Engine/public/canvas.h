@@ -119,8 +119,7 @@ namespace Vital::Godot {
                 bool filled = true,
                 float stroke = 0.0f,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
@@ -130,8 +129,7 @@ namespace Vital::Godot {
                 bool filled = true,
                 float stroke = 0.0f,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
@@ -146,8 +144,7 @@ namespace Vital::Godot {
                 float width, float height,
                 const godot::Ref<godot::Texture2D>& texture,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
@@ -156,8 +153,7 @@ namespace Vital::Godot {
                 float width, float height,
                 const std::string& path,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
@@ -166,8 +162,7 @@ namespace Vital::Godot {
                 float width, float height,
                 RenderTarget* rt,
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}
             );
 
@@ -185,8 +180,7 @@ namespace Vital::Godot {
                 int stroke = 0,
                 const godot::Color& stroke_color = {1, 1, 1, 1},
                 float rotation = 0.0f,
-                float pivot_x = 0.0f,
-                float pivot_y = 0.0f
+                godot::Vector2 pivot = {0.0f, 0.0f}
             );
     };
 }

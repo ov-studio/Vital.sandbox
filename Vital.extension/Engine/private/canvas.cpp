@@ -166,8 +166,7 @@ namespace Vital::Godot {
         bool filled,
         float stroke,
         float rotation,
-        float pivot_x,
-        float pivot_y,
+        godot::Vector2 pivot,
         const godot::Color& color
     ) {
         RectangleCommand payload;
@@ -175,7 +174,7 @@ namespace Vital::Godot {
         payload.filled = filled;
         payload.stroke = stroke;
         payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = {pivot_x, pivot_y};
+        payload.pivot = pivot;
         payload.color = color;
         push({Type::Rectangle, payload});
     }
@@ -186,8 +185,7 @@ namespace Vital::Godot {
         bool filled,
         float stroke,
         float rotation,
-        float pivot_x,
-        float pivot_y,
+        godot::Vector2 pivot,
         const godot::Color& color
     ) {
         CircleCommand payload;
@@ -195,7 +193,7 @@ namespace Vital::Godot {
         payload.filled = filled;
         payload.stroke = stroke;
         payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = {pivot_x, pivot_y};
+        payload.pivot = pivot;
         payload.color = color;
         push({Type::Circle, payload});
     }
@@ -217,7 +215,7 @@ namespace Vital::Godot {
         float width, float height,
         const godot::Ref<godot::Texture2D>& texture,
         float rotation,
-        float pivot_x, float pivot_y,
+        godot::Vector2 pivot,
         const godot::Color& color
     ) {
         if (!texture.is_valid()) return;
@@ -225,7 +223,7 @@ namespace Vital::Godot {
         payload.texture = texture;
         payload.rect = {x, y, width, height};
         payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = {pivot_x, pivot_y};
+        payload.pivot = pivot;
         payload.color = color;
         push({Type::IMAGE, payload});
 
@@ -236,10 +234,10 @@ namespace Vital::Godot {
         float width, float height,
         const std::string& path,
         float rotation,
-        float pivot_x, float pivot_y,
+        godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        draw_image(x, y, width, height, get_texture(path), rotation, pivot_x, pivot_y, color);
+        draw_image(x, y, width, height, get_texture(path), rotation, pivot, color);
     }
 
     void Canvas::draw_image(
@@ -247,11 +245,11 @@ namespace Vital::Godot {
         float width, float height,
         RenderTarget* rt,
         float rotation,
-        float pivot_x, float pivot_y,
+        godot::Vector2 pivot,
         const godot::Color& color
     ) {
         if (!rt) return;
-        draw_image(x, y, width, height, rt -> get_texture(), rotation, pivot_x, pivot_y, color);
+        draw_image(x, y, width, height, rt -> get_texture(), rotation, pivot, color);
     }
 
     void Canvas::draw_text(
@@ -267,7 +265,7 @@ namespace Vital::Godot {
         int stroke,
         const godot::Color& stroke_color,
         float rotation,
-        float pivot_x, float pivot_y
+        godot::Vector2 pivot
     ) {
         if (!font.is_valid() || text.is_empty()) return;
         TextCommand payload;
@@ -284,7 +282,7 @@ namespace Vital::Godot {
         payload.stroke = stroke;
         payload.stroke_color = stroke_color;
         payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = {pivot_x, pivot_y};
+        payload.pivot = pivot;
         payload.rect.position.y += payload.font_ascent;
         payload.text_size = payload.font -> get_multiline_string_size(
             payload.text,
