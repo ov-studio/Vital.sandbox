@@ -44,7 +44,8 @@ namespace Vital::Godot {
             };
 
             struct CircleCommand {
-                godot::Rect2 rect;
+                godot::Vector2 position;
+                float radius;
                 bool filled;
                 float stroke;
                 float rotation;
@@ -124,7 +125,7 @@ namespace Vital::Godot {
             );
 
             void draw_circle(
-                float x, float y,
+                godot::Vector2 position,
                 float radius,
                 bool filled = true,
                 float stroke = 0.0f,
