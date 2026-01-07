@@ -125,7 +125,7 @@ namespace Vital::Godot {
                     if (payload.stroke > 0.0f) {
                         node -> draw_circle(
                             -pivot,
-                            payload.radius,
+                            payload.radius + payload.stroke*0.5,
                             payload.stroke_color,
                             false,
                             payload.stroke,
@@ -240,7 +240,7 @@ namespace Vital::Godot {
         payload.stroke = stroke;
         payload.stroke_points = godot::PackedVector2Array();
         payload.stroke_color = stroke_color;
-        payload.stroke_points.resize(payload.points.size());
+        payload.stroke_points.resize(payload.points.size() + 1);
         if (payload.stroke > 0.0f) {
             float area = 0.0f;
             for (int i = 0; i < payload.points.size(); i++) {
@@ -262,10 +262,10 @@ namespace Vital::Godot {
                     n1 = -n1;
                     n2 = -n2;
                 }
-                // Average normals (miter join)
                 godot::Vector2 n = (n1 + n2).normalized();
-                payload.stroke_points[i] = curr + n*payload.stroke*0.5f;
+                payload.stroke_points[i] = curr - n*payload.stroke*0.5;
             }
+            payload.stroke_points[payload.points.size()] = payload.stroke_points[0];
         }
         push({Type::Polygon, payload});
     }
