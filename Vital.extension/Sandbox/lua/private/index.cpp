@@ -149,8 +149,8 @@ namespace Vital::Godot::Sandbox::Lua {
 
         std::string text = "Hello from Anisa from Netherland Hello from Anisa from Netherland 2";
         float rotation = std::sin(Vital::System::getTick()*0.0005)*360.0f;
-        //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
-        canvas -> draw_image(100 + (310)*0, 20, 300, 300, "res://flower.jpg", 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, {1, 1, 1, 0.35});
+        canvas -> draw_image(100 + (310)*0, 20, 300, 300, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
             100 + (310)*0, 20,
@@ -168,7 +168,7 @@ namespace Vital::Godot::Sandbox::Lua {
             {0.0f, 0.0f}
         );
 
-        canvas -> draw_image(100 + (310)*1, 20, 300, 300, "res://flower.jpg", 0, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_image(100 + (310)*1, 20, 300, 300, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
             100 + (310)*1, 20,
@@ -191,7 +191,7 @@ namespace Vital::Godot::Sandbox::Lua {
         }
 
         Vital::Godot::RenderTarget::set_rendertarget(rt, true, true);
-        canvas -> draw_image(0, 20, 300, 300, "res://flower.jpg", rotation, 0, 0, godot::Color(1, 1, 1, 0.35));
+        canvas -> draw_image(0, 20, 300, 300, "res://flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
             0, 20,
@@ -212,7 +212,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
         canvas -> draw_image(100, 500, 512, 512, rt);
 
-        canvas -> draw_rectangle({100 + (310)*3, 20}, {300, 300}, true, 0, rotation, 0, 0, godot::Color(0, 0, 1, 1));
+        canvas -> draw_rectangle({100 + (310)*3, 20}, {300, 300}, true, 0, rotation, {0.0f, 0.0f}, {0, 0, 1, 1});
 
         canvas -> draw_circle(
             100 + (310)*4 + 300*0.5, 20 + 300*0.5,
@@ -221,7 +221,7 @@ namespace Vital::Godot::Sandbox::Lua {
             0.0f,
             0.0f,
             {0.0f, 0.0f},
-            godot::Color(1, 0, 0, 1)
+            {1, 0, 0, 1}
         );
 
         canvas -> draw_line(
@@ -232,7 +232,7 @@ namespace Vital::Godot::Sandbox::Lua {
                 {100 + (310)*5.75, 320},
             },
             2,
-            godot::Color(0, 1, 0, 1)
+            {0, 1, 0, 1}
         );
 
         //vm -> loadString(rwString);
