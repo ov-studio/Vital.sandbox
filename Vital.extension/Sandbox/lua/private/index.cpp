@@ -165,7 +165,7 @@ namespace Vital::Godot::Sandbox::Lua {
             3,
             {0, 0, 0, 1},
             0.0f,
-            0.0f, 0.0f
+            {0.0f, 0.0f}
         );
 
         canvas -> draw_image(100 + (310)*1, 20, 300, 300, "res://flower.jpg", 0, 0, 0, godot::Color(1, 1, 1, 0.35));
@@ -183,7 +183,7 @@ namespace Vital::Godot::Sandbox::Lua {
             3,
             {0, 0, 0, 1},
             rotation,
-            0.0f, 0.0f
+            {0.0f, 0.0f}
         );
 
         if (!rt) {
@@ -206,7 +206,7 @@ namespace Vital::Godot::Sandbox::Lua {
             3,
             {0, 0, 0, 1},
             0.0f,
-            0.0f, 0.0f
+            {0.0f, 0.0f}
         );
         Vital::Godot::RenderTarget::set_rendertarget();
 
@@ -220,7 +220,7 @@ namespace Vital::Godot::Sandbox::Lua {
             true,
             0.0f,
             0.0f,
-            0.0f, 0.0f,
+            {0.0f, 0.0f},
             godot::Color(1, 0, 0, 1)
         );
 
