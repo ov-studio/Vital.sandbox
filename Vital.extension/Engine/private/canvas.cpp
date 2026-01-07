@@ -219,15 +219,14 @@ namespace Vital::Godot {
             max.y = godot::Math::max(max.y, p.y);
         }
         payload.rect = {min, max - min};
+        payload.points = godot::PackedVector2Array();
+        payload.points.resize(points.size());
         payload.color = color;
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = payload.rect.size*0.5f + pivot;
-        godot::PackedVector2Array local_points;
-        local_points.resize(points.size());
         for (int i = 0; i < points.size(); i++) {
-            local_points[i] = points[i] - payload.rect.position - payload.pivot;
+            payload.points[i] = points[i] - payload.rect.position - payload.pivot;
         }
-        payload.points = local_points;
         push({Type::Polygon, payload});
     }
 
