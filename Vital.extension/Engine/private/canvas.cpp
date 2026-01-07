@@ -81,7 +81,8 @@ namespace Vital::Godot {
                 }
                 case Type::Polygon: {
                     const auto &payload = std::get<Polygon>(command.payload);
-                    node -> draw_set_transform({0, 0}, 0, {1, 1});
+                    auto pivot = payload.pivot;
+                    node -> draw_set_transform(payload.pivot, payload.rotation, {1, 1});
                     node -> draw_colored_polygon(
                         payload.points,
                         payload.color
@@ -193,6 +194,7 @@ namespace Vital::Godot {
         float stroke,
         const godot::Color& color
     ) {
+        if (points.size() < 2) return;
         Line payload;
         payload.points = points;
         payload.stroke = stroke;
@@ -206,12 +208,31 @@ namespace Vital::Godot {
         float rotation,
         godot::Vector2 pivot
     ) {
+        if (points.size() < 3) return;
+        godot::Vector2 min = points[0];
+        godot::Vector2 max = points[0];
+        for (int i = 1; i < points.size(); i++) {
+            const godot::Vector2 &p = points[i];
+            min.x = godot::Math::min(min.x, p.x);
+            min.y = godot::Math::min(min.y, p.y);
+            max.x = godot::Math::max(max.x, p.x);
+            max.y = godot::Math::max(max.y, p.y);
+        }
+        godot::Rect2 rect(min, max - min);
+        godot::Vector2 center = rect.position + rect.size * 0.5f;
+        godot::Vector2 world_pivot = center + pivot;
+    
+        godot::PackedVector2Array local_points;
+        local_points.resize(points.size());
+        for (int i = 0; i < points.size(); i++) {
+            local_points[i] = points[i] - world_pivot;
+        }
         Polygon payload;
-        payload.points = points;
+        payload.points = local_points;
         payload.color = color;
         payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = pivot;
-        push({Type::Polygon, payload}); 
+        payload.pivot = world_pivot;
+        push({Type::Polygon, payload});
     }
 
     void Canvas::draw_rectangle(
@@ -313,7 +334,7 @@ namespace Vital::Godot {
         if (!font.is_valid() || text.is_empty()) return;
         Text payload;
         payload.text = text;
-        payload.rect = {start_at, {end_at.x - start_at.x, end_at.y - start_at.y}};
+        payload.rect = {start_at, end_at - start_at};
         payload.font = font;
         payload.font_size = font_size;
         payload.font_ascent = payload.font -> get_ascent(payload.font_size);

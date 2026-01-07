@@ -43,6 +43,7 @@ namespace Vital::Godot {
 
             struct Polygon {
                 godot::PackedVector2Array points;
+                godot::Rect2 rect;
                 godot::Color color;
                 float rotation;
                 godot::Vector2 pivot;
