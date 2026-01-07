@@ -218,6 +218,17 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::Color(1, 0, 0, 1)
         );
 
+        canvas -> draw_line(
+            {
+                {100 + (310)*5, 20},
+                {100 + (310)*6, 20},
+                {100 + (310)*4, 120},
+                {100 + (310)*5, 120},
+            },
+            2,
+            godot::Color(1, 0, 0, 1)
+        );
+
         //vm -> loadString(rwString);
     }
 }
