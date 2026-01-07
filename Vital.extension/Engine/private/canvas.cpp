@@ -81,8 +81,7 @@ namespace Vital::Godot {
                 }
                 case Type::Polygon: {
                     const auto &payload = std::get<Polygon>(command.payload);
-                    auto pivot = payload.pivot;
-                    node -> draw_set_transform(payload.pivot, payload.rotation, {1, 1});
+                    node -> draw_set_transform(payload.rect.position + payload.pivot, payload.rotation, {1, 1});
                     node -> draw_colored_polygon(
                         payload.points,
                         payload.color
@@ -209,6 +208,7 @@ namespace Vital::Godot {
         godot::Vector2 pivot
     ) {
         if (points.size() < 3) return;
+        Polygon payload;
         godot::Vector2 min = points[0];
         godot::Vector2 max = points[0];
         for (int i = 1; i < points.size(); i++) {
@@ -218,20 +218,16 @@ namespace Vital::Godot {
             max.x = godot::Math::max(max.x, p.x);
             max.y = godot::Math::max(max.y, p.y);
         }
-        godot::Rect2 rect(min, max - min);
-        godot::Vector2 center = rect.position + rect.size * 0.5f;
-        godot::Vector2 world_pivot = center + pivot;
-    
+        payload.rect = {min, max - min};
+        payload.color = color;
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = payload.rect.size*0.5f + pivot;
         godot::PackedVector2Array local_points;
         local_points.resize(points.size());
         for (int i = 0; i < points.size(); i++) {
-            local_points[i] = points[i] - world_pivot;
+            local_points[i] = points[i] - payload.rect.position - payload.pivot;
         }
-        Polygon payload;
         payload.points = local_points;
-        payload.color = color;
-        payload.rotation = godot::Math::deg_to_rad(rotation);
-        payload.pivot = world_pivot;
         push({Type::Polygon, payload});
     }
 
