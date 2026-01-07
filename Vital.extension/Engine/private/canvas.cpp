@@ -202,11 +202,15 @@ namespace Vital::Godot {
 
     void Canvas::draw_polygon(
         godot::PackedVector2Array points,
-        const godot::Color& color
+        const godot::Color& color,
+        float rotation,
+        godot::Vector2 pivot
     ) {
         Polygon payload;
         payload.points = points;
         payload.color = color;
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = pivot;
         push({Type::Polygon, payload}); 
     }
 

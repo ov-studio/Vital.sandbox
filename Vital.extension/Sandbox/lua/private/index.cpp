@@ -248,7 +248,9 @@ namespace Vital::Godot::Sandbox::Lua {
                 {100 + (310)*6, 320},
                 {100 + (310)*5.5, 320*0.5}
             },
-            {0, 1, 0, 1}
+            {0, 1, 0, 1},
+            0.0f,
+            {0.0f, 0.0f}
         );
 
         //vm -> loadString(rwString);

@@ -44,6 +44,8 @@ namespace Vital::Godot {
             struct Polygon {
                 godot::PackedVector2Array points;
                 godot::Color color;
+                float rotation;
+                godot::Vector2 pivot;
             };
 
             struct Rectangle {
@@ -127,7 +129,9 @@ namespace Vital::Godot {
     
             void draw_polygon(
                 godot::PackedVector2Array points,
-                const godot::Color& color = {1, 1, 1, 1}
+                const godot::Color& color = {1, 1, 1, 1},
+                float rotation = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f}
             );
 
             void draw_rectangle(
