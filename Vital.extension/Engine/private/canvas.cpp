@@ -102,7 +102,7 @@ namespace Vital::Godot {
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
                         node -> draw_rect(
-                            godot::Rect2(-pivot, payload.rect.size),
+                            godot::Rect2(-pivot - godot::Vector2(payload.stroke*0.5, payload.stroke*0.5), payload.rect.size + godot::Vector2(payload.stroke, payload.stroke)),
                             payload.stroke_color,
                             false,
                             payload.stroke,
