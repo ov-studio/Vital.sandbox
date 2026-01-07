@@ -209,13 +209,13 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_rectangle(100 + (310)*3, 20, 300, 300, true, 0, rotation, 0, 0, godot::Color(0, 0, 1, 1));
 
         canvas -> draw_circle(
-            100 + (310)*4, 20,
-            300,
+            100 + (310)*4 + 300*0.5, 20 + 300*0.5,
+            300*0.5,
             true,
             0.0f,
             0.0f,
             0.0f, 0.0f,
-            godot::Color(1, 1, 1, 1)
+            godot::Color(1, 0, 0, 1)
         );
 
         //vm -> loadString(rwString);

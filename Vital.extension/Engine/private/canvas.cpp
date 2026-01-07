@@ -82,11 +82,12 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Circle: {
+                    godot::UtilityFunctions::print("drawing circle");
                     const auto &payload = std::get<CircleCommand>(command.payload);
-                    auto pivot = payload.rect.size*0.5f + payload.pivot;
+                    auto pivot = payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_circle(
-                        payload.rect.position,
+                        -pivot,
                         payload.rect.size.x,
                         payload.color,
                         payload.filled,
