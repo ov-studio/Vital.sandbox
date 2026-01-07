@@ -255,8 +255,8 @@ namespace Vital::Godot {
 
     void Canvas::draw_text(
         const godot::String& text,
-        float left_x, float top_y,
-        float right_x, float bottom_y,
+        godot::Vector2 start_at,
+        godot::Vector2 end_at,
         const godot::Ref<godot::Font>& font,
         int font_size,
         const godot::Color& color,
@@ -271,7 +271,7 @@ namespace Vital::Godot {
         if (!font.is_valid() || text.is_empty()) return;
         TextCommand payload;
         payload.text = text;
-        payload.rect = {left_x, top_y, right_x - left_x, bottom_y - top_y};
+        payload.rect = {start_at, {end_at.x - start_at.x, end_at.y - start_at.y}};
         payload.font = font;
         payload.font_size = font_size;
         payload.font_ascent = payload.font -> get_ascent(payload.font_size);

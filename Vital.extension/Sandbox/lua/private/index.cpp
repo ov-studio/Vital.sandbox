@@ -152,8 +152,8 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_image({100 + (310)*0, 20}, {300, 300}, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
-            100 + (310)*0, 20,
-            100 + (310)*0 + 300, 20 + 300,
+            {100 + (310)*0, 20},
+            {100 + (310)*0 + 300, 20 + 300},
             font,
             20,
             {1, 1, 1, 1},
@@ -170,8 +170,8 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_image({100 + (310)*1, 20}, {300, 300}, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
-            100 + (310)*1, 20,
-            100 + (310)*1 + 300, 20 + 300,
+            {100 + (310)*1, 20},
+            {100 + (310)*1 + 300, 20 + 300},
             font,
             20,
             {1, 1, 1, 1},
@@ -193,8 +193,8 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_image({0, 20}, {300, 300}, "res://flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
-            0, 20,
-            0 + 300, 20 + 300,
+            {0, 20},
+            {0 + 300, 20 + 300},
             font,
             20,
             {1, 1, 1, 1},

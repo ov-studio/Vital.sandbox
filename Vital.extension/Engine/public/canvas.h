@@ -169,8 +169,8 @@ namespace Vital::Godot {
 
             void draw_text(
                 const godot::String& text,
-                float left_x, float top_y,
-                float right_x, float bottom_y,
+                godot::Vector2 start_at,
+                godot::Vector2 end_at,
                 const godot::Ref<godot::Font> &font,
                 int font_size,
                 const godot::Color& color = {1, 1, 1, 1},
