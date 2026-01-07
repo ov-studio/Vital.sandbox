@@ -82,6 +82,14 @@ namespace Vital::Godot {
                 case Type::Polygon: {
                     const auto &payload = std::get<Polygon>(command.payload);
                     node -> draw_set_transform(payload.rect.position + payload.pivot, payload.rotation, {1, 1});
+                    if (payload.stroke > 0.0f) {
+                        node -> draw_polyline(
+                            payload.stroke_points,
+                            payload.stroke_color,
+                            payload.stroke,
+                            true
+                        );
+                    }
                     node -> draw_colored_polygon(
                         payload.points,
                         payload.color
@@ -204,6 +212,8 @@ namespace Vital::Godot {
     void Canvas::draw_polygon(
         godot::PackedVector2Array points,
         const godot::Color& color,
+        float stroke,
+        const godot::Color& stroke_color,
         float rotation,
         godot::Vector2 pivot
     ) {
@@ -226,6 +236,36 @@ namespace Vital::Godot {
         payload.pivot = payload.rect.size*0.5f + pivot;
         for (int i = 0; i < points.size(); i++) {
             payload.points[i] = points[i] - payload.rect.position - payload.pivot;
+        }
+        payload.stroke = stroke;
+        payload.stroke_points = godot::PackedVector2Array();
+        payload.stroke_color = stroke_color;
+        payload.stroke_points.resize(payload.points.size());
+        if (payload.stroke > 0.0f) {
+            float area = 0.0f;
+            for (int i = 0; i < payload.points.size(); i++) {
+                const godot::Vector2 &a = payload.points[i];
+                const godot::Vector2 &b = payload.points[(i + 1)%payload.points.size()];
+                area += (b.x - a.x)*(b.y + a.y);
+            }
+            bool clockwise = area > 0.0f;
+            int count = payload.points.size();
+            for (int i = 0; i < count; i++) {
+                const godot::Vector2 &prev = payload.points[(i - 1 + count)%count];
+                const godot::Vector2 &curr = payload.points[i];
+                const godot::Vector2 &next = payload.points[(i + 1)%count];
+                godot::Vector2 d1 = (curr - prev).normalized();
+                godot::Vector2 d2 = (next - curr).normalized();
+                godot::Vector2 n1 = {-d1.y, d1.x};
+                godot::Vector2 n2 = {-d2.y, d2.x};
+                if (clockwise) {
+                    n1 = -n1;
+                    n2 = -n2;
+                }
+                // Average normals (miter join)
+                godot::Vector2 n = (n1 + n2).normalized();
+                payload.stroke_points[i] = curr + n*payload.stroke*0.5f;
+            }
         }
         push({Type::Polygon, payload});
     }
