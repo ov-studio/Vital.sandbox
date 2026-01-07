@@ -226,7 +226,7 @@ namespace Vital::Godot::Sandbox::Lua {
                 {100 + (310)*5, 120},
             },
             2,
-            godot::Color(1, 0, 0, 1)
+            godot::Color(0, 1, 0, 1)
         );
 
         //vm -> loadString(rwString);
