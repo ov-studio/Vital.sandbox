@@ -208,7 +208,15 @@ namespace Vital::Godot::Sandbox::Lua {
 
         canvas -> draw_image({100, 500}, {512, 512}, rt);
 
-        canvas -> draw_rectangle({100 + (310)*3, 20}, {300, 300}, true, 0, rotation, {0.0f, 0.0f}, {0, 0, 1, 1});
+        canvas -> draw_rectangle(
+            {100 + (310)*3, 20}, 
+            {300, 300},
+            {0, 0, 1, 1},
+            6,
+            {0, 0, 0, 1},
+            rotation, 
+            {0.0f, 0.0f}
+        );
 
         canvas -> draw_circle(
             {100 + (310)*4 + 300*0.5, 20 + 300*0.5},
