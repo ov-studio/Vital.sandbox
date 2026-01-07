@@ -72,11 +72,20 @@ namespace Vital::Godot {
                     const auto &payload = std::get<RectangleCommand>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
+                    if (payload.stroke > 0.0f) {
+                        node -> draw_rect(
+                            godot::Rect2(-pivot, payload.rect.size),
+                            payload.stroke_color,
+                            false,
+                            payload.stroke,
+                            true
+                        );
+                    }
                     node -> draw_rect(
                         godot::Rect2(-pivot, payload.rect.size),
                         payload.color,
-                        payload.filled,
-                        payload.filled ? -1 : payload.stroke,
+                        true,
+                        -1,
                         true
                     );
                     break;
@@ -173,19 +182,19 @@ namespace Vital::Godot {
     void Canvas::draw_rectangle(
         godot::Vector2 position,
         godot::Vector2 size,
-        bool filled,
+        const godot::Color& color,
         float stroke,
+        const godot::Color& stroke_color,
         float rotation,
-        godot::Vector2 pivot,
-        const godot::Color& color
+        godot::Vector2 pivot
     ) {
         RectangleCommand payload;
         payload.rect = {position, size};
-        payload.filled = filled;
+        payload.color = color;
         payload.stroke = stroke;
+        payload.stroke_color = stroke_color;
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = pivot;
-        payload.color = color;
         push({Type::Rectangle, payload});
     }
 
