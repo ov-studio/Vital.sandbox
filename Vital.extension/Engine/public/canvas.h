@@ -78,10 +78,12 @@ namespace Vital::Godot {
                 godot::Color color;
                 godot::HorizontalAlignment align_x;
                 godot::VerticalAlignment align_y;
-                float rotation;
-                godot::Vector2 pivot;
                 bool clip;
                 bool wordwrap;
+                int stroke;
+                godot::Color stroke_color;
+                float rotation;
+                godot::Vector2 pivot;
             };
         
             struct Command {
@@ -181,6 +183,8 @@ namespace Vital::Godot {
                 godot::VerticalAlignment align_y = godot::VERTICAL_ALIGNMENT_CENTER,
                 bool clip = false,
                 bool wordwrap = false,
+                int stroke = 0,
+                const godot::Color& stroke_color = {1, 1, 1, 1},
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f

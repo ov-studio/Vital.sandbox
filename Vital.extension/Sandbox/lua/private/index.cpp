@@ -162,6 +162,8 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::VERTICAL_ALIGNMENT_TOP,
             false,
             true,
+            2,
+            {0, 0, 0, 1},
             0.0f,
             0.0f, 0.0f
         );
@@ -178,6 +180,8 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::VERTICAL_ALIGNMENT_CENTER,
             false,
             true,
+            2,
+            {0, 0, 0, 1},
             rotation,
             0.0f, 0.0f
         );
@@ -199,6 +203,8 @@ namespace Vital::Godot::Sandbox::Lua {
             godot::VERTICAL_ALIGNMENT_BOTTOM,
             true,
             false,
+            2,
+            {0, 0, 0, 1},
             0.0f,
             0.0f, 0.0f
         );

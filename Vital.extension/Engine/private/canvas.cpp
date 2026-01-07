@@ -249,6 +249,8 @@ namespace Vital::Godot {
         godot::HorizontalAlignment alignment_x, godot::VerticalAlignment alignment_y,
         bool clip,
         bool wordwrap,
+        int stroke,
+        const godot::Color& stroke_color,
         float rotation,
         float pivot_x, float pivot_y
     ) {
@@ -256,16 +258,18 @@ namespace Vital::Godot {
         TextCommand payload;
         payload.text = text;
         payload.rect = {left_x, top_y, right_x - left_x, bottom_y - top_y};
-        payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.font = font;
         payload.font_size = font_size;
         payload.font_ascent = payload.font -> get_ascent(payload.font_size);
         payload.color = color;
         payload.align_x = alignment_x;
         payload.align_y = alignment_y;
-        payload.pivot = {pivot_x, pivot_y};
         payload.clip = clip;
         payload.wordwrap = wordwrap;
+        payload.stroke = stroke;
+        payload.stroke_color = stroke_color;
+        payload.rotation = godot::Math::deg_to_rad(rotation);
+        payload.pivot = {pivot_x, pivot_y};
         payload.rect.position.y += payload.font_ascent;
         payload.text_size = payload.font -> get_multiline_string_size(
             payload.text,
