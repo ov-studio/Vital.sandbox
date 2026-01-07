@@ -161,8 +161,8 @@ namespace Vital::Godot {
 
     // APIs //
     void Canvas::draw_rectangle(
-        float x, float y,
-        float width, float height,
+        godot::Vector2 position,
+        godot::Vector2 size,
         bool filled,
         float stroke,
         float rotation,
@@ -171,7 +171,7 @@ namespace Vital::Godot {
         const godot::Color& color
     ) {
         RectangleCommand payload;
-        payload.rect = {x, y, width, height};
+        payload.rect = {position, size};
         payload.filled = filled;
         payload.stroke = stroke;
         payload.rotation = godot::Math::deg_to_rad(rotation);

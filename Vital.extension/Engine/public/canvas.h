@@ -114,8 +114,8 @@ namespace Vital::Godot {
 
             // APIs //
             void draw_rectangle(
-                float x, float y,
-                float width, float height,
+                godot::Vector2 position,
+                godot::Vector2 size,
                 bool filled = true,
                 float stroke = 0.0f,
                 float rotation = 0.0f,
