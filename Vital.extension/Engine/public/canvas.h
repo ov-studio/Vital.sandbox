@@ -45,6 +45,9 @@ namespace Vital::Godot {
                 godot::PackedVector2Array points;
                 godot::Rect2 rect;
                 godot::Color color;
+                float stroke;
+                godot::PackedVector2Array stroke_points;
+                godot::Color stroke_color;
                 float rotation;
                 godot::Vector2 pivot;
             };
@@ -131,6 +134,8 @@ namespace Vital::Godot {
             void draw_polygon(
                 godot::PackedVector2Array points,
                 const godot::Color& color = {1, 1, 1, 1},
+                float stroke = 0.0f,
+                const godot::Color& stroke_color = {1, 1, 1, 1},
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f}
             );
