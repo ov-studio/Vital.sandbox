@@ -76,8 +76,7 @@ namespace Vital::Godot {
                 float font_height;
                 float font_ascent;
                 godot::Color color;
-                godot::HorizontalAlignment align_x;
-                godot::VerticalAlignment align_y;
+                std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment;
                 bool clip;
                 bool wordwrap;
                 int stroke;
@@ -174,8 +173,7 @@ namespace Vital::Godot {
                 const godot::Ref<godot::Font> &font,
                 int font_size,
                 const godot::Color& color = {1, 1, 1, 1},
-                godot::HorizontalAlignment align_x = godot::HORIZONTAL_ALIGNMENT_LEFT,
-                godot::VerticalAlignment align_y = godot::VERTICAL_ALIGNMENT_CENTER,
+                std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER},
                 bool clip = false,
                 bool wordwrap = false,
                 int stroke = 0,
