@@ -149,8 +149,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
         std::string text = "Hello from Anisa from Netherland Hello from Anisa from Netherland 2";
         float rotation = std::sin(Vital::System::getTick()*0.0005)*360.0f;
-        //canvas -> draw_image("res://flower.jpg", 20, 20, 300, 300, rotation, 0, 0, {1, 1, 1, 0.35});
-        canvas -> draw_image(100 + (310)*0, 20, 300, 300, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
+        canvas -> draw_image({100 + (310)*0, 20}, {300, 300}, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
             100 + (310)*0, 20,
@@ -168,7 +167,7 @@ namespace Vital::Godot::Sandbox::Lua {
             {0.0f, 0.0f}
         );
 
-        canvas -> draw_image(100 + (310)*1, 20, 300, 300, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
+        canvas -> draw_image({100 + (310)*1, 20}, {300, 300}, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
             100 + (310)*1, 20,
@@ -191,7 +190,7 @@ namespace Vital::Godot::Sandbox::Lua {
         }
 
         Vital::Godot::RenderTarget::set_rendertarget(rt, true, true);
-        canvas -> draw_image(0, 20, 300, 300, "res://flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
+        canvas -> draw_image({0, 20}, {300, 300}, "res://flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text.c_str(),
             0, 20,
@@ -210,7 +209,7 @@ namespace Vital::Godot::Sandbox::Lua {
         );
         Vital::Godot::RenderTarget::set_rendertarget();
 
-        canvas -> draw_image(100, 500, 512, 512, rt);
+        canvas -> draw_image({100, 500}, {512, 512}, rt);
 
         canvas -> draw_rectangle({100 + (310)*3, 20}, {300, 300}, true, 0, rotation, {0.0f, 0.0f}, {0, 0, 1, 1});
 

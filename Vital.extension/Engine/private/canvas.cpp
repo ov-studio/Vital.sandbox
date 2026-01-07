@@ -212,8 +212,8 @@ namespace Vital::Godot {
     }
 
     void Canvas::draw_image(
-        float x, float y,
-        float width, float height,
+        godot::Vector2 position,
+        godot::Vector2 size,
         const godot::Ref<godot::Texture2D>& texture,
         float rotation,
         godot::Vector2 pivot,
@@ -222,7 +222,7 @@ namespace Vital::Godot {
         if (!texture.is_valid()) return;
         ImageCommand payload;
         payload.texture = texture;
-        payload.rect = {x, y, width, height};
+        payload.rect = {position, size};
         payload.rotation = godot::Math::deg_to_rad(rotation);
         payload.pivot = pivot;
         payload.color = color;
@@ -231,26 +231,26 @@ namespace Vital::Godot {
     }
 
     void Canvas::draw_image(
-        float x, float y,
-        float width, float height,
+        godot::Vector2 position,
+        godot::Vector2 size,
         const std::string& path,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        draw_image(x, y, width, height, get_texture(path), rotation, pivot, color);
+        draw_image(position, size, get_texture(path), rotation, pivot, color);
     }
 
     void Canvas::draw_image(
-        float x, float y,
-        float width, float height,
+        godot::Vector2 position,
+        godot::Vector2 size,
         RenderTarget* rt,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
         if (!rt) return;
-        draw_image(x, y, width, height, rt -> get_texture(), rotation, pivot, color);
+        draw_image(position, size, rt -> get_texture(), rotation, pivot, color);
     }
 
     void Canvas::draw_text(

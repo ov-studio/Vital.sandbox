@@ -141,8 +141,8 @@ namespace Vital::Godot {
             );
 
             void draw_image(
-                float x, float y,
-                float width, float height,
+                godot::Vector2 position,
+                godot::Vector2 size,
                 const godot::Ref<godot::Texture2D>& texture,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
@@ -150,8 +150,8 @@ namespace Vital::Godot {
             );
 
             void draw_image(
-                float x, float y,
-                float width, float height,
+                godot::Vector2 position,
+                godot::Vector2 size,
                 const std::string& path,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
@@ -159,8 +159,8 @@ namespace Vital::Godot {
             );
 
             void draw_image(
-                float x, float y,
-                float width, float height,
+                godot::Vector2 position,
+                godot::Vector2 size,
                 RenderTarget* rt,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
