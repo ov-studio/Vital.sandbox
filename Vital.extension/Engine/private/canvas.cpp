@@ -82,7 +82,6 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Circle: {
-                    godot::UtilityFunctions::print("drawing circle");
                     const auto &payload = std::get<CircleCommand>(command.payload);
                     auto pivot = payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
@@ -92,6 +91,17 @@ namespace Vital::Godot {
                         payload.color,
                         payload.filled,
                         payload.filled ? -1 : payload.stroke,
+                        true
+                    );
+                    break;
+                }
+                case Type::Line: {
+                    const auto &payload = std::get<LineCommand>(command.payload);
+                    node -> draw_set_transform({0, 0}, 0, {1, 1});
+                    node -> draw_polyline(
+                        payload.points,
+                        payload.color,
+                        payload.stroke,
                         true
                     );
                     break;
@@ -173,6 +183,18 @@ namespace Vital::Godot {
         payload.pivot = {pivot_x, pivot_y};
         payload.color = color;
         push({Type::Circle, payload});
+    }
+
+    void Canvas::draw_line(
+        godot::PackedVector2Array points,
+        float stroke,
+        const godot::Color& color
+    ) {
+        LineCommand payload;
+        payload.points = points;
+        payload.stroke = stroke;
+        payload.color = color;
+        push({Type::Line, payload});
     }
 
     void Canvas::draw_image(

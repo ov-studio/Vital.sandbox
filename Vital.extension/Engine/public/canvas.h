@@ -29,26 +29,33 @@ namespace Vital::Godot {
             enum class Type {
                 Rectangle,
                 Circle,
+                Line,
                 IMAGE,
                 TEXT
             };
         
             struct RectangleCommand {
                 godot::Rect2 rect;
-                godot::Color color;
                 bool filled;
                 float stroke;
                 float rotation;
                 godot::Vector2 pivot;
+                godot::Color color;
             };
 
             struct CircleCommand {
                 godot::Rect2 rect;
-                godot::Color color;
                 bool filled;
                 float stroke;
                 float rotation;
                 godot::Vector2 pivot;
+                godot::Color color;
+            };
+
+            struct LineCommand {
+                godot::PackedVector2Array points;
+                float stroke;
+                godot::Color color;
             };
 
             struct ImageCommand {
@@ -79,7 +86,7 @@ namespace Vital::Godot {
         
             struct Command {
                 Type type;
-                std::variant<RectangleCommand, CircleCommand, ImageCommand, TextCommand> payload;
+                std::variant<RectangleCommand, CircleCommand, LineCommand, ImageCommand, TextCommand> payload;
             };
         private:
             std::vector<Command> queue;
@@ -113,7 +120,7 @@ namespace Vital::Godot {
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f,
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
+                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_circle(
@@ -124,7 +131,13 @@ namespace Vital::Godot {
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f,
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
+                const godot::Color& color = {1, 1, 1, 1}
+            );
+
+            void draw_line(
+                godot::PackedVector2Array points,
+                float stroke,
+                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_image(
@@ -134,7 +147,7 @@ namespace Vital::Godot {
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f,
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
+                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_image(
@@ -144,7 +157,7 @@ namespace Vital::Godot {
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f,
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
+                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_image(
@@ -154,7 +167,7 @@ namespace Vital::Godot {
                 float rotation = 0.0f,
                 float pivot_x = 0.0f,
                 float pivot_y = 0.0f,
-                const godot::Color& color = godot::Color(1, 1, 1, 1)
+                const godot::Color& color = {1, 1, 1, 1}
             );
 
             void draw_text(
@@ -163,7 +176,7 @@ namespace Vital::Godot {
                 float right_x, float bottom_y,
                 const godot::Ref<godot::Font> &font,
                 int font_size,
-                const godot::Color& color = godot::Color(1, 1, 1, 1),
+                const godot::Color& color = {1, 1, 1, 1},
                 godot::HorizontalAlignment align_x = godot::HORIZONTAL_ALIGNMENT_LEFT,
                 godot::VerticalAlignment align_y = godot::VERTICAL_ALIGNMENT_CENTER,
                 bool clip = false,
