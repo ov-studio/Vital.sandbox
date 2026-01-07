@@ -68,6 +68,26 @@ namespace Vital::Godot {
     void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {
         for (const auto &command : queue) {
             switch (command.type) {
+                case Type::Line: {
+                    const auto &payload = std::get<Line>(command.payload);
+                    node -> draw_set_transform({0, 0}, 0, {1, 1});
+                    node -> draw_polyline(
+                        payload.points,
+                        payload.color,
+                        payload.stroke,
+                        true
+                    );
+                    break;
+                }
+                case Type::Polygon: {
+                    const auto &payload = std::get<Line>(command.payload);
+                    node -> draw_set_transform({0, 0}, 0, {1, 1});
+                    node -> draw_colored_polygon(
+                        payload.points,
+                        payload.color
+                    );
+                    break;
+                }
                 case Type::Rectangle: {
                     const auto &payload = std::get<Rectangle>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
@@ -110,17 +130,6 @@ namespace Vital::Godot {
                         payload.color,
                         true,
                         -1,
-                        true
-                    );
-                    break;
-                }
-                case Type::Line: {
-                    const auto &payload = std::get<Line>(command.payload);
-                    node -> draw_set_transform({0, 0}, 0, {1, 1});
-                    node -> draw_polyline(
-                        payload.points,
-                        payload.color,
-                        payload.stroke,
                         true
                     );
                     break;
