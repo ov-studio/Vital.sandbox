@@ -13,6 +13,7 @@
 //////////////
 
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
@@ -32,6 +33,7 @@ namespace Vital::Godot {
 
     void Canvas::_process(double) {
         queue_redraw();
+        Texture::flush();
     }
 
     void Canvas::_clean() {
