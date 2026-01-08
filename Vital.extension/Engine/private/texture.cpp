@@ -27,11 +27,12 @@ namespace Vital::Godot {
 
     void Texture::flush() {
         auto tick = Vital::System::getTick();
-        godot::UtilityFunctions::print("ye calling");
         for (const auto& cache : cache_temp) {
-            godot::UtilityFunctions::print("ye calling 2");
-            godot::UtilityFunctions::print("ye looping", cache.first.c_str());
             auto duration = tick - cache.second -> command.tick;
+            if (duration > flush_interval) {
+                cache_temp.erase(cache.first);
+                memdelete(cache.second);
+            }
         }
     }
 
