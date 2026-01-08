@@ -16,7 +16,6 @@
 #include <Sandbox/lua/api/public/rest.h>
 #include <System/public/rest.h>
 
-#include <godot_cpp/variant/utility_functions.hpp>
 
 ///////////////
 // Lua: API //
