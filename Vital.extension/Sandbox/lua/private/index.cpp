@@ -149,7 +149,7 @@ namespace Vital::Godot::Sandbox::Lua {
         float rotation = std::sin(Vital::System::getTick()*0.0005)*360.0f;
         canvas -> draw_image({100 + (310)*0, 20}, {300, 300}, tex -> get_texture(), 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
-            text.c_str(),
+            text,
             {100 + (310)*0, 20},
             {100 + (310)*0 + 300, 20 + 300},
             font,
@@ -166,7 +166,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
         canvas -> draw_image({100 + (310)*1, 20}, {300, 300}, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
-            text.c_str(),
+            text,
             {100 + (310)*1, 20},
             {100 + (310)*1 + 300, 20 + 300},
             font,
@@ -188,7 +188,7 @@ namespace Vital::Godot::Sandbox::Lua {
         Vital::Godot::RenderTarget::set_rendertarget(rt, true, true);
         canvas -> draw_image({0, 20}, {300, 300}, "res://flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
-            text.c_str(),
+            text,
             {0, 20},
             {0 + 300, 20 + 300},
             font,
