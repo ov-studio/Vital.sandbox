@@ -118,7 +118,6 @@ namespace Vital::Godot::Sandbox::Lua {
             print("Adjustment Enabled:", adjustment.setEnabled(true))
             print("SSAO Enabled: ", ssao.setEnabled(true))
             print("SSAO Intensity: ", ssao.setIntensity(5))
-
         )";
         vm -> loadString(rwString);
 
