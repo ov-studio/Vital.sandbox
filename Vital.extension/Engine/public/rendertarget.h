@@ -33,7 +33,7 @@ namespace Vital::Godot {
         public:
             // Instantiators //
             RenderTarget() = default;
-            ~RenderTarget() override = default;
+            ~RenderTarget() override;
             void _clean();
             void _update();
             void _draw() override;
