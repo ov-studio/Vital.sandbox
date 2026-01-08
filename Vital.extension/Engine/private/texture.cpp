@@ -64,7 +64,13 @@ namespace Vital::Godot {
 
 
     // APIs //
-    Texture* Texture::create_texture_2d(const godot::PackedByteArray& buffer) {
+    Texture* Texture::create_texture_2d(const std::string& path) {
+        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
+        if (file.is_null()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        return create_texture_2d_from_buffer(file -> get_buffer(file -> get_length()));
+    }
+
+    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
@@ -89,19 +95,17 @@ namespace Vital::Godot {
         texture -> command = {Type::Texture2D, payload};
         return texture;
     }
-    
-    Texture* Texture::create_texture_2d(const std::string& path) {
-        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
-        if (file.is_null()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-        return create_texture_2d(file -> get_buffer(file -> get_length()));
-    }
 
     Texture* Texture::create_svg(const std::string& path) {
-        auto buffer = godot::FileAccess::get_file_as_string(path.c_str());
-        if (buffer.is_empty()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
+        if (file.is_null()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        return create_svg_from_buffer(file -> get_buffer(file -> get_length()));
+    }
+
+    Texture* Texture::create_svg_from_raw(const std::string& raw) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status = image -> load_svg_from_string(buffer, 1.0);
+        godot::Error status = image -> load_svg_from_string(raw.c_str(), 1.0);
         if (status != godot::OK) throw std::runtime_error(ErrorCode["invalid-arguments"]);
         SVG payload;
         auto* texture = memnew(Texture);
@@ -109,4 +113,37 @@ namespace Vital::Godot {
         texture -> command = {Type::SVG, payload};
         return texture;
     }
+
+    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer) {
+        godot::Ref<godot::Image> image;
+        image.instantiate();
+        godot::Error status = image -> load_svg_from_buffer(buffer, 1.0);
+        if (status != godot::OK) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        SVG payload;
+        auto* texture = memnew(Texture);
+        payload.texture = godot::ImageTexture::create_from_image(image);
+        texture -> command = {Type::SVG, payload};
+        return texture;
+    }
+
+    void Texture::update_svg_from_raw(const std::string& raw) {
+        if (command.type != Type::SVG) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        godot::Ref<godot::Image> image;
+        image.instantiate();
+        godot::Error status = image -> load_svg_from_string(raw.c_str(), 1.0);
+        if (status != godot::OK) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        const auto& payload = std::get<SVG>(command.payload);
+        payload.texture -> update(image);
+    }
+
+    void Texture::update_svg_from_buffer(const godot::PackedByteArray& buffer) {
+        if (command.type != Type::SVG) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        godot::Ref<godot::Image> image;
+        image.instantiate();
+        godot::Error status = image -> load_svg_from_buffer(buffer, 1.0);
+        if (status != godot::OK) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        const auto& payload = std::get<SVG>(command.payload);
+        payload.texture -> update(image);
+    }
+
 }
