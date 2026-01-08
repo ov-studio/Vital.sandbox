@@ -104,7 +104,6 @@ namespace Vital::Godot {
             };
         private:
             std::vector<Command> queue;
-            std::unordered_map<std::string, godot::Ref<godot::Texture2D>> textures;
         protected:
             static inline Canvas* singleton = nullptr;
             static void _bind_methods() {}
@@ -120,7 +119,6 @@ namespace Vital::Godot {
 
             // Utils //
             static Canvas* get_singleton();
-            godot::Ref<godot::Texture2D> get_texture(const std::string& path);
             static void execute(godot::Node2D* node, std::vector<Command> queue);
             void push(Command command);
 
