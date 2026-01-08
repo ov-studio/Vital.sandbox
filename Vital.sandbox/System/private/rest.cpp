@@ -17,9 +17,9 @@
 #include <curl/curl.h>
 
 
-/////////////////////////
-// Vital: Type: Event //
-/////////////////////////
+//////////////////////////
+// Vital: System: REST //
+//////////////////////////
 
 namespace Vital::System::REST {
     size_t CallbackHandle(void* contents, size_t size, size_t nmemb, std::string* userp) {

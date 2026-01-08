@@ -16,9 +16,9 @@
 #include <System/public/vital.h>
 
 
-/////////////////////////////
-// Vital: System: Package //
-/////////////////////////////
+//////////////////////////
+// Vital: System: REST //
+//////////////////////////
 
 namespace Vital::System::REST {
     extern std::string get(std::string& url);

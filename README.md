@@ -15,7 +15,6 @@
 * Modular Programming Architecture (C++17)
 * Integrated Crypto System
 * Integrated Stack System
-* Integrated Package System
 * Integrated Inspect System
 * Integrated REST System
 * Integrated Event System

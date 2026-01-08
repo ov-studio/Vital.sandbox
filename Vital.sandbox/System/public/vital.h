@@ -15,7 +15,6 @@
 #pragma once
 #include <Type/public/index.h>
 #include <Type/public/stack.h>
-#include <Type/public/package.h>
 #include <Type/public/module.h>
 #include <Type/public/thread.h>
 #include <Type/public/timer.h>
