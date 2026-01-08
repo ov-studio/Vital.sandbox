@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/System/public/vital.h>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
@@ -27,6 +28,8 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/viewport_texture.hpp>
 #include <godot_cpp/classes/font.hpp>
