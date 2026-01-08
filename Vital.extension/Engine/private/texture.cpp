@@ -70,6 +70,11 @@ namespace Vital::Godot {
         return Format::UNKNOWN;
     }
 
+    Texture* Texture::get_from_ref(const std::string& temp_ref) {
+        auto it = cache_temp.find(temp_ref);
+        return it != cache_temp.end() ? it -> second : nullptr;
+    }
+
     godot::Ref<godot::Texture2D> Texture::get_texture() {
         switch (command.type) {
             case Type::Texture2D: {
