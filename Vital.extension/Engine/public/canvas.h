@@ -203,19 +203,4 @@ namespace Vital::Godot {
                 godot::Vector2 pivot = {0.0f, 0.0f}
             );
     };
-
-    class SVG;
-    class SVG : public godot::Node2D {
-        GDCLASS(SVG, godot::Node2D)
-        protected:
-            godot::Ref<godot::ImageTexture> texture;
-            static void _bind_methods();
-        public:
-            // Instantiators //
-            SVG() = default;
-            ~SVG() override = default;
-
-            static SVG* load(const std::string& path);
-            godot::Ref<godot::ImageTexture> get_texture();
-    };
 }
