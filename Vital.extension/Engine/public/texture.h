@@ -57,11 +57,12 @@ namespace Vital::Godot {
 
 
             // Getters //
-            static Format get_format(godot::PackedByteArray buffer);
+            static Format get_format(const godot::PackedByteArray& buffer);
             godot::Ref<godot::Texture2D> get_texture();
 
 
             // APIs //
+            static Texture* create_texture_2d(const godot::PackedByteArray& buffer);
             static Texture* create_texture_2d(const std::string& path);
             static Texture* create_svg(const std::string& path);
     };
