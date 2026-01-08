@@ -188,7 +188,7 @@ namespace Vital::Godot {
             );
 
             void draw_text(
-                const godot::String& text,
+                const std::string& text,
                 godot::Vector2 start_at,
                 godot::Vector2 end_at,
                 const godot::Ref<godot::Font>& font,
