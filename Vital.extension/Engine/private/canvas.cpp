@@ -335,9 +335,12 @@ namespace Vital::Godot {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        auto texture = Texture::get_from_ref(path);
-        if (!texture) texture = Texture::create_texture_2d(path, path);
-        draw_image(position, size, texture, rotation, pivot, color);
+        try {
+            auto texture = Texture::get_from_ref(path);
+            if (!texture) texture = Texture::create_texture_2d(path, path);
+            draw_image(position, size, texture, rotation, pivot, color);
+        }
+        catch(...) { std::rethrow_exception(std::current_exception()); }
     }
 
     void Canvas::draw_image(
