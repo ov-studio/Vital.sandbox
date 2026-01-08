@@ -59,14 +59,6 @@ namespace Vital::Godot {
         return singleton;
     }
 
-    godot::Ref<godot::Texture2D> Canvas::get_texture(const std::string& path) {
-        auto it = textures.find(path);
-        if (it != textures.end()) return it -> second;
-        auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture");
-        if (texture.is_valid()) textures[path] = texture;
-        return texture;
-    }
-
     void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {
         for (const auto &command : queue) {
             switch (command.type) {
@@ -343,7 +335,9 @@ namespace Vital::Godot {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        draw_image(position, size, get_texture(path), rotation, pivot, color);
+        auto texture = Texture::get_from_ref(path);
+        if (!texture) texture = Texture::create_texture_2d(path, path);
+        draw_image(position, size, texture, rotation, pivot, color);
     }
 
     void Canvas::draw_image(
