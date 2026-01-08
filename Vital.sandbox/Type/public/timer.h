@@ -40,7 +40,7 @@ namespace Vital::Type {
                 }).detach();
             }
     
-            inline bool valid() {
+            inline bool valid() const {
                 return alive.load(std::memory_order_acquire);
             }
         
