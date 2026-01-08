@@ -60,7 +60,7 @@ namespace Vital::Godot {
     godot::Ref<godot::Texture2D> Canvas::get_texture(const std::string& path) {
         auto it = textures.find(path);
         if (it != textures.end()) return it -> second;
-        auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture2D");
+        auto texture = godot::ResourceLoader::get_singleton() -> load(path.c_str(), "Texture");
         if (texture.is_valid()) textures[path] = texture;
         return texture;
     }
@@ -393,4 +393,26 @@ namespace Vital::Godot {
         payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
         push({Type::TEXT, payload});
     }
+
+    SVG* SVG::load(const std::string& path) {
+        auto instance = memnew(SVG);
+        auto data = godot::FileAccess::get_file_as_string(path.c_str());
+        if (data.is_empty()) godot::UtilityFunctions::printerr("bad svg");
+        godot::UtilityFunctions::printerr("Fetched svg");
+
+        godot::Ref<godot::Image> img;
+        img.instantiate();
+        auto err = img->load_svg_from_string(data, 1.0);
+        if (err == godot::OK) {
+            instance -> texture = godot::ImageTexture::create_from_image(img);
+            godot::UtilityFunctions::printerr("created svg");
+            //}
+        }
+        return instance;
+    }
+
+    godot::Ref<godot::ImageTexture> SVG::get_texture() {
+        return texture;
+    }
+
 }

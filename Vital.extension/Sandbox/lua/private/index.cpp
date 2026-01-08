@@ -43,6 +43,8 @@ namespace Vital::Godot::Sandbox::Lua {
     // TODO: REMOVE LATER
     godot::Ref<godot::Texture2D> tex;
     godot::Ref<godot::Font> font;
+    Vital::Godot::SVG* svg;
+
     Vital::Godot::RenderTarget* rt = nullptr;
     //
     
@@ -121,6 +123,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
         tex = godot::ResourceLoader::get_singleton()->load("res://flower.jpg", "Texture2D");
         font = godot::ResourceLoader::get_singleton() -> load("res://fonts/Roboto-Bold.ttf", "Font");
+        svg = Vital::Godot::SVG::load("res://square.svg");
 
         if (tex.is_valid()) {
             godot::UtilityFunctions::print("loaded tex");
@@ -254,6 +257,9 @@ namespace Vital::Godot::Sandbox::Lua {
             rotation, 
             {0.0f, 0.0f}
         );
+
+
+        canvas -> draw_image({622, 500}, {512, 512}, svg -> get_texture());
 
         //vm -> loadString(rwString);
     }

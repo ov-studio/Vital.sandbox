@@ -191,7 +191,7 @@ namespace Vital::Godot {
                 const godot::String& text,
                 godot::Vector2 start_at,
                 godot::Vector2 end_at,
-                const godot::Ref<godot::Font> &font,
+                const godot::Ref<godot::Font>& font,
                 int font_size,
                 const godot::Color& color = {1, 1, 1, 1},
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER},
@@ -202,5 +202,20 @@ namespace Vital::Godot {
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f}
             );
+    };
+
+    class SVG;
+    class SVG : public godot::Node2D {
+        GDCLASS(SVG, godot::Node2D)
+        protected:
+            godot::Ref<godot::ImageTexture> texture;
+            static void _bind_methods();
+        public:
+            // Instantiators //
+            SVG() = default;
+            ~SVG() override = default;
+
+            static SVG* load(const std::string& path);
+            godot::Ref<godot::ImageTexture> get_texture();
     };
 }
