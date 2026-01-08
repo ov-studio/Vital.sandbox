@@ -29,6 +29,13 @@ namespace Vital::Godot {
                 SVG
             };
 
+            enum class Format {
+                PNG,
+                JPG,
+                WEBP,
+                UNKNOWN
+            };
+
             struct Texture2D {
                 godot::Ref<godot::Texture2D> texture;
             };
@@ -50,6 +57,7 @@ namespace Vital::Godot {
 
 
             // Getters //
+            static Format get_format(godot::PackedByteArray buffer);
             godot::Ref<godot::Texture2D> get_texture();
 
 
