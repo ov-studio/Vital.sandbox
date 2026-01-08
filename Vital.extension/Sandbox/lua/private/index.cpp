@@ -31,6 +31,7 @@
 
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
+#include <Vital.extension/Engine/public/texture.h>
 
 
 /////////////////////////////////
@@ -43,7 +44,7 @@ namespace Vital::Godot::Sandbox::Lua {
     // TODO: REMOVE LATER
     godot::Ref<godot::Texture2D> tex;
     godot::Ref<godot::Font> font;
-    Vital::Godot::SVG* svg;
+    Vital::Godot::Texture* svg;
 
     Vital::Godot::RenderTarget* rt = nullptr;
     //
@@ -123,7 +124,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
         tex = godot::ResourceLoader::get_singleton()->load("res://flower.jpg", "Texture2D");
         font = godot::ResourceLoader::get_singleton() -> load("res://fonts/Roboto-Bold.ttf", "Font");
-        svg = Vital::Godot::SVG::load("res://square.svg");
+        svg = Vital::Godot::Texture::create_svg("res://square.svg");
 
         if (tex.is_valid()) {
             godot::UtilityFunctions::print("loaded tex");

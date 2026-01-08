@@ -69,7 +69,7 @@ namespace Vital::Godot {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Type::Line: {
-                    const auto &payload = std::get<Line>(command.payload);
+                    const auto& payload = std::get<Line>(command.payload);
                     node -> draw_set_transform({0, 0}, 0, {1, 1});
                     node -> draw_polyline(
                         payload.points,
@@ -80,7 +80,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Polygon: {
-                    const auto &payload = std::get<Polygon>(command.payload);
+                    const auto& payload = std::get<Polygon>(command.payload);
                     node -> draw_set_transform(payload.rect.position + payload.pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
                         node -> draw_polyline(
@@ -97,7 +97,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Rectangle: {
-                    const auto &payload = std::get<Rectangle>(command.payload);
+                    const auto& payload = std::get<Rectangle>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
@@ -119,7 +119,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::Circle: {
-                    const auto &payload = std::get<Circle>(command.payload);
+                    const auto& payload = std::get<Circle>(command.payload);
                     auto pivot = payload.pivot;
                     node -> draw_set_transform(payload.position + pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
@@ -143,7 +143,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::IMAGE: {
-                    const auto &payload = std::get<Image>(command.payload);
+                    const auto& payload = std::get<Image>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
                     node -> draw_texture_rect(
@@ -155,7 +155,7 @@ namespace Vital::Godot {
                     break;
                 }
                 case Type::TEXT: {
-                    const auto &payload = std::get<Text>(command.payload);
+                    const auto& payload = std::get<Text>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     pivot.y -= payload.font_ascent;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
@@ -406,7 +406,6 @@ namespace Vital::Godot {
         if (err == godot::OK) {
             instance -> texture = godot::ImageTexture::create_from_image(img);
             godot::UtilityFunctions::printerr("created svg");
-            //}
         }
         return instance;
     }
