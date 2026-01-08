@@ -37,6 +37,8 @@ namespace Vital::Godot {
             };
 
             struct Texture2D {
+                bool temporary;
+                unsigned int tick;
                 godot::Ref<godot::Texture2D> texture;
             };
 
@@ -62,8 +64,8 @@ namespace Vital::Godot {
 
 
             // APIs //
-            static Texture* create_texture_2d(const std::string& path);
-            static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer);
+            static Texture* create_texture_2d(const std::string& path, bool temporary = false);
+            static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool temporary = false);
             static Texture* create_svg(const std::string& path);
             static Texture* create_svg_from_raw(const std::string& raw);
             static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer);

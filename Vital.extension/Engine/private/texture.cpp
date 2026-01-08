@@ -64,13 +64,13 @@ namespace Vital::Godot {
 
 
     // APIs //
-    Texture* Texture::create_texture_2d(const std::string& path) {
+    Texture* Texture::create_texture_2d(const std::string& path, bool temporary) {
         godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
         if (file.is_null()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-        return create_texture_2d_from_buffer(file -> get_buffer(file -> get_length()));
+        return create_texture_2d_from_buffer(file -> get_buffer(file -> get_length()), temporary);
     }
 
-    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer) {
+    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool temporary) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
@@ -91,6 +91,8 @@ namespace Vital::Godot {
         if (status != godot::OK) throw std::runtime_error(ErrorCode["invalid-arguments"]);
         Texture2D payload;
         auto* texture = memnew(Texture);
+        payload.temporary = temporary;
+        payload.tick = Vital::System::getTick();
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::Texture2D, payload};
         return texture;
