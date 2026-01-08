@@ -16,6 +16,7 @@
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.sandbox/System/public/event.h>
 
 
 ///////////////////////////
@@ -30,9 +31,8 @@ namespace Vital::Godot {
     
     void Core::_ready() {
         singleton = singleton ? singleton : this;
-        get_environment();
-        Canvas::get_singleton();
-        Sandbox::Lua::Singleton::fetch() -> ready();
+        Vital::Type::Stack arguments;
+        Vital::System::Event::emit("Godot:Core:@ready", arguments);
     }
 
     void Core::_process(double delta) {
