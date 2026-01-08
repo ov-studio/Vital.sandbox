@@ -24,30 +24,29 @@
 namespace Vital::Type {
     class Timer {
         private:
-            inline static std::map<Timer*, bool> buffer = {};
+            std::atomic<bool> alive { true };
         public:
             // Instantiators //
-            inline static bool valid(Timer* identifier) {
-                return buffer.find(identifier) != buffer.end();
+            inline bool valid() const noexcept {
+                return alive.load(std::memory_order_acquire);
             }
-
+    
             inline Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
-                buffer.emplace(this, true);
-                Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
-                    int currentExecutions = 0;
-                    int targetInterval = std::max(0, interval);
-                    int targetExecutions = std::max(0, executions);
-                    while (Timer::valid(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
-                        thread -> sleep(interval);
-                        currentExecutions++;
+                Vital::Type::Thread([this, exec, interval, executions](Vital::Type::Thread* thread) {
+                    int count_current = 0;
+                    int count_target = std::max(0, executions);
+                    int interval_target = std::max(0, interval);
+                    while (valid() && (count_target == 0 || count_current < count_target)) {
+                        thread->sleep(interval_target);
+                        ++count_current;
                         exec(this);
-                    };
+                    }
                     destroy();
                 }).detach();
             }
     
-            inline void destroy() {
-                buffer.erase(this);
+            inline void destroy() noexcept {
+                alive.store(false, std::memory_order_release);
             }
     };
 }

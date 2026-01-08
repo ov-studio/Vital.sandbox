@@ -15,6 +15,7 @@
 #pragma once
 #include <iostream>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <filesystem>
