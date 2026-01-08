@@ -21,7 +21,7 @@
 
 namespace Vital::Godot {
     // Getters //
-    Texture::Format Texture::get_format(godot::PackedByteArray buffer) {
+    Texture::Format Texture::get_format(const godot::PackedByteArray& buffer) {
         const uint8_t* ptr = buffer.ptr();
         const int size = buffer.size();
         godot::Ref<godot::Image> image;
@@ -64,12 +64,7 @@ namespace Vital::Godot {
 
 
     // APIs //
-    Texture* Texture::create_texture_2d(const std::string& path) {
-        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
-        if (file.is_null()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-        const int64_t size = file->get_length();
-        if (size < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
-        godot::PackedByteArray buffer = file -> get_buffer(size);
+    Texture* Texture::create_texture_2d(const godot::PackedByteArray& buffer) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
@@ -93,6 +88,12 @@ namespace Vital::Godot {
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::Texture2D, payload};
         return texture;
+    }
+    
+    Texture* Texture::create_texture_2d(const std::string& path) {
+        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
+        if (file.is_null()) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+        return create_texture_2d(file -> get_buffer(file -> get_length()));
     }
 
     Texture* Texture::create_svg(const std::string& path) {
