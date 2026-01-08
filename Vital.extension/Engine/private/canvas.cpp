@@ -352,7 +352,7 @@ namespace Vital::Godot {
     }
 
     void Canvas::draw_text(
-        const godot::String& text,
+        const std::string& text,
         godot::Vector2 start_at,
         godot::Vector2 end_at,
         const godot::Ref<godot::Font>& font,
@@ -366,9 +366,9 @@ namespace Vital::Godot {
         float rotation,
         godot::Vector2 pivot
     ) {
-        if (!font.is_valid() || text.is_empty()) return;
+        if (!font.is_valid() || text.empty()) return;
         Text payload;
-        payload.text = text;
+        payload.text = godot::String::utf8(text.c_str());
         payload.rect = {start_at, end_at - start_at};
         payload.font = font;
         payload.font_size = font_size;
