@@ -26,11 +26,6 @@ namespace Vital::Type {
         private:
             std::atomic<bool> alive { true };
         public:
-            // Instantiators //
-            inline bool valid() {
-                return alive.load(std::memory_order_acquire);
-            }
-    
             inline Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
                 Vital::Type::Thread([this, exec, interval, executions](Vital::Type::Thread* thread) {
                     int count_current = 0;
@@ -45,6 +40,10 @@ namespace Vital::Type {
                 }).detach();
             }
     
+            inline bool valid() {
+                return alive.load(std::memory_order_acquire);
+            }
+        
             inline void destroy() {
                 alive.store(false, std::memory_order_release);
             }

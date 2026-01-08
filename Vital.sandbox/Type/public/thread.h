@@ -23,42 +23,46 @@
 namespace Vital::Type {
     class Thread {
         private:
-            inline static std::mutex buffer_mutex;
-            inline static std::unordered_map<std::thread::id, Thread*> buffer = {};
             std::thread thread;
             std::thread::id worker_id = {};
+            std::atomic<bool> alive { true };
         public:
-            // Instantiators //
             inline Thread(std::function<void(Thread*)> exec) {
                 thread = std::thread([this, exec]() {
                     worker_id = std::this_thread::get_id();
-                    {
-                        std::lock_guard<std::mutex> lock(buffer_mutex);
-                        buffer[worker_id] = this;
-                    }
                     exec(this);
-                    {
-                        std::lock_guard<std::mutex> lock(buffer_mutex);
-                        buffer.erase(worker_id);
-                    }
+                    alive.store(false, std::memory_order_release);
                 });
             }
-
-            inline ~Thread() { if (thread.joinable()) thread.detach(); }
-            inline void join() { if (thread.joinable()) thread.join(); }
-            inline void detach() { if (thread.joinable()) thread.detach(); }
-
-            inline void sleep(int duration) {
-                if (duration < 0) return;
-                Thread* current = fetch();
-                if (current != this) return;
-                std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+    
+            inline ~Thread() {
+                alive.store(false, std::memory_order_release);
+                if (thread.joinable()) {
+                    thread.detach();
+                }
             }
     
-            inline static Thread* fetch() {
-                std::lock_guard<std::mutex> lock(buffer_mutex);
-                auto it = buffer.find(std::this_thread::get_id());
-                return it != buffer.end() ? it -> second : nullptr;
+            inline bool valid() const {
+                return alive.load(std::memory_order_acquire);
+            }
+    
+            inline void join() {
+                if (thread.joinable()) {
+                    thread.join();
+                }
+            }
+    
+            inline void detach() {
+                if (thread.joinable()) {
+                    thread.detach();
+                }
+            }
+    
+            inline void sleep(int duration) {
+                if (duration < 0) return;
+                if (!valid()) return;
+                if (std::this_thread::get_id() != worker_id) return;
+                std::this_thread::sleep_for(std::chrono::milliseconds(duration));
             }
         };
 }
