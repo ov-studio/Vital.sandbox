@@ -28,7 +28,7 @@ namespace Vital::Godot {
                 return payload.texture;
             }
             case Type::SVG: {
-                const auto& payload = std::get<Texture2D>(command.payload);
+                const auto& payload = std::get<SVG>(command.payload);
                 return payload.texture;
             }
         }
