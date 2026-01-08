@@ -27,7 +27,7 @@ namespace Vital::Type {
             std::atomic<bool> alive { true };
         public:
             // Instantiators //
-            inline bool valid() const noexcept {
+            inline bool valid() {
                 return alive.load(std::memory_order_acquire);
             }
     
@@ -37,7 +37,7 @@ namespace Vital::Type {
                     int count_target = std::max(0, executions);
                     int interval_target = std::max(0, interval);
                     while (valid() && (count_target == 0 || count_current < count_target)) {
-                        thread->sleep(interval_target);
+                        thread -> sleep(interval_target);
                         ++count_current;
                         exec(this);
                     }
@@ -45,7 +45,7 @@ namespace Vital::Type {
                 }).detach();
             }
     
-            inline void destroy() noexcept {
+            inline void destroy() {
                 alive.store(false, std::memory_order_release);
             }
     };
