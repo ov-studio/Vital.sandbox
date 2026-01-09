@@ -28,6 +28,7 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor"),
     os.path.join(cwd, "Vendor/fmt"),
+    os.path.join(cwd, "Vendor/msgpack"),
     os.path.join(cwd, "Vendor/rapidjson"),
     os.path.join(cwd, "Vendor/lua"),
     os.path.join(cwd, "Vendor/duktape")
