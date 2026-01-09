@@ -22,13 +22,11 @@
 
 namespace Vital {
     static const std::string Signature = "vsdk_v.0.0.1";
-
-    struct Error {
+    struct ErrorCommand {
         std::string_view code;
         std::string_view message;
     };
-
-    static constexpr Error ErrorCode[] = {
+    static constexpr ErrorCommand ErrorList[] = {
         {"invalid-result", "Invalid result"},
         {"invalid-arguments", "Invalid argument list"},
         {"invalid-thread", "Invalid thread entity"},
@@ -41,14 +39,14 @@ namespace Vital {
         {"serial-nonexistent", "Failed to fetch device's serial"}
     };
 
-    static inline const std::runtime_error throw_error(std::string_view code, std::string message = "") {
+    static inline const std::runtime_error Error(std::string_view code, std::string message = "") {
         std::string_view error = "Unknown error";
-        for (const auto& e : ErrorCode) {
+        for (const auto& e : ErrorList) {
             if (code == e.code) {
                 error = e.message;
             }
         }
-        return std::runtime_error(std::string(error));
+        return std::runtime_error(fmt::format(std::string(error), message));
     }
 }
 

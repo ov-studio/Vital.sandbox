@@ -29,7 +29,7 @@ void Vital::Sandbox::Lua::API::Network::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             bool isClient = Vital::System::get_platform() == "client";
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isClient && (!vm -> isNumber(2)))) throw throw_error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isClient && (!vm -> isNumber(2)))) throw Vital::Error("invalid-arguments");
             int queryArg = isClient ? 3 : 4;
             std::string name = vm -> getString(1);
             int peerID = isClient ? 0 : vm -> getInt(2);

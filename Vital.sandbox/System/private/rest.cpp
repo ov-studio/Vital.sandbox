@@ -40,7 +40,7 @@ namespace Vital::System::REST {
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
             CURLcode result = curl_easy_perform(curl);
-            if (result != CURLE_OK) throw throw_error("request-failed", curl_easy_strerror(result));
+            if (result != CURLE_OK) throw Vital::Error("request-failed", curl_easy_strerror(result));
             curl_easy_cleanup(curl);
             curl_global_cleanup();
             return buffer;

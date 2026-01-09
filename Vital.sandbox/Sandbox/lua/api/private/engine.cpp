@@ -75,7 +75,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw throw_error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error("invalid-arguments");
             std::string buffer = vm -> getString(1);
             bool result = false;
             if (vm -> isBool(2)) {

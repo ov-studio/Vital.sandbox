@@ -27,7 +27,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw throw_error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error("invalid-arguments");
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_adjustment_enabled(state);
             vm -> setBool(true);
@@ -46,7 +46,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setBrightness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_adjustment_brightness(value);
             vm -> setBool(true);
@@ -65,7 +65,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setContrast", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_adjustment_contrast(value);
             vm -> setBool(true);
@@ -84,7 +84,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setSaturation", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_adjustment_saturation(value);
             vm -> setBool(true);

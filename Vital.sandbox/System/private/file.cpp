@@ -32,18 +32,18 @@ namespace Vital::System::File {
     }
 
     std::streampos size(std::string& path) {
-        if (!exists(path)) throw throw_error("file-nonexistent", path);
+        if (!exists(path)) throw Vital::Error("file-nonexistent", path);
         return std::filesystem::file_size(path);
     }
 
     bool remove(std::string& path) {
-        if (!exists(path)) throw throw_error("file-nonexistent", path);
+        if (!exists(path)) throw Vital::Error("file-nonexistent", path);
         return std::filesystem::remove(path);
     }
 
     std::string read(std::string& path) {
         resolve(path);
-        if (!exists(path)) throw throw_error("file-nonexistent", path);
+        if (!exists(path)) throw Vital::Error("file-nonexistent", path);
         std::fstream handle(path, std::ios::in | std::ios::binary | std::ios::ate);
         auto size = std::filesystem::file_size(path);
         char* buffer = new char[size];
