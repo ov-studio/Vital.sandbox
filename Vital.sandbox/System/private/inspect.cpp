@@ -15,6 +15,7 @@
 #pragma once
 #include <System/public/inspect.h>
 #include <windows.h>
+#include <winioctl.h>
 #include <comdef.h>
 #include <wbemidl.h>
 #include <ntddscsi.h>
@@ -25,186 +26,290 @@
 ///////////////////////////
 
 namespace Vital::System::Inspect {
-    template<typename T = int>
-    T toNumber(std::vector<T> value, int index = 0) {
-        return ((index < 0) || value.empty() || (index >= value.size())) ? 0 : value.at(index);
+    //
+    // -------------------------
+    // Helpers
+    // -------------------------
+    //
+
+    template<typename T>
+    inline T toNumber(const std::vector<T>& v, size_t i = 0) noexcept {
+        return (i < v.size()) ? v[i] : T{};
     }
 
-    std::wstring toString(std::vector<const wchar_t*> value, int index = 0, bool clipWhitespaces = false) {
-        auto result = std::wstring(((index < 0) || value.empty() || (index >= value.size()) || (value.at(index) == nullptr)) ? L"" : value.at(index));
-        if (clipWhitespaces) result.erase(std::remove(result.begin(), result.end(), L' '), result.end());
-        result = result.length() <= 0 ? L"-" : result;
-        return result;
-    }
+    inline std::wstring toString(const std::vector<std::wstring>& v,
+                                size_t i = 0,
+                                bool trim_spaces = false) {
+        if (i >= v.size() || v[i].empty())
+            return L"-";
 
-    std::wstring queryHKLM(const std::wstring& keyName, const std::wstring& fieldName) {
-        DWORD querySize;
-        std::wstring queryResult;
-        RegGetValueW(HKEY_LOCAL_MACHINE, keyName.c_str(), fieldName.c_str(), RRF_RT_REG_SZ, nullptr, nullptr, &querySize);
-        queryResult.resize(querySize);
-        RegGetValueW(HKEY_LOCAL_MACHINE, keyName.c_str(), fieldName.c_str(), RRF_RT_REG_SZ, nullptr, &queryResult[0], &querySize);
-        return toString({ queryResult.c_str() });
-    }
-
-    template<typename T = const wchar_t*>
-    std::vector<T> queryWMI(const std::wstring& className, const std::wstring& fieldName, std::vector<T> queryResult = {}, const wchar_t* serverName = L"ROOT\\CIMV2") {
-        IWbemLocator* locator;
-        IWbemServices* services;
-        IEnumWbemClassObject* enumerator;
-        HRESULT queryState = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        queryState = CoInitializeSecurity(nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE, nullptr);
-        queryState = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, reinterpret_cast<PVOID*>(&locator));
-        queryState = locator -> ConnectServer(_bstr_t(serverName), nullptr, nullptr, nullptr, NULL, nullptr, nullptr, &services);
-        queryState = CoSetProxyBlanket(services, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
-        std::wstring queryString = L"SELECT ";
-        queryString.append(fieldName.c_str()).append(L" FROM ").append(className.c_str());
-        queryState = services -> ExecQuery(bstr_t(L"WQL"), bstr_t(queryString.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &enumerator);
-        IWbemClassObject* queryObject;
-        VARIANT queryVariant {};
-        DWORD queryReturn;
-        while (enumerator) {
-            HRESULT result = enumerator -> Next(WBEM_INFINITE, 1, &queryObject, &queryReturn);
-            if (!queryReturn) break;
-            result = queryObject -> Get(fieldName.c_str(), 0, &queryVariant, nullptr, nullptr);
-            if (typeid(T) == typeid(long) || typeid(T) == typeid(int)) queryResult.push_back((T)queryVariant.intVal);
-            else if (typeid(T) == typeid(bool)) queryResult.push_back((T)queryVariant.boolVal);
-            else if (typeid(T) == typeid(unsigned int)) queryResult.push_back((T)queryVariant.uintVal);
-            else if (typeid(T) == typeid(unsigned short)) queryResult.push_back((T)queryVariant.uiVal);
-            else if (typeid(T) == typeid(long long)) queryResult.push_back((T)queryVariant.llVal);
-            else if (typeid(T) == typeid(unsigned long long)) queryResult.push_back((T)queryVariant.ullVal);
-            else queryResult.push_back((T)((bstr_t)queryVariant.bstrVal).copy());
-            VariantClear(&queryVariant);
-            queryObject -> Release();
+        std::wstring s = v[i];
+        if (trim_spaces) {
+            s.erase(std::remove_if(s.begin(), s.end(), iswspace), s.end());
         }
-        enumerator -> Release();
-        services -> Release();
-        locator -> Release();
-        CoUninitialize();
-        return queryResult;
+        return s;
     }
+
+    //
+    // -------------------------
+    // Registry
+    // -------------------------
+    //
+
+    inline std::wstring queryHKLM(const std::wstring& key,
+                                const std::wstring& value) {
+        DWORD size = 0;
+        if (RegGetValueW(HKEY_LOCAL_MACHINE, key.c_str(), value.c_str(),
+                        RRF_RT_REG_SZ, nullptr, nullptr, &size) != ERROR_SUCCESS)
+            return L"-";
+
+        std::wstring out(size / sizeof(wchar_t), L'\0');
+        if (RegGetValueW(HKEY_LOCAL_MACHINE, key.c_str(), value.c_str(),
+                        RRF_RT_REG_SZ, nullptr, out.data(), &size) != ERROR_SUCCESS)
+            return L"-";
+
+        out.resize(wcslen(out.c_str()));
+        return out;
+    }
+
+    //
+    // -------------------------
+    // WMI (RAII)
+    // -------------------------
+    //
+
+    class WMI {
+    public:
+        explicit WMI(const wchar_t* root = L"ROOT\\CIMV2") {
+            CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+            CoInitializeSecurity(
+                nullptr, -1, nullptr, nullptr,
+                RPC_C_AUTHN_LEVEL_DEFAULT,
+                RPC_C_IMP_LEVEL_IMPERSONATE,
+                nullptr, EOAC_NONE, nullptr
+            );
+
+            CoCreateInstance(
+                CLSID_WbemLocator, nullptr,
+                CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS(&locator)
+            );
+
+            locator->ConnectServer(
+                _bstr_t(root),
+                nullptr, nullptr, nullptr,
+                0, nullptr, nullptr,
+                &services
+            );
+
+            CoSetProxyBlanket(
+                services,
+                RPC_C_AUTHN_WINNT,
+                RPC_C_AUTHZ_NONE,
+                nullptr,
+                RPC_C_AUTHN_LEVEL_CALL,
+                RPC_C_IMP_LEVEL_IMPERSONATE,
+                nullptr,
+                EOAC_NONE
+            );
+        }
+
+        ~WMI() {
+            if (services) services->Release();
+            if (locator) locator->Release();
+            CoUninitialize();
+        }
+
+        template<typename T>
+        std::vector<T> query(const std::wstring& cls,
+                            const std::wstring& field);
+
+    private:
+        IWbemLocator*  locator  = nullptr;
+        IWbemServices* services = nullptr;
+    };
+
+    template<typename T>
+    std::vector<T> WMI::query(const std::wstring& cls,
+                            const std::wstring& field) {
+        std::vector<T> out;
+
+        IEnumWbemClassObject* en = nullptr;
+        std::wstring q = L"SELECT " + field + L" FROM " + cls;
+
+        if (FAILED(services->ExecQuery(
+            bstr_t(L"WQL"),
+            bstr_t(q.c_str()),
+            WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+            nullptr,
+            &en)))
+            return out;
+
+        IWbemClassObject* obj = nullptr;
+        ULONG ret = 0;
+
+        while (en->Next(WBEM_INFINITE, 1, &obj, &ret) == S_OK) {
+            VARIANT v;
+            VariantInit(&v);
+
+            if (SUCCEEDED(obj->Get(field.c_str(), 0, &v, nullptr, nullptr))) {
+                if constexpr (std::is_same_v<T, std::wstring>) {
+                    out.emplace_back(v.bstrVal ? v.bstrVal : L"-");
+                } else if constexpr (std::is_integral_v<T>) {
+                    out.emplace_back(static_cast<T>(v.ullVal));
+                }
+            }
+
+            VariantClear(&v);
+            obj->Release();
+        }
+
+        en->Release();
+        return out;
+    }
+
+    //
+    // -------------------------
+    // Public API
+    // -------------------------
+    //
 
     Vital::Type::Inspect::System system() {
-        auto name = toString(queryWMI(L"Win32_ComputerSystem", L"Name"));
-        auto model = toString(queryWMI(L"Win32_ComputerSystem", L"Model"));
-        auto manufacturer = toString(queryWMI(L"Win32_BaseBoard", L"Manufacturer"));
-        auto hardware_id = queryHKLM(L"SYSTEM\\CurrentControlSet\\Control\\SystemInformation", L"ComputerHardwareId");
-        auto os = toString(queryWMI(L"Win32_OperatingSystem", L"Name"));
-        auto os_architecture = toString(queryWMI(L"Win32_OperatingSystem", L"OSArchitecture"));
-        auto os_version = toString(queryWMI(L"Win32_OperatingSystem", L"Version"));
-        auto os_serial = toString(queryWMI(L"Win32_OperatingSystem", L"SerialNumber"));
-        if (os.find('|') != std::wstring::npos) os.resize(os.find('|'));
-        return { name, model, manufacturer, hardware_id, os, os_architecture, os_version, os_serial };
+        WMI wmi;
+
+        auto os = toString(
+            wmi.query<std::wstring>(L"Win32_OperatingSystem", L"Name"));
+
+        if (auto p = os.find(L'|'); p != std::wstring::npos)
+            os.resize(p);
+
+        return {
+            toString(wmi.query<std::wstring>(L"Win32_ComputerSystem", L"Name")),
+            toString(wmi.query<std::wstring>(L"Win32_ComputerSystem", L"Model")),
+            toString(wmi.query<std::wstring>(L"Win32_BaseBoard", L"Manufacturer")),
+            queryHKLM(L"SYSTEM\\CurrentControlSet\\Control\\SystemInformation",
+                    L"ComputerHardwareId"),
+            os,
+            toString(wmi.query<std::wstring>(L"Win32_OperatingSystem", L"OSArchitecture")),
+            toString(wmi.query<std::wstring>(L"Win32_OperatingSystem", L"Version")),
+            toString(wmi.query<std::wstring>(L"Win32_OperatingSystem", L"SerialNumber"))
+        };
     }
 
     Vital::Type::Inspect::SMBIOS smbios() {
-        auto manufacturer = toString(queryWMI(L"Win32_BaseBoard", L"Manufacturer"));
-        auto product = toString(queryWMI(L"Win32_BaseBoard", L"Product"));
-        auto version = toString(queryWMI(L"Win32_BaseBoard", L"Version"));
-        auto serial = toString(queryWMI(L"Win32_BaseBoard", L"SerialNumber"));
-        return { manufacturer, product, version, serial };
+        WMI wmi;
+        return {
+            toString(wmi.query<std::wstring>(L"Win32_BaseBoard", L"Manufacturer")),
+            toString(wmi.query<std::wstring>(L"Win32_BaseBoard", L"Product")),
+            toString(wmi.query<std::wstring>(L"Win32_BaseBoard", L"Version")),
+            toString(wmi.query<std::wstring>(L"Win32_BaseBoard", L"SerialNumber"))
+        };
     }
 
     Vital::Type::Inspect::CPU cpu() {
-        auto name = toString(queryWMI(L"Win32_Processor", L"Name"));
-        auto manufacturer = toString(queryWMI(L"Win32_Processor", L"Manufacturer"));
-        auto id = toString(queryWMI(L"Win32_Processor", L"ProcessorId"));
-        auto cores = toNumber(queryWMI(L"Win32_Processor", L"NumberOfCores", std::vector<int> {}));
-        auto threads = toNumber(queryWMI(L"Win32_Processor", L"NumberOfLogicalProcessors", std::vector<int> {}));
-        return { name, manufacturer, id, cores, threads };
+        WMI wmi;
+
+        const uint32_t cores_u =
+            toNumber(wmi.query<uint32_t>(
+                L"Win32_Processor", L"NumberOfCores"));
+
+        const uint32_t threads_u =
+            toNumber(wmi.query<uint32_t>(
+                L"Win32_Processor", L"NumberOfLogicalProcessors"));
+
+        return {
+            toString(wmi.query<std::wstring>(L"Win32_Processor", L"Name")),
+            toString(wmi.query<std::wstring>(L"Win32_Processor", L"Manufacturer")),
+            toString(wmi.query<std::wstring>(L"Win32_Processor", L"ProcessorId")),
+            static_cast<int>(cores_u),     // FIXED narrowing
+            static_cast<int>(threads_u)    // FIXED narrowing
+        };
     }
 
     std::vector<Vital::Type::Inspect::GPU> gpu() {
-        auto name = queryWMI(L"Win32_VideoController", L"Name");
-        auto version = queryWMI(L"Win32_VideoController", L"DriverVersion");
-        auto refresh_rate = queryWMI(L"Win32_VideoController", L"CurrentRefreshRate", std::vector<int> {});
-        std::pair<std::vector<int>, std::vector<int>> resolution = { queryWMI(L"Win32_VideoController", L"CurrentHorizontalResolution", std::vector<int> {}), queryWMI(L"Win32_VideoController", L"CurrentVerticalResolution", std::vector<int> {})};
-        auto capacity = queryWMI(L"Win32_VideoController", L"AdapterRam", std::vector<unsigned long long> {});
-        std::vector<Vital::Type::Inspect::GPU> devices;
-        devices.reserve(name.size());
-        for (int i = 0; i < devices.capacity(); i++) {
-            devices.push_back({ toString(name, i), toString(version, i), toNumber(refresh_rate, i), {toNumber(resolution.first, i), toNumber(resolution.second, i)}, static_cast<const unsigned long long>(toNumber(capacity, i)*2/pow(1024, 2)/1000) });
+        WMI wmi;
+
+        auto names   = wmi.query<std::wstring>(L"Win32_VideoController", L"Name");
+        auto drivers = wmi.query<std::wstring>(L"Win32_VideoController", L"DriverVersion");
+        auto vram    = wmi.query<uint64_t>(L"Win32_VideoController", L"AdapterRAM");
+
+        std::vector<Vital::Type::Inspect::GPU> out;
+        out.reserve(names.size());
+
+        for (size_t i = 0; i < names.size(); ++i) {
+            out.push_back({
+                toString(names, i),
+                toString(drivers, i),
+                0,
+                {0, 0},
+                static_cast<unsigned long long>(
+                    (i < vram.size()) ? (vram[i] >> 30) : 0)
+            });
         }
-        return devices;
+        return out;
     }
 
     std::vector<Vital::Type::Inspect::Memory> memory() {
-        auto manufacturer = queryWMI(L"Win32_PhysicalMemory", L"Manufacturer");
-        auto version = queryWMI(L"Win32_PhysicalMemory", L"Version");
-        auto serial = queryWMI(L"Win32_PhysicalMemory", L"SerialNumber");
-        std::vector<Vital::Type::Inspect::Memory> devices;
-        devices.reserve(manufacturer.size());
-        for (int i = 0; i < devices.capacity(); i++) {
-            devices.push_back({ toString(manufacturer, i), toString(version, i), toString(serial, i) });
+        WMI wmi;
+
+        auto m = wmi.query<std::wstring>(L"Win32_PhysicalMemory", L"Manufacturer");
+        auto v = wmi.query<std::wstring>(L"Win32_PhysicalMemory", L"Version");
+        auto s = wmi.query<std::wstring>(L"Win32_PhysicalMemory", L"SerialNumber");
+
+        std::vector<Vital::Type::Inspect::Memory> out;
+        out.reserve(m.size());
+
+        for (size_t i = 0; i < m.size(); ++i) {
+            out.push_back({
+                toString(m, i),
+                toString(v, i),
+                toString(s, i)
+            });
         }
-        return devices;
+        return out;
     }
 
     std::vector<Vital::Type::Inspect::Network> network() {
-        auto name = queryWMI(L"Win32_NetworkAdapter", L"Name");
-        auto mac = queryWMI(L"Win32_NetworkAdapter", L"MACAddress");
-        std::vector<Vital::Type::Inspect::Network> devices;
-        devices.reserve(name.size());
-        for (int i = 0; i < devices.capacity(); i++) {
-            devices.push_back({ toString(name, i), toString(mac, i) });
+        WMI wmi;
+
+        auto n = wmi.query<std::wstring>(L"Win32_NetworkAdapter", L"Name");
+        auto m = wmi.query<std::wstring>(L"Win32_NetworkAdapter", L"MACAddress");
+
+        std::vector<Vital::Type::Inspect::Network> out;
+        out.reserve(n.size());
+
+        for (size_t i = 0; i < n.size(); ++i) {
+            out.push_back({
+                toString(n, i),
+                toString(m, i)
+            });
         }
-        return devices;
+        return out;
     }
 
     std::vector<Vital::Type::Inspect::Disk> disk() {
-        int drives = 0;
-        auto name = queryWMI(L"Win32_DiskDrive", L"Name");
-        auto model = queryWMI(L"Win32_DiskDrive", L"Model");
-        auto serial = queryWMI(L"Win32_DiskDrive", L"SerialNumber");
-        auto interface_type = queryWMI(L"Win32_DiskDrive", L"InterfaceType");
-        auto device_id = queryWMI(L"Win32_LogicalDisk", L"DeviceId");
-        auto media_type = queryWMI(L"MSFT_PhysicalDisk", L"MediaType", std::vector<unsigned int> {}, L"ROOT\\microsoft\\windows\\storage");
-        auto friendly_name = queryWMI(L"MSFT_PhysicalDisk", L"FriendlyName", {}, L"ROOT\\microsoft\\windows\\storage");
-        HANDLE driveHandle;
-        for (;; drives++) {
-            if ((driveHandle = CreateFileW((L"\\\\.\\PhysicalDrive" + std::to_wstring(drives)).c_str(), NULL, NULL, nullptr, OPEN_EXISTING, NULL, nullptr)) == INVALID_HANDLE_VALUE) break;
-            CloseHandle(driveHandle);
+        WMI wmi;
+    
+        auto device_id      = wmi.query<std::wstring>(L"Win32_DiskDrive", L"DeviceID");
+        auto model          = wmi.query<std::wstring>(L"Win32_DiskDrive", L"Model");
+        auto serial         = wmi.query<std::wstring>(L"Win32_DiskDrive", L"SerialNumber");
+        auto interface_type = wmi.query<std::wstring>(L"Win32_DiskDrive", L"InterfaceType");
+        auto size_bytes     = wmi.query<uint64_t>(L"Win32_DiskDrive", L"Size");
+    
+        std::vector<Vital::Type::Inspect::Disk> out;
+        out.reserve(device_id.size());
+    
+        for (size_t i = 0; i < device_id.size(); ++i) {
+            out.push_back({
+                toString(device_id, i),
+                toString(model, i),
+                toString(serial, i, true),
+                toString(interface_type, i),
+                L"-", // media type (optional / unreliable via WMI)
+                static_cast<unsigned long long>(
+                    (i < size_bytes.size()) ? (size_bytes[i] >> 30) : 0)
+            });
         }
-        std::vector<const wchar_t*> device_id_sorted;
-        device_id_sorted.reserve(drives);
-        HANDLE volumeHandle;
-        VOLUME_DISK_EXTENTS volumeDiskExtents;
-        DWORD ioBytes;
-        for (int i = 0; i < device_id_sorted.capacity(); i++) {
-            for (int j = 0; j < device_id_sorted.capacity(); j++) {
-                volumeHandle = CreateFileW((L"\\\\.\\" + toString(device_id, j)).c_str(), NULL, NULL, nullptr, OPEN_EXISTING, NULL, nullptr);
-                DeviceIoControl(volumeHandle, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, nullptr, NULL, &volumeDiskExtents, sizeof(volumeDiskExtents), &ioBytes, nullptr);
-                DeviceIoControl(volumeHandle, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, nullptr, NULL, &volumeDiskExtents, offsetof(VOLUME_DISK_EXTENTS, Extents[volumeDiskExtents.NumberOfDiskExtents]), &ioBytes, nullptr);
-                CloseHandle(volumeHandle);
-                if (volumeDiskExtents.Extents -> DiskNumber == std::stoi(&toString(name, i).back())) {
-                    device_id_sorted.push_back(device_id.at(j));
-                    break;
-                }
-            }
-        }
-        std::vector<Vital::Type::Inspect::Disk> devices;
-        devices.reserve(device_id_sorted.capacity());
-        ULARGE_INTEGER diskCapacity;
-        for (int i = 0; i < devices.capacity(); i++) {
-            std::wstring media_typename = L"-";
-            for (int j = 0; j < devices.capacity(); j++) {
-                if (!toString(model, i).compare(friendly_name.at(j))) media_type.at(i) = media_type.at(j);
-            }
-            switch(media_type.at(i)) {
-                case 3:
-                    media_typename = L"HDD";
-                    break;
-                case 4:
-                    media_typename = L"SSD";
-                    break;
-                case 5:
-                    media_typename = L"SCM";
-                    break;
-            }
-            devices.reserve(device_id_sorted.capacity());
-            std::wstring devicePath = toString(device_id_sorted, i);
-            GetDiskFreeSpaceExA(std::string(devicePath.begin(), devicePath.end()).c_str(), nullptr, &diskCapacity, nullptr);
-            devices.push_back({ toString(device_id_sorted, i), toString(model, i), toString(serial, i, true), toString(interface_type, i), media_typename, static_cast<const unsigned long long>(diskCapacity.QuadPart/pow(1024, 3)) });
-        }
-        return devices;
-    }
+        return out;
+    }    
 }
