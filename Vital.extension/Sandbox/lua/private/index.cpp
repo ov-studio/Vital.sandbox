@@ -29,8 +29,6 @@
 #include <Vital.extension/Sandbox/lua/api/public/volumetric_fog.h>
 #include <Vital.extension/Sandbox/lua/api/public/adjustment.h>
 
-#include <Vital.sandbox/System/public/inspect.h>
-
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/texture.h>
@@ -58,9 +56,6 @@ namespace Vital::Godot::Sandbox::Lua {
 
     Singleton::Singleton() {
         godot::UtilityFunctions::print("Initialized Lua vm");
-
-        auto serial = Vital::System::Inspect::fingerprint();
-        godot::UtilityFunctions::print(serial.c_str());
 
         vm = new Vital::Sandbox::Lua::create({
             {API::SSR::bind, API::SSR::inject},
