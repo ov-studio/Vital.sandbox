@@ -32,7 +32,7 @@ void Vital::Sandbox::Lua::API::REST::bind(void* instance) {
             std::string url = vm -> getString(1);
             Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
                 try {
-                    vm -> setString(Vital::System::REST::get_sync(std::string(url)));
+                    vm -> setString(Vital::System::REST::get(std::string(url)));
                     vm -> setBool(false);
                 }
                 catch(const std::runtime_error& error) {
