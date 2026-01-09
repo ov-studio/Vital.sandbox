@@ -22,11 +22,11 @@
 namespace Vital::Godot {
     // Instantiators //
     void Texture::heartbeat() {
-        command.tick = Vital::System::get_tick();
+        command.tick = Vital::get_tick();
     }
 
     void Texture::flush() {
-        auto tick = Vital::System::get_tick();
+        auto tick = Vital::get_tick();
         for (const auto& cache : cache_temp) {
             auto duration = tick - cache.second -> command.tick;
             if (duration > flush_interval) {

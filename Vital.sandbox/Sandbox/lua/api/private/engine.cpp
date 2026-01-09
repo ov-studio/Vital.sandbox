@@ -30,7 +30,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setString(Vital::System::get_platform());
+            vm -> setString(Vital::get_platform());
             return 1;
         });
     });
@@ -38,7 +38,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(static_cast<int>(Vital::System::get_tick()));
+            vm -> setNumber(static_cast<int>(Vital::get_tick()));
             return 1;
         });
     });
