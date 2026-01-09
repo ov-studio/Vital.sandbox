@@ -20,7 +20,7 @@
 // Vital //
 ////////////
 
-namespace Vital::Error::fetch {
+namespace Vital::Error {
     struct Command {
         std::string_view code;
         std::string_view message;
