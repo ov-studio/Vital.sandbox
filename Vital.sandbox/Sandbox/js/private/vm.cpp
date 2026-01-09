@@ -33,7 +33,7 @@ namespace Vital::Sandbox::JS {
         }
         this -> apis = apis;
         this -> hook("bind");
-        for (auto& i : Vital::Sandbox::fetchModules("js")) {
+        for (auto& i : Vital::get_modules("js")) {
             loadString(i);
         }
         this -> hook("inject");
