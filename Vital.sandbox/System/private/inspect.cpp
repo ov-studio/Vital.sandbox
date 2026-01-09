@@ -56,7 +56,7 @@ namespace Vital::System::Inspect {
                     CLSID_WbemLocator, nullptr,
                     CLSCTX_INPROC_SERVER,
                     IID_PPV_ARGS(&locator));
-                locator->ConnectServer(
+                locator -> ConnectServer(
                     _bstr_t(root),
                     nullptr, nullptr, nullptr,
                     0, nullptr, nullptr, &services);
@@ -71,37 +71,35 @@ namespace Vital::System::Inspect {
             }
 
             ~WMI() {
-                if (services) services->Release();
-                if (locator)  locator->Release();
+                if (services) services -> Release();
+                if (locator)  locator -> Release();
                 CoUninitialize();
             }
 
             std::vector<std::wstring> query(const std::wstring& cls, const std::wstring& field) {
                 std::vector<std::wstring> out;
                 IEnumWbemClassObject* en = nullptr;
-
                 std::wstring q = L"SELECT " + field + L" FROM " + cls;
-                if (FAILED(services->ExecQuery(
+                if (FAILED(services -> ExecQuery(
                     bstr_t(L"WQL"),
                     bstr_t(q.c_str()),
                     WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
                     nullptr,
-                    &en)))
-                    return out;
-
+                    &en))
+                ) return out;
                 IWbemClassObject* obj = nullptr;
                 ULONG ret = 0;
-                while (en->Next(WBEM_INFINITE, 1, &obj, &ret) == S_OK) {
+                while (en -> Next(WBEM_INFINITE, 1, &obj, &ret) == S_OK) {
                     VARIANT v;
                     VariantInit(&v);
-                    if (SUCCEEDED(obj->Get(field.c_str(), 0, &v, nullptr, nullptr))) {
+                    if (SUCCEEDED(obj -> Get(field.c_str(), 0, &v, nullptr, nullptr))) {
                         if (v.vt == VT_BSTR && v.bstrVal)
                             out.emplace_back(v.bstrVal);
                     }
                     VariantClear(&v);
-                    obj->Release();
+                    obj -> Release();
                 }
-                en->Release();
+                en -> Release();
                 return out;
             }
     };
@@ -111,9 +109,7 @@ namespace Vital::System::Inspect {
         #if defined(Vital_SDK_WINDOWS)
         WMI wmi;
         auto ids = wmi.query(L"Win32_Processor", L"ProcessorId");
-        if (!ids.empty())
-            return hash(normalize(
-                std::string(ids[0].begin(), ids[0].end())));
+        if (!ids.empty()) return hash(normalize(std::string(ids[0].begin(), ids[0].end())));
         #else
         std::ifstream cpuinfo("/proc/cpuinfo");
         std::string line;
@@ -126,19 +122,16 @@ namespace Vital::System::Inspect {
         return {};
     }
 
-    // -------- SYSTEM / BOARD --------
     std::string system() {
         #if defined(Vital_SDK_WINDOWS)
         WMI wmi;
         auto vendor = wmi.query(L"Win32_BaseBoard", L"Manufacturer");
         auto product = wmi.query(L"Win32_BaseBoard", L"Product");
-
         std::string s;
         if (!vendor.empty())
             s += std::string(vendor[0].begin(), vendor[0].end());
         if (!product.empty())
             s += std::string(product[0].begin(), product[0].end());
-
         return s.empty() ? std::string{} : hash(normalize(s));
         #else
         struct utsname u{};
@@ -176,8 +169,7 @@ namespace Vital::System::Inspect {
         if (!d.empty()) material += d;
         if (!c.empty()) material += c;
         if (!s.empty()) material += s;
-        material += "VSDK_BAN_FP_V1";
+        material += Vital::Signature;
         return hash(material);
     }
-
 }
