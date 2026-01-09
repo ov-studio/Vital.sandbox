@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/js/public/vm.h>
+#include <Vital.sandbox/Sandbox/js/public/vm.h>
 
 
 //////////////////////////////
