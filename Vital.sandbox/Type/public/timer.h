@@ -31,18 +31,14 @@ namespace Vital::Type {
                     int count = 0;
                     int limit = std::max(0, executions);
                     int delay = std::max(0, interval);
-                    while (valid() && (limit == 0 || count < limit)) {
+                    while (alive.load(std::memory_order_acquire) && (limit == 0 || count < limit)) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
                         exec(this);
                         ++count;
                     }
                 }).detach();
             }
-
-            inline bool valid() const {
-                return alive.load(std::memory_order_acquire);
-            }
-
+            
             void stop() {
                 alive.store(false, std::memory_order_release);
             }
