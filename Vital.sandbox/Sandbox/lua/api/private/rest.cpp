@@ -28,7 +28,7 @@ void Vital::Sandbox::Lua::API::REST::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw std::runtime_error(get_error("invalid-arguments"));
             std::string url = vm -> getString(1);
             Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
                 try {

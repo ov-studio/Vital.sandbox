@@ -27,7 +27,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_fog_enabled(state);
             vm -> setBool(true);
@@ -46,9 +46,9 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setMode", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getInt(1);
-            if ((value < godot::Environment::FOG_MODE_EXPONENTIAL) || (value > godot::Environment::FOG_MODE_DEPTH)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((value < godot::Environment::FOG_MODE_EXPONENTIAL) || (value > godot::Environment::FOG_MODE_DEPTH)) throw std::runtime_error(get_error("invalid-arguments"));
             Vital::Godot::Core::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
             vm -> setBool(true);
             return 1;
@@ -68,13 +68,13 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
                 godot::String value(vm -> getString(1).c_str());
-                if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                if (godot::Color::html_is_valid(value)) throw std::runtime_error(get_error("invalid-arguments"));
                 Vital::Godot::Core::get_environment() -> set_fog_light_color(godot::Color::html(value));
             }
             else {
-                if (vm -> getArgCount() < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                if (vm -> getArgCount() < 4) throw std::runtime_error(get_error("invalid-arguments"));
                 for (int i = 1; i <= 4; i++) {
-                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                    if (!vm -> isNumber(i)) throw std::runtime_error(get_error("invalid-arguments"));
                 }
                 Vital::Godot::Core::get_environment() -> set_fog_light_color(godot::Color(
                     vm -> getFloat(1), 
@@ -103,7 +103,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setLightEnergy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_light_energy(value);
             vm -> setBool(true);
@@ -122,7 +122,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setSunScatter", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_sun_scatter(value);
             vm -> setBool(true);
@@ -141,7 +141,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_density(value);
             vm -> setBool(true);
@@ -160,7 +160,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setHeight", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_height(value);
             vm -> setBool(true);
@@ -179,7 +179,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setHeightDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_height_density(value);
             vm -> setBool(true);
@@ -198,7 +198,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setAerialPerspective", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_aerial_perspective(value);
             vm -> setBool(true);
@@ -217,7 +217,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setSkyAffect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_sky_affect(value);
             vm -> setBool(true);
@@ -236,7 +236,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setDepthCurve", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_depth_curve(value);
             vm -> setBool(true);
@@ -255,7 +255,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setDepthBegin", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_depth_begin(value);
             vm -> setBool(true);
@@ -274,7 +274,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "fog", "setDepthEnd", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_fog_depth_end(value);
             vm -> setBool(true);

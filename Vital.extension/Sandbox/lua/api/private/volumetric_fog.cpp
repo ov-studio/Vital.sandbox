@@ -27,7 +27,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_enabled(state);
             vm -> setBool(true);
@@ -48,13 +48,13 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
                 godot::String value(vm -> getString(1).c_str());
-                if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                if (godot::Color::html_is_valid(value)) throw std::runtime_error(get_error("invalid-arguments"));
                 Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission(godot::Color::html(value));
             }
             else {
-                if (vm -> getArgCount() < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                if (vm -> getArgCount() < 4) throw std::runtime_error(get_error("invalid-arguments"));
                 for (int i = 1; i <= 4; i++) {
-                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                    if (!vm -> isNumber(i)) throw std::runtime_error(get_error("invalid-arguments"));
                 }
                 Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission(godot::Color(
                     vm -> getFloat(1), 
@@ -85,13 +85,13 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
                 godot::String value(vm -> getString(1).c_str());
-                if (godot::Color::html_is_valid(value)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                if (godot::Color::html_is_valid(value)) throw std::runtime_error(get_error("invalid-arguments"));
                 Vital::Godot::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color::html(value));
             }
             else {
-                if (vm -> getArgCount() < 4) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                if (vm -> getArgCount() < 4) throw std::runtime_error(get_error("invalid-arguments"));
                 for (int i = 1; i <= 4; i++) {
-                    if (!vm -> isNumber(i)) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+                    if (!vm -> isNumber(i)) throw std::runtime_error(get_error("invalid-arguments"));
                 }
                 Vital::Godot::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color(
                     vm -> getFloat(1), 
@@ -120,7 +120,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setDensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_density(value);
             vm -> setBool(true);
@@ -139,7 +139,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setEmissionEnergy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission_energy(value);
             vm -> setBool(true);
@@ -158,7 +158,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setAnisotropy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_anisotropy(value);
             vm -> setBool(true);
@@ -177,7 +177,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setLength", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_length(value);
             vm -> setBool(true);
@@ -196,7 +196,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setDetailSpread", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_detail_spread(value);
             vm -> setBool(true);
@@ -215,7 +215,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setGIInject", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_gi_inject(value);
             vm -> setBool(true);
@@ -234,7 +234,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setAmbientInject", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_ambient_inject(value);
             vm -> setBool(true);
@@ -253,7 +253,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setSkyAffect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_sky_affect(value);
             vm -> setBool(true);
@@ -272,7 +272,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setTemporalReprojectionEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_enabled(state);
             vm -> setBool(true);
@@ -291,7 +291,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setTemporalReprojectionAmount", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(ErrorCode["invalid-arguments"]);
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_amount(value);
             vm -> setBool(true);
