@@ -40,6 +40,7 @@ if ARGUMENTS["platform_type"] == "Client":
 
 
 # Dependencies
+env.Append(CPPFLAGS=["-DMSGPACK_NO_BOOST"])
 if platform.startswith("win"):
     env.Append(CPPFLAGS=["-DVital_SDK_WINDOWS", "/EHsc"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])

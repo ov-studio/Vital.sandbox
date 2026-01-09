@@ -30,3 +30,4 @@
 #include <string>
 #include <sstream>
 #include <Vendor/fmt/core.h>
+#include <Vendor/msgpack/msgpack.hpp>
