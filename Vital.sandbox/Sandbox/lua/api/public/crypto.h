@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class Crypto : public Vital::Type::Module {
+    class Crypto : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

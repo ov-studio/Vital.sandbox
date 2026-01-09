@@ -65,7 +65,7 @@ void Vital::Sandbox::Lua::API::Coroutine::bind(void* instance) {
             if (!vm -> isVirtualThread()) throw Vital::Error::fetch("invalid-thread");
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto duration = vm -> getInt(1);
-            Vital::Type::Timer([=](Vital::Type::Timer* self) -> void {
+            Vital::Tool::Timer([=](Vital::Tool::Timer* self) -> void {
                 vm -> setBool(true);
                 vm -> resume(1);
             }, duration, 1);

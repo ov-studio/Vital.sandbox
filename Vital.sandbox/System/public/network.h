@@ -17,12 +17,12 @@
 
 
 ///////////////////////////
-// Vital: Type: Network //
+// Vital: Tool: Network //
 ///////////////////////////
 
 namespace Vital::System::Network {
     // Managers //
-    extern bool start(Vital::Type::Network::Address address);
+    extern bool start(Vital::Tool::Network::Address address);
     extern bool stop();
     extern bool update();
 
@@ -30,9 +30,9 @@ namespace Vital::System::Network {
     extern bool isConnected();
     extern bool setPeerLimit(int limit);
     extern int getPeerLimit();
-    extern bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit);
-    extern Vital::Type::Network::Bandwidth getBandwidthLimit();
+    extern bool setBandwidthLimit(Vital::Tool::Network::Bandwidth limit);
+    extern Vital::Tool::Network::Bandwidth getBandwidthLimit();
 
     // Utils //
-    extern bool emit(Vital::Type::Stack buffer, Vital::Type::Network::PeerID peerID = 0, bool isLatent = false);
+    extern bool emit(Vital::Tool::Stack buffer, Vital::Tool::Network::PeerID peerID = 0, bool isLatent = false);
 }

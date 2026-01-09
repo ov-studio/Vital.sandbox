@@ -13,14 +13,14 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
-#include <Vital.sandbox/Type/public/error.h>
-#include <Vital.sandbox/Type/public/stack.h>
-#include <Vital.sandbox/Type/public/module.h>
-#include <Vital.sandbox/Type/public/thread.h>
-#include <Vital.sandbox/Type/public/timer.h>
-#include <Vital.sandbox/Type/public/event.h>
-#include <Vital.sandbox/Type/public/network.h>
+#include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/error.h>
+#include <Vital.sandbox/Tool/stack.h>
+#include <Vital.sandbox/Tool/module.h>
+#include <Vital.sandbox/Tool/thread.h>
+#include <Vital.sandbox/Tool/timer.h>
+#include <Vital.sandbox/Tool/event.h>
+#include <Vital.sandbox/Tool/network.h>
 
 
 ////////////////////

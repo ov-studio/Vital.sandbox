@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Inspect System
+     Desc: Inspect Tools
 ----------------------------------------------------------------*/
 
 
@@ -25,10 +25,10 @@
 
 
 ///////////////////////////
-// Vital: Type: Inspect //
+// Vital: Tool: Inspect //
 ///////////////////////////
 
-namespace Vital::System::Inspect {
+namespace Vital::Tool::Inspect {
     static inline std::string normalize(std::string s) {
         s.erase(std::remove_if(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }), s.end());
         std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });

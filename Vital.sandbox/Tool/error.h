@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: error.h
+     Script: Tool: public: error.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Error Utilities
+     Desc: Error Tools
 ----------------------------------------------------------------*/
 
 
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
+#include <Vital.sandbox/Tool/index.h>
 
 
 ////////////

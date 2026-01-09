@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class Coroutine : public Vital::Type::Module {
+    class Coroutine : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

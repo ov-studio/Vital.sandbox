@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: index.h
+     Script: Tool: public: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Type Utilities
+     Desc: Root Tools
 ----------------------------------------------------------------*/
 
 
@@ -23,7 +23,7 @@
 ////////////
 
 namespace Vital {
-    namespace Type {}
+    namespace Util {}
     namespace System {}
     namespace Sandbox {}
     static const std::string Signature = "vsdk_v.0.0.1";

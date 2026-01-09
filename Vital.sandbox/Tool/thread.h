@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: thread.h
+     Script: Tool: public: thread.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Thread Types
+     Desc: Thread Tools
 ----------------------------------------------------------------*/
 
 
@@ -13,14 +13,14 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
+#include <Vital.sandbox/Tool/index.h>
 
 
 //////////////////////////
-// Vital: Type: Thread //
+// Vital: Tool: Thread //
 //////////////////////////
 
-namespace Vital::Type {
+namespace Vital::Tool {
     class Thread {
         private:
             static inline std::unordered_map<std::thread::id, Thread*> buffer;

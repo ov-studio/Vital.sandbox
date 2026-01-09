@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: timer.h
+     Script: Tool: public: timer.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Timer Types
+     Desc: Timer Tools
 ----------------------------------------------------------------*/
 
 
@@ -13,15 +13,15 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
-#include <Vital.sandbox/Type/public/thread.h>
+#include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/thread.h>
 
 
 /////////////////////////
-// Vital: Type: Timer //
+// Vital: Tool: Timer //
 /////////////////////////
 
-namespace Vital::Type {
+namespace Vital::Tool {
     class Timer {
         private:
             static inline std::map<Timer*, bool> buffer;

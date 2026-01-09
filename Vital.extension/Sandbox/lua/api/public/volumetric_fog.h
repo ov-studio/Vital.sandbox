@@ -21,7 +21,7 @@
 /////////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
-    class VolumetricFog : public Vital::Type::Module {
+    class VolumetricFog : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

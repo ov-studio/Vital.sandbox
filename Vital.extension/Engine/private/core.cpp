@@ -31,7 +31,7 @@ namespace Vital::Godot {
     
     void Core::_ready() {
         singleton = singleton ? singleton : this;
-        Vital::Type::Stack arguments;
+        Vital::Tool::Stack arguments;
         Vital::System::Event::emit("Godot:Core:@ready", arguments);
     }
 

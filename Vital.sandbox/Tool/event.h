@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: event.h
+     Script: Tool: public: event.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Event Types
+     Desc: Event Tools
 ----------------------------------------------------------------*/
 
 
@@ -13,20 +13,20 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
-#include <Vital.sandbox/Type/public/stack.h>
+#include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/stack.h>
 
 
 /////////////////////////
-// Vital: Type: Event //
+// Vital: Tool: Event //
 /////////////////////////
 
-namespace Vital::Type::Event {
+namespace Vital::Tool::Event {
     typedef unsigned long ID;
 
     typedef struct {
         const std::function<void()> unbind;
     } Handle;
 
-    typedef std::function<void(Vital::Type::Stack)> Handler;
+    typedef std::function<void(Vital::Tool::Stack)> Handler;
 }

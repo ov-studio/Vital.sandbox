@@ -17,19 +17,19 @@
 
 
 /////////////////////////
-// Vital: Type: Event //
+// Vital: Tool: Event //
 /////////////////////////
 
 namespace Vital::System::Event {
-    Vital::Type::Event::ID vsdk_id = 0;
-    std::map<std::string, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler>> vsdk_events;
+    Vital::Tool::Event::ID vsdk_id = 0;
+    std::map<std::string, std::map<Vital::Tool::Event::ID, Vital::Tool::Event::Handler>> vsdk_events;
 
     bool isEvent(const std::string& identifier) {
         return vsdk_events.find(identifier) != vsdk_events.end();
     }
 
-    Vital::Type::Event::Handle bind(const std::string& identifier, Vital::Type::Event::Handler exec) {
-        if (!isEvent(identifier)) vsdk_events.emplace(identifier, std::map<Vital::Type::Event::ID, Vital::Type::Event::Handler> {});
+    Vital::Tool::Event::Handle bind(const std::string& identifier, Vital::Tool::Event::Handler exec) {
+        if (!isEvent(identifier)) vsdk_events.emplace(identifier, std::map<Vital::Tool::Event::ID, Vital::Tool::Event::Handler> {});
         vsdk_id++;
         vsdk_events.at(identifier).emplace(vsdk_id, exec);
         auto id = vsdk_id;
@@ -41,7 +41,7 @@ namespace Vital::System::Event {
         };
     }
 
-    bool emit(const std::string& identifier, Vital::Type::Stack arguments) {
+    bool emit(const std::string& identifier, Vital::Tool::Stack arguments) {
         if (isEvent(identifier)) {
             for (const auto i : vsdk_events.at(identifier)) {
                 (i.second)(arguments); 

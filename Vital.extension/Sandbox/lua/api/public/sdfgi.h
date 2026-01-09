@@ -21,7 +21,7 @@
 /////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
-    class SDFGI : public Vital::Type::Module {
+    class SDFGI : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

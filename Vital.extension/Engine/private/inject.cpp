@@ -27,7 +27,7 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
 
-	Vital::System::Event::bind("Godot:Core:@ready", [](Vital::Type::Stack arguments) -> void {
+	Vital::System::Event::bind("Godot:Core:@ready", [](Vital::Tool::Stack arguments) -> void {
 		Vital::Godot::Core::get_environment();
 		Vital::Godot::Canvas::get_singleton();
 		Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();

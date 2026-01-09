@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class File : public Vital::Type::Module {
+    class File : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class Network : public Vital::Type::Module {
+    class Network : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
             static void inject(void* instance);

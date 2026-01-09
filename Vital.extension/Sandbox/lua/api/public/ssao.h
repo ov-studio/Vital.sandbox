@@ -21,7 +21,7 @@
 ////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
-    class SSAO : public Vital::Type::Module {
+    class SSAO : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

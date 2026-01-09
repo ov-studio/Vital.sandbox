@@ -18,7 +18,7 @@
 #include <Vital.sandbox/System/public/vital.h>
 #include <Vital.sandbox/System/public/crypto.h>
 #include <Vital.sandbox/System/public/rest.h>
-#include <Vital.sandbox/Type/public/timer.h>
+#include <Vital.sandbox/Tool/timer.h>
 
 #include <Vital.extension/Sandbox/lua/api/public/ssr.h>
 #include <Vital.extension/Sandbox/lua/api/public/ssao.h>
@@ -85,14 +85,14 @@ namespace Vital::Godot::Sandbox::Lua {
         */
 
         /*
-        Vital::Type::Timer([](auto self) -> void {
+        Vital::Tool::Timer([](auto self) -> void {
             godot::UtilityFunctions::print("executed c++ timer");
         }, 5000, 0);
         */
 
         // Run in another thread
         /*
-        Vital::Type::Thread([=](Vital::Type::Thread* thread) -> void {
+        Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
             try {
                 std::string url = "https://jsonplaceholder.typicode.com/posts/1";
                 std::string response = Vital::System::REST::get(url);

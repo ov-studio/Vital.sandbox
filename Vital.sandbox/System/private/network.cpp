@@ -20,19 +20,19 @@
 
 
 ///////////////////////////
-// Vital: Type: Network //
+// Vital: Tool: Network //
 ///////////////////////////
 
 namespace Vital::System::Network {
     ENetHost* networkInstance = nullptr;
     ENetPeer* networkPeer = nullptr;
-    Vital::Type::Network::Bandwidth bandwidthLimit = {0, 0};
-    Vital::Type::Network::PeerID peerID = 1; int peerLimit = 32;
-    std::map<Vital::Type::Network::PeerID, ENetPeer*> networkPeers;
-    Vital::Type::Network::PeerID getPeerID(ENetPeer* peer) { return reinterpret_cast<Vital::Type::Network::PeerID>(peer -> data); }
+    Vital::Tool::Network::Bandwidth bandwidthLimit = {0, 0};
+    Vital::Tool::Network::PeerID peerID = 1; int peerLimit = 32;
+    std::map<Vital::Tool::Network::PeerID, ENetPeer*> networkPeers;
+    Vital::Tool::Network::PeerID getPeerID(ENetPeer* peer) { return reinterpret_cast<Vital::Tool::Network::PeerID>(peer -> data); }
 
     // Managers //
-    bool start(Vital::Type::Network::Address address) {
+    bool start(Vital::Tool::Network::Address address) {
         if (networkInstance) return false;
         enet_initialize();
         ENetAddress networkAddress;
@@ -65,7 +65,7 @@ namespace Vital::System::Network {
                 if (Vital::System::get_platform() == "server") {
                     networkEvent.peer -> data = reinterpret_cast<void*>(peerID);
                     networkPeers.emplace(peerID, networkEvent.peer);
-                    Vital::Type::Stack eventArguments;
+                    Vital::Tool::Stack eventArguments;
                     eventArguments.push("peerID", getPeerID(networkEvent.peer));
                     Vital::System::Event::emit("Network:@PeerConnect", eventArguments);
                     peerID++;
@@ -73,14 +73,14 @@ namespace Vital::System::Network {
                 break;
             }
             case ENET_EVENT_TYPE_RECEIVE: {
-                Vital::Type::Stack eventArguments = Vital::Type::Stack::deserialize(Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
+                Vital::Tool::Stack eventArguments = Vital::Tool::Stack::deserialize(Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
                 if (Vital::System::get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
                 enet_packet_destroy(networkEvent.packet);
                 break;
             }
             case ENET_EVENT_TYPE_DISCONNECT: {
-                Vital::Type::Stack eventArguments;
+                Vital::Tool::Stack eventArguments;
                 if (Vital::System::get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerDisconnect", eventArguments);
                 if (Vital::System::get_platform() == "client") stop();
@@ -102,14 +102,14 @@ namespace Vital::System::Network {
         return true;
     }
     int getPeerLimit() { return Vital::System::get_platform() == "server" ? peerLimit : 1; }
-    bool setBandwidthLimit(Vital::Type::Network::Bandwidth limit) {
+    bool setBandwidthLimit(Vital::Tool::Network::Bandwidth limit) {
         bandwidthLimit = limit;
         return true;
     }
-    Vital::Type::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
+    Vital::Tool::Network::Bandwidth getBandwidthLimit() { return bandwidthLimit; }
 
     // Utils //
-    bool emit(Vital::Type::Stack buffer, Vital::Type::Network::PeerID peerID, bool isLatent) {
+    bool emit(Vital::Tool::Stack buffer, Vital::Tool::Network::PeerID peerID, bool isLatent) {
         if (!isConnected()) return false;
         const std::string bufferSerial = Vital::System::Crypto::encode(buffer.serialize());
         if ((Vital::System::get_platform() == "client") || (peerID <= 0)) {

@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: module.h
+     Script: Tool: public: module.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Module Types
+     Desc: Module Tools
 ----------------------------------------------------------------*/
 
 
@@ -20,7 +20,7 @@
 // Vital //
 ////////////
 
-namespace Vital::Type {
+namespace Vital::Tool {
     class Module {
         public:
             virtual ~Module() = default;

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
-    class Fog : public Vital::Type::Module {
+    class Fog : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

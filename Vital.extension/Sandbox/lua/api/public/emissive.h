@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
-    class Emissive : public Vital::Type::Module {
+    class Emissive : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

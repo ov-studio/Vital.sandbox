@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: stack.h
+     Script: Tool: public: stack.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Stack Types
+     Desc: Stack Tools
 ----------------------------------------------------------------*/
 
 
@@ -13,14 +13,14 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
+#include <Vital.sandbox/Tool/index.h>
 
 
 /////////////////////////
-// Vital: Type: Stack //
+// Vital: Tool: Stack //
 /////////////////////////
 
-namespace Vital::Type {
+namespace Vital::Tool {
     class Stack {
         public:
             class Value;

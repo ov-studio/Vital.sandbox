@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/lua/api/public/engine.h>
 #if defined(Vital_SDK_Client)
-#include <Vital.sandbox/System/public/inspect.h>
+#include <Vital.sandbox/Tool/inspect.h>
 #include <godot_cpp/variant/utility_functions.hpp>
 #endif
 
@@ -47,7 +47,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setString(Vital::System::Inspect::fingerprint());
+            vm -> setString(Vital::Tool::Inspect::fingerprint());
             return 1;
         });
     });

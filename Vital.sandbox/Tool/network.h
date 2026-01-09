@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Type: public: network.h
+     Script: Tool: public: network.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Network Types
+     Desc: Network Tools
 ----------------------------------------------------------------*/
 
 
@@ -13,14 +13,14 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Type/public/index.h>
+#include <Vital.sandbox/Tool/index.h>
 
 
 ///////////////////////////
-// Vital: Type: Network //
+// Vital: Tool: Network //
 ///////////////////////////
 
-namespace Vital::Type::Network {
+namespace Vital::Tool::Network {
     typedef struct {
         const std::string host;
         const int port;

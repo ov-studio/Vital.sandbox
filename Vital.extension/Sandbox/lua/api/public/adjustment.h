@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
-    class Adjustment : public Vital::Type::Module {
+    class Adjustment : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };
