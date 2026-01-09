@@ -18,7 +18,6 @@
 #include <Type/public/module.h>
 #include <Type/public/thread.h>
 #include <Type/public/timer.h>
-#include <Type/public/inspect.h>
 #include <Type/public/event.h>
 #include <Type/public/network.h>
 
@@ -28,12 +27,15 @@
 ////////////////////
 
 namespace Vital::System {
-    extern std::string getPlatform();
-    extern unsigned int getTick();
-
-    #if defined(Vital_SDK_Client)
-        #if defined(Vital_SDK_WINDOWS)
-            extern std::string getSerial();
+    static inline const std::string get_platform() { 
+        #if defined(Vital_SDK_Client)
+            return "client";
+        #else
+            return "server";
         #endif
-    #endif
+    }
+
+    static inline unsigned int get_tick() {
+        return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
+    }
 }

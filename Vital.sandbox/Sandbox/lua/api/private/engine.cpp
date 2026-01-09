@@ -15,6 +15,7 @@
 #pragma once
 #include <Sandbox/lua/api/public/engine.h>
 #if defined(Vital_SDK_Client)
+#include <Vital.sandbox/System/public/inspect.h>
 #include <godot_cpp/variant/utility_functions.hpp>
 #endif
 
@@ -26,27 +27,27 @@
 void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     auto vm = static_cast<vsdk_vm*>(instance);
 
-    API::bind(vm, "engine", "getPlatform", [](auto* ref) -> int {
+    API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setString(Vital::System::getPlatform());
+            vm -> setString(Vital::System::get_platform());
             return 1;
         });
     });
 
-    API::bind(vm, "engine", "getTick", [](auto* ref) -> int {
+    API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(static_cast<int>(Vital::System::getTick()));
+            vm -> setNumber(static_cast<int>(Vital::System::get_tick()));
             return 1;
         });
     });
 
     #if defined(Vital_SDK_Client)
-    API::bind(vm, "engine", "getSerial", [](auto* ref) -> int {
+    API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setString(Vital::System::getSerial());
+            vm -> setString(Vital::System::Inspect::fingerprint());
             return 1;
         });
     });

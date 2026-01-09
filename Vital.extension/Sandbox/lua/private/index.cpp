@@ -29,6 +29,8 @@
 #include <Vital.extension/Sandbox/lua/api/public/volumetric_fog.h>
 #include <Vital.extension/Sandbox/lua/api/public/adjustment.h>
 
+#include <Vital.sandbox/System/public/inspect.h>
+
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/texture.h>
@@ -57,7 +59,7 @@ namespace Vital::Godot::Sandbox::Lua {
     Singleton::Singleton() {
         godot::UtilityFunctions::print("Initialized Lua vm");
 
-        auto serial = Vital::System::getSerial();
+        auto serial = Vital::System::Inspect::fingerprint();
         godot::UtilityFunctions::print(serial.c_str());
 
         vm = new Vital::Sandbox::Lua::create({
@@ -145,7 +147,7 @@ namespace Vital::Godot::Sandbox::Lua {
         )";
 
         std::string text = u8"Hello from Аниса from Netherland Hello from Аниса from Netherland 2";
-        float rotation = std::sin(Vital::System::getTick()*0.0005)*360.0f;
+        float rotation = std::sin(Vital::System::get_tick()*0.0005)*360.0f;
         canvas -> draw_image({100 + (310)*0, 20}, {300, 300}, tex -> get_texture(), 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text,
