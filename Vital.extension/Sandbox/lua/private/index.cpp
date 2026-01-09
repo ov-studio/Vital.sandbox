@@ -17,7 +17,7 @@
 #include <Vital.sandbox/Sandbox/lua/public/api.h>
 #include <Vital.sandbox/System/public/vital.h>
 #include <Vital.sandbox/System/public/crypto.h>
-#include <Vital.sandbox/System/public/rest.h>
+#include <Vital.sandbox/Tool/rest.h>
 #include <Vital.sandbox/Tool/timer.h>
 
 #include <Vital.extension/Sandbox/lua/api/public/ssr.h>
