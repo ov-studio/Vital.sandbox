@@ -31,14 +31,14 @@ namespace Vital::System::Crypto {
         else if (mode == "SHA256") return {::SHA256, SHA256_DIGEST_LENGTH};
         else if (mode == "SHA384") return {::SHA384, SHA384_DIGEST_LENGTH};
         else if (mode == "SHA512") return {::SHA512, SHA512_DIGEST_LENGTH};
-        else throw Vital::Error("hash-mode-nonexistent", mode);
+        else throw Vital::Error::fetch("hash-mode-nonexistent", mode);
     }
 
     const EVP_CIPHER* CipherMode(const std::string& mode) {
         if (mode == "AES128") return EVP_aes_128_cbc();
         else if (mode == "AES192") return EVP_aes_192_cbc();
         else if (mode == "AES256") return EVP_aes_256_cbc();
-        else throw Vital::Error("cipher-mode-nonexistent", mode);
+        else throw Vital::Error::fetch("cipher-mode-nonexistent", mode);
     }
 
     std::string CipherIV(const std::string& mode) {
@@ -68,8 +68,8 @@ namespace Vital::System::Crypto {
             int bufferSize = inputSize + blockSize - 1;
             unsigned char* output = new unsigned char[bufferSize];
             EVP_Init(ctx, algorithm, NULL, NULL);
-            if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw Vital::Error("cipher-invalid-key", key);
-            if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw Vital::Error("cipher-invalid-iv", iv);
+            if (EVP_CIPHER_CTX_key_length(ctx) != key.size()) throw Vital::Error::fetch("cipher-invalid-key", key);
+            if (EVP_CIPHER_CTX_iv_length(ctx) != iv.size()) throw Vital::Error::fetch("cipher-invalid-iv", iv);
             EVP_Init(ctx, algorithm, reinterpret_cast<unsigned char*>(const_cast<char*>(key.data())), reinterpret_cast<unsigned char*>(const_cast<char*>(iv.data())));
             EVP_Update(ctx, output, &currentSize, reinterpret_cast<unsigned char*>(const_cast<char*>(buffer.data())), inputSize);
             outputSize += currentSize;

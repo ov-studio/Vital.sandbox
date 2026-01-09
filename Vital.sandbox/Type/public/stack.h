@@ -92,7 +92,7 @@ namespace Vital::Type {
                             } 
                             return {type, oss.str()};
                         }
-                        throw Vital::Error("invalid-result");
+                        throw Vital::Error::fetch("invalid-result");
                     }
                     static Value deserialize(const std::pair<std::string, std::string>& serial) {
                         const auto& type = serial.first;
@@ -107,7 +107,7 @@ namespace Vital::Type {
                         if (type == "unsigned int") return Value(static_cast<unsigned int>(std::stoul(value)));
                         if (type == "unsigned long") return Value(std::stoul(value));
                         if (type == "unsigned long long") return Value(std::stoull(value));
-                        throw Vital::Error("invalid-result");
+                        throw Vital::Error::fetch("invalid-result");
                     }
             };
 
@@ -122,12 +122,12 @@ namespace Vital::Type {
             // Getters //
             template <typename T>
             T get(int index = 0) {
-                if (isNil(index)) throw Vital::Error("invalid-result");
+                if (isNil(index)) throw Vital::Error::fetch("invalid-result");
                 return vector.at(index).get<T>();
             }
             template <typename T>
             T get(const std::string& index) {
-                if (isNil(index)) throw Vital::Error("invalid-result");
+                if (isNil(index)) throw Vital::Error::fetch("invalid-result");
                 return map.at(index).get<T>();
             }
 

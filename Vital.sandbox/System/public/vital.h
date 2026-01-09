@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Type/public/index.h>
+#include <Vital.sandbox/Type/public/error.h>
 #include <Vital.sandbox/Type/public/stack.h>
 #include <Vital.sandbox/Type/public/module.h>
 #include <Vital.sandbox/Type/public/thread.h>

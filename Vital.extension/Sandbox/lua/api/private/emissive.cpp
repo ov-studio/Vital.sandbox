@@ -27,7 +27,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_glow_enabled(state);
             vm -> setBool(true);
@@ -46,7 +46,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setLevelIntensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 2) || (!vm -> isNumber(1)) || (!vm -> isNumber(2))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 2) || (!vm -> isNumber(1)) || (!vm -> isNumber(2))) throw Vital::Error::fetch("invalid-arguments");
             auto idx = vm -> getInt(1);
             auto value = vm -> getFloat(2);
             Vital::Godot::Core::get_environment() -> set_glow_level(idx, value);
@@ -58,7 +58,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "getLevelIntensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto idx = vm -> getInt(1);
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_glow_level(idx));
             return 1;
@@ -68,7 +68,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setNormalized", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_glow_normalized(state);
             vm -> setBool(true);
@@ -87,7 +87,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setIntensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_intensity(value);
             vm -> setBool(true);
@@ -106,7 +106,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setStrength", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_strength(value);
             vm -> setBool(true);
@@ -125,7 +125,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setMix", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_mix(value);
             vm -> setBool(true);
@@ -144,7 +144,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setBloom", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_bloom(value);
             vm -> setBool(true);
@@ -163,9 +163,9 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setBlendMode", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getInt(1);
-            if ((value < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (value > godot::Environment::GLOW_BLEND_MODE_MIX)) throw Vital::Error("invalid-arguments");
+            if ((value < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (value > godot::Environment::GLOW_BLEND_MODE_MIX)) throw Vital::Error::fetch("invalid-arguments");
             Vital::Godot::Core::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
             vm -> setBool(true);
             return 1;
@@ -183,7 +183,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setHDRBleedThreshold", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_hdr_bleed_threshold(value);
             vm -> setBool(true);
@@ -202,7 +202,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setHDRBleedScale", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_hdr_bleed_scale(value);
             vm -> setBool(true);
@@ -221,7 +221,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setHDRLuminanceCap", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_hdr_luminance_cap(value);
             vm -> setBool(true);
@@ -240,7 +240,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "emissive", "setMapStrength", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_glow_map_strength(value);
             vm -> setBool(true);

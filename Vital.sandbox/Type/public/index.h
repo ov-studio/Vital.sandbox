@@ -22,36 +22,10 @@
 
 namespace Vital {
     static const std::string Signature = "vsdk_v.0.0.1";
-    struct ErrorCommand {
-        std::string_view code;
-        std::string_view message;
-    };
-    static constexpr ErrorCommand ErrorList[] = {
-        {"invalid-result", "Invalid result"},
-        {"invalid-arguments", "Invalid argument list"},
-        {"invalid-thread", "Invalid thread entity"},
-        {"request-failed", "Failed to process request ('{}')"},
-        {"hash-mode-nonexistent", "Failed to fetch hash mode ('{}')"},
-        {"cipher-mode-nonexistent", "Failed to fetch cipher mode ('{}')"},
-        {"cipher-invalid-key", "Invalid cipher key ('{}')"},
-        {"cipher-invalid-iv", "Invalid cipher IV ('{}')"},
-        {"file-nonexistent", "Failed to fetch file ('{}')"},
-        {"serial-nonexistent", "Failed to fetch device's serial"}
-    };
 
-    static inline const std::runtime_error Error(std::string_view code, std::string message = "") {
-        std::string_view error = "Unknown error";
-        for (const auto& e : ErrorList) {
-            if (code == e.code) {
-                error = e.message;
-            }
-        }
-        return std::runtime_error(fmt::format(std::string(error), message));
+    namespace Type {}
+    namespace System {}
+    namespace Sandbox {
+        extern std::vector<std::string> fetchModules(const std::string& name);
     }
-}
-
-namespace Vital::Type {}
-namespace Vital::System {}
-namespace Vital::Sandbox {
-    extern std::vector<std::string> fetchModules(const std::string& name);
 }
