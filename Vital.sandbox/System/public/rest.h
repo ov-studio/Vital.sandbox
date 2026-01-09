@@ -31,12 +31,13 @@ namespace Vital::System::REST {
         CURL* curl = nullptr;
         std::string response;
         std::promise<std::string> promise;
+        std::function<void(std::string)> callback;
     };
 
     inline Curl curl_global_guard{};
     inline size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
         auto* out = static_cast<std::string*>(userdata);
-        out->append(ptr, size*nmemb);
+        out -> append(ptr, size*nmemb);
         return size*nmemb;
     }
 
@@ -67,29 +68,24 @@ namespace Vital::System::REST {
                         while (!pending.empty()) {
                             auto req = std::move(pending.front());
                             pending.pop();
-                            curl_multi_add_handle(multi, req->curl);
-                            requests[req->curl] = std::move(req);
+                            curl_multi_add_handle(multi, req -> curl);
+                            requests[req -> curl] = std::move(req);
                         }
                     }
                     curl_multi_perform(multi, &active);
                     int msgs;
                     while (auto* msg = curl_multi_info_read(multi, &msgs)) {
-                        if (msg->msg == CURLMSG_DONE) {
+                        if (msg -> msg == CURLMSG_DONE) {
                             auto it = requests.find(msg->easy_handle);
                             if (it != requests.end()) {
-                                auto& req = it->second;
-                                if (msg->data.result == CURLE_OK) {
-                                    req->promise.set_value(std::move(req->response));
+                                auto& req = it -> second;
+                                if (msg -> data.result == CURLE_OK) {
+                                    req -> promise.set_value(std::move(req -> response));
+                                    if (req -> callback) req -> callback(req -> response);
                                 }
-                                else {
-                                    req->promise.set_exception(
-                                        std::make_exception_ptr(
-                                            Vital::Error::fetch("request-failed", curl_easy_strerror(msg->data.result))
-                                        )
-                                    );
-                                }
-                                curl_multi_remove_handle(multi, req->curl);
-                                curl_easy_cleanup(req->curl);
+                                else req -> promise.set_exception(std::make_exception_ptr(Vital::Error::fetch("request-failed", curl_easy_strerror(msg -> data.result))));
+                                curl_multi_remove_handle(multi, req -> curl);
+                                curl_easy_cleanup(req -> curl);
                                 requests.erase(it);
                             }
                         }
@@ -110,13 +106,14 @@ namespace Vital::System::REST {
                 curl_multi_cleanup(multi);
             }
 
-            std::future<std::string> get(std::string_view url) {
+            std::future<std::string> get_async(std::string_view url, std::function<void(std::string)> callback = nullptr) {
                 auto req = std::make_unique<Request>();
-                req->curl = curl_easy_init();
-                req->response.reserve(4096);
-                curl_easy_setopt(req->curl, CURLOPT_URL, std::string(url).c_str());
-                set_curl_options(req->curl, &req->response);
-                auto fut = req->promise.get_future();
+                req -> curl = curl_easy_init();
+                req -> response.reserve(4096);
+                curl_easy_setopt(req -> curl, CURLOPT_URL, std::string(url).c_str());
+                set_curl_options(req -> curl, &req -> response);
+                auto fut = req -> promise.get_future();
+                req -> callback = std::move(callback);
                 {
                     std::lock_guard lock(queue_mutex);
                     pending.push(std::move(req));
@@ -147,7 +144,7 @@ namespace Vital::System::REST {
     }
 
     [[nodiscard]]
-    inline std::future<std::string> get_async(std::string_view url) {
-        return engine.get(url);
+    inline std::future<std::string> get_async(std::string_view url, std::function<void(std::string)> callback = nullptr) {
+        return engine.get_async(url);
     }
 }
