@@ -24,23 +24,36 @@
 namespace Vital::Type {
     class Timer {
         private:
-            std::atomic<bool> alive{ true };
+            static inline std::map<Timer*, bool> buffer;
+            static inline std::mutex mutex;
         public:
             Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
-                std::thread([this, exec = std::move(exec), interval, executions]() {
-                    int count = 0;
-                    int limit = std::max(0, executions);
-                    int delay = std::max(0, interval);
-                    while (alive.load(std::memory_order_acquire) && (limit == 0 || count < limit)) {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    buffer.emplace(this, true);
+                }
+                Thread([=](Thread* thread) {
+                    int currentExecutions = 0;
+                    int targetInterval = std::max(0, interval);
+                    int targetExecutions = std::max(0, executions);
+        
+                    while (valid(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
+                        thread->sleep(targetInterval);
+                        currentExecutions++;
                         exec(this);
-                        ++count;
                     }
+                    stop();
                 }).detach();
             }
-            
+        
+            static bool valid(Timer* identifier) {
+                std::lock_guard<std::mutex> lock(mutex);
+                return buffer.find(identifier) != buffer.end();
+            }
+    
             void stop() {
-                alive.store(false, std::memory_order_release);
+                std::lock_guard<std::mutex> lock(mutex);
+                buffer.erase(this);
             }
     };
 }

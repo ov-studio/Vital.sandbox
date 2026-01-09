@@ -23,46 +23,49 @@
 namespace Vital::Type {
     class Thread {
         private:
+            static inline std::unordered_map<std::thread::id, Thread*> buffer;
+            static inline std::mutex mutex;
             std::thread thread;
-            std::thread::id worker_id = {};
-            std::atomic<bool> alive { true };
         public:
-            inline Thread(std::function<void(Thread*)> exec) {
-                thread = std::thread([this, exec]() {
-                    worker_id = std::this_thread::get_id();
+            Thread(std::function<void(Thread*)> exec) {
+                thread = std::thread([this, exec = std::move(exec)]() {
+                    std::thread::id id = std::this_thread::get_id();
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        buffer.emplace(id, this);
+                    }
                     exec(this);
-                    alive.store(false, std::memory_order_release);
                 });
             }
-    
-            inline ~Thread() {
-                alive.store(false, std::memory_order_release);
-                if (thread.joinable()) {
-                    thread.detach();
+        
+            ~Thread() {
+                std::thread::id id = std::this_thread::get_id();
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    buffer.erase(id);
                 }
+                detach();
+            }
+        
+            static Thread* fetch() {
+                std::thread::id id = std::this_thread::get_id();
+                std::lock_guard<std::mutex> lock(mutex);
+                auto it = buffer.find(id);
+                return it != buffer.end() ? it -> second : nullptr;
             }
     
-            inline bool valid() const {
-                return alive.load(std::memory_order_acquire);
+            void join() { 
+                if (thread.joinable()) thread.join(); 
             }
-    
-            inline void join() {
-                if (thread.joinable()) {
-                    thread.join();
-                }
+        
+            void detach() { 
+                if (thread.joinable()) thread.detach(); 
             }
-    
-            inline void detach() {
-                if (thread.joinable()) {
-                    thread.detach();
-                }
-            }
-    
-            inline void sleep(int duration) {
+        
+            void sleep(int duration) {
                 if (duration < 0) return;
-                if (!valid()) return;
-                if (std::this_thread::get_id() != worker_id) return;
+                if (fetch() != this) return;
                 std::this_thread::sleep_for(std::chrono::milliseconds(duration));
             }
-        };
+    };
 }
