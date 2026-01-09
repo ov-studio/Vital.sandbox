@@ -22,15 +22,13 @@
 /////////////////////
 
 namespace Vital::Sandbox {
-    std::string repository = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
-
     std::vector<std::string> fetchModules(const std::string& name) {
         std::vector<std::string> result;
         rapidjson::Document manifest;
-        manifest.Parse(Vital::System::REST::get(fmt::format(repository, "manifest.json")).c_str());
+        manifest.Parse(Vital::System::REST::get(fmt::format(Repository, "manifest.json")).c_str());
         if (!manifest.HasParseError() && manifest.HasMember(name.c_str())) {
             for (auto& i : manifest[name.c_str()]["sources"].GetArray()) {
-                result.push_back(Vital::System::REST::get(fmt::format(repository, name + "/" + std::string(i.GetString()))));
+                result.push_back(Vital::System::REST::get(fmt::format(Repository, name + "/" + std::string(i.GetString()))));
             }
         }
         return result;

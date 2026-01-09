@@ -22,6 +22,7 @@
 
 namespace Vital {
     static const std::string Signature = "vsdk_v.0.0.1";
+    static const std::string Repository = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
 
     namespace Type {}
     namespace System {}
