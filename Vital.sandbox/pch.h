@@ -29,6 +29,7 @@
 #include <variant>
 #include <utility>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <Vendor/fmt/core.h>
 #include <Vendor/msgpack/msgpack.hpp>
