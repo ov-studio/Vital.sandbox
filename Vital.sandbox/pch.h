@@ -23,9 +23,12 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#include <future>
 #include <exception>
+#include <queue>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <variant>
 #include <utility>
 #include <string>
