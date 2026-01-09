@@ -42,7 +42,7 @@ void Vital::Sandbox::Lua::API::Coroutine::bind(void* instance) {
             if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto thread = vm -> getThread(1);
             auto thread_vm = fetchVM(thread);
-            if (!thread_vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
+            if (!thread_vm -> isVirtualThread()) throw std::runtime_error(get_error("invalid-thread"));
             thread_vm -> resume();
             vm -> setBool(true);
             return 1;
@@ -52,7 +52,7 @@ void Vital::Sandbox::Lua::API::Coroutine::bind(void* instance) {
     API::bind(vm, "coroutine", "pause", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
+            if (!vm -> isVirtualThread()) throw std::runtime_error(get_error("invalid-thread"));
             vm -> pause();
             vm -> setBool(true);
             return 1;
@@ -62,7 +62,7 @@ void Vital::Sandbox::Lua::API::Coroutine::bind(void* instance) {
     API::bind(vm, "coroutine", "sleep", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if (!vm -> isVirtualThread()) throw std::runtime_error(ErrorCode["invalid-thread"]);
+            if (!vm -> isVirtualThread()) throw std::runtime_error(get_error("invalid-thread"));
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
             auto duration = vm -> getInt(1);
             Vital::Type::Timer([=](Vital::Type::Timer* self) -> void {
