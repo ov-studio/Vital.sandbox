@@ -18,6 +18,7 @@
 #include <mutex>
 #include <atomic>
 #include <chrono>
+#include <cctype>
 #include <functional>
 #include <filesystem>
 #include <fstream>
