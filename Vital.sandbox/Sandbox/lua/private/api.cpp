@@ -34,7 +34,7 @@ namespace Vital::Sandbox::Lua {
             {API::Coroutine::bind, API::Coroutine::inject},
             {API::File::bind, API::File::inject},
             {API::Crypto::bind, API::Crypto::inject},
-            {API::REST::bind, API::REST::inject},
+            {API::Rest::bind, API::Rest::inject},
             {API::Network::bind, API::Network::inject}
         };
         for (auto& i : apis) natives.push_back(i);

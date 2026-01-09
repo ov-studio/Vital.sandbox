@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: crypto.h
+     Script: Tool: public: crypto.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,7 +17,7 @@
 
 
 ////////////////////////////
-// Vital: System: Crypto //
+// Vital: Tool: Crypto //
 ////////////////////////////
 
 namespace Vital::System::Crypto {

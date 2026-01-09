@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: REST APIs
+     Desc: Rest APIs
 ----------------------------------------------------------------*/
 
 
@@ -21,7 +21,7 @@
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
-    class REST : public Vital::Tool::Module {
+    class Rest : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

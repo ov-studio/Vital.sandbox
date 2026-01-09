@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: private: file.cpp
+     Script: Tool: private: file.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,7 +17,7 @@
 
 
 //////////////////////////
-// Vital: System: File //
+// Vital: Tool: File //
 //////////////////////////
 
 namespace Vital::System::File {

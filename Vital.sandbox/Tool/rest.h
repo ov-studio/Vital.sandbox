@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: rest.h
+     Script: Tool: public: rest.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: REST System
+     Desc: Rest Tools
 ----------------------------------------------------------------*/
 
 
@@ -17,12 +17,11 @@
 #include <curl/curl.h>
 
 
-//////////////////////////
-// Vital: System: REST //
-//////////////////////////
+////////////////////////
+// Vital: Tool: Rest //
+////////////////////////
 
-namespace Vital::System::REST {
-
+namespace Vital::System::Rest {
     struct CurlGlobal {
         CurlGlobal() { 
             if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)

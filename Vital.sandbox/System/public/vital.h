@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: System: public: vital.h
+     Script: Tool: public: vital.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -24,7 +24,7 @@
 
 
 ////////////////////
-// Vital: System //
+// Vital: Tool //
 ////////////////////
 
 namespace Vital::System {

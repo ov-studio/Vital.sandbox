@@ -16,7 +16,7 @@
 * Integrated Crypto System
 * Integrated Stack System
 * Integrated Inspect System
-* Integrated REST System
+* Integrated Rest System
 * Integrated Event System
 * Integrated Sandboxing Environments (Lua, JS)
 * Integrated Robust Threader (Includes async/await, heartbeats, promises and much more!)
