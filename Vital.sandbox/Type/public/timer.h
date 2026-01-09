@@ -24,27 +24,26 @@
 namespace Vital::Type {
     class Timer {
         private:
-            std::atomic<bool> alive { true };
+            std::atomic<bool> alive{ true };
         public:
-            inline Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
-                Vital::Type::Thread([this, exec, interval, executions](Vital::Type::Thread* thread) {
-                    int count_current = 0;
-                    int count_target = std::max(0, executions);
-                    int interval_target = std::max(0, interval);
-                    while (valid() && (count_target == 0 || count_current < count_target)) {
-                        thread -> sleep(interval_target);
-                        ++count_current;
+            Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
+                std::thread([this, exec = std::move(exec), interval, executions]() {
+                    int count = 0;
+                    int limit = std::max(0, executions);
+                    int delay = std::max(0, interval);
+                    while (valid() && (limit == 0 || count < limit)) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
                         exec(this);
+                        ++count;
                     }
-                    destroy();
                 }).detach();
             }
-    
+
             inline bool valid() const {
                 return alive.load(std::memory_order_acquire);
             }
-        
-            inline void destroy() {
+
+            void stop() {
                 alive.store(false, std::memory_order_release);
             }
     };
