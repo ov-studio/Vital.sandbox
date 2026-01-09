@@ -13,10 +13,10 @@
 //////////////
 
 #pragma once
-#include <System/public/network.h>
-#include <System/public/crypto.h>
-#include <System/public/event.h>
-#include <Vendor/enet/enet.h>
+#include <Vital.sandbox/System/public/network.h>
+#include <Vital.sandbox/System/public/crypto.h>
+#include <Vital.sandbox/System/public/event.h>
+#include <Vital.sandbox/Vendor/enet/enet.h>
 
 
 ///////////////////////////

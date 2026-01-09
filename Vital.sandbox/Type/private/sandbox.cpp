@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include <System/public/rest.h>
-#include <Vendor/rapidjson/document.h>
+#include <Vital.sandbox/System/public/rest.h>
+#include <Vital.sandbox/Vendor/rapidjson/document.h>
 
 
 /////////////////////

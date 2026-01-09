@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include <Type/public/index.h>
-#include <Type/public/thread.h>
+#include <Vital.sandbox/Type/public/index.h>
+#include <Vital.sandbox/Type/public/thread.h>
 
 
 /////////////////////////

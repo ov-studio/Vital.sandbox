@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <System/public/vital.h>
+#include <Vital.sandbox/System/public/vital.h>
 
 
 //////////////////////////

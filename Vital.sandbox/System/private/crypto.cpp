@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <System/public/crypto.h>
+#include <Vital.sandbox/System/public/crypto.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <openssl/bio.h>
