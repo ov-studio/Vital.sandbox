@@ -27,7 +27,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "setEnabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw std::runtime_error(get_error("invalid-arguments"));
+            if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw throw_error("invalid-arguments");
             auto state = vm -> getBool(1);
             Vital::Godot::Core::get_environment() -> set_ssr_enabled(state);
             vm -> setBool(true);
@@ -46,7 +46,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "setMaxSteps", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
             auto value = vm -> getInt(1);
             Vital::Godot::Core::get_environment() -> set_ssr_max_steps(value);
             vm -> setBool(true);
@@ -65,7 +65,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "setFadeIn", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_ssr_fade_in(value);
             vm -> setBool(true);
@@ -84,7 +84,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "setFadeOut", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_ssr_fade_out(value);
             vm -> setBool(true);
@@ -103,7 +103,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "setDepthTolerance", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw std::runtime_error(get_error("invalid-arguments"));
+            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw throw_error("invalid-arguments");
             auto value = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_ssr_depth_tolerance(value);
             vm -> setBool(true);
