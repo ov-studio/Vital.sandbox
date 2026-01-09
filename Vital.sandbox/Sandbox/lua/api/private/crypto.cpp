@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/api/public/crypto.h>
-#include <System/public/crypto.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/crypto.h>
+#include <Vital.sandbox/System/public/crypto.h>
 
 
 ///////////////

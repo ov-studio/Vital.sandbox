@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/api/public/engine.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/engine.h>
 #if defined(Vital_SDK_Client)
 #include <Vital.sandbox/System/public/inspect.h>
 #include <godot_cpp/variant/utility_functions.hpp>

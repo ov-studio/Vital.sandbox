@@ -13,9 +13,9 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/api/public/network.h>
-#include <System/public/network.h>
-#include <System/public/crypto.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/network.h>
+#include <Vital.sandbox/System/public/network.h>
+#include <Vital.sandbox/System/public/crypto.h>
 
 
 ///////////////

@@ -13,13 +13,13 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/public/api.h>
-#include <Sandbox/lua/api/public/engine.h>
-#include <Sandbox/lua/api/public/coroutine.h>
-#include <Sandbox/lua/api/public/file.h>
-#include <Sandbox/lua/api/public/crypto.h>
-#include <Sandbox/lua/api/public/rest.h>
-#include <Sandbox/lua/api/public/network.h>
+#include <Vital.sandbox/Sandbox/lua/public/api.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/engine.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/coroutine.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/file.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/crypto.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/rest.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/network.h>
 
 
 ///////////////////////////////

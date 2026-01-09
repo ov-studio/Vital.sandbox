@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include <System/public/vital.h>
-#include <Vendor/lua/lua.hpp>
+#include <Vital.sandbox/System/public/vital.h>
+#include <Vital.sandbox/Vendor/lua/lua.hpp>
 
 
 //////////////////////////

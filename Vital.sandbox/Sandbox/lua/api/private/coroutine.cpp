@@ -13,9 +13,9 @@
 //////////////
 
 #pragma once
-#include <Sandbox/lua/api/public/coroutine.h>
-#include <Vendor/lua/lauxlib.h>
-#include <Vendor/lua/lualib.h>
+#include <Vital.sandbox/Sandbox/lua/api/public/coroutine.h>
+#include <Vital.sandbox/Vendor/lua/lauxlib.h>
+#include <Vital.sandbox/Vendor/lua/lualib.h>
 
 
 ///////////////

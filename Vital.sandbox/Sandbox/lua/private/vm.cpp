@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include <System/public/file.h>
-#include <Sandbox/lua/public/api.h>
+#include <Vital.sandbox/System/public/file.h>
+#include <Vital.sandbox/Sandbox/lua/public/api.h>
 
 
 //////////////////////////
