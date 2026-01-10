@@ -46,6 +46,14 @@ namespace Vital {
         return godot::OS::get_singleton() -> get_executable_path().get_base_dir();
     }
 
+    inline godot::String to_godot_string(const std::string& input) {
+        return godot::String::utf8(input.c_str());
+    }
+
+    inline godot::std::string to_std_string(const godot::String& input) {
+        return std::string(input.utf8().get_data());
+    }
+
     inline std::vector<std::string> get_modules(const std::string& name) {
         std::vector<std::string> result;
         rapidjson::Document manifest;
