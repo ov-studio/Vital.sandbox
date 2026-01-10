@@ -26,7 +26,7 @@ namespace Vital::Error {
         std::string_view message;
     };
     
-    static constexpr Command List[] = {
+    inline constexpr Command List[] = {
         {"invalid-result", "Invalid result"},
         {"invalid-arguments", "Invalid argument list"},
         {"invalid-thread", "Invalid thread entity"},
@@ -39,7 +39,7 @@ namespace Vital::Error {
         {"serial-nonexistent", "Failed to fetch device's serial"}
     };
 
-    static inline const std::runtime_error fetch(std::string_view code, std::string message = "") {
+    inline const std::runtime_error fetch(std::string_view code, std::string message = "") {
         std::string_view error = "Unknown error";
         for (const auto& e : List) {
             if (code == e.code) {
