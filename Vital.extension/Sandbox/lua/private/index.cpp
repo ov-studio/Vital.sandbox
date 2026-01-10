@@ -54,12 +54,6 @@ namespace Vital::Godot::Sandbox::Lua {
     Singleton::Singleton() {
         godot::UtilityFunctions::print("Initialized Lua vm");
 
-        auto base64test = "something_base64test";
-        auto base64result = Vital::Tool::Crypto:encode(base64test);
-        godot::UtilityFunctions::print("Encoded: ", base64result.c_str());
-        godot::UtilityFunctions::print("Decoded: ", Vital::Tool::Crypto:decode(base64result).c_str());
-
-
         vm = new Vital::Sandbox::Lua::create({
             {API::SSR::bind, API::SSR::inject},
             {API::SSAO::bind, API::SSAO::inject},
