@@ -30,6 +30,14 @@ namespace Vital {
     static const std::string Signature = "vsdk_v.0.0.1";
     static const std::string Repository = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
 
+    inline godot::String to_godot_string(const std::string& input) {
+        return godot::String::utf8(input.c_str());
+    }
+
+    inline std::string to_std_string(const godot::String& input) {
+        return std::string(input.utf8().get_data());
+    }
+
     inline const std::string get_platform() { 
         #if defined(Vital_SDK_Client)
             return "client";
@@ -42,18 +50,10 @@ namespace Vital {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }
 
-    inline godot::String get_directory() {
-        return godot::OS::get_singleton() -> get_executable_path().get_base_dir();
+    inline std::string get_directory() {
+        return to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
     }
-
-    inline godot::String to_godot_string(const std::string& input) {
-        return godot::String::utf8(input.c_str());
-    }
-
-    inline std::string to_std_string(const godot::String& input) {
-        return std::string(input.utf8().get_data());
-    }
-
+    
     inline std::vector<std::string> get_modules(const std::string& name) {
         std::vector<std::string> result;
         rapidjson::Document manifest;
