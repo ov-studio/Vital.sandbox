@@ -25,17 +25,17 @@ namespace Vital::System::Event {
     using Handler = std::function<void(Vital::Tool::Stack)>;
     using EventMap = std::map<EventID, Handler>;
     using EventPool = std::map<std::string, EventMap>;
-    inline EventID id = 0;
-    inline EventPool pool;
+    static inline EventID id = 0;
+    static inline EventPool pool;
 
-    inline EventID bind(const std::string& identifier, Handler exec) {
-        ++id;
-        const EventID id = id;
-        pool[identifier].emplace(id, std::move(exec));
+    static inline EventID bind(const std::string& identifier, Handler exec) {
+        auto it = pool.find(identifier);
+        if (it == pool.end()) pool[identifier] = {};
+        pool[identifier].emplace(++id, std::move(exec));
         return id;
     }
 
-    inline bool unbind(const std::string& identifier, EventID id) {
+    static inline bool unbind(const std::string& identifier, EventID id) {
         auto it = pool.find(identifier);
         if (it == pool.end()) return false;
         it -> second.erase(id);
@@ -43,7 +43,7 @@ namespace Vital::System::Event {
         return true;
     }
 
-    inline bool emit(const std::string& identifier, Vital::Tool::Stack arguments = {}) {
+    static inline bool emit(const std::string& identifier, Vital::Tool::Stack arguments = {}) {
         auto it = pool.find(identifier);
         if (it == pool.end()) return false;
         for (const auto& [id, handler] : it -> second) {
