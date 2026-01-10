@@ -22,13 +22,13 @@
 
 namespace Vital::System::Event {
     using EventID = unsigned long;
-    using Handler = std::function<void(Vital::Tool::Stack)>;
-    using EventMap = std::map<EventID, Handler>;
+    using EventHandle = std::function<void(Vital::Tool::Stack)>;
+    using EventMap = std::map<EventID, EventHandle>;
     using EventPool = std::map<std::string, EventMap>;
     static inline EventID id = 0;
     static inline EventPool pool;
 
-    static inline EventID bind(const std::string& identifier, Handler exec) {
+    static inline EventID bind(const std::string& identifier, EventHandle exec) {
         auto it = pool.find(identifier);
         if (it == pool.end()) pool[identifier] = {};
         pool[identifier].emplace(++id, std::move(exec));
