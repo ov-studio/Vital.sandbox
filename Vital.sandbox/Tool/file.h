@@ -23,7 +23,7 @@
 // Vital: Tool: File //
 ///////////////////////
 
-namespace Vital::System::File {
+namespace Vital::Tool::File {
     inline bool is_path(const godot::String& path) {
         if (path.is_empty()) return false;
         if (path.begins_with("/") || path.begins_with("\\")) return false;
@@ -59,6 +59,16 @@ namespace Vital::System::File {
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::READ);
         if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
         return file -> get_as_text().utf8().get_data();
+    }
+
+    inline std::string read_binary(const godot::String& base, const godot::String& target) {
+        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
+        if (!dir -> file_exists(target)) throw Vital::Error::fetch("file-nonexistent", to_std_string(target));
+        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::READ);
+        if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
+        return file -> get_buffer(file -> get_length());
     }
 
     /*
