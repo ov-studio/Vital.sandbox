@@ -29,13 +29,13 @@
 ///////////////////////////
 
 namespace Vital::Tool::Inspect {
-    static inline std::string normalize(std::string s) {
+    inline std::string normalize(std::string s) {
         s.erase(std::remove_if(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }), s.end());
         std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
         return s;
     }
 
-    static inline std::string hash(const std::string& s) {
+    inline std::string hash(const std::string& s) {
         return Vital::System::Crypto::hash("SHA256", s);
     }
 
@@ -103,7 +103,7 @@ namespace Vital::Tool::Inspect {
     };
     #endif
 
-    static inline std::string cpu() {
+    inline std::string cpu() {
         #if defined(Vital_SDK_WINDOWS)
         WMI wmi;
         auto ids = wmi.query(L"Win32_Processor", L"ProcessorId");
@@ -120,7 +120,7 @@ namespace Vital::Tool::Inspect {
         return {};
     }
 
-    static inline std::string system() {
+    inline std::string system() {
         #if defined(Vital_SDK_WINDOWS)
         WMI wmi;
         auto vendor = wmi.query(L"Win32_BaseBoard", L"Manufacturer");
@@ -140,7 +140,7 @@ namespace Vital::Tool::Inspect {
         #endif
     }
 
-    static inline std::string disk() {
+    inline std::string disk() {
         #if defined(Vital_SDK_WINDOWS)
         WMI wmi;
         auto serials = wmi.query(L"Win32_DiskDrive", L"SerialNumber");
@@ -159,7 +159,7 @@ namespace Vital::Tool::Inspect {
         return {};
     }
 
-    static inline std::string fingerprint() {
+    inline std::string fingerprint() {
         std::string material;
         auto d = disk();
         auto c = cpu();
