@@ -23,17 +23,6 @@
 void Vital::Sandbox::Lua::API::File::bind(void* instance) {
     auto vm = static_cast<vsdk_vm*>(instance);
 
-    API::bind(vm, "file", "resolve", [](auto* ref) -> int {
-        auto vm = fetchVM(ref);
-        return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
-            Vital::System::File::resolve(path);
-            vm -> setString(path);
-            return 1;
-        });
-    });
-
     API::bind(vm, "file", "exists", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
