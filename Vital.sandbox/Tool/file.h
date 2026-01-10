@@ -39,14 +39,14 @@ namespace Vital::System::File {
     inline bool exists(const godot::String& base, const godot::String& target) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
-        if (!dir.is_valid()) return false;
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
         return dir -> file_exists(target);
     }
 
     inline bool remove(const godot::String& base, const godot::String& target) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
-        if (!dir.is_valid()) return false;
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
         if (!dir -> file_exists(target)) return false;
         return dir -> remove(target) == godot::OK;
     }
