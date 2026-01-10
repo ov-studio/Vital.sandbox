@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/lua/api/public/crypto.h>
-#include <Vital.sandbox/System/public/crypto.h>
 
 
 ///////////////

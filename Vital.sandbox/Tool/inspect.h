@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
-#include <Vital.sandbox/System/public/crypto.h>
+#include <Vital.sandbox/Tool/crypto.h>
 #if defined(Vital_SDK_WINDOWS)
     #include <windows.h>
     #include <comdef.h>
