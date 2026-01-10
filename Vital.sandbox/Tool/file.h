@@ -51,6 +51,15 @@ namespace Vital::System::File {
         return dir -> remove(target) == godot::OK;
     }
 
+    inline std::string read_text(const godot::String& base, const godot::String& target) {
+        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
+        if (!dir -> file_exists(target)) throw Vital::Error::fetch("file-nonexistent", to_std_string(target));
+        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::READ);
+        if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
+        return file -> get_as_text().utf8().get_data();
+    }
 
     /*
     inline std::streampos size(std::string& path) {
@@ -59,15 +68,6 @@ namespace Vital::System::File {
             return 0;
 
         return static_cast<std::streampos>(f->get_length());
-    }
-
-    inline std::string read(std::string& path) {
-        Ref<FileAccess> f = FileAccess::open(to_godot_string(path), FileAccess::READ);
-        if (f.is_null())
-            return {};
-
-        String content = f->get_as_text();
-        return to_std_string(content);
     }
 
     inline bool write(std::string& path, const std::string& buffer) {
