@@ -24,7 +24,7 @@
 // Vital: Tool: Crypto //
 //////////////////////////
 
-namespace Vital::System::Crypto {
+namespace Vital::Tool::Crypto {
     namespace Internal {
         inline const EVP_MD* hash_mode(std::string_view mode) {
             if (mode == "SHA1") return EVP_sha1();

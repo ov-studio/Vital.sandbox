@@ -29,7 +29,7 @@ void Vital::Sandbox::Lua::API::Crypto::bind(void* instance) {
             if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw Vital::Error::fetch("invalid-arguments");
             std::string mode = vm -> getString(1);
             std::string buffer = vm -> getString(2);
-            vm -> setString(Vital::System::Crypto::hash(mode, buffer));
+            vm -> setString(Vital::Tool::Crypto::hash(mode, buffer));
             return 1;
         });
     });
@@ -39,7 +39,7 @@ void Vital::Sandbox::Lua::API::Crypto::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
             std::string buffer = vm -> getString(1);
-            vm -> setString(Vital::System::Crypto::encode(buffer));
+            vm -> setString(Vital::Tool::Crypto::encode(buffer));
             return 1;
         });
     });
@@ -49,7 +49,7 @@ void Vital::Sandbox::Lua::API::Crypto::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
             std::string buffer = vm -> getString(1);
-            vm -> setString(Vital::System::Crypto::decode(buffer));
+            vm -> setString(Vital::Tool::Crypto::decode(buffer));
             return 1;
         });
     });
@@ -61,7 +61,7 @@ void Vital::Sandbox::Lua::API::Crypto::bind(void* instance) {
             std::string mode = vm -> getString(1);
             std::string buffer = vm -> getString(2);
             std::string key = vm -> getString(3);
-            auto result = Vital::System::Crypto::encrypt(mode, buffer, key);
+            auto result = Vital::Tool::Crypto::encrypt(mode, buffer, key);
             vm -> setString(result.first);
             vm -> setString(result.second);
             return 2;
@@ -76,7 +76,7 @@ void Vital::Sandbox::Lua::API::Crypto::bind(void* instance) {
             std::string buffer = vm -> getString(2);
             std::string key = vm -> getString(3);
             std::string iv = vm -> getString(4);
-            vm -> setString(Vital::System::Crypto::decrypt(mode, buffer, key, iv));
+            vm -> setString(Vital::Tool::Crypto::decrypt(mode, buffer, key, iv));
             return 1;
         });
     });

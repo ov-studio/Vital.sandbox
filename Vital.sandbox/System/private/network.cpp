@@ -73,7 +73,7 @@ namespace Vital::System::Network {
                 break;
             }
             case ENET_EVENT_TYPE_RECEIVE: {
-                Vital::Tool::Stack eventArguments = Vital::Tool::Stack::deserialize(Vital::System::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
+                Vital::Tool::Stack eventArguments = Vital::Tool::Stack::deserialize(Vital::Tool::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
                 if (Vital::get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
                 enet_packet_destroy(networkEvent.packet);
@@ -111,7 +111,7 @@ namespace Vital::System::Network {
     // Utils //
     bool emit(Vital::Tool::Stack buffer, Vital::Tool::Network::PeerID peerID, bool isLatent) {
         if (!isConnected()) return false;
-        const std::string bufferSerial = Vital::System::Crypto::encode(buffer.serialize());
+        const std::string bufferSerial = Vital::Tool::Crypto::encode(buffer.serialize());
         if ((Vital::get_platform() == "client") || (peerID <= 0)) {
             enet_host_broadcast(networkInstance, 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
         }
