@@ -43,7 +43,6 @@ namespace Vital::System::Event {
     }
 
     inline bool emit(const std::string& identifier, Vital::Tool::Stack arguments = {}) {
-        godot::UtilityFunctions::print("called emit -1");
         auto it = pool.find(identifier);
         if (it == pool.end()) return false;
         for (const auto& [id, handler] : it -> second) {
