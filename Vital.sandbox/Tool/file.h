@@ -27,20 +27,12 @@ namespace Vital::System::File {
 
     using namespace godot;
 
-    inline String to_godot(const std::string& s) {
-        return String::utf8(s.c_str());
-    }
-
-    inline std::string to_std(const String& s) {
-        return std::string(s.utf8().get_data());
-    }
-
     inline bool exists(std::string& path) {
-        return FileAccess::file_exists(to_godot(path));
+        return FileAccess::file_exists(to_godot_string(path));
     }
 
     inline std::streampos size(std::string& path) {
-        Ref<FileAccess> f = FileAccess::open(to_godot(path), FileAccess::READ);
+        Ref<FileAccess> f = FileAccess::open(to_godot_string(path), FileAccess::READ);
         if (f.is_null())
             return 0;
 
@@ -50,7 +42,7 @@ namespace Vital::System::File {
     inline bool remove(std::string& path) {
         using namespace godot;
 
-        String p = to_godot(path);
+        String p = to_godot_string(path);
     
         // Sandbox safety
         if (!p.begins_with("res://") && !p.begins_with("user://"))
@@ -66,24 +58,24 @@ namespace Vital::System::File {
     }
 
     inline std::string read(std::string& path) {
-        Ref<FileAccess> f = FileAccess::open(to_godot(path), FileAccess::READ);
+        Ref<FileAccess> f = FileAccess::open(to_godot_string(path), FileAccess::READ);
         if (f.is_null())
             return {};
 
         String content = f->get_as_text();
-        return to_std(content);
+        return to_std_string(content);
     }
 
     inline bool write(std::string& path, const std::string& buffer) {
         Ref<FileAccess> f = FileAccess::open(
-            to_godot(path),
+            to_godot_string(path),
             FileAccess::WRITE
         );
 
         if (f.is_null())
             return false;
 
-        f->store_string(to_godot(buffer));
+        f->store_string(to_godot_string(buffer));
         return true;
     }
 
@@ -92,14 +84,14 @@ namespace Vital::System::File {
         bool fetchDirs = false
     ) {
         std::vector<std::string> out;
-        String p = to_godot(path);
+        String p = to_godot_string(path);
         PackedStringArray files = FileAccess::get_files_at_path(p);
         for (int i = 0; i < files.size(); ++i)
-            out.emplace_back(to_std(files[i]));
+            out.emplace_back(to_std_string(files[i]));
         if (fetchDirs) {
             PackedStringArray dirs = FileAccess::get_directories_at_path(p);
             for (int i = 0; i < dirs.size(); ++i)
-                out.emplace_back(to_std(dirs[i]));
+                out.emplace_back(to_std_string(dirs[i]));
         }
         return out;
     }

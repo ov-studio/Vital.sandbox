@@ -378,7 +378,7 @@ namespace Vital::Godot {
     ) {
         if (!font.is_valid() || text.empty()) return;
         Text payload;
-        payload.text = godot::String::utf8(text.c_str());
+        payload.text = to_godot_string(text);
         payload.rect = {start_at, end_at - start_at};
         payload.font = font;
         payload.font_size = font_size;

@@ -61,7 +61,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
                 buffer << std::string(value, length);
                 vm -> pop(1);
             }
-            godot::UtilityFunctions::print(buffer.str().c_str());
+            godot::UtilityFunctions::print(to_godot_string(buffer.str()));
             vm -> setBool(true);
             return 1;
         });

@@ -93,7 +93,7 @@ namespace Vital::Godot {
 
     // APIs //
     Texture* Texture::create_texture_2d(const std::string& path, const std::string& temp_ref) {
-        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
+        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(to_godot_string(path), godot::FileAccess::READ);
         if (file.is_null()) throw Vital::Error::fetch("invalid-arguments");
         return create_texture_2d_from_buffer(file -> get_buffer(file -> get_length()), temp_ref);
     }
@@ -126,7 +126,7 @@ namespace Vital::Godot {
     }
 
     Texture* Texture::create_svg(const std::string& path, const std::string& temp_ref) {
-        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(path.c_str(), godot::FileAccess::READ);
+        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(to_godot_string(path), godot::FileAccess::READ);
         if (file.is_null()) throw Vital::Error::fetch("invalid-arguments");
         return create_svg_from_buffer(file -> get_buffer(file -> get_length()), temp_ref);
     }
@@ -134,7 +134,7 @@ namespace Vital::Godot {
     Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& temp_ref) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status = image -> load_svg_from_string(raw.c_str(), 1.0);
+        godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
         if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
         SVG payload;
         auto* texture = memnew(Texture);
@@ -161,7 +161,7 @@ namespace Vital::Godot {
         if (command.type != Type::SVG) throw Vital::Error::fetch("invalid-arguments");
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status = image -> load_svg_from_string(raw.c_str(), 1.0);
+        godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
         if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
         const auto& payload = std::get<SVG>(command.payload);
         payload.texture -> update(image);

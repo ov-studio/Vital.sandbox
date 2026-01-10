@@ -67,7 +67,7 @@ void Vital::Godot::Sandbox::Lua::API::Fog::bind(void* instance) {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
-                godot::String value(vm -> getString(1).c_str());
+                auto value = to_godot_string(vm -> getString(1));
                 if (godot::Color::html_is_valid(value)) throw Vital::Error::fetch("invalid-arguments");
                 Vital::Godot::Core::get_environment() -> set_fog_light_color(godot::Color::html(value));
             }
