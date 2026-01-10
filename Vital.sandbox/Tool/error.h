@@ -39,13 +39,13 @@ namespace Vital::Error {
         {"serial-nonexistent", "Failed to fetch device's serial"}
     };
 
-    inline const std::runtime_error fetch(std::string_view code, std::string message = "") {
+    inline const std::runtime_error fetch(std::string_view code, std::string_view message = "") {
         std::string_view error = "Unknown error";
         for (const auto& e : List) {
             if (code == e.code) {
                 error = e.message;
             }
         }
-        return std::runtime_error(fmt::format(std::string(error), message));
+        return std::runtime_error(fmt::format(std::string(error), std::string(message)));
     }
 }

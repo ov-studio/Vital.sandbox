@@ -32,14 +32,14 @@ namespace Vital::Tool::Crypto {
             if (mode == "SHA256") return EVP_sha256();
             if (mode == "SHA384") return EVP_sha384();
             if (mode == "SHA512") return EVP_sha512();
-            throw Vital::Error::fetch("hash-mode-nonexistent", std::string(mode));
+            throw Vital::Error::fetch("hash-mode-nonexistent", mode);
         }
 
         inline const EVP_CIPHER* cipher_mode(std::string_view mode) {
             if (mode == "AES128") return EVP_aes_128_cbc();
             if (mode == "AES192") return EVP_aes_192_cbc();
             if (mode == "AES256") return EVP_aes_256_cbc();
-            throw Vital::Error::fetch("cipher-mode-nonexistent", std::string(mode));
+            throw Vital::Error::fetch("cipher-mode-nonexistent", mode);
         }
 
         inline std::string base64_encode(std::string_view in) {
