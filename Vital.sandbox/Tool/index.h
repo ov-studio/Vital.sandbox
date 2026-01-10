@@ -29,7 +29,7 @@ namespace Vital {
     static const std::string Signature = "vsdk_v.0.0.1";
     static const std::string Repository = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
 
-    static inline std::vector<std::string> get_modules(const std::string& name) {
+    inline std::vector<std::string> get_modules(const std::string& name) {
         std::vector<std::string> result;
         rapidjson::Document manifest;
         manifest.Parse(Vital::System::Rest::get(fmt::format(Repository, "manifest.json")).c_str());
@@ -41,7 +41,7 @@ namespace Vital {
         return result;
     }
 
-    static inline const std::string get_platform() { 
+    inline const std::string get_platform() { 
         #if defined(Vital_SDK_Client)
             return "client";
         #else
@@ -49,7 +49,7 @@ namespace Vital {
         #endif
     }
 
-    static inline unsigned int get_tick() {
+    inline unsigned int get_tick() {
         return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
     }
 }
