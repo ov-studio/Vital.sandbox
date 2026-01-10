@@ -71,6 +71,24 @@ namespace Vital::Tool::File {
         return file -> get_buffer(file -> get_length());
     }
 
+    inline void write_text(const godot::String& base, const godot::String& target, const std::string& text) {
+        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
+        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
+        if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
+        file -> store_string(to_godot_string(text));
+    }
+
+    inline void write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
+        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
+        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
+        if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
+        file -> store_buffer(data);
+    }
+
     /*
     inline std::streampos size(std::string& path) {
         Ref<FileAccess> f = FileAccess::open(to_godot_string(path), FileAccess::READ);
@@ -78,19 +96,6 @@ namespace Vital::Tool::File {
             return 0;
 
         return static_cast<std::streampos>(f->get_length());
-    }
-
-    inline bool write(std::string& path, const std::string& buffer) {
-        Ref<FileAccess> f = FileAccess::open(
-            to_godot_string(path),
-            FileAccess::WRITE
-        );
-
-        if (f.is_null())
-            return false;
-
-        f->store_string(to_godot_string(buffer));
-        return true;
     }
 
     inline std::vector<std::string> contents(
