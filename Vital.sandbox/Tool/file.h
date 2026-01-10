@@ -47,8 +47,8 @@ namespace Vital::System::File {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) return false;
-        if (!dir->file_exists(target)) return false;
-        return dir->remove(target) == godot::OK;
+        if (!dir -> file_exists(target)) return false;
+        return dir -> remove(target) == godot::OK;
     }
 
 
