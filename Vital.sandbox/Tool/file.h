@@ -24,37 +24,41 @@
 ///////////////////////
 
 namespace Vital::System::File {
-
-    using namespace godot;
-
-    inline bool exists(std::string& path) {
-        return FileAccess::file_exists(to_godot_string(path));
+    inline bool is_path(const godot::String& path) {
+        if (path.is_empty()) return false;
+        if (path.begins_with("/") || path.begins_with("\\")) return false;
+        if (path.find(":") != -1) return false;
+        auto parts = path.replace("\\", "/").split("/");
+        for (const auto& part : parts) {
+            if (part == "..")
+                return false;
+        }
+        return true;
     }
 
+    inline bool exists(const godot::String& base, const godot::String& target) {
+        if (!is_path(target)) return false;
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) return false;
+        return dir -> file_exists(target);
+    }
+
+    inline bool remove(const godot::String& base, const godot::String& target) {
+        if (!is_path(target)) return false;
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) return false;
+        if (!dir->file_exists(target)) return false;
+        return dir->remove(target) == godot::OK;
+    }
+
+
+    /*
     inline std::streampos size(std::string& path) {
         Ref<FileAccess> f = FileAccess::open(to_godot_string(path), FileAccess::READ);
         if (f.is_null())
             return 0;
 
         return static_cast<std::streampos>(f->get_length());
-    }
-
-    inline bool remove(std::string& path) {
-        using namespace godot;
-
-        String p = to_godot_string(path);
-    
-        // Sandbox safety
-        if (!p.begins_with("res://") && !p.begins_with("user://"))
-            return false;
-    
-        // Open directory from absolute path
-        Ref<DirAccess> dir = DirAccess::open(p.get_base_dir());
-        if (dir.is_null())
-            return false;
-    
-        // Remove file by name
-        return dir->remove(p.get_file()) == OK;
     }
 
     inline std::string read(std::string& path) {
@@ -95,4 +99,5 @@ namespace Vital::System::File {
         }
         return out;
     }
+    */
 }
