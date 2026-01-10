@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/System/public/vital.h>
+#include <Vital.sandbox/vital.h>
 #include <Vital.sandbox/System/public/crypto.h>
 #if defined(Vital_SDK_WINDOWS)
     #include <windows.h>

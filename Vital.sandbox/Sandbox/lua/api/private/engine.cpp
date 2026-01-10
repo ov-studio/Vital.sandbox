@@ -16,7 +16,6 @@
 #include <Vital.sandbox/Sandbox/lua/api/public/engine.h>
 #if defined(Vital_SDK_Client)
 #include <Vital.sandbox/Tool/inspect.h>
-#include <godot_cpp/variant/utility_functions.hpp>
 #endif
 
 
