@@ -167,7 +167,6 @@ namespace Vital::Tool::Inspect {
         if (!d.empty()) material += d;
         if (!c.empty()) material += c;
         if (!s.empty()) material += s;
-        material += Vital::Signature;
         return hash(material);
     }
 }
