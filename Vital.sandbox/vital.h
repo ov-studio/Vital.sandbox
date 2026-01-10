@@ -21,6 +21,12 @@
 #include <Vital.sandbox/Tool/timer.h>
 #include <Vital.sandbox/Tool/event.h>
 #include <Vital.sandbox/Tool/network.h>
+#include <Vital.sandbox/Tool/inspect.h>
+#include <Vital.sandbox/Tool/crypto.h>
+#include <Vital.sandbox/Tool/rest.h>
+
+#include <Vital.sandbox/System/public/file.h>
+#include <Vital.sandbox/System/public/network.h>
 
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/file_access.hpp>
