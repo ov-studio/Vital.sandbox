@@ -35,6 +35,7 @@ namespace Vital::Error {
         {"cipher-mode-nonexistent", "Failed to fetch cipher mode ('{}')"},
         {"cipher-invalid-key", "Invalid cipher key ('{}')"},
         {"cipher-invalid-iv", "Invalid cipher IV ('{}')"},
+        {"file-path-invalid", "Invalid file path ('{}')"},
         {"file-nonexistent", "Failed to fetch file ('{}')"},
         {"serial-nonexistent", "Failed to fetch device's serial"}
     };
