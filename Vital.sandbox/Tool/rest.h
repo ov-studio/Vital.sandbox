@@ -30,14 +30,14 @@ namespace Vital::System::Rest {
         ~CurlGlobal() { curl_global_cleanup(); }
     };
 
-    static inline CurlGlobal global;
-    static inline size_t CallbackHandle(void* contents, size_t size, size_t nmemb, void* userp) {
-        size_t totalSize = size * nmemb;
+    inline CurlGlobal global;
+    inline size_t CallbackHandle(void* contents, size_t size, size_t nmemb, void* userp) {
+        size_t totalSize = size*nmemb;
         static_cast<std::string*>(userp)->append(static_cast<char*>(contents), totalSize);
         return totalSize;
     }
 
-    static inline std::string get(const std::string& url) {
+    inline std::string get(const std::string& url) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
