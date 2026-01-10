@@ -50,7 +50,7 @@ namespace Vital {
         return godot::String::utf8(input.c_str());
     }
 
-    inline godot::std::string to_std_string(const godot::String& input) {
+    inline std::string to_std_string(const godot::String& input) {
         return std::string(input.utf8().get_data());
     }
 
