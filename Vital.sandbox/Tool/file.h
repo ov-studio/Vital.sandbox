@@ -43,6 +43,16 @@ namespace Vital::Tool::File {
         return dir -> file_exists(target);
     }
 
+    inline uint64_t size(const godot::String& base, const godot::String& target) {
+        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
+        if (!dir -> file_exists(target)) throw Vital::Error::fetch("file-nonexistent", to_std_string(target));
+        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::READ);
+        if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
+        return file -> get_length();
+    }
+
     inline bool remove(const godot::String& base, const godot::String& target) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
