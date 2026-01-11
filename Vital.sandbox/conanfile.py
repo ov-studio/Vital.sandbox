@@ -2,7 +2,7 @@ from conan import ConanFile
 from conan.tools.scons import SConsDeps
 
 class BuildConan(ConanFile):
-    settings = "os", "arch","build_type", "compiler"
+    settings = "os", "arch", "build_type", "compiler"
     generators = "SConsDeps"
 
     def requirements(self):
@@ -10,7 +10,11 @@ class BuildConan(ConanFile):
         self.requires("libcurl/8.12.1")
 
     def configure(self):
-        self.options["openssl"].shared = False
-        self.options["libcurl"].shared = False
-        self.settings.compiler.cppstd = "17"
-        self.settings.compiler.runtime = "static"
+        for lib in ["openssl", "libcurl"]:
+            self.options[lib].shared = False
+
+        if self.settings.compiler.get_safe("cppstd"):
+            self.settings.compiler.cppstd = "17"
+
+        if self.settings.compiler == "msvc":
+            self.settings.compiler.runtime = "static"
