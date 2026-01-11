@@ -24,7 +24,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
     auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     #if defined(Vital_SDK_Client)
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -35,7 +35,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "isEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "is_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_ssao_enabled());
@@ -43,7 +43,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setRadius", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_radius", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -54,7 +54,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getRadius", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_radius", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_radius());
@@ -62,7 +62,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setIntensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_Intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -73,7 +73,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getIntensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_Intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_intensity());
@@ -81,7 +81,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setPower", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_power", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -92,7 +92,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getPower", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_power", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_power());
@@ -100,7 +100,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setDetail", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_detail", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -111,7 +111,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getDetail", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_detail", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_detail());
@@ -119,7 +119,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setHorizon", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_horizon", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -130,7 +130,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getHorizon", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_horizon", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_horizon());
@@ -138,7 +138,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setSharpness", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_sharpness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -149,7 +149,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getSharpness", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_sharpness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_sharpness());
@@ -157,7 +157,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setDirectLightAffect", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_direct_light_affect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -168,7 +168,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getDirectLightAffect", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_direct_light_affect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_direct_light_affect());
@@ -176,7 +176,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "setChannelAffect", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "set_channel_affect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -187,7 +187,7 @@ void Vital::Godot::Sandbox::Lua::API::SSAO::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssao", "getChannelAffect", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssao", "get_channel_affect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssao_ao_channel_affect());
