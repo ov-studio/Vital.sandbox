@@ -11,7 +11,6 @@ RmlUiNode::RmlUiNode() {
 }
 
 RmlUiNode::~RmlUiNode() {
-    /*
     if (context) {
         Rml::RemoveContext(context->GetName());
         context = nullptr;
@@ -20,7 +19,6 @@ RmlUiNode::~RmlUiNode() {
     delete renderer;
     delete file;
     delete system;
-    */
 }
 
 void RmlUiNode::_bind_methods() {
@@ -29,7 +27,6 @@ void RmlUiNode::_bind_methods() {
 
 void RmlUiNode::_ready() {
     renderer = new RmlGodotRenderer();
-    /**
     file = new RmlGodotFile();
     system = new RmlGodotSystem();
 
@@ -42,14 +39,11 @@ void RmlUiNode::_ready() {
         Rml::Vector2i(1024, 768)
     );
     UtilityFunctions::print("RmlUiNode ready");
-    */
 }
 
 void RmlUiNode::_process(double delta) {
-    /**
     if (context) {
         context->Update();
         context->Render();
     }
-    */
 }
