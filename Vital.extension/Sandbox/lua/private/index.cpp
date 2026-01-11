@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.extension/Sandbox/lua/public/index.h>
 #include <Vital.sandbox/Sandbox/lua/public/api.h>
-#include <Vital.sandbox/vital.h>
+#include <Vital.sandbox/vital.hpp>
 
 #include <Vital.extension/Sandbox/lua/api/public/ssr.h>
 #include <Vital.extension/Sandbox/lua/api/public/ssao.h>

@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/vital.h>
+#include <Vital.sandbox/vital.hpp>
 #include <Vital.sandbox/Vendor/duktape/duktape.h>
 
 
