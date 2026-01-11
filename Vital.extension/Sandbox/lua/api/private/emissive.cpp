@@ -84,7 +84,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "emissive", "set_Intensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "emissive", "set_intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -95,7 +95,7 @@ void Vital::Godot::Sandbox::Lua::API::Emissive::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "emissive", "get_Intensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "emissive", "get_intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_glow_intensity());
