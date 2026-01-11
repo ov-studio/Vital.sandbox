@@ -7,18 +7,26 @@
 #include <Vital.extension/Engine/public/RmlGodotFile.h>
 #include <Vital.extension/Engine/public/RmlGodotSystem.h>
 
+class RmlGodotRenderer;
+class RmlGodotFile;
+class RmlGodotSystem;
+
 class RmlUiNode : public godot::Node2D {
     GDCLASS(RmlUiNode, godot::Node2D)
 
-public:
-    static void _bind_methods() {}
+    protected:
+        static void _bind_methods();
+    public:
+        RmlUiNode();
+        ~RmlUiNode();
 
-    void _ready() override;
-    void _process(double delta) override;
+        void _ready() override;
+        void _process(double delta) override;
 
-private:
-    Rml::Context* context = nullptr;
-    RmlGodotRenderer renderer;
-    RmlGodotFile file;
-    RmlGodotSystem system;
+    private:
+        Rml::Context* context = nullptr;
+
+        RmlGodotRenderer* renderer = nullptr;
+        RmlGodotFile* file = nullptr;
+        RmlGodotSystem* system = nullptr;
 };
