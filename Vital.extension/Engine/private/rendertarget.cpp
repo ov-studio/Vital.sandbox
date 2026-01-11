@@ -12,6 +12,8 @@
 // Imports //
 //////////////
 
+#if defined(Vital_SDK_Client)
+#pragma once
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/core.h>
 
@@ -101,3 +103,4 @@ namespace Vital::Godot {
         if (instant) _update();
     }
 }
+#endif
