@@ -24,12 +24,16 @@
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
 	godot::ClassDB::register_class<Vital::Godot::Core>();
+	#if defined(Vital_SDK_Client)
 	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
+	#endif
 
 	Vital::System::Event::bind("Godot:Core:@ready", [](Vital::Tool::Stack arguments) -> void {
+		#if defined(Vital_SDK_Client)
 		Vital::Godot::Core::get_environment();
 		Vital::Godot::Canvas::get_singleton();
+		#endif
 		Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
 	});
 }
