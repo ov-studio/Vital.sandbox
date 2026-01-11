@@ -30,6 +30,8 @@
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/texture.h>
 
+#include <RmlUi/Core.h>
+
 
 /////////////////////////////////
 // Vital: Godot: Sandbox: Lua //

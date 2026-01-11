@@ -71,10 +71,7 @@ env.Append(LIBPATH=[
     os.path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "lib")
 ])
 
-env.Append(LIBS=[
-    "RmlCore",
-    "RmlDebugger"
-])
+env.Append(LIBS=["rmlui"])
     
 # Returns
 Return("env")
