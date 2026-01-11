@@ -26,7 +26,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setString(Vital::get_platform());
+            vm -> setString(get_platform());
             return 1;
         });
     });
@@ -34,7 +34,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
     API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            vm -> setNumber(static_cast<int>(Vital::get_tick()));
+            vm -> setNumber(static_cast<int>(get_tick()));
             return 1;
         });
     });
@@ -72,7 +72,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string buffer = vm -> getString(1);
+            auto buffer = vm -> getString(1);
             bool result = false;
             if (vm -> isBool(2)) {
                 bool autoload = vm -> getBool(2);

@@ -27,8 +27,8 @@ void Vital::Sandbox::Lua::API::File::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
-            vm -> setBool(Vital::Tool::File::exists(path));
+            auto path = vm -> getString(1);
+            vm -> setBool(Vital::Tool::File::exists(to_godot_string(get_directory()), to_godot_string(path)));
             return 1;
         });
     });
@@ -37,8 +37,8 @@ void Vital::Sandbox::Lua::API::File::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
-            vm -> setNumber(static_cast<double>(Vital::Tool::File::size(path)));
+            auto path = vm -> getString(1);
+            vm -> setNumber(static_cast<double>(Vital::Tool::File::size(to_godot_string(get_directory()), to_godot_string(path))));
             return 1;
         });
     });
@@ -47,8 +47,8 @@ void Vital::Sandbox::Lua::API::File::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
-            vm -> setBool(Vital::Tool::File::remove(path));
+            auto path = vm -> getString(1);
+            vm -> setBool(Vital::Tool::File::remove(to_godot_string(get_directory()), to_godot_string(path)));
             return 1;
         });
     });
@@ -57,8 +57,8 @@ void Vital::Sandbox::Lua::API::File::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
-            auto buffer = Vital::Tool::File::read_text(path);
+            auto path = vm -> getString(1);
+            auto buffer = Vital::Tool::File::read_text(to_godot_string(get_directory()), to_godot_string(path));
             vm -> setString(buffer);
             return 1;
         });
@@ -68,9 +68,9 @@ void Vital::Sandbox::Lua::API::File::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
-            std::string buffer = vm -> getString(2);
-            vm -> setBool(Vital::Tool::File::write_text(path, buffer));
+            auto path = vm -> getString(1);
+            auto buffer = vm -> getString(2);
+            vm -> setBool(Vital::Tool::File::write_text(to_godot_string(get_directory()), to_godot_string(path), buffer));
             return 1;
         });
     });
@@ -79,10 +79,10 @@ void Vital::Sandbox::Lua::API::File::bind(void* instance) {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
-            std::string path = vm -> getString(1);
+            auto path = vm -> getString(1);
             bool directory_search = vm -> isBool(2) ? vm -> getBool(2) : false;
             vm -> createTable();
-            for (const auto& i : Vital::Tool::File::contents(path, directory_search)) {
+            for (const auto& i : Vital::Tool::File::contents(to_godot_string(get_directory()), to_godot_string(path), directory_search)) {
                 vm -> pushString(i);
             }
             return 1;

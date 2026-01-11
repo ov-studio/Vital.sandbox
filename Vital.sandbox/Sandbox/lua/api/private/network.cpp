@@ -26,13 +26,13 @@ void Vital::Sandbox::Lua::API::Network::bind(void* instance) {
     API::bind(vm, "network", "emit", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
         return vm -> execute([&]() -> int {
-            bool isClient = Vital::get_platform() == "client";
-            if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!isClient && (!vm -> isNumber(2)))) throw Vital::Error::fetch("invalid-arguments");
-            int queryArg = isClient ? 3 : 4;
-            std::string name = vm -> getString(1);
-            int peerID = isClient ? 0 : vm -> getInt(2);
+            bool client = get_platform() == "client";
+            if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!client && (!vm -> isNumber(2)))) throw Vital::Error::fetch("invalid-arguments");
+            int queryArg = client ? 3 : 4;
+            auto name = vm -> getString(1);
+            int peerID = client ? 0 : vm -> getInt(2);
             bool isLatent = vm -> isBool(queryArg - 1) ? vm -> getBool(queryArg - 1) : false;
-            std::string payload = vm -> isString(queryArg) ? vm -> getString(queryArg) : "";
+            auto payload = vm -> isString(queryArg) ? vm -> getString(queryArg) : "";
             Vital::Tool::Stack networkArgs;
             networkArgs.push("Network:name", name);
             networkArgs.push("Network:payload", payload);

@@ -39,7 +39,7 @@ namespace Vital::System::Network {
         enet_address_set_host(&networkAddress, address.host.c_str());
         networkAddress.port = static_cast<enet_uint16>(address.port);
         auto bandwidthLimit = getBandwidthLimit();
-        if (Vital::get_platform() == "client") {
+        if (get_platform() == "client") {
             networkInstance = enet_host_create(NULL, getPeerLimit(), 2, bandwidthLimit.incoming, bandwidthLimit.outgoing);
             networkPeer = enet_host_connect(networkInstance, &networkAddress, 2, 0);
         }
@@ -48,7 +48,7 @@ namespace Vital::System::Network {
     }
     bool stop() {
         if (!networkInstance) return false;
-        if (Vital::get_platform() == "client") enet_peer_reset(networkPeer);
+        if (get_platform() == "client") enet_peer_reset(networkPeer);
         enet_host_destroy(networkInstance);
         enet_deinitialize();
         networkInstance = nullptr;
@@ -62,7 +62,7 @@ namespace Vital::System::Network {
         enet_host_service(networkInstance, &networkEvent, 1000);
         switch (networkEvent.type) {
             case ENET_EVENT_TYPE_CONNECT: {
-                if (Vital::get_platform() == "server") {
+                if (get_platform() == "server") {
                     networkEvent.peer -> data = reinterpret_cast<void*>(peerID);
                     networkPeers.emplace(peerID, networkEvent.peer);
                     Vital::Tool::Stack eventArguments;
@@ -74,16 +74,16 @@ namespace Vital::System::Network {
             }
             case ENET_EVENT_TYPE_RECEIVE: {
                 Vital::Tool::Stack eventArguments = Vital::Tool::Stack::deserialize(Vital::Tool::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
-                if (Vital::get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
+                if (get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
                 enet_packet_destroy(networkEvent.packet);
                 break;
             }
             case ENET_EVENT_TYPE_DISCONNECT: {
                 Vital::Tool::Stack eventArguments;
-                if (Vital::get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
+                if (get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
                 Vital::System::Event::emit("Network:@PeerDisconnect", eventArguments);
-                if (Vital::get_platform() == "client") stop();
+                if (get_platform() == "client") stop();
                 else {
                     networkPeers.erase(getPeerID(networkEvent.peer));
                     networkEvent.peer -> data = NULL;
@@ -97,11 +97,11 @@ namespace Vital::System::Network {
     // APIs //
     bool isConnected() { return networkInstance ? true : false; }
     bool setPeerLimit(int limit) {
-        if (Vital::get_platform() != "server") return false;
+        if (get_platform() != "server") return false;
         peerLimit = limit;
         return true;
     }
-    int getPeerLimit() { return Vital::get_platform() == "server" ? peerLimit : 1; }
+    int getPeerLimit() { return get_platform() == "server" ? peerLimit : 1; }
     bool setBandwidthLimit(Vital::Tool::Network::Bandwidth limit) {
         bandwidthLimit = limit;
         return true;
@@ -112,7 +112,7 @@ namespace Vital::System::Network {
     bool emit(Vital::Tool::Stack buffer, Vital::Tool::Network::PeerID peerID, bool isLatent) {
         if (!isConnected()) return false;
         const std::string bufferSerial = Vital::Tool::Crypto::encode(buffer.serialize());
-        if ((Vital::get_platform() == "client") || (peerID <= 0)) {
+        if ((get_platform() == "client") || (peerID <= 0)) {
             enet_host_broadcast(networkInstance, 0, enet_packet_create(bufferSerial.c_str(), bufferSerial.size(), isLatent ? ENET_PACKET_FLAG_UNSEQUENCED : ENET_PACKET_FLAG_RELIABLE));
         }
         else {

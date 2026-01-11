@@ -81,22 +81,24 @@ namespace Vital::Tool::File {
         return file -> get_buffer(file -> get_length());
     }
 
-    inline void write_text(const godot::String& base, const godot::String& target, const std::string& text) {
+    inline bool write_text(const godot::String& base, const godot::String& target, const std::string& text) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
         if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
         file -> store_string(to_godot_string(text));
+        return true;
     }
 
-    inline void write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
+    inline bool write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
         if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
         file -> store_buffer(data);
+        return true;
     }
 
     inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
