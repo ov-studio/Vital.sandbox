@@ -42,7 +42,6 @@ namespace Vital::Godot::Sandbox::Lua {
     godot::Ref<godot::Font> font;
     Vital::Godot::Texture* tex;
     Vital::Godot::Texture* svg;
-
     Vital::Godot::RenderTarget* rt = nullptr;
     //
     
