@@ -100,14 +100,6 @@ namespace Vital::Tool::File {
     }
 
     /*
-    inline std::streampos size(std::string& path) {
-        Ref<FileAccess> f = FileAccess::open(to_godot_string(path), FileAccess::READ);
-        if (f.is_null())
-            return 0;
-
-        return static_cast<std::streampos>(f->get_length());
-    }
-
     inline std::vector<std::string> contents(
         std::string& path,
         bool fetchDirs = false
