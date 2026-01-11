@@ -90,7 +90,7 @@ namespace Vital::Tool::File {
         return file -> get_as_text().utf8().get_data();
     }
 
-    inline std::string read_binary(const godot::String& base, const godot::String& target) {
+    inline godot::PackedByteArray read_binary(const godot::String& base, const godot::String& target) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
