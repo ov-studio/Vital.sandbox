@@ -32,6 +32,7 @@ env.Append(CPPPATH=[
 
 # Builds
 build_dir = ".build/{}".format(name)
+env['SHLIBPREFIX'] = ''
 build = env.SharedLibrary(
     ".bin/{}/{}".format(env['platform'], "{}{}{}".format(name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),
     source = env.sources
