@@ -1,6 +1,7 @@
 # Imports
+import os
+import sys
 from utils import *
-
 
 # Metadatas
 ARGUMENTS["platform_type"] = ARGUMENTS.get("platform_type", "Server")
@@ -11,13 +12,20 @@ ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 cwd = os.path.abspath(os.getcwd())
 platform = sys.platform
 
+# Tool Selection
 scons_tools = ["default"]
 if platform.startswith("win"):
     scons_tools.append("msvc")
 
 env = Environment(tools=scons_tools, PLATFORM="")
+
 env.BuildConan(ARGUMENTS["build_type"])
-env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
+
+# Load Conan dependencies if they exist
+conan_script = ".conan/SConscript_conandeps"
+if os.path.exists(conan_script):
+    env.MergeFlags(SConscript(conan_script)["conandeps"])
+
 env.sources = (
     env.RGlob("Type", "*.cpp") + 
     env.RGlob("System", "*.cpp") + 
@@ -26,6 +34,7 @@ env.sources = (
     env.RGlob("Vendor", "*.c") + 
     env.RGlob("Vendor", "*.cc")
 )
+
 env.Append(CPPPATH=[
     cwd,
     os.path.join(cwd, "Type"),
@@ -48,6 +57,7 @@ if ARGUMENTS["platform_type"] == "Client":
 # Dependencies
 env.Append(CPPFLAGS=["-DMSGPACK_NO_BOOST"])
 VCPKG_TRIPLET = None
+
 if platform.startswith("win"):
     VCPKG_TRIPLET = "x64-windows"
     env.Append(CPPFLAGS=["-DVital_SDK_WINDOWS", "/EHsc"])
@@ -58,13 +68,13 @@ elif platform == "darwin":
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
 elif platform.startswith("linux"):
     VCPKG_TRIPLET = "x64-linux"
-    env.Append(CPPFLAGS=["-DVital_SDK_LINUX"])
+    
+    env.Append(CPPFLAGS=["-DVital_SDK_LINUX", "-fexceptions", "-DHAS_SOCKLEN_T"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
-
 
 VCPKG_ROOT = os.environ.get("VCPKG_ROOT")
 if not VCPKG_ROOT:
-    Exit("VCPKG_ROOT environment variable not set")
+    Exit("VCPKG_ROOT environment variable not set. Please export VCPKG_ROOT=/path/to/vcpkg")
 
 env.Append(CPPDEFINES=["VITAL_USE_VCPKG"])
 
