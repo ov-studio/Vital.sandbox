@@ -39,6 +39,7 @@ namespace Vital::Error {
         {"base-path-invalid", "Invalid base path ('{}')"},
         {"file-path-invalid", "Invalid file path ('{}')"},
         {"file-nonexistent", "File not found ('{}')"},
+        {"directory-nonexistent", "Directory not found ('{}')"},
         {"file-busy", "File busy ('{}')"}
     };
 
