@@ -24,7 +24,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
     auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     #if defined(Vital_SDK_Client)
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -35,7 +35,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "isEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "is_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_sdfgi_enabled());
@@ -43,7 +43,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setCascades", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_cascades", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -54,7 +54,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getCascades", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_cascades", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_cascades());
@@ -62,7 +62,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setMinCellSize", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_min_cell_size", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -73,7 +73,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getMinCellSize", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_min_cell_size", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_min_cell_size());
@@ -81,7 +81,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setMaxDistance", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_max_distance", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -92,7 +92,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getMaxDistance", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_max_distance", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_max_distance());
@@ -100,7 +100,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setYScale", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_y_scale", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -112,7 +112,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getYScale", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_y_scale", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_y_scale());
@@ -120,7 +120,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setUseOcclusion", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_use_occlusion", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -131,7 +131,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "isUsingOcclusion", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "is_using_occlusion", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_sdfgi_using_occlusion());
@@ -139,7 +139,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setBounceFeedback", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_bounce_feedback", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -150,7 +150,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getBounceFeedback", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_bounce_feedback", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_bounce_feedback());
@@ -158,7 +158,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setReadSkyLight", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_read_sky_light", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -169,7 +169,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setReadingSkyLight", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "is_reading_sky_light", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_sdfgi_reading_sky_light());
@@ -177,7 +177,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setEnergy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_energy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -188,7 +188,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getEnergy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_energy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_energy());
@@ -196,7 +196,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setNormalBias", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_normal_bias", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -207,7 +207,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getNormalBias", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_normal_bias", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_normal_bias());
@@ -215,7 +215,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "setProbeBias", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "set_probe_bias", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -226,7 +226,7 @@ void Vital::Godot::Sandbox::Lua::API::SDFGI::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "getProbeBias", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "sdfgi", "get_probe_bias", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_sdfgi_probe_bias());
