@@ -50,12 +50,9 @@ namespace Vital::Godot {
         return tree ? tree -> get_root() : nullptr;
     }
     
+    #if defined(Vital_SDK_Client)
     godot::RenderingServer* Core::get_rendering_server() {
         return godot::RenderingServer::get_singleton();
-    }
-
-    godot::ResourceLoader* Core::get_resource_loader() {
-        return godot::ResourceLoader::get_singleton();
     }
     
     godot::Ref<godot::Environment> Core::get_environment() {
@@ -73,4 +70,5 @@ namespace Vital::Godot {
         }
         return parent -> get_environment();
     }
+    #endif
 }
