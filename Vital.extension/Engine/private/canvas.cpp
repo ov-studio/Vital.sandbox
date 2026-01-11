@@ -12,6 +12,7 @@
 // Imports //
 //////////////
 
+#pragma once
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>

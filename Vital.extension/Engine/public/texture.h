@@ -12,6 +12,7 @@
 // Imports //
 //////////////
 
+#if defined(Vital_SDK_Client)
 #pragma once
 #include <Vital.extension/Engine/public/index.h>
 
@@ -78,3 +79,4 @@ namespace Vital::Godot {
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
     };
 }
+#endif

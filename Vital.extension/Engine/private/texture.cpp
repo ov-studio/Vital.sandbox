@@ -12,6 +12,8 @@
 // Imports //
 //////////////
 
+#if defined(Vital_SDK_Client)
+#pragma once
 #include <Vital.extension/Engine/public/texture.h>
 
 
@@ -181,3 +183,4 @@ namespace Vital::Godot {
         heartbeat();
     }
 }
+#endif
