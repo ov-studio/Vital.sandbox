@@ -14,6 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/network.h>
+#include <Vital.sandbox/Tool/stack.h>
 
 
 ///////////////////////////
