@@ -113,9 +113,9 @@ namespace Vital::Godot::Sandbox::Lua {
         )";
         vm -> loadString(rwString);
 
-        font = godot::ResourceLoader::get_singleton() -> load("res://fonts/Roboto-Bold.ttf", "Font");
-        tex = Vital::Godot::Texture::create_texture_2d("res://flower.jpg");
-        svg = Vital::Godot::Texture::create_svg("res://square.svg");
+        font = godot::ResourceLoader::get_singleton() -> load("fonts/Roboto-Bold.ttf", "Font");
+        tex = Vital::Godot::Texture::create_texture_2d("flower.jpg");
+        svg = Vital::Godot::Texture::create_svg("square.svg");
     }
 
     void Singleton::process(double delta) {
@@ -155,7 +155,7 @@ namespace Vital::Godot::Sandbox::Lua {
             {0.0f, 0.0f}
         );
 
-        canvas -> draw_image({100 + (310)*1, 20}, {300, 300}, "res://flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
+        canvas -> draw_image({100 + (310)*1, 20}, {300, 300}, "flower.jpg", 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text,
             {100 + (310)*1, 20},
@@ -177,7 +177,7 @@ namespace Vital::Godot::Sandbox::Lua {
         }
 
         Vital::Godot::RenderTarget::set_rendertarget(rt, true, true);
-        canvas -> draw_image({0, 20}, {300, 300}, "res://flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
+        canvas -> draw_image({0, 20}, {300, 300}, "flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text,
             {0, 20},
