@@ -115,8 +115,6 @@ namespace Vital::Godot::Sandbox::Lua {
 
         font.instantiate();
         font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
-
-        font = godot::ResourceLoader::get_singleton() -> load("fonts/Roboto-Bold.ttf", "Font");
         tex = Vital::Godot::Texture::create_texture_2d("flower.jpg");
         svg = Vital::Godot::Texture::create_svg("square.svg");
     }
