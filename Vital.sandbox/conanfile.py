@@ -10,8 +10,8 @@ class BuildConan(ConanFile):
         self.requires("libcurl/8.12.1")
 
     def configure(self):
-        self.options["openssl"].shared = False
-        self.options["libcurl"].shared = False
+        for lib in ["openssl", "libcurl"]:
+            self.options[lib].shared = False
 
         if self.settings.compiler.get_safe("cppstd"):
             self.settings.compiler.cppstd = "17"

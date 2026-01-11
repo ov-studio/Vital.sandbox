@@ -13,7 +13,8 @@ ARGUMENTS["target"] = f'template_{ARGUMENTS["build_type"].lower()}'
 cwd = os.path.abspath(os.getcwd())
 env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
-env.Append(LINKFLAGS=['/NODEFAULTLIB:LIBCMTD'])
+if sys.platform.startswith("win"):
+    env.Append(LINKFLAGS=['/NODEFAULTLIB:LIBCMTD'])
 env.sources += (
     env.RGlob('Engine', '*.cpp') + 
     env.RGlob('Engine', '*.c') + 
@@ -32,7 +33,7 @@ env.Append(CPPPATH=[
 # Builds
 build_dir = ".build/{}".format(name)
 build = env.SharedLibrary(
-    ".bin/{}/{}".format(env['platform'], "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),
+    ".bin/{}/{}".format(env['platform'], "{}{}{}".format(name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),
     source = env.sources
 )
 Default(*[build, env.Install("{}/{}/".format(build_dir, env["platform"]), build)])
