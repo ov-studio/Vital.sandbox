@@ -33,6 +33,20 @@ env.Append(CPPPATH=[
 # Builds
 build_dir = ".build/{}".format(name)
 env['SHLIBPREFIX'] = ''
+
+VCPKG_ROOT = os.environ.get("VCPKG_ROOT")
+if VCPKG_ROOT and sys.platform.startswith("linux"):
+    VCPKG_LIB = os.path.join(VCPKG_ROOT, "installed", "x64-linux", "lib")
+    env.Append(LIBS=[
+        File(os.path.join(VCPKG_LIB, "librmlui.a")),
+        File(os.path.join(VCPKG_LIB, "libfreetype.a")),
+        File(os.path.join(VCPKG_LIB, "libpng.a")),
+        File(os.path.join(VCPKG_LIB, "libz.a")),
+        File(os.path.join(VCPKG_LIB, "libbz2.a")),
+        File(os.path.join(VCPKG_LIB, "libbrotlidec.a")),
+        File(os.path.join(VCPKG_LIB, "libbrotlicommon.a"))
+    ])
+
 build = env.SharedLibrary(
     ".bin/{}/{}".format(env['platform'], "{}{}{}".format(name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),
     source = env.sources
