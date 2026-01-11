@@ -106,10 +106,10 @@ namespace Vital::Godot::Sandbox::Lua {
     void Singleton::ready() {
         std::string rwString = R"(
             print("SSAO Enabled: ", ssao.set_enabled(true))
-            print("SSAO Intensity: ", ssao.getIntensity())
+            print("SSAO Intensity: ", ssao.get_Intensity())
             print("Adjustment Enabled:", adjustment.set_enabled(true))
             print("SSAO Enabled: ", ssao.set_enabled(true))
-            print("SSAO Intensity: ", ssao.setIntensity(5))
+            print("SSAO Intensity: ", ssao.set_Intensity(5))
         )";
         vm -> loadString(rwString);
 
