@@ -24,7 +24,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
     auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     #if defined(Vital_SDK_Client)
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "set_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -35,7 +35,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "isEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "is_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_adjustment_enabled());
@@ -43,7 +43,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setBrightness", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "set_brightness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -54,7 +54,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "getBrightness", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "get_brightness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_adjustment_brightness());
@@ -62,7 +62,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setContrast", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "set_contrast", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -73,7 +73,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "getContrast", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "get_contrast", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_adjustment_contrast());
@@ -81,7 +81,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "setSaturation", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "set_saturation", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -92,7 +92,7 @@ void Vital::Godot::Sandbox::Lua::API::Adjustment::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "getSaturation", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "adjustment", "get_saturation", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_adjustment_saturation());
