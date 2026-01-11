@@ -24,7 +24,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
     auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     #if defined(Vital_SDK_Client)
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -35,7 +35,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "isEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "is_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_volumetric_fog_enabled());
@@ -43,7 +43,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setEmission", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_emission", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
@@ -68,7 +68,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getEmission", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_emission", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             auto value = Vital::Godot::Core::get_environment() -> get_volumetric_fog_emission();
@@ -80,7 +80,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setAlbedo", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_albedo", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if (vm -> isString(1)) {
@@ -105,7 +105,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getAlbedo", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_albedo", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             auto value = Vital::Godot::Core::get_environment() -> get_volumetric_fog_albedo();
@@ -117,7 +117,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setDensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_density", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -128,7 +128,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getDensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_density", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_density());
@@ -136,7 +136,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setEmissionEnergy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_emission_energy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -147,7 +147,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getEmissionEnergy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_emission_energy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_emission_energy());
@@ -155,7 +155,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setAnisotropy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_anisotropy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -166,7 +166,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getAnisotropy", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_anisotropy", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_anisotropy());
@@ -174,7 +174,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setLength", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_length", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -185,7 +185,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getLength", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_length", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_length());
@@ -193,7 +193,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setDetailSpread", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_detail_spread", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -204,7 +204,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getDetailSpread", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_detail_spread", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_detail_spread());
@@ -212,7 +212,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setGIInject", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_gi_inject", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -223,7 +223,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getGIInject", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_gi_inject", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_gi_inject());
@@ -231,7 +231,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setAmbientInject", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_ambient_inject", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -242,7 +242,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getAmbientInject", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_ambient_inject", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_ambient_inject());
@@ -250,7 +250,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setSkyAffect", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_sky_affect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -261,7 +261,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getSkyAffect", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_sky_affect", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_sky_affect());
@@ -269,7 +269,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setTemporalReprojectionEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_temporal_reprojection_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -280,7 +280,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getTemporalReprojectionEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "is_temporal_reprojection_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_volumetric_fog_temporal_reprojection_enabled());
@@ -288,7 +288,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "setTemporalReprojectionAmount", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_temporal_reprojection_amount", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -299,7 +299,7 @@ void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "getTemporalReprojectionAmount", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "get_temporal_reprojection_amount", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
