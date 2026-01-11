@@ -38,7 +38,7 @@ namespace Vital::Sandbox::Lua {
         }
         this -> apis = apis;
         this -> hook("bind");
-        for (auto& i : Vital::get_modules("lua")) {
+        for (auto& i : Vital::Tool::get_modules("lua")) {
             loadString(i);
         }
         this -> hook("inject");
