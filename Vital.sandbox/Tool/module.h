@@ -25,7 +25,6 @@
 namespace Vital::Tool {
     class Module {
         public:
-            virtual ~Module() = default;
             static void bind(void* entity) {};
             static void inject(void* entity) {};
     };
@@ -42,4 +41,3 @@ namespace Vital::Tool {
         return result;
     }
 }
-
