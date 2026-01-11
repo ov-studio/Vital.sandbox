@@ -24,7 +24,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
     auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     #if defined(Vital_SDK_Client)
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "setEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "set_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isBool(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -35,7 +35,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "isEnabled", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "is_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setBool(Vital::Godot::Core::get_environment() -> is_ssil_enabled());
@@ -43,7 +43,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "setRadius", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "set_radius", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -54,7 +54,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "getRadius", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "get_radius", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssil_radius());
@@ -62,7 +62,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "setIntensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "set_intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -73,7 +73,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "getIntensity", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "get_intensity", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssil_intensity());
@@ -81,7 +81,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "setSharpness", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "set_sharpness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -92,7 +92,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "getSharpness", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "get_sharpness", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssil_sharpness());
@@ -100,7 +100,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "setNormalRejection", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "set_normal_rejection", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
@@ -111,7 +111,7 @@ void Vital::Godot::Sandbox::Lua::API::SSIL::bind(void* instance) {
         });
     });
 
-    Vital::Sandbox::Lua::API::bind(vm, "ssil", "getNormalRejection", [](auto* ref) -> int {
+    Vital::Sandbox::Lua::API::bind(vm, "ssil", "get_normal_rejection", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::fetchVM(ref);
         return vm -> execute([&]() -> int {
             vm -> setNumber(Vital::Godot::Core::get_environment() -> get_ssil_normal_rejection());
