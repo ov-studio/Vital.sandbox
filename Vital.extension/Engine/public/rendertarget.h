@@ -12,6 +12,7 @@
 // Imports //
 //////////////
 
+#if defined(Vital_SDK_Client)
 #pragma once
 #include <Vital.extension/Engine/public/canvas.h>
 
@@ -53,3 +54,4 @@ namespace Vital::Godot {
             void clear(bool clear, bool instant);
     };
 }
+#endif
