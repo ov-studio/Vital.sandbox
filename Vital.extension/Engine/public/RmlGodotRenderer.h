@@ -6,18 +6,11 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <unordered_map>
 
-struct GodotGeometry {
-    godot::RID mesh;
-};
-
-struct GodotTexture {
-    godot::RID rid;
-    godot::Vector2i size;
-};
 
 class RmlGodotRenderer final : public Rml::RenderInterface {
 public:
-    godot::RID canvas;
+    RmlGodotRenderer();
+    ~RmlGodotRenderer() override;
 
     // Geometry
     Rml::CompiledGeometryHandle CompileGeometry(
@@ -33,28 +26,29 @@ public:
 
     void ReleaseGeometry(Rml::CompiledGeometryHandle geometry) override;
 
-    // Textures (file)
+    // Scissor
+    void EnableScissorRegion(bool enable) override;
+    void SetScissorRegion(Rml::Rectanglei region) override;
+
+    // Textures
     Rml::TextureHandle LoadTexture(
         Rml::Vector2i& texture_dimensions,
         const Rml::String& source
     ) override;
+    
 
-    // Textures (memory)  ✅ REQUIRED IN RMLUI v6
     Rml::TextureHandle GenerateTexture(
         Rml::Span<const Rml::byte> source,
         Rml::Vector2i dimensions
     ) override;
 
     void ReleaseTexture(Rml::TextureHandle texture) override;
-
-    // Scissor
-    void EnableScissorRegion(bool enable) override;
-    void SetScissorRegion(Rml::Rectanglei region) override;
-
 private:
-    std::unordered_map<Rml::CompiledGeometryHandle, GodotGeometry> geometries;
-    std::unordered_map<Rml::TextureHandle, GodotTexture> textures;
+    struct Texture {
+        godot::RID rid;
+        godot::Vector2i size;
+    };
 
-    Rml::CompiledGeometryHandle next_geometry = 1;
     Rml::TextureHandle next_texture = 1;
+    std::unordered_map<Rml::TextureHandle, Texture> textures;
 };
