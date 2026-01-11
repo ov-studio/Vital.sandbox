@@ -93,9 +93,10 @@ namespace Vital::Godot {
 
     // APIs //
     Texture* Texture::create_texture_2d(const std::string& path, const std::string& temp_ref) {
-        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(to_godot_string(path), godot::FileAccess::READ);
-        if (file.is_null()) throw Vital::Error::fetch("invalid-arguments");
-        return create_texture_2d_from_buffer(file -> get_buffer(file -> get_length()), temp_ref);
+        return create_texture_2d_from_buffer(
+            Vital::Tool::File::read_binary(to_godot_string(get_directory()), to_godot_string(path)), 
+            temp_ref
+        );
     }
 
     Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& temp_ref) {
@@ -126,9 +127,10 @@ namespace Vital::Godot {
     }
 
     Texture* Texture::create_svg(const std::string& path, const std::string& temp_ref) {
-        godot::Ref<godot::FileAccess> file = godot::FileAccess::open(to_godot_string(path), godot::FileAccess::READ);
-        if (file.is_null()) throw Vital::Error::fetch("invalid-arguments");
-        return create_svg_from_buffer(file -> get_buffer(file -> get_length()), temp_ref);
+        return create_svg_from_buffer(
+            Vital::Tool::File::read_binary(to_godot_string(get_directory()), to_godot_string(path)), 
+            temp_ref
+        );
     }
 
     Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& temp_ref) {
