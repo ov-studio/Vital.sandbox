@@ -36,25 +36,6 @@ namespace Vital::Tool::File {
         return true;
     }
 
-    inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
-        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
-        auto dir = godot::DirAccess::open(base);
-        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
-        dir = godot::DirAccess::open(dir -> get_current_dir() + "/" + target);
-        if (!dir.is_valid()) throw Vital::Error::fetch("directory-nonexistent", to_std_string(target));
-        std::vector<std::string> result;
-        dir -> list_dir_begin();
-        while (true) {
-            auto name = dir -> get_next();
-            if (name.is_empty()) break;
-            if (name == "." || name == "..") continue;
-            if (directory_search != dir -> current_is_dir()) continue;
-            result.emplace_back(to_std_string(target.is_empty() ? name : target + godot::String("/") + name));
-        }
-        dir -> list_dir_end();
-        return result;
-    }
-
     inline bool exists(const godot::String& base, const godot::String& target) {
         if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
         auto dir = godot::DirAccess::open(base);
@@ -116,5 +97,24 @@ namespace Vital::Tool::File {
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
         if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
         file -> store_buffer(data);
+    }
+
+    inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
+        if (!is_path(target)) throw Vital::Error::fetch("file-path-invalid", to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Error::fetch("base-path-invalid", to_std_string(base));
+        dir = godot::DirAccess::open(dir -> get_current_dir() + "/" + target);
+        if (!dir.is_valid()) throw Vital::Error::fetch("directory-nonexistent", to_std_string(target));
+        std::vector<std::string> result;
+        dir -> list_dir_begin();
+        while (true) {
+            auto name = dir -> get_next();
+            if (name.is_empty()) break;
+            if (name == "." || name == "..") continue;
+            if (directory_search != dir -> current_is_dir()) continue;
+            result.emplace_back(to_std_string(target.is_empty() ? name : target + godot::String("/") + name));
+        }
+        dir -> list_dir_end();
+        return result;
     }
 }
