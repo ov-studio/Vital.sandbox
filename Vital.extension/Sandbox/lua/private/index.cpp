@@ -39,7 +39,7 @@ namespace Vital::Godot::Sandbox::Lua {
     Vital::Sandbox::Lua::create* vm = nullptr;
 
     // TODO: REMOVE LATER
-    godot::Ref<godot::Font> font;
+    godot::Ref<godot::FontFile> font;
     Vital::Godot::Texture* tex;
     Vital::Godot::Texture* svg;
     Vital::Godot::RenderTarget* rt = nullptr;
@@ -112,6 +112,9 @@ namespace Vital::Godot::Sandbox::Lua {
             print("SSAO Intensity: ", ssao.setIntensity(5))
         )";
         vm -> loadString(rwString);
+
+        font.instantiate();
+        font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
 
         font = godot::ResourceLoader::get_singleton() -> load("fonts/Roboto-Bold.ttf", "Font");
         tex = Vital::Godot::Texture::create_texture_2d("flower.jpg");

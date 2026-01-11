@@ -13,11 +13,11 @@
 * Fully Open-Source
 * Highly Performance-Friendly
 * Modular Programming Architecture (C++17)
-* Integrated Crypto System
-* Integrated Stack System
-* Integrated Inspect System
-* Integrated Rest System
-* Integrated Event System
+* Integrated Crypto Tool
+* Integrated Stack Tool
+* Integrated Inspect Tool
+* Integrated Rest Tool
+* Integrated Event Tool
 * Integrated Sandboxing Environments (Lua, JS)
 * Integrated Robust Threader (Includes async/await, heartbeats, promises and much more!)
 * Integrated Robust Networking, Scheduling and Rendering Solutions
