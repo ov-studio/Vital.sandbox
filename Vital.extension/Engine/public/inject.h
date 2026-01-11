@@ -17,6 +17,7 @@
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.extension/Engine/public/RmlUiNode.h>
 
 
 //////////////

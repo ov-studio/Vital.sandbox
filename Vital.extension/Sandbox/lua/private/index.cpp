@@ -30,8 +30,6 @@
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/texture.h>
 
-#include <RmlUi/Core.h>
-
 
 /////////////////////////////////
 // Vital: Godot: Sandbox: Lua //
@@ -64,6 +62,26 @@ namespace Vital::Godot::Sandbox::Lua {
             {API::VolumetricFog::bind, API::VolumetricFog::inject},
             {API::Adjustment::bind, API::Adjustment::inject}
         });
+
+
+        /*
+        //RML//
+        Rml::SetSystemInterface(new RmlGodotSystem());
+        Rml::SetFileInterface(new RmlGodotFile());
+        
+        Rml::Initialise();
+        
+        Rml::LoadFontFace("res://ui/fonts/Roboto-Regular.ttf");
+        
+        Rml::Context* ctx = Rml::CreateContext(
+            "main",
+            Rml::Vector2i(1280, 720)
+        );
+        
+        ctx->LoadDocument("res://ui/main.rml")->Show();
+        */
+        //CLOSRML//
+
 
         /*
         std::string rwString = R"(

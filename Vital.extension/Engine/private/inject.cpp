@@ -27,6 +27,7 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	#if defined(Vital_SDK_Client)
 	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
+	godot::ClassDB::register_class<RmlUiNode>(true);
 	#endif
 
 	Vital::System::Event::bind("Godot:Core:@ready", [](Vital::Tool::Stack arguments) -> void {
