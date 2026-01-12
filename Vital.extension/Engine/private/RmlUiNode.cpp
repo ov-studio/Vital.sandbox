@@ -67,10 +67,9 @@ void RmlUiNode::_ready() {
 }
 
 void RmlUiNode::_process(double delta) {
-    /*
     if (context) {
+        UtilityFunctions::print("rendering");
         context->Update();
         context->Render();
     }
-    */
 }
