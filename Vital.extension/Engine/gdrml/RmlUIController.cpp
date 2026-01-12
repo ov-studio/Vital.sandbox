@@ -6,7 +6,6 @@
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#include <RmlUi/Debugger.h>
 #include <RmlUi/Lua.h>
 
 using namespace gdrml;
@@ -53,8 +52,6 @@ void RmlUIController::_enter_tree()
 	Rml::SetFileInterface(&m_FileInterface);
 
 	Rml::Initialise();
-
-	// Initialize Lua plugin
 	Rml::Lua::Initialise();
 
 	// Load fonts
