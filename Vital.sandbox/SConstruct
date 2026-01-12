@@ -9,8 +9,8 @@ ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 
 # Environments
 cwd = os.path.abspath(os.getcwd())
-platform = sys.platform
 env = Environment(tools=["default", "msvc"], PLATFORM="")
+vcpkg = env.VCPKG()
 env.BuildConan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
@@ -23,6 +23,7 @@ env.sources = (
 )
 env.Append(CPPPATH=[
     cwd,
+    os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include"),
     os.path.join(cwd, "Type"),
     os.path.join(cwd, "System"),
     os.path.join(cwd, "Sandbox"),
@@ -38,40 +39,34 @@ env.Append(CPPPATH=[
 # Flags
 if ARGUMENTS["platform_type"] == "Client":
     env.Append(CPPFLAGS=["-DVital_SDK_Client"])
+    env.Append(CPPDEFINES={"RML_LUA_BINDINGS_LIBRARY": "lua"})
+    env.Append(LIBPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")])
+    env.Append(LIBS=[
+        "rmlui",
+        "lua",
+        "rmlui_lua",
+        "zlib",
+        "libpng16",
+        "freetype",
+        "bz2",
+        "brotlienc",
+        "brotlidec",
+        "brotlicommon"
+    ])
 
 
 # Dependencies
 env.Append(CPPFLAGS=["-DMSGPACK_NO_BOOST"])
-VCPKG_TRIPLET = None
-if platform.startswith("win"):
-    VCPKG_TRIPLET = "x64-windows"
+if sys.platform.startswith("win"):
     env.Append(CPPFLAGS=["-DVital_SDK_WINDOWS", "/EHsc"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
-elif platform == "darwin":
-    VCPKG_TRIPLET = "arm64-osx"
+elif sys.platform == "darwin":
     env.Append(CPPFLAGS=["-DVital_SDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
-elif platform.startswith("linux"):
-    VCPKG_TRIPLET = "x64-linux"
+elif sys.platform.startswith("linux"):
     env.Append(CPPFLAGS=["-DVital_SDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
 
-
-VCPKG_ROOT = os.environ.get("VCPKG_ROOT")
-if not VCPKG_ROOT:
-    Exit("VCPKG_ROOT environment variable not set")
-
-env.Append(CPPDEFINES=["VITAL_USE_VCPKG"])
-
-env.Append(CPPPATH=[
-    os.path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "include")
-])
-
-env.Append(LIBPATH=[
-    os.path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "lib")
-])
-
-env.Append(LIBS=["rmlui"])
     
 # Returns
 Return("env")
