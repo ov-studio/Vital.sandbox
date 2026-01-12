@@ -19,7 +19,8 @@
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
-#include <Vital.extension/Engine/public/RmlUiNode.h>
+#include <Engine/gdrml/RmlNode.hpp>
+#include <Engine/gdrml/RmlUIController.hpp>
 
 ///////////////////////////
 // Vital: Godot: Canvas //
@@ -33,9 +34,18 @@ namespace Vital::Godot {
         set_visible(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
 
+        UtilityFunctions::print("CREATED CANVAS!");
+
+
         auto* root = Core::get_singleton() -> get_tree() -> get_root();
-        singleton = memnew(Canvas);
-        root -> call_deferred("add_child", singleton);
+
+        auto rmlcontrollernode = memnew(gdrml::RmlUIController());
+        this -> call_deferred("add_child", rmlcontrollernode);
+
+
+        auto rmlnode = memnew(gdrml::RmlNode());
+        rmlnode->set_document_path("res://main.rml");
+        this -> call_deferred("add_child", rmlnode);
 
     }
 
@@ -62,6 +72,9 @@ namespace Vital::Godot {
                 auto* root = Core::get_singleton() -> get_tree() -> get_root();
                 singleton = memnew(Canvas);
                 root -> call_deferred("add_child", singleton);
+
+                UtilityFunctions::print("CREATED CANVAS 2!");
+
             //}
         }
         return singleton;
