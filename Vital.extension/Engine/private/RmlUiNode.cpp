@@ -11,7 +11,6 @@ RmlUiNode::RmlUiNode() {
 }
 
 RmlUiNode::~RmlUiNode() {
-    /*
     if (context) {
         Rml::RemoveContext(context->GetName());
         context = nullptr;
@@ -20,7 +19,6 @@ RmlUiNode::~RmlUiNode() {
     delete renderer;
     delete file;
     delete system;
-    */
 }
 
 void RmlUiNode::_bind_methods() {
@@ -28,28 +26,50 @@ void RmlUiNode::_bind_methods() {
 }
 
 void RmlUiNode::_ready() {
-    renderer = new RmlGodotRenderer();
-    /**
-    file = new RmlGodotFile();
-    system = new RmlGodotSystem();
+    using namespace godot;
 
+    // 1️⃣ Initialize RmlUi (call once per process)
+    Rml::Initialise();
+
+    // 2️⃣ Create interface objects
+    renderer = memnew(RmlGodotRenderer());
+    file = memnew(RmlGodotFile());
+    system = memnew(RmlGodotSystem());
+
+    // 3️⃣ Register interfaces
     Rml::SetRenderInterface(renderer);
     Rml::SetFileInterface(file);
     Rml::SetSystemInterface(system);
 
+    UtilityFunctions::print("RmlUi interfaces ready");
+
+    // 4️⃣ Create a context (the “browser”)
     context = Rml::CreateContext(
         "main",
         Rml::Vector2i(1024, 768)
     );
-    UtilityFunctions::print("RmlUiNode ready");
-    */
+
+    if (!context) {
+        UtilityFunctions::print("Failed to create RmlUi context!");
+        return;
+    }
+
+    UtilityFunctions::print("RmlUi context created");
+
+    // 5️⃣ Load a document
+    Rml::ElementDocument* doc = context->LoadDocument("res://main.rml");
+    if (doc) {
+        doc->Show();
+        UtilityFunctions::print("Document loaded and visible");
+    } else {
+        UtilityFunctions::print("Failed to load document");
+    }
 }
 
 void RmlUiNode::_process(double delta) {
-    /**
     if (context) {
+        UtilityFunctions::print("rendering");
         context->Update();
         context->Render();
     }
-    */
 }

@@ -31,6 +31,9 @@
 #include <Vital.extension/Engine/public/texture.h>
 
 
+#include <Vital.extension/Engine/public/RmlUiNode.h>
+
+
 /////////////////////////////////
 // Vital: Godot: Sandbox: Lua //
 /////////////////////////////////
@@ -63,6 +66,14 @@ namespace Vital::Godot::Sandbox::Lua {
             {API::Adjustment::bind, API::Adjustment::inject}
         });
 
+
+        // Add to the scene tree
+        //        auto* rml_node = memnew(RmlUiNode);
+        //auto* root = Core::get_root();
+       //root->add_child(rml_node);
+
+        // Optionally, set position
+        //rml_node->set_position(godot::Vector2(100, 100));
 
         /*
         //RML//

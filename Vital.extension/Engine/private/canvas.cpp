@@ -19,6 +19,7 @@
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
+#include <Vital.extension/Engine/public/RmlUiNode.h>
 
 ///////////////////////////
 // Vital: Godot: Canvas //
@@ -31,6 +32,11 @@ namespace Vital::Godot {
         set_as_top_level(true);
         set_visible(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
+
+        auto* root = Core::get_singleton() -> get_tree() -> get_root();
+        singleton = memnew(Canvas);
+        root -> call_deferred("add_child", singleton);
+
     }
 
     void Canvas::_process(double) {
