@@ -4,6 +4,24 @@ import fnmatch
 import subprocess
 from SCons.Environment import Base as BaseEnvironment
 
+def VCPKG(self):
+    triplet = None
+    root = os.environ.get("VCPKG_ROOT")
+    if not root:
+        Exit("VCPKG_ROOT environment variable not set")
+    if sys.platform.startswith("win"):
+        triplet = "x64-windows"
+    elif sys.platform == "darwin":
+        triplet = "arm64-osx"
+    elif sys.platform.startswith("linux"):
+        triplet = "x64-linux"
+    return {
+        "root": root,
+        "triplet": triplet
+    }
+BaseEnvironment.VCPKG = VCPKG
+
+
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
     paths = [root_path]
