@@ -51,7 +51,11 @@ void RmlUIController::_enter_tree()
 	Rml::SetSystemInterface(&m_SystemInterface);
 	Rml::SetFileInterface(&m_FileInterface);
 
-	Rml::Initialise();
+	if(!Rml::Initialise()){
+		godot::UtilityFunctions::print("RmlUIController: Rml::Initialise() failed!");
+		return;
+	}
+	
 	Rml::Lua::Initialise();
 
 	// Load fonts
