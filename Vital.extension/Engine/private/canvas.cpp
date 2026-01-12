@@ -45,6 +45,9 @@ namespace Vital::Godot {
 
         auto rmlnode = memnew(gdrml::RmlNode());
         rmlnode->set_document_path("res://main.rml");
+        rmlnode->set_anchors_preset(godot::Control::PRESET_FULL_RECT);
+        auto window_size = get_viewport_rect().size;
+        rmlnode->set_size(window_size);
         this -> call_deferred("add_child", rmlnode);
 
     }

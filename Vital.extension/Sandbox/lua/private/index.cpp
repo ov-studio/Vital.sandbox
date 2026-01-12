@@ -44,7 +44,7 @@ namespace Vital::Godot::Sandbox::Lua {
     Vital::Godot::Texture* svg;
     Vital::Godot::RenderTarget* rt = nullptr;
     //
-    
+
     Singleton* Singleton::fetch() {
         instance = instance ? instance : memnew(Singleton());
         return instance;
@@ -76,16 +76,16 @@ namespace Vital::Godot::Sandbox::Lua {
         //RML//
         Rml::SetSystemInterface(new RmlGodotSystem());
         Rml::SetFileInterface(new RmlGodotFile());
-        
+
         Rml::Initialise();
-        
+
         Rml::LoadFontFace("res://ui/fonts/Roboto-Regular.ttf");
-        
+
         Rml::Context* ctx = Rml::CreateContext(
             "main",
             Rml::Vector2i(1280, 720)
         );
-        
+
         ctx->LoadDocument("res://ui/main.rml")->Show();
         */
         //CLOSRML//
@@ -124,7 +124,7 @@ namespace Vital::Godot::Sandbox::Lua {
             catch(const std::runtime_error& error) { godot::UtilityFunctions::print(error.what()); }
         }).detach();
         */
-        
+
         //auto stuff = Vital::Tool::Crypto::hash("SHA256", "hello");
         //godot::UtilityFunctions::print(stuff.c_str());
         //ClassDB::register_abstract_class<Lua>();
@@ -149,7 +149,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
     void Singleton::process(double delta) {
         //godot::UtilityFunctions::print("rendered");
-        
+
         // Lua script to run
         std::string rwString = R"(
             print("processing")
@@ -159,7 +159,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
     void Singleton::draw(Vital::Godot::Canvas* canvas) {
         //godot::UtilityFunctions::print("rendered");
-        
+
         /*
         // Lua script to run
         std::string rwString = R"(
@@ -228,12 +228,12 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_image({100, 500}, {512, 512}, rt);
 
         canvas -> draw_rectangle(
-            {100 + (310)*3, 20}, 
+            {100 + (310)*3, 20},
             {300, 300},
             {0, 0, 1, 1},
             6,
             {0, 0, 0, 1},
-            rotation, 
+            rotation,
             {0.0f, 0.0f}
         );
 
@@ -270,7 +270,7 @@ namespace Vital::Godot::Sandbox::Lua {
             {0, 1, 0, 1},
             6,
             {0, 0, 0, 1},
-            rotation, 
+            rotation,
             {0.0f, 0.0f}
         );
 
