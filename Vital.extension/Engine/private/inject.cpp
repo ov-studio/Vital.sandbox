@@ -16,6 +16,12 @@
 #include <Engine/public/inject.h>
 #include <Vital.sandbox/Tool/event.h>
 
+#include <RmlUi/Core.h>
+
+#include <Engine/gdrml/RmlNode.hpp>
+#include <Engine/gdrml/RmlUIController.hpp>
+
+
 
 //////////////
 // Injects //
@@ -24,11 +30,16 @@
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
 	godot::ClassDB::register_class<Vital::Godot::Core>();
+
+	ClassDB::register_class<gdrml::RmlUIController>(true);
+	ClassDB::register_class<gdrml::RmlNode>(true);
+
 	#if defined(Vital_SDK_Client)
 	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
-	godot::ClassDB::register_class<RmlUiNode>(true);
+	//godot::ClassDB::register_class<RmlUiNode>(true);
 	#endif
+
 
 	Vital::System::Event::bind("Godot:Core:@ready", [](Vital::Tool::Stack arguments) -> void {
 		#if defined(Vital_SDK_Client)
