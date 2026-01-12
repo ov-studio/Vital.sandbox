@@ -14,19 +14,17 @@ class RmlGodotSystem;
 class RmlUiNode : public godot::Node2D {
     GDCLASS(RmlUiNode, godot::Node2D)
 
-    protected:
-        static void _bind_methods();
-    public:
-        RmlUiNode();
-        ~RmlUiNode();
+public:
+    RmlUiNode();
+    ~RmlUiNode();
 
-        void _ready() override;
-        void _process(double delta) override;
+    void _ready() override;
+    void _process(double delta) override;
+    void _draw() override;
 
-    private:
-        Rml::Context* context = nullptr;
-
-        RmlGodotRenderer* renderer = nullptr;
-        RmlGodotFile* file = nullptr;
-        RmlGodotSystem* system = nullptr;
-};
+private:
+    Rml::Context* context = nullptr;
+    RmlGodotRenderer* renderer = nullptr;
+    RmlGodotFile* file = nullptr;
+    RmlGodotSystem* system = nullptr;
+}
