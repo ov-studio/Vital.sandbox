@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include <RmlUi/Debugger.h>
+#include <RmlUi/Lua.h>
 
 using namespace gdrml;
 
@@ -52,6 +53,7 @@ void RmlUIController::_enter_tree()
 	Rml::SetFileInterface(&m_FileInterface);
 
 	Rml::Initialise();
+    Rml::Lua::Initialise();
 
 	Rml::Factory::RegisterEventListenerInstancer(&m_EventListenerInstancer);
 }
