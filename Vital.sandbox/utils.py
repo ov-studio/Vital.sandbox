@@ -1,5 +1,5 @@
 
-import os, sys, subprocess, fnmatch
+import os, sys, subprocess, fnmatch, urllib.request
 from platform import machine, system
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
@@ -14,6 +14,10 @@ def Fetch_OS():
         "archi" : archi
     }
 
+def Throw_Error(msg):
+    print(msg)
+    sys.exit(2)
+
 def Fetch_Compiler():
     os_info = Fetch_OS()
     compiler = ["default"]
@@ -22,11 +26,10 @@ def Fetch_Compiler():
     return compiler
 
 def Fetch_Remote(url, destination):
-    Exit("Downloading " + url + " into " + destination)
+    print("Downloading " + url)
     try:
         request = urllib.request.Request(url)
         with urllib.request.urlopen(request, timeout=60) as response:
-            total_size = int(response.headers.get('content-length', 0))
             with open(destination, 'wb') as f:
                 chunk_size = 8192
                 downloaded = 0
@@ -37,11 +40,11 @@ def Fetch_Remote(url, destination):
                     f.write(chunk)
                     downloaded += len(chunk)
     except urllib.error.URLError as e:
-        Exit(f"Download failed: {e}")
+        Throw_Error(f"Download failed: {e}")
     except TimeoutError:
-        Exit(f"Download timeout for {url}")
+        Throw_Error(f"Download timeout for {url}")
     except Exception as e:
-        Exit(f"Unexpected error downloading {url}: {e}")
+        Throw_Error(f"Unexpected error downloading {url}: {e}")
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
