@@ -28,7 +28,7 @@ def Install_VCPKG(self):
             "https://github.com/microsoft/vcpkg.git",
             f"{vcpkg["root"]}"
         ))
-    subprocess.run((f"{os.path.join(vcpkg["root"], "bootstrap-vcpkg.bat" if os_info["type"] == "Windows" else "bootstrap-vcpkg.sh")}"))
+    subprocess.run((f"{os.path.join(vcpkg["root"], "bootstrap-vcpkg.bat" if os_info["type"] == "Windows" else "bootstrap-vcpkg.sh")} -disableMetrics"))
 BaseEnvironment.Install_VCPKG = Install_VCPKG
 
 def Build_VCPKG(self):

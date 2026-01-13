@@ -4,6 +4,7 @@
 .bin/
 .conan/
 .vcpkg/
+.cef/
 
 # Binaries
 *.o

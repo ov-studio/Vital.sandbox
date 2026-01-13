@@ -34,7 +34,7 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/duktape")
 ])
 env.Build_VCPKG()
-env.Init_CEF()
+env.Install_CEF()
 
 
 # Flags
