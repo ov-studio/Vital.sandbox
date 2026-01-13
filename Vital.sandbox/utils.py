@@ -1,25 +1,25 @@
-import os
-import sys
-import fnmatch
-import subprocess
-from vcpkg import *
-from cef import *
+
+import os, sys, subprocess, fnmatch
+from platform import machine, system
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
 
-def Compiler():
-    compiler = ["default"]
-    if sys.platform.startswith("win"):
-        compiler.append("msvc")
+def Fetch_OS():
+    type = system()
+    archi = machine()
+    if archi == "AMD64":
+        archi = "x86_64"
+    return {
+        "type" : type,
+        "archi" : archi
+    }
 
-def BuildConan(self, build_type):
-    subprocess.run((
-        "conan", "install", ".",
-        "--build=missing",
-        "--output-folder=.conan",
-        f"--settings=build_type={build_type}"
-    ))
-BaseEnvironment.BuildConan = BuildConan
+def Fetch_Compiler():
+    os_info = Fetch_OS()
+    compiler = ["default"]
+    if os_info["type"] == "Windows":
+        compiler.append("msvc")
+    return compiler
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
@@ -43,3 +43,11 @@ def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, ex
     return sorted(filtered_nodes)
 BaseEnvironment.RGlob = RGlob
 
+def Build_Conan(self, build_type):
+    subprocess.run((
+        "conan", "install", ".",
+        "--build=missing",
+        "--output-folder=.conan",
+        f"--settings=build_type={build_type}"
+    ))
+BaseEnvironment.Build_Conan = Build_Conan
