@@ -21,6 +21,24 @@ def VCPKG(self):
     }
 BaseEnvironment.VCPKG = VCPKG
 
+def BuildVCPKG(self, platform_type):
+    vcpkg = self.VCPKG()
+    self.Append(CPPDEFINES={("RML_LUA_BINDINGS_LIBRARY", "lua")})
+    self.Append(CPPPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")])
+    self.Append(LIBPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")])
+    self.Append(LIBS=[
+        "rmlui",
+        "lua",
+        "rmlui_lua",
+        "zlib",
+        "libpng16",
+        "freetype",
+        "bz2",
+        "brotlienc",
+        "brotlidec",
+        "brotlicommon"
+    ])
+BaseEnvironment.BuildVCPKG = BuildVCPKG
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []

@@ -10,7 +10,6 @@ ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 # Environments
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=["default", "msvc"], PLATFORM="")
-vcpkg = env.VCPKG()
 env.BuildConan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
@@ -31,30 +30,14 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/msgpack"),
     os.path.join(cwd, "Vendor/rapidjson"),
     os.path.join(cwd, "Vendor/lua"),
-    os.path.join(cwd, "Vendor/duktape"),
-    os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")
+    os.path.join(cwd, "Vendor/duktape")
 ])
+env.BuildVCPKG(ARGUMENTS["platform_type"])
 
 
 # Flags
 if ARGUMENTS["platform_type"] == "Client":
     env.Append(CPPDEFINES=["Vital_SDK_Client"])
-    env.Append(CPPDEFINES={
-        ("RML_LUA_BINDINGS_LIBRARY", "lua")
-    })
-    env.Append(LIBPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")])
-    env.Append(LIBS=[
-        "rmlui",
-        "lua",
-        "rmlui_lua",
-        "zlib",
-        "libpng16",
-        "freetype",
-        "bz2",
-        "brotlienc",
-        "brotlidec",
-        "brotlicommon"
-    ])
 
 
 # Dependencies
