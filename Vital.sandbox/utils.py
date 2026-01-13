@@ -5,10 +5,9 @@ import subprocess
 from SCons.Environment import Base as BaseEnvironment
 
 def VCPKG(self):
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    root = os.path.join(root_dir, "vcpkg")
     triplet = None
-    root = os.environ.get("VCPKG_ROOT")
-    if not root:
-        Exit("VCPKG_ROOT environment variable not set")
     if sys.platform.startswith("win"):
         triplet = "x64-windows"
     elif sys.platform == "darwin":
@@ -21,8 +20,24 @@ def VCPKG(self):
     }
 BaseEnvironment.VCPKG = VCPKG
 
+def InstallVCPKG(self):
+    vcpkg = self.VCPKG()
+    if not os.path.isdir(vcpkg["root"]):
+        subprocess.run((
+            "git", "clone",
+            "https://github.com/microsoft/vcpkg.git",
+            f"{vcpkg["root"]}"
+        ))
+    subprocess.run((f"{os.path.join(vcpkg["root"], "bootstrap-vcpkg.bat" if sys.platform.startswith("win") else "bootstrap-vcpkg.sh")}"))
+    subprocess.run((
+        f"{os.path.join(vcpkg["root"], "vcpkg")}", "install", 
+       "rmlui[lua]", "--recurse"
+    ))
+BaseEnvironment.InstallVCPKG = InstallVCPKG
+
 def BuildVCPKG(self, platform_type):
     vcpkg = self.VCPKG()
+    self.InstallVCPKG()
     self.Append(CPPDEFINES={("RML_LUA_BINDINGS_LIBRARY", "lua")})
     self.Append(CPPPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")])
     self.Append(LIBPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")])
