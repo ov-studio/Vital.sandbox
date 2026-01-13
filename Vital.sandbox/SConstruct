@@ -9,7 +9,7 @@ ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 
 # Environments
 cwd = os.path.abspath(os.getcwd())
-env = Environment(tools=["default", "msvc"], PLATFORM="")
+env = Environment(tools=Compiler(), PLATFORM="")
 env.BuildConan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (

@@ -5,6 +5,11 @@ import subprocess
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
 
+def Compiler():
+    compiler = ["default"]
+    if sys.platform.startswith("win"):
+        compiler.append("msvc")
+
 def VCPKG(self):
     root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".vcpkg")
     triplet = None
