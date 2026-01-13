@@ -31,8 +31,8 @@ env.Append(CPPPATH=[
 
 # Builds
 build_dir = ".build/{}".format(name)
-build = env.SharedLibrary(
-    ".bin/{}/{}".format(env['platform'], "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),
-    source = env.sources
-)
-Default(*[build, env.Install("{}/{}/".format(build_dir, env["platform"]), build)])
+bin_dir = ".bin/{}/{}".format(env['platform'], "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX')))
+bin = env.SharedLibrary(bin_dir, source = env.sources)
+build = env.Install("{}/{}/".format(build_dir, env['platform']), bin)
+env.StageVCPKG(build)
+Default([bin, build])

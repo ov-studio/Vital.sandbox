@@ -3,6 +3,7 @@ import sys
 import fnmatch
 import subprocess
 from SCons.Environment import Base as BaseEnvironment
+from SCons.Script import Copy, Action
 
 def VCPKG(self):
     root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".vcpkg")
@@ -53,6 +54,30 @@ def BuildVCPKG(self, platform_type):
         "brotlicommon"
     ])
 BaseEnvironment.BuildVCPKG = BuildVCPKG
+
+def StageVCPKG(self, build):
+    vcpkg = self.VCPKG()
+    out_dir = os.path.dirname(str(build[0].abspath))
+    if sys.platform.startswith("win"):
+        vcpkg_bin = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "bin")
+        copy_nodes = []
+        for dll in os.listdir(vcpkg_bin):
+            if dll.lower().endswith(".dll"):
+                src = os.path.join(vcpkg_bin, dll)
+                dst = os.path.join(out_dir, dll)
+                copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
+        self.Depends(build, copy_nodes)
+    else:
+        vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
+        copy_nodes = []
+        for so_file in os.listdir(vcpkg_lib):
+            if so_file.endswith(".so") or ".so." in so_file:
+                src = os.path.join(vcpkg_lib, so_file)
+                dst = os.path.join(out_dir, so_file)
+                copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
+        self.Depends(build, copy_nodes)
+BaseEnvironment.StageVCPKG = StageVCPKG
+
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
