@@ -19,8 +19,6 @@
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 
-#include <Engine/gdrml/RmlNode.hpp>
-#include <Engine/gdrml/RmlUIController.hpp>
 
 ///////////////////////////
 // Vital: Godot: Canvas //
@@ -35,20 +33,6 @@ namespace Vital::Godot {
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
 
         UtilityFunctions::print("CREATED CANVAS!");
-
-
-        auto* root = Core::get_singleton() -> get_tree() -> get_root();
-
-        auto rmlcontrollernode = memnew(gdrml::RmlUIController());
-        this -> call_deferred("add_child", rmlcontrollernode);
-
-
-        auto rmlnode = memnew(gdrml::RmlNode());
-        rmlnode->set_document_path("res://main.rml");
-        rmlnode->set_anchors_preset(godot::Control::PRESET_FULL_RECT);
-        auto window_size = get_viewport_rect().size;
-        rmlnode->set_size(window_size);
-        this -> call_deferred("add_child", rmlnode);
 
     }
 

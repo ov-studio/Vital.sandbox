@@ -34,10 +34,6 @@ def InstallVCPKG(self):
             f"{vcpkg["root"]}"
         ))
     subprocess.run((f"{os.path.join(vcpkg["root"], "bootstrap-vcpkg.bat" if sys.platform.startswith("win") else "bootstrap-vcpkg.sh")}"))
-    subprocess.run((
-        f"{os.path.join(vcpkg["root"], "vcpkg")}", "install", 
-       "rmlui[lua]", "--recurse"
-    ))
 BaseEnvironment.InstallVCPKG = InstallVCPKG
 
 def BuildVCPKG(self):
@@ -86,7 +82,6 @@ def StageVCPKG(self, build):
                 copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
         self.Depends(build, copy_nodes)
 BaseEnvironment.StageVCPKG = StageVCPKG
-
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
