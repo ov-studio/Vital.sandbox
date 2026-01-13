@@ -15,6 +15,7 @@
 #include <godot_cpp/classes/input_event_mouse.hpp>
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
+#include <godot_cpp/classes/viewport.hpp>
 
 #include "Conversion.h"
 
@@ -200,7 +201,7 @@ void RmlNode::_enter_tree()
 		//return;
 
 		UtilityFunctions::print("ENTERED TREE!");
-		
+
 	if (RmlUIController::Instance() == nullptr)
 	{
 		UtilityFunctions::print("GDRML: !!!! RmlUIController didn't get initialized!");
@@ -213,6 +214,9 @@ void RmlNode::_enter_tree()
 
 	if (m_Context)
 	{
+		float dpi_scale = get_viewport()->get_canvas_transform().get_scale().x;
+		m_Context->SetDensityIndependentPixelRatio(dpi_scale);
+		//m_Context -> SetDensityIndependentPixelRatio(2.0);
 		m_Document = m_Context->LoadDocument(Conversion::stringToStd(m_DocumentPath));
 		m_Document->Show();
 	}
