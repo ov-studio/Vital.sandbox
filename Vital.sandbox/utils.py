@@ -25,52 +25,43 @@ def Fetch_Compiler():
         compiler.append("msvc")
     return compiler
 
-def Fetch_Remote(url, destination):
-    print("Downloading " + url)
+def Download_Remote(url, destination):
+    print("Downloading:", url)
     try:
-        request = urllib.request.Request(url)
-        with urllib.request.urlopen(request, timeout=60) as response:
-            with open(destination, 'wb') as f:
-                chunk_size = 8192
-                downloaded = 0
-                while True:
-                    chunk = response.read(chunk_size)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-                    downloaded += len(chunk)
-    except urllib.error.URLError as e:
+        with urllib.request.urlopen(url, timeout=60) as r, open(destination, "wb") as f:
+            while True:
+                chunk = r.read(8192)
+                if not chunk:
+                    break
+                f.write(chunk)
+    except (urllib.error.URLError, socket.timeout, TimeoutError, Exception) as e:
+        if os.path.exists(destination):
+            os.remove(destination)
         Throw_Error(f"Download failed: {e}")
-    except TimeoutError:
-        Throw_Error(f"Download timeout for {url}")
-    except Exception as e:
-        Throw_Error(f"Unexpected error downloading {url}: {e}")
 
-def Extract_Tar(url, destination):
-    print("Unpacking " + url)
+def Extract_Tar(path, destination):
+    print("Unpacking:", path)
     temp_dir = destination + "_temp"
-    try:
-        with tarfile.open(url) as tar:
-            tar.extractall(temp_dir)
-        contents = os.listdir(temp_dir)
-        if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])):
-            root_dir = os.path.join(temp_dir, contents[0])
-            os.mkdir(destination)
-            for item in os.listdir(root_dir):
-                src = os.path.join(root_dir, item)
-                dst = os.path.join(destination, item)
-                print(" - %s" % dst)
-                shutil.move(src, dst)
-        else:
-            os.mkdir(destination)
-            for item in contents:
-                src = os.path.join(temp_dir, item)
-                dst = os.path.join(destination, item)
-                print(" - %s" % dst)
-                shutil.move(src, dst)
-    finally:
-        if os.path.exists(temp_dir):
-            os.rmdir(temp_dir)
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
+    os.makedirs(temp_dir, exist_ok=True)
+    with tarfile.open(path) as tar:
+        tar.extractall(temp_dir)
+    contents = os.listdir(temp_dir)
+    if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])):
+        root_dir = os.path.join(temp_dir, contents[0])
+    else:
+        root_dir = temp_dir
+    if os.path.exists(destination):
+        shutil.rmtree(destination)
+    os.makedirs(destination, exist_ok=True)
+    for item in os.listdir(root_dir):
+        src = os.path.join(root_dir, item)
+        dst = os.path.join(destination, item)
+        print("Moving:", dst)
+        shutil.move(src, dst)
+    shutil.rmtree(temp_dir)
+    print("Extraction complete.")
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []

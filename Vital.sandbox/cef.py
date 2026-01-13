@@ -39,6 +39,6 @@ def Install_CEF(self):
     cef_info = self.Init_CEF()
     os.makedirs(cef_info["root"], exist_ok=True)
     if not os.path.exists(cef_info["root"] + "/" + cef_info["identifier"]):
-        Fetch_Remote(cef_info["url"], cef_info["root"] + "/" + cef_info["identifier"])
+        Download_Remote(cef_info["url"], cef_info["root"] + "/" + cef_info["identifier"])
     Extract_Tar(cef_info["root"] + "/" + cef_info["identifier"], cef_info["root"])
 BaseEnvironment.Install_CEF = Install_CEF
