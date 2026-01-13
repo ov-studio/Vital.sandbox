@@ -36,9 +36,32 @@ def Init_CEF(self):
 BaseEnvironment.Init_CEF = Init_CEF
 
 def Install_CEF(self):
-    cef_info = self.Init_CEF()
-    os.makedirs(cef_info["root"], exist_ok=True)
-    if not os.path.exists(cef_info["root"] + "/" + cef_info["identifier"]):
-        Download_Remote(cef_info["url"], cef_info["root"] + "/" + cef_info["identifier"])
-        Extract_Tar(cef_info["root"] + "/" + cef_info["identifier"], cef_info["root"])
+    cef = self.Init_CEF()
+    if not os.path.exists(cef["root"]):
+        os.makedirs(cef["root"], exist_ok=True)
+        Download_Remote(cef["url"], cef["root"] + "/" + cef["identifier"])
+        Extract_Tar(cef["root"] + "/" + cef["identifier"], cef["root"])
 BaseEnvironment.Install_CEF = Install_CEF
+
+def Build_CEF(self):
+    cef = self.Init_CEF()
+    self.Install_CEF()
+    """
+    self.Append(CPPPATH=[vcpkg_include])
+    self.Append(LIBPATH=[vcpkg_lib])
+    if os.path.isdir(vcpkg_lib):
+        if os_info["type"] == "Windows":
+            for f in os.listdir(vcpkg_lib):
+                if f.endswith(".lib"):
+                    lib_name = f[:-4]
+                    vcpkg_libs.append(lib_name)
+        else:
+            for f in os.listdir(vcpkg_lib):
+                if f.endswith(".a"):
+                    lib_name = f
+                    if f.startswith("lib"):
+                        lib_name = f[3:-2]
+                    vcpkg_libs.append(lib_name)
+    self.Append(LIBS=vcpkg_libs)
+    """
+BaseEnvironment.Build_CEF = Build_CEF
