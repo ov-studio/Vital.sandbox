@@ -37,7 +37,6 @@
 #include <godot_cpp/classes/editor_interface.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node2d.hpp>
