@@ -1,5 +1,5 @@
 
-import os, sys, subprocess, fnmatch, urllib.request
+import os, sys, subprocess, fnmatch, urllib.request, tarfile, shutil
 from platform import machine, system
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
@@ -45,6 +45,32 @@ def Fetch_Remote(url, destination):
         Throw_Error(f"Download timeout for {url}")
     except Exception as e:
         Throw_Error(f"Unexpected error downloading {url}: {e}")
+
+def Extract_Tar(url, destination):
+    print("Unpacking " + url)
+    temp_dir = destination + "_temp"
+    try:
+        with tarfile.open(url) as tar:
+            tar.extractall(temp_dir)
+        contents = os.listdir(temp_dir)
+        if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])):
+            root_dir = os.path.join(temp_dir, contents[0])
+            os.mkdir(destination)
+            for item in os.listdir(root_dir):
+                src = os.path.join(root_dir, item)
+                dst = os.path.join(destination, item)
+                print(" - %s" % dst)
+                shutil.move(src, dst)
+        else:
+            os.mkdir(destination)
+            for item in contents:
+                src = os.path.join(temp_dir, item)
+                dst = os.path.join(destination, item)
+                print(" - %s" % dst)
+                shutil.move(src, dst)
+    finally:
+        if os.path.exists(temp_dir):
+            os.rmdir(temp_dir)
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
