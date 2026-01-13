@@ -63,34 +63,6 @@ namespace Vital::Godot::Sandbox::Lua {
             {API::Adjustment::bind, API::Adjustment::inject}
         });
 
-
-        // Add to the scene tree
-        //        auto* rml_node = memnew(RmlUiNode);
-        //auto* root = Core::get_root();
-       //root->add_child(rml_node);
-
-        // Optionally, set position
-        //rml_node->set_position(godot::Vector2(100, 100));
-
-        /*
-        //RML//
-        Rml::SetSystemInterface(new RmlGodotSystem());
-        Rml::SetFileInterface(new RmlGodotFile());
-        
-        Rml::Initialise();
-        
-        Rml::LoadFontFace("res://ui/fonts/Roboto-Regular.ttf");
-        
-        Rml::Context* ctx = Rml::CreateContext(
-            "main",
-            Rml::Vector2i(1280, 720)
-        );
-        
-        ctx->LoadDocument("res://ui/main.rml")->Show();
-        */
-        //CLOSRML//
-
-
         /*
         std::string rwString = R"(
             local a = 10
