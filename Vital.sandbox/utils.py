@@ -42,45 +42,43 @@ def BuildVCPKG(self):
     vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
     vcpkg_libs = []
     self.InstallVCPKG()
-    self.Append(CPPDEFINES={("RML_LUA_BINDINGS_LIBRARY", "lua")})
     self.Append(CPPPATH=[vcpkg_include])
     self.Append(LIBPATH=[vcpkg_lib])
-    if sys.platform.startswith("win"):
-        for f in os.listdir(vcpkg_lib):
-            if f.endswith(".lib"):
-                lib_name = f[:-4]
-                vcpkg_libs.append(lib_name)
-    else:
-        for f in os.listdir(vcpkg_lib):
-            if f.endswith(".a"):
-                lib_name = f
-                if f.startswith("lib"):
-                    lib_name = f[3:-2]
-                vcpkg_libs.append(lib_name)
+    if os.path.isdir(vcpkg_lib):
+        if sys.platform.startswith("win"):
+            for f in os.listdir(vcpkg_lib):
+                if f.endswith(".lib"):
+                    lib_name = f[:-4]
+                    vcpkg_libs.append(lib_name)
+        else:
+            for f in os.listdir(vcpkg_lib):
+                if f.endswith(".a"):
+                    lib_name = f
+                    if f.startswith("lib"):
+                        lib_name = f[3:-2]
+                    vcpkg_libs.append(lib_name)
     self.Append(LIBS=vcpkg_libs)
 BaseEnvironment.BuildVCPKG = BuildVCPKG
 
 def StageVCPKG(self, build):
     vcpkg = self.VCPKG()
     out_dir = os.path.dirname(str(build[0].abspath))
-    if sys.platform.startswith("win"):
-        vcpkg_bin = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "bin")
-        copy_nodes = []
-        for dll in os.listdir(vcpkg_bin):
-            if dll.lower().endswith(".dll"):
-                src = os.path.join(vcpkg_bin, dll)
-                dst = os.path.join(out_dir, dll)
-                copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
-        self.Depends(build, copy_nodes)
-    else:
-        vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
-        copy_nodes = []
-        for so_file in os.listdir(vcpkg_lib):
-            if so_file.endswith(".so") or ".so." in so_file:
-                src = os.path.join(vcpkg_lib, so_file)
-                dst = os.path.join(out_dir, so_file)
-                copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
-        self.Depends(build, copy_nodes)
+    vcpkg_bin = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "bin")
+    copy_nodes = []
+    if os.path.isdir(vcpkg_bin):
+        if sys.platform.startswith("win"):
+            for dll in os.listdir(vcpkg_bin):
+                if dll.lower().endswith(".dll"):
+                    src = os.path.join(vcpkg_bin, dll)
+                    dst = os.path.join(out_dir, dll)
+                    copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
+        else:
+            for so_file in os.listdir(vcpkg_lib):
+                if so_file.endswith(".so") or ".so." in so_file:
+                    src = os.path.join(vcpkg_lib, so_file)
+                    dst = os.path.join(out_dir, so_file)
+                    copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
+    self.Depends(build, copy_nodes)
 BaseEnvironment.StageVCPKG = StageVCPKG
 
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
