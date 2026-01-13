@@ -72,21 +72,7 @@ elif platform.startswith("linux"):
     env.Append(CPPFLAGS=["-DVital_SDK_LINUX", "-fexceptions", "-DHAS_SOCKLEN_T"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
 
-VCPKG_ROOT = os.environ.get("VCPKG_ROOT")
-if not VCPKG_ROOT:
-    Exit("VCPKG_ROOT environment variable not set. Please export VCPKG_ROOT=/path/to/vcpkg")
-
-env.Append(CPPDEFINES=["VITAL_USE_VCPKG"])
-
-env.Append(CPPPATH=[
-    os.path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "include")
-])
-
-env.Append(LIBPATH=[
-    os.path.join(VCPKG_ROOT, "installed", VCPKG_TRIPLET, "lib")
-])
-
-env.Append(LIBS=["rmlui"])
+# RmlUI disabled - no vcpkg dependencies needed
     
 # Returns
 Return("env")

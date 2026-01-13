@@ -15,12 +15,18 @@ env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
 if sys.platform.startswith("win"):
     env.Append(LINKFLAGS=['/NODEFAULTLIB:LIBCMTD'])
-env.sources += (
-    env.RGlob('Engine', '*.cpp') + 
-    env.RGlob('Engine', '*.c') + 
-    env.RGlob('Sandbox', '*.cpp') + 
+# Get all sources but exclude RmlUI-related files
+all_sources = (
+    env.RGlob('Engine', '*.cpp') +
+    env.RGlob('Engine', '*.c') +
+    env.RGlob('Sandbox', '*.cpp') +
     env.RGlob('Sandbox', '*.c')
 )
+
+# Filter out only RmlUI/gdrml files (keep Canvas and RenderTarget but remove RmlUI dependency)
+env.sources += [src for src in all_sources
+                if 'gdrml' not in str(src).lower()
+                and 'rml' not in str(src).lower()]
 env.Append(CPPPATH=[
     cwd,
     os.path.join(cwd, "../"),
@@ -34,18 +40,7 @@ env.Append(CPPPATH=[
 build_dir = ".build/{}".format(name)
 env['SHLIBPREFIX'] = ''
 
-VCPKG_ROOT = os.environ.get("VCPKG_ROOT")
-if VCPKG_ROOT and sys.platform.startswith("linux"):
-    VCPKG_LIB = os.path.join(VCPKG_ROOT, "installed", "x64-linux", "lib")
-    env.Append(LIBS=[
-        File(os.path.join(VCPKG_LIB, "librmlui.a")),
-        File(os.path.join(VCPKG_LIB, "libfreetype.a")),
-        File(os.path.join(VCPKG_LIB, "libpng.a")),
-        File(os.path.join(VCPKG_LIB, "libz.a")),
-        File(os.path.join(VCPKG_LIB, "libbz2.a")),
-        File(os.path.join(VCPKG_LIB, "libbrotlidec.a")),
-        File(os.path.join(VCPKG_LIB, "libbrotlicommon.a"))
-    ])
+# RmlUI disabled - no vcpkg libraries linked
 
 build = env.SharedLibrary(
     ".bin/{}/{}".format(env['platform'], "{}{}{}".format(name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst('$SHLIBSUFFIX'))),

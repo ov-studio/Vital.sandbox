@@ -160,7 +160,6 @@ namespace Vital::Godot::Sandbox::Lua {
     void Singleton::draw(Vital::Godot::Canvas* canvas) {
         //godot::UtilityFunctions::print("rendered");
 
-        /*
         // Lua script to run
         std::string rwString = R"(
             print("drawing")
@@ -278,6 +277,6 @@ namespace Vital::Godot::Sandbox::Lua {
         canvas -> draw_image({622, 500}, {512, 512}, svg -> get_texture());
 
         //vm -> loadString(rwString);
-        */
+        
     }
 }
