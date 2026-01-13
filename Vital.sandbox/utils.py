@@ -5,8 +5,7 @@ import subprocess
 from SCons.Environment import Base as BaseEnvironment
 
 def VCPKG(self):
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    root = os.path.join(root_dir, "vcpkg")
+    root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".vcpkg")
     triplet = None
     if sys.platform.startswith("win"):
         triplet = "x64-windows"

@@ -3,7 +3,7 @@
 .build/
 .bin/
 .conan/
-vcpkg/
+.vcpkg/
 
 # Binaries
 *.o
