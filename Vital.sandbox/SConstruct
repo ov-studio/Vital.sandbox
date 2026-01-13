@@ -1,5 +1,5 @@
 # Imports
-from utils import *
+from vital import *
 
 
 # Metadatas
@@ -8,9 +8,10 @@ ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 
 
 # Environments
+os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
-env = Environment(tools=Compiler(), PLATFORM="")
-env.BuildConan(ARGUMENTS["build_type"])
+env = Environment(tools=Fetch_Compiler(), PLATFORM="")
+env.Build_Conan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
     env.RGlob("Type", "*.cpp") + 
@@ -32,7 +33,8 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/lua"),
     os.path.join(cwd, "Vendor/duktape")
 ])
-env.BuildVCPKG()
+env.Build_VCPKG()
+env.Init_CEF()
 
 
 # Flags
@@ -42,14 +44,14 @@ if ARGUMENTS["platform_type"] == "Client":
 
 # Dependencies
 env.Append(CPPDEFINES=["MSGPACK_NO_BOOST"])
-if sys.platform.startswith("win"):
+if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
     env.Append(CPPFLAGS=["/EHsc"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
-elif sys.platform == "darwin":
+elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
-elif sys.platform.startswith("linux"):
+elif os_info["type"] == "Linux":
     env.Append(CPPDEFINES=["Vital_SDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
 
