@@ -53,7 +53,12 @@ void RmlUIController::_enter_tree()
 	Rml::SetFileInterface(&m_FileInterface);
 
 	Rml::Initialise();
-    Rml::Lua::Initialise();
+
+	// Initialize Lua plugin
+	Rml::Lua::Initialise();
+
+	// Load fonts
+	Rml::LoadFontFace("res://fonts/Roboto-Regular.ttf");
 
 	Rml::Factory::RegisterEventListenerInstancer(&m_EventListenerInstancer);
 }
