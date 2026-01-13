@@ -32,7 +32,7 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/lua"),
     os.path.join(cwd, "Vendor/duktape")
 ])
-env.BuildVCPKG(ARGUMENTS["platform_type"])
+env.BuildVCPKG()
 
 
 # Flags

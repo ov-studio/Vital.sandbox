@@ -35,24 +35,28 @@ def InstallVCPKG(self):
     ))
 BaseEnvironment.InstallVCPKG = InstallVCPKG
 
-def BuildVCPKG(self, platform_type):
+def BuildVCPKG(self):
     vcpkg = self.VCPKG()
+    vcpkg_include = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")
+    vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
+    vcpkg_libs = []
     self.InstallVCPKG()
     self.Append(CPPDEFINES={("RML_LUA_BINDINGS_LIBRARY", "lua")})
-    self.Append(CPPPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")])
-    self.Append(LIBPATH=[os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")])
-    self.Append(LIBS=[
-        "rmlui",
-        "lua",
-        "rmlui_lua",
-        "zlib",
-        "libpng16",
-        "freetype",
-        "bz2",
-        "brotlienc",
-        "brotlidec",
-        "brotlicommon"
-    ])
+    self.Append(CPPPATH=[vcpkg_include])
+    self.Append(LIBPATH=[vcpkg_lib])
+    if sys.platform.startswith("win"):
+        for f in os.listdir(vcpkg_lib):
+            if f.endswith(".lib"):
+                lib_name = f[:-4]
+                vcpkg_libs.append(lib_name)
+    else:
+        for f in os.listdir(vcpkg_lib):
+            if f.endswith(".a"):
+                lib_name = f
+                if f.startswith("lib"):
+                    lib_name = f[3:-2]
+                vcpkg_libs.append(lib_name)
+    self.Append(LIBS=vcpkg_libs)
 BaseEnvironment.BuildVCPKG = BuildVCPKG
 
 def StageVCPKG(self, build):
