@@ -58,7 +58,7 @@ void RmlUIController::_enter_tree()
 	Rml::Lua::Initialise();
 
 	// Load fonts
-	Rml::LoadFontFace("res://fonts/Roboto-Regular.ttf");
+	Rml::LoadFontFace("res://fonts/Roboto-Bold.ttf");
 
 	Rml::Factory::RegisterEventListenerInstancer(&m_EventListenerInstancer);
 }
