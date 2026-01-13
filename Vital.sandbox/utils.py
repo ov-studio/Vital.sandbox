@@ -21,6 +21,28 @@ def Fetch_Compiler():
         compiler.append("msvc")
     return compiler
 
+def Fetch_Remote(url, destination):
+    Exit("Downloading " + url + " into " + destination)
+    try:
+        request = urllib.request.Request(url)
+        with urllib.request.urlopen(request, timeout=60) as response:
+            total_size = int(response.headers.get('content-length', 0))
+            with open(destination, 'wb') as f:
+                chunk_size = 8192
+                downloaded = 0
+                while True:
+                    chunk = response.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
+    except urllib.error.URLError as e:
+        Exit(f"Download failed: {e}")
+    except TimeoutError:
+        Exit(f"Download timeout for {url}")
+    except Exception as e:
+        Exit(f"Unexpected error downloading {url}: {e}")
+
 def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
     result_nodes = []
     paths = [root_path]
