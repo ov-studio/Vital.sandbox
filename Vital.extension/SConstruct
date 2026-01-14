@@ -7,6 +7,7 @@ from vital import *
 # Metadatas
 name = "vital.sdk"
 ARGUMENTS["target"] = f"template_{ARGUMENTS["build_type"].lower()}" 
+ARGUMENTS["use_static_cpp"] = "no" 
 
 
 # Environments
