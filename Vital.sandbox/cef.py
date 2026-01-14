@@ -61,6 +61,7 @@ def Build_CEF(self):
         os.chdir("build")
         Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
         Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
+        self.Append(CPPDEFINES=['CEF_USE_SANDBOX', 'WRAPPING_CEF_SHARED', '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
     else:
         if not (shutil.which("ninja") or shutil.which("make")):
             Throw_Error("You need to install either the 'ninja' or GNU Make tool")
@@ -72,25 +73,10 @@ def Build_CEF(self):
         else:
             Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
             Exec("make", "cefsimple", "-j" + os_info["nproc"])
-
-    """
-    self.Append(CPPPATH=[vcpkg_include])
-    self.Append(LIBPATH=[vcpkg_lib])
-    if os.path.isdir(vcpkg_lib):
-        if os_info["type"] == "Windows":
-            for f in os.listdir(vcpkg_lib):
-                if f.endswith(".lib"):
-                    lib_name = f[:-4]
-                    vcpkg_libs.append(lib_name)
-        else:
-            for f in os.listdir(vcpkg_lib):
-                if f.endswith(".a"):
-                    lib_name = f
-                    if f.startswith("lib"):
-                        lib_name = f[3:-2]
-                    vcpkg_libs.append(lib_name)
-    self.Append(LIBS=vcpkg_libs)
-    """
+        env.Append(CPPDEFINES=['CEF_USE_SANDBOX', '_FILE_OFFSET_BITS=64', '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
+    self.Append(CPPPATH=[cef["root"] + "/include"])
+    self.Append(LIBPATH=[cef["root"] + "/" + self.Args["build_type"]])
+    self.Append(LIBS=["libcef"])
 BaseEnvironment.Build_CEF = Build_CEF
 
 def Stage_CEF(self, build):
