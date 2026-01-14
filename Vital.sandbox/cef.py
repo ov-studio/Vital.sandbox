@@ -25,6 +25,8 @@ def Init_CEF(self):
             archi = "linux64"
         else:
             archi = "linuxarm"
+    else:
+        Throw_Error("CEF not supported on " + os_info["type"])
     identifier = "cef_binary_" + version.replace("+", "%2B") + "_" + archi + ".tar.bz2"
     return {
         "root" : root,
@@ -140,7 +142,5 @@ def Stage_CEF(self, build):
             )
         )
         copy_nodes += self.RGlobCopy(locales, os.path.join(S, "locales", "*"))
-    else:
-        Throw_Error("Unknown OS " + os_info["type"] + ": Cannot extract CEF artifacts")
     self.Depends(build, copy_nodes)
 BaseEnvironment.Stage_CEF = Stage_CEF
