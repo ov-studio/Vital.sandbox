@@ -38,7 +38,7 @@ def Exec(*args):
         )
         return result
     except subprocess.CalledProcessError as e:
-        error_msg = f"Failed executing: {' '.join(map(str, command))}\n"
+        error_msg = f"Failed executing: {" ".join(map(str, command))}\n"
         if e.stdout:
             error_msg += f"STDOUT: {e.stdout}\n"
         if e.stderr:

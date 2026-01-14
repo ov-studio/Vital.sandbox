@@ -46,25 +46,25 @@ BaseEnvironment.Install_CEF = Install_CEF
 def Build_CEF(self):
     cef = self.Init_CEF()
     self.Install_CEF()
-    if not shutil.which('cmake'):
-        Throw_Error("You need to install the 'cmake' tool")
-    if not (shutil.which('ninja') or shutil.which('make')):
-        Throw_Error("You need to install either the 'ninja' or GNU Make tool")
-    if (shutil.which('ninja') is None and OSTYPE == "Darwin"):
-        Throw_Error("You need to install the 'ninja' tool for macOS builds")
     os.chdir(cef["root"])
     if os_info["type"] == "Windows":
+        if not shutil.which("cmake"):
+            Throw_Error("You need to install the 'cmake' tool")
         Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], ".")
         Exec("cmake", "--build", ".", "--config", self.Args["build_type"])
     elif os_info["type"] == "Darwin":
+        if (shutil.which("ninja") is None and OSTYPE == "Darwin"):
+            Throw_Error("You need to install the 'ninja' tool for macOS builds")
         os.mkdir("build")
         os.chdir("build")
         Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
         Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
     else:
+        if not (shutil.which("ninja") or shutil.which("make")):
+            Throw_Error("You need to install either the 'ninja' or GNU Make tool")
         os.mkdir("build")
         os.chdir("build")
-        if shutil.which('ninja') is not None:
+        if shutil.which("ninja") is not None:
             Exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
             Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
         else:
