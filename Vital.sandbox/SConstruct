@@ -11,6 +11,7 @@ ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
 os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=Fetch_Compiler(), PLATFORM="")
+env.Args = ARGUMENTS
 env.Build_Conan(ARGUMENTS["build_type"])
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
@@ -34,7 +35,7 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/duktape")
 ])
 env.Build_VCPKG()
-env.Build_CEF(ARGUMENTS["build_type"])
+env.Build_CEF()
 
 
 # Flags

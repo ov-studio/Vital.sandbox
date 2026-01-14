@@ -43,26 +43,26 @@ def Install_CEF(self):
         Extract_Tar(cef["root"] + "/" + cef["identifier"], cef["root"])
 BaseEnvironment.Install_CEF = Install_CEF
 
-def Build_CEF(self, build_type):
+def Build_CEF(self):
     cef = self.Init_CEF()
     self.Install_CEF()
     os.chdir(cef["root"])
     if os_info["type"] == "Windows":
-        Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + build_type, ".")
-        Exec("cmake", "--build", ".", "--config", build_type)
+        Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], ".")
+        Exec("cmake", "--build", ".", "--config", self.Args["build_type"])
     elif os_info["type"] == "Darwin":
         os.mkdir("build")
         os.chdir("build")
-        Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + build_type, "..")
+        Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
         Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
     else:
         os.mkdir("build")
         os.chdir("build")
         if shutil.which('ninja') is not None:
-            Exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + build_type, "..")
+            Exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
             Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
         else:
-            Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + build_type, "..")
+            Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
             Exec("make", "cefsimple", "-j" + os_info["nproc"])
 
     """
@@ -84,3 +84,98 @@ def Build_CEF(self, build_type):
     self.Append(LIBS=vcpkg_libs)
     """
 BaseEnvironment.Build_CEF = Build_CEF
+
+def Stage_CEF(self, build):
+    cef = self.Init_CEF()
+    out_dir = os.path.dirname(str(build[0].abspath))
+    locales = os.path.join(out_dir, "locales")
+    if not os.path.isdir(locales):
+        os.mkdir(locales)
+    copy_nodes = []
+    if os_info["type"] in ("Linux", "Windows"):
+        S = os.path.join(cef["root"], "Resources")
+        copy_nodes.append(
+            self.Command(
+                os.path.join(out_dir, "icudtl.dat"),
+                os.path.join(S, "icudtl.dat"),
+                Action(Copy("$TARGET", "$SOURCE"), None),
+            )
+        )
+        for f in glob.glob(os.path.join(S, "*.pak")):
+            copy_nodes.append(
+                self.Command(
+                    os.path.join(out_dir, os.path.basename(f)),
+                    f,
+                    Action(Copy("$TARGET", "$SOURCE"), None),
+                )
+            )
+        for f in glob.glob(os.path.join(S, "locales", "*")):
+            copy_nodes.append(
+                self.Command(
+                    os.path.join(locales, os.path.basename(f)),
+                    f,
+                    Action(Copy("$TARGET", "$SOURCE"), None),
+                )
+            )
+        S = os.path.join(cef["root"], self.Args["build_type"])
+        copy_nodes.append(
+            self.Command(
+                os.path.join(out_dir, "vk_swiftshader_icd.json"),
+                os.path.join(S, "vk_swiftshader_icd.json"),
+                Action(Copy("$TARGET", "$SOURCE"), None),
+            )
+        )
+        for f in glob.glob(os.path.join(S, "*snapshot*.bin")):
+            copy_nodes.append(
+                self.Command(
+                    os.path.join(out_dir, os.path.basename(f)),
+                    f,
+                    Action(Copy("$TARGET", "$SOURCE"), None),
+                )
+            )
+        if os_info["type"] == "Linux":
+            for f in glob.glob(os.path.join(S, "*.so")) + glob.glob(os.path.join(S, "*.so.*")):
+                copy_nodes.append(
+                    self.Command(
+                        os.path.join(out_dir, os.path.basename(f)),
+                        f,
+                        Action(Copy("$TARGET", "$SOURCE"), None),
+                    )
+                )
+        else:
+            for f in glob.glob(os.path.join(S, "*.dll")):
+                copy_nodes.append(
+                    self.Command(
+                        os.path.join(out_dir, os.path.basename(f)),
+                        f,
+                        Action(Copy("$TARGET", "$SOURCE"), None),
+                    )
+                )
+    elif os_info["type"] == "Darwin":
+        S = os.path.join(
+            cef["root"],
+            "build",
+            "tests",
+            "cefsimple",
+            self.Args["build_type"],
+            "cefsimple.app",
+        )
+        copy_nodes.append(
+            self.Command(
+                os.path.join(out_dir, "cefsimple.app"),
+                S,
+                Action(CopyTree("$TARGET", "$SOURCE"), None),
+            )
+        )
+        for f in glob.glob(os.path.join(S, "locales", "*")):
+            copy_nodes.append(
+                self.Command(
+                    os.path.join(locales, os.path.basename(f)),
+                    f,
+                    Action(Copy("$TARGET", "$SOURCE"), None),
+                )
+            )
+    else:
+        Throw_Error("Unknown OS " + os_info["type"] + ": Cannot extract CEF artifacts")
+    self.Depends(build, copy_nodes)
+BaseEnvironment.Stage_CEF = Stage_CEF

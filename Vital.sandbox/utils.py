@@ -34,7 +34,7 @@ def Exec(*args):
             command,
             text=True,
             check=True,
-            capture_output=True  # Capture stdout/stderr
+            capture_output=True
         )
         return result
     except subprocess.CalledProcessError as e:

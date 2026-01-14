@@ -35,4 +35,5 @@ bin_dir = ".bin/{}/{}".format(env["platform"], "{}{}{}".format(name, env["suffix
 bin = env.SharedLibrary(bin_dir, source = env.sources)
 build = env.Install("{}/{}/".format(build_dir, env["platform"]), bin)
 env.Stage_VCPKG(build)
+env.Stage_CEF(build)
 Default([bin, build])
