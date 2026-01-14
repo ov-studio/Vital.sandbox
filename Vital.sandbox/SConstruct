@@ -34,7 +34,7 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/duktape")
 ])
 env.Build_VCPKG()
-env.Build_CEF()
+env.Build_CEF(ARGUMENTS["build_type"])
 
 
 # Flags

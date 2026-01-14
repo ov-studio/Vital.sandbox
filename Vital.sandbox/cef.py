@@ -43,9 +43,28 @@ def Install_CEF(self):
         Extract_Tar(cef["root"] + "/" + cef["identifier"], cef["root"])
 BaseEnvironment.Install_CEF = Install_CEF
 
-def Build_CEF(self):
+def Build_CEF(self, build_type):
     cef = self.Init_CEF()
     self.Install_CEF()
+    os.chdir(cef["root"])
+    if os_info["type"] == "Windows":
+        Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + build_type, ".")
+        Exec("cmake", "--build", ".", "--config", build_type)
+    elif os_info["type"] == "Darwin":
+        os.mkdir("build")
+        os.chdir("build")
+        Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + build_type, "..")
+        Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
+    else:
+        os.mkdir("build")
+        os.chdir("build")
+        if shutil.which('ninja') is not None:
+            Exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + build_type, "..")
+            Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
+        else:
+            Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + build_type, "..")
+            Exec("make", "cefsimple", "-j" + os_info["nproc"])
+
     """
     self.Append(CPPPATH=[vcpkg_include])
     self.Append(LIBPATH=[vcpkg_lib])

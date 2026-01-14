@@ -1,6 +1,7 @@
 
 import os, sys, subprocess, fnmatch, urllib.request, tarfile, shutil
 from platform import machine, system
+from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
 
@@ -11,7 +12,8 @@ def Fetch_OS():
         archi = "x86_64"
     return {
         "type" : type,
-        "archi" : archi
+        "archi" : archi,
+        "nproc" : str(cpu_count())
     }
 
 def Throw_Error(msg):
@@ -24,6 +26,26 @@ def Fetch_Compiler():
     if os_info["type"] == "Windows":
         compiler.append("msvc")
     return compiler
+
+def Exec(*args):
+    command = list(args)
+    try:
+        result = subprocess.run(
+            command,
+            text=True,
+            check=True,
+            capture_output=True  # Capture stdout/stderr
+        )
+        return result
+    except subprocess.CalledProcessError as e:
+        error_msg = f"Failed executing: {' '.join(map(str, command))}\n"
+        if e.stdout:
+            error_msg += f"STDOUT: {e.stdout}\n"
+        if e.stderr:
+            error_msg += f"STDERR: {e.stderr}"
+        Throw_Error(error_msg)
+    except FileNotFoundError:
+        Throw_Error(f"Command not found: {command[0]}")
 
 def Download_Remote(url, destination):
     print("Downloading:", url)
