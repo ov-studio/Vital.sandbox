@@ -4,8 +4,8 @@
 .bin/
 .conan/
 .vcpkg/
-cef/
-*_temp/
+.cef/
+*.cef_temp/
 
 # Binaries
 *.o
