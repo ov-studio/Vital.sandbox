@@ -58,20 +58,16 @@ BaseEnvironment.Build_VCPKG = Build_VCPKG
 def Stage_VCPKG(self, build):
     vcpkg = self.Init_VCPKG()
     out_dir = os.path.dirname(str(build[0].abspath))
-    vcpkg_bin = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "bin")
+    vcpkg_root = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"])
+    vcpkg_bin  = os.path.join(vcpkg_root, "bin")
+    vcpkg_lib  = os.path.join(vcpkg_root, "lib")
     copy_nodes = []
-    if os.path.isdir(vcpkg_bin):
-        if os_info["type"] == "Windows":
-            for dll in os.listdir(vcpkg_bin):
-                if dll.lower().endswith(".dll"):
-                    src = os.path.join(vcpkg_bin, dll)
-                    dst = os.path.join(out_dir, dll)
-                    copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
-        else:
-            for so_file in os.listdir(vcpkg_lib):
-                if so_file.endswith(".so") or ".so." in so_file:
-                    src = os.path.join(vcpkg_lib, so_file)
-                    dst = os.path.join(out_dir, so_file)
-                    copy_nodes.append(self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None)))
+    if os_info["type"] == "Windows":
+        if os.path.isdir(vcpkg_bin):
+            copy_nodes += self.RCopy(out_dir, os.path.join(vcpkg_bin, "*.dll"))
+    else:
+        if os.path.isdir(vcpkg_lib):
+            copy_nodes += self.RCopy(out_dir, os.path.join(vcpkg_lib, "*.so"))
+            copy_nodes += self.RCopy(out_dir, os.path.join(vcpkg_lib, "*.so.*"))
     self.Depends(build, copy_nodes)
 BaseEnvironment.Stage_VCPKG = Stage_VCPKG
