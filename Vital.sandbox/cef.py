@@ -46,6 +46,12 @@ BaseEnvironment.Install_CEF = Install_CEF
 def Build_CEF(self):
     cef = self.Init_CEF()
     self.Install_CEF()
+    if not shutil.which('cmake'):
+        Throw_Error("You need to install the 'cmake' tool")
+    if not (shutil.which('ninja') or shutil.which('make')):
+        Throw_Error("You need to install either the 'ninja' or GNU Make tool")
+    if (shutil.which('ninja') is None and OSTYPE == "Darwin"):
+        Throw_Error("You need to install the 'ninja' tool for macOS builds")
     os.chdir(cef["root"])
     if os_info["type"] == "Windows":
         Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], ".")
