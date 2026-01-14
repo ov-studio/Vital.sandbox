@@ -7,7 +7,7 @@ os_info = Fetch_OS()
 cef_version = "143.0.13+g30cb3bd+chromium-143.0.7499.170" #https://cef-builds.spotifycdn.com/index.html
 
 def Init_CEF(self):
-    root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".cef")
+    root = os.path.join(os.path.abspath(os.path.dirname(__file__)), "Vendor", ".cef")
     archi = None
     version = cef_version
     if os_info["type"] == "Windows":
@@ -74,7 +74,7 @@ def Build_CEF(self):
             Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
             Exec("make", "cefsimple", "-j" + os_info["nproc"])
         env.Append(CPPDEFINES=['CEF_USE_SANDBOX', '_FILE_OFFSET_BITS=64', '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
-    self.Append(CPPPATH=[cef["root"] + "/include"])
+    self.Append(CPPPATH=[cef["root"]])
     self.Append(LIBPATH=[cef["root"] + "/" + self.Args["build_type"]])
     self.Append(LIBS=["libcef"])
 BaseEnvironment.Build_CEF = Build_CEF
