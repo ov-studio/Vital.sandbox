@@ -5,6 +5,7 @@ from SCons.Script import Copy, Action
 
 os_info = Fetch_OS()
 cef_version = "143.0.13+g30cb3bd+chromium-143.0.7499.170" #https://cef-builds.spotifycdn.com/index.html
+cef_build = "Release"
 
 def Init_CEF(self):
     root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".cef")
@@ -33,7 +34,8 @@ def Init_CEF(self):
         "archi" : archi,
         "version" : version,
         "identifier" : identifier,
-        "url" : "https://cef-builds.spotifycdn.com/" + identifier
+        "url" : "https://cef-builds.spotifycdn.com/" + identifier,
+        "artifacts" : "cef_artifacts"
     }
 BaseEnvironment.Init_CEF = Init_CEF
 
@@ -52,14 +54,15 @@ def Build_CEF(self):
     if os_info["type"] == "Windows":
         if not shutil.which("cmake"):
             Throw_Error("You need to install the 'cmake' tool")
-        Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], ".")
-        Exec("cmake", "--build", ".", "--config", self.Args["build_type"])
+        runtime = "/MDd" if cef_build == "Debug" else "/MD"
+        Exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + cef_build, ".")
+        Exec("cmake", "--build", ".", "--config", cef_build)
     elif os_info["type"] == "Darwin":
         if (shutil.which("ninja") is None and OSTYPE == "Darwin"):
             Throw_Error("You need to install the 'ninja' tool for macOS builds")
         os.mkdir("build")
         os.chdir("build")
-        Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
+        Exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH=" + os_info["archi"], "-DCMAKE_BUILD_TYPE=" + cef_build, "..")
         Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
         self.Append(CPPDEFINES=["CEF_USE_SANDBOX", "WRAPPING_CEF_SHARED", "__STDC_CONSTANT_MACROS", "__STDC_FORMAT_MACROS"])
     else:
@@ -68,16 +71,17 @@ def Build_CEF(self):
         os.mkdir("build")
         os.chdir("build")
         if shutil.which("ninja") is not None:
-            Exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
+            Exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + cef_build, "..")
             Exec("ninja", "-v", "-j" + os_info["nproc"], "cefsimple")
         else:
-            Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + self.Args["build_type"], "..")
+            Exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + cef_build, "..")
             Exec("make", "cefsimple", "-j" + os_info["nproc"])
-        env.Append(CPPDEFINES=["CEF_USE_SANDBOX", "_FILE_OFFSET_BITS=64", "__STDC_CONSTANT_MACROS", "__STDC_FORMAT_MACROS"])
+        self.Append(CPPDEFINES=["CEF_USE_SANDBOX", "_FILE_OFFSET_BITS=64", "__STDC_CONSTANT_MACROS", "__STDC_FORMAT_MACROS"])
     self.Append(CPPPATH=[cef["root"]])
-    self.Append(LIBPATH=[cef["root"] + "/" + self.Args["build_type"]])
-    self.Append(LIBS=["libcef"])
-    self.Append(CXXFLAGS=["-DCEF_ARTIFACTS_FOLDER=" + self["cef_artifacts_folder"]])
+    self.Append(LIBPATH=[cef["root"] + "/" + cef_build])
+    self.Append(LIBPATH=[cef["root"] + "/libcef_dll_wrapper/" + cef_build])
+    self.Append(LIBS=["libcef", "libcef_dll_wrapper"])
+    self.Append(CXXFLAGS=["-DCEF_ARTIFACTS_FOLDER=" + cef["artifacts"]])
 BaseEnvironment.Build_CEF = Build_CEF
 
 def Stage_CEF(self, build):
@@ -89,7 +93,7 @@ def Stage_CEF(self, build):
         os.mkdir(locales)
     if os_info["type"] in ("Linux", "Windows"):
         R = os.path.join(cef["root"], "Resources")
-        B = os.path.join(cef["root"], self.Args["build_type"])
+        B = os.path.join(cef["root"], cef_build)
         copy_nodes.append(
             self.Command(
                 os.path.join(out_dir, "icudtl.dat"),
@@ -118,7 +122,7 @@ def Stage_CEF(self, build):
             "build",
             "tests",
             "cefsimple",
-            self.Args["build_type"],
+            cef_build,
             "cefsimple.app",
         )
         copy_nodes.append(
