@@ -119,11 +119,11 @@ def RGlobCopy(self, destination, pattern):
     return nodes
 BaseEnvironment.RGlobCopy = RGlobCopy
 
-def Build_Conan(self, build_type):
+def Build_Conan(self):
     subprocess.run((
         "conan", "install", ".",
         "--build=missing",
         "--output-folder=.conan",
-        f"--settings=build_type={build_type}"
+        f"--settings=build_type={self.Args["build_type"]}"
     ))
 BaseEnvironment.Build_Conan = Build_Conan
