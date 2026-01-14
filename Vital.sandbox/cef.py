@@ -7,7 +7,7 @@ os_info = Fetch_OS()
 cef_version = "143.0.13+g30cb3bd+chromium-143.0.7499.170" #https://cef-builds.spotifycdn.com/index.html
 
 def Init_CEF(self):
-    root = os.path.join(os.path.abspath(os.path.dirname(__file__)), "Vendor", ".cef")
+    root = os.path.join(os.path.abspath(os.path.dirname(__file__)), "Vendor", "cef")
     archi = None
     version = cef_version
     if os_info["type"] == "Windows":
