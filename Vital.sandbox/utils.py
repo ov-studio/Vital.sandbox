@@ -1,5 +1,5 @@
 
-import os, sys, subprocess, fnmatch, urllib.request, tarfile, shutil
+import os, sys, subprocess, glob, fnmatch, urllib.request, tarfile, shutil
 from platform import machine, system
 from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
@@ -106,6 +106,18 @@ def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, ex
     filtered_nodes = [node for node in result_nodes if fnmatch.fnmatch(os.path.basename(node), pattern)]
     return sorted(filtered_nodes)
 BaseEnvironment.RGlob = RGlob
+
+def RCopy(self, destination, src):
+    dst = os.path.join(destination, os.path.basename(src))
+    return self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None))
+BaseEnvironment.RCopy = RCopy
+
+def RGlobCopy(self, destination, pattern):
+    nodes = []
+    for f in glob.glob(pattern):
+        nodes.append(self.RCopy(destination, f))
+    return nodes
+BaseEnvironment.RGlobCopy = RGlobCopy
 
 def Build_Conan(self, build_type):
     subprocess.run((

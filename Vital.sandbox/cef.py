@@ -89,68 +89,34 @@ def Stage_CEF(self, build):
     cef = self.Init_CEF()
     out_dir = os.path.dirname(str(build[0].abspath))
     locales = os.path.join(out_dir, "locales")
+    copy_nodes = []
     if not os.path.isdir(locales):
         os.mkdir(locales)
-    copy_nodes = []
     if os_info["type"] in ("Linux", "Windows"):
-        S = os.path.join(cef["root"], "Resources")
+        R = os.path.join(cef["root"], "Resources")
+        B = os.path.join(cef["root"], self.Args["build_type"])
         copy_nodes.append(
             self.Command(
                 os.path.join(out_dir, "icudtl.dat"),
-                os.path.join(S, "icudtl.dat"),
+                os.path.join(R, "icudtl.dat"),
                 Action(Copy("$TARGET", "$SOURCE"), None),
             )
         )
-        for f in glob.glob(os.path.join(S, "*.pak")):
-            copy_nodes.append(
-                self.Command(
-                    os.path.join(out_dir, os.path.basename(f)),
-                    f,
-                    Action(Copy("$TARGET", "$SOURCE"), None),
-                )
-            )
-        for f in glob.glob(os.path.join(S, "locales", "*")):
-            copy_nodes.append(
-                self.Command(
-                    os.path.join(locales, os.path.basename(f)),
-                    f,
-                    Action(Copy("$TARGET", "$SOURCE"), None),
-                )
-            )
-        S = os.path.join(cef["root"], self.Args["build_type"])
+        copy_nodes += self.RGlobCopy(out_dir, os.path.join(R, "*.pak"))
+        copy_nodes += self.RGlobCopy(locales, os.path.join(R, "locales", "*"))
         copy_nodes.append(
             self.Command(
                 os.path.join(out_dir, "vk_swiftshader_icd.json"),
-                os.path.join(S, "vk_swiftshader_icd.json"),
+                os.path.join(B, "vk_swiftshader_icd.json"),
                 Action(Copy("$TARGET", "$SOURCE"), None),
             )
         )
-        for f in glob.glob(os.path.join(S, "*snapshot*.bin")):
-            copy_nodes.append(
-                self.Command(
-                    os.path.join(out_dir, os.path.basename(f)),
-                    f,
-                    Action(Copy("$TARGET", "$SOURCE"), None),
-                )
-            )
+        copy_nodes += self.RGlobCopy(out_dir, os.path.join(B, "*snapshot*.bin"))
         if os_info["type"] == "Linux":
-            for f in glob.glob(os.path.join(S, "*.so")) + glob.glob(os.path.join(S, "*.so.*")):
-                copy_nodes.append(
-                    self.Command(
-                        os.path.join(out_dir, os.path.basename(f)),
-                        f,
-                        Action(Copy("$TARGET", "$SOURCE"), None),
-                    )
-                )
+            copy_nodes += self.RGlobCopy(out_dir, os.path.join(B, "*.so"))
+            copy_nodes += self.RGlobCopy(out_dir, os.path.join(B, "*.so.*"))
         else:
-            for f in glob.glob(os.path.join(S, "*.dll")):
-                copy_nodes.append(
-                    self.Command(
-                        os.path.join(out_dir, os.path.basename(f)),
-                        f,
-                        Action(Copy("$TARGET", "$SOURCE"), None),
-                    )
-                )
+            copy_nodes += self.RGlobCopy(out_dir, os.path.join(B, "*.dll"))
     elif os_info["type"] == "Darwin":
         S = os.path.join(
             cef["root"],
@@ -167,14 +133,7 @@ def Stage_CEF(self, build):
                 Action(CopyTree("$TARGET", "$SOURCE"), None),
             )
         )
-        for f in glob.glob(os.path.join(S, "locales", "*")):
-            copy_nodes.append(
-                self.Command(
-                    os.path.join(locales, os.path.basename(f)),
-                    f,
-                    Action(Copy("$TARGET", "$SOURCE"), None),
-                )
-            )
+        copy_nodes += self.RGlobCopy(locales, os.path.join(S, "locales", "*"))
     else:
         Throw_Error("Unknown OS " + os_info["type"] + ": Cannot extract CEF artifacts")
     self.Depends(build, copy_nodes)
