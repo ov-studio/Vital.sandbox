@@ -50,19 +50,19 @@ namespace Vital::Godot {
     }
 
     bool Webview::is_fullscreen() {
-        return (bool)webview -> get("full_window_size");
+        return (bool)webview -> call("get_full_window_size");
     }
 
     bool Webview::is_transparent() {
-        return (bool)webview -> get("transparent");
+        return (bool)webview -> call("get_transparent");
     }
 
     bool Webview::is_autoplay() {
-        return (bool)webview -> get("autoplay");
+        return (bool)webview -> call("get_autoplay");
     }
 
     bool Webview::is_zoomable() {
-        return (bool)webview -> get("zoom_hotkeys");
+        return (bool)webview -> call("get_zoom_hotkeys");
     }
 
     bool Webview::is_devtools_visible() {
@@ -84,19 +84,19 @@ namespace Vital::Godot {
     }
 
     void Webview::set_fullscreen(bool state) {
-        webview -> set_deferred("full_window_size", state);
+        webview -> call("set_full_window_size", state);
     }
 
     void Webview::set_transparent(bool state) {
-        webview -> set_deferred("transparent", state);
+        webview -> call("set_transparent", state);
     }
 
     void Webview::set_autoplay(bool state) {
-        webview -> set_deferred("autoplay", state);
+        webview -> call("set_autoplay", state);
     }
 
     void Webview::set_zoomable(bool state) {
-        webview -> set_deferred("zoom_hotkeys", state);
+        webview -> call("set_zoom_hotkeys", state);
     }
 
     void Webview::set_devtools_visible(bool state) {
