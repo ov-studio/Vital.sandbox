@@ -27,7 +27,7 @@ namespace Vital::Godot {
     // Instantiators //
     Console::Console() {
         webview = new Vital::Godot::Webview;
-        webview -> set_position({0, 0});
+        webview -> set_position({2, 2});
         webview -> set_size({850, 425});
         webview -> set_visible(true);
         webview -> set_fullscreen(false);
