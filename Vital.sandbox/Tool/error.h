@@ -40,7 +40,8 @@ namespace Vital::Error {
         {"file-path-invalid", "Invalid file path ('{}')"},
         {"file-nonexistent", "File not found ('{}')"},
         {"directory-nonexistent", "Directory not found ('{}')"},
-        {"file-busy", "File busy ('{}')"}
+        {"file-busy", "File busy ('{}')"},
+        {"webview-failed", "Webview failed ('{}')"}
     };
 
     inline const std::runtime_error fetch(std::string_view code, std::string_view message = "") {
