@@ -19,6 +19,8 @@ env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
 
 if os_info["type"] == "Windows":
     env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD"])
+else:
+    env.Append(CXXFLAGS=["-fexceptions"])
 
 env.sources += (
     env.RGlob("Engine", "*.cpp") + 

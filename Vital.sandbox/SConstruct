@@ -50,10 +50,10 @@ if os_info["type"] == "Windows":
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
 elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
-    env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE"])
+    env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE", "HAS_SOCKLEN_T"])
 elif os_info["type"] == "Linux":
     env.Append(CPPDEFINES=["Vital_SDK_LINUX"])
-    env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX"])
+    env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX", "HAS_SOCKLEN_T"])
 
     
 # Returns
