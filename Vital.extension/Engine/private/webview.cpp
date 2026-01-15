@@ -69,6 +69,10 @@ namespace Vital::Godot {
         webview -> call_deferred("reload");
     }
 
+    void Webview::zoom(float value) {
+        webview -> call_deferred("zoom", value);
+    }
+
     void Webview::update() {
         webview -> call_deferred("resize");
         webview -> call_deferred("update_visibility");

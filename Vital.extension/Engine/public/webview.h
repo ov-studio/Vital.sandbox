@@ -38,6 +38,7 @@ namespace Vital::Godot {
             void eval(const std::string& input);
             void focus();
             void reload();
+            void zoom(float value);
             void update();
             bool is_visible();
             void set_visible(bool state);
