@@ -110,6 +110,14 @@ namespace Vital::Godot {
         webview -> set_deferred("autoplay", state);
     }
 
+    bool Webview::is_zoomable() {
+        return (bool)webview -> get("zoom_hotkeys");
+    }
+
+    void Webview::set_zoomable(bool state) {
+        webview -> set_deferred("zoom_hotkeys", state);
+    }
+
     bool Webview::is_devtools_visible() {
         return (bool)webview -> call("is_devtools_open");
     }

@@ -48,6 +48,8 @@ namespace Vital::Godot {
             void set_transparent(bool state);
             bool is_autoplay();
             void set_autoplay(bool state);
+            bool is_zoomable();
+            void set_zoomable(bool state);
             bool is_devtools_visible();
             void set_devtools_visible(bool state);
             void emit(const std::string& input);
