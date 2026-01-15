@@ -23,7 +23,7 @@
 
 namespace Vital::Godot {
     class Webview {
-        protected:
+        private:
             godot::Control* webview = nullptr;
         public:
             // Instantiators //
