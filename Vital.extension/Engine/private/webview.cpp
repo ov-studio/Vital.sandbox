@@ -98,6 +98,14 @@ namespace Vital::Godot {
         webview -> set_deferred("transparent", state);
     }
 
+    bool Webview::is_autoplay() {
+        return (bool)webview -> get("autoplay");
+    }
+
+    void Webview::set_autoplay(bool state) {
+        webview -> set_deferred("autoplay", state);
+    }
+
     bool Webview::is_devtools_visible() {
         return (bool)webview -> call("is_devtools_open");
     }
