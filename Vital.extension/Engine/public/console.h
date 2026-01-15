@@ -34,11 +34,11 @@ namespace Vital::Godot {
             // Instantiators //
             Console();
             ~Console();
-            void _notification(int what);
 
 
             // Getters //
             static Console* get_singleton();
+            void update();
     };
 }
 #endif
