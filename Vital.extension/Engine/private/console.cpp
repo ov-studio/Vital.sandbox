@@ -26,9 +26,9 @@
 namespace Vital::Godot {
     // Instantiators //
     Console::Console() {
-        webview = memnew(Vital::Godot::Webview);
+        webview = new Vital::Godot::Webview;
         webview -> set_position({0, 0});
-        webview -> set_size({5, 5});
+        webview -> set_size({300, 300});
         webview -> set_visible(true);
         webview -> set_fullscreen(false);
         webview -> set_transparent(true);
@@ -36,20 +36,22 @@ namespace Vital::Godot {
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
         webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
-        Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", this);
-        update();
+        godot::UtilityFunctions::print("created console");
     }
 
     Console::~Console() {
         if (!webview) return;
-        memdelete(webview);
+        delete webview;
         webview = nullptr;
     }
 
 
     // Getters //
     Console* Console::get_singleton() {
-        if (!singleton) singleton = memnew(Console);
+        if (!singleton) {
+            singleton = memnew(Console);
+            singleton -> update();
+        }
         return singleton;
     }
 
