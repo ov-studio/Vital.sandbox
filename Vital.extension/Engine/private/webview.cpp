@@ -36,7 +36,7 @@ namespace Vital::Godot {
         Canvas::get_singleton() -> add_child(webview);
     }
 
-    ~Webview::Webview() {
+    Webview::~Webview() {
         if (!webview) return;
         memdelete(webview);
         webview = nullptr;

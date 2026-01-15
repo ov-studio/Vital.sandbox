@@ -14,7 +14,7 @@
 
 #if defined(Vital_SDK_Client)
 #pragma once
-#include <Vital.extension/Engine/public/index.h>
+#include <Vital.extension/Engine/public/canvas.h>
 
 
 ////////////////////////////
@@ -27,7 +27,7 @@ namespace Vital::Godot {
             godot::Control* webview = nullptr;
         public:
             // Instantiators //
-            Webview() = default;
+            Webview();
             ~Webview();
 
 
