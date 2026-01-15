@@ -70,11 +70,11 @@ namespace Vital::Godot {
     }
 
     godot::Vector2 Webview::get_position() {
-        webview -> get_position();
+        return webview -> get_position();
     }
 
     godot::Vector2 Webview::get_size() {
-        webview -> get_size();
+        return webview -> get_size();
     }
 
 
