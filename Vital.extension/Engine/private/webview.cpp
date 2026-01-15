@@ -69,18 +69,18 @@ namespace Vital::Godot {
         return (bool)webview -> call("is_devtools_open");
     }
 
+    godot::Vector2 Webview::get_position() {
+        webview -> get_position();
+    }
+
+    godot::Vector2 Webview::get_size() {
+        webview -> get_size();
+    }
+
 
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> call_deferred("set_visible", state);
-    }
-
-    void Webview::set_position(const godot::Vector2& position) {
-        webview -> set_position(position);
-    }
-
-    void Webview::set_size(const godot::Vector2& size) {
-        webview -> set_size(size);
     }
 
     void Webview::set_fullscreen(bool state) {
@@ -102,6 +102,14 @@ namespace Vital::Godot {
     void Webview::set_devtools_visible(bool state) {
         if (state) webview -> call_deferred("open_devtools");
         else webview -> call_deferred("close_devtools");
+    }
+
+    void Webview::set_position(const godot::Vector2& position) {
+        webview -> set_position(position);
+    }
+
+    void Webview::set_size(const godot::Vector2& size) {
+        webview -> set_size(size);
     }
 
 

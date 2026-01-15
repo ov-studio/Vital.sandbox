@@ -38,16 +38,8 @@ namespace Vital::Godot {
             bool is_autoplay();
             bool is_zoomable();
             bool is_devtools_visible();
-
-            void Webview::set_position(const godot::Vector2 &pos) {
-                if (!webview) return;
-                webview->set_position(pos);
-            }
-            
-            void Webview::set_size(const godot::Vector2 &size) {
-                if (!webview) return;
-                webview->set_size(size);
-            }
+            godot::Vector2 get_position();
+            godot::Vector2 get_size();
 
 
             // Setters //
