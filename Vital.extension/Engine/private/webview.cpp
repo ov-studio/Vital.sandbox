@@ -82,8 +82,12 @@ namespace Vital::Godot {
         webview -> call_deferred("set_visible", state);
     }
 
-    bool Webview::is_full_window() {
+    bool Webview::is_fullscreen() {
         return (bool)webview -> get("full_window_size");
+    }
+
+    void Webview::set_fullscreen(bool state) {
+        webview -> set_deferred("full_window_size", state);
     }
 
     bool Webview::is_devtools_visible() {
