@@ -36,7 +36,7 @@ namespace Vital::Godot {
 
             // Getters //
             static Console* get_singleton();
-            void update();
+            void update_size();
     };
 }
 #endif
