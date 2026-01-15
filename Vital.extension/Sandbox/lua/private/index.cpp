@@ -52,6 +52,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
     Singleton::Singleton() {
         godot::UtilityFunctions::print("Initialized Lua vm");
+
         vm = new Vital::Sandbox::Lua::create({
             {API::SSR::bind, API::SSR::inject},
             {API::SSAO::bind, API::SSAO::inject},
@@ -121,7 +122,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
     void Singleton::process(double delta) {
         //godot::UtilityFunctions::print("rendered");
-        
+
         // Lua script to run
         std::string rwString = R"(
             print("processing")

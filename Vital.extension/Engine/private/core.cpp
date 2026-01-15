@@ -17,6 +17,7 @@
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/lua/public/index.h>
 #include <Vital.sandbox/Tool/event.h>
+#include <Vital.sandbox/System/public/discord.h>
 
 
 ///////////////////////////
@@ -27,6 +28,21 @@ namespace Vital::Godot {
     // Instantiators //
     Core::Core() {
         Sandbox::Lua::Singleton::fetch();
+
+        // Initialize Discord Rich Presence
+        if (Vital::System::Discord::start(1461425342722998474)) {
+            godot::UtilityFunctions::print("Discord Rich Presence initialized");
+            Vital::System::Discord::setActivity(
+                "Playing Vital.sandbox",  // state
+                "In Main Menu",           // details
+                "",                       // largeImage
+                "",                       // largeText
+                "",                       // smallImage
+                ""                        // smallText
+            );
+        } else {
+            godot::UtilityFunctions::print("Failed to initialize Discord (Discord may not be running)");
+        }
     }
     
     void Core::_ready() {
@@ -37,6 +53,9 @@ namespace Vital::Godot {
 
     void Core::_process(double delta) {
         Sandbox::Lua::Singleton::fetch() -> process(delta);
+
+        // Update Discord callbacks (connection alive)
+        Vital::System::Discord::update();
     }
 
 
