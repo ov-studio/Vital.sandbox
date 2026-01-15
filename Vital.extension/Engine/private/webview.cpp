@@ -65,6 +65,27 @@ namespace Vital::Godot {
         webview -> call_deferred("focus");
     }
 
+    void Webview::reload() {
+        webview -> call_deferred("reload");
+    }
+
+    void Webview::update() {
+        webview -> call_deferred("resize");
+        webview -> call_deferred("update_visibility");
+    }
+
+    bool Webview::is_visible() {
+        return (bool)webview -> call("is_visible");
+    }
+
+    void Webview::set_visible(bool state) {
+        webview -> call_deferred("set_visible", state);
+    }
+
+    bool Webview::is_full_window() {
+        return (bool)webview -> get("full_window_size");
+    }
+
     bool Webview::is_devtools_visible() {
         return (bool)webview -> call("is_devtools_open");
     }

@@ -37,6 +37,11 @@ namespace Vital::Godot {
             void clear_history();
             void eval(const std::string& input);
             void focus();
+            void reload();
+            void update();
+            bool is_visible();
+            void set_visible(bool state);
+            bool is_full_window();
             bool is_devtools_visible();
             void set_devtools_visible(bool state);
             void emit(const std::string& input);
