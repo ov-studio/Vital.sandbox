@@ -1,5 +1,8 @@
 from conan import ConanFile
 from conan.tools.scons import SConsDeps
+from utils import *
+
+os_info = Fetch_OS()
 
 class BuildConan(ConanFile):
     settings = "os", "arch","build_type", "compiler"
@@ -13,4 +16,6 @@ class BuildConan(ConanFile):
         self.options["openssl"].shared = False
         self.options["libcurl"].shared = False
         self.settings.compiler.cppstd = "17"
-        self.settings.compiler.runtime = "static"
+        
+        if os_info["type"] == "Windows":
+            self.settings.compiler.runtime = "static"
