@@ -33,7 +33,8 @@ namespace Vital::Godot {
                 throw Vital::Error::fetch("webview-failed", "No compatible device found");
             }
         }
-        Canvas::get_singleton() -> add_child(webview);
+        Canvas::get_singleton() -> call_deferred("add_child", webview);
+        webview -> call_deferred("load_url", "https://github.com/ov-studio/Vital.sandbox");
     }
 
     Webview::~Webview() {
@@ -44,8 +45,37 @@ namespace Vital::Godot {
 
 
     // APIs //
-    void Webview::load_url(const std::string& url) {
-        webview -> call("load_url", to_godot_string(url));
+    void Webview::load_from_url(const std::string& url) {
+        webview -> call_deferred("load_url", to_godot_string(url));
+    }
+
+    void Webview::load_from_raw(const std::string& raw) {
+        webview -> call_deferred("load_html", to_godot_string(raw));
+    }
+
+    void Webview::clear_history() {
+        webview -> call_deferred("clear_all_browsing_data");
+    }
+
+    void Webview::eval(const std::string& input) {
+        webview -> call_deferred("eval", to_godot_string(input));
+    }
+
+    void Webview::focus() {
+        webview -> call_deferred("focus");
+    }
+
+    bool Webview::is_devtools_visible() {
+        return (bool)webview -> call("is_devtools_open");
+    }
+
+    void Webview::set_devtools_visible(bool state) {
+        if (state) webview -> call_deferred("open_devtools");
+        else webview -> call_deferred("close_devtools");
+    }
+
+    void Webview::emit(const std::string& input) {
+        webview -> call_deferred("post_message", to_godot_string(input));
     }
 }
 #endif

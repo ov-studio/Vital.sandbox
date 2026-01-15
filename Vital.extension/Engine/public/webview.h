@@ -32,7 +32,14 @@ namespace Vital::Godot {
 
 
             // APIs //
-            void load_url(const std::string& url);
+            void load_from_url(const std::string& url);
+            void load_from_raw(const std::string& raw);
+            void clear_history();
+            void eval(const std::string& input);
+            void focus();
+            bool is_devtools_visible();
+            void set_devtools_visible(bool state);
+            void emit(const std::string& input);
     };
 }
 #endif
