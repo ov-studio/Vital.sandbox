@@ -43,6 +43,8 @@ namespace Vital::Godot {
             void set_visible(bool state);
             bool is_fullscreen();
             void set_fullscreen(bool state);
+            bool is_transparent();
+            void set_transparent(bool state);
             bool is_devtools_visible();
             void set_devtools_visible(bool state);
             void emit(const std::string& input);

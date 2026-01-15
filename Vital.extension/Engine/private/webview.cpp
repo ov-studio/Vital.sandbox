@@ -90,6 +90,14 @@ namespace Vital::Godot {
         webview -> set_deferred("full_window_size", state);
     }
 
+    bool Webview::is_transparent() {
+        return (bool)webview -> get("transparent");
+    }
+
+    void Webview::set_transparent(bool state) {
+        webview -> set_deferred("transparent", state);
+    }
+
     bool Webview::is_devtools_visible() {
         return (bool)webview -> call("is_devtools_open");
     }
