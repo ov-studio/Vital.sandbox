@@ -23,23 +23,22 @@
 
 namespace Vital::Godot {
     class Console;
-    class Console : public godot::Node2D {
+    class Console : public godot::Control {
+        GDCLASS(Console, godot::Control)
         protected:
             static inline Console* singleton = nullptr;
+			static void _bind_methods() {};
         private:
             Webview* webview = nullptr;
         public:
             // Instantiators //
             Console();
             ~Console();
+            void _notification(int what);
 
 
             // Getters //
             static Console* get_singleton();
-
-
-            // APIs //
-            void update(); // TODO: Call it whenever godot window resizes
     };
 }
 #endif

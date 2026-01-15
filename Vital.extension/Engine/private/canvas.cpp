@@ -31,6 +31,7 @@ namespace Vital::Godot {
         set_as_top_level(true);
         set_visible(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
+        Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
         godot::UtilityFunctions::print("Initialized Canvas");
     }
 
@@ -54,9 +55,7 @@ namespace Vital::Godot {
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
-                auto* root = Core::get_singleton() -> get_tree() -> get_root();
                 singleton = memnew(Canvas);
-                root -> call_deferred("add_child", singleton);
             //}
         }
         return singleton;
