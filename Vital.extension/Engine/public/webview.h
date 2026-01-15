@@ -22,7 +22,7 @@
 ////////////////////////////
 
 namespace Vital::Godot {
-    class Webview : public godot::Node2D {
+    class Webview {
         private:
             godot::Control* webview = nullptr;
         public:
