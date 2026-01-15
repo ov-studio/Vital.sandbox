@@ -37,7 +37,6 @@ namespace Vital::Godot {
     void Canvas::_process(double) {
         queue_redraw();
         Texture::flush();
-        godot::UtilityFunctions::print("Rendering Canvas");
     }
 
     void Canvas::_clean() {
