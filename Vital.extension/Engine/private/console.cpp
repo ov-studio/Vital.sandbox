@@ -26,7 +26,15 @@ namespace Vital::Godot {
     // Instantiators //
     Console::Console() {
         webview = memnew(Vital::Godot::Webview);
-        webview -> load_from_url("https://github.com/ov-studio/Vital.sandbox");
+        webview -> set_position({0, 0});
+        webview -> set_size({500, 400});
+        webview -> set_visible(true);
+        webview -> set_fullscreen(false);
+        webview -> set_transparent(true);
+        webview -> set_autoplay(false);
+        webview -> set_zoomable(false);
+        webview -> set_devtools_visible(false);
+        webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
     }
 
     Console::~Console() {
