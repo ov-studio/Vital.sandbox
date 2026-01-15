@@ -33,8 +33,13 @@ namespace Vital::Godot {
             Console();
             ~Console();
 
+
             // Getters //
             static Console* get_singleton();
+
+
+            // APIs //
+            void update(); // TODO: Call it whenever godot window resizes
     };
 }
 #endif
