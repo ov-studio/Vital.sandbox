@@ -68,7 +68,7 @@ namespace Vital::Tool::File {
         if (!dir -> file_exists(target)) throw Vital::Error::fetch("file-nonexistent", to_std_string(target));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::READ);
         if (!file.is_valid()) throw Vital::Error::fetch("file-busy", to_std_string(target));
-        return file -> get_as_text().utf8().get_data();
+        return to_std_string(file -> get_as_text());
     }
 
     inline godot::PackedByteArray read_binary(const godot::String& base, const godot::String& target) {
