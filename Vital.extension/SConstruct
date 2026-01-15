@@ -19,6 +19,8 @@ env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
 
 if os_info["type"] == "Windows":
     env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD"])
+else:
+    env.Append(CXXFLAGS=["-fexceptions"])
 
 env.sources += (
     env.RGlob("Engine", "*.cpp") + 
@@ -38,6 +40,10 @@ env.Append(CPPPATH=[
 # Builds
 build_dir = ".build/{}".format(name)
 bin_dir = ".bin/{}/{}".format(env["platform"], "{}{}{}".format(name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst("$SHLIBSUFFIX")))
+
+if os_info["type"] != "Windows":
+    env["SHLIBPREFIX"] = ""
+
 bin = env.SharedLibrary(bin_dir, source = env.sources)
 build = env.Install("{}/{}/".format(build_dir, env["platform"]), bin)
 env.Stage_VCPKG(build)
