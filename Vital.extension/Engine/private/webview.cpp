@@ -75,6 +75,14 @@ namespace Vital::Godot {
         webview -> call_deferred("set_visible", state);
     }
 
+    void Webview::set_position(const godot::Vector2& position) {
+        webview -> set_position(position);
+    }
+
+    void Webview::set_size(const godot::Vector2& size) {
+        webview -> set_size(size);
+    }
+
     void Webview::set_fullscreen(bool state) {
         webview -> set_deferred("full_window_size", state);
     }
