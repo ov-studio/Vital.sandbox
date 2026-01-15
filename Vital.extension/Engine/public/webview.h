@@ -31,27 +31,33 @@ namespace Vital::Godot {
             ~Webview();
 
 
+            // Getters //
+            bool is_visible();
+            bool is_fullscreen();
+            bool is_transparent();
+            bool is_autoplay();
+            bool is_zoomable();
+            bool is_devtools_visible();
+
+
+            // Setters //
+            void set_visible(bool state);
+            void set_fullscreen(bool state);
+            void set_transparent(bool state);
+            void set_autoplay(bool state);
+            void set_zoomable(bool state);
+            void set_devtools_visible(bool state);
+
+
             // APIs //
             void load_from_url(const std::string& url);
             void load_from_raw(const std::string& raw);
             void clear_history();
-            void eval(const std::string& input);
             void focus();
             void reload();
             void zoom(float value);
             void update();
-            bool is_visible();
-            void set_visible(bool state);
-            bool is_fullscreen();
-            void set_fullscreen(bool state);
-            bool is_transparent();
-            void set_transparent(bool state);
-            bool is_autoplay();
-            void set_autoplay(bool state);
-            bool is_zoomable();
-            void set_zoomable(bool state);
-            bool is_devtools_visible();
-            void set_devtools_visible(bool state);
+            void eval(const std::string& input);
             void emit(const std::string& input);
     };
 }

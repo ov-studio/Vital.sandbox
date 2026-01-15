@@ -44,6 +44,59 @@ namespace Vital::Godot {
     }
 
 
+    // Getters //
+    bool Webview::is_visible() {
+        return (bool)webview -> call("is_visible");
+    }
+
+    bool Webview::is_fullscreen() {
+        return (bool)webview -> get("full_window_size");
+    }
+
+    bool Webview::is_transparent() {
+        return (bool)webview -> get("transparent");
+    }
+
+    bool Webview::is_autoplay() {
+        return (bool)webview -> get("autoplay");
+    }
+
+    bool Webview::is_zoomable() {
+        return (bool)webview -> get("zoom_hotkeys");
+    }
+
+    bool Webview::is_devtools_visible() {
+        return (bool)webview -> call("is_devtools_open");
+    }
+
+
+    // Setters //
+    void Webview::set_visible(bool state) {
+        webview -> call_deferred("set_visible", state);
+    }
+
+    void Webview::set_fullscreen(bool state) {
+        webview -> set_deferred("full_window_size", state);
+    }
+
+    void Webview::set_transparent(bool state) {
+        webview -> set_deferred("transparent", state);
+    }
+
+    void Webview::set_autoplay(bool state) {
+        webview -> set_deferred("autoplay", state);
+    }
+
+    void Webview::set_zoomable(bool state) {
+        webview -> set_deferred("zoom_hotkeys", state);
+    }
+
+    void Webview::set_devtools_visible(bool state) {
+        if (state) webview -> call_deferred("open_devtools");
+        else webview -> call_deferred("close_devtools");
+    }
+
+
     // APIs //
     void Webview::load_from_url(const std::string& url) {
         webview -> call_deferred("load_url", to_godot_string(url));
@@ -55,10 +108,6 @@ namespace Vital::Godot {
 
     void Webview::clear_history() {
         webview -> call_deferred("clear_all_browsing_data");
-    }
-
-    void Webview::eval(const std::string& input) {
-        webview -> call_deferred("eval", to_godot_string(input));
     }
 
     void Webview::focus() {
@@ -78,53 +127,8 @@ namespace Vital::Godot {
         webview -> call_deferred("update_visibility");
     }
 
-    bool Webview::is_visible() {
-        return (bool)webview -> call("is_visible");
-    }
-
-    void Webview::set_visible(bool state) {
-        webview -> call_deferred("set_visible", state);
-    }
-
-    bool Webview::is_fullscreen() {
-        return (bool)webview -> get("full_window_size");
-    }
-
-    void Webview::set_fullscreen(bool state) {
-        webview -> set_deferred("full_window_size", state);
-    }
-
-    bool Webview::is_transparent() {
-        return (bool)webview -> get("transparent");
-    }
-
-    void Webview::set_transparent(bool state) {
-        webview -> set_deferred("transparent", state);
-    }
-
-    bool Webview::is_autoplay() {
-        return (bool)webview -> get("autoplay");
-    }
-
-    void Webview::set_autoplay(bool state) {
-        webview -> set_deferred("autoplay", state);
-    }
-
-    bool Webview::is_zoomable() {
-        return (bool)webview -> get("zoom_hotkeys");
-    }
-
-    void Webview::set_zoomable(bool state) {
-        webview -> set_deferred("zoom_hotkeys", state);
-    }
-
-    bool Webview::is_devtools_visible() {
-        return (bool)webview -> call("is_devtools_open");
-    }
-
-    void Webview::set_devtools_visible(bool state) {
-        if (state) webview -> call_deferred("open_devtools");
-        else webview -> call_deferred("close_devtools");
+    void Webview::eval(const std::string& input) {
+        webview -> call_deferred("eval", to_godot_string(input));
     }
 
     void Webview::emit(const std::string& input) {
