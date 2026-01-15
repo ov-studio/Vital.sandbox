@@ -53,10 +53,10 @@ namespace Vital::Godot {
     // Utils //
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
-            if (!godot::Engine::get_singleton() -> is_editor_hint()) {
+            //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
                 singleton = memnew(Canvas);
                 Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
-            }
+            //}
         }
         return singleton;
     }
