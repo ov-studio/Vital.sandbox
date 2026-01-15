@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://3hid3cjm00pb"]
+
+[ext_resource type="Texture2D" uid="uid://ckqleoao16gr0" path="res://images (2).jpg" id="1_ig7tw"]
+
+[sub_resource type="Environment" id="Environment_0xm2m"]
+ssao_enabled = true
+ssao_intensity = 5.0
+adjustment_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
+albedo_texture = ExtResource("1_ig7tw")
+
+[sub_resource type="BoxMesh" id="BoxMesh_7dm0k"]
+custom_aabb = AABB(5, 5, 5, 5, 5, 5)
+uv2_padding = 2.3
+size = Vector3(50, 50, 50)
+
+[node name="Node" type="Node"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_0xm2m")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.0120121, 0.188458, -0.982008, 0.0396779, 0.981215, 0.188791, 0.99914, -0.0412318, 0.00430887, -69.9152, 13.8143, 11.696)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+material_override = SubResource("StandardMaterial3D_0xm2m")
+mesh = SubResource("BoxMesh_7dm0k")
+
+[node name="Core" type="Core" parent="."]
