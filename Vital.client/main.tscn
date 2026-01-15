@@ -1,6 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://3hid3cjm00pb"]
-
-[ext_resource type="Texture2D" uid="uid://ckqleoao16gr0" path="res://images (2).jpg" id="1_ig7tw"]
+[gd_scene load_steps=4 format=3 uid="uid://3hid3cjm00pb"]
 
 [sub_resource type="Environment" id="Environment_0xm2m"]
 ssao_enabled = true
@@ -8,7 +6,6 @@ ssao_intensity = 5.0
 adjustment_enabled = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
-albedo_texture = ExtResource("1_ig7tw")
 
 [sub_resource type="BoxMesh" id="BoxMesh_7dm0k"]
 custom_aabb = AABB(5, 5, 5, 5, 5, 5)
