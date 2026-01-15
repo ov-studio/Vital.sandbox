@@ -47,4 +47,15 @@ if os_info["type"] != "Windows":
 bin = env.SharedLibrary(bin_dir, source = env.sources)
 build = env.Install("{}/{}/".format(build_dir, env["platform"]), bin)
 env.Stage_VCPKG(build)
-Default([bin, build])
+
+# Automated Discord SDK copy files
+discord_sdk_bin = os.path.join(cwd, "../Vital.sandbox/Vendor/discord-sdk/bin")
+discord_output_dir = "{}/{}/".format(build_dir, env["platform"])
+if os_info["type"] == "Windows":
+    discord_lib = env.Install(discord_output_dir, os.path.join(discord_sdk_bin, "discord_game_sdk.dll"))
+elif os_info["type"] == "Darwin":
+    discord_lib = env.Install(discord_output_dir, os.path.join(discord_sdk_bin, "discord_game_sdk.dylib"))
+elif os_info["type"] == "Linux":
+    discord_lib = env.Install(discord_output_dir, os.path.join(discord_sdk_bin, "discord_game_sdk.so"))
+
+Default([bin, build, discord_lib])
