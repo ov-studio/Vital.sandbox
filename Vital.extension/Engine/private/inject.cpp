@@ -34,7 +34,6 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 		Vital::Godot::Core::get_environment();
 		Vital::Godot::Canvas::get_singleton();
 		Vital::Godot::Console::get_singleton();
-		Vital::Godot::Console::get_singleton();
 		#endif
 		Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
 	});

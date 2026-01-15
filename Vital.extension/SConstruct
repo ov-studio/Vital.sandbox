@@ -18,7 +18,7 @@ env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
 
 if os_info["type"] == "Windows":
-    env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD"])
+    env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])
 else:
     env.Append(CXXFLAGS=["-fexceptions"])
 
