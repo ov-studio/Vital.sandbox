@@ -33,6 +33,10 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 		#if defined(Vital_SDK_Client)
 		Vital::Godot::Core::get_environment();
 		Vital::Godot::Canvas::get_singleton();
+
+		// TODO: REMOVE LATER
+		auto* webview = memnew(Vital::Godot::Webview);
+		webview -> load_url("https://ko-fi.com/ovstudio");
 		#endif
 		Vital::Godot::Sandbox::Lua::Singleton::fetch() -> ready();
 	});
