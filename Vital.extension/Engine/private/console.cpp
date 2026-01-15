@@ -36,7 +36,7 @@ namespace Vital::Godot {
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
         webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
-        Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
+        Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", this);
     }
 
     Console::~Console() {
