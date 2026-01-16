@@ -49,7 +49,7 @@ env.Append(LIBPATH=[os.path.join(cwd, "Vendor/discord-sdk/bin")])
 if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
     env.Append(CPPFLAGS=["/EHsc"])
-    env.Append(LIBS=["ws2_32", "winmm", "wbemuuid", "discord_game_sdk"])
+    env.Append(LIBS=["ws2_32", "winmm", "wbemuuid", "discord_game_sdk.dll"])
 elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE", "HAS_SOCKLEN_T"])
@@ -57,7 +57,7 @@ elif os_info["type"] == "Darwin":
 elif os_info["type"] == "Linux":
     env.Append(CPPDEFINES=["Vital_SDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX", "HAS_SOCKLEN_T"])
-    env.Append(LIBS=[":discord_game_sdk.so"])
+    env.Append(LIBS=["discord_game_sdk.so"])
 
     
 # Returns
