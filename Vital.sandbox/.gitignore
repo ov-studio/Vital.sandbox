@@ -6,6 +6,7 @@
 .vcpkg/
 .cef/
 *.cef_temp/
+**/discord-sdk/bin/
 
 # Binaries
 *.o

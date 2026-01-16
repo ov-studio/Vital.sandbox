@@ -21,20 +21,14 @@
 ////////////////////////////
 
 namespace Vital::System::Discord {
-    // Managers //
-    extern bool start(long long applicationID);
+    // // Managers //
+    extern bool start();
     extern bool stop();
-    extern bool update();
 
-    // APIs //
+    // // APIs //
     extern bool isConnected();
     extern bool setActivity(
         const std::string& state,
-        const std::string& details,
-        const std::string& largeImage = "",
-        const std::string& largeText = "",
-        const std::string& smallImage = "",
-        const std::string& smallText = ""
+        const std::string& details
     );
-    extern bool clearActivity();
 }

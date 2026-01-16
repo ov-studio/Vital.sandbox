@@ -1,0 +1,8 @@
+Please check out this page and download discord-social-sdk: 
+https://discord.com/developers/docs/discord-social-sdk/getting-started/using-c++#step-4-download-the-discord-sdk-for-c++
+
+Folder structure:
+discord-sdk/
+  bin/
+    debug/
+    release/
