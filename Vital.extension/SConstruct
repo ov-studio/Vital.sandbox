@@ -38,7 +38,7 @@ env.Append(CPPPATH=[
 
 
 # Builds
-build_dir = ".build/{}/{}".format(env["platform"], name)
+build_dir = ".build/{}/{}".format(name, env["platform"])
 bin_dir = ".bin/{}/{}".format(env["platform"], "{}{}{}".format(name, env["suffix"].replace(".dev", "").replace(".universal", ""), env.subst("$SHLIBSUFFIX")))
 
 if os_info["type"] != "Windows":
