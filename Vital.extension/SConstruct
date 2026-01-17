@@ -46,7 +46,7 @@ build = env.Install(build_dir, bin)
 env.Stage_VCPKG(build)
 
 
-if ARGUMENTS == "Client":
+if ARGUMENTS["platform_type"] == "Client":
     # Automated Discord SDK copy files
     discord_sdk_bin = os.path.join(cwd, f"../Vital.sandbox/Vendor/discord-sdk/bin/{ARGUMENTS["build_type"].lower()}")
     if os_info["type"] == "Windows":
