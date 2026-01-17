@@ -16,12 +16,6 @@ ARGUMENTS["use_static_cpp"] = "no"
 cwd = os.path.abspath(os.getcwd())
 env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
-
-if os_info["type"] == "Windows":
-    env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])
-else:
-    env.Append(CXXFLAGS=["-fexceptions"])
-
 env.sources += (
     env.RGlob("Engine", "*.cpp") + 
     env.RGlob("Engine", "*.c") + 
@@ -35,6 +29,10 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor")
 ])
+if os_info["type"] == "Windows":
+    env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])
+else:
+    env.Append(CXXFLAGS=["-fexceptions"])
 
 
 # Builds
