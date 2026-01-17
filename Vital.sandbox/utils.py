@@ -134,6 +134,16 @@ def Build_Modules(self):
 BaseEnvironment.Build_Modules = Build_Modules
 
 def Build_Conan(self):
+    if shutil.which("conan") is not None:
+        return
+
+    # Install conan silently via pip
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=True,
+    )
     subprocess.run((
         "conan", "install", ".",
         "--build=missing",

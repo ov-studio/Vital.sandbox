@@ -1,7 +1,4 @@
-import os, subprocess
 from utils import *
-from SCons.Environment import Base as BaseEnvironment
-from SCons.Script import Copy, Action
 
 os_info = Fetch_OS()
 
