@@ -11,4 +11,5 @@ BaseEnvironment.Build_Module = Build_Module
 
 def Stage_Module(self, build):
     self.Stage_VCPKG(build)
+    self.Stage_Discord(build)
 BaseEnvironment.Stage_Module = Stage_Module
