@@ -7,6 +7,7 @@ def Build_Module(self):
     self.Build_Vendor()
     self.Build_Conan()
     self.Build_VCPKG()
+    self.Build_Discord()
 BaseEnvironment.Build_Module = Build_Module
 
 def Stage_Module(self, build):
