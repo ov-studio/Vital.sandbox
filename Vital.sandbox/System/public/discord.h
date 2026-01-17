@@ -12,6 +12,7 @@
 // Imports //
 //////////////
 
+#if defined(Vital_SDK_Client)
 #pragma once
 #include <string>
 
@@ -32,3 +33,4 @@ namespace Vital::System::Discord {
         const std::string& details
     );
 }
+#endif

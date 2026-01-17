@@ -29,6 +29,7 @@ namespace Vital::Godot {
     Core::Core() {
         Sandbox::Lua::Singleton::fetch();
 
+        #if defined(Vital_SDK_Client)
         // Initialize Discord Rich Presence
         if (Vital::System::Discord::start()) {
             godot::UtilityFunctions::print("Discord Rich Presence initialized");
@@ -41,6 +42,7 @@ namespace Vital::Godot {
         } else {
             godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
         }
+        #endif
     }
     
     void Core::_ready() {

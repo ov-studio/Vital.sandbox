@@ -12,6 +12,7 @@
 // Imports //
 //////////////
 
+#if defined(Vital_SDK_Client)
 #define DISCORDPP_IMPLEMENTATION // this is needed, do not remove
 #pragma once
 #include <Vital.sandbox/System/public/discord.h>
@@ -83,3 +84,4 @@ namespace Vital::System::Discord {
     // // APIs //
     bool isConnected() { return running && client; }
 }
+#endif
