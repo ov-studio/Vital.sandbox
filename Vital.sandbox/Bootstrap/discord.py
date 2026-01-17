@@ -21,6 +21,5 @@ def Stage_Discord(self, build, build_dir):
             copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dylib"))
         elif os_info["type"] == "Linux":
             copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.so"))
-        print(copy_nodes)
         self.Depends(build, copy_nodes)
 BaseEnvironment.Stage_Discord = Stage_Discord
