@@ -5,7 +5,6 @@ from vital import *
 
 
 # Metadatas
-name = "vital.sdk"
 ARGUMENTS["target"] = f"template_{ARGUMENTS["build_type"].lower()}" 
 ARGUMENTS["use_static_cpp"] = "no" 
 
@@ -39,7 +38,7 @@ else:
 
 # Builds
 build_dir = f".build/{env.Args["platform_type"].lower()}/{env['platform']}"
-bin_dir = f".bin/{env.Args["platform_type"].lower()}/{env['platform']}/{name}{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}{env.subst('$SHLIBSUFFIX')}"
+bin_dir = f".bin/{env.Args["platform_type"].lower()}/{env['platform']}/{env.name}{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}{env.subst('$SHLIBSUFFIX')}"
 bin = env.SharedLibrary(bin_dir, source = env.sources)
 build = env.Install(build_dir, bin)
 env.Stage_Module(build)

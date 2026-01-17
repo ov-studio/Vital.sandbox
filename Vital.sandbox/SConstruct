@@ -6,6 +6,7 @@ from vital import *
 os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=Fetch_Compiler(), PLATFORM="")
+env.name = "vital.sdk"
 env.Args = ARGUMENTS
 env.Args["platform_type"] = env.Args.get("platform_type", "Server")
 env.Args["build_type"] = env.Args.get("build_type", "Debug")
