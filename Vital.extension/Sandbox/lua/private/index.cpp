@@ -130,6 +130,7 @@ namespace Vital::Godot::Sandbox::Lua {
         //vm -> loadString(rwString);
     }
 
+    #if defined(Vital_SDK_Client)
     void Singleton::draw(Vital::Godot::Canvas* canvas) {
         //godot::UtilityFunctions::print("rendered");
         
@@ -253,4 +254,5 @@ namespace Vital::Godot::Sandbox::Lua {
         //vm -> loadString(rwString);
         */
     }
+    #endif
 }
