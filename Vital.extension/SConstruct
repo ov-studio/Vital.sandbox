@@ -29,6 +29,9 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor")
 ])
+
+
+# Flags
 if os_info["type"] == "Windows":
     env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])
 else:
