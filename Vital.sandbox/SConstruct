@@ -35,7 +35,7 @@ env.Append(CPPPATH=[
 
 
 # Flags
-if ARGUMENTS["platform_type"] == "Client":
+if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["Vital_SDK_Client"])
 
 
