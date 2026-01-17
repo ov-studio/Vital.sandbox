@@ -47,7 +47,7 @@ def Exec(*args):
     except FileNotFoundError:
         Throw_Error(f"Command not found: {command[0]}")
 
-def Download_Remote(url, destination):
+def Download(url, destination):
     print("Downloading:", url)
     try:
         with urllib.request.urlopen(url, timeout=60) as r, open(destination, "wb") as f:
