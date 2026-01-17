@@ -4,7 +4,6 @@ sys.path.append("../Vital.sandbox")
 from vital import *
 from utils import *
 
-os_info = Fetch_OS()
 
 # Metadatas
 name = "vital.sdk"
@@ -13,6 +12,7 @@ ARGUMENTS["use_static_cpp"] = "no"
 
 
 # Environments
+os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
 env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
