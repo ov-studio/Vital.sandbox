@@ -49,7 +49,7 @@ env.Append(LIBPATH=[os.path.join(cwd, f"Vendor/discord-sdk/bin/{ARGUMENTS["build
 if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
     env.Append(CPPFLAGS=["/EHsc"])
-    env.Append(LIBS=["ws2_32", "winmm", "wbemuuid", "discord_partner_sdk"])
+    env.Append(LIBS=["ws2_32", "winmm", "wbemuuid", "discord_partner_sdk.dll"])
 elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE", "HAS_SOCKLEN_T"])
