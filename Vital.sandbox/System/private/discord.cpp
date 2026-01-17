@@ -12,9 +12,17 @@
 // Imports //
 //////////////
 
+#define DISCORDPP_IMPLEMENTATION // this is needed, do not remove
 #pragma once
 #include <Vital.sandbox/System/public/discord.h>
-#include <discord-sdk/include/discord.h>
+#include <discord-sdk/include/discordpp.h>
+#include <csignal>
+#include <iostream>
+
+//////////////
+// Constants //
+//////////////
+const uint64_t APPLICATION_ID = 1461425342722998474;
 
 
 ////////////////////////////
@@ -22,69 +30,56 @@
 ////////////////////////////
 
 namespace Vital::System::Discord {
-    discord::Core* core = nullptr;
-    bool connected = false;
+    std::shared_ptr<discordpp::Client> client;
+    std::atomic<bool> running = false;
+
+    void signalHandler(int signum) {
+        running.store(false);
+    }
+
+    void PerformAuthentication();
 
     // Managers //
-    bool start(long long applicationID) {
-        if (core) return false;
-        auto result = discord::Core::Create(applicationID, DiscordCreateFlags_NoRequireDiscord, &core);
-        if (result != discord::Result::Ok) {
-            core = nullptr;
+    bool start() {     
+        client = std::make_shared<discordpp::Client>();
+
+        client->SetApplicationId(APPLICATION_ID);
+        running = true;
+
+        return true;
+    }
+
+    bool setActivity(const std::string& state, const std::string& details) {
+        if (!client) {
+            std::cerr << "⚠️ Cannot set activity: Client is null.\n";
             return false;
         }
-        connected = true;
+
+        discordpp::Activity activity;
+        activity.SetType(discordpp::ActivityTypes::Playing);
+        activity.SetState(state);
+        activity.SetDetails(details);
+
+        // Update rich presence
+        client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
+            if (result.Successful()) {
+                std::cout << "Rich Presence updated successfully!\n";
+            } else {
+                std::cerr << "Rich Presence update failed";
+            }
+        });
+
         return true;
     }
 
     bool stop() {
-        if (!core) return false;
-        delete core;
-        core = nullptr;
-        connected = false;
+        if (!client) return false;
+        delete &client;
+        client = nullptr;
+        running = false;
         return true;
     }
 
-    bool update() {
-        if (!core) return false;
-        auto result = core->RunCallbacks();
-        if (result != discord::Result::Ok) {
-            connected = false;
-            return false;
-        }
-        return true;
-    }
-
-    // APIs //
-    bool isConnected() { return connected && core; }
-
-    bool setActivity(
-        const std::string& state,
-        const std::string& details,
-        const std::string& largeImage,
-        const std::string& largeText,
-        const std::string& smallImage,
-        const std::string& smallText
-    ) {
-        if (!core) return false;
-        discord::Activity activity{};
-        activity.SetState(state.c_str());
-        activity.SetDetails(details.c_str());
-        if (!largeImage.empty()) activity.GetAssets().SetLargeImage(largeImage.c_str());
-        if (!largeText.empty()) activity.GetAssets().SetLargeText(largeText.c_str());
-        if (!smallImage.empty()) activity.GetAssets().SetSmallImage(smallImage.c_str());
-        if (!smallText.empty()) activity.GetAssets().SetSmallText(smallText.c_str());
-        core->ActivityManager().UpdateActivity(activity, [](discord::Result result) {
-            // callback when activity is updated
-        });
-        return true;
-    }
-
-    bool clearActivity() {
-        if (!core) return false;
-        core->ActivityManager().ClearActivity([](discord::Result result) {
-            // callback when activity is cleared
-        });
-        return true;
-    }
+    // // APIs //
+    bool isConnected() { return running && client; }
 }

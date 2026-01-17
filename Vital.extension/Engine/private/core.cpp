@@ -30,18 +30,16 @@ namespace Vital::Godot {
         Sandbox::Lua::Singleton::fetch();
 
         // Initialize Discord Rich Presence
-        if (Vital::System::Discord::start(1461425342722998474)) {
+        if (Vital::System::Discord::start()) {
             godot::UtilityFunctions::print("Discord Rich Presence initialized");
-            Vital::System::Discord::setActivity(
-                "Playing Vital.sandbox",  // state
-                "In Main Menu",           // details
-                "",                       // largeImage
-                "",                       // largeText
-                "",                       // smallImage
-                ""                        // smallText
-            );
+
+            if(Vital::System::Discord::setActivity("In Main Menu", "Thinking about what to do..")){
+                godot::UtilityFunctions::print("Discord Rich Presence activity set");
+            } else {
+                godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
+            }
         } else {
-            godot::UtilityFunctions::print("Failed to initialize Discord (Discord may not be running)");
+            godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
         }
     }
     
@@ -53,11 +51,7 @@ namespace Vital::Godot {
 
     void Core::_process(double delta) {
         Sandbox::Lua::Singleton::fetch() -> process(delta);
-
-        // Update Discord callbacks (connection alive)
-        Vital::System::Discord::update();
     }
-
 
     // Getters //
     Core* Core::get_singleton() {
