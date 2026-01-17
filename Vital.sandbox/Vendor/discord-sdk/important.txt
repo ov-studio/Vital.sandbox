@@ -5,4 +5,14 @@ Folder structure:
 discord-sdk/
   bin/
     debug/
+      discord_partner_sdk.aar
+      discord_partner_sdk.dll
+      discord_partner_sdk.lib
+      libdiscord_partner_sdk.dylib
+      libdiscord_partner_sdk.so
     release/
+      discord_partner_sdk.aar
+      discord_partner_sdk.dll
+      discord_partner_sdk.lib
+      libdiscord_partner_sdk.dylib
+      libdiscord_partner_sdk.so
