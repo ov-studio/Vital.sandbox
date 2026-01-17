@@ -123,7 +123,7 @@ def Build_Modules(self):
     git = shutil.which("git")
     os_info = Fetch_OS()
     if not git:
-        Throw_Error("git not found in PATH")
+        Throw_Error("git not found")
     script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".gitreload.sh"))
     if os_info["type"] == "Windows":
         git_root = os.path.abspath(os.path.join(os.path.dirname(git), ".."))
@@ -134,16 +134,14 @@ def Build_Modules(self):
 BaseEnvironment.Build_Modules = Build_Modules
 
 def Build_Conan(self):
-    if shutil.which("conan") is not None:
-        return
-
-    # Install conan silently via pip
-    subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=True,
-    )
+    conan = shutil.which("conan")
+    if not conan:
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
     subprocess.run((
         "conan", "install", ".",
         "--build=missing",
