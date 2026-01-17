@@ -2,16 +2,13 @@
 from vital import *
 
 
-# Metadatas
-ARGUMENTS["platform_type"] = ARGUMENTS.get("platform_type", "Server")
-ARGUMENTS["build_type"] = ARGUMENTS.get("build_type", "Debug")
-
-
 # Environments
 os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=Fetch_Compiler(), PLATFORM="")
 env.Args = ARGUMENTS
+env.Args["platform_type"] = env.Args.get("platform_type", "Server")
+env.Args["build_type"] = env.Args.get("build_type", "Debug")
 env.Build_Module()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
