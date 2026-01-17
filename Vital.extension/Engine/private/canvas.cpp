@@ -53,11 +53,8 @@ namespace Vital::Godot {
     // Utils //
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
-            // TODO: Fix disabling canvas singleton on editor causes crashes
-            //if (!godot::Engine::get_singleton() -> is_editor_hint()) {
-                singleton = memnew(Canvas);
-                Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
-            //}
+            singleton = memnew(Canvas);
+            Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
         }
         return singleton;
     }

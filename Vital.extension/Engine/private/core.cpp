@@ -47,6 +47,7 @@ namespace Vital::Godot {
     
     void Core::_ready() {
         singleton = singleton ? singleton : this;
+        if (Vital::is_editor()) return;
         Vital::Tool::Stack arguments;
         Vital::System::Event::emit("Godot:Core:@ready", arguments);
     }

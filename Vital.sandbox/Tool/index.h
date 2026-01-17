@@ -15,6 +15,7 @@
 #pragma once
 #include <pch.h>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 
 ////////////
@@ -50,5 +51,13 @@ namespace Vital {
 
     inline std::string get_directory() {
         return to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
+    }
+
+    inline bool is_editor() { 
+        #if defined(Vital_SDK_Client)
+            return godot::Engine::get_singleton() -> is_editor_hint();
+        #else
+            return false;
+        #endif
     }
 }
