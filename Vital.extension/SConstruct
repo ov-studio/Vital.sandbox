@@ -46,8 +46,8 @@ build = env.Install(build_dir, bin)
 env.Stage_VCPKG(build)
 
 
+# Automated Discord SDK copy files
 if ARGUMENTS["platform_type"] == "Client":
-    # Automated Discord SDK copy files
     discord_sdk_bin = os.path.join(cwd, f"../Vital.sandbox/Vendor/discord-sdk/bin/{ARGUMENTS["build_type"].lower()}")
     if os_info["type"] == "Windows":
         discord_lib = env.Install(build_dir, os.path.join(discord_sdk_bin, "discord_partner_sdk.dll"))
