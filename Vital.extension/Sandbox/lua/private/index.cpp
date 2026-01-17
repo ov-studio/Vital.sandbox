@@ -38,13 +38,15 @@
 namespace Vital::Godot::Sandbox::Lua {
     Vital::Sandbox::Lua::create* vm = nullptr;
 
+    /*
     // TODO: REMOVE LATER
     godot::Ref<godot::FontFile> font;
     Vital::Godot::Texture* tex;
     Vital::Godot::Texture* svg;
     Vital::Godot::RenderTarget* rt = nullptr;
     //
-    
+    */
+
     Singleton* Singleton::fetch() {
         instance = instance ? instance : memnew(Singleton());
         return instance;
@@ -105,6 +107,8 @@ namespace Vital::Godot::Sandbox::Lua {
     }
 
     void Singleton::ready() {
+        /*
+        // TODO: REMOVE LATER
         std::string rwString = R"(
             print("SSAO Enabled: ", ssao.set_enabled(true))
             print("SSAO Intensity: ", ssao.get_intensity())
@@ -118,6 +122,7 @@ namespace Vital::Godot::Sandbox::Lua {
         font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
         tex = Vital::Godot::Texture::create_texture_2d("flower.jpg");
         svg = Vital::Godot::Texture::create_svg("square.svg");
+        */
     }
 
     void Singleton::process(double delta) {
