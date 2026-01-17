@@ -138,9 +138,9 @@ def Build_Conan(self):
     if not conan:
         subprocess.run(
             [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=True,
+            stdout = subprocess.DEVNULL,
+            stderr = subprocess.DEVNULL,
+            check = True
         )
     subprocess.run((
         "conan", "install", ".",
