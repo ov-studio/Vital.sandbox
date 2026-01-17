@@ -42,19 +42,5 @@ build_dir = f".build/{name}/{env['platform']}"
 bin_dir = f".bin/{env['platform']}/{name}{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}{env.subst('$SHLIBSUFFIX')}"
 bin = env.SharedLibrary(bin_dir, source = env.sources)
 build = env.Install(build_dir, bin)
-env.Stage_VCPKG(build)
-
-
-# Automated Discord SDK copy files
-if ARGUMENTS["platform_type"] == "Client":
-    discord_sdk_bin = os.path.join(cwd, f"../Vital.sandbox/Vendor/discord-sdk/bin/{ARGUMENTS["build_type"].lower()}")
-    if os_info["type"] == "Windows":
-        discord_lib = env.Install(build_dir, os.path.join(discord_sdk_bin, "discord_partner_sdk.dll"))
-    elif os_info["type"] == "Darwin":
-        discord_lib = env.Install(build_dir, os.path.join(discord_sdk_bin, "libdiscord_partner_sdk.dylib"))
-    elif os_info["type"] == "Linux":
-        discord_lib = env.Install(build_dir, os.path.join(discord_sdk_bin, "libdiscord_partner_sdk.so"))
-
-    Default([bin, build, discord_lib])
-else:
-    Default([bin, build])
+env.Stage_Module(build)
+Default([bin, build])

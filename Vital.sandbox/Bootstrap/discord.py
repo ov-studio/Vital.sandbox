@@ -9,7 +9,18 @@ def Build_Discord(self):
             self.Append(LIBS=["discord_partner_sdk"])
 BaseEnvironment.Build_Discord = Build_Discord
 
-def Stage_Discord(self, build):
+def Stage_Discord(self, build, build_dir):
     if self.Args["platform_type"] == "Client":
-        print("stage discord")
+        os_info = Fetch_OS()
+        cwd = os.path.abspath(os.getcwd())
+        discord_bin = os.path.join(cwd, f"Vendor/discord-sdk/bin/{self.Args["build_type"].lower()}")
+        copy_nodes = []
+        if os_info["type"] == "Windows":
+            copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dll"))
+        elif os_info["type"] == "Darwin":
+            copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dylib"))
+        elif os_info["type"] == "Linux":
+            copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.so"))
+        print(copy_nodes)
+        #self.Depends(build, copy_nodes)
 BaseEnvironment.Stage_Discord = Stage_Discord
