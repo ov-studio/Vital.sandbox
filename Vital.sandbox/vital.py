@@ -1,2 +1,2 @@
 from Bootstrap.utils import *
-from Bootstrap.vcpkg import *
+from Bootstrap.module import *

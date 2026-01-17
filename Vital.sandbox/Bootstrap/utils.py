@@ -119,7 +119,7 @@ def RGlobCopy(self, destination, pattern):
     return nodes
 BaseEnvironment.RGlobCopy = RGlobCopy
 
-def Build_Modules(self):
+def Build_Module(self):
     git = shutil.which("git")
     os_info = Fetch_OS()
     if not git:
@@ -131,7 +131,7 @@ def Build_Modules(self):
         subprocess.run([bash, script], check=True)
     else:
         subprocess.run([script], check=True)
-BaseEnvironment.Build_Modules = Build_Modules
+BaseEnvironment.Build_Module = Build_Module
 
 def Build_Conan(self):
     conan = shutil.which("conan")

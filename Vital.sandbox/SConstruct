@@ -12,8 +12,7 @@ os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=Fetch_Compiler(), PLATFORM="")
 env.Args = ARGUMENTS
-env.Build_Modules()
-env.Build_Conan()
+env.Build_Module()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
     env.RGlob("Type", "*.cpp") + 
@@ -36,7 +35,6 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/duktape"),
     os.path.join(cwd, "Vendor/discord-sdk")
 ])
-env.Build_VCPKG()
 
 
 # Flags
