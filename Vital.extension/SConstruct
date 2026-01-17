@@ -38,8 +38,8 @@ else:
 
 
 # Builds
-build_dir = f".build/{name}/{env['platform']}"
-bin_dir = f".bin/{env['platform']}/{name}{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}{env.subst('$SHLIBSUFFIX')}"
+build_dir = f".build/{env.Args["platform_type"].lower()}/{env['platform']}"
+bin_dir = f".bin/{env.Args["platform_type"].lower()}/{env['platform']}/{name}{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}{env.subst('$SHLIBSUFFIX')}"
 bin = env.SharedLibrary(bin_dir, source = env.sources)
 build = env.Install(build_dir, bin)
 env.Stage_Module(build)
