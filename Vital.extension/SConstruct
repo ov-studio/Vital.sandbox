@@ -2,7 +2,6 @@
 import sys
 sys.path.append("../Vital.sandbox")
 from vital import *
-from utils import *
 
 
 # Metadatas

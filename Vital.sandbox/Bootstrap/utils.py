@@ -124,7 +124,7 @@ def Build_Modules(self):
     os_info = Fetch_OS()
     if not git:
         Throw_Error("git not found")
-    script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".gitreload.sh"))
+    script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..\\..", ".gitreload.sh"))
     if os_info["type"] == "Windows":
         git_root = os.path.abspath(os.path.join(os.path.dirname(git), ".."))
         bash = os.path.join(git_root, "usr", "bin", "bash.exe")

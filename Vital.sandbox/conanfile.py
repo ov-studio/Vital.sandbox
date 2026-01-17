@@ -1,6 +1,6 @@
 from conan import ConanFile
 from conan.tools.scons import SConsDeps
-from utils import *
+from vital import *
 
 os_info = Fetch_OS()
 
