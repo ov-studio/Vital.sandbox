@@ -132,20 +132,3 @@ def Build_Module(self):
     else:
         subprocess.run([script], check=True)
 BaseEnvironment.Build_Module = Build_Module
-
-def Build_Conan(self):
-    conan = shutil.which("conan")
-    if not conan:
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
-            stdout = subprocess.DEVNULL,
-            stderr = subprocess.DEVNULL,
-            check = True
-        )
-    subprocess.run((
-        "conan", "install", ".",
-        "--build=missing",
-        "--output-folder=.conan",
-        f"--settings=build_type={self.Args["build_type"]}"
-    ))
-BaseEnvironment.Build_Conan = Build_Conan

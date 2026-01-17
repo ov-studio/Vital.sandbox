@@ -1,4 +1,5 @@
 from Bootstrap.utils import *
+from Bootstrap.conan import *
 from Bootstrap.vcpkg import *
 
 def Build_Module(self):
