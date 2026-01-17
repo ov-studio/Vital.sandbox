@@ -12,6 +12,7 @@ os_info = Fetch_OS()
 cwd = os.path.abspath(os.getcwd())
 env = Environment(tools=Fetch_Compiler(), PLATFORM="")
 env.Args = ARGUMENTS
+env.Build_Modules()
 env.Build_Conan()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
