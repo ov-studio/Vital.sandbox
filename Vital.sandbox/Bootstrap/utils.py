@@ -118,17 +118,3 @@ def RGlobCopy(self, destination, pattern):
         nodes.append(self.RCopy(destination, f))
     return nodes
 BaseEnvironment.RGlobCopy = RGlobCopy
-
-def Build_Module(self):
-    git = shutil.which("git")
-    os_info = Fetch_OS()
-    if not git:
-        Throw_Error("git not found")
-    script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..\\..", ".gitreload.sh"))
-    if os_info["type"] == "Windows":
-        git_root = os.path.abspath(os.path.join(os.path.dirname(git), ".."))
-        bash = os.path.join(git_root, "usr", "bin", "bash.exe")
-        subprocess.run([bash, script], check=True)
-    else:
-        subprocess.run([script], check=True)
-BaseEnvironment.Build_Module = Build_Module
