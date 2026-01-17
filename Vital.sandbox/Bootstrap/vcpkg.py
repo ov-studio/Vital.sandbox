@@ -1,8 +1,7 @@
 from Bootstrap.utils import *
 
-os_info = Fetch_OS()
-
 def Init_VCPKG(self):
+    os_info = Fetch_OS()
     root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".vcpkg")
     triplet = None
     if os_info["type"] == "Windows":
@@ -18,6 +17,7 @@ def Init_VCPKG(self):
 BaseEnvironment.Init_VCPKG = Init_VCPKG
 
 def Install_VCPKG(self):
+    os_info = Fetch_OS()
     vcpkg = self.Init_VCPKG()
     if not os.path.isdir(vcpkg["root"]):
         subprocess.run((
@@ -32,6 +32,7 @@ def Install_VCPKG(self):
 BaseEnvironment.Install_VCPKG = Install_VCPKG
 
 def Build_VCPKG(self):
+    os_info = Fetch_OS()
     vcpkg = self.Init_VCPKG()
     vcpkg_include = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")
     vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
@@ -56,6 +57,7 @@ def Build_VCPKG(self):
 BaseEnvironment.Build_VCPKG = Build_VCPKG
 
 def Stage_VCPKG(self, build):
+    os_info = Fetch_OS()
     vcpkg = self.Init_VCPKG()
     out_dir = os.path.dirname(str(build[0].abspath))
     vcpkg_root = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"])

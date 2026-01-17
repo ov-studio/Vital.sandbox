@@ -2,8 +2,6 @@ from conan import ConanFile
 from conan.tools.scons import SConsDeps
 from vital import *
 
-os_info = Fetch_OS()
-
 class BuildConan(ConanFile):
     settings = "os", "arch","build_type", "compiler"
     generators = "SConsDeps"
@@ -13,6 +11,7 @@ class BuildConan(ConanFile):
         self.requires("libcurl/8.12.1")
 
     def configure(self):
+        os_info = Fetch_OS()
         self.options["openssl"].shared = False
         self.options["libcurl"].shared = False
         self.settings.compiler.cppstd = "17"

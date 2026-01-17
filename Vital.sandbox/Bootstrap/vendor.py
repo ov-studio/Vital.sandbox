@@ -1,8 +1,8 @@
 from Bootstrap.utils import *
 
 def Build_Vendor(self):
-    git = shutil.which("git")
     os_info = Fetch_OS()
+    git = shutil.which("git")
     if not git:
         Throw_Error("git not found")
     script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..\\..", ".gitreload.sh"))
