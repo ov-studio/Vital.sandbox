@@ -11,6 +11,7 @@ def Build_Module(self):
 BaseEnvironment.Build_Module = Build_Module
 
 def Stage_Module(self, build):
+    build = os.path.dirname(str(build[0].abspath))
     self.Stage_VCPKG(build)
     self.Stage_Discord(build)
 BaseEnvironment.Stage_Module = Stage_Module

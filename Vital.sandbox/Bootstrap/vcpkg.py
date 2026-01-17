@@ -59,16 +59,15 @@ BaseEnvironment.Build_VCPKG = Build_VCPKG
 def Stage_VCPKG(self, build):
     os_info = Fetch_OS()
     vcpkg = self.Init_VCPKG()
-    out_dir = os.path.dirname(str(build[0].abspath))
     vcpkg_root = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"])
     vcpkg_bin  = os.path.join(vcpkg_root, "bin")
     copy_nodes = []
     if os_info["type"] == "Windows":
         if os.path.isdir(vcpkg_bin):
-            copy_nodes += self.RCopy(out_dir, os.path.join(vcpkg_bin, "*.dll"))
+            copy_nodes += self.RCopy(build, os.path.join(vcpkg_bin, "*.dll"))
     else:
         if os.path.isdir(vcpkg_bin):
-            copy_nodes += self.RCopy(out_dir, os.path.join(vcpkg_bin, "*.so"))
-            copy_nodes += self.RCopy(out_dir, os.path.join(vcpkg_bin, "*.so.*"))
+            copy_nodes += self.RCopy(build, os.path.join(vcpkg_bin, "*.so"))
+            copy_nodes += self.RCopy(build, os.path.join(vcpkg_bin, "*.so.*"))
     self.Depends(build, copy_nodes)
 BaseEnvironment.Stage_VCPKG = Stage_VCPKG
