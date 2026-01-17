@@ -36,7 +36,6 @@ namespace Vital::Godot {
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
         webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
-        godot::UtilityFunctions::print("created console");
     }
 
     Console::~Console() {

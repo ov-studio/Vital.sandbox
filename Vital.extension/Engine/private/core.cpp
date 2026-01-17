@@ -27,8 +27,6 @@
 namespace Vital::Godot {
     // Instantiators //
     Core::Core() {
-        Sandbox::Lua::Singleton::fetch();
-
         #if defined(Vital_SDK_Client)
         // Initialize Discord Rich Presence
         if (Vital::System::Discord::start()) {

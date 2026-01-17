@@ -31,7 +31,6 @@ namespace Vital::Godot {
         set_as_top_level(true);
         set_visible(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
-        godot::UtilityFunctions::print("Initialized Canvas");
     }
 
     void Canvas::_process(double) {
