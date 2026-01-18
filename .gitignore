@@ -4,9 +4,9 @@
 .bin/
 .conan/
 .vcpkg/
-.cef/
-*.cef_temp/
 **/discord-sdk/bin/
+**vital.sdk/
+
 
 # Binaries
 *.o
@@ -25,6 +25,7 @@
 *.includes
 *.idb
 *.exp
+
 
 # IDE
 .vs/*
