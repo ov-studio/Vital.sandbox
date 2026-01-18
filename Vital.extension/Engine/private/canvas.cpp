@@ -58,6 +58,12 @@ namespace Vital::Godot {
         return singleton;
     }
 
+    void Canvas::free_singleton() {
+        if (!singleton) return
+        memdelete(singleton);
+        singleton = nullptr;
+    }
+
     void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {
         for (const auto &command : queue) {
             switch (command.type) {
