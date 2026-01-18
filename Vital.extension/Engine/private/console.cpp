@@ -55,6 +55,12 @@ namespace Vital::Godot {
         return singleton;
     }
 
+    void Console::free_singleton() {
+        if (!singleton) return;
+        memdelete(singleton);
+        singleton = nullptr;
+    }
+
     void Console::update_size() {
         godot::UtilityFunctions::print("updated console");
         auto vp_size = get_viewport() -> get_visible_rect().size;
