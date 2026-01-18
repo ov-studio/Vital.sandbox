@@ -26,6 +26,7 @@ namespace Vital::Godot {
 		GDCLASS(Core, godot::Node)
 		protected:
 			static inline Core* singleton = nullptr;
+			static inline godot::WorldEnvironment* environment = nullptr;
 			static void _bind_methods() {};
 		public:
 			// Instantiators //
@@ -41,6 +42,7 @@ namespace Vital::Godot {
 			#if defined(Vital_SDK_Client)
 			static godot::RenderingServer* get_rendering_server();
 			static godot::Ref<godot::Environment> get_environment();
+			static void free_environment();
 			#endif
 
 	
