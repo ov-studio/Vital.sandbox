@@ -31,6 +31,7 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::_update() {
+        if (!is_inside_tree()) return;        
         auto* rs = Core::get_rendering_server();
         auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
         rs -> viewport_set_active(viewport_main, false);
@@ -42,7 +43,6 @@ namespace Vital::Godot {
         if (!viewport -> has_transparent_background()) draw_rect(godot::Rect2({0, 0}, get_size()), godot::Color(0, 0, 0, 1), true, -1, false);
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         instant = false;
-        queue.clear();
     }
 
 
