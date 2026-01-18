@@ -13,5 +13,5 @@
 * [**Lua**](https://www.lua.org) - Offers runtime scripting and sandboxing capabilities.
 * [**Duktape**](https://duktape.org) - Offers runtime scripting and sandboxing capabilities.
 * [**Lua-RapidJSON**](https://github.com/xpol/lua-rapidjson) - Offers Lua bindings for RapidJSON.
-* [**Godot-WRY**](https://godot-wry.doceazedo.com) - Facilitates native webview integration.
 * [**Discord-SDK**](https://discord.com/developers/docs/developer-tools/game-sdk) - Offers discord integration.
+* [**Godot-WRY**](https://godot-wry.doceazedo.com) - Facilitates native webview integration.
