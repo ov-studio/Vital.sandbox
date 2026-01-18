@@ -31,7 +31,7 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::_update() {
-        if (!is_inside_tree()) return;        
+        if (!is_inside_tree()) return;
         auto* rs = Core::get_rendering_server();
         auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
         rs -> viewport_set_active(viewport_main, false);
