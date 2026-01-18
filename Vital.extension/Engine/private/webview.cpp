@@ -39,7 +39,7 @@ namespace Vital::Godot {
 
     Webview::~Webview() {
         if (!webview) return;
-        memdelete(webview);
+        webview -> queue_free();
         webview = nullptr;
     }
 
