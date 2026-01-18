@@ -82,7 +82,7 @@ namespace Vital::Godot {
 
     void Core::free_environment() {
         if (!environment) return;
-        memdelete(environment);
+        environment -> queue_free();
         environment = nullptr;
     }
     #endif
