@@ -72,7 +72,7 @@ namespace Vital::Godot {
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
-            root -> call_deferred("add_child", environment);
+            get_root() -> call_deferred("add_child", environment);
             godot::Ref<godot::Environment> env;
             env.instantiate();
             parent -> set_environment(env);
