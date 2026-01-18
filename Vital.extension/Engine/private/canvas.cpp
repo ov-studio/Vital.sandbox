@@ -60,7 +60,7 @@ namespace Vital::Godot {
 
     void Canvas::free_singleton() {
         if (!singleton) return
-        memdelete(singleton);
+        singleton -> queue_free();
         singleton = nullptr;
     }
 
