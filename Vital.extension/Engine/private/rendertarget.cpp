@@ -72,6 +72,7 @@ namespace Vital::Godot {
         rt -> viewport -> set_disable_3d(true);
         rt -> viewport -> set_transparent_background(transparent);
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
+        rt -> viewport -> set_clear_mode(transparent ? godot::SubViewport::CLEAR_MODE_ALWAYS : godot::SubViewport::CLEAR_MODE_NEVER);
         rt -> viewport -> call_deferred("add_child", rt);
         Canvas::get_singleton() -> call_deferred("add_child", rt -> viewport);
         return rt;
@@ -84,7 +85,6 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::clear(bool clear, bool instant) {
-        get_viewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         this -> instant = instant;
         if (clear) {
             queue.clear();
