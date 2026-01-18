@@ -30,10 +30,6 @@ namespace Vital::Godot {
         viewport = nullptr;
     }
 
-    void RenderTarget::_clean() {
-        queue.clear();
-    }
-
     void RenderTarget::_update() {
         auto* rs = Core::get_rendering_server();
         auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
@@ -46,7 +42,7 @@ namespace Vital::Godot {
         if (!viewport -> has_transparent_background()) draw_rect(godot::Rect2({0, 0}, get_size()), godot::Color(0, 0, 0, 1), true, -1, false);
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         instant = false;
-        _clean();
+        queue.clear();
     }
 
 
@@ -91,7 +87,7 @@ namespace Vital::Godot {
         get_viewport() -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         this -> instant = instant;
         if (clear) {
-            _clean();
+            queue.clear();
             queue_redraw();
         }
         if (instant) _update();
