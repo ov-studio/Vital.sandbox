@@ -53,7 +53,7 @@ namespace Vital::Godot {
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             singleton = memnew(Canvas);
-            Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
+            Core::get_singleton() -> call_deferred("add_child", singleton);
         }
         return singleton;
     }

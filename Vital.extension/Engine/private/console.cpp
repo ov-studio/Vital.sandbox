@@ -26,7 +26,7 @@
 namespace Vital::Godot {
     // Instantiators //
     Console::Console() {
-        webview = new Vital::Godot::Webview;
+        webview = memnew(Vital::Godot::Webview);
         webview -> set_position({0, 0});
         webview -> set_size({850, 425});
         webview -> set_visible(true);
@@ -40,7 +40,7 @@ namespace Vital::Godot {
 
     Console::~Console() {
         if (!webview) return;
-        delete webview;
+        memdelete(webview);
         webview = nullptr;
     }
 
