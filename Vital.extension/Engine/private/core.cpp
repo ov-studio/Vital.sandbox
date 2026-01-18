@@ -70,19 +70,20 @@ namespace Vital::Godot {
     }
     
     godot::Ref<godot::Environment> Core::get_environment() {
-        auto* root = get_root();
-        godot::WorldEnvironment* parent = nullptr;
-        std::vector<godot::WorldEnvironment*> nodes;
-        fetch_nodes_by_type(root, nodes, 1);
-        if (!nodes.empty()) parent = nodes[0];
-        else {
-            parent = memnew(godot::WorldEnvironment);
-            root -> call_deferred("add_child", parent);
+        if (!environment) {
+            environment = memnew(godot::WorldEnvironment);
+            root -> call_deferred("add_child", environment);
             godot::Ref<godot::Environment> env;
             env.instantiate();
             parent -> set_environment(env);
         }
-        return parent -> get_environment();
+        return environment -> get_environment();
+    }
+
+    void Core::free_environment() {
+        if (!environment) return;
+        memdelete(environment);
+        environment = nullptr;
     }
     #endif
 }
