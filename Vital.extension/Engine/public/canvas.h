@@ -114,7 +114,6 @@ namespace Vital::Godot {
             ~Canvas() override = default;
             void _ready() override;
             void _process(double delta) override;
-            void _clean();
             void _draw() override;
 
 

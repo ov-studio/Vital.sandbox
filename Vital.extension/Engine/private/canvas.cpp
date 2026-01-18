@@ -38,13 +38,9 @@ namespace Vital::Godot {
         Texture::flush();
     }
 
-    void Canvas::_clean() {
-        queue.clear();
-    }
-
     void Canvas::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        _clean();
+        queue.clear();
         Sandbox::Lua::Singleton::fetch() -> draw(this);
     }
 
