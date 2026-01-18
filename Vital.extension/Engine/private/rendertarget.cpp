@@ -26,7 +26,7 @@ namespace Vital::Godot {
     // Instantiators //
     RenderTarget::~RenderTarget() {
         if (!viewport) return;
-        memdelete(viewport);
+        viewport -> queue_free();
         viewport = nullptr;
     }
 
