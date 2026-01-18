@@ -27,16 +27,10 @@
 namespace Vital::Godot {
     // Instantiators //
     void Canvas::_ready() {
-        singleton = singleton ? singleton : this;
         queue.reserve(256);
         set_as_top_level(true);
         set_visible(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
-    }
-
-    void Canvas::_exit_tree() {
-        if (singleton != this) return;
-        singleton = nullptr;
     }
 
     void Canvas::_process(double) {
@@ -50,7 +44,6 @@ namespace Vital::Godot {
 
     void Canvas::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        //godot::UtilityFunctions::print("yes drawing");
         _clean();
         Sandbox::Lua::Singleton::fetch() -> draw(this);
     }
@@ -60,9 +53,15 @@ namespace Vital::Godot {
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             singleton = memnew(Canvas);
-            Core::get_singleton() -> call_deferred("add_child", singleton);
+            Core::get_singleton() -> get_tree() -> get_root() -> call_deferred("add_child", singleton);
         }
         return singleton;
+    }
+
+    void Canvas::free_singleton() {
+        if (!singleton) return
+        singleton -> queue_free();
+        singleton = nullptr;
     }
 
     void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {

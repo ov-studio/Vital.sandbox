@@ -44,6 +44,7 @@ void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 
 	#if defined(Vital_SDK_Client)
 	Vital::Godot::Core::free_environment();
+	Vital::Godot::Canvas::free_singleton();
 	Vital::Godot::Console::free_singleton();
 	#endif
 }
