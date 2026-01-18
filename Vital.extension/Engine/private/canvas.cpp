@@ -59,7 +59,7 @@ namespace Vital::Godot {
         singleton = nullptr;
     }
 
-    void Canvas::execute(godot::Node2D* node, std::vector<Command> queue) {
+    void Canvas::execute(godot::Node2D* node, std::vector<Command>& queue) {
         for (const auto &command : queue) {
             switch (command.type) {
                 case Type::Line: {
