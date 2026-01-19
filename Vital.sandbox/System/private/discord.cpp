@@ -59,22 +59,28 @@ namespace Vital::System::Discord {
         activity.SetState(currentData.state);
         activity.SetDetails(currentData.details);
 
-        if (!currentData.largeImageKey.empty()) {
-            activity.SetLargeImage(currentData.largeImageKey);
-            activity.SetLargeText(currentData.largeImageText);
+        if (!currentData.largeImageKey.empty() || !currentData.smallImageKey.empty()) {
+            discordpp::ActivityAssets assets;
+            if (!currentData.largeImageKey.empty()) {
+                assets.SetLargeImage(currentData.largeImageKey);
+                assets.SetLargeText(currentData.largeImageText);
+            }
+            if (!currentData.smallImageKey.empty()) {
+                assets.SetSmallImage(currentData.smallImageKey);
+                assets.SetSmallText(currentData.smallImageText);
+            }
+            activity.SetAssets(assets);
         }
 
-        if (!currentData.smallImageKey.empty()) {
-            activity.SetSmallImage(currentData.smallImageKey);
-            activity.SetSmallText(currentData.smallImageText);
-        }
-
-        if (currentData.startTimestamp > 0) {
-            activity.SetStartTimestamp(currentData.startTimestamp);
-        }
-
-        if (currentData.endTimestamp > 0) {
-            activity.SetEndTimestamp(currentData.endTimestamp);
+        if (currentData.startTimestamp > 0 || currentData.endTimestamp > 0) {
+            discordpp::ActivityTimestamps timestamps;
+            if (currentData.startTimestamp > 0) {
+                timestamps.SetStart(currentData.startTimestamp);
+            }
+            if (currentData.endTimestamp > 0) {
+                timestamps.SetEnd(currentData.endTimestamp);
+            }
+            activity.SetTimestamps(timestamps);
         }
 
         client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
@@ -108,7 +114,7 @@ namespace Vital::System::Discord {
         return true;
     }
 
-    bool updateLargeAsset(const std::string& key, const std::string& text) {
+    bool updateLargeImage(const std::string& key, const std::string& text) {
         if (!client) return false;
         currentData.largeImageKey = key;
         currentData.largeImageText = text;
@@ -116,7 +122,7 @@ namespace Vital::System::Discord {
         return true;
     }
 
-    bool updateSmallAsset(const std::string& key, const std::string& text) {
+    bool updateSmallImage(const std::string& key, const std::string& text) {
         if (!client) return false;
         currentData.smallImageKey = key;
         currentData.smallImageText = text;

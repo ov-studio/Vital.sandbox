@@ -50,8 +50,8 @@ namespace Vital::System::Discord {
     // Partial Updates
     extern bool updateState(const std::string& state);
     extern bool updateDetails(const std::string& details);
-    extern bool updateLargeAsset(const std::string& key, const std::string& text = "");
-    extern bool updateSmallAsset(const std::string& key, const std::string& text = "");
+    extern bool updateLargeImage(const std::string& key, const std::string& text = "");
+    extern bool updateSmallImage(const std::string& key, const std::string& text = "");
     extern bool updateTimestamps(int64_t start, int64_t end);
 }
 #endif
