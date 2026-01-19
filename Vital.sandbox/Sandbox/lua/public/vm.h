@@ -318,13 +318,13 @@ namespace Vital::Sandbox::Lua {
                 lua_yield(vm, count);
             }
 
-            inline bool load_string(const std::string& buf, bool autoload = true) {
-                if (buf.empty()) return false;
+            inline bool load_string(const std::string& raw, bool autoload = true) {
+                if (raw.empty()) return false;
                 if (!autoload) {
-                    std::string b = "return (function() " + buf + " end)";
+                    std::string b = "return (function() " + raw + " end)";
                     luaL_loadstring(vm, b.c_str());
                 }
-                else luaL_loadstring(vm, buf.c_str());
+                else luaL_loadstring(vm, raw.c_str());
                 if (pcall(0, LUA_MULTRET)) {
                     API::error(get_string(-1));
                     pop();
