@@ -46,23 +46,6 @@ namespace Vital::Sandbox::Lua {
         extern void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec);
     }
 
-    inline std::vector<luaL_Reg> vsdk_libraries = {
-        {"_G", luaopen_base},
-        {"table", luaopen_table},
-        {"string", luaopen_string},
-        {"math", luaopen_math},
-        {"debug", luaopen_debug},
-        {"coroutine", luaopen_coroutine},
-        {"utf8", luaopen_utf8},
-        {"json", luaopen_rapidjson}
-    };
-
-    inline std::vector<std::string> vsdk_blacklist = {
-        "dofile",
-        "load",
-        "loadfile"
-    };
-
     // Class //
     class create {
         private:
@@ -70,17 +53,33 @@ namespace Vital::Sandbox::Lua {
             vsdk_reference reference = {};
             vsdk_apis apis = {};
             bool thread = false;
+
+            static inline std::vector<luaL_Reg> whitelist = {
+                {"_G", luaopen_base},
+                {"table", luaopen_table},
+                {"string", luaopen_string},
+                {"math", luaopen_math},
+                {"debug", luaopen_debug},
+                {"coroutine", luaopen_coroutine},
+                {"utf8", luaopen_utf8},
+                {"json", luaopen_rapidjson}
+            };
+            static inline std::vector<std::string> blacklist = {
+                "dofile",
+                "load",
+                "loadfile"
+            };
         public:
             // Instantiators //
             inline create(vsdk_apis apis = {}) {
                 vm = luaL_newstate();
                 this->apis = apis;
                 vms.emplace(vm, this);
-                for (auto& i : vsdk_libraries) {
+                for (auto& i : whitelist) {
                     luaL_requiref(vm, i.name, i.func, 1);
                     pop();
                 }
-                for (auto& i : vsdk_blacklist) {
+                for (auto& i : blacklist) {
                     setNil();
                     setGlobal(i);
                 }
