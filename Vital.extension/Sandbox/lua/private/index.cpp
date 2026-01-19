@@ -256,8 +256,7 @@ namespace Vital::Godot::Sandbox::Lua {
 
         canvas -> draw_image({622, 500}, {512, 512}, svg -> get_texture());
 
-        //vm -> loadString(rwString);
-        */
+        //vm -> load_string(rwString);
     }
     #endif
 }
