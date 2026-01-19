@@ -106,27 +106,6 @@ namespace Vital::Sandbox::Lua {
             inline bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
 
 
-            // Pushers //
-            inline void push_global(const std::string& index) { lua_setglobal(vm, index.c_str()); }
-            inline void push_nil() { lua_pushnil(vm); }
-            inline void push_bool(bool value) { lua_pushboolean(vm, value); }
-            inline void push_string(const std::string& value) { lua_pushstring(vm, value.c_str()); }
-            inline void push_number(int value) { lua_pushnumber(vm, value); }
-            inline void push_number(float value) { lua_pushnumber(vm, value); }
-            inline void push_number(double value) { lua_pushnumber(vm, value); }
-            inline void push_table(int index = 1) { lua_settable(vm, index); }
-            inline void push_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
-            inline void push_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
-            inline void push_meta_table(int index = 1) { lua_setmetatable(vm, index);}
-            inline void push_meta_table(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
-            inline void push_userdata(void* value) { lua_pushlightuserdata(vm, value); }
-            inline void push_function(vm_exec& value) { lua_pushcfunction(vm, value); }
-            inline void push_reference(const std::string& name, int index = 1) {
-                push(index);
-                reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
-            }
-        
-
             // Getters //
             inline int get_arg_count() { return lua_gettop(vm); }
             inline bool get_global(const std::string& index) { return lua_getglobal(vm, index.c_str()); }
@@ -138,8 +117,8 @@ namespace Vital::Sandbox::Lua {
             inline bool get_table(int index = 1) { return lua_gettable(vm, index); }
             inline bool get_table_field(int value, int index = 1) { return lua_geti(vm, index, value); }
             inline bool get_table_field(const std::string& value, int index = 1) {return lua_getfield(vm, index, value.c_str());}
-            inline bool get_meta_table(int index = 1) { return lua_getmetatable(vm, index); }
-            inline bool get_meta_table(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
+            inline bool get_metatable(int index = 1) { return lua_getmetatable(vm, index); }
+            inline bool get_metatable(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
             inline vm_state* get_thread(int index = 1) { return lua_tothread(vm, index); }
             inline void* get_userdata(int index = 1) { return lua_touserdata(vm, index); }
             inline int get_reference(const std::string& name, bool pushValue = false) {
@@ -154,10 +133,31 @@ namespace Vital::Sandbox::Lua {
                 return result;
             }
         
+        
+            // Pushers //
+            inline void push_global(const std::string& index) { lua_setglobal(vm, index.c_str()); }
+            inline void push_nil() { lua_pushnil(vm); }
+            inline void push_bool(bool value) { lua_pushboolean(vm, value); }
+            inline void push_string(const std::string& value) { lua_pushstring(vm, value.c_str()); }
+            inline void push_number(int value) { lua_pushnumber(vm, value); }
+            inline void push_number(float value) { lua_pushnumber(vm, value); }
+            inline void push_number(double value) { lua_pushnumber(vm, value); }
+            inline void push_table(int index = 1) { lua_settable(vm, index); }
+            inline void push_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
+            inline void push_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
+            inline void push_metatable(int index = 1) { lua_setmetatable(vm, index);}
+            inline void push_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
+            inline void push_userdata(void* value) { lua_pushlightuserdata(vm, value); }
+            inline void push_function(vm_exec& value) { lua_pushcfunction(vm, value); }
+            inline void push_reference(const std::string& name, int index = 1) {
+                push(index);
+                reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
+            }
+    
 
             // Containers //
             inline void create_table() { lua_newtable(vm); }
-            inline void create_meta_table(const std::string& value) { luaL_newmetatable(vm, value.c_str()); }
+            inline void create_metatable(const std::string& value) { luaL_newmetatable(vm, value.c_str()); }
             inline create* create_thread() { return new create(lua_newthread(vm)); }
             inline void create_namespace(const std::string& nspace) {
                 get_global(nspace);
@@ -174,7 +174,7 @@ namespace Vital::Sandbox::Lua {
             }
             inline void create_object(const std::string& index, void* value) {
                 create_userdata(value);
-                push_meta_table(index);
+                push_metatable(index);
             }
 
 
@@ -292,27 +292,32 @@ namespace Vital::Sandbox::Lua {
             inline void pop(int count = 1) { lua_pop(vm, count); }
             inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
-            inline void removeReference(const std::string& name) {
+
+            inline void remove_reference(const std::string& name) {
                 if (!is_reference(name)) return;
                 luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
                 reference.erase(name);
             }
-            inline void resume(int count = 0) {
-                if (!is_virtual()) return;
-                int ncount;
-                lua_resume(vm, nullptr, count, &ncount);
-                if (lua_status(vm) != LUA_YIELD) delete this;
-            }
-            inline void pause(int count = 0) {
-                if (!is_virtual()) return;
-                lua_yield(vm, count);
-            }
+
             inline int execute(std::function<int()> exec) {
                 try { return exec(); }
                 catch(const std::runtime_error& error) { throw_error(error.what()); }
                 catch(...) { throw_error(); }
                 return 1;
             }
+
+            inline void resume(int count = 0) {
+                if (!is_virtual()) return;
+                int ncount;
+                lua_resume(vm, nullptr, count, &ncount);
+                if (lua_status(vm) != LUA_YIELD) delete this;
+            }
+
+            inline void pause(int count = 0) {
+                if (!is_virtual()) return;
+                lua_yield(vm, count);
+            }
+
             inline bool load_string(const std::string& buf, bool autoload = true) {
                 if (buf.empty()) return false;
                 if (!autoload) {
@@ -327,6 +332,7 @@ namespace Vital::Sandbox::Lua {
                 }
                 return true;
             }
+
             inline void throw_error(const std::string& error = "") {
                 lua_Debug debug;
                 lua_getstack(vm, 1, &debug);
@@ -336,6 +342,9 @@ namespace Vital::Sandbox::Lua {
             }
 
             void hook(const std::string& mode);
+
+
+            // Thread Tools //
 
     };
 }
