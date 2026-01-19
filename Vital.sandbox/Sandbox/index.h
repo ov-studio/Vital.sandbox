@@ -55,11 +55,18 @@ namespace Vital::Sandbox::Lua {
                 "load",
                 "loadfile"
             };
+            static inline vm_apis natives = {
+                {API::Engine::bind, API::Engine::inject},
+                {API::Coroutine::bind, API::Coroutine::inject},
+                {API::File::bind, API::File::inject},
+                {API::Crypto::bind, API::Crypto::inject},
+                {API::Rest::bind, API::Rest::inject},
+                {API::Network::bind, API::Network::inject}
+            }
         private:
             bool virtualized = false;
             vm_state* vm = nullptr;
             vm_refs reference = {};
-            vm_apis natives = {};
             vm_apis apis = {};
         public:
             inline create(vm_apis apis = {}) {
