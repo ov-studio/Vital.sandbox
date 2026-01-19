@@ -32,7 +32,7 @@ namespace Vital::Sandbox::Lua::API {
                         if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> get_string(1);
                         auto buffer = vm -> get_string(2);
-                        vm -> set_string(Vital::Tool::Crypto::hash(mode, buffer));
+                        vm -> push_string(Vital::Tool::Crypto::hash(mode, buffer));
                         return 1;
                     });
                 });
@@ -42,7 +42,7 @@ namespace Vital::Sandbox::Lua::API {
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> get_string(1);
-                        vm -> set_string(Vital::Tool::Crypto::encode(buffer));
+                        vm -> push_string(Vital::Tool::Crypto::encode(buffer));
                         return 1;
                     });
                 });
@@ -52,7 +52,7 @@ namespace Vital::Sandbox::Lua::API {
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> get_string(1);
-                        vm -> set_string(Vital::Tool::Crypto::decode(buffer));
+                        vm -> push_string(Vital::Tool::Crypto::decode(buffer));
                         return 1;
                     });
                 });
@@ -65,8 +65,8 @@ namespace Vital::Sandbox::Lua::API {
                         auto buffer = vm -> get_string(2);
                         auto key = vm -> get_string(3);
                         auto result = Vital::Tool::Crypto::encrypt(mode, buffer, key);
-                        vm -> set_string(result.first);
-                        vm -> set_string(result.second);
+                        vm -> push_string(result.first);
+                        vm -> push_string(result.second);
                         return 2;
                     });
                 });
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::Lua::API {
                         auto buffer = vm -> get_string(2);
                         auto key = vm -> get_string(3);
                         auto iv = vm -> get_string(4);
-                        vm -> set_string(Vital::Tool::Crypto::decrypt(mode, buffer, key, iv));
+                        vm -> push_string(Vital::Tool::Crypto::decrypt(mode, buffer, key, iv));
                         return 1;
                     });
                 });

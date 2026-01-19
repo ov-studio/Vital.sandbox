@@ -30,7 +30,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
             auto state = vm -> get_bool(1);
             Vital::Godot::Core::get_environment() -> set_ssr_enabled(state);
-            vm -> set_bool(true);
+            vm -> push_bool(true);
             return 1;
         });
     });
@@ -38,7 +38,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "is_enabled", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
         return vm -> execute([&]() -> int {
-            vm -> set_bool(Vital::Godot::Core::get_environment() -> is_ssr_enabled());
+            vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssr_enabled());
             return 1;
         });
     });
@@ -49,7 +49,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> get_int(1);
             Vital::Godot::Core::get_environment() -> set_ssr_max_steps(value);
-            vm -> set_bool(true);
+            vm -> push_bool(true);
             return 1;
         });
     });
@@ -57,7 +57,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "get_max_steps", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
         return vm -> execute([&]() -> int {
-            vm -> set_number(Vital::Godot::Core::get_environment() -> get_ssr_max_steps());
+            vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_max_steps());
             return 1;
         });
     });
@@ -68,7 +68,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> get_float(1);
             Vital::Godot::Core::get_environment() -> set_ssr_fade_in(value);
-            vm -> set_bool(true);
+            vm -> push_bool(true);
             return 1;
         });
     });
@@ -76,7 +76,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "get_fade_in", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
         return vm -> execute([&]() -> int {
-            vm -> set_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_in());
+            vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_in());
             return 1;
         });
     });
@@ -87,7 +87,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> get_float(1);
             Vital::Godot::Core::get_environment() -> set_ssr_fade_out(value);
-            vm -> set_bool(true);
+            vm -> push_bool(true);
             return 1;
         });
     });
@@ -95,7 +95,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "get_fade_out", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
         return vm -> execute([&]() -> int {
-            vm -> set_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_out());
+            vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_out());
             return 1;
         });
     });
@@ -106,7 +106,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto value = vm -> get_float(1);
             Vital::Godot::Core::get_environment() -> set_ssr_depth_tolerance(value);
-            vm -> set_bool(true);
+            vm -> push_bool(true);
             return 1;
         });
     });
@@ -114,7 +114,7 @@ void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "ssr", "get_depth_tolerance", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
         return vm -> execute([&]() -> int {
-            vm -> set_number(Vital::Godot::Core::get_environment() -> get_ssr_depth_tolerance());
+            vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_depth_tolerance());
             return 1;
         });
     });

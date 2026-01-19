@@ -29,7 +29,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> set_string(get_platform());
+                        vm -> push_string(get_platform());
                         return 1;
                     });
                 });
@@ -37,7 +37,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> set_number(static_cast<int>(get_tick()));
+                        vm -> push_number(static_cast<int>(get_tick()));
                         return 1;
                     });
                 });
@@ -46,7 +46,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> set_string(Vital::Tool::Inspect::fingerprint());
+                        vm -> push_string(Vital::Tool::Inspect::fingerprint());
                         return 1;
                     });
                 });
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::Lua::API {
                             vm -> pop(1);
                         }
                         godot::UtilityFunctions::print(to_godot_string(buffer.str()));
-                        vm -> set_bool(true);
+                        vm -> push_bool(true);
                         return 1;
                     });
                 });
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::Lua::API {
                             if (result) return 1;
                         }
                         else result = vm -> load_string(buffer);
-                        vm -> set_bool(result);
+                        vm -> push_bool(result);
                         return 1;
                     });
                 });
@@ -96,7 +96,7 @@ namespace Vital::Sandbox::Lua::API {
                 #if defined(Vital_SDK_Client)
                 vm -> get_global("engine");
                 vm -> get_table_field("print", -1);
-                vm -> set_global("print");
+                vm -> push_global("print");
                 vm -> pop(1);
                 #endif
             }

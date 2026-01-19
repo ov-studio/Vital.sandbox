@@ -70,8 +70,8 @@ namespace Vital::Sandbox::Lua {
                     pop();
                 }
                 for (auto& value : blacklist) {
-                    set_nil();
-                    set_global(value);
+                    push_nil();
+                    push_global(value);
                 }
                 hook("bind");
                 for (auto& value : Vital::Tool::get_modules("lua")) {
@@ -106,22 +106,22 @@ namespace Vital::Sandbox::Lua {
             inline bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
 
 
-            // Setters //
-            inline void set_global(const std::string& index) { lua_setglobal(vm, index.c_str()); }
-            inline void set_nil() { lua_pushnil(vm); }
-            inline void set_bool(bool value) { lua_pushboolean(vm, value); }
-            inline void set_string(const std::string& value) { lua_pushstring(vm, value.c_str()); }
-            inline void set_number(int value) { lua_pushnumber(vm, value); }
-            inline void set_number(float value) { lua_pushnumber(vm, value); }
-            inline void set_number(double value) { lua_pushnumber(vm, value); }
-            inline void set_table(int index = 1) { lua_settable(vm, index); }
-            inline void set_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
-            inline void set_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
-            inline void set_meta_table(int index = 1) { lua_setmetatable(vm, index);}
-            inline void set_meta_table(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
-            inline void set_userdata(void* value) { lua_pushlightuserdata(vm, value); }
-            inline void set_function(vm_exec& value) { lua_pushcfunction(vm, value); }
-            inline void set_reference(const std::string& name, int index = 1) {
+            // Pushers //
+            inline void push_global(const std::string& index) { lua_setglobal(vm, index.c_str()); }
+            inline void push_nil() { lua_pushnil(vm); }
+            inline void push_bool(bool value) { lua_pushboolean(vm, value); }
+            inline void push_string(const std::string& value) { lua_pushstring(vm, value.c_str()); }
+            inline void push_number(int value) { lua_pushnumber(vm, value); }
+            inline void push_number(float value) { lua_pushnumber(vm, value); }
+            inline void push_number(double value) { lua_pushnumber(vm, value); }
+            inline void push_table(int index = 1) { lua_settable(vm, index); }
+            inline void push_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
+            inline void push_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
+            inline void push_meta_table(int index = 1) { lua_setmetatable(vm, index);}
+            inline void push_meta_table(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
+            inline void push_userdata(void* value) { lua_pushlightuserdata(vm, value); }
+            inline void push_function(vm_exec& value) { lua_pushcfunction(vm, value); }
+            inline void push_reference(const std::string& name, int index = 1) {
                 push(index);
                 reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
             }
@@ -164,7 +164,7 @@ namespace Vital::Sandbox::Lua {
                 if (!is_table(-1)) {
                     pop();
                     create_table();
-                    set_global(namespace);
+                    push_global(namespace);
                     get_global(namespace);
                 }
             }
@@ -174,116 +174,91 @@ namespace Vital::Sandbox::Lua {
             }
             inline void create_object(const std::string& index, void* value) {
                 create_userdata(value);
-                set_meta_table(index);
+                push_meta_table(index);
             }
 
 
             // Pushers //
             inline void table_push_nil() {
-                set_nil();
-                set_table_field(get_length(-2) + 1, -2);
+                push_nil();
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_bool(bool value) {
-                set_bool(value);
-                set_table_field(get_length(-2) + 1, -2);
+                push_bool(value);
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_string(const std::string& value) {
-                set_string(value);
-                set_table_field(get_length(-2) + 1, -2);
+                push_string(value);
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_number(int value) {
-                set_number(value);
-                set_table_field(get_length(-2) + 1, -2);
+                push_number(value);
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_number(float value) {
-                set_number(value);
-                set_table_field(get_length(-2) + 1, -2);
+                push_number(value);
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_number(double value) {
-                set_number(value);
-                set_table_field(get_length(-2) + 1, -2);
+                push_number(value);
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_table() {
                 if (!is_table(-1)) return;
-                set_table_field(get_length(-2) + 1, -2);
+                push_table_field(get_length(-2) + 1, -2);
             }
             inline void table_push_function(vm_exec& exec) {
-                set_function(exec);
-                set_table_field(get_length(-2) + 1, -2);
+                push_function(exec);
+                push_table_field(get_length(-2) + 1, -2);
             }
 
-            inline void table_set_nil(const std::string& index) {
-                set_nil();
-                set_table_field(index, -2);
+            inline void table_set_nil(const std::string& index, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_nil();
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_nil(const std::string& index, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_nil(index);
-                pop();
+            inline void table_set_bool(const std::string& index, bool value, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_bool(value);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_bool(const std::string& index, bool value) {
-                set_bool(value);
-                set_table_field(index, -2);
+            inline void table_set_string(const std::string& index, const std::string& value, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_string(value);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_bool(const std::string& index, bool value, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_bool(index, value);
-                pop();
+            inline void table_set_number(const std::string& index, int value, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_number(value);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_string(const std::string& index, const std::string& value) {
-                set_string(value);
-                set_table_field(index, -2);
+            inline void table_set_number(const std::string& index, float value, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_number(value);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_string(const std::string& index, const std::string& value, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_string(index, value);
-                pop();
+            inline void table_set_number(const std::string& index, double value, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_number(value);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_number(const std::string& index, int value) {
-                set_number(value);
-                set_table_field(index, -2);
+            inline void table_set_table(const std::string& index, const std::string& namespace = "") {
+                //if (!is_table(-1)) return;
+                if (!namespace.empty()) create_namespace(namespace);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
-            inline void table_set_number(const std::string& index, int value, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_number(index, value);
-                pop();
-            }
-            inline void table_set_number(const std::string& index, float value) {
-                set_number(value);
-                set_table_field(index, -2);
-            }
-            inline void table_set_number(const std::string& index, float value, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_number(index, value);
-                pop();
-            }
-            inline void table_set_number(const std::string& index, double value) {
-                set_number(value);
-                set_table_field(index, -2);
-            }
-            inline void table_set_number(const std::string& index, double value, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_number(index, value);
-                pop();
-            }
-            inline void table_set_table(const std::string& index) {
-                if (!is_table(-1)) return;
-                set_table_field(index, -2);
-            }
-            inline void table_set_table(const std::string& index, const std::string& namespace) {
-                if (!is_table(-1)) return;
-                create_namespace(namespace);
-                table_set_table(index);
-                pop();
-            }
-            inline void table_set_function(const std::string& index, vm_exec& exec) {
-                set_function(exec);
-                set_table_field(index, -2);
-            }
-            inline void table_set_function(const std::string& index, vm_exec& exec, const std::string& namespace) {
-                create_namespace(namespace);
-                table_set_function(index, exec);
-                pop();
+            inline void table_set_function(const std::string& index, vm_exec& exec, const std::string& namespace = "") {
+                if (!namespace.empty()) create_namespace(namespace);
+                push_function(exec);
+                push_table_field(index, -2);
+                if (!namespace.empty()) pop();
             }
 
 
@@ -341,7 +316,7 @@ namespace Vital::Sandbox::Lua {
                 lua_getstack(vm, 1, &debug);
                 lua_getinfo(vm, "nSl", &debug);
                 API::error("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
-                set_bool(false);
+                push_bool(false);
             }
 
             void hook(const std::string& mode);

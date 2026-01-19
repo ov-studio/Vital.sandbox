@@ -31,7 +31,7 @@ namespace Vital::Sandbox::Lua::API {
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
-                        vm -> set_bool(Vital::Tool::File::exists(to_godot_string(get_directory()), to_godot_string(path)));
+                        vm -> push_bool(Vital::Tool::File::exists(to_godot_string(get_directory()), to_godot_string(path)));
                         return 1;
                     });
                 });
@@ -41,7 +41,7 @@ namespace Vital::Sandbox::Lua::API {
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
-                        vm -> set_number(static_cast<double>(Vital::Tool::File::size(to_godot_string(get_directory()), to_godot_string(path))));
+                        vm -> push_number(static_cast<double>(Vital::Tool::File::size(to_godot_string(get_directory()), to_godot_string(path))));
                         return 1;
                     });
                 });
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::Lua::API {
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
-                        vm -> set_bool(Vital::Tool::File::remove(to_godot_string(get_directory()), to_godot_string(path)));
+                        vm -> push_bool(Vital::Tool::File::remove(to_godot_string(get_directory()), to_godot_string(path)));
                         return 1;
                     });
                 });
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::Lua::API {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
                         auto buffer = Vital::Tool::File::read_text(to_godot_string(get_directory()), to_godot_string(path));
-                        vm -> set_string(buffer);
+                        vm -> push_string(buffer);
                         return 1;
                     });
                 });
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::Lua::API {
                         if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
                         auto buffer = vm -> get_string(2);
-                        vm -> set_bool(Vital::Tool::File::write_text(to_godot_string(get_directory()), to_godot_string(path), buffer));
+                        vm -> push_bool(Vital::Tool::File::write_text(to_godot_string(get_directory()), to_godot_string(path), buffer));
                         return 1;
                     });
                 });

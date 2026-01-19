@@ -34,12 +34,12 @@ namespace Vital::Sandbox::Lua::API {
                         auto url = vm -> get_string(1);
                         Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                             try {
-                                vm -> set_string(Vital::System::Rest::get(url));
-                                vm -> set_bool(false);
+                                vm -> push_string(Vital::System::Rest::get(url));
+                                vm -> push_bool(false);
                             }
                             catch(const std::runtime_error& error) {
-                                vm -> set_bool(false);
-                                vm -> set_string(error.what());
+                                vm -> push_bool(false);
+                                vm -> push_string(error.what());
                             }
                             vm -> resume(2);
                         }).detach();

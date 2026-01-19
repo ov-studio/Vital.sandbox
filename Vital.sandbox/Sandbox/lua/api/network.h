@@ -40,7 +40,7 @@ namespace Vital::Sandbox::Lua::API {
                         networkArgs.push("Network:name", name);
                         networkArgs.push("Network:payload", payload);
                         Vital::System::Network::emit(networkArgs, peerID, isLatent);
-                        vm -> set_bool(true);
+                        vm -> push_bool(true);
                         return 1;
                     });
                 });
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::Lua::API {
 
                 vm -> get_global("network");
                 vm -> get_table_field("execNetwork", -1);
-                vm -> set_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), -1);
+                vm -> push_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), -1);
                 vm -> pop(2);
                 vm -> table_set_nil("execNetwork", "network");
             }
@@ -60,8 +60,8 @@ namespace Vital::Sandbox::Lua::API {
                 for (auto vm : Vital::Sandbox::Lua::create::fetch_buffer()) {
                     if (!vm.second -> is_virtual()) {
                         vm.second -> get_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
-                        vm.second -> set_string(name);
-                        vm.second -> set_string(payload);
+                        vm.second -> push_string(name);
+                        vm.second -> push_string(payload);
                         vm.second -> pcall(2, 0);
                     }
                 }

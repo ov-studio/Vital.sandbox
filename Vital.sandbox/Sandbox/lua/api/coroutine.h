@@ -45,7 +45,7 @@ namespace Vital::Sandbox::Lua::API {
                         auto thread_vm = Vital::Sandbox::Lua::create::fetch_vm(thread);
                         if (!thread_vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         thread_vm -> resume();
-                        vm -> set_bool(true);
+                        vm -> push_bool(true);
                         return 1;
                     });
                 });
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::Lua::API {
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         vm -> pause();
-                        vm -> set_bool(true);
+                        vm -> push_bool(true);
                         return 1;
                     });
                 });
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::Lua::API {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto duration = vm -> get_int(1);
                         Vital::Tool::Timer([=](Vital::Tool::Timer* self) -> void {
-                            vm -> set_bool(true);
+                            vm -> push_bool(true);
                             vm -> resume(1);
                         }, duration, 1);
                         vm -> pause();
