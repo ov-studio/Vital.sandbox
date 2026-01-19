@@ -21,7 +21,7 @@
 // Vital: Sandbox: Lua //
 //////////////////////////
 
-nspace Vital::Sandbox::Lua {
+namespace Vital::Sandbox::Lua {
     class create;
     using vm_state = lua_State;
     using vm_exec = lua_CFunction;
@@ -31,7 +31,7 @@ nspace Vital::Sandbox::Lua {
 
 
     // Globals //
-    nspace API {
+    namespace API {
         extern void createErrorHandle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
         extern void bind(create* vm, const std::string& nspace, const std::string& name, vm_exec exec);
