@@ -60,7 +60,7 @@ namespace Vital::Sandbox::Lua {
             vm_state* vm = nullptr;
             vm_refs reference = {};
             vm_apis apis = {};
-            bool thread = false;
+            bool is_virtual = false;
         public:
             // Instantiators //
             inline create(vm_apis apis = {}) {
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::Lua {
             }
             inline create(vm_state* thread) {
                 vm = thread;
-                this -> thread = true;
+                is_virtual = true;
                 buffer.emplace(vm, this);
             }
             inline ~create() {
@@ -100,7 +100,7 @@ namespace Vital::Sandbox::Lua {
 
         
             // Checkers //
-            inline bool isVirtualThread() { return thread; }
+            inline bool isVirtual() { return is_virtual; }
             inline bool isNil(int index = 1) { return lua_isnoneornil(vm, index); }
             inline bool isBool(int index = 1) { return lua_isboolean(vm, index); }
             inline bool isString(int index = 1) { return lua_isstring(vm, index); }
@@ -303,13 +303,13 @@ namespace Vital::Sandbox::Lua {
                 reference.erase(name);
             }
             inline void resume(int count = 0) {
-                if (!isVirtualThread()) return;
+                if (!isVirtual()) return;
                 int ncount;
                 lua_resume(vm, nullptr, count, &ncount);
                 if (lua_status(vm) != LUA_YIELD) delete this;
             }
             inline void pause(int count = 0) {
-                if (!isVirtualThread()) return;
+                if (!isVirtual()) return;
                 lua_yield(vm, count);
             }
             inline int execute(std::function<int()> exec) {
