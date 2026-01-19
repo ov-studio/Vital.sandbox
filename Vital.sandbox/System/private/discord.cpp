@@ -50,44 +50,85 @@ namespace Vital::System::Discord {
         return true;
     }
 
-    bool setActivity(const ActivityData& data) {
-        if (!client) {
-            std::cerr << "Cannot set activity: Client is null.\n";
-            return false;
-        }
+    ActivityData currentData;
+    void pushUpdate() {
+        if (!client) return;
 
         discordpp::Activity activity;
         activity.SetType(discordpp::ActivityTypes::Playing);
-        activity.SetState(data.state);
-        activity.SetDetails(data.details);
+        activity.SetState(currentData.state);
+        activity.SetDetails(currentData.details);
 
-        if (!data.largeImageKey.empty()) {
-            activity.SetLargeImage(data.largeImageKey);
-            activity.SetLargeText(data.largeImageText);
+        if (!currentData.largeImageKey.empty()) {
+            activity.SetLargeImage(currentData.largeImageKey);
+            activity.SetLargeText(currentData.largeImageText);
         }
 
-        if (!data.smallImageKey.empty()) {
-            activity.SetSmallImage(data.smallImageKey);
-            activity.SetSmallText(data.smallImageText);
+        if (!currentData.smallImageKey.empty()) {
+            activity.SetSmallImage(currentData.smallImageKey);
+            activity.SetSmallText(currentData.smallImageText);
         }
 
-        if (data.startTimestamp > 0) {
-            activity.SetStartTimestamp(data.startTimestamp);
+        if (currentData.startTimestamp > 0) {
+            activity.SetStartTimestamp(currentData.startTimestamp);
         }
 
-        if (data.endTimestamp > 0) {
-            activity.SetEndTimestamp(data.endTimestamp);
+        if (currentData.endTimestamp > 0) {
+            activity.SetEndTimestamp(currentData.endTimestamp);
         }
 
-        // Update rich presence
         client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
-            if (result.Successful()) {
-                std::cout << "Rich Presence updated successfully!\n";
-            } else {
-                std::cerr << "Rich Presence update failed";
+            if (!result.Successful()) {
+                // TO DO: std::cerr << "Rich Presence update failed\n";
             }
         });
+    }
 
+    bool setActivity(const ActivityData& data) {
+        if (!client) {
+            // TO DO: std::cerr << "Cannot set activity: Client is null.\n";
+            return false;
+        }
+        currentData = data;
+        pushUpdate();
+        return true;
+    }
+
+    bool updateState(const std::string& state) {
+        if (!client) return false;
+        currentData.state = state;
+        pushUpdate();
+        return true;
+    }
+
+    bool updateDetails(const std::string& details) {
+        if (!client) return false;
+        currentData.details = details;
+        pushUpdate();
+        return true;
+    }
+
+    bool updateLargeAsset(const std::string& key, const std::string& text) {
+        if (!client) return false;
+        currentData.largeImageKey = key;
+        currentData.largeImageText = text;
+        pushUpdate();
+        return true;
+    }
+
+    bool updateSmallAsset(const std::string& key, const std::string& text) {
+        if (!client) return false;
+        currentData.smallImageKey = key;
+        currentData.smallImageText = text;
+        pushUpdate();
+        return true;
+    }
+
+    bool updateTimestamps(int64_t start, int64_t end) {
+        if (!client) return false;
+        currentData.startTimestamp = start;
+        currentData.endTimestamp = end;
+        pushUpdate();
         return true;
     }
 
