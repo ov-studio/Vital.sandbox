@@ -16,6 +16,13 @@
 #include <Vital.sandbox/vital.hpp>
 #include <Vital.sandbox/Vendor/lua/lua.hpp>
 
+#include <Vital.sandbox/Sandbox/lua/api/engine.h>
+#include <Vital.sandbox/Sandbox/lua/api/coroutine.h>
+#include <Vital.sandbox/Sandbox/lua/api/file.h>
+#include <Vital.sandbox/Sandbox/lua/api/crypto.h>
+#include <Vital.sandbox/Sandbox/lua/api/rest.h>
+#include <Vital.sandbox/Sandbox/lua/api/network.h>
+
 
 //////////////////////////
 // Vital: Sandbox: Lua //
