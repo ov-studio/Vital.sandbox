@@ -292,8 +292,8 @@ namespace Vital::Sandbox::Lua {
             inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
             inline void set_table(int index = 1) { lua_settable(vm, index); }
-            inline void set_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
-            inline void set_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
+            inline void set_table_field(int field, int index = 1) { lua_seti(vm, index, field); }
+            inline void set_table_field(const std::string& field, int index = 1) { lua_setfield(vm, index, field.c_str()); }
             inline void set_metatable(int index = 1) { lua_setmetatable(vm, index);}
             inline void set_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
 
