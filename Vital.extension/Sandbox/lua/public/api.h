@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
-#include <Vital.sandbox/Sandbox/lua/public/api.h>
+#include <Vital.sandbox/Sandbox/lua/public/vm.h>
 
 
 //////////////////////////////////////

@@ -21,10 +21,32 @@
 //////////////////////////
 
 namespace Vital::Sandbox::Lua {
-    typedef lua_State vsdk_ref;
-    typedef lua_CFunction vsdk_exec;
-    typedef std::map<std::string, int> vsdk_reference;
-    typedef std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>> vsdk_apis;
+    using vsdk_ref = lua_State;
+    using vsdk_exec = lua_CFunction;
+    using vsdk_reference = std::map<std::string, int>;
+    using vsdk_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
+
+
+    // Globals //
+    class create;
+    using vsdk_vm  = create;
+    using vsdk_vms = std::map<vsdk_ref*, vsdk_vm*>;
+    inline vsdk_vms vms;
+    inline vsdk_vms fetchVMs() { return vms; }
+    inline vsdk_vm* fetchVM(vsdk_ref* vm) {
+        auto it = vms.find(vm);
+        return it != vms.end() ? it->second : nullptr;
+    }
+    inline vsdk_vm* toVM(void* vm) { return static_cast<vsdk_vm*>(vm); }
+
+    namespace API {
+        extern void createErrorHandle(std::function<void(const std::string&)> exec);
+        extern void error(const std::string& error);
+        extern void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec);
+    }
+    
+
+    // Class //
     class create {
         private:
             vsdk_ref* vm = nullptr;
@@ -33,107 +55,279 @@ namespace Vital::Sandbox::Lua {
             bool thread = false;
         public:
             // Instantiators //
-            create(vsdk_apis apis = {});
-            create(vsdk_ref* thread);
-            ~create();
+            inline create(vsdk_apis apis = {}) {
+                vm = luaL_newstate();
+                this->apis = apis;
+                vms.emplace(vm, this);
+                for (auto& i : vsdk_libraries) {
+                    luaL_requiref(vm, i.name, i.func, 1);
+                    pop();
+                }
+                for (auto& i : vsdk_blacklist) {
+                    setNil();
+                    setGlobal(i);
+                }
+                hook("bind");
+                for (auto& i : Vital::Tool::get_modules("lua")) {
+                    loadString(i);
+                }
+                hook("inject");
+            }
+            inline create(vsdk_ref* thread) {
+                vm = thread;
+                this->thread = true;
+                vms.emplace(vm, this);
+            }
+            inline ~create() {
+                if (!vm) return;
+                vms.erase(vm);
+                vm = nullptr;
+            }
+
 
             // Checkers //
-            bool isVirtualThread();
-            bool isNil(int index = 1);
-            bool isBool(int index = 1);
-            bool isString(int index = 1);
-            bool isNumber(int index = 1);
-            bool isTable(int index = 1);
-            bool isThread(int index = 1);
-            bool isUserData(int index = 1);
-            bool isFunction(int index = 1);
-            bool isReference(const std::string& name);
+            inline bool isVirtualThread() { return thread; }
+            inline bool isNil(int index = 1) { return lua_isnoneornil(vm, index); }
+            inline bool isBool(int index = 1) { return lua_isboolean(vm, index); }
+            inline bool isString(int index = 1) { return lua_isstring(vm, index); }
+            inline bool isNumber(int index = 1) { return lua_isnumber(vm, index); }
+            inline bool isTable(int index = 1) { return lua_istable(vm, index); }
+            inline bool isThread(int index = 1) { return lua_isthread(vm, index); }
+            inline bool isUserData(int index = 1) { return lua_isuserdata(vm, index); }
+            inline bool isFunction(int index = 1) { return lua_isfunction(vm, index); }
+            inline bool isReference(const std::string& name) { return reference.find(name) != reference.end(); }
+
 
             // Setters //
-            void setGlobal(const std::string& index);
-            void setNil();
-            void setBool(bool value);
-            void setString(const std::string& value);
-            void setNumber(int value);
-            void setNumber(float value);
-            void setNumber(double value);
-            void createTable();
-            void setTable(int index = 1);
-            void setTableField(int value, int index = 1);
-            void setTableField(const std::string& value, int index = 1);
-            void createMetaTable(const std::string& value);
-            void setMetaTable(int index = 1);
-            void setMetaTable(const std::string& index);
-            void createNamespace(const std::string& parent);
-            create* createThread();
-            void createUserData(void* value);
-            void setUserData(void* value);
-            void setFunction(vsdk_exec& value);
-            void setReference(const std::string& name, int index = 1);
+            inline void setGlobal(const std::string& index) { lua_setglobal(vm, index.c_str()); }
+            inline void setNil() { lua_pushnil(vm); }
+            inline void setBool(bool value) { lua_pushboolean(vm, value); }
+            inline void setString(const std::string& value) { lua_pushstring(vm, value.c_str()); }
+            inline void setNumber(int value) { lua_pushnumber(vm, value); }
+            inline void setNumber(float value) { lua_pushnumber(vm, value); }
+            inline void setNumber(double value) { lua_pushnumber(vm, value); }
+            inline void createTable() { lua_newtable(vm); }
+            inline void setTable(int index = 1) { lua_settable(vm, index); }
+            inline void setTableField(int value, int index = 1) { lua_seti(vm, index, value); }
+            inline void setTableField(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
+            inline void createMetaTable(const std::string& value) { luaL_newmetatable(vm, value.c_str()); }
+            inline void setMetaTable(int index = 1) { lua_setmetatable(vm, index);}
+            inline void setMetaTable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
+            inline void createNamespace(const std::string& parent) {
+                getGlobal(parent);
+                if (!isTable(-1)) {
+                    pop();
+                    createTable();
+                    setGlobal(parent);
+                    getGlobal(parent);
+                }
+            }
+            inline create* createThread() { return new create(lua_newthread(vm)); }
+            inline void createUserData(void* value) {
+                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
+                *userdata = value;
+            }
+            inline void setUserData(void* value) { lua_pushlightuserdata(vm, value); }
+            inline void setFunction(vsdk_exec& value) { lua_pushcfunction(vm, value); }
+            inline void setReference(const std::string& name, int index = 1) {
+                push(index);
+                reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
+            }
+
 
             // Getters //
-            int getArgCount();
-            bool getGlobal(const std::string& index);
-            bool getBool(int index = 1);
-            std::string getString(int index = 1);
-            int getInt(int index = 1);
-            float getFloat(int index = 1);
-            double getDouble(int index = 1);
-            bool getTable(int index = 1);
-            bool getTableField(int value, int index = 1);
-            bool getTableField(const std::string& value, int index = 1);
-            bool getMetaTable(int index = 1);
-            bool getMetaTable(const std::string& index);
-            vsdk_ref* getThread(int index = 1);
-            void* getUserData(int index = 1);
-            int getReference(const std::string& name, bool pushValue = false);
-            int getLength(int index = 1);
+            inline int getArgCount() { return lua_gettop(vm); }
+            inline bool getGlobal(const std::string& index) { return lua_getglobal(vm, index.c_str()); }
+            inline bool getBool(int index = 1) { return lua_toboolean(vm, index); }
+            inline std::string getString(int index = 1) { return lua_tostring(vm, index); }
+            inline int getInt(int index = 1) { return (int)lua_tonumber(vm, index); }
+            inline float getFloat(int index = 1) { return (float)lua_tonumber(vm, index); }
+            inline double getDouble(int index = 1) { return lua_tonumber(vm, index); }
+            inline bool getTable(int index = 1) { return lua_gettable(vm, index); }
+            inline bool getTableField(int value, int index = 1) { return lua_geti(vm, index, value); }
+            inline bool getTableField(const std::string& value, int index = 1) {return lua_getfield(vm, index, value.c_str());}
+            inline bool getMetaTable(int index = 1) { return lua_getmetatable(vm, index); }
+            inline bool getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
+            inline vsdk_ref* getThread(int index = 1) { return lua_tothread(vm, index); }
+            inline void* getUserData(int index = 1) { return lua_touserdata(vm, index); }
+            inline int getReference(const std::string& name, bool pushValue = false) {
+                if (!pushValue) return reference.at(name);
+                lua_rawgeti(vm, LUA_REGISTRYINDEX, reference.at(name));
+                return 0;
+            }
+            inline int getLength(int index = 1) {
+                lua_len(vm, index);
+                int result = getInt(-1);
+                pop();
+                return result;
+            }
+
 
             // Pushers //
-            void pushNil();
-            void pushBool(bool value);
-            void pushString(const std::string& value);
-            void pushNumber(int value);
-            void pushNumber(float value);
-            void pushNumber(double value);
-            void pushTable();
-            void pushFunction(vsdk_exec& exec);
+            inline void pushNil() {
+                setNil();
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushBool(bool value) {
+                setBool(value);
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushString(const std::string& value) {
+                setString(value);
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushNumber(int value) {
+                setNumber(value);
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushNumber(float value) {
+                setNumber(value);
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushNumber(double value) {
+                setNumber(value);
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushTable() {
+                if (!isTable(-1)) return;
+                setTableField(getLength(-2) + 1, -2);
+            }
+            inline void pushFunction(vsdk_exec& exec) {
+                setFunction(exec);
+                setTableField(getLength(-2) + 1, -2);
+            }
 
+        
             // Registerers //
-            void registerNil(const std::string& index);
-            void registerNil(const std::string& index, const std::string& parent);
-            void registerBool(const std::string& index, bool value);
-            void registerBool(const std::string& index, bool value, const std::string& parent);
-            void registerString(const std::string& index, const std::string& value);
-            void registerString(const std::string& index, const std::string& value, const std::string& parent);
-            void registerNumber(const std::string& index, int value);
-            void registerNumber(const std::string& index, int value, const std::string& parent);
-            void registerNumber(const std::string& index, float value);
-            void registerNumber(const std::string& index, float value, const std::string& parent);
-            void registerNumber(const std::string& index, double value);
-            void registerNumber(const std::string& index, double value, const std::string& parent);
-            void registerTable(const std::string& index);
-            void registerTable(const std::string& index, const std::string& parent);
-            void registerFunction(const std::string& index, vsdk_exec& exec);
-            void registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent);
-            void registerObject(const std::string& index, void* value);
+            inline void registerNil(const std::string& index) {
+                setNil();
+                setTableField(index, -2);
+            }
+            inline void registerNil(const std::string& index, const std::string& parent) {
+                createNamespace(parent);
+                registerNil(index);
+                pop();
+            }
+            inline void registerBool(const std::string& index, bool value) {
+                setBool(value);
+                setTableField(index, -2);
+            }
+            inline void registerBool(const std::string& index, bool value, const std::string& parent) {
+                createNamespace(parent);
+                registerBool(index, value);
+                pop();
+            }
+            inline void registerString(const std::string& index, const std::string& value) {
+                setString(value);
+                setTableField(index, -2);
+            }
+            inline void registerString(const std::string& index, const std::string& value, const std::string& parent) {
+                createNamespace(parent);
+                registerString(index, value);
+                pop();
+            }
+            inline void registerNumber(const std::string& index, int value) {
+                setNumber(value);
+                setTableField(index, -2);
+            }
+            inline void registerNumber(const std::string& index, int value, const std::string& parent) {
+                createNamespace(parent);
+                registerNumber(index, value);
+                pop();
+            }
+            inline void registerNumber(const std::string& index, float value) {
+                setNumber(value);
+                setTableField(index, -2);
+            }
+            inline void registerNumber(const std::string& index, float value, const std::string& parent) {
+                createNamespace(parent);
+                registerNumber(index, value);
+                pop();
+            }
+            inline void registerNumber(const std::string& index, double value) {
+                setNumber(value);
+                setTableField(index, -2);
+            }
+            inline void registerNumber(const std::string& index, double value, const std::string& parent) {
+                createNamespace(parent);
+                registerNumber(index, value);
+                pop();
+            }
+            inline void registerTable(const std::string& index) {
+                if (!isTable(-1)) return;
+                setTableField(index, -2);
+            }
+            inline void registerTable(const std::string& index, const std::string& parent) {
+                if (!isTable(-1)) return;
+                createNamespace(parent);
+                registerTable(index);
+                pop();
+            }
+            inline void registerFunction(const std::string& index, vsdk_exec& exec) {
+                setFunction(exec);
+                setTableField(index, -2);
+            }
+            inline void registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent) {
+                createNamespace(parent);
+                registerFunction(index, exec);
+                pop();
+            }
+            inline void registerObject(const std::string& index, void* value) {
+                createUserData(value);
+                setMetaTable(index);
+            }
+
 
             // Utils //
-            void push(int index = 1);
-            void pop(int count = 1);
-            void move(create* target, int count = 1);
-            bool pcall(int arguments, int returns);
-            void removeReference(const std::string& name);
-            void resume(int count = 0);
-            void pause(int count = 0);
+            inline void push(int index = 1) { lua_pushvalue(vm, index); }
+            inline void pop(int count = 1) { lua_pop(vm, count); }
+            inline void move(create* target, int count = 1) { lua_xmove(vm, target->vm, count); }
+            inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
+            inline void removeReference(const std::string& name) {
+                if (!isReference(name)) return;
+                luaL_unref(vm, LUA_REGISTRYINDEX, getReference(name));
+                reference.erase(name);
+            }
+            inline void resume(int count = 0) {
+                if (!isVirtualThread()) return;
+                int ncount;
+                lua_resume(vm, nullptr, count, &ncount);
+                if (lua_status(vm) != LUA_YIELD) delete this;
+            }
+            inline void pause(int count = 0) {
+                if (!isVirtualThread()) return;
+                lua_yield(vm, count);
+            }
+            inline int execute(std::function<int()> exec) {
+                try { return exec(); }
+                catch(const std::runtime_error& error) { throwError(error.what()); }
+                catch(...) { throwError(); }
+                return 1;
+            }
+            inline bool loadString(const std::string& buf, bool autoload = true) {
+                if (buf.empty()) return false;
+                if (!autoload) {
+                    std::string b = "return (function() " + buf + " end)";
+                    luaL_loadstring(vm, b.c_str());
+                }
+                else luaL_loadstring(vm, buf.c_str());
+                if (pcall(0, LUA_MULTRET)) {
+                    API::error(getString(-1));
+                    pop();
+                    return false;
+                }
+                return true;
+            }
+            inline void throwError(const std::string& error = "") {
+                lua_Debug debug;
+                lua_getstack(vm, 1, &debug);
+                lua_getinfo(vm, "nSl", &debug);
+                API::error("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
+                setBool(false);
+            }
+
+
             void hook(const std::string& mode);
-            int execute(std::function<int()> exec);
-            bool loadString(const std::string& buffer, bool autoload = true);
-            void throwError(const std::string& error = "");
+
     };
-    typedef create vsdk_vm;
-    typedef std::map<vsdk_ref*, vsdk_vm*> vsdk_vms;
-    extern vsdk_vms fetchVMs();
-    extern vsdk_vm* fetchVM(vsdk_ref* vm);
-    extern vsdk_vm* toVM(void* vm);
 }
