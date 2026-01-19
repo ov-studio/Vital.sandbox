@@ -59,6 +59,7 @@ namespace Vital::Sandbox::Lua {
             bool virtualized = false;
             vm_state* vm = nullptr;
             vm_refs reference = {};
+            vm_apis natives = {};
             vm_apis apis = {};
         public:
             inline create(vm_apis apis = {}) {
@@ -96,6 +97,7 @@ namespace Vital::Sandbox::Lua {
             // APIs //
             static inline vm_buffer fetch_buffer() { return buffer; }
             static inline create* to_vm(void* vm) { return static_cast<create*>(vm); }
+            static inline create* to_void(create* vm) { return static_cast<void*>(vm); }
             static inline create* fetch_vm(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
@@ -304,7 +306,15 @@ namespace Vital::Sandbox::Lua {
                 return 1;
             }
 
-            void hook(const std::string& mode);
+            void hook(const std::string& mode) {
+                auto vm = to_void(this);
+                vm_apis apis = natives;
+                for (auto& i : this -> apis) apis.push_back(i);
+                for (auto& i : apis) {
+                    if (mode == "bind") i.first(vm);
+                    else if (mode == "inject") i.second(vm);
+                }
+            }
 
             inline void resume(int count = 0) {
                 if (!is_virtual()) return;
