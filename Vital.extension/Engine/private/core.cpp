@@ -54,6 +54,7 @@ namespace Vital::Godot {
         Sandbox::Lua::Singleton::fetch() -> process(delta);
     }
 
+
     // Getters //
     Core* Core::get_singleton() {
         return singleton;
