@@ -93,6 +93,15 @@ namespace Vital::Sandbox::Lua {
             }
 
 
+            // APIs //
+            static inline vm_buffer fetch_buffer() { return buffer; }
+            static inline create* to_vm(void* vm) { return static_cast<create*>(vm); }
+            static inline create* fetch_vm(vm_state* vm) {
+                auto it = buffer.find(vm);
+                return it != buffer.end() ? it -> second : nullptr;
+            }
+
+
             // Checkers //
             inline bool is_virtual() { return virtualized; }
             inline bool is_nil(int index = 1) { return lua_isnoneornil(vm, index); }
@@ -142,18 +151,13 @@ namespace Vital::Sandbox::Lua {
             inline void push_number(int value) { lua_pushnumber(vm, value); }
             inline void push_number(float value) { lua_pushnumber(vm, value); }
             inline void push_number(double value) { lua_pushnumber(vm, value); }
-            inline void push_table(int index = 1) { lua_settable(vm, index); }
-            inline void push_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
-            inline void push_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
-            inline void push_metatable(int index = 1) { lua_setmetatable(vm, index);}
-            inline void push_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
             inline void push_userdata(void* value) { lua_pushlightuserdata(vm, value); }
             inline void push_function(vm_exec& value) { lua_pushcfunction(vm, value); }
             inline void push_reference(const std::string& name, int index = 1) {
                 push(index);
                 reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
             }
-    
+        
 
             // Containers //
             inline void create_table() { lua_newtable(vm); }
@@ -174,7 +178,7 @@ namespace Vital::Sandbox::Lua {
             }
             inline void create_object(const std::string& index, void* value) {
                 create_userdata(value);
-                push_metatable(index);
+                set_metatable(index);
             }
 
 
@@ -182,37 +186,37 @@ namespace Vital::Sandbox::Lua {
             inline void table_push_nil(const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_push_bool(bool value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_bool(value);
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_push_string(const std::string& value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_string(value);
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_push_number(int value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_push_number(float value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_push_number(double value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_push_table(const std::string& nspace = "") {
@@ -220,50 +224,50 @@ namespace Vital::Sandbox::Lua {
                     create_namespace(nspace);
                     get_table(-2);
                 }
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop(2);
             }
             inline void table_push_function(vm_exec& exec, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_function(exec);
-                push_table_field(get_length(-2) + 1, -2);
+                set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
 
             inline void table_set_nil(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_set_bool(const std::string& index, bool value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_bool(value);
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_set_string(const std::string& index, const std::string& value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_string(value);
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_set_number(const std::string& index, int value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_set_number(const std::string& index, float value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_set_number(const std::string& index, double value, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
             inline void table_set_table(const std::string& index, const std::string& nspace = "") {
@@ -271,23 +275,14 @@ namespace Vital::Sandbox::Lua {
                     create_namespace(nspace);
                     get_table(-2);
                 }
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop(2);
             }
             inline void table_set_function(const std::string& index, vm_exec& exec, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_function(exec);
-                push_table_field(index, -2);
+                set_table_field(index, -2);
                 if (!nspace.empty()) pop();
-            }
-
-
-            // APIs //
-            static inline vm_buffer fetch_buffer() { return buffer; }
-            static inline create* to_vm(void* vm) { return static_cast<create*>(vm); }
-            static inline create* fetch_vm(vm_state* vm) {
-                auto it = buffer.find(vm);
-                return it != buffer.end() ? it -> second : nullptr;
             }
 
 
@@ -296,6 +291,11 @@ namespace Vital::Sandbox::Lua {
             inline void pop(int count = 1) { lua_pop(vm, count); }
             inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
+            inline void set_table(int index = 1) { lua_settable(vm, index); }
+            inline void set_table_field(int value, int index = 1) { lua_seti(vm, index, value); }
+            inline void set_table_field(const std::string& value, int index = 1) { lua_setfield(vm, index, value.c_str()); }
+            inline void set_metatable(int index = 1) { lua_setmetatable(vm, index);}
+            inline void set_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
 
             inline int execute(std::function<int()> exec) {
                 try { return exec(); }
