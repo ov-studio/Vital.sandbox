@@ -29,7 +29,7 @@
 namespace Vital::Sandbox::Lua {
     void create::hook(const std::string& mode) {
         auto instance = static_cast<void*>(this);
-        vsdk_apis natives = {
+        vm_apis natives = {
             {API::Engine::bind, API::Engine::inject},
             {API::Coroutine::bind, API::Coroutine::inject},
             {API::File::bind, API::File::inject},
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::Lua {
             vsdk_errorhandle(error);
         }
     
-        void bind(create* vm, const std::string& parent, const std::string& name, lua_CFunction exec) {
+        void bind(create* vm, const std::string& parent, const std::string& name, vm_exec exec) {
             vm -> registerFunction(name, exec, parent);
         }
     }

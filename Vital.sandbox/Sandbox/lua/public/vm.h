@@ -22,15 +22,18 @@
 //////////////////////////
 
 namespace Vital::Sandbox::Lua {
-    using vsdk_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
+    class create;
+    using vm_state = lua_State;
+    using vm_buffer = std::map<vm_state*, create*>;
+    using vm_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
+    using vm_exec = lua_CFunction;
 
 
     // Globals //
-    class create;
     namespace API {
         extern void createErrorHandle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
-        extern void bind(create* vm, const std::string& parent, const std::string& name, lua_CFunction exec);
+        extern void bind(create* vm, const std::string& parent, const std::string& name, vm_exec exec);
     }
 
     // Class //
@@ -51,15 +54,15 @@ namespace Vital::Sandbox::Lua {
                 "load",
                 "loadfile"
             };
-            static inline std::map<lua_State*, create*> buffer;
+            static inline vm_buffer buffer;
         private:
-            lua_State* vm = nullptr;
+            vm_state* vm = nullptr;
             std::map<std::string, int> reference = {};
-            vsdk_apis apis = {};
+            vm_apis apis = {};
             bool thread = false;
         public:
             // Instantiators //
-            inline create(vsdk_apis apis = {}) {
+            inline create(vm_apis apis = {}) {
                 vm = luaL_newstate();
                 this -> apis = apis;
                 buffer.emplace(vm, this);
@@ -77,7 +80,7 @@ namespace Vital::Sandbox::Lua {
                 }
                 hook("inject");
             }
-            inline create(lua_State* thread) {
+            inline create(vm_state* thread) {
                 vm = thread;
                 this -> thread = true;
                 buffer.emplace(vm, this);
@@ -87,9 +90,9 @@ namespace Vital::Sandbox::Lua {
                 buffer.erase(vm);
                 vm = nullptr;
             }
-            static inline std::map<lua_State*, create*> fetchVMs() { return buffer; }
+            static inline vm_buffer fetchVMs() { return buffer; }
             static inline create* toVM(void* vm) { return static_cast<create*>(vm); }
-            static inline create* fetchVM(lua_State* vm) {
+            static inline create* fetchVM(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
             }
@@ -138,7 +141,7 @@ namespace Vital::Sandbox::Lua {
                 *userdata = value;
             }
             inline void setUserData(void* value) { lua_pushlightuserdata(vm, value); }
-            inline void setFunction(lua_CFunction& value) { lua_pushcfunction(vm, value); }
+            inline void setFunction(vm_exec& value) { lua_pushcfunction(vm, value); }
             inline void setReference(const std::string& name, int index = 1) {
                 push(index);
                 reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
@@ -158,7 +161,7 @@ namespace Vital::Sandbox::Lua {
             inline bool getTableField(const std::string& value, int index = 1) {return lua_getfield(vm, index, value.c_str());}
             inline bool getMetaTable(int index = 1) { return lua_getmetatable(vm, index); }
             inline bool getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
-            inline lua_State* getThread(int index = 1) { return lua_tothread(vm, index); }
+            inline vm_state* getThread(int index = 1) { return lua_tothread(vm, index); }
             inline void* getUserData(int index = 1) { return lua_touserdata(vm, index); }
             inline int getReference(const std::string& name, bool pushValue = false) {
                 if (!pushValue) return reference.at(name);
@@ -202,7 +205,7 @@ namespace Vital::Sandbox::Lua {
                 if (!isTable(-1)) return;
                 setTableField(getLength(-2) + 1, -2);
             }
-            inline void pushFunction(lua_CFunction& exec) {
+            inline void pushFunction(vm_exec& exec) {
                 setFunction(exec);
                 setTableField(getLength(-2) + 1, -2);
             }
@@ -273,11 +276,11 @@ namespace Vital::Sandbox::Lua {
                 registerTable(index);
                 pop();
             }
-            inline void registerFunction(const std::string& index, lua_CFunction& exec) {
+            inline void registerFunction(const std::string& index, vm_exec& exec) {
                 setFunction(exec);
                 setTableField(index, -2);
             }
-            inline void registerFunction(const std::string& index, lua_CFunction& exec, const std::string& parent) {
+            inline void registerFunction(const std::string& index, vm_exec& exec, const std::string& parent) {
                 createNamespace(parent);
                 registerFunction(index, exec);
                 pop();
