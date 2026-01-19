@@ -30,7 +30,6 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/msgpack"),
     os.path.join(cwd, "Vendor/rapidjson"),
     os.path.join(cwd, "Vendor/lua"),
-    os.path.join(cwd, "Vendor/duktape"),
     os.path.join(cwd, "Vendor/discord-sdk")
 ])
 
