@@ -116,7 +116,7 @@ namespace Vital::Godot::Sandbox::Lua {
             print("SSAO Enabled: ", ssao.set_enabled(true))
             print("SSAO Intensity: ", ssao.set_intensity(5))
         )";
-        vm -> loadString(rwString);
+        vm -> load_string(rwString);
 
         font.instantiate();
         font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
@@ -132,7 +132,7 @@ namespace Vital::Godot::Sandbox::Lua {
         std::string rwString = R"(
             print("processing")
         )";
-        //vm -> loadString(rwString);
+        //vm -> load_string(rwString);
     }
 
     #if defined(Vital_SDK_Client)
