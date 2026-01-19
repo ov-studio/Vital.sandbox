@@ -293,18 +293,14 @@ namespace Vital::Sandbox::Lua {
             inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
 
-            inline void remove_reference(const std::string& name) {
-                if (!is_reference(name)) return;
-                luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
-                reference.erase(name);
-            }
-
             inline int execute(std::function<int()> exec) {
                 try { return exec(); }
                 catch(const std::runtime_error& error) { throw_error(error.what()); }
                 catch(...) { throw_error(); }
                 return 1;
             }
+
+            void hook(const std::string& mode);
 
             inline void resume(int count = 0) {
                 if (!is_virtual()) return;
@@ -333,6 +329,12 @@ namespace Vital::Sandbox::Lua {
                 return true;
             }
 
+            inline void remove_reference(const std::string& name) {
+                if (!is_reference(name)) return;
+                luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
+                reference.erase(name);
+            }
+
             inline void throw_error(const std::string& error = "") {
                 lua_Debug debug;
                 lua_getstack(vm, 1, &debug);
@@ -340,11 +342,5 @@ namespace Vital::Sandbox::Lua {
                 API::error("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
                 push_bool(false);
             }
-
-            void hook(const std::string& mode);
-
-
-            // Thread Tools //
-
     };
 }
