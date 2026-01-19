@@ -24,9 +24,10 @@
 namespace Vital::Sandbox::Lua {
     class create;
     using vm_state = lua_State;
-    using vm_buffer = std::map<vm_state*, create*>;
-    using vm_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
     using vm_exec = lua_CFunction;
+    using vm_buffer = std::map<vm_state*, create*>;
+    using vm_refs = std::map<std::string, int>;
+    using vm_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
 
 
     // Globals //
@@ -39,6 +40,7 @@ namespace Vital::Sandbox::Lua {
     // Class //
     class create {
         protected:
+            static inline vm_buffer buffer;
             static inline std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
                 {"table", luaopen_table},
@@ -54,10 +56,9 @@ namespace Vital::Sandbox::Lua {
                 "load",
                 "loadfile"
             };
-            static inline vm_buffer buffer;
         private:
             vm_state* vm = nullptr;
-            std::map<std::string, int> reference = {};
+            vm_refs reference = {};
             vm_apis apis = {};
             bool thread = false;
         public:
