@@ -56,10 +56,10 @@ namespace Vital::Sandbox::Lua {
                 "loadfile"
             };
         private:
+            bool is_virtual = false;
             vm_state* vm = nullptr;
             vm_refs reference = {};
             vm_apis apis = {};
-            bool is_virtual = false;
         public:
             inline create(vm_apis apis = {}) {
                 vm = luaL_newstate();
@@ -287,17 +287,21 @@ namespace Vital::Sandbox::Lua {
             }
 
 
-            // Utils //
-            inline void push(int index = 1) { lua_pushvalue(vm, index); }
-            inline void pop(int count = 1) { lua_pop(vm, count); }
-            inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
-            inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
+
+            // APIs //
             static inline vm_buffer fetchVMs() { return buffer; }
             static inline create* toVM(void* vm) { return static_cast<create*>(vm); }
             static inline create* fetchVM(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
             }
+
+
+            // Utils //
+            inline void push(int index = 1) { lua_pushvalue(vm, index); }
+            inline void pop(int count = 1) { lua_pop(vm, count); }
+            inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
+            inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
             inline void removeReference(const std::string& name) {
                 if (!isReference(name)) return;
                 luaL_unref(vm, LUA_REGISTRYINDEX, getReference(name));
