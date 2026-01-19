@@ -97,7 +97,7 @@ namespace Vital::Sandbox::Lua {
             // APIs //
             static inline vm_buffer fetch_buffer() { return buffer; }
             static inline create* to_vm(void* vm) { return static_cast<create*>(vm); }
-            static inline create* to_void(create* vm) { return static_cast<void*>(vm); }
+            static inline void* to_void(create* vm) { return static_cast<void*>(vm); }
             static inline create* fetch_vm(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
