@@ -24,10 +24,10 @@ namespace Vital::Sandbox::Lua::API {
     class Network : public Vital::Tool::Module {
         public:
             static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::to_vm(instance);
 
                 API::bind(vm, "network", "emit", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         bool client = get_platform() == "client";
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Error::fetch("invalid-arguments");
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::Lua::API {
             }
 
             static void inject(void* instance) {
-                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::to_vm(instance);
 
                 vm -> get_global("network");
                 vm -> get_table_field("execNetwork", -1);
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::Lua::API {
             }
 
             static void execute(const std::string& name, const std::string& payload) {
-                for (auto vm : Vital::Sandbox::Lua::create::fetchVMs()) {
+                for (auto vm : Vital::Sandbox::Lua::create::fetch_buffer()) {
                     if (!vm.second -> is_virtual()) {
                         vm.second -> get_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
                         vm.second -> set_string(name);

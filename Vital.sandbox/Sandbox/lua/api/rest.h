@@ -24,10 +24,10 @@ namespace Vital::Sandbox::Lua::API {
     class Rest : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::to_vm(instance);
 
                 API::bind(vm, "rest", "get", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");

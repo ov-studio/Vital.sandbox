@@ -24,10 +24,10 @@ namespace Vital::Sandbox::Lua::API {
     class Coroutine : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::to_vm(instance);
 
                 API::bind(vm, "coroutine", "create", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_function(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto thread = vm -> create_thread();
@@ -38,11 +38,11 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "coroutine", "resume", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_thread(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto thread = vm -> get_thread(1);
-                        auto thread_vm = Vital::Sandbox::Lua::create::fetchVM(thread);
+                        auto thread_vm = Vital::Sandbox::Lua::create::fetch_vm(thread);
                         if (!thread_vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         thread_vm -> resume();
                         vm -> set_bool(true);
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "coroutine", "pause", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         vm -> pause();
@@ -61,7 +61,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "coroutine", "sleep", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
