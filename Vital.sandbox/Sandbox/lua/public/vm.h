@@ -54,7 +54,7 @@ namespace Vital::Sandbox::Lua {
                 "load",
                 "loadfile"
             };
-            static inline std::map<lua_State*, create*> buffer = {};
+            static inline std::map<lua_State*, create*> buffer;
         private:
             lua_State* vm = nullptr;
             vsdk_reference reference = {};
