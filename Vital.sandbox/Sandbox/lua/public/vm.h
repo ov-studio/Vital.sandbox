@@ -21,7 +21,7 @@
 // Vital: Sandbox: Lua //
 //////////////////////////
 
-namespace Vital::Sandbox::Lua {
+nspace Vital::Sandbox::Lua {
     class create;
     using vm_state = lua_State;
     using vm_exec = lua_CFunction;
@@ -31,10 +31,10 @@ namespace Vital::Sandbox::Lua {
 
 
     // Globals //
-    namespace API {
+    nspace API {
         extern void createErrorHandle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
-        extern void bind(create* vm, const std::string& namespace, const std::string& name, vm_exec exec);
+        extern void bind(create* vm, const std::string& nspace, const std::string& name, vm_exec exec);
     }
 
     class create {
@@ -159,13 +159,13 @@ namespace Vital::Sandbox::Lua {
             inline void create_table() { lua_newtable(vm); }
             inline void create_meta_table(const std::string& value) { luaL_newmetatable(vm, value.c_str()); }
             inline create* create_thread() { return new create(lua_newthread(vm)); }
-            inline void create_namespace(const std::string& namespace) {
-                get_global(namespace);
+            inline void create_namespace(const std::string& nspace) {
+                get_global(nspace);
                 if (!is_table(-1)) {
                     pop();
                     create_table();
-                    push_global(namespace);
-                    get_global(namespace);
+                    push_global(nspace);
+                    get_global(nspace);
                 }
             }
             inline void create_userdata(void* value) {
@@ -179,86 +179,102 @@ namespace Vital::Sandbox::Lua {
 
 
             // Pushers //
-            inline void table_push_nil() {
+            inline void table_push_nil(const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_bool(bool value) {
+            inline void table_push_bool(bool value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_bool(value);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_string(const std::string& value) {
+            inline void table_push_string(const std::string& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_string(value);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_number(int value) {
+            inline void table_push_number(int value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_number(float value) {
+            inline void table_push_number(float value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_number(double value) {
+            inline void table_push_number(double value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_table() {
-                if (!is_table(-1)) return;
+            inline void table_push_table(const std::string& nspace = "") {
+                //if (!is_table(-1)) return;
+                if (!nspace.empty()) create_namespace(nspace);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
-            inline void table_push_function(vm_exec& exec) {
+            inline void table_push_function(vm_exec& exec, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_function(exec);
                 push_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
             }
 
-            inline void table_set_nil(const std::string& index, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_nil(const std::string& index, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_bool(const std::string& index, bool value, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_bool(const std::string& index, bool value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_bool(value);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_string(const std::string& index, const std::string& value, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_string(const std::string& index, const std::string& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_string(value);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_number(const std::string& index, int value, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_number(const std::string& index, int value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_number(const std::string& index, float value, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_number(const std::string& index, float value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_number(const std::string& index, double value, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_number(const std::string& index, double value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_number(value);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_table(const std::string& index, const std::string& namespace = "") {
+            inline void table_set_table(const std::string& index, const std::string& nspace = "") {
                 //if (!is_table(-1)) return;
-                if (!namespace.empty()) create_namespace(namespace);
+                if (!nspace.empty()) create_namespace(nspace);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
-            inline void table_set_function(const std::string& index, vm_exec& exec, const std::string& namespace = "") {
-                if (!namespace.empty()) create_namespace(namespace);
+            inline void table_set_function(const std::string& index, vm_exec& exec, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
                 push_function(exec);
                 push_table_field(index, -2);
-                if (!namespace.empty()) pop();
+                if (!nspace.empty()) pop();
             }
 
 
