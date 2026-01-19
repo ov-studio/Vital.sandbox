@@ -58,7 +58,7 @@ namespace Vital::Sandbox::Lua::API {
 
             static void execute(const std::string& name, const std::string& payload) {
                 for (auto vm : Vital::Sandbox::Lua::create::fetchVMs()) {
-                    if (!vm.second -> isVirtual()) {
+                    if (!vm.second -> is_virtual()) {
                         vm.second -> getReference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
                         vm.second -> setString(name);
                         vm.second -> setString(payload);

@@ -29,7 +29,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "rest", "get", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if (!vm -> isVirtual()) throw Vital::Error::fetch("invalid-thread");
+                        if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto url = vm -> getString(1);
                         Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
