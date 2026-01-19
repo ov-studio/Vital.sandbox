@@ -32,7 +32,11 @@ namespace Vital::Godot {
         if (Vital::System::Discord::start()) {
             godot::UtilityFunctions::print("Discord Rich Presence initialized");
 
-            if(Vital::System::Discord::setActivity("In Main Menu", "Thinking about what to do..")){
+            Vital::System::Discord::ActivityData activity;
+            activity.state = "In Main Menu";
+            activity.details = "Thinking about what to do..";
+
+            if(Vital::System::Discord::setActivity(activity)){
                 godot::UtilityFunctions::print("Discord Rich Presence activity set");
             } else {
                 godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
