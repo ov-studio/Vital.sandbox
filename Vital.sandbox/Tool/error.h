@@ -49,6 +49,7 @@ namespace Vital::Error {
         for (const auto& e : List) {
             if (code == e.code) {
                 error = e.message;
+                break;
             }
         }
         return std::runtime_error(fmt::format(std::string(error), std::string(message)));
