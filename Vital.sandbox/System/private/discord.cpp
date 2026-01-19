@@ -75,8 +75,7 @@ namespace Vital::System::Discord {
 
     bool stop() {
         if (!client) return false;
-        delete &client;
-        client = nullptr;
+        client.reset();
         running = false;
         return true;
     }
