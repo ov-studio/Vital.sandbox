@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/lua/public/api.h>
+#include <Vital.sandbox/Sandbox/lua/public/vm.h>
 
 
 //////////////////////////
