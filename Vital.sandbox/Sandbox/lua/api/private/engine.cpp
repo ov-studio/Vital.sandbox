@@ -21,7 +21,7 @@
 ///////////////
 
 void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
-    auto vm = static_cast<vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
@@ -87,7 +87,7 @@ void Vital::Sandbox::Lua::API::Engine::bind(void* instance) {
 }
 
 void Vital::Sandbox::Lua::API::Engine::inject(void* instance) {
-    auto vm = static_cast<vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
     #if defined(Vital_SDK_Client)
     vm -> getGlobal("engine");
     vm -> getTableField("print", -1);

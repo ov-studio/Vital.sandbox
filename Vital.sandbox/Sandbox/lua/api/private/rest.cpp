@@ -21,7 +21,7 @@
 ///////////////
 
 void Vital::Sandbox::Lua::API::Rest::bind(void* instance) {
-    auto vm = static_cast<vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     API::bind(vm, "rest", "get", [](auto* ref) -> int {
         auto vm = fetchVM(ref);

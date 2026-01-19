@@ -21,7 +21,7 @@
 ///////////////
 
 void Vital::Sandbox::Lua::API::Network::bind(void* instance) {
-    auto vm = static_cast<vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
 
     API::bind(vm, "network", "emit", [](auto* ref) -> int {
         auto vm = fetchVM(ref);
@@ -44,7 +44,7 @@ void Vital::Sandbox::Lua::API::Network::bind(void* instance) {
 }
 
 void Vital::Sandbox::Lua::API::Network::inject(void* instance) {
-    auto vm = static_cast<vsdk_vm*>(instance);
+    auto vm = Vital::Sandbox::Lua::toVM(instance);
     vm -> getGlobal("network");
     vm -> getTableField("execNetwork", -1);
     vm -> setReference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), -1);
