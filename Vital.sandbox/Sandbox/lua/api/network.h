@@ -30,17 +30,17 @@ namespace Vital::Sandbox::Lua::API {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         bool client = get_platform() == "client";
-                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Error::fetch("invalid-arguments");
                         int queryArg = client ? 3 : 4;
-                        auto name = vm -> getString(1);
-                        int peerID = client ? 0 : vm -> getInt(2);
-                        bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> getBool(queryArg - 1) : false;
-                        auto payload = vm -> is_string(queryArg) ? vm -> getString(queryArg) : "";
+                        auto name = vm -> get_string(1);
+                        int peerID = client ? 0 : vm -> get_int(2);
+                        bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> get_bool(queryArg - 1) : false;
+                        auto payload = vm -> is_string(queryArg) ? vm -> get_string(queryArg) : "";
                         Vital::Tool::Stack networkArgs;
                         networkArgs.push("Network:name", name);
                         networkArgs.push("Network:payload", payload);
                         Vital::System::Network::emit(networkArgs, peerID, isLatent);
-                        vm -> setBool(true);
+                        vm -> set_bool(true);
                         return 1;
                     });
                 });
@@ -49,19 +49,19 @@ namespace Vital::Sandbox::Lua::API {
             static void inject(void* instance) {
                 auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
-                vm -> getGlobal("network");
-                vm -> getTableField("execNetwork", -1);
-                vm -> setReference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), -1);
+                vm -> get_global("network");
+                vm -> get_table_field("execNetwork", -1);
+                vm -> set_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), -1);
                 vm -> pop(2);
-                vm -> registerNil("execNetwork", "network");
+                vm -> table_set_nil("execNetwork", "network");
             }
 
             static void execute(const std::string& name, const std::string& payload) {
                 for (auto vm : Vital::Sandbox::Lua::create::fetchVMs()) {
                     if (!vm.second -> is_virtual()) {
-                        vm.second -> getReference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
-                        vm.second -> setString(name);
-                        vm.second -> setString(payload);
+                        vm.second -> get_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
+                        vm.second -> set_string(name);
+                        vm.second -> set_string(payload);
                         vm.second -> pcall(2, 0);
                     }
                 }

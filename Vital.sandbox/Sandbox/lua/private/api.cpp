@@ -56,7 +56,7 @@ namespace Vital::Sandbox::Lua {
         }
     
         void bind(create* vm, const std::string& parent, const std::string& name, vm_exec exec) {
-            vm -> registerFunction(name, exec, parent);
+            vm -> table_set_function(name, exec, parent);
         }
     }
 }

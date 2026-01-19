@@ -30,16 +30,16 @@ namespace Vital::Sandbox::Lua::API {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
-                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto url = vm -> getString(1);
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
+                        auto url = vm -> get_string(1);
                         Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                             try {
-                                vm -> setString(Vital::System::Rest::get(url));
-                                vm -> setBool(false);
+                                vm -> set_string(Vital::System::Rest::get(url));
+                                vm -> set_bool(false);
                             }
                             catch(const std::runtime_error& error) {
-                                vm -> setBool(false);
-                                vm -> setString(error.what());
+                                vm -> set_bool(false);
+                                vm -> set_string(error.what());
                             }
                             vm -> resume(2);
                         }).detach();

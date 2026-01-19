@@ -29,7 +29,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> setString(get_platform());
+                        vm -> set_string(get_platform());
                         return 1;
                     });
                 });
@@ -37,7 +37,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> setNumber(static_cast<int>(get_tick()));
+                        vm -> set_number(static_cast<int>(get_tick()));
                         return 1;
                     });
                 });
@@ -46,7 +46,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> setString(Vital::Tool::Inspect::fingerprint());
+                        vm -> set_string(Vital::Tool::Inspect::fingerprint());
                         return 1;
                     });
                 });
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::Lua::API {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         std::ostringstream buffer;
-                        for (int i = 0; i < vm -> getArgCount(); ++i) {
+                        for (int i = 0; i < vm -> get_arg_count(); ++i) {
                             size_t length;
                             const char* value = luaL_tolstring(ref, i + 1, &length);
                             if (i != 0) buffer << " ";
@@ -66,25 +66,25 @@ namespace Vital::Sandbox::Lua::API {
                             vm -> pop(1);
                         }
                         godot::UtilityFunctions::print(to_godot_string(buffer.str()));
-                        vm -> setBool(true);
+                        vm -> set_bool(true);
                         return 1;
                     });
                 });
                 #endif
             
-                API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
+                API::bind(vm, "engine", "load_string", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto buffer = vm -> getString(1);
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
+                        auto buffer = vm -> get_string(1);
                         bool result = false;
                         if (vm -> is_bool(2)) {
-                            bool autoload = vm -> getBool(2);
-                            result = vm -> loadString(buffer, autoload);
+                            bool autoload = vm -> get_bool(2);
+                            result = vm -> load_string(buffer, autoload);
                             if (result) return 1;
                         }
-                        else result = vm -> loadString(buffer);
-                        vm -> setBool(result);
+                        else result = vm -> load_string(buffer);
+                        vm -> set_bool(result);
                         return 1;
                     });
                 });
@@ -94,8 +94,8 @@ namespace Vital::Sandbox::Lua::API {
                 auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 #if defined(Vital_SDK_Client)
-                vm -> getGlobal("engine");
-                vm -> getTableField("print", -1);
+                vm -> get_global("engine");
+                vm -> get_table_field("print", -1);
                 vm -> set_global("print");
                 vm -> pop(1);
                 #endif
