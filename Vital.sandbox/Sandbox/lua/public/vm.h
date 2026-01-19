@@ -64,7 +64,7 @@ namespace Vital::Sandbox::Lua {
             // Instantiators //
             inline create(vsdk_apis apis = {}) {
                 vm = luaL_newstate();
-                this->apis = apis;
+                this -> apis = apis;
                 buffer.emplace(vm, this);
                 for (auto& i : whitelist) {
                     luaL_requiref(vm, i.name, i.func, 1);
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::Lua {
             }
             inline create(lua_State* thread) {
                 vm = thread;
-                this->thread = true;
+                this -> thread = true;
                 buffer.emplace(vm, this);
             }
             inline ~create() {
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::Lua {
             }
             static inline create* fetchVM(lua_State* vm) {
                 auto it = buffer.find(vm);
-                return it != buffer.end() ? it->second : nullptr;
+                return it != buffer.end() ? it -> second : nullptr;
             }
 
         
@@ -295,7 +295,7 @@ namespace Vital::Sandbox::Lua {
             // Utils //
             inline void push(int index = 1) { lua_pushvalue(vm, index); }
             inline void pop(int count = 1) { lua_pop(vm, count); }
-            inline void move(create* target, int count = 1) { lua_xmove(vm, target->vm, count); }
+            inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
             inline void removeReference(const std::string& name) {
                 if (!isReference(name)) return;
