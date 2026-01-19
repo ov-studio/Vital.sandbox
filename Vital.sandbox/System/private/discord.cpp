@@ -50,16 +50,34 @@ namespace Vital::System::Discord {
         return true;
     }
 
-    bool setActivity(const std::string& state, const std::string& details) {
+    bool setActivity(const ActivityData& data) {
         if (!client) {
-            std::cerr << "⚠️ Cannot set activity: Client is null.\n";
+            std::cerr << "Cannot set activity: Client is null.\n";
             return false;
         }
 
         discordpp::Activity activity;
         activity.SetType(discordpp::ActivityTypes::Playing);
-        activity.SetState(state);
-        activity.SetDetails(details);
+        activity.SetState(data.state);
+        activity.SetDetails(data.details);
+
+        if (!data.largeImageKey.empty()) {
+            activity.SetLargeImage(data.largeImageKey);
+            activity.SetLargeText(data.largeImageText);
+        }
+
+        if (!data.smallImageKey.empty()) {
+            activity.SetSmallImage(data.smallImageKey);
+            activity.SetSmallText(data.smallImageText);
+        }
+
+        if (data.startTimestamp > 0) {
+            activity.SetStartTimestamp(data.startTimestamp);
+        }
+
+        if (data.endTimestamp > 0) {
+            activity.SetEndTimestamp(data.endTimestamp);
+        }
 
         // Update rich presence
         client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {

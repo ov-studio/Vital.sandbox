@@ -17,20 +17,34 @@
 #include <string>
 
 
+#include <cstdint>
+
 ////////////////////////////
 // Vital: System: Discord //
 ////////////////////////////
 
 namespace Vital::System::Discord {
+    struct ActivityData {
+        std::string state;
+        std::string details;
+        
+        // Assets
+        std::string largeImageKey;
+        std::string largeImageText;
+        std::string smallImageKey;
+        std::string smallImageText;
+
+        // Timestamps (0 = ignored)
+        int64_t startTimestamp = 0;
+        int64_t endTimestamp = 0;
+    };
+
     // // Managers //
     extern bool start();
     extern bool stop();
 
     // // APIs //
     extern bool isConnected();
-    extern bool setActivity(
-        const std::string& state,
-        const std::string& details
-    );
+    extern bool setActivity(const ActivityData& data);
 }
 #endif
