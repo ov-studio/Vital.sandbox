@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto vm = Vital::Sandbox::Lua::toVM(instance);
 
                 API::bind(vm, "network", "emit", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         bool client = get_platform() == "client";
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!client && (!vm -> isNumber(2)))) throw Vital::Error::fetch("invalid-arguments");
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::Lua::API {
             }
 
             static void execute(const std::string& name, const std::string& payload) {
-                for (auto vm : Vital::Sandbox::Lua::fetchVMs()) {
+                for (auto vm : Vital::Sandbox::Lua::create::fetchVMs()) {
                     if (!vm.second -> isVirtualThread()) {
                         vm.second -> getReference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
                         vm.second -> setString(name);

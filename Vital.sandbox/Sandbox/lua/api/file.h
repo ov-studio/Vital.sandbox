@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto vm = Vital::Sandbox::Lua::toVM(instance);
 
                 API::bind(vm, "file", "exists", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> getString(1);
@@ -37,7 +37,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "file", "size", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> getString(1);
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "file", "delete", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> getString(1);
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "file", "read", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> getString(1);
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "file", "write", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> getString(1);
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "file", "contents", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> getString(1);

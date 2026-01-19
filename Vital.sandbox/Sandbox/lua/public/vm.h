@@ -22,38 +22,23 @@
 //////////////////////////
 
 namespace Vital::Sandbox::Lua {
-    using vsdk_ref = lua_State;
-    using vsdk_exec = lua_CFunction;
     using vsdk_reference = std::map<std::string, int>;
     using vsdk_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
 
 
     // Globals //
     class create;
-    using vsdk_vm  = create;
-    using vsdk_vms = std::map<vsdk_ref*, vsdk_vm*>;
-    inline vsdk_vms vms;
-    inline vsdk_vms fetchVMs() { return vms; }
-    inline vsdk_vm* fetchVM(vsdk_ref* vm) {
-        auto it = vms.find(vm);
-        return it != vms.end() ? it->second : nullptr;
-    }
-    inline vsdk_vm* toVM(void* vm) { return static_cast<vsdk_vm*>(vm); }
+    inline create* toVM(void* vm) { return static_cast<create*>(vm); }
 
     namespace API {
         extern void createErrorHandle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
-        extern void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec);
+        extern void bind(create* vm, const std::string& parent, const std::string& name, lua_CFunction exec);
     }
 
     // Class //
     class create {
-        private:
-            vsdk_ref* vm = nullptr;
-            vsdk_reference reference = {};
-            vsdk_apis apis = {};
-            bool thread = false;
-
+        protected:
             static inline std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
                 {"table", luaopen_table},
@@ -69,12 +54,18 @@ namespace Vital::Sandbox::Lua {
                 "load",
                 "loadfile"
             };
+            static inline std::map<lua_State*, create*> buffer = {};
+        private:
+            lua_State* vm = nullptr;
+            vsdk_reference reference = {};
+            vsdk_apis apis = {};
+            bool thread = false;
         public:
             // Instantiators //
             inline create(vsdk_apis apis = {}) {
                 vm = luaL_newstate();
                 this->apis = apis;
-                vms.emplace(vm, this);
+                buffer.emplace(vm, this);
                 for (auto& i : whitelist) {
                     luaL_requiref(vm, i.name, i.func, 1);
                     pop();
@@ -89,18 +80,25 @@ namespace Vital::Sandbox::Lua {
                 }
                 hook("inject");
             }
-            inline create(vsdk_ref* thread) {
+            inline create(lua_State* thread) {
                 vm = thread;
                 this->thread = true;
-                vms.emplace(vm, this);
+                buffer.emplace(vm, this);
             }
             inline ~create() {
                 if (!vm) return;
-                vms.erase(vm);
+                buffer.erase(vm);
                 vm = nullptr;
             }
+            static inline std::map<lua_State*, create*> fetchVMs() {
+                return buffer;
+            }
+            static inline create* fetchVM(lua_State* vm) {
+                auto it = buffer.find(vm);
+                return it != buffer.end() ? it->second : nullptr;
+            }
 
-
+        
             // Checkers //
             inline bool isVirtualThread() { return thread; }
             inline bool isNil(int index = 1) { return lua_isnoneornil(vm, index); }
@@ -144,7 +142,7 @@ namespace Vital::Sandbox::Lua {
                 *userdata = value;
             }
             inline void setUserData(void* value) { lua_pushlightuserdata(vm, value); }
-            inline void setFunction(vsdk_exec& value) { lua_pushcfunction(vm, value); }
+            inline void setFunction(lua_CFunction& value) { lua_pushcfunction(vm, value); }
             inline void setReference(const std::string& name, int index = 1) {
                 push(index);
                 reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
@@ -164,7 +162,7 @@ namespace Vital::Sandbox::Lua {
             inline bool getTableField(const std::string& value, int index = 1) {return lua_getfield(vm, index, value.c_str());}
             inline bool getMetaTable(int index = 1) { return lua_getmetatable(vm, index); }
             inline bool getMetaTable(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
-            inline vsdk_ref* getThread(int index = 1) { return lua_tothread(vm, index); }
+            inline lua_State* getThread(int index = 1) { return lua_tothread(vm, index); }
             inline void* getUserData(int index = 1) { return lua_touserdata(vm, index); }
             inline int getReference(const std::string& name, bool pushValue = false) {
                 if (!pushValue) return reference.at(name);
@@ -208,7 +206,7 @@ namespace Vital::Sandbox::Lua {
                 if (!isTable(-1)) return;
                 setTableField(getLength(-2) + 1, -2);
             }
-            inline void pushFunction(vsdk_exec& exec) {
+            inline void pushFunction(lua_CFunction& exec) {
                 setFunction(exec);
                 setTableField(getLength(-2) + 1, -2);
             }
@@ -279,11 +277,11 @@ namespace Vital::Sandbox::Lua {
                 registerTable(index);
                 pop();
             }
-            inline void registerFunction(const std::string& index, vsdk_exec& exec) {
+            inline void registerFunction(const std::string& index, lua_CFunction& exec) {
                 setFunction(exec);
                 setTableField(index, -2);
             }
-            inline void registerFunction(const std::string& index, vsdk_exec& exec, const std::string& parent) {
+            inline void registerFunction(const std::string& index, lua_CFunction& exec, const std::string& parent) {
                 createNamespace(parent);
                 registerFunction(index, exec);
                 pop();

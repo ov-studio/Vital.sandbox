@@ -27,7 +27,7 @@ namespace Vital::Sandbox::Lua::API {
                 auto vm = Vital::Sandbox::Lua::toVM(instance);
 
                 API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         vm -> setString(get_platform());
                         return 1;
@@ -35,7 +35,7 @@ namespace Vital::Sandbox::Lua::API {
                 });
             
                 API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         vm -> setNumber(static_cast<int>(get_tick()));
                         return 1;
@@ -44,7 +44,7 @@ namespace Vital::Sandbox::Lua::API {
             
                 #if defined(Vital_SDK_Client)
                 API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         vm -> setString(Vital::Tool::Inspect::fingerprint());
                         return 1;
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::Lua::API {
                 #if defined(Vital_SDK_Client)
                 // TODO: MAKE IT OUTPUT TO GAME CONSOLE
                 API::bind(vm, "engine", "print", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         std::ostringstream buffer;
                         for (int i = 0; i < vm -> getArgCount(); ++i) {
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::Lua::API {
                 #endif
             
                 API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
-                    auto vm = fetchVM(ref);
+                    auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> getString(1);

@@ -55,7 +55,7 @@ namespace Vital::Sandbox::Lua {
             vsdk_errorhandle(error);
         }
     
-        void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec) {
+        void bind(create* vm, const std::string& parent, const std::string& name, lua_CFunction exec) {
             vm -> registerFunction(name, exec, parent);
         }
     }
