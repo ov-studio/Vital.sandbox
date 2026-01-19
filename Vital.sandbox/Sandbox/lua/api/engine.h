@@ -24,7 +24,7 @@ namespace Vital::Sandbox::Lua::API {
     class Engine : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
@@ -91,7 +91,7 @@ namespace Vital::Sandbox::Lua::API {
             }
 
             inline static void inject(void* instance) {
-                auto vm = Vital::Sandbox::Lua::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 #if defined(Vital_SDK_Client)
                 vm -> getGlobal("engine");

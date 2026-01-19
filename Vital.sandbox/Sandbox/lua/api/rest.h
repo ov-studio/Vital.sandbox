@@ -24,7 +24,7 @@ namespace Vital::Sandbox::Lua::API {
     class Rest : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 API::bind(vm, "rest", "get", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);

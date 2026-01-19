@@ -22,14 +22,11 @@
 //////////////////////////
 
 namespace Vital::Sandbox::Lua {
-    using vsdk_reference = std::map<std::string, int>;
     using vsdk_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
 
 
     // Globals //
     class create;
-    inline create* toVM(void* vm) { return static_cast<create*>(vm); }
-
     namespace API {
         extern void createErrorHandle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
@@ -57,7 +54,7 @@ namespace Vital::Sandbox::Lua {
             static inline std::map<lua_State*, create*> buffer;
         private:
             lua_State* vm = nullptr;
-            vsdk_reference reference = {};
+            std::map<std::string, int> reference = {};
             vsdk_apis apis = {};
             bool thread = false;
         public:
@@ -90,9 +87,8 @@ namespace Vital::Sandbox::Lua {
                 buffer.erase(vm);
                 vm = nullptr;
             }
-            static inline std::map<lua_State*, create*> fetchVMs() {
-                return buffer;
-            }
+            static inline std::map<lua_State*, create*> fetchVMs() { return buffer; }
+            static inline create* toVM(void* vm) { return static_cast<create*>(vm); }
             static inline create* fetchVM(lua_State* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;

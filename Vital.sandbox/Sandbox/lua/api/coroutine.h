@@ -24,7 +24,7 @@ namespace Vital::Sandbox::Lua::API {
     class Coroutine : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 API::bind(vm, "coroutine", "create", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);

@@ -24,7 +24,7 @@ namespace Vital::Sandbox::Lua::API {
     class Network : public Vital::Tool::Module {
         public:
             static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 API::bind(vm, "network", "emit", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::Lua::API {
             }
 
             static void inject(void* instance) {
-                auto vm = Vital::Sandbox::Lua::toVM(instance);
+                auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
                 vm -> getGlobal("network");
                 vm -> getTableField("execNetwork", -1);

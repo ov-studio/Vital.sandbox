@@ -21,7 +21,7 @@
 /////////////////////////////////////////////////////
 
 void Vital::Godot::Sandbox::Lua::API::VolumetricFog::bind(void* instance) {
-    auto vm = Vital::Sandbox::Lua::toVM(instance);
+    auto vm = Vital::Sandbox::Lua::create::toVM(instance);
 
     #if defined(Vital_SDK_Client)
     Vital::Sandbox::Lua::API::bind(vm, "volumetric_fog", "set_enabled", [](auto* ref) -> int {
