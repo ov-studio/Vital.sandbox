@@ -13,7 +13,8 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/lua/public/index.h>
+#include <Vital.sandbox/vital.hpp>
+#include <Vital.sandbox/Vendor/lua/lua.hpp>
 
 
 //////////////////////////
@@ -44,7 +45,23 @@ namespace Vital::Sandbox::Lua {
         extern void error(const std::string& error);
         extern void bind(vsdk_vm* vm, const std::string& parent, const std::string& name, vsdk_exec exec);
     }
-    
+
+    inline std::vector<luaL_Reg> vsdk_libraries = {
+        {"_G", luaopen_base},
+        {"table", luaopen_table},
+        {"string", luaopen_string},
+        {"math", luaopen_math},
+        {"debug", luaopen_debug},
+        {"coroutine", luaopen_coroutine},
+        {"utf8", luaopen_utf8},
+        {"json", luaopen_rapidjson}
+    };
+
+    inline std::vector<std::string> vsdk_blacklist = {
+        "dofile",
+        "load",
+        "loadfile"
+    };
 
     // Class //
     class create {
