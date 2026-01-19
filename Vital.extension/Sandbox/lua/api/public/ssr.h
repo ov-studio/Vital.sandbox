@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Sandbox: lua: api: public: ssr.h
+     Script: Sandbox: lua: api: ssr.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
