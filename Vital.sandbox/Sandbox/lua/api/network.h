@@ -30,12 +30,12 @@ namespace Vital::Sandbox::Lua::API {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         bool client = get_platform() == "client";
-                        if ((vm -> getArgCount() < 1) || (!vm -> isString(1)) || (!client && (!vm -> isNumber(2)))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Error::fetch("invalid-arguments");
                         int queryArg = client ? 3 : 4;
                         auto name = vm -> getString(1);
                         int peerID = client ? 0 : vm -> getInt(2);
-                        bool isLatent = vm -> isBool(queryArg - 1) ? vm -> getBool(queryArg - 1) : false;
-                        auto payload = vm -> isString(queryArg) ? vm -> getString(queryArg) : "";
+                        bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> getBool(queryArg - 1) : false;
+                        auto payload = vm -> is_string(queryArg) ? vm -> getString(queryArg) : "";
                         Vital::Tool::Stack networkArgs;
                         networkArgs.push("Network:name", name);
                         networkArgs.push("Network:payload", payload);

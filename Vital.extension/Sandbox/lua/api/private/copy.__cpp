@@ -26,7 +26,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "environment", "set_sky_custom_fov", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto fov = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_sky_custom_fov(fov);
             vm -> setBool(true);
@@ -45,7 +45,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     Vital::Sandbox::Lua::API::bind(vm, "environment", "set_bg_energy_multiplier", [](auto* ref) -> int {
         auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
+            if ((vm -> getArgCount() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto energy = vm -> getFloat(1);
             Vital::Godot::Core::get_environment() -> set_bg_energy_multiplier(energy);
             vm -> setBool(true);

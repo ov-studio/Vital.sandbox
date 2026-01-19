@@ -29,7 +29,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "coroutine", "create", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 1) || (!vm -> isFunction(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_function(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto thread = vm -> createThread();
                         vm -> push(1);
                         vm -> move(thread, 1);
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "coroutine", "resume", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 1) || (!vm -> isThread(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_thread(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto thread = vm -> getThread(1);
                         auto thread_vm = Vital::Sandbox::Lua::create::fetchVM(thread);
                         if (!thread_vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
@@ -64,7 +64,7 @@ namespace Vital::Sandbox::Lua::API {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
-                        if ((vm -> getArgCount() < 1) || (!vm -> isNumber(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto duration = vm -> getInt(1);
                         Vital::Tool::Timer([=](Vital::Tool::Timer* self) -> void {
                             vm -> setBool(true);

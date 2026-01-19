@@ -896,7 +896,7 @@ private:
             i++; // consumes '/'
 
             token->name = name;
-            bool isNumber = true;
+            bool is_number = true;
 
             while (i < length && source[i] != '/') {
                 Ch c = source[i];
@@ -916,7 +916,7 @@ private:
                             c = *name;
                         else {
                             name += len;
-                            isNumber = false;
+                            is_number = false;
                             i++;
                             continue;
                         }
@@ -949,33 +949,33 @@ private:
 
                 // First check for index: all of characters are digit
                 if (c < '0' || c > '9')
-                    isNumber = false;
+                    is_number = false;
 
                 *name++ = c;
             }
             token->length = static_cast<SizeType>(name - token->name);
             if (token->length == 0)
-                isNumber = false;
+                is_number = false;
             *name++ = '\0'; // Null terminator
 
             // Second check for index: more than one digit cannot have leading zero
-            if (isNumber && token->length > 1 && token->name[0] == '0')
-                isNumber = false;
+            if (is_number && token->length > 1 && token->name[0] == '0')
+                is_number = false;
 
             // String to SizeType conversion
             SizeType n = 0;
-            if (isNumber) {
+            if (is_number) {
                 for (size_t j = 0; j < token->length; j++) {
                     SizeType m = n * 10 + static_cast<SizeType>(token->name[j] - '0');
                     if (m < n) {   // overflow detection
-                        isNumber = false;
+                        is_number = false;
                         break;
                     }
                     n = m;
                 }
             }
 
-            token->index = isNumber ? n : kPointerInvalidIndex;
+            token->index = is_number ? n : kPointerInvalidIndex;
             token++;
         }
 

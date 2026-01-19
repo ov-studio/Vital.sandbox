@@ -75,10 +75,10 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "engine", "loadString", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> getString(1);
                         bool result = false;
-                        if (vm -> isBool(2)) {
+                        if (vm -> is_bool(2)) {
                             bool autoload = vm -> getBool(2);
                             result = vm -> loadString(buffer, autoload);
                             if (result) return 1;
@@ -96,7 +96,7 @@ namespace Vital::Sandbox::Lua::API {
                 #if defined(Vital_SDK_Client)
                 vm -> getGlobal("engine");
                 vm -> getTableField("print", -1);
-                vm -> setGlobal("print");
+                vm -> set_global("print");
                 vm -> pop(1);
                 #endif
             }

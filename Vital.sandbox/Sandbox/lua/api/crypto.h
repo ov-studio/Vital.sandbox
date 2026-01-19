@@ -29,7 +29,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "crypto", "hash", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 2) || (!vm -> isString(1)) || (!vm -> isString(2))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> getString(1);
                         auto buffer = vm -> getString(2);
                         vm -> setString(Vital::Tool::Crypto::hash(mode, buffer));
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "crypto", "encode", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> getString(1);
                         vm -> setString(Vital::Tool::Crypto::encode(buffer));
                         return 1;
@@ -50,7 +50,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "crypto", "decode", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 1) || (!vm -> isString(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> getString(1);
                         vm -> setString(Vital::Tool::Crypto::decode(buffer));
                         return 1;
@@ -60,7 +60,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "crypto", "encrypt", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 3) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 3) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> getString(1);
                         auto buffer = vm -> getString(2);
                         auto key = vm -> getString(3);
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::Lua::API {
                 API::bind(vm, "crypto", "decrypt", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Lua::create::fetchVM(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> getArgCount() < 4) || (!vm -> isString(1)) || (!vm -> isString(2)) || (!vm -> isString(3)) || (!vm -> isString(4))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> getArgCount() < 4) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_string(4))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> getString(1);
                         auto buffer = vm -> getString(2);
                         auto key = vm -> getString(3);

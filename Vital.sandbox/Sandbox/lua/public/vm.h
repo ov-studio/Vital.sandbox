@@ -71,7 +71,7 @@ namespace Vital::Sandbox::Lua {
                 }
                 for (auto& value : blacklist) {
                     setNil();
-                    setGlobal(value);
+                    set_global(value);
                 }
                 hook("bind");
                 for (auto& value : Vital::Tool::get_modules("lua")) {
@@ -95,19 +95,19 @@ namespace Vital::Sandbox::Lua {
 
             // Checkers //
             inline bool is_virtual() { return virtualized; }
-            inline bool isNil(int index = 1) { return lua_isnoneornil(vm, index); }
-            inline bool isBool(int index = 1) { return lua_isboolean(vm, index); }
-            inline bool isString(int index = 1) { return lua_isstring(vm, index); }
-            inline bool isNumber(int index = 1) { return lua_isnumber(vm, index); }
-            inline bool isTable(int index = 1) { return lua_istable(vm, index); }
-            inline bool isThread(int index = 1) { return lua_isthread(vm, index); }
-            inline bool isUserData(int index = 1) { return lua_isuserdata(vm, index); }
-            inline bool isFunction(int index = 1) { return lua_isfunction(vm, index); }
-            inline bool isReference(const std::string& name) { return reference.find(name) != reference.end(); }
+            inline bool is_nil(int index = 1) { return lua_isnoneornil(vm, index); }
+            inline bool is_bool(int index = 1) { return lua_isboolean(vm, index); }
+            inline bool is_string(int index = 1) { return lua_isstring(vm, index); }
+            inline bool is_number(int index = 1) { return lua_isnumber(vm, index); }
+            inline bool is_table(int index = 1) { return lua_istable(vm, index); }
+            inline bool is_thread(int index = 1) { return lua_isthread(vm, index); }
+            inline bool is_userdata(int index = 1) { return lua_isuserdata(vm, index); }
+            inline bool is_function(int index = 1) { return lua_isfunction(vm, index); }
+            inline bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
 
 
             // Setters //
-            inline void setGlobal(const std::string& index) { lua_setglobal(vm, index.c_str()); }
+            inline void set_global(const std::string& index) { lua_setglobal(vm, index.c_str()); }
             inline void setNil() { lua_pushnil(vm); }
             inline void setBool(bool value) { lua_pushboolean(vm, value); }
             inline void setString(const std::string& value) { lua_pushstring(vm, value.c_str()); }
@@ -161,10 +161,10 @@ namespace Vital::Sandbox::Lua {
             inline create* createThread() { return new create(lua_newthread(vm)); }
             inline void createNamespace(const std::string& parent) {
                 getGlobal(parent);
-                if (!isTable(-1)) {
+                if (!is_table(-1)) {
                     pop();
                     createTable();
-                    setGlobal(parent);
+                    set_global(parent);
                     getGlobal(parent);
                 }
             }
@@ -200,7 +200,7 @@ namespace Vital::Sandbox::Lua {
                 setTableField(getLength(-2) + 1, -2);
             }
             inline void pushTable() {
-                if (!isTable(-1)) return;
+                if (!is_table(-1)) return;
                 setTableField(getLength(-2) + 1, -2);
             }
             inline void pushFunction(vm_exec& exec) {
@@ -263,11 +263,11 @@ namespace Vital::Sandbox::Lua {
                 pop();
             }
             inline void registerTable(const std::string& index) {
-                if (!isTable(-1)) return;
+                if (!is_table(-1)) return;
                 setTableField(index, -2);
             }
             inline void registerTable(const std::string& index, const std::string& parent) {
-                if (!isTable(-1)) return;
+                if (!is_table(-1)) return;
                 createNamespace(parent);
                 registerTable(index);
                 pop();
@@ -302,7 +302,7 @@ namespace Vital::Sandbox::Lua {
             inline void move(create* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
             inline void removeReference(const std::string& name) {
-                if (!isReference(name)) return;
+                if (!is_reference(name)) return;
                 luaL_unref(vm, LUA_REGISTRYINDEX, getReference(name));
                 reference.erase(name);
             }
