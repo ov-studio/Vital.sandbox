@@ -216,10 +216,12 @@ namespace Vital::Sandbox::Lua {
                 if (!nspace.empty()) pop();
             }
             inline void table_push_table(const std::string& nspace = "") {
-                //if (!is_table(-1)) return;
-                if (!nspace.empty()) create_namespace(nspace);
+                if (!nspace.empty()) {
+                    create_namespace(nspace);
+                    get_table(-2);
+                }
                 push_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
+                if (!nspace.empty()) pop(2);
             }
             inline void table_push_function(vm_exec& exec, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
@@ -265,10 +267,12 @@ namespace Vital::Sandbox::Lua {
                 if (!nspace.empty()) pop();
             }
             inline void table_set_table(const std::string& index, const std::string& nspace = "") {
-                //if (!is_table(-1)) return;
-                if (!nspace.empty()) create_namespace(nspace);
+                if (!nspace.empty()) {
+                    create_namespace(nspace);
+                    get_table(-2);
+                }
                 push_table_field(index, -2);
-                if (!nspace.empty()) pop();
+                if (!nspace.empty()) pop(2);
             }
             inline void table_set_function(const std::string& index, vm_exec& exec, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
