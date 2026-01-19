@@ -67,20 +67,21 @@ namespace Vital::Sandbox::Lua {
                 vm = luaL_newstate();
                 this -> apis = apis;
                 buffer.emplace(vm, this);
-                for (auto& i : whitelist) {
-                    luaL_requiref(vm, i.name, i.func, 1);
+                for (auto& value : whitelist) {
+                    luaL_requiref(vm, value.name, value.func, 1);
                     pop();
                 }
-                for (auto& i : blacklist) {
+                for (auto& value : blacklist) {
                     setNil();
-                    setGlobal(i);
+                    setGlobal(value);
                 }
                 hook("bind");
-                for (auto& i : Vital::Tool::get_modules("lua")) {
-                    loadString(i);
+                for (auto& value : Vital::Tool::get_modules("lua")) {
+                    loadString(value);
                 }
                 hook("inject");
             }
+
             inline create(vm_state* thread) {
                 vm = thread;
                 is_virtual = true;
