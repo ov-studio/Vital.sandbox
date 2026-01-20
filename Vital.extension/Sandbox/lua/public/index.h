@@ -18,10 +18,10 @@
 
 
 /////////////////////////////////
-// Vital: Godot: Sandbox: Lua //
+// Vital: Godot: Sandbox: Machine //
 /////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua {
+namespace Vital::Godot::Sandbox::Lua::Machine {
 	class Singleton;
 	class Singleton {
 		protected:

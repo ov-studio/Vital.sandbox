@@ -23,11 +23,11 @@
 
 
 ///////////////////////////////
-// Vital: Sandbox: Lua: API //
+// Vital: Sandbox: Machine: API //
 ///////////////////////////////
 
-namespace Vital::Sandbox {
-    vm_apis Lua::natives = {
+namespace Vital::Sandbox::Lua {
+    vm_apis Machine::natives = {
         {API::Engine::bind, API::Engine::inject},
         {API::Coroutine::bind, API::Coroutine::inject},
         {API::File::bind, API::File::inject},
@@ -47,7 +47,7 @@ namespace Vital::Sandbox {
             vsdk_errorhandle(error);
         }
     
-        void bind(Lua* vm, const std::string& nspace, const std::string& name, vm_exec exec) {
+        void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec) {
             vm -> table_set_function(name, exec, nspace);
         }
     }

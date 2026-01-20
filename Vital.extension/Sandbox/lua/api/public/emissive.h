@@ -17,7 +17,7 @@
 
 
 ////////////////////////////////////////////////
-// Vital: Godot: Sandbox: Lua: API: Emissive //
+// Vital: Godot: Sandbox: Machine: API: Emissive //
 ////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {

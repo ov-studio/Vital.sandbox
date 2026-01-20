@@ -17,7 +17,7 @@
 
 
 ///////////////////////////////////////////
-// Vital: Godot: Sandbox: Lua: API: Fog //
+// Vital: Godot: Sandbox: Machine: API: Fog //
 ///////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {

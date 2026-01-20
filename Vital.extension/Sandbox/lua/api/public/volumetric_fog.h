@@ -17,7 +17,7 @@
 
 
 /////////////////////////////////////////////////////
-// Vital: Godot: Sandbox: Lua: API: VolumetricFog //
+// Vital: Godot: Sandbox: Machine: API: VolumetricFog //
 /////////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {

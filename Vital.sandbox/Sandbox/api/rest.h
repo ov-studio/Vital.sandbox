@@ -17,17 +17,17 @@
 
 
 ///////////////
-// Lua: API //
+// Machine: API //
 ///////////////
 
-namespace Vital::Sandbox::API {
+namespace Vital::Sandbox::Lua::API {
     class Rest : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Lua::to_vm(instance);
+                auto vm = Vital::Sandbox::Lua::Machine::to_vm(instance);
 
                 API::bind(vm, "rest", "get", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Lua::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Lua::Machine::fetch_vm(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");

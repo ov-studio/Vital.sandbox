@@ -17,7 +17,7 @@
 
 
 //////////////////////////////////////////////////
-// Vital: Godot: Sandbox: Lua: API: Adjustment //
+// Vital: Godot: Sandbox: Machine: API: Adjustment //
 //////////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {

@@ -18,7 +18,7 @@
 
 
 //////////////////////////////////////
-// Vital: Godot: Sandbox: Lua: API //
+// Vital: Godot: Sandbox: Machine: API //
 //////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {}

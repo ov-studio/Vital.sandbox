@@ -4,7 +4,7 @@
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Lua Utilities
+     Desc: Machine Utilities
 ----------------------------------------------------------------*/
 
 
@@ -32,11 +32,11 @@
 // Vital: Sandbox //
 /////////////////////
 
-namespace Vital::Sandbox {
-    class Lua;
+namespace Vital::Sandbox::Lua {
+    class Machine;
     using vm_state = lua_State;
     using vm_exec = lua_CFunction;
-    using vm_buffer = std::map<vm_state*, Lua*>;
+    using vm_buffer = std::map<vm_state*, Machine*>;
     using vm_refs = std::map<std::string, int>;
     using vm_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
 
@@ -45,10 +45,10 @@ namespace Vital::Sandbox {
     namespace API {
         extern void createErrorHandle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
-        extern void bind(Lua* vm, const std::string& nspace, const std::string& name, vm_exec exec);
+        extern void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec);
     }
 
-    class Lua {
+    class Machine {
         protected:
             static inline std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -73,7 +73,7 @@ namespace Vital::Sandbox {
             vm_refs reference = {};
             vm_apis apis = {};
         public:
-            inline Lua(vm_apis apis = {}) {
+            inline Machine(vm_apis apis = {}) {
                 vm = luaL_newstate();
                 this -> apis = apis;
                 buffer.emplace(vm, this);
@@ -92,13 +92,13 @@ namespace Vital::Sandbox {
                 hook("inject");
             }
 
-            inline Lua(vm_state* thread) {
+            inline Machine(vm_state* thread) {
                 vm = thread;
                 virtualized = true;
                 buffer.emplace(vm, this);
             }
 
-            inline ~Lua() {
+            inline ~Machine() {
                 if (!vm) return;
                 buffer.erase(vm);
                 vm = nullptr;
@@ -107,9 +107,9 @@ namespace Vital::Sandbox {
 
             // APIs //
             static inline vm_buffer fetch_buffer() { return buffer; }
-            static inline Lua* to_vm(void* vm) { return static_cast<Lua*>(vm); }
-            static inline void* to_void(Lua* vm) { return static_cast<void*>(vm); }
-            static inline Lua* fetch_vm(vm_state* vm) {
+            static inline Machine* to_vm(void* vm) { return static_cast<Machine*>(vm); }
+            static inline void* to_void(Machine* vm) { return static_cast<void*>(vm); }
+            static inline Machine* fetch_vm(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
             }
@@ -175,7 +175,7 @@ namespace Vital::Sandbox {
             // Containers //
             inline void create_table() { lua_newtable(vm); }
             inline void create_metatable(const std::string& value) { luaL_newmetatable(vm, value.c_str()); }
-            inline Lua* create_thread() { return new Lua(lua_newthread(vm)); }
+            inline Machine* create_thread() { return new Machine(lua_newthread(vm)); }
             inline void create_namespace(const std::string& nspace) {
                 get_global(nspace);
                 if (!is_table(-1)) {
@@ -302,7 +302,7 @@ namespace Vital::Sandbox {
             // Utils //
             inline void push(int index = 1) { lua_pushvalue(vm, index); }
             inline void pop(int count = 1) { lua_pop(vm, count); }
-            inline void move(Lua* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
+            inline void move(Machine* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
             inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
             inline void set_table(int index = 1) { lua_settable(vm, index); }
             inline void set_table_field(int field, int index = 1) { lua_seti(vm, index, field); }

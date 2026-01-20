@@ -17,7 +17,7 @@
 
 
 /////////////////////////////////////////////
-// Vital: Godot: Sandbox: Lua: API: SDFGI //
+// Vital: Godot: Sandbox: Machine: API: SDFGI //
 /////////////////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::API {
