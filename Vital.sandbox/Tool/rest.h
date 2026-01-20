@@ -22,6 +22,8 @@
 ////////////////////////
 
 namespace Vital::Tool::Rest {
+    using rest_headers = std::vector<std::string>;
+
     struct CurlGlobal {
         CurlGlobal() { 
             if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
@@ -35,6 +37,14 @@ namespace Vital::Tool::Rest {
         size_t totalSize = size*nmemb;
         static_cast<std::string*>(userp)->append(static_cast<char*>(contents), totalSize);
         return totalSize;
+    }
+
+    inline curl_slist* ApplyHeaders(const rest_headers &headers) {
+        curl_slist* list = nullptr;
+        for (const auto& header : headers) {
+            list = curl_slist_append(list, header.c_str());
+        }
+        return list;
     }
 
     inline std::string get(const std::string& url) {
