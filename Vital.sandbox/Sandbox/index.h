@@ -28,9 +28,9 @@
 #include <Vital.sandbox/Vendor/lua/lua.hpp>
 
 
-//////////////////////////
-// Vital: Sandbox: Lua //
-//////////////////////////
+/////////////////////
+// Vital: Sandbox //
+/////////////////////
 
 namespace Vital::Sandbox {
     class create;
