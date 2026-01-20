@@ -35,7 +35,7 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 		Vital::Godot::Canvas::get_singleton();
 		Vital::Godot::Console::get_singleton();
 		#endif
-		Vital::Godot::Sandbox::Singleton::fetch() -> ready();
+		Vital::Godot::Sandbox::get_singleton() -> ready();
 	});
 }
 
@@ -47,6 +47,7 @@ void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	Vital::Godot::Canvas::free_singleton();
 	Vital::Godot::Console::free_singleton();
 	#endif
+	Vital::Godot::Sandbox::free_singleton();
 }
 
 extern "C" {

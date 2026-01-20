@@ -15,6 +15,7 @@
 #if defined(Vital_SDK_Client)
 #pragma once
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/index.h>
@@ -40,7 +41,7 @@ namespace Vital::Godot {
 
     void Canvas::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        Sandbox::Singleton::fetch() -> draw(this);
+        Sandbox::get_singleton() -> draw(this);
     }
 
 

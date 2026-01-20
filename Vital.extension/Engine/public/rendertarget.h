@@ -24,13 +24,13 @@
 namespace Vital::Godot {
     class RenderTarget : public godot::Node2D {
         GDCLASS(RenderTarget, godot::Node2D)
-        private:
-            std::vector<Canvas::Command> queue;
-            bool instant = false;
         protected:
             godot::SubViewport* viewport = nullptr;
             inline static RenderTarget* rendertarget = nullptr;
             static void _bind_methods() {}
+        private:
+            std::vector<Canvas::Command> queue;
+            bool instant = false;
         public:
             // Instantiators //
             RenderTarget() = default;

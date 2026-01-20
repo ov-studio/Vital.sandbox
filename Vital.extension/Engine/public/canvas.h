@@ -103,11 +103,11 @@ namespace Vital::Godot {
                 Type type;
                 std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
             };
-        private:
-            std::vector<Command> queue;
         protected:
             inline static Canvas* singleton = nullptr;
             static void _bind_methods() {}
+        private:
+            std::vector<Command> queue;
         public:
             // Instantiators //
             Canvas() = default;
