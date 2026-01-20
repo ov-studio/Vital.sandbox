@@ -4,12 +4,9 @@
 
 ###### *» Maintainer(s): [**Aviril**](https://github.com/ov-aviril), **Mario**, [**Tron**](https://github.com/ov-tron), [**Anisa**](https://github.com/ov-anisa), [**A-Variakojiene**](https://github.com/A-Variakojiene)*
 
-**Vital.sandbox** is an official Sandbox-SDK designed to empower sandbox projects developed by **vStudio**. This comprehensive toolkit is built to facilitate the creation of high-performance, modular applications with integrated sandboxing environments, robust threading, and extensive networking capabilities.
+**Vital.sandbox** is an official Sandbox-SDK designed to empower sandbox projects developed by **ov-studio**. This comprehensive toolkit is built to facilitate the creation of high-performance, modular applications with integrated sandboxing environments, robust threading, and extensive networking capabilities.
 
 ## » Features
-
-💎**CONSIDER** [**SPONSORING**](https://ko-fi.com/ovstudio) **US TO SUPPORT THE DEVELOPMENT.**
-
 * Fully Open-Source
 * Highly Performance-Friendly
 * Modular Programming Architecture (C++17)
