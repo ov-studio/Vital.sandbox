@@ -35,7 +35,7 @@
 /////////////////////////////////
 
 namespace Vital::Godot::Sandbox::Lua::Machine {
-    Vital::Sandbox::Lua::Machine* vm = nullptr;
+    Vital::Sandbox::Machine* vm = nullptr;
 
     /*
     // TODO: REMOVE LATER
