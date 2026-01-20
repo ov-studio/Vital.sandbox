@@ -23,6 +23,6 @@
 namespace Vital::Sandbox::API {
     class SSR : public Vital::Tool::Module {
         public:
-            static void bind(void* instance);
+            static void bind(void* machine);
     };
 }
