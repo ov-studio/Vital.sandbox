@@ -28,9 +28,9 @@
 #include <Vital.extension/Engine/public/texture.h>
 
 
-/////////////////////////////////
-// Vital: Godot: Sandbox: Lua //
-/////////////////////////////////
+////////////////////////////
+// Vital: Godot: Sandbox //
+////////////////////////////
 
 namespace Vital::Godot::Sandbox {
     Vital::Sandbox::Machine* vm = nullptr;
