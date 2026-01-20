@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: lua: public: vm.h
+     Script: Sandbox: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Machine Utilities
+     Desc: Root Utilities
 ----------------------------------------------------------------*/
 
 
