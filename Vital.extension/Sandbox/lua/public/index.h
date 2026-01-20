@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Sandbox: public: lua.h
+     Script: Sandbox: public: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
