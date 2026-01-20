@@ -21,4 +21,3 @@
 ///////////////////////////
 
 namespace Vital::Godot {}
-namespace Vital::Godot::Sandbox {}
