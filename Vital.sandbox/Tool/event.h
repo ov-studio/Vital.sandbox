@@ -23,8 +23,8 @@
 namespace Vital::Tool::Event {
     using event_id = unsigned long;
     using event_handle = std::function<void(Vital::Tool::Stack)>;
-    using event_map = std::map<event_id, event_handle>;
-    using event_pool = std::map<std::string, event_map>;
+    using event_map = std::unordered_map<event_id, event_handle>;
+    using event_pool = std::unordered_map<std::string, event_map>;
     inline event_id id = 0;
     inline event_pool pool;
 
