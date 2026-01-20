@@ -51,13 +51,16 @@ namespace Vital::Tool::Rest {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
+        curl_slist* rq_headers = ApplyHeaders(headers);
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CallbackHandle);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
         curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Signature);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         CURLcode res = curl_easy_perform(curl);
+        curl_slist_free_all(rq_headers);
         curl_easy_cleanup(curl);
         if (res != CURLE_OK) {
             std::string err = curl_easy_strerror(res);
