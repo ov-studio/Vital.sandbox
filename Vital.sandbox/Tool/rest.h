@@ -56,4 +56,31 @@ namespace Vital::System::Rest {
         curl_easy_cleanup(curl);
         return buffer;
     }
+
+    inline std::string post(const std::string& url, const std::string& body, const char* content_type = "application/json") {
+        std::string buffer;
+        CURL* curl = curl_easy_init();
+        if (!curl) throw std::runtime_error("curl_easy_init failed");
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, content_type);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.size());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CallbackHandle);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Signature);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        CURLcode res = curl_easy_perform(curl);
+        curl_slist_free_all(headers);
+        if (res != CURLE_OK) {
+            std::string err = curl_easy_strerror(res);
+            curl_easy_cleanup(curl);
+            throw std::runtime_error("Request failed: " + err);
+        }
+        curl_easy_cleanup(curl);
+        return buffer;
+    }
 }
