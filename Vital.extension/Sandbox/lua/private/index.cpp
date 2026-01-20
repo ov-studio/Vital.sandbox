@@ -101,7 +101,7 @@ namespace Vital::Godot::Sandbox::Lua {
         
         //auto stuff = Vital::Tool::Crypto::hash("SHA256", "hello");
         //godot::UtilityFunctions::print(stuff.c_str());
-        //ClassDB::register_abstract_class<Lua>();
+        //ClassDB::register_abstract_class<Machine>();
 
     }
 
