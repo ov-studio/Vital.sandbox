@@ -20,7 +20,7 @@
 // Vital: Tool: Event //
 /////////////////////////
 
-namespace Vital::System::Event {
+namespace Vital::Tool::Event {
     using event_id = unsigned long;
     using event_handle = std::function<void(Vital::Tool::Stack)>;
     using event_map = std::map<event_id, event_handle>;

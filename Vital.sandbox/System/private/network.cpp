@@ -67,7 +67,7 @@ namespace Vital::System::Network {
                     networkPeers.emplace(peerID, networkEvent.peer);
                     Vital::Tool::Stack eventArguments;
                     eventArguments.push("peerID", getPeerID(networkEvent.peer));
-                    Vital::System::Event::emit("Network:@PeerConnect", eventArguments);
+                    Vital::Tool::Event::emit("Network:@PeerConnect", eventArguments);
                     peerID++;
                 }
                 break;
@@ -75,14 +75,14 @@ namespace Vital::System::Network {
             case ENET_EVENT_TYPE_RECEIVE: {
                 Vital::Tool::Stack eventArguments = Vital::Tool::Stack::deserialize(Vital::Tool::Crypto::decode(std::string(reinterpret_cast<char*>(networkEvent.packet -> data), networkEvent.packet -> dataLength)));
                 if (get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
-                Vital::System::Event::emit("Network:@PeerMessage", eventArguments);
+                Vital::Tool::Event::emit("Network:@PeerMessage", eventArguments);
                 enet_packet_destroy(networkEvent.packet);
                 break;
             }
             case ENET_EVENT_TYPE_DISCONNECT: {
                 Vital::Tool::Stack eventArguments;
                 if (get_platform() == "server") eventArguments.push("peerID", getPeerID(networkEvent.peer));
-                Vital::System::Event::emit("Network:@PeerDisconnect", eventArguments);
+                Vital::Tool::Event::emit("Network:@PeerDisconnect", eventArguments);
                 if (get_platform() == "client") stop();
                 else {
                     networkPeers.erase(getPeerID(networkEvent.peer));
