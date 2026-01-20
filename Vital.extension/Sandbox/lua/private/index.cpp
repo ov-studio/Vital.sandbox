@@ -54,7 +54,7 @@ namespace Vital::Godot::Sandbox::Lua {
     Singleton::Singleton() {
         godot::UtilityFunctions::print("Initialized Lua vm");
 
-        vm = new Vital::Sandbox::Lua::create({
+        vm = new Vital::Sandbox::Lua::Machine({
             {API::SSR::bind, API::SSR::inject},
             {API::SSAO::bind, API::SSAO::inject},
             {API::SSIL::bind, API::SSIL::inject},
