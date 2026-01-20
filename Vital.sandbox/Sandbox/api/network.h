@@ -25,10 +25,10 @@ namespace Vital::Sandbox::API {
     class Network : public Vital::Tool::Module {
         public:
             static void bind(void* machine) {
-                auto vm = Vital::Sandbox::Machine::to_machine(machine);
+                auto vm = Machine::to_machine(machine);
 
                 API::bind(vm, "network", "emit", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         bool client = get_platform() == "client";
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Error::fetch("invalid-arguments");
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
             }
 
             static void inject(void* machine) {
-                auto vm = Vital::Sandbox::Machine::to_machine(machine);
+                auto vm = Machine::to_machine(machine);
 
                 vm -> get_global("network");
                 vm -> get_table_field("execNetwork", -1);
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
             }
 
             static void execute(const std::string& name, const std::string& payload) {
-                for (auto vm : Vital::Sandbox::Machine::fetch_buffer()) {
+                for (auto vm : Machine::fetch_buffer()) {
                     if (!vm.second -> is_virtual()) {
                         vm.second -> get_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
                         vm.second -> push_string(name);

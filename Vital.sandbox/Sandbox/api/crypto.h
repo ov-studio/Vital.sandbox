@@ -24,10 +24,10 @@ namespace Vital::Sandbox::API {
     class Crypto : public Vital::Tool::Module {
         public:
             inline static void bind(void* machine) {
-                auto vm = Vital::Sandbox::Machine::to_machine(machine);
+                auto vm = Machine::to_machine(machine);
 
                 API::bind(vm, "crypto", "hash", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> get_string(1);
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "crypto", "encode", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> get_string(1);
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "crypto", "decode", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto buffer = vm -> get_string(1);
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "crypto", "encrypt", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 3) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> get_string(1);
@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "crypto", "decrypt", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 4) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_string(4))) throw Vital::Error::fetch("invalid-arguments");
                         auto mode = vm -> get_string(1);

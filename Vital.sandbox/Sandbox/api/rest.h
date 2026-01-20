@@ -24,10 +24,10 @@ namespace Vital::Sandbox::API {
     class Rest : public Vital::Tool::Module {
         public:
             inline static void bind(void* machine) {
-                auto vm = Vital::Sandbox::Machine::to_machine(machine);
+                auto vm = Machine::to_machine(machine);
 
                 API::bind(vm, "rest", "get", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
+                    auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
