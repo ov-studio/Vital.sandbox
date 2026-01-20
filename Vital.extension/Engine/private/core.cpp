@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>
-#include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.extension/Sandbox/public/index.h>
 #include <Vital.sandbox/Tool/event.h>
 #include <Vital.sandbox/System/public/discord.h>
 

@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Sandbox: api: sdfgi.h
+     Script: Sandbox: api: ssao.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: SDFGI APIs
+     Desc: SSAO APIs
 ----------------------------------------------------------------*/
 
 
@@ -13,226 +13,187 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.extension/Sandbox/public/index.h>
 
 
-/////////////////////////////////
-// Vital: Sandbox: API: SDFGI //
-/////////////////////////////////
+////////////////////////////////
+// Vital: Sandbox: API: SSAO //
+////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    class SDFGI : public Vital::Tool::Module {
+    class SSAO : public Vital::Tool::Module {
         public:
             inline static void bind(void* machine) {
                 auto vm = Machine::to_machine(machine);
 
                 #if defined(Vital_SDK_Client)
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_enabled", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_enabled", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto state = vm -> get_bool(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_enabled(state);
+                        Vital::Godot::Core::get_environment() -> set_ssao_enabled(state);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "is_enabled", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "is_enabled", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_enabled());
+                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssao_enabled());
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_cascades", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto value = vm -> get_int(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_cascades(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_cascades", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_cascades());
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_min_cell_size", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_radius", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_min_cell_size(value);
+                        Vital::Godot::Core::get_environment() -> set_ssao_radius(value);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_min_cell_size", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "get_radius", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_min_cell_size());
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_radius());
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_max_distance", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_intensity", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_max_distance(value);
+                        Vital::Godot::Core::get_environment() -> set_ssao_intensity(value);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_max_distance", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "get_intensity", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_max_distance());
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_intensity());
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_y_scale", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto value = vm -> get_int(1);
-                        if ((value < godot::Environment::SDFGI_Y_SCALE_50_PERCENT) || (value > godot::Environment::SDFGI_Y_SCALE_100_PERCENT)) throw Vital::Error::fetch("invalid-arguments");
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_y_scale(static_cast<godot::Environment::SDFGIYScale>(value));
-                        vm -> push_bool(true);
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_y_scale", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_y_scale());
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_use_occlusion", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto state = vm -> get_bool(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_use_occlusion(state);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "is_using_occlusion", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_using_occlusion());
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_bounce_feedback", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_power", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_bounce_feedback(value);
+                        Vital::Godot::Core::get_environment() -> set_ssao_power(value);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_bounce_feedback", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "get_power", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_bounce_feedback());
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_power());
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_read_sky_light", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto state = vm -> get_bool(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_read_sky_light(state);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "is_reading_sky_light", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_reading_sky_light());
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_energy", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_detail", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_energy(value);
+                        Vital::Godot::Core::get_environment() -> set_ssao_detail(value);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_energy", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "get_detail", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_energy());
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_detail());
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_normal_bias", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_horizon", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_normal_bias(value);
+                        Vital::Godot::Core::get_environment() -> set_ssao_horizon(value);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_normal_bias", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "get_horizon", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_normal_bias());
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_horizon());
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "set_probe_bias", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "set_sharpness", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_sdfgi_probe_bias(value);
+                        Vital::Godot::Core::get_environment() -> set_ssao_sharpness(value);
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
             
-                Vital::Sandbox::API::bind(vm, "sdfgi", "get_probe_bias", [](auto* ref) -> int {
+                Vital::Sandbox::API::bind(vm, "ssao", "get_sharpness", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_sdfgi_probe_bias());
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_sharpness());
+                        return 1;
+                    });
+                });
+            
+                Vital::Sandbox::API::bind(vm, "ssao", "set_direct_light_affect", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        auto value = vm -> get_float(1);
+                        Vital::Godot::Core::get_environment() -> set_ssao_direct_light_affect(value);
+                        vm -> push_bool(true);
+                        return 1;
+                    });
+                });
+            
+                Vital::Sandbox::API::bind(vm, "ssao", "get_direct_light_affect", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_direct_light_affect());
+                        return 1;
+                    });
+                });
+            
+                Vital::Sandbox::API::bind(vm, "ssao", "set_channel_affect", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        auto value = vm -> get_float(1);
+                        Vital::Godot::Core::get_environment() -> set_ssao_ao_channel_affect(value);
+                        vm -> push_bool(true);
+                        return 1;
+                    });
+                });
+            
+                Vital::Sandbox::API::bind(vm, "ssao", "get_channel_affect", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_ao_channel_affect());
                         return 1;
                     });
                 });

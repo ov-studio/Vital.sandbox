@@ -13,17 +13,17 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.extension/Sandbox/public/index.h>
 #include <Vital.sandbox/vital.hpp>
 
-#include <Vital.extension/Sandbox/lua/api/public/ssr.h>
-#include <Vital.extension/Sandbox/lua/api/public/ssao.h>
-#include <Vital.extension/Sandbox/lua/api/public/ssil.h>
-#include <Vital.extension/Sandbox/lua/api/public/sdfgi.h>
-#include <Vital.extension/Sandbox/lua/api/public/emissive.h>
-#include <Vital.extension/Sandbox/lua/api/public/fog.h>
-#include <Vital.extension/Sandbox/lua/api/public/volumetric_fog.h>
-#include <Vital.extension/Sandbox/lua/api/public/adjustment.h>
+#include <Vital.extension/Sandbox/api/ssr.h>
+#include <Vital.extension/Sandbox/api/ssao.h>
+#include <Vital.extension/Sandbox/api/ssil.h>
+#include <Vital.extension/Sandbox/api/sdfgi.h>
+#include <Vital.extension/Sandbox/api/emissive.h>
+#include <Vital.extension/Sandbox/api/fog.h>
+#include <Vital.extension/Sandbox/api/volumetric_fog.h>
+#include <Vital.extension/Sandbox/api/adjustment.h>
 
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
