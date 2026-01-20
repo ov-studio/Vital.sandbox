@@ -88,7 +88,7 @@ namespace Vital::Godot {
         Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
             try {
                 std::string url = "https://jsonplaceholder.typicode.com/posts/1";
-                std::string response = Vital::System::Rest::get(url);
+                std::string response = Vital::Tool::Rest::get(url);
                 godot::UtilityFunctions::print(response.c_str());
             }
             catch(const std::runtime_error& error) { godot::UtilityFunctions::print(error.what()); }

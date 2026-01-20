@@ -21,7 +21,7 @@
 // Vital: Tool: Rest //
 ////////////////////////
 
-namespace Vital::System::Rest {
+namespace Vital::Tool::Rest {
     struct CurlGlobal {
         CurlGlobal() { 
             if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)

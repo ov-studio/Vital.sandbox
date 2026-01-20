@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
                         auto url = vm -> get_string(1);
                         Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                             try {
-                                vm -> push_string(Vital::System::Rest::get(url));
+                                vm -> push_string(Vital::Tool::Rest::get(url));
                                 vm -> push_bool(false);
                             }
                             catch(const std::runtime_error& error) {
