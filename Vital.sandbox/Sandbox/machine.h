@@ -73,6 +73,7 @@ namespace Vital::Sandbox {
 
             inline ~Machine() {
                 if (!vm) return;
+                if (!virtualized) lua_close(vm);
                 buffer.erase(vm);
                 vm = nullptr;
             }
