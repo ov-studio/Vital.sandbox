@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: private: inject.cpp
+     Script: Boostrap: index.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Inject Utilities
+     Desc: Boostrap Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Engine/public/inject.h>
+#include <Boostrap/index.h>
 #include <Vital.sandbox/Tool/event.h>
 
 

@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: public: inject.h
+     Script: Boostrap: index.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Inject Utilities
+     Desc: Boostrap Utilities
 ----------------------------------------------------------------*/
 
 
