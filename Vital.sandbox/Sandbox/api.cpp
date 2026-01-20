@@ -22,9 +22,9 @@
 #include <Vital.sandbox/Sandbox/api/network.h>
 
 
-///////////////////////////////
-// Vital: Sandbox: Machine: API //
-///////////////////////////////
+//////////////////////////
+// Vital: Sandbox: API //
+//////////////////////////
 
 namespace Vital::Sandbox {
     vm_apis Machine::natives = {

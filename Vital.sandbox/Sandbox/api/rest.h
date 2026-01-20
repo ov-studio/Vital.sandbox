@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Sandbox/index.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+////////////////////////////////
+// Vital: Sandbox: API: Rest //
+////////////////////////////////
 
 namespace Vital::Sandbox::API {
     class Rest : public Vital::Tool::Module {

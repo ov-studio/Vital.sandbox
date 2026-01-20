@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Sandbox/index.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+/////////////////////////////////
+// Vital: Sandbox: API: Crypto //
+/////////////////////////////////
 
 namespace Vital::Sandbox::API {
     class Crypto : public Vital::Tool::Module {

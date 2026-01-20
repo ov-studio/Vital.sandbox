@@ -17,9 +17,9 @@
 #include <Vital.sandbox/System/public/network.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+///////////////////////////////////
+// Vital: Sandbox: API: Network //
+///////////////////////////////////
 
 namespace Vital::Sandbox::API {
     class Network : public Vital::Tool::Module {

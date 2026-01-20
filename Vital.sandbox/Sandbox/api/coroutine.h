@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Sandbox/index.h>
 
 
-///////////////
-// Lua: API //
-///////////////
+/////////////////////////////////////
+// Vital: Sandbox: API: Coroutine //
+/////////////////////////////////////
 
 namespace Vital::Sandbox::API {
     class Coroutine : public Vital::Tool::Module {
