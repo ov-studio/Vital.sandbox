@@ -76,8 +76,8 @@ namespace Vital::Godot::Sandbox::Lua {
             end, 2500, 5)
             return a + b
         )";
-        vm -> loadString(rwString);
-        double result = vm -> getInt(-1);
+        vm -> load_string(rwString);
+        double result = vm -> get_int(-1);
         godot::UtilityFunctions::print(result);
         */
 
