@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Sandbox: public: index.h
+     Script: Sandbox: index.h
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Sandbox Utilities
+     Desc: Root Utilities
 ----------------------------------------------------------------*/
 
 

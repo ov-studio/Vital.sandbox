@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Sandbox: private: index.cpp
+     Script: Sandbox: index.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Sandbox Utilities
+     Desc: Root Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Sandbox/public/index.h>
+#include <Vital.extension/Sandbox/index.h>
 #include <Vital.sandbox/vital.hpp>
 
 #include <Vital.extension/Sandbox/api/ssr.h>

@@ -17,7 +17,7 @@
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
-#include <Vital.extension/Sandbox/public/index.h>
+#include <Vital.extension/Sandbox/index.h>
 
 
 ///////////////////////////
