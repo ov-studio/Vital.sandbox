@@ -20,8 +20,8 @@
 // Vital: Godot: Sandbox: Machine: API: SSR //
 ///////////////////////////////////////////
 
-void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* instance) {
-    auto vm = Vital::Sandbox::Machine::to_machine(instance);
+void Vital::Godot::Sandbox::Lua::API::SSR::bind(void* machine) {
+    auto vm = Vital::Sandbox::Machine::to_machine(machine);
 
     #if defined(Vital_SDK_Client)
     Vital::Sandbox::API::bind(vm, "ssr", "set_enabled", [](auto* ref) -> int {
