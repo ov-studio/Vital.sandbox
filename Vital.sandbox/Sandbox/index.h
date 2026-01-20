@@ -32,7 +32,7 @@
 // Vital: Sandbox //
 /////////////////////
 
-namespace Vital::Sandbox::Lua {
+namespace Vital::Sandbox {
     class Machine;
     using vm_state = lua_State;
     using vm_exec = lua_CFunction;

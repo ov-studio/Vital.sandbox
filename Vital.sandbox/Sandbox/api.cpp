@@ -26,7 +26,7 @@
 // Vital: Sandbox: Machine: API //
 ///////////////////////////////
 
-namespace Vital::Sandbox::Lua {
+namespace Vital::Sandbox {
     vm_apis Machine::natives = {
         {API::Engine::bind, API::Engine::inject},
         {API::Coroutine::bind, API::Coroutine::inject},
