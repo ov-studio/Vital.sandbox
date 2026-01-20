@@ -50,7 +50,6 @@ namespace Vital::Sandbox {
 
     class create {
         protected:
-            static inline vm_buffer buffer;
             static inline std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
                 {"table", luaopen_table},
@@ -67,6 +66,7 @@ namespace Vital::Sandbox {
                 "loadfile"
             };
             static vm_apis natives;
+            static inline vm_buffer buffer;
         private:
             bool virtualized = false;
             vm_state* vm = nullptr;
