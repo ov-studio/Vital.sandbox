@@ -21,15 +21,25 @@
 // Vital: Godot: Sandbox //
 ////////////////////////////
 
-namespace Vital::Godot::Sandbox {
-	class Singleton;
-	class Singleton {
+namespace Vital::Godot {
+	class Sandbox;
+	class Sandbox : public godot::Node {
 		protected:
-			inline static Singleton* instance = nullptr;
+			inline static Sandbox* singleton = nullptr;
+		private:
+			Vital::Sandbox::Machine* vm = nullptr;
 		public:
-			Singleton();
-			~Singleton();
-			static Singleton* fetch();
+			// Instantiators //
+			Sandbox();
+			~Sandbox();
+
+
+			// Utils //
+			static Sandbox* get_singleton();
+            static void free_singleton();
+
+
+			// APIs //
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)
