@@ -135,11 +135,11 @@ namespace Vital::Sandbox {
             inline void push_nil() { lua_pushnil(vm); }
             inline void push_bool(bool value) { lua_pushboolean(vm, value); }
             inline void push_string(const std::string& value) { lua_pushstring(vm, value.c_str()); }
-            inline void push_number(int value) { lua_pushnumber(vm, value); }
+            inline void push_number(int value) { lua_pushinteger(vm, value); }
             inline void push_number(float value) { lua_pushnumber(vm, value); }
             inline void push_number(double value) { lua_pushnumber(vm, value); }
             inline void push_userdata(void* value) { lua_pushlightuserdata(vm, value); }
-            inline void push_function(vm_exec& value) { lua_pushcfunction(vm, value); }
+            inline void push_function(const vm_exec& value) { lua_pushcfunction(vm, value); }
             inline void push_reference(const std::string& name, int index = 1) {
                 push(index);
                 reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
@@ -277,27 +277,28 @@ namespace Vital::Sandbox {
             inline void push(int index = 1) { lua_pushvalue(vm, index); }
             inline void pop(int count = 1) { lua_pop(vm, count); }
             inline void move(Machine* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
-            inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0); }
+            inline bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0) == LUA_OK; }
             inline void set_table(int index = 1) { lua_settable(vm, index); }
             inline void set_table_field(int field, int index = 1) { lua_seti(vm, index, field); }
             inline void set_table_field(const std::string& field, int index = 1) { lua_setfield(vm, index, field.c_str()); }
             inline void set_metatable(int index = 1) { lua_setmetatable(vm, index);}
             inline void set_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
 
-            inline int execute(std::function<int()> exec) {
+            template<typename F>
+            inline int execute(F&& exec) {
                 try { return exec(); }
-                catch(const std::runtime_error& error) { throw_error(error.what()); }
-                catch(...) { throw_error(); }
+                catch (const std::runtime_error& e) { throw_error(e.what()); }
+                catch (...) { throw_error(); }
                 return 1;
             }
 
             inline void hook(const std::string& mode) {
-                auto vm = to_void(this);
-                vm_apis apis = natives;
-                for (auto& i : this -> apis) apis.push_back(i);
+                auto vm_ptr = to_void(this);
+                for (auto& i : natives) {
+                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
+                }
                 for (auto& i : apis) {
-                    if (mode == "bind") i.first(vm);
-                    else if (mode == "inject") i.second(vm);
+                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
                 }
             }
 

@@ -23,8 +23,8 @@
 namespace Vital::Sandbox::API {
     class Crypto : public Vital::Tool::Module {
         public:
-            inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Machine::to_machine(instance);
+            inline static void bind(void* machine) {
+                auto vm = Vital::Sandbox::Machine::to_machine(machine);
 
                 API::bind(vm, "crypto", "hash", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Machine::fetch_machine(ref);

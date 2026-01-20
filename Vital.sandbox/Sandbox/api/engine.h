@@ -23,8 +23,8 @@
 namespace Vital::Sandbox::API {
     class Engine : public Vital::Tool::Module {
         public:
-            inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Machine::to_machine(instance);
+            inline static void bind(void* machine) {
+                auto vm = Vital::Sandbox::Machine::to_machine(machine);
 
                 API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
@@ -90,8 +90,8 @@ namespace Vital::Sandbox::API {
                 });
             }
 
-            inline static void inject(void* instance) {
-                auto vm = Vital::Sandbox::Machine::to_machine(instance);
+            inline static void inject(void* machine) {
+                auto vm = Vital::Sandbox::Machine::to_machine(machine);
 
                 #if defined(Vital_SDK_Client)
                 vm -> get_global("engine");

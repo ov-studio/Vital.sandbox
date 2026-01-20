@@ -24,8 +24,8 @@
 namespace Vital::Sandbox::API {
     class Network : public Vital::Tool::Module {
         public:
-            static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Machine::to_machine(instance);
+            static void bind(void* machine) {
+                auto vm = Vital::Sandbox::Machine::to_machine(machine);
 
                 API::bind(vm, "network", "emit", [](auto* ref) -> int {
                     auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
@@ -47,8 +47,8 @@ namespace Vital::Sandbox::API {
                 });
             }
 
-            static void inject(void* instance) {
-                auto vm = Vital::Sandbox::Machine::to_machine(instance);
+            static void inject(void* machine) {
+                auto vm = Vital::Sandbox::Machine::to_machine(machine);
 
                 vm -> get_global("network");
                 vm -> get_table_field("execNetwork", -1);
