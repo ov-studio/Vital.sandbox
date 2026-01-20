@@ -47,6 +47,29 @@ namespace Vital::Sandbox::API {
                         return 0;
                     });
                 });
+
+                API::bind(vm, "rest", "post", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
+                        if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
+                        auto url = vm -> get_string(1);
+                        auto body = vm -> get_string(2);
+                        Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
+                            try {
+                                vm -> push_string(Vital::Tool::Rest::post(url, body));
+                                vm -> push_bool(false);
+                            }
+                            catch(const std::runtime_error& error) {
+                                vm -> push_bool(false);
+                                vm -> push_string(error.what());
+                            }
+                            vm -> resume(2);
+                        }).detach();
+                        vm -> pause();
+                        return 0;
+                    });
+                });
             }
     };
 }
