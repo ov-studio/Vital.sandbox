@@ -16,9 +16,9 @@
 #include <Vital.extension/Sandbox/lua/api/public/fog.h>
 
 
-////////////////////////////////////////
+///////////////////////////////
 // Vital: Sandbox: API: Fog //
-////////////////////////////////////////
+///////////////////////////////
 
 void Vital::Sandbox::API::Fog::bind(void* machine) {
     auto vm = Machine::to_machine(machine);
