@@ -18,7 +18,7 @@
 
 
 ///////////////
-// Machine: API //
+// Lua: API //
 ///////////////
 
 namespace Vital::Sandbox::Lua::API {
