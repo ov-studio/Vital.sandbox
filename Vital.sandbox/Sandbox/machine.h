@@ -46,7 +46,7 @@ namespace Vital::Sandbox {
             vm_refs reference = {};
             vm_apis apis = {};
         public:
-            inline Machine(vm_apis apis = {}) {
+            inline Machine(vm_apis apis = {}) : apis(std::move(apis)) {
                 vm = luaL_newstate();
                 this -> apis = apis;
                 buffer.emplace(vm, this);
