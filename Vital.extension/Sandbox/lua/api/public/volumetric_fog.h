@@ -16,12 +16,12 @@
 #include <Vital.extension/Sandbox/lua/public/api.h>
 
 
-/////////////////////////////////////////
-// Vital: Sandbox: API: VolumetricFog //
-/////////////////////////////////////////
+//////////////////////////////////////////
+// Vital: Sandbox: API: Volumetric_Fog //
+//////////////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    class VolumetricFog : public Vital::Tool::Module {
+    class Volumetric_Fog : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
     };

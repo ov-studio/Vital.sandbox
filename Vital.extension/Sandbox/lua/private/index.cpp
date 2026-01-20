@@ -59,7 +59,7 @@ namespace Vital::Godot::Sandbox {
             {Vital::Sandbox::API::SDFGI::bind, Vital::Sandbox::API::SDFGI::inject},
             {Vital::Sandbox::API::Emissive::bind, Vital::Sandbox::API::Emissive::inject},
             {Vital::Sandbox::API::Fog::bind, Vital::Sandbox::API::Fog::inject},
-            {Vital::Sandbox::API::VolumetricFog::bind, Vital::Sandbox::API::VolumetricFog::inject},
+            {Vital::Sandbox::API::Volumetric_Fog::bind, Vital::Sandbox::API::Volumetric_Fog::inject},
             {Vital::Sandbox::API::Adjustment::bind, Vital::Sandbox::API::Adjustment::inject}
         });
 

@@ -16,11 +16,11 @@
 #include <Vital.extension/Sandbox/lua/api/public/volumetric_fog.h>
 
 
-/////////////////////////////////////////
-// Vital: Sandbox: API: VolumetricFog //
-/////////////////////////////////////////
+//////////////////////////////////////////
+// Vital: Sandbox: API: Volumetric_Fog //
+//////////////////////////////////////////
 
-void Vital::Sandbox::API::VolumetricFog::bind(void* machine) {
+void Vital::Sandbox::API::Volumetric_Fog::bind(void* machine) {
     auto vm = Machine::to_machine(machine);
 
     #if defined(Vital_SDK_Client)
