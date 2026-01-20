@@ -38,7 +38,7 @@ namespace Vital::Sandbox {
 
     namespace API {
         std::function<void(const std::string&)> vsdk_errorhandle = NULL;
-        void createErrorHandle(std::function<void(const std::string&)> exec) {
+        void create_error_handle(std::function<void(const std::string&)> exec) {
             vsdk_errorhandle = exec;
         }
     
