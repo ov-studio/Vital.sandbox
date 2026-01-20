@@ -29,7 +29,7 @@ namespace Vital::Godot {
             bool instant = false;
         protected:
             godot::SubViewport* viewport = nullptr;
-            static inline RenderTarget* rendertarget = nullptr;
+            inline static RenderTarget* rendertarget = nullptr;
             static void _bind_methods() {}
         public:
             // Instantiators //

@@ -25,7 +25,7 @@ namespace Vital::Godot::Sandbox {
 	class Singleton;
 	class Singleton {
 		protected:
-			static inline Singleton* instance = nullptr;
+			inline static Singleton* instance = nullptr;
 		public:
 			Singleton();
 			~Singleton();

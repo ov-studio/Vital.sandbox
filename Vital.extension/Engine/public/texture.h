@@ -52,8 +52,8 @@ namespace Vital::Godot {
             };
         protected:
             Command command;
-            static inline const unsigned int flush_interval = 10000;
-            static inline std::unordered_map<std::string, Texture*> cache_temp = {};
+            inline static const unsigned int flush_interval = 10000;
+            inline static std::unordered_map<std::string, Texture*> cache_temp = {};
             void push_temp(const std::string& temp_ref);
         public:
             // Instantiators //

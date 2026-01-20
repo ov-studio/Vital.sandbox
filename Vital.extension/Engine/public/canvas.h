@@ -106,7 +106,7 @@ namespace Vital::Godot {
         private:
             std::vector<Command> queue;
         protected:
-            static inline Canvas* singleton = nullptr;
+            inline static Canvas* singleton = nullptr;
             static void _bind_methods() {}
         public:
             // Instantiators //

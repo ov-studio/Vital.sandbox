@@ -25,7 +25,7 @@ namespace Vital::Godot {
     class Console;
     class Console : public godot::Control {
         protected:
-            static inline Console* singleton = nullptr;
+            inline static Console* singleton = nullptr;
         private:
             Webview* webview = nullptr;
         public:

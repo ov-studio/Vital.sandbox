@@ -23,8 +23,8 @@
 namespace Vital::Tool {
     class Thread {
         private:
-            static inline std::unordered_map<std::thread::id, Thread*> buffer;
-            static inline std::mutex mutex;
+            inline static std::unordered_map<std::thread::id, Thread*> buffer;
+            inline static std::mutex mutex;
             std::thread thread;
         public:
             Thread(std::function<void(Thread*)> exec) {

@@ -24,8 +24,8 @@ namespace Vital::Sandbox {
     class Machine {
         protected:
             static vm_apis natives;
-            static inline vm_buffer buffer;
-            static inline std::vector<luaL_Reg> whitelist = {
+            inline static vm_buffer buffer;
+            inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
                 {"table", luaopen_table},
                 {"string", luaopen_string},
@@ -35,7 +35,7 @@ namespace Vital::Sandbox {
                 {"utf8", luaopen_utf8},
                 {"json", luaopen_rapidjson}
             };
-            static inline std::vector<std::string> blacklist = {
+            inline static std::vector<std::string> blacklist = {
                 "dofile",
                 "load",
                 "loadfile"
@@ -80,10 +80,10 @@ namespace Vital::Sandbox {
 
 
             // APIs //
-            static inline const vm_buffer fetch_buffer() { return buffer; }
-            static inline Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
-            static inline void* to_void(Machine* vm) { return static_cast<void*>(vm); }
-            static inline Machine* fetch_machine(vm_state* vm) {
+            inline static const vm_buffer fetch_buffer() { return buffer; }
+            inline static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
+            inline static void* to_void(Machine* vm) { return static_cast<void*>(vm); }
+            inline static Machine* fetch_machine(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
             }

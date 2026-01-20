@@ -25,8 +25,8 @@ namespace Vital::Godot {
 	class Core : public godot::Node {
 		GDCLASS(Core, godot::Node)
 		protected:
-			static inline Core* singleton = nullptr;
-			static inline godot::WorldEnvironment* environment = nullptr;
+			inline static Core* singleton = nullptr;
+			inline static godot::WorldEnvironment* environment = nullptr;
 			static void _bind_methods() {};
 		public:
 			// Instantiators //
