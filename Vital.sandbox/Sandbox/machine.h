@@ -339,7 +339,7 @@ namespace Vital::Sandbox {
                 lua_Debug debug;
                 lua_getstack(vm, 1, &debug);
                 lua_getinfo(vm, "nSl", &debug);
-                API::error("[ERROR - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
+                API::error("[Error - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
                 push_bool(false);
             }
     };
