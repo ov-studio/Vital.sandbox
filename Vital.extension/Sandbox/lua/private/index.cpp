@@ -34,7 +34,7 @@
 // Vital: Godot: Sandbox: Lua //
 /////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::Machine {
+namespace Vital::Godot::Sandbox {
     Vital::Sandbox::Machine* vm = nullptr;
 
     // TODO: REMOVE LATER
@@ -53,14 +53,14 @@ namespace Vital::Godot::Sandbox::Lua::Machine {
         godot::UtilityFunctions::print("Initialized Lua vm");
 
         vm = new Vital::Sandbox::Machine({
-            {API::SSR::bind, API::SSR::inject},
-            {API::SSAO::bind, API::SSAO::inject},
-            {API::SSIL::bind, API::SSIL::inject},
-            {API::SDFGI::bind, API::SDFGI::inject},
-            {API::Emissive::bind, API::Emissive::inject},
-            {API::Fog::bind, API::Fog::inject},
-            {API::VolumetricFog::bind, API::VolumetricFog::inject},
-            {API::Adjustment::bind, API::Adjustment::inject}
+            {Vital::Sandbox::API::SSR::bind, Vital::Sandbox::API::SSR::inject},
+            {Vital::Sandbox::API::SSAO::bind, Vital::Sandbox::API::SSAO::inject},
+            {Vital::Sandbox::API::SSIL::bind, Vital::Sandbox::API::SSIL::inject},
+            {Vital::Sandbox::API::SDFGI::bind, Vital::Sandbox::API::SDFGI::inject},
+            {Vital::Sandbox::API::Emissive::bind, Vital::Sandbox::API::Emissive::inject},
+            {Vital::Sandbox::API::Fog::bind, Vital::Sandbox::API::Fog::inject},
+            {Vital::Sandbox::API::VolumetricFog::bind, Vital::Sandbox::API::VolumetricFog::inject},
+            {Vital::Sandbox::API::Adjustment::bind, Vital::Sandbox::API::Adjustment::inject}
         });
 
         /*

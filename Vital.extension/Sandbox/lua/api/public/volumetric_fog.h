@@ -17,10 +17,10 @@
 
 
 /////////////////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: VolumetricFog //
+// Vital: Sandbox: API: VolumetricFog //
 /////////////////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class VolumetricFog : public Vital::Tool::Module {
         public:
             static void bind(void* instance);

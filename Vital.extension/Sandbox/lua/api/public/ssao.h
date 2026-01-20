@@ -17,10 +17,10 @@
 
 
 ////////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: SSAO //
+// Vital: Sandbox: API: SSAO //
 ////////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class SSAO : public Vital::Tool::Module {
         public:
             static void bind(void* instance);

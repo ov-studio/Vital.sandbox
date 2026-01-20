@@ -17,10 +17,10 @@
 
 
 ////////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: SSIL //
+// Vital: Sandbox: API: SSIL //
 ////////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class SSIL : public Vital::Tool::Module {
         public:
             static void bind(void* instance);

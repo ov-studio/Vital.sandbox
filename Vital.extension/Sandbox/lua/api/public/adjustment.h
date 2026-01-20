@@ -17,10 +17,10 @@
 
 
 //////////////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: Adjustment //
+// Vital: Sandbox: API: Adjustment //
 //////////////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class Adjustment : public Vital::Tool::Module {
         public:
             static void bind(void* instance);

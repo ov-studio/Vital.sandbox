@@ -17,10 +17,10 @@
 
 
 ///////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: Fog //
+// Vital: Sandbox: API: Fog //
 ///////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class Fog : public Vital::Tool::Module {
         public:
             static void bind(void* instance);

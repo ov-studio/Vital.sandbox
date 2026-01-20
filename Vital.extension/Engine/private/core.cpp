@@ -51,7 +51,7 @@ namespace Vital::Godot {
     }
 
     void Core::_process(double delta) {
-        Sandbox::Lua::Machine::Singleton::fetch() -> process(delta);
+        Sandbox::Singleton::fetch() -> process(delta);
     }
 
 

@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/canvas.h>
 
 
-/////////////////////////////////
-// Vital: Godot: Sandbox: Machine //
-/////////////////////////////////
+////////////////////////////
+// Vital: Godot: Sandbox //
+////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::Machine {
+namespace Vital::Godot::Sandbox {
 	class Singleton;
 	class Singleton {
 		protected:

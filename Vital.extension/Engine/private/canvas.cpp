@@ -40,7 +40,7 @@ namespace Vital::Godot {
 
     void Canvas::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        Sandbox::Lua::Machine::Singleton::fetch() -> draw(this);
+        Sandbox::Singleton::fetch() -> draw(this);
     }
 
 

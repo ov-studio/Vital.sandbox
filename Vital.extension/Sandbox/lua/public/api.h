@@ -15,10 +15,3 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.sandbox/Sandbox/index.h>
-
-
-//////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API //
-//////////////////////////////////////
-
-namespace Vital::Godot::Sandbox::Lua::API {}

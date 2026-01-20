@@ -17,10 +17,10 @@
 
 
 ////////////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: Emissive //
+// Vital: Sandbox: API: Emissive //
 ////////////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class Emissive : public Vital::Tool::Module {
         public:
             static void bind(void* instance);

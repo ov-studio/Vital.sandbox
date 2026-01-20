@@ -17,10 +17,10 @@
 
 
 ///////////////////////////////////////////
-// Vital: Godot: Sandbox: Machine: API: SSR //
+// Vital: Sandbox: API: SSR //
 ///////////////////////////////////////////
 
-namespace Vital::Godot::Sandbox::Lua::API {
+namespace Vital::Sandbox::API {
     class SSR : public Vital::Tool::Module {
         public:
             static void bind(void* instance);
