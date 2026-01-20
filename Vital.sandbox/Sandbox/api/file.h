@@ -24,10 +24,10 @@ namespace Vital::Sandbox::API {
     class File : public Vital::Tool::Module {
         public:
             inline static void bind(void* instance) {
-                auto vm = Vital::Sandbox::Machine::to_vm(instance);
+                auto vm = Vital::Sandbox::Machine::to_machine(instance);
 
                 API::bind(vm, "file", "exists", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
@@ -37,7 +37,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "file", "size", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "file", "delete", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "file", "read", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "file", "write", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
                 });
             
                 API::bind(vm, "file", "contents", [](auto* ref) -> int {
-                    auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+                    auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto path = vm -> get_string(1);

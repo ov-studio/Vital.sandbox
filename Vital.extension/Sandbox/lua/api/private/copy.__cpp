@@ -21,10 +21,10 @@
 ///////////////////////////////////////////////////
 
 void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
-    auto vm = Vital::Sandbox::Machine::to_vm(instance);
+    auto vm = Vital::Sandbox::Machine::to_machine(instance);
 
     Vital::Sandbox::API::bind(vm, "environment", "set_sky_custom_fov", [](auto* ref) -> int {
-        auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+        auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto fov = vm -> get_float(1);
@@ -35,7 +35,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     });
 
     Vital::Sandbox::API::bind(vm, "environment", "get_sky_custom_fov", [](auto* ref) -> int {
-        auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+        auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             vm -> push_number(Vital::Godot::Core::get_environment() -> get_sky_custom_fov());
             return 1;
@@ -43,7 +43,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     });
 
     Vital::Sandbox::API::bind(vm, "environment", "set_bg_energy_multiplier", [](auto* ref) -> int {
-        auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+        auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
             auto energy = vm -> get_float(1);
@@ -54,7 +54,7 @@ void Vital::Godot::Sandbox::Lua::API::Environment::bind(void* instance) {
     });
 
     Vital::Sandbox::API::bind(vm, "environment", "get_bg_energy_multiplier", [](auto* ref) -> int {
-        auto vm = Vital::Sandbox::Machine::fetch_vm(ref);
+        auto vm = Vital::Sandbox::Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             vm -> push_number(Vital::Godot::Core::get_environment() -> get_bg_energy_multiplier());
             return 1;
