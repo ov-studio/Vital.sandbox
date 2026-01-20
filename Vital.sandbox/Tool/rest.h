@@ -47,7 +47,7 @@ namespace Vital::Tool::Rest {
         return list;
     }
 
-    inline std::string get(const std::string& url) {
+    inline std::string get(const std::string& url, const rest_headers& headers = {}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
@@ -58,12 +58,11 @@ namespace Vital::Tool::Rest {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         CURLcode res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
         if (res != CURLE_OK) {
             std::string err = curl_easy_strerror(res);
-            curl_easy_cleanup(curl);
             throw std::runtime_error("Request failed: " + err);
         }
-        curl_easy_cleanup(curl);
         return buffer;
     }
 
@@ -85,12 +84,11 @@ namespace Vital::Tool::Rest {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         CURLcode res = curl_easy_perform(curl);
         curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
         if (res != CURLE_OK) {
             std::string err = curl_easy_strerror(res);
-            curl_easy_cleanup(curl);
             throw std::runtime_error("Request failed: " + err);
         }
-        curl_easy_cleanup(curl);
         return buffer;
     }
 }
