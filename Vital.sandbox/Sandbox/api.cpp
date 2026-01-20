@@ -47,8 +47,8 @@ namespace Vital::Sandbox {
             vsdk_errorhandle(error);
         }
     
-        void bind(Lua* vm, const std::string& parent, const std::string& name, vm_exec exec) {
-            vm -> table_set_function(name, exec, parent);
+        void bind(Lua* vm, const std::string& nspace, const std::string& name, vm_exec exec) {
+            vm -> table_set_function(name, exec, nspace);
         }
     }
 }
