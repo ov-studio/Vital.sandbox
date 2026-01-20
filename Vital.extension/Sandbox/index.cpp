@@ -14,8 +14,6 @@
 
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
-#include <Vital.sandbox/vital.hpp>
-
 #include <Vital.extension/Sandbox/api/ssr.h>
 #include <Vital.extension/Sandbox/api/ssao.h>
 #include <Vital.extension/Sandbox/api/ssil.h>
