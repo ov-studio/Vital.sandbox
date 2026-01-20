@@ -13,15 +13,17 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/vital.hpp>
+#include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/module.h>
 #include <Vital.sandbox/Vendor/lua/lua.hpp>
-
+/*
 #include <Vital.sandbox/Sandbox/lua/api/engine.h>
 #include <Vital.sandbox/Sandbox/lua/api/coroutine.h>
 #include <Vital.sandbox/Sandbox/lua/api/file.h>
 #include <Vital.sandbox/Sandbox/lua/api/crypto.h>
 #include <Vital.sandbox/Sandbox/lua/api/rest.h>
 #include <Vital.sandbox/Sandbox/lua/api/network.h>
+*/
 
 
 //////////////////////////
@@ -63,13 +65,15 @@ namespace Vital::Sandbox::Lua {
                 "loadfile"
             };
             static inline vm_apis natives = {
+                /*
                 {API::Engine::bind, API::Engine::inject},
                 {API::Coroutine::bind, API::Coroutine::inject},
                 {API::File::bind, API::File::inject},
                 {API::Crypto::bind, API::Crypto::inject},
                 {API::Rest::bind, API::Rest::inject},
                 {API::Network::bind, API::Network::inject}
-            }
+                */
+            };
         private:
             bool virtualized = false;
             vm_state* vm = nullptr;
@@ -320,7 +324,7 @@ namespace Vital::Sandbox::Lua {
                 return 1;
             }
 
-            void hook(const std::string& mode) {
+            inline void hook(const std::string& mode) {
                 auto vm = to_void(this);
                 vm_apis apis = natives;
                 for (auto& i : this -> apis) apis.push_back(i);
