@@ -14,16 +14,18 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/error.h>
+#include <Vital.sandbox/Tool/stack.h>
 #include <Vital.sandbox/Tool/module.h>
+#include <Vital.sandbox/Tool/thread.h>
+#include <Vital.sandbox/Tool/timer.h>
+#include <Vital.sandbox/Tool/file.h>
+#include <Vital.sandbox/Tool/event.h>
+#include <Vital.sandbox/Tool/network.h>
+#include <Vital.sandbox/Tool/rest.h>
+#include <Vital.sandbox/Tool/inspect.h>
+#include <Vital.sandbox/Tool/crypto.h>
 #include <Vital.sandbox/Vendor/lua/lua.hpp>
-/*
-#include <Vital.sandbox/Sandbox/lua/api/engine.h>
-#include <Vital.sandbox/Sandbox/lua/api/coroutine.h>
-#include <Vital.sandbox/Sandbox/lua/api/file.h>
-#include <Vital.sandbox/Sandbox/lua/api/crypto.h>
-#include <Vital.sandbox/Sandbox/lua/api/rest.h>
-#include <Vital.sandbox/Sandbox/lua/api/network.h>
-*/
 
 
 //////////////////////////
@@ -64,16 +66,7 @@ namespace Vital::Sandbox::Lua {
                 "load",
                 "loadfile"
             };
-            static inline vm_apis natives = {
-                /*
-                {API::Engine::bind, API::Engine::inject},
-                {API::Coroutine::bind, API::Coroutine::inject},
-                {API::File::bind, API::File::inject},
-                {API::Crypto::bind, API::Crypto::inject},
-                {API::Rest::bind, API::Rest::inject},
-                {API::Network::bind, API::Network::inject}
-                */
-            };
+            static vm_apis natives;
         private:
             bool virtualized = false;
             vm_state* vm = nullptr;

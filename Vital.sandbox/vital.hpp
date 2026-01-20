@@ -13,20 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/index.h>
-#include <Vital.sandbox/Tool/error.h>
-#include <Vital.sandbox/Tool/stack.h>
-#include <Vital.sandbox/Tool/module.h>
-#include <Vital.sandbox/Tool/thread.h>
-#include <Vital.sandbox/Tool/timer.h>
-#include <Vital.sandbox/Tool/file.h>
-#include <Vital.sandbox/Tool/event.h>
-#include <Vital.sandbox/Tool/network.h>
-#include <Vital.sandbox/Tool/rest.h>
-#include <Vital.sandbox/Tool/inspect.h>
-#include <Vital.sandbox/Tool/crypto.h>
-//#include <Vital.sandbox/Sandbox/vm.h>
-
+#include <Vital.sandbox/Sandbox/index.h>
 #include <Vital.sandbox/System/public/network.h>
 
 #include <godot_cpp/godot.hpp>

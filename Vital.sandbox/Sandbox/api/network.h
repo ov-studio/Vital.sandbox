@@ -13,7 +13,8 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/vm.h>
+#include <Vital.sandbox/Sandbox/index.h>
+#include <Vital.sandbox/System/public/network.h>
 
 
 ///////////////

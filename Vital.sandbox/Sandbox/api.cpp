@@ -13,8 +13,13 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/vm.h>
-
+#include <Vital.sandbox/Sandbox/index.h>
+#include <Vital.sandbox/Sandbox/api/engine.h>
+#include <Vital.sandbox/Sandbox/api/coroutine.h>
+#include <Vital.sandbox/Sandbox/api/file.h>
+#include <Vital.sandbox/Sandbox/api/crypto.h>
+#include <Vital.sandbox/Sandbox/api/rest.h>
+#include <Vital.sandbox/Sandbox/api/network.h>
 
 
 ///////////////////////////////
@@ -22,6 +27,15 @@
 ///////////////////////////////
 
 namespace Vital::Sandbox::Lua {
+    vm_apis create::natives = {
+        {API::Engine::bind, API::Engine::inject},
+        {API::Coroutine::bind, API::Coroutine::inject},
+        {API::File::bind, API::File::inject},
+        {API::Crypto::bind, API::Crypto::inject},
+        {API::Rest::bind, API::Rest::inject},
+        {API::Network::bind, API::Network::inject}
+    };
+
     namespace API {
         std::function<void(const std::string&)> vsdk_errorhandle = NULL;
         void createErrorHandle(std::function<void(const std::string&)> exec) {
