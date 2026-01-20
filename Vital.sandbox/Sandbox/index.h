@@ -41,7 +41,6 @@ namespace Vital::Sandbox {
     using vm_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
 
     namespace API {
-        extern void create_error_handle(std::function<void(const std::string&)> exec);
         extern void error(const std::string& error);
         extern void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec);
     }

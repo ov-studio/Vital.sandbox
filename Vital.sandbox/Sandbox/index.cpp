@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api.cpp
+     Script: Sandbox: index.cpp
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: API Utilities
+     Desc: Root Utilities
 ----------------------------------------------------------------*/
 
 
@@ -37,14 +37,12 @@ namespace Vital::Sandbox {
     };
 
     namespace API {
-        std::function<void(const std::string&)> vsdk_errorhandle = NULL;
-        void create_error_handle(std::function<void(const std::string&)> exec) {
-            vsdk_errorhandle = exec;
-        }
-    
         void error(const std::string& error) {
-            if (!vsdk_errorhandle) return;
-            vsdk_errorhandle(error);
+            #if defined(Vital_SDK_Client)
+            // TODO: Print it in console
+            #else
+            // TODO: Print it in cmd line
+            #endif
         }
     
         void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec) {
