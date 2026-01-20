@@ -321,7 +321,7 @@ namespace Vital::Sandbox {
                     luaL_loadstring(vm, b.c_str());
                 }
                 else luaL_loadstring(vm, raw.c_str());
-                if (pcall(0, LUA_MULTRET)) {
+                if (!pcall(0, LUA_MULTRET)) {
                     API::error(get_string(-1));
                     pop();
                     return false;
