@@ -67,16 +67,16 @@ namespace Vital::Godot {
 
     // APIs //
     void Sandbox::ready() {
-        godot::UtilityFunctions::print("sandbox ready");;
+        Vital::Tool::Event::emit("vital.sandbox:ready");
     }
 
     void Sandbox::process(double delta) {
-
+        Vital::Tool::Event::emit("vital.sandbox:process");
     }
 
     #if defined(Vital_SDK_Client)
-    void Sandbox::draw(Vital::Godot::Canvas* canvas) {
-        
+    void Sandbox::draw() {
+        Vital::Tool::Event::emit("vital.sandbox:draw");
     }
     #endif
 }
