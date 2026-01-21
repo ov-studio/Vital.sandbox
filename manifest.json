@@ -9,7 +9,7 @@
             "math/quat.lua",
             "math/matrix.lua",
             "string.lua",
-            "threader.lua",
+            "thread.lua",
             "timer.lua",
             "engine.lua",
             "network.lua",
