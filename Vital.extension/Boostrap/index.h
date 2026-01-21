@@ -21,9 +21,9 @@
 #include <Vital.extension/Sandbox/index.h>
 
 
-//////////////
-// Injects //
-//////////////
+///////////
+// APIs //
+///////////
 
 void initialize_gdextension_types();
 void uninitialize_gdextension_types();
