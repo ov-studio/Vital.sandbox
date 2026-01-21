@@ -49,6 +49,11 @@ namespace Vital::Godot {
         Vital::Tool::Event::emit("vital.core:ready");
     }
 
+    void Core::_exit_tree() {
+        if (Vital::is_editor()) return;
+        Vital::Tool::Event::emit("vital.core:free");
+    }
+
     void Core::_process(double delta) {
         Sandbox::get_singleton() -> process(delta);
     }

@@ -33,6 +33,7 @@ namespace Vital::Godot {
 			Core();
 			~Core() override = default;
 			void _ready() override;
+			void _exit_tree() override;
 			void _process(double delta) override;
 
 
@@ -48,12 +49,12 @@ namespace Vital::Godot {
 	
 			// Utils //
 			template <typename T>
-			static void fetch_nodes_by_type(godot::Node* node, std::vector<T*> &result, int limit = -1) {
+			static void fetch_nodes(godot::Node* node, std::vector<T*> &result, int limit = -1) {
 				if (!node || (limit == 0)) return;
 				T* typed_node = godot::Object::cast_to<T>(node);
 				if (typed_node) result.push_back(typed_node);
 				for (int i = 0; i < node -> get_child_count(); i++) {
-					if ((limit == -1) || (result.size() < limit)) fetch_nodes_by_type(node -> get_child(i), result, limit);
+					if ((limit == -1) || (result.size() < limit)) fetch_nodes(node -> get_child(i), result, limit);
 					else break;
 				}
 			}

@@ -27,26 +27,11 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
 	#endif
-
-	Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
-		#if defined(Vital_SDK_Client)
-		Vital::Godot::Core::get_environment();
-		Vital::Godot::Canvas::get_singleton();
-		Vital::Godot::Console::get_singleton();
-		#endif
-		Vital::Godot::Sandbox::get_singleton() -> ready();
-	});
+	initialize_vital_events();
 }
 
 void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
-
-	#if defined(Vital_SDK_Client)
-	Vital::Godot::Core::free_environment();
-	Vital::Godot::Canvas::free_singleton();
-	Vital::Godot::Console::free_singleton();
-	#endif
-	Vital::Godot::Sandbox::free_singleton();
 }
 
 extern "C" {
