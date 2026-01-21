@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
 --[[ Resource: Assetify Library
-     Script: utilities: sandbox: threader.lua
+     Script: utilities: sandbox: thread.lua
      Author: vStudio
      Developer(s): Aviril, Tron, Mario, Аниса
      DOC: 19/10/2021
-     Desc: Threader Utilities ]]--
+     Desc: Thread Utilities ]]--
 ----------------------------------------------------------------
 
 
