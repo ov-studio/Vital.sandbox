@@ -51,16 +51,16 @@ namespace Vital::Sandbox::API {
                 auto vm = Machine::to_machine(machine);
 
                 vm -> get_global("network");
-                vm -> get_table_field("execNetwork", -1);
-                vm -> push_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), -1);
+                vm -> get_table_field("execute", -1);
+                vm -> push_reference("vital.network:execute", -1);
                 vm -> pop(2);
-                vm -> table_set_nil("execNetwork", "network");
+                vm -> table_set_nil("execute", "network");
             }
 
             static void execute(const std::string& name, const std::string& payload) {
                 for (auto vm : Machine::fetch_buffer()) {
                     if (!vm.second -> is_virtual()) {
-                        vm.second -> get_reference(Vital::Tool::Crypto::hash("SHA256", "network.execNetwork"), true);
+                        vm.second -> get_reference(Vital::Tool::Crypto::hash("SHA256", "network.execute"), true);
                         vm.second -> push_string(name);
                         vm.second -> push_string(payload);
                         vm.second -> pcall(2, 0);
