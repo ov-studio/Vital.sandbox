@@ -35,7 +35,7 @@
     * [Namespace](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Namespace)
     * [File System](https://github.com/ov-sa/Assetify-Library/wiki/Library:-File-System)
     * [Timer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Timer)
-    * [Threader](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Threader)
+    * [Thread](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Threader)
     * [Networker](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Networker)
     * [Rest](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Rest)
     * [Scheduler](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Scheduler)
