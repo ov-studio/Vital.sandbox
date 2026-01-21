@@ -21,6 +21,7 @@
 /////////////
 
 void initialize_vital_events() {
+    // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
         Vital::Godot::Core::get_environment();
@@ -37,5 +38,19 @@ void initialize_vital_events() {
         Vital::Godot::Console::free_singleton();
         #endif
         Vital::Godot::Sandbox::free_singleton();
+    });
+
+
+    // Sandbox //
+    Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
+
+    });
+
+    Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
+
+    });
+
+    Vital::Tool::Event::draw("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
+
     });
 }
