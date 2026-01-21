@@ -18,7 +18,7 @@
 * Integrated Event Tool
 * Integrated Webview
 * Integrated Discord SDK
-* Integrated Sandboxing Environments (Lua)
+* Integrated Sandboxing Environment
 * Integrated Robust Threader (Includes async/await, heartbeats, promises and much more!)
 * Integrated Robust Networking, Scheduling and Rendering Solutions
 * Integrated Scalable Global and Entity Data System
