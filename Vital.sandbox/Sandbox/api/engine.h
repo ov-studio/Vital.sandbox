@@ -92,7 +92,6 @@ namespace Vital::Sandbox::API {
 
             inline static void inject(void* machine) {
                 auto vm = Machine::to_machine(machine);
-
                 #if defined(Vital_SDK_Client)
                 vm -> get_global("engine");
                 vm -> get_table_field("print", -1);
