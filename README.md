@@ -11,6 +11,7 @@
 * Highly Performance-Friendly
 * Modular Programming Architecture (C++17)
 * Integrated Crypto Tool
+* Integrated Shrinker Tool
 * Integrated Stack Tool
 * Integrated Inspect Tool
 * Integrated Rest Tool
