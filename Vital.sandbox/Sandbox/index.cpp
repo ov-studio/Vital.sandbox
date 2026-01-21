@@ -17,9 +17,10 @@
 #include <Vital.sandbox/Sandbox/api/engine.h>
 #include <Vital.sandbox/Sandbox/api/coroutine.h>
 #include <Vital.sandbox/Sandbox/api/file.h>
-#include <Vital.sandbox/Sandbox/api/crypto.h>
-#include <Vital.sandbox/Sandbox/api/rest.h>
 #include <Vital.sandbox/Sandbox/api/network.h>
+#include <Vital.sandbox/Sandbox/api/rest.h>
+#include <Vital.sandbox/Sandbox/api/crypto.h>
+#include <Vital.sandbox/Sandbox/api/shrinker.h>
 
 
 /////////////////////
@@ -30,10 +31,11 @@ namespace Vital::Sandbox {
     vm_apis Machine::natives = {
         {API::Engine::bind, API::Engine::inject},
         {API::Coroutine::bind, API::Coroutine::inject},
+        {API::Network::bind, API::Network::inject},
+        {API::Rest::bind, API::Rest::inject},
         {API::File::bind, API::File::inject},
         {API::Crypto::bind, API::Crypto::inject},
-        {API::Rest::bind, API::Rest::inject},
-        {API::Network::bind, API::Network::inject}
+        {API::Shrinker::bind, API::Shrinker::inject}
     };
 
     namespace API {
