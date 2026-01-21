@@ -23,21 +23,34 @@
 void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
+        if (!Vital::is_editor()) {
+            #if defined(Vital_SDK_Client)
+            Vital::Godot::Core::get_environment();
+            Vital::Godot::Canvas::get_singleton();
+            Vital::Godot::Console::get_singleton();
+            #endif
+            Vital::Godot::Sandbox::get_singleton() -> ready();
+        }
+
         #if defined(Vital_SDK_Client)
-        Vital::Godot::Core::get_environment();
-        Vital::Godot::Canvas::get_singleton();
-        Vital::Godot::Console::get_singleton();
+        if (Vital::System::Discord::start()) {
+            godot::UtilityFunctions::print("Discord Rich Presence initialized");
+            if(Vital::System::Discord::setActivity("In Main Menu", "Thinking about what to do..")) godot::UtilityFunctions::print("Discord Rich Presence activity set");
+            else godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
+        }
+        else godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
         #endif
-        Vital::Godot::Sandbox::get_singleton() -> ready();
     });
     
     Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) -> void {
-        #if defined(Vital_SDK_Client)
-        Vital::Godot::Core::free_environment();
-        Vital::Godot::Canvas::free_singleton();
-        Vital::Godot::Console::free_singleton();
-        #endif
-        Vital::Godot::Sandbox::free_singleton();
+        if (!Vital::is_editor()) {
+            #if defined(Vital_SDK_Client)
+            Vital::Godot::Core::free_environment();
+            Vital::Godot::Canvas::free_singleton();
+            Vital::Godot::Console::free_singleton();
+            #endif
+            Vital::Godot::Sandbox::free_singleton();
+        }
     });
 
 

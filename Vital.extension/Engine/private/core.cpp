@@ -17,7 +17,6 @@
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.sandbox/Tool/event.h>
-#include <Vital.sandbox/System/public/discord.h>
 
 
 ///////////////////////////
@@ -25,32 +24,13 @@
 ///////////////////////////
 
 namespace Vital::Godot {
-    // Instantiators //
-    Core::Core() {
-        #if defined(Vital_SDK_Client)
-        // Initialize Discord Rich Presence
-        if (Vital::System::Discord::start()) {
-            godot::UtilityFunctions::print("Discord Rich Presence initialized");
-
-            if(Vital::System::Discord::setActivity("In Main Menu", "Thinking about what to do..")){
-                godot::UtilityFunctions::print("Discord Rich Presence activity set");
-            } else {
-                godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
-            }
-        } else {
-            godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
-        }
-        #endif
-    }
-    
+    // Instantiators //    
     void Core::_ready() {
         singleton = singleton ? singleton : this;
-        if (Vital::is_editor()) return;
         Vital::Tool::Event::emit("vital.core:ready");
     }
 
     void Core::_exit_tree() {
-        if (Vital::is_editor()) return;
         Vital::Tool::Event::emit("vital.core:free");
     }
 

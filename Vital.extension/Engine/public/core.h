@@ -30,7 +30,7 @@ namespace Vital::Godot {
 			static void _bind_methods() {};
 		public:
 			// Instantiators //
-			Core();
+			Core() = default;
 			~Core() override = default;
 			void _ready() override;
 			void _exit_tree() override;

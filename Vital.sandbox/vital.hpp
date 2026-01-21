@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/System/public/network.h>
+#include <Vital.sandbox/System/public/discord.h>
 
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/os.hpp>
