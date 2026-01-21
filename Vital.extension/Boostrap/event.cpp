@@ -50,7 +50,7 @@ void initialize_vital_events() {
 
     });
 
-    Vital::Tool::Event::draw("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
+    Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
 
     });
 }
