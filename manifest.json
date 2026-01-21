@@ -13,7 +13,6 @@
             "timer.lua",
             "engine.lua",
             "file.lua",
-            "crypto.lua",
             "network.lua",
             "resource.lua"
         ]

@@ -100,46 +100,13 @@ for i, j in pairs(module) do
         return j.public.gsub(baseString, "\t", "    ")
     end
     
-    function j.public.minify(baseString)
+    function j.public.compress(baseString)
         if not baseString or (imports.type(baseString) ~= "string") then return false end
-        baseString = j.public.gsub(baseString, "%-%-%[%[(.-)%]%]", "") --Removes single-line comments
-        baseString = j.public.gsub(baseString, "%-%-.-\n", "") --Removes multi-line comments
-        do
-            --Encodes strings into bytes
-            local index, key, result = 1, false, [[
-                local function vsdk_processbyte(byte)
-                    local result = ""
-                    for num in ]]..i..[[.gmatch(byte, "(%d+):") do
-                        result = result..]]..i..[[.char(num)
-                    end
-                    return result
-                end
-            ]]
-            repeat
-                local rw = j.public.sub(baseString, index, index)
-                local isEscaped = j.public.sub(baseString, index - 1, index - 1) == "\\"
-                if not key then
-                    if not isEscaped and ((rw == "\"") or (rw == "\'")) then
-                        key = rw
-                        result = result.."vsdk_processbyte(\""
-                    else
-                        result = result..rw
-                    end
-                else
-                    if not isEscaped and (key == rw) then
-                        key = false
-                        result = result.."\")"
-                    else
-                        result = result..j.public.byte(rw)..":"
-                    end
-                end
-                index = index + 1
-            until(index > #baseString)
-            baseString = result
-        end
-        baseString = j.public.gsub(baseString, "\n", " ") --Removes newlines
-        baseString = j.public.gsub(baseString, "%s+$", "") --Removes trailing spaces
-        baseString = j.public.gsub(baseString, "%s+", " ") --Removes trailing spaces
-        return baseString
+        return shrinker.compress(baseString)
+    end
+
+    function j.public.decompress(baseString)
+        if not baseString or (imports.type(baseString) ~= "string") then return false end
+        return shrinker.decompress(baseString)
     end
 end
