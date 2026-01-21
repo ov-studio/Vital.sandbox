@@ -43,7 +43,7 @@ namespace Vital::Godot {
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)
-			void draw(Vital::Godot::Canvas* canvas);
+			void draw(Canvas* canvas);
 			#endif
 	};	
 }

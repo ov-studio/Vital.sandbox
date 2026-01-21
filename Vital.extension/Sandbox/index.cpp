@@ -75,7 +75,7 @@ namespace Vital::Godot {
     }
 
     #if defined(Vital_SDK_Client)
-    void Sandbox::draw() {
+    void Sandbox::draw(Canvas* canvas) {
         Vital::Tool::Event::emit("vital.sandbox:draw");
     }
     #endif
