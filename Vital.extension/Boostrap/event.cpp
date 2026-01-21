@@ -1,3 +1,25 @@
+/*----------------------------------------------------------------
+     Resource: Vital.extension
+     Script: Boostrap: event.cpp
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Event Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
+#include <Boostrap/index.h>
+
+
+/////////////
+// Events //
+/////////////
+
 void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
