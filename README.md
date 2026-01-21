@@ -25,22 +25,6 @@
 * Integrated Asset Encrypter (Supports `aes128` apparently)
 * Integrated Asset Downloader and Broadcaster
 * Essential Integration APIs
-* Comprehensive Built-In Libraries ft:
-  * **Lua:**
-    * [Table](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Table)
-    * [Math](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Math)
-      * [Quat](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Math:-Quat)
-      * [Matrix](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Math:-Matrix)
-    * [String](https://github.com/ov-sa/Assetify-Library/wiki/Library:-String)
-    * [Namespace](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Namespace)
-    * [File System](https://github.com/ov-sa/Assetify-Library/wiki/Library:-File-System)
-    * [Timer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Timer)
-    * [Thread](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Threader)
-    * [Networker](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Networker)
-    * [Rest](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Rest)
-    * [Scheduler](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Scheduler)
-    * [Renderer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Renderer)
-    * [Syncer](https://github.com/ov-sa/Assetify-Library/wiki/Library:-Syncer)
 
 ## » Contents
 
