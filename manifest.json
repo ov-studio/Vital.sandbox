@@ -12,7 +12,6 @@
             "threader.lua",
             "timer.lua",
             "engine.lua",
-            "file.lua",
             "network.lua",
             "resource.lua"
         ]
