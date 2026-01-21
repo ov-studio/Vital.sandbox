@@ -29,7 +29,7 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
 	#endif
 
-	Vital::Tool::Event::bind("Godot:Core:@ready", [](Vital::Tool::Stack arguments) -> void {
+	Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
 		#if defined(Vital_SDK_Client)
 		Vital::Godot::Core::get_environment();
 		Vital::Godot::Canvas::get_singleton();
