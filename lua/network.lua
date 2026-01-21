@@ -44,7 +44,7 @@ function network.private.fetchArg(index, pool)
     return value
 end
 
-function network.private.execNetwork(cNetwork, exec, payload)
+function network.private.execute(cNetwork, exec, payload)
     local cThread = thread:getThread()
     if not cNetwork.isCallback then
         if cThread then exec(cThread, table.unpack(payload.arguments))
@@ -68,7 +68,7 @@ function network.private.execNetwork(cNetwork, exec, payload)
 end
 
 --TODO: MAKE THIS INJECTION SAFE SOMEHOW... STORE REF SOMEWHERE
-function network.public.execNetwork(name, payload)
+function network.public.execute(name, payload)
     if not string.find(name, "vsdk.network") then return false end
     payload = table.decode(payload)
     if not payload or not payload.type or not payload.identifier then return false end
@@ -80,16 +80,16 @@ function network.public.execNetwork(name, payload)
                 for i = 1, table.length(cNetwork.priority.index), 1 do
                     local j = cNetwork.priority.index[i]
                     if not cNetwork.priority.handlers[j].config.isAsync then
-                        network.private.execNetwork(cNetwork, j, payload)
+                        network.private.execute(cNetwork, j, payload)
                     else
-                        thread:create(function() network.private.execNetwork(cNetwork, j, payload) end):resume()
+                        thread:create(function() network.private.execute(cNetwork, j, payload) end):resume()
                     end
                 end
                 for i, j in imports.pairs(cNetwork.handlers) do
                     if not j.config.isAsync then
-                        network.private.execNetwork(cNetwork, i, false, payload)
+                        network.private.execute(cNetwork, i, false, payload)
                     else
-                        thread:create(function() network.private.execNetwork(cNetwork, i, payload) end):resume()
+                        thread:create(function() network.private.execute(cNetwork, i, payload) end):resume()
                     end
                 end
             end
@@ -100,9 +100,9 @@ function network.public.execNetwork(name, payload)
                     payload.isSignal = true
                     payload.isRestricted = true
                     if not cNetwork.handler.config.isAsync then
-                        network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload)
+                        network.private.execute(cNetwork, cNetwork.handler.exec, payload)
                     else
-                        thread:create(function() network.private.execNetwork(cNetwork, cNetwork.handler.exec, payload) end):resume()
+                        thread:create(function() network.private.execute(cNetwork, cNetwork.handler.exec, payload) end):resume()
                     end
                 end
             else
