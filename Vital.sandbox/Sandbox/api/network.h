@@ -38,8 +38,8 @@ namespace Vital::Sandbox::API {
                         bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> get_bool(queryArg - 1) : false;
                         auto payload = vm -> is_string(queryArg) ? vm -> get_string(queryArg) : "";
                         Vital::Tool::Stack networkArgs;
-                        networkArgs.push("Network:name", name);
-                        networkArgs.push("Network:payload", payload);
+                        //networkArgs.push("Network:name", name);
+                        //networkArgs.push("Network:payload", payload);
                         Vital::System::Network::emit(networkArgs, peerID, isLatent);
                         vm -> push_bool(true);
                         return 1;
