@@ -47,7 +47,7 @@ namespace Vital::Godot {
         
             struct Command {
                 Type type;
-                unsigned int tick;
+                uint64_t tick;
                 std::variant<Texture2D, SVG> payload;
             };
         protected:
