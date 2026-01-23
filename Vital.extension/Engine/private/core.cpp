@@ -41,14 +41,12 @@ namespace Vital::Godot {
     }
 
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
-        godot::UtilityFunctions::print("Key press 0");
         auto* key_event = godot::Object::cast_to<godot::InputEventKey>(event.ptr());
-        if (!key_event || key_event -> is_echo()) return;
-        godot::UtilityFunctions::print("Key press 1");
-        if (key_event->is_pressed()) {
+        if (key_event && key_event -> is_echo()) {
             godot::Key key_code = static_cast<godot::Key>(key_event->get_keycode());
             godot::String key_name = godot::OS::get_singleton()->get_keycode_string(key_code);
-            godot::UtilityFunctions::print("Key pressed: " + key_name);
+            if (key_event -> is_pressed()) godot::UtilityFunctions::print("Key pressed: " + key_name);
+            else godot::UtilityFunctions::print("Key released: " + key_name);
         }
     }
 
