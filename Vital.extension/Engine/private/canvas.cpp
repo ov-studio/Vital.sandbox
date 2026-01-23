@@ -31,6 +31,7 @@ namespace Vital::Godot {
         queue.reserve(256);
         set_as_top_level(true);
         set_visible(true);
+        set_process(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
     }
 
