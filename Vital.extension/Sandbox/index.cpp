@@ -78,17 +78,18 @@ namespace Vital::Godot {
 
     #if defined(Vital_SDK_Client)
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
-        auto* key_event = godot::Object::cast_to<godot::InputEventKey>(event.ptr());
-        if (key_event) {
-            if (key_event -> is_echo()) return;
-            godot::Key key_code = static_cast<godot::Key>(key_event->get_keycode());
+        auto* event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr());
+        if (event_key) {
+            if (event_key -> is_echo()) return;
+            godot::Key key_code = static_cast<godot::Key>(event_key->get_keycode());
             godot::String key_name = godot::OS::get_singleton()->get_keycode_string(key_code);
 
             //Sandbox::get_singleton() -> input(delta);
             Vital::Tool::Event::emit("vital.core:input");
+            int keycode = (int)event_key->get_keycode();
 
-            if (key_event -> is_pressed()) godot::UtilityFunctions::print("Key pressed: " + key_name);
-            else godot::UtilityFunctions::print("Key released: " + key_name);
+            if (event_key -> is_pressed()) godot::UtilityFunctions::print("Key pressed: " + key_name + " code: " + keycode);
+            else godot::UtilityFunctions::print("Key released: " + key_name + " code: " + keycode);
         }
     }
 
