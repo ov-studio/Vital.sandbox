@@ -97,21 +97,13 @@ namespace msgpack {
                     pk.pack_array(2);
                     std::visit([&](auto&& arg) {
                         using T = std::decay_t<decltype(arg)>;
-                        if constexpr (std::is_same_v<T, std::nullptr_t>) {
-                            pk.pack(0); pk.pack_nil();
-                        } else if constexpr (std::is_same_v<T, bool>) {
-                            pk.pack(1); pk.pack(arg);
-                        } else if constexpr (std::is_same_v<T, int32_t>) {
-                            pk.pack(2); pk.pack(arg);
-                        } else if constexpr (std::is_same_v<T, int64_t>) {
-                            pk.pack(3); pk.pack(arg);
-                        } else if constexpr (std::is_same_v<T, float>) {
-                            pk.pack(4); pk.pack(arg);
-                        } else if constexpr (std::is_same_v<T, double>) {
-                            pk.pack(5); pk.pack(arg);
-                        } else if constexpr (std::is_same_v<T, std::string>) {
-                            pk.pack(6); pk.pack(arg);
-                        }
+                        if constexpr (std::is_same_v<T, std::nullptr_t>) pk.pack(0), pk.pack_nil();
+                        else if constexpr (std::is_same_v<T, bool>) pk.pack(1), pk.pack(arg);
+                        else if constexpr (std::is_same_v<T, int32_t>) pk.pack(2), pk.pack(arg);
+                        else if constexpr (std::is_same_v<T, int64_t>) pk.pack(3), pk.pack(arg);
+                        else if constexpr (std::is_same_v<T, float>) pk.pack(4), pk.pack(arg);
+                        else if constexpr (std::is_same_v<T, double>) pk.pack(5), pk.pack(arg);
+                        else if constexpr (std::is_same_v<T, std::string>) pk.pack(6), pk.pack(arg);
                     }, v.value);
                     return pk;
                 }
