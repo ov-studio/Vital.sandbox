@@ -77,24 +77,19 @@ namespace Vital::Godot {
     }
 
     #if defined(Vital_SDK_Client)
+    void Sandbox::draw(Canvas* canvas) {
+        Vital::Tool::Event::emit("vital.sandbox:draw");
+    }
+
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         auto* event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr());
         if (event_key) {
             if (event_key -> is_echo()) return;
-            godot::Key key_code = static_cast<godot::Key>(event_key->get_keycode());
-            godot::String key_name = godot::OS::get_singleton()->get_keycode_string(key_code);
-
-            //Sandbox::get_singleton() -> input(delta);
-            Vital::Tool::Event::emit("vital.core:input");
-            int keycode = (int)event_key->get_keycode();
-
-            if (event_key -> is_pressed()) godot::UtilityFunctions::print("Key pressed: " + key_name + " code: " + keycode);
-            else godot::UtilityFunctions::print("Key released: " + key_name + " code: " + keycode);
+            Vital::Tool::Stack arguments;
+            arguments.object["keycode"] = to_std_string(godot::String::num_int64(event_key -> get_keycode()));
+            arguments.object["state"] = event_key -> is_pressed();
+            Vital::Tool::Event::emit("vital.sandbox:input", arguments);
         }
-    }
-
-    void Sandbox::draw(Canvas* canvas) {
-        Vital::Tool::Event::emit("vital.sandbox:draw");
     }
     #endif
 }
