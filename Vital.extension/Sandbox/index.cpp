@@ -71,7 +71,9 @@ namespace Vital::Godot {
     }
 
     void Sandbox::process(double delta) {
-        Vital::Tool::Event::emit("vital.sandbox:process");
+        Vital::Tool::Stack arguments;
+        arguments.object["delta"] = Vital::Tool::StackValue(delta);
+        Vital::Tool::Event::emit("vital.sandbox:process", arguments);
     }
 
     #if defined(Vital_SDK_Client)
