@@ -63,8 +63,8 @@ namespace Vital::Tool {
     struct Stack {
         static constexpr uint16_t ProtocolVersion = 1;
         uint16_t version{ProtocolVersion};
-        std::vector<StackValue> values;
-        std::map<std::string, StackValue> named;
+        std::vector<StackValue> array;
+        std::map<std::string, StackValue> object;
 
         std::string serialize() const {
             msgpack::sbuffer buffer;
@@ -137,8 +137,8 @@ namespace msgpack {
                 msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& pk, Vital::Tool::Stack const& s) const {
                     pk.pack_map(3);
                     pk.pack("version"); pk.pack(s.version);
-                    pk.pack("values");  pk.pack(s.values);
-                    pk.pack("named");   pk.pack(s.named);
+                    pk.pack("array");  pk.pack(s.array);
+                    pk.pack("object");   pk.pack(s.object);
                     return pk;
                 }
             };
@@ -152,8 +152,8 @@ namespace msgpack {
                         auto& v = obj.via.map.ptr[i].val;
                         const std::string key = k.as<std::string>();
                         if (key == "version") v.convert(s.version);
-                        else if (key == "values") v.convert(s.values);
-                        else if (key == "named") v.convert(s.named);
+                        else if (key == "array") v.convert(s.array);
+                        else if (key == "object") v.convert(s.object);
                     }
                     return obj;
                 }

@@ -20,9 +20,6 @@
 // Events //
 /////////////
 
-using namespace godot;
-using namespace Vital::Tool;
-
 void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
@@ -43,30 +40,6 @@ void initialize_vital_events() {
         }
         else godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
         #endif
-
-
-        Stack stack;
-
-        stack.values.emplace_back(42);             // int
-        stack.values.emplace_back(3.14f);          // float
-        stack.values.emplace_back(2.718);          // double
-
-        stack.named["pi"] = StackValue(3.14159);
-        stack.named["answer"] = StackValue(42);
-
-        // -----------------------------
-        // Serialize
-        // -----------------------------
-        std::string data = stack.serialize();
-        UtilityFunctions::print("Serialized size: " + Vital::to_godot_string(std::to_string(data.size())) + " bytes");
-
-        // -----------------------------
-        // Deserialize
-        // -----------------------------
-        Stack restored = Stack::deserialize(data);
-
-        int number = restored.values[0].as<int32_t>();
-        UtilityFunctions::print(number);
     });
     
     Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) -> void {
