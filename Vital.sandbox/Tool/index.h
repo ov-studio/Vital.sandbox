@@ -15,6 +15,7 @@
 #pragma once
 #include <pch.h>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/engine.hpp>
 
 
@@ -45,10 +46,8 @@ namespace Vital {
         #endif
     }
 
-    inline int64_t get_tick() {
-        auto now = std::chrono::steady_clock::now();
-        auto ms  = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        return static_cast<int64_t>(ms);
+    inline uint64_t get_tick() {
+        return godot::Time::get_singleton() -> get_ticks_msec();
     }
 
     inline std::string get_directory() {
