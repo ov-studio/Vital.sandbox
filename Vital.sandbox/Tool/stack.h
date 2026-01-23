@@ -22,177 +22,150 @@
 // Vital: Tool: Stack //
 /////////////////////////
 
-#pragma once
-
-#define MSGPACK_NO_BOOST 1
-
-#include <msgpack.hpp>
-#include <vector>
-#include <map>
-#include <string>
-#include <cstdint>
-#include <sstream>
-#include <stdexcept>
-
 namespace Vital::Tool {
+    struct StackValue {
+        using Value = std::variant<
+            std::nullptr_t,
+            bool,
+            int32_t,
+            int64_t,
+            float,
+            double,
+            std::string
+        >;
 
-// =====================================
-// StackValue
-// =====================================
-struct StackValue {
-    enum class Type : uint8_t {
-        Int,
-        Float,
-        Double,
-        Long,
-        LongLong,
-        LongDouble
+        Value value{nullptr};
+
+        // Constructors //
+        StackValue() = default;
+        StackValue(std::nullptr_t) : value(nullptr) {}
+        StackValue(bool v)         : value(v) {}
+        StackValue(int32_t v)      : value(v) {}
+        StackValue(int64_t v)      : value(v) {}
+        StackValue(float v)        : value(v) {}
+        StackValue(double v)       : value(v) {}
+        StackValue(const char* v)  : value(std::string(v)) {}
+        StackValue(std::string v)  : value(std::move(v)) {}
+
+
+        // Accessors //
+        template<typename T>
+        const T& as() const {
+            return std::get<T>(value);
+        }
+
+        template<typename T>
+        bool is() const {
+            return std::holds_alternative<T>(value);
+        }
     };
 
-    Type type{Type::Int};
+    struct Stack {
+        static constexpr uint16_t ProtocolVersion = 1;
+        uint16_t version{ProtocolVersion};
+        std::vector<StackValue> values;
+        std::map<std::string, StackValue> named;
 
-    union {
-        int         i;
-        float       f;
-        double      d;
-        long        l;
-        long long   ll;
-        long double ld;
+        std::string serialize() const {
+            msgpack::sbuffer buffer;
+            msgpack::pack(buffer, *this);
+            return { buffer.data(), buffer.size() };
+        }
+
+        static Stack deserialize(const void* data, size_t size) {
+            msgpack::object_handle oh = msgpack::unpack(static_cast<const char*>(data), size);
+            Stack s;
+            oh.get().convert(s);
+            if (s.version != ProtocolVersion) throw std::runtime_error("Stack protocol version mismatch");
+            return s;
+        }
+
+        static Stack deserialize(const std::string& bytes) {
+            return deserialize(bytes.data(), bytes.size());
+        }
     };
+}
 
-    StackValue() : i(0) {}
-    StackValue(int v)         : type(Type::Int), i(v) {}
-    StackValue(float v)       : type(Type::Float), f(v) {}
-    StackValue(double v)      : type(Type::Double), d(v) {}
-    StackValue(long v)        : type(Type::Long), l(v) {}
-    StackValue(long long v)   : type(Type::LongLong), ll(v) {}
-    StackValue(long double v) : type(Type::LongDouble), ld(v) {}
-};
-
-// =====================================
-// Stack
-// =====================================
-struct Stack {
-    std::vector<StackValue> values;
-    std::map<std::string, StackValue> named;
-
-    // ---------- Serialization ----------
-    std::string serialize() const {
-        std::stringstream ss;
-        msgpack::pack(ss, *this);
-        return ss.str();
-    }
-
-    static Stack deserialize(const void* data, size_t size) {
-        msgpack::object_handle oh =
-            msgpack::unpack(static_cast<const char*>(data), size);
-
-        Stack s;
-        oh.get().convert(s);
-        return s;
-    }
-
-    static Stack deserialize(const std::string& bytes) {
-        return deserialize(bytes.data(), bytes.size());
-    }
-};
-
-} // namespace Vital::Tool
-
-// =====================================
-// MsgPack Adaptors
-// =====================================
 namespace msgpack {
-MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
-namespace adaptor {
+    MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
+        namespace adaptor {
+            // StackValue Adapter //
+            template<>
+            struct pack<Vital::Tool::StackValue> {
+                template<typename Stream>
+                msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& pk, Vital::Tool::StackValue const& v) const {
+                    pk.pack_array(2);
+                    std::visit([&](auto&& arg) {
+                        using T = std::decay_t<decltype(arg)>;
+                        if constexpr (std::is_same_v<T, std::nullptr_t>) {
+                            pk.pack(0); pk.pack_nil();
+                        } else if constexpr (std::is_same_v<T, bool>) {
+                            pk.pack(1); pk.pack(arg);
+                        } else if constexpr (std::is_same_v<T, int32_t>) {
+                            pk.pack(2); pk.pack(arg);
+                        } else if constexpr (std::is_same_v<T, int64_t>) {
+                            pk.pack(3); pk.pack(arg);
+                        } else if constexpr (std::is_same_v<T, float>) {
+                            pk.pack(4); pk.pack(arg);
+                        } else if constexpr (std::is_same_v<T, double>) {
+                            pk.pack(5); pk.pack(arg);
+                        } else if constexpr (std::is_same_v<T, std::string>) {
+                            pk.pack(6); pk.pack(arg);
+                        }
+                    }, v.value);
+                    return pk;
+                }
+            };
 
-// ---------- StackValue ----------
+            template<>
+            struct convert<Vital::Tool::StackValue> {
+                msgpack::object const& operator()(msgpack::object const& o, Vital::Tool::StackValue& v) const {
+                    if (o.type != msgpack::type::ARRAY || o.via.array.size != 2) throw msgpack::type_error();
+                    int type = o.via.array.ptr[0].as<int>();
+                    const msgpack::object& val = o.via.array.ptr[1];
+                    switch (type) {
+                        case 0: v.value = nullptr; break;
+                        case 1: v.value = val.as<bool>(); break;
+                        case 2: v.value = val.as<int32_t>(); break;
+                        case 3: v.value = val.as<int64_t>(); break;
+                        case 4: v.value = val.as<float>(); break;
+                        case 5: v.value = val.as<double>(); break;
+                        case 6: v.value = val.as<std::string>(); break;
+                        default: throw msgpack::type_error();
+                    }
+                    return o;
+                }
+            };
 
-template<>
-struct pack<Vital::Tool::StackValue> {
-    template<typename Stream>
-    packer<Stream>& operator()(packer<Stream>& pk,
-                               Vital::Tool::StackValue const& v) const {
-        pk.pack_array(2);
-        pk.pack(static_cast<uint8_t>(v.type));
 
-        switch (v.type) {
-            case Vital::Tool::StackValue::Type::Int:        pk.pack(v.i); break;
-            case Vital::Tool::StackValue::Type::Float:      pk.pack(v.f); break;
-            case Vital::Tool::StackValue::Type::Double:     pk.pack(v.d); break;
-            case Vital::Tool::StackValue::Type::Long:       pk.pack(v.l); break;
-            case Vital::Tool::StackValue::Type::LongLong:   pk.pack(v.ll); break;
-            case Vital::Tool::StackValue::Type::LongDouble:
-                pk.pack(static_cast<double>(v.ld)); // msgpack-safe
-                break;
+            // Stack Adapter //
+            template<>
+            struct pack<Vital::Tool::Stack> {
+                template<typename Stream>
+                msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& pk, Vital::Tool::Stack const& s) const {
+                    pk.pack_map(3);
+                    pk.pack("version"); pk.pack(s.version);
+                    pk.pack("values");  pk.pack(s.values);
+                    pk.pack("named");   pk.pack(s.named);
+                    return pk;
+                }
+            };
+
+            template<>
+            struct convert<Vital::Tool::Stack> {
+                msgpack::object const& operator()(msgpack::object const& obj, Vital::Tool::Stack& s) const {
+                    if (obj.type != msgpack::type::MAP) throw msgpack::type_error();
+                    for (uint32_t i = 0; i < obj.via.map.size; ++i) {
+                        auto& k = obj.via.map.ptr[i].key;
+                        auto& v = obj.via.map.ptr[i].val;
+                        const std::string key = k.as<std::string>();
+                        if (key == "version") v.convert(s.version);
+                        else if (key == "values") v.convert(s.values);
+                        else if (key == "named") v.convert(s.named);
+                    }
+                    return obj;
+                }
+            };
         }
-        return pk;
     }
-};
-
-template<>
-struct convert<Vital::Tool::StackValue> {
-    msgpack::object const& operator()(msgpack::object const& obj,
-                                      Vital::Tool::StackValue& v) const {
-        if (obj.type != msgpack::type::ARRAY || obj.via.array.size != 2)
-            throw msgpack::type_error();
-
-        v.type = static_cast<Vital::Tool::StackValue::Type>(
-            obj.via.array.ptr[0].as<uint8_t>()
-        );
-
-        const msgpack::object& val = obj.via.array.ptr[1];
-
-        switch (v.type) {
-            case Vital::Tool::StackValue::Type::Int:        v.i  = val.as<int>(); break;
-            case Vital::Tool::StackValue::Type::Float:      v.f  = val.as<float>(); break;
-            case Vital::Tool::StackValue::Type::Double:     v.d  = val.as<double>(); break;
-            case Vital::Tool::StackValue::Type::Long:       v.l  = val.as<long>(); break;
-            case Vital::Tool::StackValue::Type::LongLong:   v.ll = val.as<long long>(); break;
-            case Vital::Tool::StackValue::Type::LongDouble:
-                v.ld = static_cast<long double>(val.as<double>());
-                break;
-        }
-        return obj;
-    }
-};
-
-// ---------- Stack ----------
-
-template<>
-struct pack<Vital::Tool::Stack> {
-    template<typename Stream>
-    packer<Stream>& operator()(packer<Stream>& pk,
-                               Vital::Tool::Stack const& s) const {
-        pk.pack_map(2);
-        pk.pack("values");
-        pk.pack(s.values);
-        pk.pack("named");
-        pk.pack(s.named);
-        return pk;
-    }
-};
-
-template<>
-struct convert<Vital::Tool::Stack> {
-    msgpack::object const& operator()(msgpack::object const& obj,
-                                      Vital::Tool::Stack& s) const {
-        if (obj.type != msgpack::type::MAP)
-            throw msgpack::type_error();
-
-        for (uint32_t i = 0; i < obj.via.map.size; ++i) {
-            auto& k = obj.via.map.ptr[i].key;
-            auto& v = obj.via.map.ptr[i].val;
-
-            if (k.as<std::string>() == "values")
-                v.convert(s.values);
-            else if (k.as<std::string>() == "named")
-                v.convert(s.named);
-        }
-        return obj;
-    }
-};
-
-} // adaptor
-} // api
-} // msgpack
+}

@@ -50,13 +50,9 @@ void initialize_vital_events() {
         stack.values.emplace_back(42);             // int
         stack.values.emplace_back(3.14f);          // float
         stack.values.emplace_back(2.718);          // double
-        stack.values.emplace_back(123456789L);     // long
-        stack.values.emplace_back(9876543210LL);   // long long
-        stack.values.emplace_back(1.2345L);        // long double
 
         stack.named["pi"] = StackValue(3.14159);
         stack.named["answer"] = StackValue(42);
-        stack.named["big"] = StackValue(1.23456789L);
 
         // -----------------------------
         // Serialize
@@ -69,7 +65,7 @@ void initialize_vital_events() {
         // -----------------------------
         Stack restored = Stack::deserialize(data);
 
-        int number = restored.values[0].i;
+        int number = restored.values[0].as<int32_t>();
         UtilityFunctions::print(number);
     });
     

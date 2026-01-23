@@ -45,8 +45,10 @@ namespace Vital {
         #endif
     }
 
-    inline unsigned int get_tick() {
-        return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
+    inline int64_t get_tick() {
+        auto now = std::chrono::steady_clock::now();
+        auto ms  = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+        return static_cast<int64_t>(ms);
     }
 
     inline std::string get_directory() {

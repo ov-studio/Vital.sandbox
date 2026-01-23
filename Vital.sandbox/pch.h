@@ -38,4 +38,5 @@
 #include <sstream>
 #include <memory>
 #include <cstdint>
+#include <stdexcept>
 #include <initializer_list>
