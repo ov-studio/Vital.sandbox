@@ -39,13 +39,13 @@ namespace Vital::Tool {
         // Constructors //
         StackValue() = default;
         StackValue(std::nullptr_t) : value(nullptr) {}
-        StackValue(bool v)         : value(v) {}
-        StackValue(int32_t v)      : value(v) {}
-        StackValue(int64_t v)      : value(v) {}
-        StackValue(float v)        : value(v) {}
-        StackValue(double v)       : value(v) {}
-        StackValue(const char* v)  : value(std::string(v)) {}
-        StackValue(std::string v)  : value(std::move(v)) {}
+        StackValue(bool v) : value(v) {}
+        StackValue(int32_t v) : value(v) {}
+        StackValue(int64_t v) : value(v) {}
+        StackValue(float v) : value(v) {}
+        StackValue(double v) : value(v) {}
+        StackValue(const char* v) : value(std::string(v)) {}
+        StackValue(std::string v) : value(std::move(v)) {}
 
 
         // Accessors //
