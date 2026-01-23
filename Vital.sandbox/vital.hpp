@@ -34,6 +34,7 @@
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/image.hpp>
