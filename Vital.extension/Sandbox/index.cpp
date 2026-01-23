@@ -83,12 +83,58 @@ namespace Vital::Godot {
 
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         auto* event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr());
+        auto* event_mouse = godot::Object::cast_to<godot::InputEventMouse>(event.ptr());
         if (event_key) {
             if (event_key -> is_echo()) return;
             Vital::Tool::Stack arguments;
             arguments.object["keycode"] = to_std_string(godot::String::num_int64(event_key -> get_keycode()));
             arguments.object["state"] = event_key -> is_pressed();
             Vital::Tool::Event::emit("vital.sandbox:input", arguments);
+        }
+        else if (event_mouse) {
+            auto* event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event_mouse);
+            auto* event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event_mouse);
+            if (event_mouse_button) {
+                /*
+                if (event_mouse_button -> is_pressed()) {
+                    switch (event_mouse_button->get_button_index())
+                    {
+                    case MouseButton::MOUSE_BUTTON_LEFT:
+                        m_Context->ProcessMouseButtonDown(0, 0);
+                        break;
+                    case MouseButton::MOUSE_BUTTON_RIGHT:
+                        m_Context->ProcessMouseButtonDown(1, 0);
+                        break;
+                    case MouseButton::MOUSE_BUTTON_MIDDLE:
+                        m_Context->ProcessMouseButtonDown(2, 0);
+                        break;
+                    }
+                }
+                else {
+                    switch (event_mouse_button->get_button_index())
+                    {
+                    case MouseButton::MOUSE_BUTTON_LEFT:
+                        m_Context->ProcessMouseButtonUp(0, 0);
+                        break;
+                    case MouseButton::MOUSE_BUTTON_RIGHT:
+                        m_Context->ProcessMouseButtonUp(1, 0);
+                        break;
+                    case MouseButton::MOUSE_BUTTON_MIDDLE:
+                        m_Context->ProcessMouseButtonUp(2, 0);
+                        break;
+                    }
+                }
+                */
+            }
+            else if (event_mouse_motion) {
+                auto position = event_mouse_motion -> get_position();
+                Vital::Tool::Stack arguments;
+                //arguments.object["keycode"] = to_std_string(godot::String::num_int64(event_key -> get_keycode()));
+                //m_Context->ProcessMouseMove(event_mouse_motion->get_position().x, event_mouse_motion->get_position().y, 0);
+                //return;
+                Vital::Tool::Event::emit("vital.sandbox:mouse_move", arguments);
+                godot::UtilityFunctions::print("moving mouse", position.x, position.y);
+            }
         }
     }
     #endif
