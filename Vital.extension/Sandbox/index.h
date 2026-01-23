@@ -43,6 +43,7 @@ namespace Vital::Godot {
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)
+			void input(godot::Ref<godot::InputEvent> event);
 			void draw(Canvas* canvas);
 			#endif
 	};	
