@@ -27,6 +27,8 @@ namespace Vital::Godot {
     // Instantiators //    
     void Core::_ready() {
         singleton = singleton ? singleton : this;
+        set_process(true);
+        set_process_unhandled_key_input(true); //set_process_unhandled_key_input
         Vital::Tool::Event::emit("vital.core:ready");
     }
 
@@ -36,6 +38,15 @@ namespace Vital::Godot {
 
     void Core::_process(double delta) {
         Sandbox::get_singleton() -> process(delta);
+    }
+
+    void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
+        auto* key_event = godot::Object::cast_to<godot::InputEventKey>(event.ptr());
+        if (key_event && key_event->is_pressed() && !key_event->is_echo()) {
+            godot::Key key_code = static_cast<godot::Key>(key_event->get_keycode());
+            godot::String key_name = godot::OS::get_singleton()->get_keycode_string(key_code);
+            godot::UtilityFunctions::print("Key pressed: " + key_name);
+        }
     }
 
 

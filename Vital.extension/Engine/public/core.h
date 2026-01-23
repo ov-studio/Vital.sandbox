@@ -35,6 +35,7 @@ namespace Vital::Godot {
 			void _ready() override;
 			void _exit_tree() override;
 			void _process(double delta) override;
+			void _unhandled_input(godot::Ref<godot::InputEvent> event);
 
 
 			// Getters //
