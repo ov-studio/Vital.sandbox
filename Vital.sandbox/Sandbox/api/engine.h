@@ -42,6 +42,21 @@ namespace Vital::Sandbox::API {
                     });
                 });
             
+                API::bind(vm, "engine", "get_timestamp", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        auto timestamp = get_timestamp();
+                        vm -> create_table();
+                        vm -> table_set_number("hour", timestamp.object["hour"].as<int32_t>());
+                        vm -> table_set_number("minute", timestamp.object["minute"].as<int32_t>());
+                        vm -> table_set_number("second", timestamp.object["second"].as<int32_t>());
+                        vm -> table_set_number("day", timestamp.object["day"].as<int32_t>());
+                        vm -> table_set_number("month", timestamp.object["month"].as<int32_t>());
+                        vm -> table_set_number("year", timestamp.object["year"].as<int32_t>());
+                        return 1;
+                    });
+                });
+
                 #if defined(Vital_SDK_Client)
                 API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
