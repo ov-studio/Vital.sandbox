@@ -14,6 +14,7 @@
 
 #pragma once
 #include <pch.h>
+#include <Vital.sandbox/Tool/stack.h>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -24,7 +25,6 @@
 ////////////
 
 namespace Vital {
-    namespace Util {}
     namespace System {}
     namespace Sandbox {}
     static const std::string Signature = "vsdk_v.0.0.1";
@@ -48,6 +48,18 @@ namespace Vital {
 
     inline uint64_t get_tick() {
         return godot::Time::get_singleton() -> get_ticks_msec();
+    }
+
+    inline Vital::Tool::Stack get_timestamp() {
+        Vital::Tool::Stack timestamp;
+        godot::Dictionary datetime = godot::Time::get_singleton() -> get_datetime_dict_from_system();
+        timestamp.object["hour"] = int(datetime["hour"]);
+        timestamp.object["minute"] = int(datetime["minute"]);
+        timestamp.object["second"] = int(datetime["second"]);
+        timestamp.object["day"] = int(datetime["day"]);
+        timestamp.object["month"] = int(datetime["month"]);
+        timestamp.object["year"] = int(datetime["year"]);
+        return timestamp;
     }
 
     inline std::string get_directory() {
