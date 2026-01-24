@@ -87,13 +87,13 @@ namespace Vital::Godot {
             Vital::Tool::Stack arguments;
             arguments.object["keycode"] = to_std_string(godot::String::num_int64(event_key -> get_keycode()));
             arguments.object["state"] = event_key -> is_pressed();
-            Vital::Tool::Event::emit("vital.sandbox:input", arguments);
+            Vital::Tool::Event::emit("vital.sandbox:key_input", arguments);
         }
         else if (auto* event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
             Vital::Tool::Stack arguments;
             arguments.object["keycode"] = fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())));
             arguments.object["state"] = event_mouse_button -> is_pressed();
-            Vital::Tool::Event::emit("vital.sandbox:input", arguments);
+            Vital::Tool::Event::emit("vital.sandbox:key_input", arguments);
         }
         else if (auto* event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event.ptr())) {
             auto position = event_mouse_motion -> get_position();
