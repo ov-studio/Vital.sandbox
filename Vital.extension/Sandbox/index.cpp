@@ -129,11 +129,9 @@ namespace Vital::Godot {
             else if (event_mouse_motion) {
                 auto position = event_mouse_motion -> get_position();
                 Vital::Tool::Stack arguments;
-                //arguments.object["keycode"] = to_std_string(godot::String::num_int64(event_key -> get_keycode()));
-                //m_Context->ProcessMouseMove(event_mouse_motion->get_position().x, event_mouse_motion->get_position().y, 0);
-                //return;
+                arguments.object["x"] = position.x;
+                arguments.object["y"] = position.y;
                 Vital::Tool::Event::emit("vital.sandbox:mouse_move", arguments);
-                godot::UtilityFunctions::print("moving mouse", position.x, position.y);
             }
         }
     }
