@@ -74,7 +74,7 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.sandbox:input", [](Vital::Tool::Stack arguments) -> void {
         auto keycode = arguments.object["keycode"].as<std::string>();
         auto state = arguments.object["state"].as<bool>();
-        godot::UtilityFunctions::print("Key:  ", Vital::to_godot_string(keycode), " ", (state ? "pressed" : "released"));
+        godot::UtilityFunctions::print("Key: ", Vital::to_godot_string(keycode), " ", (state ? "pressed" : "released"));
     });
 
     Vital::Tool::Event::bind("vital.sandbox:mouse_move", [](Vital::Tool::Stack arguments) -> void {
