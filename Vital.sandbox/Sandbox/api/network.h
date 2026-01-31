@@ -87,6 +87,7 @@ namespace Vital::Sandbox::API {
                             else if constexpr (std::is_same_v<T, std::string>) vm.second -> push_string(arg);
                             else if constexpr (std::is_pointer_v<T> && !std::is_same_v<T, const char*>) vm.second -> push_userdata(static_cast<void*>(const_cast<std::remove_const_t<std::remove_pointer_t<T>>*>(arg)));
                             else if constexpr (std::is_same_v<T, vm_exec>) vm.second -> push_function(arg);
+                            else vm.second -> push_nil();
                         }(std::forward<Args>(args)), ...);
                         vm.second -> pcall(sizeof...(Args) + 1, 0);
                     }

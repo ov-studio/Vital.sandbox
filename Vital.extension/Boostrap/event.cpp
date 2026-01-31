@@ -15,6 +15,9 @@
 #pragma once
 #include <Boostrap/index.h>
 
+// TODO: SHOULD BE AUTOMATICALLY INCLUDED IN MACHINE.h separated into api.h and include altogether perhaps?
+#include <Vital.sandbox/Sandbox/api/network.h>
+
 
 /////////////
 // Events //
@@ -68,7 +71,7 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
-
+        Vital::Sandbox::API::Network::execute("vital.sandbox:draw", "Hello");
     });
 
     Vital::Tool::Event::bind("vital.sandbox:key_input", [](Vital::Tool::Stack arguments) -> void {

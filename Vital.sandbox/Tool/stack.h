@@ -61,6 +61,7 @@ namespace Vital::Tool {
     };
 
     struct Stack {
+        // TODO: USE SANDBOX VERSIONING
         static constexpr uint16_t ProtocolVersion = 1;
         uint16_t version{ProtocolVersion};
         std::vector<StackValue> array;
