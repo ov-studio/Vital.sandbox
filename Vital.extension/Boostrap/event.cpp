@@ -63,26 +63,32 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-
+        Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
-
+        Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<float>());
     });
 
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:draw", "Hello");
+        Vital::Sandbox::API::Network::execute("vital.sandbox:draw");
     });
 
     Vital::Tool::Event::bind("vital.sandbox:key_input", [](Vital::Tool::Stack arguments) -> void {
+        Vital::Sandbox::API::Network::execute("vital.sandbox:key_input", arguments.object["keycode"].as<std::string>(), arguments.object["state"].as<bool>());
+        /*
         auto keycode = arguments.object["keycode"].as<std::string>();
         auto state = arguments.object["state"].as<bool>();
         godot::UtilityFunctions::print("Key: ", Vital::to_godot_string(keycode), " ", (state ? "pressed" : "released"));
+        */
     });
 
     Vital::Tool::Event::bind("vital.sandbox:mouse_move", [](Vital::Tool::Stack arguments) -> void {
+        Vital::Sandbox::API::Network::execute("vital.sandbox:mouse_move", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
+        /*
         auto x = arguments.object["x"].as<float>();
         auto y = arguments.object["y"].as<float>();
         godot::UtilityFunctions::print("Mouse moved: ", x, ", ", y);
+        */
     });
 }
