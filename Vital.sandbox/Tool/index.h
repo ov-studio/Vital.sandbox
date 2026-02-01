@@ -27,8 +27,8 @@
 namespace Vital {
     namespace System {}
     namespace Sandbox {}
-    static const std::string Signature = "vsdk_v.0.0.1";
-    static const std::string Repository = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
+    static const std::string Build_ver = "v0.0.1";
+    static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
     inline godot::String to_godot_string(const std::string& input) {
         return godot::String::utf8(input.c_str());
