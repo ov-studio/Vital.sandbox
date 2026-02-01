@@ -64,7 +64,7 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<float>());
+        Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<double>());
     });
 
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {

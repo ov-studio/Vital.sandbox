@@ -138,8 +138,8 @@ namespace msgpack {
                 msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& pk, Vital::Tool::Stack const& s) const {
                     pk.pack_map(3);
                     pk.pack("version"); pk.pack(s.version);
-                    pk.pack("array");  pk.pack(s.array);
-                    pk.pack("object");   pk.pack(s.object);
+                    pk.pack("array"); pk.pack(s.array);
+                    pk.pack("object"); pk.pack(s.object);
                     return pk;
                 }
             };
