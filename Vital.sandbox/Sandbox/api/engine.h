@@ -96,7 +96,7 @@ namespace Vital::Sandbox::API {
                         if (vm -> is_bool(2)) {
                             bool autoload = vm -> get_bool(2);
                             result = vm -> load_string(buffer, autoload);
-                            if (result) return 1;
+                            return result ? 1 : 0;
                         }
                         else result = vm -> load_string(buffer);
                         vm -> push_bool(result);
