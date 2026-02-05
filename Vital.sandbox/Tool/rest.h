@@ -22,7 +22,7 @@
 ////////////////////////
 
 namespace Vital::Tool::Rest {
-    using rest_headers = std::vector<std::string>;
+    using Headers = std::vector<std::string>;
 
     struct CurlGlobal {
         CurlGlobal() { 
@@ -39,7 +39,7 @@ namespace Vital::Tool::Rest {
         return totalSize;
     }
 
-    inline curl_slist* ApplyHeaders(const rest_headers &headers) {
+    inline curl_slist* ApplyHeaders(const Headers &headers) {
         curl_slist* list = nullptr;
         for (const auto& header : headers) {
             list = curl_slist_append(list, header.c_str());
@@ -47,7 +47,7 @@ namespace Vital::Tool::Rest {
         return list;
     }
 
-    inline std::string get(const std::string& url, const rest_headers& headers = {}) {
+    inline std::string get(const std::string& url, const Headers& headers = {}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
@@ -69,7 +69,7 @@ namespace Vital::Tool::Rest {
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {"Content-Type: application/json"}) {
+    inline std::string post(const std::string& url, const std::string& body, const Headers& headers = {"Content-Type: application/json"}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
