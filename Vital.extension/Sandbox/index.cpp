@@ -31,7 +31,6 @@
 namespace Vital::Godot {
     // Instantiators //
     Sandbox::Sandbox() {
-        godot::UtilityFunctions::print("Initialized sandbox");
         vm = new Vital::Sandbox::Machine({
             {Vital::Sandbox::API::SSR::bind, Vital::Sandbox::API::SSR::inject},
             {Vital::Sandbox::API::SSAO::bind, Vital::Sandbox::API::SSAO::inject},
@@ -45,7 +44,6 @@ namespace Vital::Godot {
     }
 
     Sandbox::~Sandbox() {
-        godot::UtilityFunctions::print("uninitialized sandbox");
         if (!vm) return;
         delete vm;
         vm = nullptr;
@@ -74,6 +72,7 @@ namespace Vital::Godot {
         Vital::Tool::Stack arguments;
         arguments.object["delta"] = Vital::Tool::StackValue(delta);
         Vital::Tool::Event::emit("vital.sandbox:process", arguments);
+        //Vital::Tool::Event::emit("vital.sandbox:process", arguments);
     }
 
     #if defined(Vital_SDK_Client)
