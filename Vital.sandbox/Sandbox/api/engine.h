@@ -109,6 +109,9 @@ namespace Vital::Sandbox::API {
                 vm -> push_global("print");
                 vm -> pop(1);
                 #endif
+                
+                vm -> table_set_nil("dump", "string");
+                vm -> table_set_nil("dump", "utf8");
             }
     };
 }
