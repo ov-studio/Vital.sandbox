@@ -316,16 +316,18 @@ namespace Vital::Sandbox {
 
             inline bool load_string(const std::string& raw, bool autoload = true) {
                 if (raw.empty()) return false;
-                if (!autoload) {
-                    std::string b = "return (function() " + raw + " end)";
-                    luaL_loadstring(vm, b.c_str());
-                }
-                else luaL_loadstring(vm, raw.c_str());
-                if (!pcall(0, LUA_MULTRET)) {
+                if (luaL_loadstring(vm, raw.c_str()) != LUA_OK) {
                     API::error(get_string(-1));
                     pop();
                     return false;
                 }
+                if (autoload) {
+                    if (!pcall(0, LUA_MULTRET)) {
+                        API::error(get_string(-1));
+                        pop();
+                        return false;
+                    }
+                }                
                 return true;
             }
 
