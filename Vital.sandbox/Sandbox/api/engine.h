@@ -91,9 +91,9 @@ namespace Vital::Sandbox::API {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto buffer = vm -> get_string(1);
+                        auto input = vm -> get_string(1);
                         bool autoload = !vm -> is_bool(2) ? true : vm -> get_bool(2);
-                        bool result = vm -> load_string(buffer, autoload);
+                        bool result = vm -> load_string(input, autoload);
                         if (autoload) vm -> push_bool(result);
                         vm -> push_bool(result);
                         return 1;
