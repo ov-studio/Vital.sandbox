@@ -30,8 +30,8 @@ namespace Vital::Sandbox::API {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto buffer = vm -> get_string(1);
-                        vm -> push_string(Vital::Tool::Shrinker::compress(buffer));
+                        auto input = vm -> get_string(1);
+                        vm -> push_string(Vital::Tool::Shrinker::compress(input));
                         return 1;
                     });
                 });
@@ -40,8 +40,8 @@ namespace Vital::Sandbox::API {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
-                        auto buffer = vm -> get_string(1);
-                        vm -> push_string(Vital::Tool::Shrinker::decompress(buffer));
+                        auto input = vm -> get_string(1);
+                        vm -> push_string(Vital::Tool::Shrinker::decompress(input));
                         return 1;
                     });
                 });
