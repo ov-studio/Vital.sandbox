@@ -36,8 +36,7 @@ namespace Vital::Godot {
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
         webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
-
-        print("testing");
+        print("info", "testing");
     }
 
     Console::~Console() {
@@ -61,13 +60,15 @@ namespace Vital::Godot {
 
 
     // APIs //
-    void Console::print(const std::string& input) {
+    void Console::print(const std::string& mode, const std::string& input) {
+        if (mode.empty() || input.empty()) return;
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.SetObject();
         auto& alloc = document.GetAllocator();
         document.AddMember("action",  "print", alloc);
+        document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
         document.AddMember("message", rapidjson::Value(input.c_str(), alloc), alloc);
         document.Accept(writer);
         webview -> emit(buffer.GetString());

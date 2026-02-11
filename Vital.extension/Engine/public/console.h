@@ -40,7 +40,7 @@ namespace Vital::Godot {
 
 
             // APIs //
-            void print(const std::string& input);
+            void print(const std::string& mode, const std::string& input);
     };
 }
 #endif
