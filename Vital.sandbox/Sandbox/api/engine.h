@@ -67,8 +67,6 @@ namespace Vital::Sandbox::API {
                 });
                 #endif
             
-                #if defined(Vital_SDK_Client)
-                // TODO: MAKE IT OUTPUT TO GAME CONSOLE
                 API::bind(vm, "engine", "print", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
@@ -80,12 +78,11 @@ namespace Vital::Sandbox::API {
                             buffer << std::string(value, length);
                             vm -> pop(1);
                         }
-                        godot::UtilityFunctions::print(to_godot_string(buffer.str()));
+                        Vital::print("info", buffer.str());
                         vm -> push_bool(true);
                         return 1;
                     });
                 });
-                #endif
             
                 API::bind(vm, "engine", "load_string", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
