@@ -54,11 +54,10 @@ namespace Vital {
         ((oss << (first ? (first = false, "") : " ") << std::forward<Args>(args)), ...);
         const std::string message = oss.str();
         if (message.empty()) return;
-
         #if defined(Vital_SDK_Client)
             Godot::Console::get_singleton() -> print(mode, message);
         #else
-            
+            godot::UtilityFunctions::print(to_godot_string(message));
         #endif
     }
 }
