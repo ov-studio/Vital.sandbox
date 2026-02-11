@@ -19,6 +19,7 @@
 #include <Vital.extension/Engine/public/webview.h>
 #include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Sandbox/index.h>
+#include <Vital.sandbox/Sandbox/api.h>
 
 
 ///////////
