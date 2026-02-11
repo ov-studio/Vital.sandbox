@@ -46,10 +46,7 @@ namespace Vital::Godot {
 
     // Utils //
     Console* Console::get_singleton() {
-        if (!singleton) {
-            singleton = memnew(Console);
-            Vital::print("error", "just testing it", "second message");
-        }
+        if (!singleton) singleton = memnew(Console);
         return singleton;
     }
 
