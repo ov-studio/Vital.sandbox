@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Sandbox/api.h>
+#include <Vital.extension/Engine/public/console.h>
 
 
 /////////////////////
@@ -34,11 +35,7 @@ namespace Vital::Sandbox {
 
     namespace API {
         void error(const std::string& error) {
-            #if defined(Vital_SDK_Client)
-            // TODO: Print it in console
-            #else
-            // TODO: Print it in cmd line
-            #endif
+            Vital::print("error", error);
         }
     
         void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec) {
