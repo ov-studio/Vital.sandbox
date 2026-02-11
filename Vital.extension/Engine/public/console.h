@@ -44,3 +44,21 @@ namespace Vital::Godot {
     };
 }
 #endif
+
+namespace Vital {
+    template<typename... Args>
+    inline void print(const std::string& mode, Args&&... args) {
+        if (mode.empty()) return;
+        std::ostringstream oss;
+        bool first = true;
+        ((oss << (first ? (first = false, "") : " ") << std::forward<Args>(args)), ...);
+        const std::string message = oss.str();
+        if (message.empty()) return;
+
+        #if defined(Vital_SDK_Client)
+            Godot::Console::get_singleton() -> print(mode, message);
+        #else
+            
+        #endif
+    }
+}
