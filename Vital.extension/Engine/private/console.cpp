@@ -56,6 +56,5 @@ namespace Vital::Godot {
         memdelete(singleton);
         singleton = nullptr;
     }
-        godot::UtilityFunctions::print("updated console");
 }
 #endif
