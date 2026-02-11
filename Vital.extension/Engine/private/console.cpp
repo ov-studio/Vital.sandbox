@@ -28,7 +28,6 @@ namespace Vital::Godot {
     Console::Console() {
         webview = memnew(Vital::Godot::Webview);
         webview -> set_position({0, 0});
-        webview -> set_size({850, 425});
         webview -> set_visible(true);
         webview -> set_fullscreen(true);
         webview -> set_transparent(true);
@@ -47,7 +46,10 @@ namespace Vital::Godot {
 
     // Utils //
     Console* Console::get_singleton() {
-        if (!singleton) singleton = memnew(Console);
+        if (!singleton) {
+            singleton = memnew(Console);
+            Vital::print("error", "just testing it", "second message");
+        }
         return singleton;
     }
 
