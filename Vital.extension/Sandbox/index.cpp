@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
+//#include <Vital.extension/Sandbox/api/console.h>
 #include <Vital.extension/Sandbox/api/ssr.h>
 #include <Vital.extension/Sandbox/api/ssao.h>
 #include <Vital.extension/Sandbox/api/ssil.h>
@@ -32,6 +33,7 @@ namespace Vital::Godot {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine({
+            //{Vital::Sandbox::API::Console::bind, Vital::Sandbox::API::Console::inject},
             {Vital::Sandbox::API::SSR::bind, Vital::Sandbox::API::SSR::inject},
             {Vital::Sandbox::API::SSAO::bind, Vital::Sandbox::API::SSAO::inject},
             {Vital::Sandbox::API::SSIL::bind, Vital::Sandbox::API::SSIL::inject},
