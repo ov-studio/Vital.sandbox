@@ -16,7 +16,6 @@
 
 // Internal //
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/Sandbox/api.h>
 // Remove later and bundle with tools instead - header only
 #include <Vital.sandbox/System/public/network.h>
 #include <Vital.sandbox/System/public/discord.h>
