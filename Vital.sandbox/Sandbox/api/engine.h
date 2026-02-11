@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.extension/Engine/public/console.h>
 
 
 //////////////////////////////////
@@ -76,6 +77,23 @@ namespace Vital::Sandbox::API {
                         bool result = vm -> load_string(input, autoload);
                         if (autoload) vm -> push_bool(result);
                         vm -> push_bool(result);
+                        return 1;
+                    });
+                });
+
+                API::bind(vm, "engine", "print", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        std::ostringstream buffer;
+                        for (int i = 0; i < vm -> get_arg_count(); ++i) {
+                            size_t length;
+                            const char* value = luaL_tolstring(ref, i + 1, &length);
+                            if (i != 0) buffer << " ";
+                            buffer << std::string(value, length);
+                            vm -> pop(1);
+                        }
+                        Vital::print("info", buffer.str());
+                        vm -> push_bool(true);
                         return 1;
                     });
                 });
