@@ -60,8 +60,8 @@ namespace Vital::Godot {
 
 
     // APIs //
-    void Console::print(const std::string& mode, const std::string& input) {
-        if (mode.empty() || input.empty()) return;
+    void Console::print(const std::string& mode, const std::string& message) {
+        if (mode.empty() || message.empty()) return;
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -69,7 +69,7 @@ namespace Vital::Godot {
         auto& alloc = document.GetAllocator();
         document.AddMember("action",  "print", alloc);
         document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
-        document.AddMember("message", rapidjson::Value(input.c_str(), alloc), alloc);
+        document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
         document.Accept(writer);
         webview -> emit(buffer.GetString());
     }
