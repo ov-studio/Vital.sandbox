@@ -34,9 +34,13 @@ namespace Vital::Godot {
             ~Console();
 
 
-            // Getters //
+            // Utils //
             static Console* get_singleton();
             static void free_singleton();
+
+
+            // APIs //
+            void print(const std::string& input);
     };
 }
 #endif

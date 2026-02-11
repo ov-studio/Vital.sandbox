@@ -16,6 +16,8 @@
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/rest.h>
 #include <Vital.sandbox/Vendor/rapidjson/document.h>
+#include <Vital.sandbox/Vendor/rapidjson/writer.h>
+#include <Vital.sandbox/Vendor/rapidjson/stringbuffer.h>
 
 
 ////////////
@@ -31,10 +33,10 @@ namespace Vital::Tool {
 
     inline std::vector<std::string> get_modules(const std::string& name) {
         std::vector<std::string> result;
-        rapidjson::Document manifest;
-        manifest.Parse(Vital::Tool::Rest::get(fmt::format(Repo_Kit, "manifest.json")).c_str());
-        if (!manifest.HasParseError() && manifest.HasMember(name.c_str())) {
-            for (auto& i : manifest[name.c_str()]["sources"].GetArray()) {
+        rapidjson::Document document;
+        document.Parse(Vital::Tool::Rest::get(fmt::format(Repo_Kit, "manifest.json")).c_str());
+        if (!document.HasParseError() && document.HasMember(name.c_str())) {
+            for (auto& i : document[name.c_str()]["sources"].GetArray()) {
                 result.push_back(Vital::Tool::Rest::get(fmt::format(Repo_Kit, name + "/" + std::string(i.GetString()))));
             }
         }

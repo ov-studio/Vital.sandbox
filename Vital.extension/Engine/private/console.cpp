@@ -36,6 +36,8 @@ namespace Vital::Godot {
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
         webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
+
+        print("testing");
     }
 
     Console::~Console() {
@@ -45,7 +47,7 @@ namespace Vital::Godot {
     }
 
 
-    // Getters //
+    // Utils //
     Console* Console::get_singleton() {
         if (!singleton) singleton = memnew(Console);
         return singleton;
@@ -55,6 +57,20 @@ namespace Vital::Godot {
         if (!singleton) return;
         memdelete(singleton);
         singleton = nullptr;
+    }
+
+
+    // APIs //
+    void Console::print(const std::string& input) {
+        rapidjson::Document document;
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        document.SetObject();
+        auto& alloc = document.GetAllocator();
+        document.AddMember("action",  "print", alloc);
+        document.AddMember("message", rapidjson::Value(input.c_str(), alloc), alloc);
+        document.Accept(writer);
+        webview -> emit(buffer.GetString());
     }
 }
 #endif
