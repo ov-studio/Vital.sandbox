@@ -34,13 +34,19 @@ namespace Vital::Godot {
             }
         }
         Canvas::get_singleton() -> call_deferred("add_child", webview);
+        webview -> connect("ipc_message", godot::Callable(this, "on_message"));
         webview -> call_deferred("load_url", "https://github.com/ov-studio/Vital.sandbox");
+
     }
 
     Webview::~Webview() {
         if (!webview) return;
         webview -> queue_free();
         webview = nullptr;
+    }
+
+    void Webview::_bind_methods() {
+        godot::ClassDB::bind_method(godot::D_METHOD("on_message", "message"), &Webview::on_message);
     }
 
 
@@ -149,6 +155,12 @@ namespace Vital::Godot {
 
     void Webview::emit(const std::string& input) {
         webview -> call_deferred("post_message", to_godot_string(input));
+    }
+
+
+    // Events //
+    void Webview::on_message(godot::String message) {
+        godot::UtilityFunctions::print("IPC Message: ", message);
     }
 }
 #endif

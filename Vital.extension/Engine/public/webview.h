@@ -23,13 +23,15 @@
 
 namespace Vital::Godot {
     class Webview : public godot::Node2D {
+        GDCLASS(Webview, godot::Node2D)
+        protected:
+            static void _bind_methods();
         private:
             godot::Control* webview = nullptr;
         public:
             // Instantiators //
             Webview();
             ~Webview();
-
 
             // Getters //
             bool is_visible();
@@ -63,6 +65,9 @@ namespace Vital::Godot {
             void update();
             void eval(const std::string& input);
             void emit(const std::string& input);
+
+            // Events //
+            void on_message(godot::String message);
     };
 }
 #endif
