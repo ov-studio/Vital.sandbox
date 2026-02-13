@@ -73,28 +73,18 @@ void initialize_vital_events() {
 
     Vital::Tool::Event::bind("vital.sandbox:key_input", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:key_input", arguments.object["keycode"].as<std::string>(), arguments.object["state"].as<bool>());
-        /*
-        auto keycode = arguments.object["keycode"].as<std::string>();
-        auto state = arguments.object["state"].as<bool>();
-        godot::UtilityFunctions::print("Key: ", Vital::to_godot_string(keycode), " ", (state ? "pressed" : "released"));
-        */
     });
 
     Vital::Tool::Event::bind("vital.sandbox:mouse_move", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:mouse_move", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
-        /*
-        auto x = arguments.object["x"].as<float>();
-        auto y = arguments.object["y"].as<float>();
-        godot::UtilityFunctions::print("Mouse moved: ", x, ", ", y);
-        */
     });
 
     Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
+
         //Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
-        /*
-        auto x = arguments.object["x"].as<float>();
-        auto y = arguments.object["y"].as<float>();
-        godot::UtilityFunctions::print("Mouse moved: ", x, ", ", y);
-        */
+
+        auto command = arguments.object["command"].as<std::string>();
+        //auto y = arguments.object["y"].as<float>();
+        godot::UtilityFunctions::print("Console input: ", Vital::to_godot_string(command));
     });
 }
