@@ -31,12 +31,15 @@ namespace Vital::Tool {
     };
 
     inline std::mutex module_mutex;
-    inline std::unordered_map<std::string, std::string, std::hash<std::string_view>, std::equal_to<>> module_cache;
+    inline std::unordered_map<std::string, std::string> module_cache;
 
     inline const std::string& fetch_content(std::string_view url) {
         std::lock_guard<std::mutex> lock(module_mutex);
-        auto it = module_cache.find(url);
-        if (it == module_cache.end()) it = module_cache.emplace(std::string(url), Vital::Tool::Rest::get(std::string(url))).first;
+        std::string request(url);
+        auto it = module_cache.find(request);
+        if (it == module_cache.end()) {
+            it = module_cache.emplace(std::move(request), Vital::Tool::Rest::get(std::string(url))).first;
+        }
         return it -> second;
     }
     
