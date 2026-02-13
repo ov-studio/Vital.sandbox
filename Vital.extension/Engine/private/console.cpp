@@ -78,7 +78,24 @@ namespace Vital::Godot {
 
     // Events //
     void Console::on_message(godot::String message) {
-        godot::UtilityFunctions::print("Console IPC: ", message);
+        rapidjson::Document document;
+        document.Parse(to_std_string(message).c_str());
+        if (document.HasParseError() || !document.HasMember("action")) return;
+
+        std::string action = document["action"].GetString();
+        if (action == "input") {
+            if (!document.HasMember("message") || !document["message"].IsArray()) return;
+            const auto& values = document["message"].GetArray();
+            if (values.Empty()) return;
+            std::vector<std::string> parameters;
+            for (size_t i = 1; i < values.Size(); ++i) {
+                parameters.push_back(values[i].GetString());
+            }
+            Vital::Tool::Stack arguments;
+            arguments.object["command"] = values[0].GetString();
+            arguments.object["parameters"] = parameters;
+            Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
+        }
     }
 }
 #endif
