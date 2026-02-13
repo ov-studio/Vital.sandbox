@@ -47,7 +47,7 @@ namespace Vital::Tool {
         rapidjson::Document document;
         document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
         if (!document.HasParseError() && document.HasMember(name.c_str()) && document[name.c_str()].HasMember("source")) {
-            return document[name.c_str()]["source"].GetString();
+            return fetch_content(fmt::format(Repo_Kit, name + "/" + document[name.c_str()]["source"].GetString()));
         }
         return "";
     }
