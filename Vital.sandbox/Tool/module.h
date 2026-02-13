@@ -31,22 +31,22 @@ namespace Vital::Tool {
     };
 
     inline std::mutex module_mutex;
-    inline std::unordered_map<std::string, std::string> module_cache;
+    inline std::unordered_map<std::string, std::string, std::hash<std::string_view>, std::equal_to<>> module_cache;
 
-    inline std::string fetch_content(const std::string& url) {
+    inline const std::string& fetch_content(std::string_view url) {
         std::lock_guard<std::mutex> lock(module_mutex);
-        if (module_cache.find(url) == module_cache.end()) module_cache[url] = Vital::Tool::Rest::get(url);
-        return module_cache[url];
+        auto it = module_cache.find(url);
+        if (it == module_cache.end()) it = module_cache.emplace(std::string(url), Vital::Tool::Rest::get(std::string(url))).first;
+        return it -> second;
     }
     
     inline std::string fetch_module(const std::string& name) {
-        std::vector<std::string> result;
         rapidjson::Document document;
         document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
         if (!document.HasParseError() && document.HasMember(name.c_str()) && document[name.c_str()].HasMember("source")) {
-            result.push_back(document[name.c_str()].HasMember("source").GetString());
+            return document[name.c_str()]["source"].GetString();
         }
-        return result;
+        return "";
     }
 
     inline std::vector<std::string> fetch_modules(const std::string& name) {
