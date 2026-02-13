@@ -28,11 +28,13 @@ namespace Vital::Godot {
             static void _bind_methods();
         private:
             godot::Control* webview = nullptr;
+            std::function<void(godot::String)> message_handler;
         public:
             // Instantiators //
             Webview();
             ~Webview();
 
+        
             // Getters //
             bool is_visible();
             bool is_fullscreen();
@@ -53,6 +55,7 @@ namespace Vital::Godot {
             void set_devtools_visible(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
+            void set_message_handler(std::function<void(godot::String)> handler);
 
 
             // APIs //

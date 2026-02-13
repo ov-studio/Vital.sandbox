@@ -118,6 +118,10 @@ namespace Vital::Godot {
         webview -> set_size(size);
     }
 
+    void Webview::set_message_handler(std::function<void(godot::String)> handler) {
+        message_handler = std::move(handler);
+    }
+
 
     // APIs //
     void Webview::load_from_url(const std::string& url) {
