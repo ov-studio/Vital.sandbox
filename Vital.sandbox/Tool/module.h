@@ -36,10 +36,10 @@ namespace Vital::Tool {
     inline std::vector<std::string> get_modules(const std::string& name) {
         std::vector<std::string> result;
         std::lock_guard<std::mutex> lock(module_mutex);
-        const std::string manifest_key = "__manifest__";
-        if (module_cache.find(manifest_key) == module_cache.end()) module_cache[manifest_key] = Vital::Tool::Rest::get(fmt::format(Repo_Kit, "manifest.json"));        
+        const std::string url = fmt::format(Repo_Kit, "manifest.json");
+        if (module_cache.find(url) == module_cache.end()) module_cache[url] = Vital::Tool::Rest::get(url);        
         rapidjson::Document document;
-        document.Parse(module_cache[manifest_key].c_str());
+        document.Parse(module_cache[url].c_str());
         if (!document.HasParseError() && document.HasMember(name.c_str())) {
             for (auto& i : document[name.c_str()]["sources"].GetArray()) {
                 std::string source_name = i.GetString();
