@@ -164,7 +164,8 @@ namespace Vital::Godot {
 
     // Events //
     void Webview::on_message(godot::String message) {
-        godot::UtilityFunctions::print("IPC Message: ", message);
+        if (!message_handler) return;
+        message_handler(message);
     }
 }
 #endif

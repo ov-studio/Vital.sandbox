@@ -41,6 +41,10 @@ namespace Vital::Godot {
 
             // APIs //
             void print(const std::string& mode, const std::string& message);
+
+
+            // Events //
+            void on_message(godot::String message);
     };
 }
 #endif

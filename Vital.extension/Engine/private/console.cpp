@@ -35,7 +35,9 @@ namespace Vital::Godot {
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
         webview -> load_from_raw(Vital::Tool::fetch_module("console")); 
-
+        webview -> set_message_handler([this](godot::String message) {
+            this -> on_message(message);
+        });
     }
 
     Console::~Console() {
@@ -71,6 +73,12 @@ namespace Vital::Godot {
         document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
         document.Accept(writer);
         webview -> emit(buffer.GetString());
+    }
+
+
+    // Events //
+    void Console::on_message(godot::String message) {
+        godot::UtilityFunctions::print("Console IPC: ", message);
     }
 }
 #endif

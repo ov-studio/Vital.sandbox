@@ -69,6 +69,7 @@ namespace Vital::Godot {
             void eval(const std::string& input);
             void emit(const std::string& input);
 
+
             // Events //
             void on_message(godot::String message);
     };
