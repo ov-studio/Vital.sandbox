@@ -30,22 +30,23 @@ namespace Vital::Tool {
         static void inject(void* entity) {}
     };
 
-    inline std::unordered_map<std::string, std::string> module_cache;
     inline std::mutex module_mutex;
+    inline std::unordered_map<std::string, std::string> module_cache;
 
+    inline std::string fetch_content(const std::string& url) {
+        std::lock_guard<std::mutex> lock(module_mutex);
+        if (module_cache.find(url) == module_cache.end()) module_cache[url] = Vital::Tool::Rest::get(url);
+        return module_cache[url];
+    }
+    
     inline std::vector<std::string> get_modules(const std::string& name) {
         std::vector<std::string> result;
-        std::lock_guard<std::mutex> lock(module_mutex);
-        const std::string url = fmt::format(Repo_Kit, "manifest.json");
-        if (module_cache.find(url) == module_cache.end()) module_cache[url] = Vital::Tool::Rest::get(url);        
         rapidjson::Document document;
-        document.Parse(module_cache[url].c_str());
+        document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
         if (!document.HasParseError() && document.HasMember(name.c_str())) {
             for (auto& i : document[name.c_str()]["sources"].GetArray()) {
                 std::string source_name = i.GetString();
-                std::string url = fmt::format(Repo_Kit, name + "/" + source_name);
-                if (module_cache.find(url) == module_cache.end()) module_cache[url] = Vital::Tool::Rest::get(url);                
-                result.push_back(module_cache[url]);
+                result.push_back(fetch_content(fmt::format(Repo_Kit, name + "/" + source_name)));
             }
         }
         return result;
