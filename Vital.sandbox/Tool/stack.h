@@ -31,7 +31,8 @@ namespace Vital::Tool {
             int64_t,
             float,
             double,
-            std::string
+            std::string,
+            std::vector<std::string>
         >;
 
         Value value{nullptr};
@@ -46,7 +47,7 @@ namespace Vital::Tool {
         StackValue(double v) : value(v) {}
         StackValue(const char* v) : value(std::string(v)) {}
         StackValue(std::string v) : value(std::move(v)) {}
-
+        StackValue(std::vector<std::string> v) : value(std::move(v)) {}
 
         // Accessors //
         template<typename T>
@@ -105,6 +106,7 @@ namespace msgpack {
                         else if constexpr (std::is_same_v<T, float>) pk.pack(4), pk.pack(arg);
                         else if constexpr (std::is_same_v<T, double>) pk.pack(5), pk.pack(arg);
                         else if constexpr (std::is_same_v<T, std::string>) pk.pack(6), pk.pack(arg);
+                        else if constexpr (std::is_same_v<T, std::vector<std::string>>) pk.pack(7), pk.pack(arg);
                     }, v.value);
                     return pk;
                 }
@@ -124,6 +126,7 @@ namespace msgpack {
                         case 4: v.value = val.as<float>(); break;
                         case 5: v.value = val.as<double>(); break;
                         case 6: v.value = val.as<std::string>(); break;
+                        case 7: v.value = val.as<std::vector<std::string>>(); break;
                         default: throw msgpack::type_error();
                     }
                     return o;

@@ -88,4 +88,13 @@ void initialize_vital_events() {
         godot::UtilityFunctions::print("Mouse moved: ", x, ", ", y);
         */
     });
+
+    Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
+        Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
+        /*
+        auto x = arguments.object["x"].as<float>();
+        auto y = arguments.object["y"].as<float>();
+        godot::UtilityFunctions::print("Mouse moved: ", x, ", ", y);
+        */
+    });
 }
