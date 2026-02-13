@@ -59,7 +59,7 @@ namespace Vital::Sandbox {
                     push_global(value);
                 }
                 hook("bind");
-                for (auto& value : Vital::Tool::get_modules("lua")) {
+                for (auto& value : Vital::Tool::fetch_modules("lua")) {
                     load_string(value);
                 }
                 hook("inject");
