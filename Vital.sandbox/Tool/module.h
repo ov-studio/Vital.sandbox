@@ -56,7 +56,7 @@ namespace Vital::Tool {
         std::vector<std::string> result;
         rapidjson::Document document;
         document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
-        if (!document.HasParseError() && document.HasMember(name.c_str()) && document[name.c_str()].HasMember("sources")) {
+        if (!document.HasParseError() && document.HasMember(name.c_str()) && document[name.c_str()].HasMember("sources") && document[name.c_str()]["sources"].IsArray()) {
             for (auto& i : document[name.c_str()]["sources"].GetArray()) {
                 std::string source_name = i.GetString();
                 result.push_back(fetch_content(fmt::format(Repo_Kit, name + "/" + source_name)));
