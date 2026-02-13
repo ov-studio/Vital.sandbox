@@ -34,7 +34,8 @@ namespace Vital::Godot {
         webview -> set_autoplay(false);
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
-        webview -> load_from_raw(Vital::Tool::File::read_text(to_godot_string(get_directory()), "console.html"));
+        webview -> load_from_raw(Vital::Tool::Rest::get(fmt::format(Repo_Kit, "console/index.html"))); 
+
     }
 
     Console::~Console() {
