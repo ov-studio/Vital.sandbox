@@ -85,6 +85,13 @@ namespace Vital::Sandbox::API {
                             else if constexpr (std::is_same_v<T, double>) vm.second -> push_number(arg);
                             else if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>) vm.second -> push_string(std::string(arg));
                             else if constexpr (std::is_same_v<T, std::string>) vm.second -> push_string(arg);
+                            else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+                                vm.second -> create_table();
+                                for (size_t i = 0; i < arg.size(); ++i) {
+                                    vm.second -> push_string(arg[i]);
+                                    vm.second -> set_table_field(i + 1, -2);
+                                }
+                            }
                             else if constexpr (std::is_pointer_v<T> && !std::is_same_v<T, const char*>) vm.second -> push_userdata(static_cast<void*>(const_cast<std::remove_const_t<std::remove_pointer_t<T>>*>(arg)));
                             else if constexpr (std::is_same_v<T, vm_exec>) vm.second -> push_function(arg);
                             else vm.second -> push_nil();

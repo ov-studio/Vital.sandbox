@@ -80,11 +80,6 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
-
-        //Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
-
-        auto command = arguments.object["command"].as<std::string>();
-        //auto y = arguments.object["y"].as<float>();
-        godot::UtilityFunctions::print("Console input: ", Vital::to_godot_string(command));
+        Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["command"].as<std::string>(), arguments.object["parameters"].as<std::vector<std::string>>());
     });
 }
