@@ -90,7 +90,7 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
+        //Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
         /*
         auto x = arguments.object["x"].as<float>();
         auto y = arguments.object["y"].as<float>();
