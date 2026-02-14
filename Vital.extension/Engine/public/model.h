@@ -7,8 +7,10 @@
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/gltf_document.hpp>
 #include <godot_cpp/classes/gltf_state.hpp>
+#include <godot_cpp/classes/animation_player.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/animation.hpp>
 #include <unordered_map>
 #include <string>
 
@@ -20,6 +22,9 @@ class ModelObject : public Node3D {
 private:
     String model_name;
     Node3D* instance_node;
+    AnimationPlayer* animation_player;
+
+    AnimationPlayer* find_animation_player(Node* node);
 
 protected:
     static void _bind_methods();
@@ -35,6 +40,17 @@ public:
     void set_rotation(float x, float y, float z);
     Vector3 get_position_vec() const;
     Vector3 get_rotation_vec() const;
+
+    // Animation functions
+    bool play_animation(const String& animation_name, bool loop = true, float speed = 1.0f);
+    void stop_animation();
+    void pause_animation();
+    void resume_animation();
+    bool is_animation_playing() const;
+    String get_current_animation() const;
+    Array get_available_animations() const;
+    void set_animation_speed(float speed);
+    float get_animation_speed() const;
 
     void _ready() override;
 };
