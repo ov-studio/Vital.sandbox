@@ -1,0 +1,71 @@
+// model_loader.h
+#ifndef MODEL_LOADER_H
+#define MODEL_LOADER_H
+
+#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/gltf_document.hpp>
+#include <godot_cpp/classes/gltf_state.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+#include <unordered_map>
+#include <string>
+
+namespace godot {
+
+class ModelObject : public Node3D {
+    GDCLASS(ModelObject, Node3D)
+
+private:
+    String model_name;
+    Node3D* instance_node;
+
+protected:
+    static void _bind_methods();
+
+public:
+    ModelObject();
+    ~ModelObject();
+
+    void set_model_name(const String& name);
+    String get_model_name() const;
+
+    void set_position(float x, float y, float z);
+    void set_rotation(float x, float y, float z);
+    Vector3 get_position_vec() const;
+    Vector3 get_rotation_vec() const;
+
+    void _ready() override;
+};
+
+class ModelLoader : public Node {
+    GDCLASS(ModelLoader, Node)
+
+private:
+    static ModelLoader* singleton;
+    std::unordered_map<std::string, Ref<PackedScene>> loaded_models;
+
+    Ref<PackedScene> load_from_resource_path(const String& file_path);
+    Ref<PackedScene> load_from_absolute_path(const String& file_path);
+
+protected:
+    static void _bind_methods();
+
+public:
+    ModelLoader();
+    ~ModelLoader();
+
+    static ModelLoader* get_singleton();
+
+    bool load_model(const String& model_name, const String& file_path);
+    bool load_model_absolute(const String& model_name, const String& absolute_path);
+    ModelObject* create_object(const String& model_name);
+    bool unload_model(const String& model_name);
+    bool is_model_loaded(const String& model_name) const;
+    Array get_loaded_models() const;
+};
+
+} // namespace godot
+
+#endif // MODEL_LOADER_H
