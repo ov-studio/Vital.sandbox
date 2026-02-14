@@ -198,6 +198,13 @@ void ModelObject::_ready() {
         Array anims = get_available_animations();
         if (anims.size() > 0) {
             UtilityFunctions::print("Available animations: ", anims);
+
+
+            // TODO: TESTING
+            godot::String anim_name = anims[0];
+            godot::UtilityFunctions::print("yes entered anim", anim_name);
+            cube->call_deferred("play_animation", anim_name, true, 1.0f);
+            godot::UtilityFunctions::print("Playing animation: ", anim_name);
         }
     }
 }
