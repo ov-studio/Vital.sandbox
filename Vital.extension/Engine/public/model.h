@@ -18,15 +18,13 @@
 namespace godot {
     class ModelObject : public Node3D {
         GDCLASS(ModelObject, Node3D)
-
+        protected:
+            static void _bind_methods() {};
         private:
             String model_name;
             Node3D* instance_node;
             AnimationPlayer* animation_player;
             AnimationPlayer* find_animation_player(Node* node);
-        protected:
-            static void _bind_methods() {};
-
         public:
             ModelObject();
             ~ModelObject();
@@ -54,15 +52,12 @@ namespace godot {
 
     class ModelLoader : public Node {
         GDCLASS(ModelLoader, Node)
-
+        protected:
+            static void _bind_methods() {};
         private:
             static ModelLoader* singleton;
             std::unordered_map<std::string, Ref<PackedScene>> loaded_models;
             Ref<PackedScene> load_from_absolute_path(const String& file_path);
-
-        protected:
-            static void _bind_methods() {};
-
         public:
             ModelLoader();
             ~ModelLoader();
