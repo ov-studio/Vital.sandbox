@@ -15,59 +15,64 @@
 #pragma once
 #include <Vital.extension/Engine/public/index.h>
 
-namespace godot {
-    class ModelObject : public Node3D {
-        GDCLASS(ModelObject, Node3D)
+
+//////////////////////////
+// Vital: Godot: Model //
+//////////////////////////
+
+namespace Vital::Godot {
+    class ModelObject : public godot::Node3D {
+        GDCLASS(ModelObject, godot::Node3D)
         protected:
             static void _bind_methods() {};
         private:
-            String model_name;
-            Node3D* instance_node;
-            AnimationPlayer* animation_player;
-            AnimationPlayer* find_animation_player(Node* node);
+            godot::String model_name;
+            godot::Node3D* instance_node;
+            godot::AnimationPlayer* animation_player;
+            godot::AnimationPlayer* find_animation_player(Node* node);
         public:
             ModelObject();
             ~ModelObject();
 
-            void set_model_name(const String& name);
-            String get_model_name() const;
+            void set_model_name(const godot::String& name);
+            godot::String get_model_name() const;
             void set_position(float x, float y, float z);
             void set_rotation(float x, float y, float z);
-            Vector3 get_position_vec() const;
-            Vector3 get_rotation_vec() const;
+            godot::Vector3 get_position_vec() const;
+            godot::Vector3 get_rotation_vec() const;
 
             // Animation functions
-            bool play_animation(const String& animation_name, bool loop = true, float speed = 1.0f);
+            bool play_animation(const godot::String& animation_name, bool loop = true, float speed = 1.0f);
             void stop_animation();
             void pause_animation();
             void resume_animation();
             bool is_animation_playing() const;
-            String get_current_animation() const;
-            Array get_available_animations() const;
+            godot::String get_current_animation() const;
+            godot::Array get_available_animations() const;
             void set_animation_speed(float speed);
             float get_animation_speed() const;
 
             void _ready() override;
     };
 
-    class ModelLoader : public Node {
-        GDCLASS(ModelLoader, Node)
+    class ModelLoader : public godot::Node {
+        GDCLASS(ModelLoader, godot::Node)
         protected:
             static void _bind_methods() {};
         private:
             static ModelLoader* singleton;
-            std::unordered_map<std::string, Ref<PackedScene>> loaded_models;
-            Ref<PackedScene> load_from_absolute_path(const String& file_path);
+            std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
+            godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
             ModelLoader();
             ~ModelLoader();
 
             static ModelLoader* get_singleton();
 
-            bool load_model(const String& model_name, const String& file_path);
-            ModelObject* create_object(const String& model_name);
-            bool unload_model(const String& model_name);
-            bool is_model_loaded(const String& model_name) const;
-            Array get_loaded_models() const;
+            bool load_model(const godot::String& model_name, const godot::String& file_path);
+            ModelObject* create_object(const godot::String& model_name);
+            bool unload_model(const godot::String& model_name);
+            bool is_model_loaded(const godot::String& model_name) const;
+            godot::Array get_loaded_models() const;
     };
 }

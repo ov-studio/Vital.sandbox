@@ -28,8 +28,8 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
 	godot::ClassDB::register_class<Vital::Godot::Webview>(true);
 
-	godot::ClassDB::register_class<godot::ModelLoader>(true);
-	godot::ClassDB::register_class<godot::ModelObject>(true);
+	godot::ClassDB::register_class<Vital::Godot::ModelLoader>(true);
+	godot::ClassDB::register_class<Vital::Godot::ModelObject>(true);
 	#endif
 	initialize_vital_events();
 }
