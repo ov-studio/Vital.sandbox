@@ -61,6 +61,26 @@ void initialize_vital_events() {
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
+
+
+        auto* loader = memnew(Vital::Godot::ModelLoader);
+        loader->load_model("cube", "cube.glb");
+        auto* cube = loader->create_object("cube");
+        if (cube != nullptr) {
+            godot::UtilityFunctions::print("Spawned cube!");
+            Vital::Godot::Core::get_singleton() -> call_deferred("add_child", cube);
+            cube->set_position(0.0f, 0.0f, 0.0f);
+
+            // Play animation on loop
+            // First, let's see what animations are available
+            godot::Array available_anims = cube->get_available_animations();
+            godot::UtilityFunctions::print("Available animations: ", available_anims);
+            
+            //tree->set_rotation(0.0f, Math::randf() * 360.0f, 0.0f);
+            //props.push_back(tree);
+        }
+        
+
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
