@@ -2,17 +2,8 @@
 #ifndef MODEL_LOADER_H
 #define MODEL_LOADER_H
 
-#include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
-#include <godot_cpp/classes/gltf_document.hpp>
-#include <godot_cpp/classes/gltf_state.hpp>
-#include <godot_cpp/classes/animation_player.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/animation.hpp>
-#include <unordered_map>
-#include <string>
+#include <Vital.extension/Engine/public/index.h>
+
 
 namespace godot {
 

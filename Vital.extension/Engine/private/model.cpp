@@ -1,6 +1,5 @@
 // model_loader.cpp
 #include <Vital.extension/Engine/public/model.h>
-#include <godot_cpp/classes/animation_library.hpp>
 
 using namespace godot;
 
