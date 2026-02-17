@@ -1,4 +1,18 @@
-// model_loader.cpp
+/*----------------------------------------------------------------
+     Resource: Vital.extension
+     Script: Engine: private: model.cpp
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Model Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
 #include <Vital.extension/Engine/public/model.h>
 
 using namespace godot;
@@ -212,7 +226,6 @@ void ModelObject::_ready() {
 
 void ModelLoader::_bind_methods() {
     ClassDB::bind_method(D_METHOD("load_model", "model_name", "file_path"), &ModelLoader::load_model);
-    ClassDB::bind_method(D_METHOD("load_model_absolute", "model_name", "absolute_path"), &ModelLoader::load_model_absolute);
     ClassDB::bind_method(D_METHOD("create_object", "model_name"), &ModelLoader::create_object);
     ClassDB::bind_method(D_METHOD("unload_model", "model_name"), &ModelLoader::unload_model);
     ClassDB::bind_method(D_METHOD("is_model_loaded", "model_name"), &ModelLoader::is_model_loaded);
@@ -234,12 +247,6 @@ ModelLoader::~ModelLoader() {
 
 ModelLoader* ModelLoader::get_singleton() {
     return singleton;
-}
-
-Ref<PackedScene> ModelLoader::load_from_resource_path(const String& file_path) {
-    ResourceLoader* loader = ResourceLoader::get_singleton();
-    Ref<PackedScene> scene = loader->load(file_path);
-    return scene;
 }
 
 Ref<PackedScene> ModelLoader::load_from_absolute_path(const String& file_path) {
@@ -268,12 +275,6 @@ Ref<PackedScene> ModelLoader::load_from_absolute_path(const String& file_path) {
         
         return scene;
     } 
-    else if (lower_path.ends_with(".tscn") || lower_path.ends_with(".scn")) {
-        String user_path = "user://" + file_path;
-        ResourceLoader* loader = ResourceLoader::get_singleton();
-        Ref<PackedScene> scene = loader->load(user_path);
-        return scene;
-    }
     
     UtilityFunctions::push_error("Unsupported file format: ", file_path);
     return Ref<PackedScene>();
@@ -287,13 +288,7 @@ bool ModelLoader::load_model(const String& model_name, const String& file_path) 
         return false;
     }
 
-    Ref<PackedScene> scene;
-    
-    if (file_path.begins_with("res://") || file_path.begins_with("user://")) {
-        scene = load_from_resource_path(file_path);
-    } else {
-        scene = load_from_absolute_path(file_path);
-    }
+    Ref<PackedScene> scene = load_from_absolute_path(file_path);
     
     if (scene.is_null()) {
         UtilityFunctions::push_error("Failed to load model from path: ", file_path);
@@ -302,26 +297,6 @@ bool ModelLoader::load_model(const String& model_name, const String& file_path) 
 
     loaded_models[key] = scene;
     UtilityFunctions::print("Model '", model_name, "' loaded successfully from ", file_path);
-    return true;
-}
-
-bool ModelLoader::load_model_absolute(const String& model_name, const String& absolute_path) {
-    std::string key = std::string(model_name.utf8().get_data());
-    
-    if (loaded_models.find(key) != loaded_models.end()) {
-        UtilityFunctions::push_warning("Model '", model_name, "' is already loaded.");
-        return false;
-    }
-
-    Ref<PackedScene> scene = load_from_absolute_path(absolute_path);
-    
-    if (scene.is_null()) {
-        UtilityFunctions::push_error("Failed to load model from absolute path: ", absolute_path);
-        return false;
-    }
-
-    loaded_models[key] = scene;
-    UtilityFunctions::print("Model '", model_name, "' loaded successfully from ", absolute_path);
     return true;
 }
 
