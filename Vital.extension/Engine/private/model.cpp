@@ -221,31 +221,39 @@ namespace Vital::Godot {
 
     godot::Ref<godot::PackedScene> ModelLoader::load_from_absolute_path(const godot::String& file_path) {
         godot::String lower_path = file_path.to_lower();
-
+    
         if (lower_path.ends_with(".glb") || lower_path.ends_with(".gltf")) {
-            godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
-            godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
-
-            godot::Error err = gltf_doc->append_from_file(file_path, gltf_state);
-            if (err != godot::OK) {
-                godot::UtilityFunctions::push_error("Failed to load GLTF from absolute path: ", file_path);
+            // Read raw bytes using your existing file utility
+            auto buffer = Vital::Tool::File::read_binary(to_godot_string(get_directory()), file_path);
+            if (buffer.is_empty()) {
+                godot::UtilityFunctions::push_error("Failed to read binary from: ", file_path);
                 return godot::Ref<godot::PackedScene>();
             }
-
+    
+            godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
+            godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
+    
+            // Feed raw bytes instead of letting Godot open the file itself
+            // Later set basepath (second param to be sibling of filepath)
+            godot::Error err = gltf_doc->append_from_buffer(buffer, "", gltf_state);
+            if (err != godot::OK) {
+                godot::UtilityFunctions::push_error("Failed to parse GLTF buffer from: ", file_path);
+                return godot::Ref<godot::PackedScene>();
+            }
+    
             godot::Node* root = gltf_doc->generate_scene(gltf_state);
             if (root == nullptr) {
                 godot::UtilityFunctions::push_error("Failed to generate scene from GLTF: ", file_path);
                 return godot::Ref<godot::PackedScene>();
             }
-
+    
             godot::Ref<godot::PackedScene> scene = memnew(godot::PackedScene);
             scene->pack(root);
-
             memdelete(root);
-
+    
             return scene;
         }
-
+    
         godot::UtilityFunctions::push_error("Unsupported file format: ", file_path);
         return godot::Ref<godot::PackedScene>();
     }
