@@ -23,9 +23,7 @@ namespace godot {
             String model_name;
             Node3D* instance_node;
             AnimationPlayer* animation_player;
-
             AnimationPlayer* find_animation_player(Node* node);
-
         protected:
             static void _bind_methods() {};
 
@@ -35,7 +33,6 @@ namespace godot {
 
             void set_model_name(const String& name);
             String get_model_name() const;
-
             void set_position(float x, float y, float z);
             void set_rotation(float x, float y, float z);
             Vector3 get_position_vec() const;
