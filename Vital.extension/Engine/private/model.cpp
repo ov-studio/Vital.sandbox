@@ -21,8 +21,6 @@
 //////////////////////////
 
 namespace Vital::Godot {
-    ModelLoader* ModelLoader::singleton = nullptr;
-
     ModelObject::ModelObject() : instance_node(nullptr), animation_player(nullptr) {
     }
 

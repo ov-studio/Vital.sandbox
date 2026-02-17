@@ -60,7 +60,7 @@ namespace Vital::Godot {
         protected:
             static void _bind_methods() {};
         private:
-            static ModelLoader* singleton;
+            inline static ModelLoader* singleton = nullptr;
             std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
             godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
