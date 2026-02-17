@@ -27,7 +27,7 @@ namespace godot {
             AnimationPlayer* find_animation_player(Node* node);
 
         protected:
-            static void _bind_methods();
+            static void _bind_methods() {};
 
         public:
             ModelObject();
@@ -64,7 +64,7 @@ namespace godot {
             Ref<PackedScene> load_from_absolute_path(const String& file_path);
 
         protected:
-            static void _bind_methods();
+            static void _bind_methods() {};
 
         public:
             ModelLoader();

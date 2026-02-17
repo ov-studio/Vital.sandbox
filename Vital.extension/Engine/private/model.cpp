@@ -19,31 +19,6 @@ using namespace godot;
 
 ModelLoader* ModelLoader::singleton = nullptr;
 
-// ========== ModelObject Implementation ==========
-
-void ModelObject::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("set_model_name", "name"), &ModelObject::set_model_name);
-    ClassDB::bind_method(D_METHOD("get_model_name"), &ModelObject::get_model_name);
-    
-    ClassDB::bind_method(D_METHOD("set_position", "x", "y", "z"), &ModelObject::set_position);
-    ClassDB::bind_method(D_METHOD("set_rotation", "x", "y", "z"), &ModelObject::set_rotation);
-    ClassDB::bind_method(D_METHOD("get_position_vec"), &ModelObject::get_position_vec);
-    ClassDB::bind_method(D_METHOD("get_rotation_vec"), &ModelObject::get_rotation_vec);
-
-    // Animation methods
-    ClassDB::bind_method(D_METHOD("play_animation", "animation_name", "loop", "speed"), &ModelObject::play_animation, DEFVAL(true), DEFVAL(1.0f));
-    ClassDB::bind_method(D_METHOD("stop_animation"), &ModelObject::stop_animation);
-    ClassDB::bind_method(D_METHOD("pause_animation"), &ModelObject::pause_animation);
-    ClassDB::bind_method(D_METHOD("resume_animation"), &ModelObject::resume_animation);
-    ClassDB::bind_method(D_METHOD("is_animation_playing"), &ModelObject::is_animation_playing);
-    ClassDB::bind_method(D_METHOD("get_current_animation"), &ModelObject::get_current_animation);
-    ClassDB::bind_method(D_METHOD("get_available_animations"), &ModelObject::get_available_animations);
-    ClassDB::bind_method(D_METHOD("set_animation_speed", "speed"), &ModelObject::set_animation_speed);
-    ClassDB::bind_method(D_METHOD("get_animation_speed"), &ModelObject::get_animation_speed);
-
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "model_name"), "set_model_name", "get_model_name");
-}
-
 ModelObject::ModelObject() : instance_node(nullptr), animation_player(nullptr) {
 }
 
@@ -223,14 +198,6 @@ void ModelObject::_ready() {
 }
 
 // ========== ModelLoader Implementation ==========
-
-void ModelLoader::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("load_model", "model_name", "file_path"), &ModelLoader::load_model);
-    ClassDB::bind_method(D_METHOD("create_object", "model_name"), &ModelLoader::create_object);
-    ClassDB::bind_method(D_METHOD("unload_model", "model_name"), &ModelLoader::unload_model);
-    ClassDB::bind_method(D_METHOD("is_model_loaded", "model_name"), &ModelLoader::is_model_loaded);
-    ClassDB::bind_method(D_METHOD("get_loaded_models"), &ModelLoader::get_loaded_models);
-}
 
 ModelLoader::ModelLoader() {
     if (singleton == nullptr) {
