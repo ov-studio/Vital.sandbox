@@ -26,7 +26,7 @@ namespace Vital::Godot {
         get_animation_player(this);
 
         if (animation_player) {
-            godot::UtilityFunctions::print("Found AnimationPlayer in model '", model_name, "'");
+            godot::UtilityFunctions::print("Found AnimationPlayer in model '", to_godot_string(model_name), "'");
 
             godot::Array anims = get_animations();
             if (anims.size() > 0) {
@@ -34,7 +34,7 @@ namespace Vital::Godot {
 
                 // TODO: TESTING
                 godot::String anim_name = anims[0];
-                play_animation(anim_name, true, 1.0f);
+                play_animation(to_std_string(anim_name), true, 1.0f);
                 godot::UtilityFunctions::print("Playing animation: ", anim_name);
             }
         }
@@ -42,18 +42,18 @@ namespace Vital::Godot {
 
 
     // Checkers //
-    bool Model::is_model_loaded(const std::string& model_name) {
-        return cache_loaded.find(model_name) != cache_loaded.end();
+    bool Model::is_model_loaded(const std::string& name) {
+        return cache_loaded.find(name) != cache_loaded.end();
     }
 
-    bool Model::is_animation_playing() const {
+    bool Model::is_animation_playing() {
         if (!animation_player) return false;
         return animation_player -> is_playing();
     }
 
 
     // Setters //
-    void Model::set_model_name(const godot::String& name) {
+    void Model::set_model_name(const std::string& name) {
         model_name = name;
     }
 
@@ -87,19 +87,19 @@ namespace Vital::Godot {
         return cache_loaded;
     }
 
-    godot::String Model::get_model_name() const {
+    std::string Model::get_model_name() {
         return model_name;
     }
 
-    godot::Vector3 Model::get_position() const {
+    godot::Vector3 Model::get_position() {
         return get_global_position();
     }
 
-    godot::Vector3 Model::get_rotation() const {
+    godot::Vector3 Model::get_rotation() {
         return get_rotation_degrees();
     }
 
-    godot::Array Model::get_animations() const {
+    godot::Array Model::get_animations() {
         godot::Array animations;
         if (!animation_player) return animations;
         godot::PackedStringArray anim_list = animation_player -> get_animation_list();
@@ -123,28 +123,28 @@ namespace Vital::Godot {
         return animation_player;
     }
 
-    godot::String Model::get_current_animation() const {
+    std::string Model::get_current_animation() {
         if (!animation_player) return "";
-        return animation_player -> get_current_animation();
+        return to_std_string(animation_player -> get_current_animation());
     }
 
-    float Model::get_animation_speed() const {
+    float Model::get_animation_speed() {
         if (!animation_player) return 1.0f;
         return animation_player -> get_speed_scale();
     }
 
 
     // APIs //
-    bool Model::load_model(const std::string& model_name, const std::string& path) {
+    bool Model::load_model(const std::string& name, const std::string& path) {
         return load_model_from_buffer(
-            model_name, 
+            name, 
             Vital::Tool::File::read_binary(to_godot_string(get_directory()), to_godot_string(path))
         );
     }
 
-    bool Model::load_model_from_buffer(const std::string& model_name, const godot::PackedByteArray& buffer) {
-        if (is_model_loaded(model_name)) {
-            godot::UtilityFunctions::push_warning("Model '", to_godot_string(model_name), "' is already loaded.");
+    bool Model::load_model_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
+        if (is_model_loaded(name)) {
+            godot::UtilityFunctions::push_warning("Model '", to_godot_string(name), "' is already loaded.");
             return false;
         }
 
@@ -155,12 +155,12 @@ namespace Vital::Godot {
                 godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
                 godot::Error status = gltf_doc -> append_from_buffer(buffer, "", gltf_state);
                 if (status != godot::OK) {
-                    godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(model_name), "'");
+                    godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(name), "'");
                     return false;
                 }
                 godot::Node* root = gltf_doc -> generate_scene(gltf_state);
                 if (root == nullptr) {
-                    godot::UtilityFunctions::push_error("Failed to generate scene for '", to_godot_string(model_name), "'");
+                    godot::UtilityFunctions::push_error("Failed to generate scene for '", to_godot_string(name), "'");
                     return false;
                 }
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
@@ -170,35 +170,33 @@ namespace Vital::Godot {
             }
         }
         if (scene.is_null()) throw Vital::Error::fetch("invalid-arguments");
-        cache_loaded[model_name] = scene;
+        cache_loaded[name] = scene;
         return true;
     }
 
-    bool Model::unload_model(const std::string& model_name) {
-        auto it = cache_loaded.find(model_name);
+    bool Model::unload_model(const std::string& name) {
+        auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) {
-            godot::UtilityFunctions::push_warning("Model '", to_godot_string(model_name), "' is not loaded.");
+            godot::UtilityFunctions::push_warning("Model '", to_godot_string(name), "' is not loaded.");
             return false;
         }
         cache_loaded.erase(it);
-        godot::UtilityFunctions::print("Model '", to_godot_string(model_name), "' unloaded successfully.");
+        godot::UtilityFunctions::print("Model '", to_godot_string(name), "' unloaded successfully.");
         return true;
     }
 
-    Model* Model::create_object(const godot::String& model_name) {
-        std::string key = std::string(model_name.utf8().get_data());
-
-        auto it = cache_loaded.find(key);
+    Model* Model::create_object(const std::string& name) {
+        auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) {
-            godot::UtilityFunctions::push_error("Model '", model_name, "' is not loaded. Call load_model first.");
+            godot::UtilityFunctions::push_error("Model '", to_godot_string(name), "' is not loaded. Call load_model first.");
             return nullptr;
         }
 
         Model* obj = memnew(Model);
-        obj -> set_model_name(model_name);
+        obj -> set_model_name(name);
         godot::Node* instance = it -> second -> instantiate();
         if (instance == nullptr) {
-            godot::UtilityFunctions::push_error("Failed to instantiate model '", model_name, "'");
+            godot::UtilityFunctions::push_error("Failed to instantiate model '", to_godot_string(name), "'");
             memdelete(obj);
             return nullptr;
         }
@@ -207,17 +205,17 @@ namespace Vital::Godot {
         return obj;
     }
 
-    bool Model::play_animation(const godot::String& animation_name, bool loop, float speed) {
+    bool Model::play_animation(const std::string& name, bool loop, float speed) {
         if (!animation_player) return false;
-        if (!animation_player -> has_animation(animation_name)) {
-            godot::UtilityFunctions::push_warning("Animation '", animation_name, "' not found in model '", model_name, "'");
+        if (!animation_player -> has_animation(to_godot_string(name))) {
+            godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
             return false;
         }
-        godot::Ref<godot::Animation> anim = animation_player -> get_animation(animation_name);
+        godot::Ref<godot::Animation> anim = animation_player -> get_animation(to_godot_string(name));
         if (anim.is_valid()) anim -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
         animation_player -> set_speed_scale(speed);
-        animation_player -> play(animation_name);
-        godot::UtilityFunctions::print("Playing animation '", animation_name, "' on model '", model_name, "'");
+        animation_player -> play(to_godot_string(name));
+        godot::UtilityFunctions::print("Playing animation '", to_godot_string(name), "' on model '", to_godot_string(model_name), "'");
         return true;
     }
 
