@@ -23,7 +23,11 @@
 namespace Vital::Godot {
     // Loaders //
     bool Model::is_model_loaded(const std::string& model_name) {
-        return loaded_models.find(model_name) != loaded_models.end();
+        return loaded.find(model_name) != loaded.end();
+    }
+
+    Model::Models Model::get_loaded_models() {
+        return loaded;
     }
 
     bool Model::load_model(const std::string& model_name, const std::string& path) {
@@ -61,28 +65,20 @@ namespace Vital::Godot {
             }
         }
         if (scene.is_null()) throw Vital::Error::fetch("invalid-arguments");
-        loaded_models[model_name] = scene;
+        loaded[model_name] = scene;
         return true;
     }
 
 
     bool Model::unload_model(const std::string& model_name) {
-        auto it = loaded_models.find(model_name);
-        if (it == loaded_models.end()) {
+        auto it = loaded.find(model_name);
+        if (it == loaded.end()) {
             godot::UtilityFunctions::push_warning("Model '", to_godot_string(model_name), "' is not loaded.");
             return false;
         }
-        loaded_models.erase(it);
+        loaded.erase(it);
         godot::UtilityFunctions::print("Model '", to_godot_string(model_name), "' unloaded successfully.");
         return true;
-    }
-
-    godot::Array Model::get_loaded_models() {
-        godot::Array result;
-        for (const auto& pair : loaded_models) {
-            result.append(godot::String(pair.first.c_str()));
-        }
-        return result;
     }
 
 
@@ -119,8 +115,8 @@ namespace Vital::Godot {
     Model* Model::create_object(const godot::String& model_name) {
         std::string key = std::string(model_name.utf8().get_data());
 
-        auto it = loaded_models.find(key);
-        if (it == loaded_models.end()) {
+        auto it = loaded.find(key);
+        if (it == loaded.end()) {
             godot::UtilityFunctions::push_error("Model '", model_name, "' is not loaded. Call load_model first.");
             return nullptr;
         }
