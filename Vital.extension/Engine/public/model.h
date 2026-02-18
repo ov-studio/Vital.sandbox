@@ -31,7 +31,7 @@ namespace Vital::Godot {
             godot::AnimationPlayer* find_animation_player(Node* node);
         public:
             ModelObject() = default;
-            ~ModelObject();
+            ~ModelObject() override = default;
 
             void set_model_name(const godot::String& name);
             godot::String get_model_name() const;

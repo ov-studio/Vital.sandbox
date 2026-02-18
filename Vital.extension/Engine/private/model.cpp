@@ -21,10 +21,6 @@
 //////////////////////////
 
 namespace Vital::Godot {
-    ModelObject::~ModelObject() {
-
-    }
-
     godot::AnimationPlayer* ModelObject::find_animation_player(godot::Node* node) {
         if (node == nullptr) {
             return nullptr;
