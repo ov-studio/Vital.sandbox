@@ -29,6 +29,7 @@ namespace Vital::Godot {
             godot::String model_name;
             godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
+            
             inline static std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
             static godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
@@ -60,7 +61,7 @@ namespace Vital::Godot {
             void set_animation_speed(float speed);
             float get_animation_speed() const;
 
-            
+
             // Loader static API
             static bool load_model(const godot::String& model_name, const godot::String& file_path);
             static Model* create_object(const godot::String& model_name);
