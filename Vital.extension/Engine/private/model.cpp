@@ -100,7 +100,7 @@ namespace Vital::Godot {
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (!animation_player) return animations;
-        godot::PackedStringArray anim_list = animation_player->get_animation_list();
+        auto anim_list = animation_player -> get_animation_list();
         for (int i = 0; i < anim_list.size(); i++) {
             animations.push_back(to_std_string(anim_list[i]));
         }
