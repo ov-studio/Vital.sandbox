@@ -100,7 +100,7 @@ namespace Vital::Godot {
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (!animation_player) return animations;
-        godot::PackedStringArray anim_list = animation_player->get_animation_list();
+        auto anim_list = animation_player->get_animation_list();
         for (int i = 0; i < anim_list.size(); i++) {
             animations.push_back(anim_list[i].utf8().get_data());
         }
@@ -149,14 +149,14 @@ namespace Vital::Godot {
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
             case Format::GLB: {
-                godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
-                godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
-                godot::Error status = gltf_doc -> append_from_buffer(buffer, "", gltf_state);
+                auto gltf_doc = memnew(godot::GLTFDocument);
+                auto gltf_state = memnew(godot::GLTFState);
+                auto status = gltf_doc -> append_from_buffer(buffer, "", gltf_state);
                 if (status != godot::OK) {
                     godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(name), "'");
                     return false;
                 }
-                godot::Node* root = gltf_doc -> generate_scene(gltf_state);
+                auto* root = gltf_doc -> generate_scene(gltf_state);
                 if (root == nullptr) {
                     godot::UtilityFunctions::push_error("Failed to generate scene for '", to_godot_string(name), "'");
                     return false;
@@ -209,7 +209,7 @@ namespace Vital::Godot {
             godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
             return false;
         }
-        godot::Ref<godot::Animation> anim = animation_player -> get_animation(to_godot_string(name));
+        auto anim = animation_player -> get_animation(to_godot_string(name));
         if (anim.is_valid()) anim -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
         animation_player -> set_speed_scale(speed);
         animation_player -> play(to_godot_string(name));
