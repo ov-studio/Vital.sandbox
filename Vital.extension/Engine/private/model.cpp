@@ -61,11 +61,11 @@ namespace Vital::Godot {
         set_rotation_degrees(rotation);
     }
 
-    godot::Vector3 Model::get_position_vec() const {
+    godot::Vector3 Model::get_position() const {
         return get_global_position();
     }
 
-    godot::Vector3 Model::get_rotation_vec() const {
+    godot::Vector3 Model::get_rotation() const {
         return get_rotation_degrees();
     }
 

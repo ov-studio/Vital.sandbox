@@ -42,8 +42,8 @@ namespace Vital::Godot {
             godot::String get_model_name() const;
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
-            godot::Vector3 get_position_vec() const;
-            godot::Vector3 get_rotation_vec() const;
+            godot::Vector3 get_position() const;
+            godot::Vector3 get_rotation() const;
 
             bool play_animation(const godot::String& animation_name, bool loop = true, float speed = 1.0f);
             void stop_animation();
