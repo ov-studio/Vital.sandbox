@@ -24,7 +24,7 @@ namespace Vital::Godot {
     // Instantiators //
     void Model::_ready() {
         get_animation_player(this);
-
+        
         // TODO: REMOVE LATER
         if (animation_player) {
             godot::UtilityFunctions::print("Found AnimationPlayer in model '", to_godot_string(model_name), "'");
@@ -100,9 +100,9 @@ namespace Vital::Godot {
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (!animation_player) return animations;
-        auto anim_list = animation_player -> get_animation_list();
+        godot::PackedStringArray anim_list = animation_player->get_animation_list();
         for (int i = 0; i < anim_list.size(); i++) {
-            animations.push_back(anim_list[i].utf8().get_data());
+            animations.push_back(to_std_string(anim_list[i]));
         }
         return animations;
     }
@@ -110,11 +110,15 @@ namespace Vital::Godot {
     godot::AnimationPlayer* Model::get_animation_player(godot::Node* node) {
         if (!node) return nullptr;
         if (!animation_player) {
-            for (int i = 0; i < node -> get_child_count(); i++) {
-                auto* result = get_animation_player(node -> get_child(i));
-                if (result) {
-                    animation_player = result;
-                    break;
+            auto* result = godot::Object::cast_to<godot::AnimationPlayer>(node);
+            if (result) animation_player = result;
+            else {
+                for (int i = 0; i < node -> get_child_count(); i++) {
+                    auto* result = get_animation_player(node -> get_child(i));
+                    if (result) {
+                        animation_player = result;
+                        break;
+                    }
                 }
             }
         }
@@ -149,14 +153,14 @@ namespace Vital::Godot {
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
             case Format::GLB: {
-                auto gltf_doc = memnew(godot::GLTFDocument);
-                auto gltf_state = memnew(godot::GLTFState);
-                auto status = gltf_doc -> append_from_buffer(buffer, "", gltf_state);
+                godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
+                godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
+                godot::Error status = gltf_doc -> append_from_buffer(buffer, "", gltf_state);
                 if (status != godot::OK) {
                     godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(name), "'");
                     return false;
                 }
-                auto* root = gltf_doc -> generate_scene(gltf_state);
+                godot::Node* root = gltf_doc -> generate_scene(gltf_state);
                 if (root == nullptr) {
                     godot::UtilityFunctions::push_error("Failed to generate scene for '", to_godot_string(name), "'");
                     return false;
@@ -209,7 +213,7 @@ namespace Vital::Godot {
             godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
             return false;
         }
-        auto anim = animation_player -> get_animation(to_godot_string(name));
+        godot::Ref<godot::Animation> anim = animation_player -> get_animation(to_godot_string(name));
         if (anim.is_valid()) anim -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
         animation_player -> set_speed_scale(speed);
         animation_player -> play(to_godot_string(name));
