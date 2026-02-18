@@ -27,24 +27,46 @@ namespace Vital::Godot {
         return loaded_models.find(key) != loaded_models.end();
     }
 
-    bool Model::load_model(const godot::String& model_name, const godot::String& file_path) {
-        std::string key = std::string(model_name.utf8().get_data());
+    bool Model::load_model(const godot::String& model_name, const godot::String& path) {
+        return load_model_from_buffer(
+            model_name, 
+            Vital::Tool::File::read_binary(to_godot_string(get_directory()), path)
+        );
+    }
 
-        if (loaded_models.find(key) != loaded_models.end()) {
+    bool Model::load_model_from_buffer(const godot::String& model_name, const godot::PackedByteArray& buffer) {
+        if (is_model_loaded(model_name)) {
             godot::UtilityFunctions::push_warning("Model '", model_name, "' is already loaded.");
             return false;
         }
 
-        godot::Ref<godot::PackedScene> scene = load_from_absolute_path(file_path);
-        if (scene.is_null()) {
-            godot::UtilityFunctions::push_error("Failed to load model from path: ", file_path);
-            return false;
+        godot::Ref<godot::PackedScene> scene;
+        switch (get_format(buffer)) {
+            case Format::GLB: {
+                godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
+                godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
+                godot::Error status = gltf_doc->append_from_buffer(buffer, "", gltf_state);
+                if (status != godot::OK) {
+                    godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", model_name, "'");
+                    return false;
+                }
+                godot::Node* root = gltf_doc->generate_scene(gltf_state);
+                if (root == nullptr) {
+                    godot::UtilityFunctions::push_error("Failed to generate scene for '", model_name, "'");
+                    return false;
+                }
+                scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
+                scene->pack(root);
+                memdelete(root);
+                break;
+            }
         }
-
+        if (scene.is_null()) throw Vital::Error::fetch("invalid-arguments");
+        std::string key = std::string(model_name.utf8().get_data());
         loaded_models[key] = scene;
-        godot::UtilityFunctions::print("Model '", model_name, "' loaded successfully from ", file_path);
         return true;
     }
+
 
     bool Model::unload_model(const godot::String& model_name) {
         std::string key = std::string(model_name.utf8().get_data());
@@ -253,41 +275,5 @@ namespace Vital::Godot {
             ptr[2] == 0x54 && ptr[3] == 0x46
         ) return Format::GLB;
         return Format::UNKNOWN;
-    }
-
-    godot::Ref<godot::PackedScene> Model::load_from_absolute_path(const godot::String& file_path) {
-        godot::String lower_path = file_path.to_lower();
-
-        if (lower_path.ends_with(".glb") || lower_path.ends_with(".gltf")) {
-            auto buffer = Vital::Tool::File::read_binary(to_godot_string(get_directory()), file_path);
-            if (buffer.is_empty()) {
-                godot::UtilityFunctions::push_error("Failed to read binary from: ", file_path);
-                return godot::Ref<godot::PackedScene>();
-            }
-
-            godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
-            godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
-
-            godot::Error err = gltf_doc->append_from_buffer(buffer, "", gltf_state);
-            if (err != godot::OK) {
-                godot::UtilityFunctions::push_error("Failed to parse GLTF buffer from: ", file_path);
-                return godot::Ref<godot::PackedScene>();
-            }
-
-            godot::Node* root = gltf_doc->generate_scene(gltf_state);
-            if (root == nullptr) {
-                godot::UtilityFunctions::push_error("Failed to generate scene from GLTF: ", file_path);
-                return godot::Ref<godot::PackedScene>();
-            }
-
-            godot::Ref<godot::PackedScene> scene = memnew(godot::PackedScene);
-            scene->pack(root);
-            memdelete(root);
-
-            return scene;
-        }
-
-        godot::UtilityFunctions::push_error("Unsupported file format: ", file_path);
-        return godot::Ref<godot::PackedScene>();
     }
 }

@@ -35,7 +35,6 @@ namespace Vital::Godot {
             godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             inline static std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
-            static godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
             // Instantiators //
             Model() = default;
@@ -45,7 +44,8 @@ namespace Vital::Godot {
 
             // Loaders //
             static bool is_model_loaded(const godot::String& model_name);
-            static bool load_model(const godot::String& model_name, const godot::String& file_path);
+            static bool load_model(const godot::String& model_name, const godot::String& path);
+            static bool load_model_from_buffer(const godot::String& model_name, const godot::PackedByteArray& buffer);
             static bool unload_model(const godot::String& model_name);
             static godot::Array get_loaded_models();
 
