@@ -21,9 +21,6 @@
 //////////////////////////
 
 namespace Vital::Godot {
-    ModelObject::ModelObject() : instance_node(nullptr), animation_player(nullptr) {
-    }
-
     ModelObject::~ModelObject() {
         if (instance_node != nullptr && instance_node->is_inside_tree()) {
             instance_node->queue_free();

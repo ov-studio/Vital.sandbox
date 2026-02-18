@@ -27,11 +27,11 @@ namespace Vital::Godot {
             static void _bind_methods() {};
         private:
             godot::String model_name;
-            godot::Node3D* instance_node;
-            godot::AnimationPlayer* animation_player;
+            godot::Node3D* instance_node = nullptr;
+            godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(Node* node);
         public:
-            ModelObject();
+            ModelObject() = default;
             ~ModelObject();
 
             void set_model_name(const godot::String& name);
