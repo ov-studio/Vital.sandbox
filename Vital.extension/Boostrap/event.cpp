@@ -63,9 +63,8 @@ void initialize_vital_events() {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
 
-        auto* loader = Vital::Godot::ModelLoader::get_singleton();
-        loader->load_model("cube", "cube.glb");
-        auto* cube = loader->create_object("cube");
+        Vital::Godot::Model::load_model("cube", "cube.glb");
+        auto* cube = Vital::Godot::Model::create_object("cube");
         if (cube != nullptr) {
             godot::UtilityFunctions::print("Spawned cube!");
             Vital::Godot::Core::get_singleton() -> call_deferred("add_child", cube);

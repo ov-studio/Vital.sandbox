@@ -21,18 +21,24 @@
 //////////////////////////
 
 namespace Vital::Godot {
-    class ModelObject : public godot::Node3D {
-        GDCLASS(ModelObject, godot::Node3D)
+    class Model : public godot::Node3D {
+        GDCLASS(Model, godot::Node3D)
         protected:
             static void _bind_methods() {};
         private:
+            // Instance
             godot::String model_name;
             godot::AnimationPlayer* animation_player = nullptr;
-            godot::AnimationPlayer* find_animation_player(Node* node);
-        public:
-            ModelObject() = default;
-            ~ModelObject() override = default;
+            godot::AnimationPlayer* find_animation_player(godot::Node* node);
 
+            // Loader (static)
+            inline static std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
+            static godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
+        public:
+            Model() = default;
+            ~Model() override = default;
+
+            // Instance API
             void set_model_name(const godot::String& name);
             godot::String get_model_name() const;
             void set_position(float x, float y, float z);
@@ -40,7 +46,6 @@ namespace Vital::Godot {
             godot::Vector3 get_position_vec() const;
             godot::Vector3 get_rotation_vec() const;
 
-            // Animation functions
             bool play_animation(const godot::String& animation_name, bool loop = true, float speed = 1.0f);
             void stop_animation();
             void pause_animation();
@@ -52,26 +57,12 @@ namespace Vital::Godot {
             float get_animation_speed() const;
 
             void _ready() override;
-    };
 
-    class ModelLoader : public godot::Node {
-        GDCLASS(ModelLoader, godot::Node)
-        protected:
-            static void _bind_methods() {};
-        private:
-            inline static ModelLoader* singleton = nullptr;
-            std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
-            godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
-        public:
-            ModelLoader() = default;
-            ~ModelLoader() override;
-
-            static ModelLoader* get_singleton();
-
-            bool load_model(const godot::String& model_name, const godot::String& file_path);
-            ModelObject* create_object(const godot::String& model_name);
-            bool unload_model(const godot::String& model_name);
-            bool is_model_loaded(const godot::String& model_name) const;
-            godot::Array get_loaded_models() const;
+            // Loader static API
+            static bool load_model(const godot::String& model_name, const godot::String& file_path);
+            static Model* create_object(const godot::String& model_name);
+            static bool unload_model(const godot::String& model_name);
+            static bool is_model_loaded(const godot::String& model_name);
+            static godot::Array get_loaded_models();
     };
 }
