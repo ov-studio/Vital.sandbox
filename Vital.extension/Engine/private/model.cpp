@@ -67,7 +67,7 @@ namespace Vital::Godot {
 
     void Model::set_animation_speed(float speed) {
         if (!animation_player) return;
-        animation_player->set_speed_scale(speed);
+        animation_player -> set_speed_scale(speed);
     }
 
 
@@ -102,7 +102,7 @@ namespace Vital::Godot {
     godot::Array Model::get_animations() const {
         godot::Array animations;
         if (!animation_player) return animations;
-        godot::PackedStringArray anim_list = animation_player->get_animation_list();
+        godot::PackedStringArray anim_list = animation_player -> get_animation_list();
         for (int i = 0; i < anim_list.size(); i++) {
             animations.append(anim_list[i]);
         }
@@ -195,59 +195,46 @@ namespace Vital::Godot {
         }
 
         Model* obj = memnew(Model);
-        obj->set_model_name(model_name);
-
-        godot::Node* instance = it->second->instantiate();
+        obj -> set_model_name(model_name);
+        godot::Node* instance = it -> second -> instantiate();
         if (instance == nullptr) {
             godot::UtilityFunctions::push_error("Failed to instantiate model '", model_name, "'");
             memdelete(obj);
             return nullptr;
         }
-
-        obj->add_child(instance);
-        instance->set_owner(obj);
-
+        obj -> add_child(instance);
+        instance -> set_owner(obj);
         return obj;
     }
 
     bool Model::play_animation(const godot::String& animation_name, bool loop, float speed) {
-        if (animation_player == nullptr) {
-            godot::UtilityFunctions::push_warning("No AnimationPlayer found in model '", model_name, "'");
-            return false;
-        }
-
-        if (!animation_player->has_animation(animation_name)) {
+        if (!animation_player) return false;
+        if (!animation_player -> has_animation(animation_name)) {
             godot::UtilityFunctions::push_warning("Animation '", animation_name, "' not found in model '", model_name, "'");
             return false;
         }
-
-        godot::Ref<godot::Animation> anim = animation_player->get_animation(animation_name);
-        if (anim.is_valid()) {
-            anim->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        }
-
-        animation_player->set_speed_scale(speed);
-        animation_player->play(animation_name);
-
+        godot::Ref<godot::Animation> anim = animation_player -> get_animation(animation_name);
+        if (anim.is_valid()) anim -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+        animation_player -> set_speed_scale(speed);
+        animation_player -> play(animation_name);
         godot::UtilityFunctions::print("Playing animation '", animation_name, "' on model '", model_name, "'");
         return true;
     }
 
     void Model::stop_animation() {
         if (!animation_player) return;
-        animation_player->stop();
+        animation_player -> stop();
     }
 
     void Model::pause_animation() {
         if (!animation_player) return;
-        animation_player->pause();
+        animation_player -> pause();
     }
 
     void Model::resume_animation() {
         if (!animation_player) return;
-        godot::String current = animation_player->get_current_animation();
-        if (!current.is_empty()) {
-            animation_player->play(current);
-        }
+        godot::String current = animation_player -> get_current_animation();
+        if (current.is_empty()) return;
+        animation_player -> play(current);
     }
 }
