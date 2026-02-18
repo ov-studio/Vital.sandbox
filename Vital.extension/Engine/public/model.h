@@ -43,10 +43,10 @@ namespace Vital::Godot {
 
 
             // Loaders //
-            static bool is_model_loaded(const godot::String& model_name);
-            static bool load_model(const godot::String& model_name, const godot::String& path);
-            static bool load_model_from_buffer(const godot::String& model_name, const godot::PackedByteArray& buffer);
-            static bool unload_model(const godot::String& model_name);
+            static bool is_model_loaded(const std::string& model_name);
+            static bool load_model(const std::string& model_name, const std::string& path);
+            static bool load_model_from_buffer(const std::string& model_name, const godot::PackedByteArray& buffer);
+            static bool unload_model(const std::string& model_name);
             static godot::Array get_loaded_models();
 
             
