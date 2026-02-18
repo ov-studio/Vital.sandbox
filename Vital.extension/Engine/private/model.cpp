@@ -25,6 +25,7 @@ namespace Vital::Godot {
     void Model::_ready() {
         get_animation_player(this);
 
+        // TODO: REMOVE LATER
         if (animation_player) {
             godot::UtilityFunctions::print("Found AnimationPlayer in model '", to_godot_string(model_name), "'");
         
