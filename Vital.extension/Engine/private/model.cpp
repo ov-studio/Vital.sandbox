@@ -214,18 +214,13 @@ namespace Vital::Godot {
     }
 
     godot::String Model::get_current_animation() const {
-        if (animation_player == nullptr) {
-            return "";
-        }
+        if (!animation_player) return "";
         return animation_player->get_current_animation();
     }
 
     godot::Array Model::get_available_animations() const {
         godot::Array animations;
-        if (animation_player == nullptr) {
-            return animations;
-        }
-
+        if (!animation_player) return animations;
         godot::PackedStringArray anim_list = animation_player->get_animation_list();
         for (int i = 0; i < anim_list.size(); i++) {
             animations.append(anim_list[i]);
@@ -239,9 +234,7 @@ namespace Vital::Godot {
     }
 
     float Model::get_animation_speed() const {
-        if (animation_player == nullptr) {
-            return 1.0f;
-        }
+        if (!animation_player) return 1.0f;
         return animation_player->get_speed_scale();
     }
 
