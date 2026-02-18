@@ -27,15 +27,12 @@ namespace Vital::Godot {
 
         if (animation_player) {
             godot::UtilityFunctions::print("Found AnimationPlayer in model '", to_godot_string(model_name), "'");
-
-            godot::Array anims = get_animations();
-            if (anims.size() > 0) {
-                godot::UtilityFunctions::print("Available animations: ", anims);
-
+        
+            std::vector<std::string> anims = get_animations();
+            if (!anims.empty()) {
                 // TODO: TESTING
-                godot::String anim_name = anims[0];
-                play_animation(to_std_string(anim_name), true, 1.0f);
-                godot::UtilityFunctions::print("Playing animation: ", anim_name);
+                play_animation(anims[0], true, 1.0f);
+                godot::UtilityFunctions::print("Playing animation: ", to_godot_string(anims[0]));
             }
         }
     }
@@ -99,12 +96,12 @@ namespace Vital::Godot {
         return get_rotation_degrees();
     }
 
-    godot::Array Model::get_animations() {
-        godot::Array animations;
+    std::vector<std::string> Model::get_animations() {
+        std::vector<std::string> animations;
         if (!animation_player) return animations;
-        godot::PackedStringArray anim_list = animation_player -> get_animation_list();
+        godot::PackedStringArray anim_list = animation_player->get_animation_list();
         for (int i = 0; i < anim_list.size(); i++) {
-            animations.append(anim_list[i]);
+            animations.push_back(anim_list[i].utf8().get_data());
         }
         return animations;
     }

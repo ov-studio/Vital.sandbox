@@ -61,7 +61,7 @@ namespace Vital::Godot {
             std::string get_model_name();
             godot::Vector3 get_position();
             godot::Vector3 get_rotation();
-            godot::Array get_animations();
+            std::vector<std::string> get_animations();
             godot::AnimationPlayer* get_animation_player(godot::Node* node);
             std::string get_current_animation();
             float get_animation_speed();
