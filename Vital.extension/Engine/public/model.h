@@ -27,7 +27,6 @@ namespace Vital::Godot {
             static void _bind_methods() {};
         private:
             godot::String model_name;
-            godot::Node3D* instance_node = nullptr;
             godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(Node* node);
         public:

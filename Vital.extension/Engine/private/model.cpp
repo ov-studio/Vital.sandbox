@@ -22,9 +22,7 @@
 
 namespace Vital::Godot {
     ModelObject::~ModelObject() {
-        if (instance_node != nullptr && instance_node->is_inside_tree()) {
-            instance_node->queue_free();
-        }
+
     }
 
     godot::AnimationPlayer* ModelObject::find_animation_player(godot::Node* node) {
@@ -60,16 +58,10 @@ namespace Vital::Godot {
 
     void ModelObject::set_position(float x, float y, float z) {
         set_global_position(godot::Vector3(x, y, z));
-        if (instance_node != nullptr) {
-            instance_node->set_global_position(godot::Vector3(x, y, z));
-        }
     }
 
     void ModelObject::set_rotation(float x, float y, float z) {
         set_rotation_degrees(godot::Vector3(x, y, z));
-        if (instance_node != nullptr) {
-            instance_node->set_rotation_degrees(godot::Vector3(x, y, z));
-        }
     }
 
     godot::Vector3 ModelObject::get_position_vec() const {
