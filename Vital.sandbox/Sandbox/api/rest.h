@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
                         if (!vm -> is_virtual()) throw Vital::Error::fetch("invalid-thread");
                         if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
                         auto url = vm -> get_string(1);
-                        Vital::Tool::Rest::Headers headers = {};
+                        Vital::Tool::Rest::curl_headers headers = {};
                         if (vm -> is_table(2)) {
                             for (int i = 1; i <= vm -> get_length(2); i++) {
                                 vm -> get_table_field(i, 2);
@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
                         if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Error::fetch("invalid-arguments");
                         auto url = vm -> get_string(1);
                         auto body = vm -> get_string(2);
-                        Vital::Tool::Rest::Headers headers = {};
+                        Vital::Tool::Rest::curl_headers headers = {};
                         if (vm -> is_table(3)) {
                             for (int i = 1; i <= vm -> get_length(3); i++) {
                                 vm -> get_table_field(i, 3);

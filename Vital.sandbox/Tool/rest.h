@@ -22,39 +22,42 @@
 ////////////////////////
 
 namespace Vital::Tool::Rest {
-    using Headers = std::vector<std::string>;
+    using curl_headers = std::vector<std::string>;
 
-    struct CurlGlobal {
-        CurlGlobal() { 
+    struct Curl {
+        Curl() { 
             if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
                 throw std::runtime_error("curl_global_init failed");
         }
-        ~CurlGlobal() { curl_global_cleanup(); }
-    };
 
-    inline CurlGlobal global;
-    inline size_t CallbackHandle(void* contents, size_t size, size_t nmemb, void* userp) {
-        size_t totalSize = size*nmemb;
-        static_cast<std::string*>(userp)->append(static_cast<char*>(contents), totalSize);
-        return totalSize;
-    }
-
-    inline curl_slist* ApplyHeaders(const Headers &headers) {
-        curl_slist* list = nullptr;
-        for (const auto& header : headers) {
-            list = curl_slist_append(list, header.c_str());
+        ~Curl() { 
+            curl_global_cleanup(); 
         }
-        return list;
-    }
+    
+        static inline curl_slist* apply_headers(const curl_headers &headers) {
+            curl_slist* list = nullptr;
+            for (const auto& header : headers) {
+                list = curl_slist_append(list, header.c_str());
+            }
+            return list;
+        }
 
-    inline std::string get(const std::string& url, const Headers& headers = {}) {
+        static size_t callback(void* contents, size_t size, size_t nmemb, void* userp) {
+            size_t totalSize = size*nmemb;
+            static_cast<std::string*>(userp)->append(static_cast<char*>(contents), totalSize);
+            return totalSize;
+        }
+    };
+    inline Curl ctx;
+
+    inline std::string get(const std::string& url, const curl_headers& headers = {}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
-        curl_slist* rq_headers = ApplyHeaders(headers);
+        curl_slist* rq_headers = Curl::apply_headers(headers);
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CallbackHandle);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
         curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -69,17 +72,17 @@ namespace Vital::Tool::Rest {
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const Headers& headers = {"Content-Type: application/json"}) {
+    inline std::string post(const std::string& url, const std::string& body, const curl_headers& headers = {"Content-Type: application/json"}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
-        curl_slist* rq_headers = ApplyHeaders(headers);
+        curl_slist* rq_headers = Curl::apply_headers(headers);
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.size());
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CallbackHandle);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
         curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
