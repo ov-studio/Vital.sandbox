@@ -53,12 +53,12 @@ namespace Vital::Godot {
         return model_name;
     }
 
-    void Model::set_position(float x, float y, float z) {
-        set_global_position(godot::Vector3(x, y, z));
+    void Model::set_position(godot::Vector3 position) {
+        set_global_position(position);
     }
 
-    void Model::set_rotation(float x, float y, float z) {
-        set_rotation_degrees(godot::Vector3(x, y, z));
+    void Model::set_rotation(godot::Vector3 rotation) {
+        set_rotation_degrees(rotation);
     }
 
     godot::Vector3 Model::get_position_vec() const {

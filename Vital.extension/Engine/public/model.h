@@ -40,8 +40,8 @@ namespace Vital::Godot {
             // Instance API
             void set_model_name(const godot::String& name);
             godot::String get_model_name() const;
-            void set_position(float x, float y, float z);
-            void set_rotation(float x, float y, float z);
+            void set_position(godot::Vector3 position);
+            void set_rotation(godot::Vector3 rotation);
             godot::Vector3 get_position_vec() const;
             godot::Vector3 get_rotation_vec() const;
 
