@@ -22,19 +22,20 @@
 ////////////////////////
 
 namespace Vital::Tool::Rest {
-    using curl_headers = std::vector<std::string>;
+    using rest_headers = std::vector<std::string>;
 
     struct Curl {
         Curl() { 
-            if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+            if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
                 throw std::runtime_error("curl_global_init failed");
+            }
         }
 
         ~Curl() { 
             curl_global_cleanup(); 
         }
     
-        static inline curl_slist* apply_headers(const curl_headers &headers) {
+        static inline curl_slist* apply_headers(const rest_headers &headers) {
             curl_slist* list = nullptr;
             for (const auto& header : headers) {
                 list = curl_slist_append(list, header.c_str());
@@ -44,13 +45,13 @@ namespace Vital::Tool::Rest {
 
         static size_t callback(void* contents, size_t size, size_t nmemb, void* userp) {
             size_t totalSize = size*nmemb;
-            static_cast<std::string*>(userp)->append(static_cast<char*>(contents), totalSize);
+            static_cast<std::string*>(userp) -> append(static_cast<char*>(contents), totalSize);
             return totalSize;
         }
     };
     inline Curl ctx;
 
-    inline std::string get(const std::string& url, const curl_headers& headers = {}) {
+    inline std::string get(const std::string& url, const rest_headers& headers = {}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
@@ -72,7 +73,7 @@ namespace Vital::Tool::Rest {
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const curl_headers& headers = {"Content-Type: application/json"}) {
+    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {"Content-Type: application/json"}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
