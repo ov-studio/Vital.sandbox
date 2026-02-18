@@ -69,7 +69,6 @@ namespace Vital::Godot {
         return true;
     }
 
-
     bool Model::unload_model(const std::string& model_name) {
         auto it = cache_loaded.find(model_name);
         if (it == cache_loaded.end()) {
