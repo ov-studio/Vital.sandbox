@@ -26,17 +26,16 @@ namespace Vital::Godot {
         protected:
             static void _bind_methods() {};
         private:
-            // Instance
             godot::String model_name;
             godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
-
-            // Loader (static)
             inline static std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
             static godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
+            // Instantiators //
             Model() = default;
             ~Model() override = default;
+            void _ready() override;
 
             // Instance API
             void set_model_name(const godot::String& name);
@@ -55,8 +54,6 @@ namespace Vital::Godot {
             godot::Array get_available_animations() const;
             void set_animation_speed(float speed);
             float get_animation_speed() const;
-
-            void _ready() override;
 
             // Loader static API
             static bool load_model(const godot::String& model_name, const godot::String& file_path);
