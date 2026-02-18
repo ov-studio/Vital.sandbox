@@ -27,14 +27,6 @@ namespace Vital::Sandbox::API {
             inline static void bind(void* machine) {
                 auto vm = Machine::to_machine(machine);
 
-                API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_string(get_platform());
-                        return 1;
-                    });
-                });
-            
                 API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
@@ -43,6 +35,14 @@ namespace Vital::Sandbox::API {
                     });
                 });
             
+                API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        vm -> push_string(get_platform());
+                        return 1;
+                    });
+                });
+
                 API::bind(vm, "engine", "get_timestamp", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {

@@ -26,7 +26,6 @@
 
 namespace Vital {
     namespace System {}
-    namespace Sandbox {}
     static const std::string Build_ver = "v0.0.1";
     static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
@@ -38,16 +37,16 @@ namespace Vital {
         return std::string(input.utf8().get_data());
     }
 
+    inline uint64_t get_tick() {
+        return godot::Time::get_singleton() -> get_ticks_msec();
+    }
+
     inline const std::string get_platform() { 
         #if defined(Vital_SDK_Client)
             return "client";
         #else
             return "server";
         #endif
-    }
-
-    inline uint64_t get_tick() {
-        return godot::Time::get_singleton() -> get_ticks_msec();
     }
 
     inline Vital::Tool::Stack get_timestamp() {
