@@ -72,7 +72,7 @@ void initialize_vital_events() {
 
             // Play animation on loop
             // First, let's see what animations are available
-            godot::Array available_anims = cube->get_available_animations();
+            godot::Array available_anims = cube->get_animations();
             godot::UtilityFunctions::print("Available animations: ", available_anims);
             
             //tree->set_rotation(0.0f, Math::randf() * 360.0f, 0.0f);

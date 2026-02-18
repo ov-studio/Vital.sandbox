@@ -21,15 +21,120 @@
 //////////////////////////
 
 namespace Vital::Godot {
-    // Loaders //
+    // Instantiators //
+    void Model::_ready() {
+        get_animation_player(this);
+
+        if (animation_player) {
+            godot::UtilityFunctions::print("Found AnimationPlayer in model '", model_name, "'");
+
+            godot::Array anims = get_animations();
+            if (anims.size() > 0) {
+                godot::UtilityFunctions::print("Available animations: ", anims);
+
+                // TODO: TESTING
+                godot::String anim_name = anims[0];
+                play_animation(anim_name, true, 1.0f);
+                godot::UtilityFunctions::print("Playing animation: ", anim_name);
+            }
+        }
+    }
+
+
+    // Checkers //
     bool Model::is_model_loaded(const std::string& model_name) {
         return cache_loaded.find(model_name) != cache_loaded.end();
+    }
+
+    bool Model::is_animation_playing() const {
+        if (!animation_player) return false;
+        return animation_player -> is_playing();
+    }
+
+
+    // Setters //
+    void Model::set_model_name(const godot::String& name) {
+        model_name = name;
+    }
+
+    void Model::set_position(godot::Vector3 position) {
+        set_global_position(position);
+    }
+
+    void Model::set_rotation(godot::Vector3 rotation) {
+        set_rotation_degrees(rotation);
+    }
+
+    void Model::set_animation_speed(float speed) {
+        if (!animation_player) return;
+        animation_player->set_speed_scale(speed);
+    }
+
+
+    // Getters //
+    Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
+        const uint8_t* ptr = buffer.ptr();
+        const int size = buffer.size();
+        if (
+            size >= 4 && 
+            ptr[0] == 0x67 && ptr[1] == 0x6C && 
+            ptr[2] == 0x54 && ptr[3] == 0x46
+        ) return Format::GLB;
+        return Format::UNKNOWN;
     }
 
     Model::Models Model::get_loaded_models() {
         return cache_loaded;
     }
 
+    godot::String Model::get_model_name() const {
+        return model_name;
+    }
+
+    godot::Vector3 Model::get_position() const {
+        return get_global_position();
+    }
+
+    godot::Vector3 Model::get_rotation() const {
+        return get_rotation_degrees();
+    }
+
+    godot::Array Model::get_animations() const {
+        godot::Array animations;
+        if (!animation_player) return animations;
+        godot::PackedStringArray anim_list = animation_player->get_animation_list();
+        for (int i = 0; i < anim_list.size(); i++) {
+            animations.append(anim_list[i]);
+        }
+        return animations;
+    }
+
+    godot::AnimationPlayer* Model::get_animation_player(godot::Node* node) {
+        if (!node) return nullptr;
+        if (!animation_player) {
+            for (int i = 0; i < node -> get_child_count(); i++) {
+                auto* player = get_animation_player(node -> get_child(i));
+                if (player) {
+                    animation_player = player;
+                    break;
+                }
+            }
+        }
+        return animation_player;
+    }
+
+    godot::String Model::get_current_animation() const {
+        if (!animation_player) return "";
+        return animation_player -> get_current_animation();
+    }
+
+    float Model::get_animation_speed() const {
+        if (!animation_player) return 1.0f;
+        return animation_player -> get_speed_scale();
+    }
+
+
+    // APIs //
     bool Model::load_model(const std::string& model_name, const std::string& path) {
         return load_model_from_buffer(
             model_name, 
@@ -80,37 +185,6 @@ namespace Vital::Godot {
         return true;
     }
 
-
-    // Setters //
-    void Model::set_model_name(const godot::String& name) {
-        model_name = name;
-    }
-
-    void Model::set_position(godot::Vector3 position) {
-        set_global_position(position);
-    }
-
-    void Model::set_rotation(godot::Vector3 rotation) {
-        set_rotation_degrees(rotation);
-    }
-
-
-    // Getters //
-    godot::String Model::get_model_name() const {
-        return model_name;
-    }
-
-    godot::Vector3 Model::get_position() const {
-        return get_global_position();
-    }
-
-    godot::Vector3 Model::get_rotation() const {
-        return get_rotation_degrees();
-    }
-
-
-
-    // APIs //
     Model* Model::create_object(const godot::String& model_name) {
         std::string key = std::string(model_name.utf8().get_data());
 
@@ -134,27 +208,6 @@ namespace Vital::Godot {
         instance->set_owner(obj);
 
         return obj;
-    }
-
-    godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
-        if (node == nullptr) {
-            return nullptr;
-        }
-
-        godot::AnimationPlayer* anim_player = godot::Object::cast_to<godot::AnimationPlayer>(node);
-        if (anim_player != nullptr) {
-            return anim_player;
-        }
-
-        for (int i = 0; i < node->get_child_count(); i++) {
-            godot::Node* child = node->get_child(i);
-            godot::AnimationPlayer* found = find_animation_player(child);
-            if (found != nullptr) {
-                return found;
-            }
-        }
-
-        return nullptr;
     }
 
     bool Model::play_animation(const godot::String& animation_name, bool loop, float speed) {
@@ -196,67 +249,5 @@ namespace Vital::Godot {
         if (!current.is_empty()) {
             animation_player->play(current);
         }
-    }
-
-    bool Model::is_animation_playing() const {
-        if (!animation_player) return false;
-        return animation_player -> is_playing();
-    }
-
-    godot::String Model::get_current_animation() const {
-        if (!animation_player) return "";
-        return animation_player->get_current_animation();
-    }
-
-    godot::Array Model::get_available_animations() const {
-        godot::Array animations;
-        if (!animation_player) return animations;
-        godot::PackedStringArray anim_list = animation_player->get_animation_list();
-        for (int i = 0; i < anim_list.size(); i++) {
-            animations.append(anim_list[i]);
-        }
-        return animations;
-    }
-
-    void Model::set_animation_speed(float speed) {
-        if (!animation_player) return;
-        animation_player->set_speed_scale(speed);
-    }
-
-    float Model::get_animation_speed() const {
-        if (!animation_player) return 1.0f;
-        return animation_player->get_speed_scale();
-    }
-
-    void Model::_ready() {
-        godot::Node3D::_ready();
-
-        animation_player = find_animation_player(this);
-
-        if (animation_player) {
-            godot::UtilityFunctions::print("Found AnimationPlayer in model '", model_name, "'");
-
-            godot::Array anims = get_available_animations();
-            if (anims.size() > 0) {
-                godot::UtilityFunctions::print("Available animations: ", anims);
-
-                // TODO: TESTING
-                godot::String anim_name = anims[0];
-                play_animation(anim_name, true, 1.0f);
-                godot::UtilityFunctions::print("Playing animation: ", anim_name);
-            }
-        }
-    }
-
-    // ========== Loader Static Implementation ==========
-    Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
-        const uint8_t* ptr = buffer.ptr();
-        const int size = buffer.size();
-        if (
-            size >= 4 && 
-            ptr[0] == 0x67 && ptr[1] == 0x6C && 
-            ptr[2] == 0x54 && ptr[3] == 0x46
-        ) return Format::GLB;
-        return Format::UNKNOWN;
     }
 }
