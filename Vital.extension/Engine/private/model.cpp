@@ -21,6 +21,54 @@
 //////////////////////////
 
 namespace Vital::Godot {
+    // Loaders //
+    bool Model::is_model_loaded(const godot::String& model_name) {
+        std::string key = std::string(model_name.utf8().get_data());
+        return loaded_models.find(key) != loaded_models.end();
+    }
+
+    bool Model::load_model(const godot::String& model_name, const godot::String& file_path) {
+        std::string key = std::string(model_name.utf8().get_data());
+
+        if (loaded_models.find(key) != loaded_models.end()) {
+            godot::UtilityFunctions::push_warning("Model '", model_name, "' is already loaded.");
+            return false;
+        }
+
+        godot::Ref<godot::PackedScene> scene = load_from_absolute_path(file_path);
+        if (scene.is_null()) {
+            godot::UtilityFunctions::push_error("Failed to load model from path: ", file_path);
+            return false;
+        }
+
+        loaded_models[key] = scene;
+        godot::UtilityFunctions::print("Model '", model_name, "' loaded successfully from ", file_path);
+        return true;
+    }
+
+    bool Model::unload_model(const godot::String& model_name) {
+        std::string key = std::string(model_name.utf8().get_data());
+
+        auto it = loaded_models.find(key);
+        if (it == loaded_models.end()) {
+            godot::UtilityFunctions::push_warning("Model '", model_name, "' is not loaded.");
+            return false;
+        }
+
+        loaded_models.erase(it);
+        godot::UtilityFunctions::print("Model '", model_name, "' unloaded successfully.");
+        return true;
+    }
+
+    godot::Array Model::get_loaded_models() {
+        godot::Array result;
+        for (const auto& pair : loaded_models) {
+            result.append(godot::String(pair.first.c_str()));
+        }
+        return result;
+    }
+
+
     // Setters //
     void Model::set_model_name(const godot::String& name) {
         model_name = name;
@@ -49,6 +97,32 @@ namespace Vital::Godot {
     }
 
 
+
+    // APIs //
+    Model* Model::create_object(const godot::String& model_name) {
+        std::string key = std::string(model_name.utf8().get_data());
+
+        auto it = loaded_models.find(key);
+        if (it == loaded_models.end()) {
+            godot::UtilityFunctions::push_error("Model '", model_name, "' is not loaded. Call load_model first.");
+            return nullptr;
+        }
+
+        Model* obj = memnew(Model);
+        obj->set_model_name(model_name);
+
+        godot::Node* instance = it->second->instantiate();
+        if (instance == nullptr) {
+            godot::UtilityFunctions::push_error("Failed to instantiate model '", model_name, "'");
+            memdelete(obj);
+            return nullptr;
+        }
+
+        obj->add_child(instance);
+        instance->set_owner(obj);
+
+        return obj;
+    }
 
     godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
         if (node == nullptr) {
@@ -95,31 +169,26 @@ namespace Vital::Godot {
     }
 
     void Model::stop_animation() {
-        if (animation_player != nullptr) {
-            animation_player->stop();
-        }
+        if (!animation_player) return;
+        animation_player->stop();
     }
 
     void Model::pause_animation() {
-        if (animation_player != nullptr) {
-            animation_player->pause();
-        }
+        if (!animation_player) return;
+        animation_player->pause();
     }
 
     void Model::resume_animation() {
-        if (animation_player != nullptr) {
-            godot::String current = animation_player->get_current_animation();
-            if (!current.is_empty()) {
-                animation_player->play(current);
-            }
+        if (!animation_player) return;
+        godot::String current = animation_player->get_current_animation();
+        if (!current.is_empty()) {
+            animation_player->play(current);
         }
     }
 
     bool Model::is_animation_playing() const {
-        if (animation_player == nullptr) {
-            return false;
-        }
-        return animation_player->is_playing();
+        if (!animation_player) return false;
+        return animation_player -> is_playing();
     }
 
     godot::String Model::get_current_animation() const {
@@ -143,9 +212,8 @@ namespace Vital::Godot {
     }
 
     void Model::set_animation_speed(float speed) {
-        if (animation_player != nullptr) {
-            animation_player->set_speed_scale(speed);
-        }
+        if (!animation_player) return;
+        animation_player->set_speed_scale(speed);
     }
 
     float Model::get_animation_speed() const {
@@ -160,7 +228,7 @@ namespace Vital::Godot {
 
         animation_player = find_animation_player(this);
 
-        if (animation_player != nullptr) {
+        if (animation_player) {
             godot::UtilityFunctions::print("Found AnimationPlayer in model '", model_name, "'");
 
             godot::Array anims = get_available_animations();
@@ -221,76 +289,5 @@ namespace Vital::Godot {
 
         godot::UtilityFunctions::push_error("Unsupported file format: ", file_path);
         return godot::Ref<godot::PackedScene>();
-    }
-
-    bool Model::load_model(const godot::String& model_name, const godot::String& file_path) {
-        std::string key = std::string(model_name.utf8().get_data());
-
-        if (loaded_models.find(key) != loaded_models.end()) {
-            godot::UtilityFunctions::push_warning("Model '", model_name, "' is already loaded.");
-            return false;
-        }
-
-        godot::Ref<godot::PackedScene> scene = load_from_absolute_path(file_path);
-        if (scene.is_null()) {
-            godot::UtilityFunctions::push_error("Failed to load model from path: ", file_path);
-            return false;
-        }
-
-        loaded_models[key] = scene;
-        godot::UtilityFunctions::print("Model '", model_name, "' loaded successfully from ", file_path);
-        return true;
-    }
-
-    Model* Model::create_object(const godot::String& model_name) {
-        std::string key = std::string(model_name.utf8().get_data());
-
-        auto it = loaded_models.find(key);
-        if (it == loaded_models.end()) {
-            godot::UtilityFunctions::push_error("Model '", model_name, "' is not loaded. Call load_model first.");
-            return nullptr;
-        }
-
-        Model* obj = memnew(Model);
-        obj->set_model_name(model_name);
-
-        godot::Node* instance = it->second->instantiate();
-        if (instance == nullptr) {
-            godot::UtilityFunctions::push_error("Failed to instantiate model '", model_name, "'");
-            memdelete(obj);
-            return nullptr;
-        }
-
-        obj->add_child(instance);
-        instance->set_owner(obj);
-
-        return obj;
-    }
-
-    bool Model::unload_model(const godot::String& model_name) {
-        std::string key = std::string(model_name.utf8().get_data());
-
-        auto it = loaded_models.find(key);
-        if (it == loaded_models.end()) {
-            godot::UtilityFunctions::push_warning("Model '", model_name, "' is not loaded.");
-            return false;
-        }
-
-        loaded_models.erase(it);
-        godot::UtilityFunctions::print("Model '", model_name, "' unloaded successfully.");
-        return true;
-    }
-
-    bool Model::is_model_loaded(const godot::String& model_name) {
-        std::string key = std::string(model_name.utf8().get_data());
-        return loaded_models.find(key) != loaded_models.end();
-    }
-
-    godot::Array Model::get_loaded_models() {
-        godot::Array result;
-        for (const auto& pair : loaded_models) {
-            result.append(godot::String(pair.first.c_str()));
-        }
-        return result;
     }
 }
