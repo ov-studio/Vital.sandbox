@@ -37,13 +37,18 @@ namespace Vital::Godot {
             ~Model() override = default;
             void _ready() override;
 
-            // Instance API
+
+            // Setters //
             void set_model_name(const godot::String& name);
-            godot::String get_model_name() const;
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
+
+
+            // Getters //
+            godot::String get_model_name() const;
             godot::Vector3 get_position() const;
             godot::Vector3 get_rotation() const;
+
 
             bool play_animation(const godot::String& animation_name, bool loop = true, float speed = 1.0f);
             void stop_animation();
@@ -55,6 +60,7 @@ namespace Vital::Godot {
             void set_animation_speed(float speed);
             float get_animation_speed() const;
 
+            
             // Loader static API
             static bool load_model(const godot::String& model_name, const godot::String& file_path);
             static Model* create_object(const godot::String& model_name);

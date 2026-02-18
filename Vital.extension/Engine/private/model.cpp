@@ -21,8 +21,34 @@
 //////////////////////////
 
 namespace Vital::Godot {
+    // Setters //
+    void Model::set_model_name(const godot::String& name) {
+        model_name = name;
+    }
 
-    // ========== Instance Implementation ==========
+    void Model::set_position(godot::Vector3 position) {
+        set_global_position(position);
+    }
+
+    void Model::set_rotation(godot::Vector3 rotation) {
+        set_rotation_degrees(rotation);
+    }
+
+
+    // Getters //
+    godot::String Model::get_model_name() const {
+        return model_name;
+    }
+
+    godot::Vector3 Model::get_position() const {
+        return get_global_position();
+    }
+
+    godot::Vector3 Model::get_rotation() const {
+        return get_rotation_degrees();
+    }
+
+
 
     godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
         if (node == nullptr) {
@@ -43,30 +69,6 @@ namespace Vital::Godot {
         }
 
         return nullptr;
-    }
-
-    void Model::set_model_name(const godot::String& name) {
-        model_name = name;
-    }
-
-    godot::String Model::get_model_name() const {
-        return model_name;
-    }
-
-    void Model::set_position(godot::Vector3 position) {
-        set_global_position(position);
-    }
-
-    void Model::set_rotation(godot::Vector3 rotation) {
-        set_rotation_degrees(rotation);
-    }
-
-    godot::Vector3 Model::get_position() const {
-        return get_global_position();
-    }
-
-    godot::Vector3 Model::get_rotation() const {
-        return get_rotation_degrees();
     }
 
     bool Model::play_animation(const godot::String& animation_name, bool loop, float speed) {
