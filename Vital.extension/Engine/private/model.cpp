@@ -185,20 +185,12 @@ namespace Vital::Godot {
 
     // ========== ModelLoader Implementation ==========
 
-    ModelLoader::ModelLoader() {
-        if (singleton == nullptr) {
-            singleton = this;
-        }
-    }
-
     ModelLoader::~ModelLoader() {
-        if (singleton == this) {
-            singleton = nullptr;
-        }
         loaded_models.clear();
     }
 
     ModelLoader* ModelLoader::get_singleton() {
+        if (!singleton) singleton = memnew(ModelLoader);
         return singleton;
     }
 

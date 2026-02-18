@@ -63,8 +63,8 @@ namespace Vital::Godot {
             std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
             godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
-            ModelLoader();
-            ~ModelLoader();
+            ModelObject() = default;
+            ~ModelLoader() override;
 
             static ModelLoader* get_singleton();
 
