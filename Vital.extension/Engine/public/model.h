@@ -36,7 +36,7 @@ namespace Vital::Godot {
             godot::String model_name;
             godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
-            inline static Models loaded;
+            inline static Models loaded_models;
         public:
             // Instantiators //
             Model() = default;
