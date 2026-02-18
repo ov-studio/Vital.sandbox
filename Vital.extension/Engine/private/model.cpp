@@ -176,6 +176,17 @@ namespace Vital::Godot {
     }
 
     // ========== Loader Static Implementation ==========
+    Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
+        const uint8_t* ptr = buffer.ptr();
+        const int size = buffer.size();
+        if (
+            size >= 4 && 
+            ptr[0] == 0x67 && ptr[1] == 0x6C && 
+            ptr[2] == 0x54 && ptr[3] == 0x46
+        ) return Format::GLB;
+        return Format::UNKNOWN;
+    }
+
     godot::Ref<godot::PackedScene> Model::load_from_absolute_path(const godot::String& file_path) {
         godot::String lower_path = file_path.to_lower();
 

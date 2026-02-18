@@ -23,13 +23,17 @@
 namespace Vital::Godot {
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
+        public:
+            enum class Format {
+                GLB,
+                UNKNOWN
+            };
         protected:
             static void _bind_methods() {};
         private:
             godot::String model_name;
             godot::AnimationPlayer* animation_player = nullptr;
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
-            
             inline static std::unordered_map<std::string, godot::Ref<godot::PackedScene>> loaded_models;
             static godot::Ref<godot::PackedScene> load_from_absolute_path(const godot::String& file_path);
         public:
@@ -46,6 +50,7 @@ namespace Vital::Godot {
 
 
             // Getters //
+            static Format get_format(const godot::PackedByteArray& buffer);
             godot::String get_model_name() const;
             godot::Vector3 get_position() const;
             godot::Vector3 get_rotation() const;
