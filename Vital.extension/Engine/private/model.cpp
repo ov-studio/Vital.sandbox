@@ -23,11 +23,11 @@
 namespace Vital::Godot {
     // Loaders //
     bool Model::is_model_loaded(const std::string& model_name) {
-        return loaded_models.find(model_name) != loaded_models.end();
+        return cache_loaded.find(model_name) != cache_loaded.end();
     }
 
     Model::Models Model::get_loaded_models() {
-        return loaded_models;
+        return cache_loaded;
     }
 
     bool Model::load_model(const std::string& model_name, const std::string& path) {
@@ -48,35 +48,35 @@ namespace Vital::Godot {
             case Format::GLB: {
                 godot::Ref<godot::GLTFDocument> gltf_doc = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> gltf_state = memnew(godot::GLTFState);
-                godot::Error status = gltf_doc->append_from_buffer(buffer, "", gltf_state);
+                godot::Error status = gltf_doc -> append_from_buffer(buffer, "", gltf_state);
                 if (status != godot::OK) {
                     godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(model_name), "'");
                     return false;
                 }
-                godot::Node* root = gltf_doc->generate_scene(gltf_state);
+                godot::Node* root = gltf_doc -> generate_scene(gltf_state);
                 if (root == nullptr) {
                     godot::UtilityFunctions::push_error("Failed to generate scene for '", to_godot_string(model_name), "'");
                     return false;
                 }
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-                scene->pack(root);
+                scene -> pack(root);
                 memdelete(root);
                 break;
             }
         }
         if (scene.is_null()) throw Vital::Error::fetch("invalid-arguments");
-        loaded_models[model_name] = scene;
+        cache_loaded[model_name] = scene;
         return true;
     }
 
 
     bool Model::unload_model(const std::string& model_name) {
-        auto it = loaded_models.find(model_name);
-        if (it == loaded_models.end()) {
+        auto it = cache_loaded.find(model_name);
+        if (it == cache_loaded.end()) {
             godot::UtilityFunctions::push_warning("Model '", to_godot_string(model_name), "' is not loaded.");
             return false;
         }
-        loaded_models.erase(it);
+        cache_loaded.erase(it);
         godot::UtilityFunctions::print("Model '", to_godot_string(model_name), "' unloaded successfully.");
         return true;
     }
@@ -115,8 +115,8 @@ namespace Vital::Godot {
     Model* Model::create_object(const godot::String& model_name) {
         std::string key = std::string(model_name.utf8().get_data());
 
-        auto it = loaded_models.find(key);
-        if (it == loaded_models.end()) {
+        auto it = cache_loaded.find(key);
+        if (it == cache_loaded.end()) {
             godot::UtilityFunctions::push_error("Model '", model_name, "' is not loaded. Call load_model first.");
             return nullptr;
         }

@@ -32,11 +32,11 @@ namespace Vital::Godot {
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
         protected:
             static void _bind_methods() {};
+            godot::AnimationPlayer* find_animation_player(godot::Node* node);
         private:
             godot::String model_name;
             godot::AnimationPlayer* animation_player = nullptr;
-            godot::AnimationPlayer* find_animation_player(godot::Node* node);
-            inline static Models loaded_models;
+            inline static Models cache_loaded;
         public:
             // Instantiators //
             Model() = default;
