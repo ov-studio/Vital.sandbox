@@ -228,7 +228,7 @@ namespace Vital::Godot {
 
     void Model::resume_animation() {
         if (!animation_player) return;
-        godot::String current = animation_player -> get_current_animation();
+        auto current = animation_player -> get_current_animation();
         if (current.is_empty()) return;
         animation_player -> play(current);
     }
