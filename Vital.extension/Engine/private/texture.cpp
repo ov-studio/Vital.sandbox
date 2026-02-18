@@ -51,7 +51,6 @@ namespace Vital::Godot {
         const int size = buffer.size();
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status;
         if (
             size >= 8 &&
             ptr[0] == 0x89 && ptr[1] == 0x50 &&
