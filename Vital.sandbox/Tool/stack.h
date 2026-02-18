@@ -24,7 +24,7 @@
 
 namespace Vital::Tool {
     struct StackValue {
-        using Value = std::variant<
+        using stack_value = std::variant<
             std::nullptr_t,
             bool,
             int32_t,
@@ -34,8 +34,7 @@ namespace Vital::Tool {
             std::string,
             std::vector<std::string>
         >;
-
-        Value value{nullptr};
+        stack_value value{nullptr};
 
         // Constructors //
         StackValue() = default;
