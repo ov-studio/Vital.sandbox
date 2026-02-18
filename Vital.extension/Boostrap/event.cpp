@@ -63,7 +63,7 @@ void initialize_vital_events() {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
 
-        auto* loader = memnew(Vital::Godot::ModelLoader);
+        auto* loader = Vital::Godot::ModelLoader::get_singleton();
         loader->load_model("cube", "cube.glb");
         auto* cube = loader->create_object("cube");
         if (cube != nullptr) {
