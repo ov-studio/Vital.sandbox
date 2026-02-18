@@ -113,9 +113,9 @@ namespace Vital::Godot {
         if (!node) return nullptr;
         if (!animation_player) {
             for (int i = 0; i < node -> get_child_count(); i++) {
-                auto* player = get_animation_player(node -> get_child(i));
-                if (player) {
-                    animation_player = player;
+                auto* result = get_animation_player(node -> get_child(i));
+                if (result) {
+                    animation_player = result;
                     break;
                 }
             }
