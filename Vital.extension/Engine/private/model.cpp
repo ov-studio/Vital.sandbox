@@ -154,9 +154,9 @@ namespace Vital::Godot {
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
             case Format::GLB: {
-                auto document = memnew(godot::GLTFDocument);
-                auto state = memnew(godot::GLTFState);
-                auto status = document -> append_from_buffer(buffer, "", state);
+                godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
+                godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
+                godot::Error status = document -> append_from_buffer(buffer, "", state);
                 if (status != godot::OK) {
                     godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(name), "'");
                     return false;
@@ -214,7 +214,7 @@ namespace Vital::Godot {
             godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
             return false;
         }
-        auto animation = animation_player -> get_animation(to_godot_string(name));
+        godot::Ref<godot::Animation> animation = animation_player -> get_animation(to_godot_string(name));
         if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
         animation_player -> set_speed_scale(speed);
         animation_player -> play(to_godot_string(name));
