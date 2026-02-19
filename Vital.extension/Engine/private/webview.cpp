@@ -52,7 +52,7 @@ namespace Vital::Godot {
 
     // Getters //
     bool Webview::is_visible() {
-        return (bool)webview -> call("is_visible_in_tree");
+        return webview -> is_visible_in_tree();
     }
 
     bool Webview::is_fullscreen() {
