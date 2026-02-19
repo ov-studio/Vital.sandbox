@@ -24,18 +24,6 @@ namespace Vital::Godot {
     // Instantiators //
     void Model::_ready() {
         get_animation_player(this);
-        
-        // TODO: REMOVE LATER
-        if (animation_player) {
-            godot::UtilityFunctions::print("Found AnimationPlayer in model '", to_godot_string(model_name), "'");
-        
-            std::vector<std::string> anims = get_animations();
-            if (!anims.empty()) {
-                // TODO: TESTING
-                play_animation(anims[0], true, 1.0f);
-                godot::UtilityFunctions::print("Playing animation: ", to_godot_string(anims[0]));
-            }
-        }
     }
 
 

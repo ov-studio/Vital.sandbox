@@ -73,6 +73,11 @@ void initialize_vital_events() {
             // First, let's see what animations are available
             auto available_anims = cube->get_animations();
             godot::UtilityFunctions::print("Available animations: ", (int)available_anims.size());
+            if (!available_anims.empty()) {
+                // TODO: TESTING
+                cube -> play_animation(available_anims[0], true, 1.0f);
+                godot::UtilityFunctions::print("Playing animation: ", Vital::to_godot_string(available_anims[0]));
+            }
 
             //tree->set_rotation(0.0f, Math::randf() * 360.0f, 0.0f);
             //props.push_back(tree);
