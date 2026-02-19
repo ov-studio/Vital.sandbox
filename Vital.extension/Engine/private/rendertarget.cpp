@@ -71,8 +71,8 @@ namespace Vital::Godot {
         rt -> viewport -> set_disable_3d(true);
         rt -> viewport -> set_transparent_background(transparent);
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
-        rt -> viewport -> call_deferred("add_child", rt);
-        Canvas::get_singleton() -> call_deferred("add_child", rt -> viewport);
+        rt -> viewport -> add_child(rt);
+        Canvas::get_singleton() -> add_child(rt -> viewport);
         return rt;
     }
 
