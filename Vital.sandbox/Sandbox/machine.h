@@ -284,7 +284,8 @@ namespace Vital::Sandbox {
             template<typename F>
             inline int execute(F&& exec) {
                 try { return exec(); }
-                catch (const Vital::Log::Warning& w) { log(std::string(Vital::Log::Warning::label), w.what()); }
+                catch (const Vital::Log::Info& e) { log(std::string(Vital::Log::Info::label), e.what()); }
+                catch (const Vital::Log::Warning& e) { log(std::string(Vital::Log::Warning::label), e.what()); }
                 catch (const Vital::Log::Error& e) { log(std::string(Vital::Log::Error::label), e.what()); }
                 catch (const std::runtime_error& e) { log(std::string(Vital::Log::Error::label), e.what()); }
                 catch (...) { log(std::string(Vital::Log::Error::label)); }

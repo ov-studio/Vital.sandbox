@@ -23,6 +23,7 @@
 
 namespace Vital::Log {
     enum class Type {
+        Info,
         Error,
         Warning
     };
@@ -32,14 +33,19 @@ namespace Vital::Log {
         std::string_view message;
     };
 
-    struct Error : std::runtime_error {
+    struct Info : std::runtime_error {
         using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = "error";
+        static constexpr std::string_view label = "info";
     };
 
     struct Warning : std::runtime_error {
         using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = "warning";
+        static constexpr std::string_view label = "warn";
+    };
+
+    struct Error : std::runtime_error {
+        using std::runtime_error::runtime_error;
+        static constexpr std::string_view label = "error";
     };
 
     inline constexpr Command List[] = {
@@ -67,7 +73,7 @@ namespace Vital::Log {
         return "N/A";
     }
 
-    inline std::runtime_error fetch(std::string_view code, Type type = Type::Error, std::string_view message = "") {
+    inline std::runtime_error fetch(std::string_view code, Type type = Type::Info, std::string_view message = "") {
         auto formatted = fmt::format(std::string(resolve(code)), std::string(message));
         switch (type) {
             case Type::Warning: return Warning(formatted);
