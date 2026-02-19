@@ -171,7 +171,6 @@ namespace Vital::Godot {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         cache_loaded.erase(it);
-        godot::UtilityFunctions::print("Model '", to_godot_string(name), "' unloaded successfully.");
         return true;
     }
 
@@ -181,10 +180,9 @@ namespace Vital::Godot {
         Model* obj = memnew(Model);
         obj -> set_model_name(name);
         godot::Node* instance = it -> second -> instantiate();
-        if (instance == nullptr) {
-            godot::UtilityFunctions::push_error("Failed to instantiate model '", to_godot_string(name), "'");
+        if (!instance) {
             memdelete(obj);
-            return nullptr;
+            throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
         obj -> add_child(instance);
         instance -> set_owner(obj);
@@ -201,7 +199,6 @@ namespace Vital::Godot {
         if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
         animation_player -> set_speed_scale(speed);
         animation_player -> play(to_godot_string(name));
-        godot::UtilityFunctions::print("Playing animation '", to_godot_string(name), "' on model '", to_godot_string(model_name), "'");
         return true;
     }
 
