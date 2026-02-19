@@ -146,11 +146,7 @@ namespace Vital::Godot {
     }
 
     bool Model::load_model_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        if (is_model_loaded(name)) {
-            godot::UtilityFunctions::push_warning("Model '", to_godot_string(name), "' is already loaded.");
-            return false;
-        }
-
+        if (is_model_loaded(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model: '{}' is already loaded", name));
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
             case Format::GLB: {
@@ -179,10 +175,7 @@ namespace Vital::Godot {
 
     bool Model::unload_model(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) {
-            godot::UtilityFunctions::push_warning("Model '", to_godot_string(name), "' is not loaded.");
-            return false;
-        }
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model: '{}' isn't loaded yet", name));
         cache_loaded.erase(it);
         godot::UtilityFunctions::print("Model '", to_godot_string(name), "' unloaded successfully.");
         return true;
@@ -190,11 +183,7 @@ namespace Vital::Godot {
 
     Model* Model::create_object(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) {
-            godot::UtilityFunctions::push_error("Model '", to_godot_string(name), "' is not loaded. Call load_model first.");
-            return nullptr;
-        }
-
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model: '{}' isn't loaded yet", name));
         Model* obj = memnew(Model);
         obj -> set_model_name(name);
         godot::Node* instance = it -> second -> instantiate();
