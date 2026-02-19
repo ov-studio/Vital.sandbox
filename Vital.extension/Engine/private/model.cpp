@@ -177,16 +177,16 @@ namespace Vital::Godot {
     Model* Model::create_object(const std::string& name) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
-        Model* obj = memnew(Model);
-        obj -> set_model_name(name);
+        Model* object = memnew(Model);
+        object -> set_model_name(name);
         godot::Node* instance = it -> second -> instantiate();
         if (!instance) {
-            memdelete(obj);
+            memdelete(object);
             throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
-        obj -> add_child(instance);
-        instance -> set_owner(obj);
-        return obj;
+        object -> add_child(instance);
+        instance -> set_owner(object);
+        return object;
     }
 
     bool Model::play_animation(const std::string& name, bool loop, float speed) {
