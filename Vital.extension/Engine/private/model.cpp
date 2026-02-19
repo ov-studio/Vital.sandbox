@@ -146,22 +146,16 @@ namespace Vital::Godot {
     }
 
     bool Model::load_model_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        if (is_model_loaded(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model: '{}' is already loaded", name));
+        if (is_model_loaded(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' is already loaded", name));
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
             case Format::GLB: {
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
                 godot::Error status = document -> append_from_buffer(buffer, "", state);
-                if (status != godot::OK) {
-                    godot::UtilityFunctions::push_error("Failed to parse GLB buffer for '", to_godot_string(name), "'");
-                    return false;
-                }
+                if (status != godot::OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
                 godot::Node* root = document -> generate_scene(state);
-                if (root == nullptr) {
-                    godot::UtilityFunctions::push_error("Failed to generate scene for '", to_godot_string(name), "'");
-                    return false;
-                }
+                if (root == nullptr) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
                 scene -> pack(root);
                 memdelete(root);
@@ -175,7 +169,7 @@ namespace Vital::Godot {
 
     bool Model::unload_model(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model: '{}' isn't loaded yet", name));
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         cache_loaded.erase(it);
         godot::UtilityFunctions::print("Model '", to_godot_string(name), "' unloaded successfully.");
         return true;
@@ -183,7 +177,7 @@ namespace Vital::Godot {
 
     Model* Model::create_object(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model: '{}' isn't loaded yet", name));
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         Model* obj = memnew(Model);
         obj -> set_model_name(name);
         godot::Node* instance = it -> second -> instantiate();
