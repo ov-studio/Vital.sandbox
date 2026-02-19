@@ -185,7 +185,6 @@ namespace Vital::Godot {
             throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
         object -> add_child(instance);
-        instance -> set_owner(object);
         return object;
     }
 
