@@ -67,7 +67,6 @@ void initialize_vital_events() {
         auto* cube = Vital::Godot::Model::create_object("cube");
         if (cube != nullptr) {
             godot::UtilityFunctions::print("Spawned cube!");
-            Vital::Godot::Core::get_singleton() -> call_deferred("add_child", cube);
             cube->set_position({0.0f, 0.0f, 0.0f});
 
             // Play animation on loop
