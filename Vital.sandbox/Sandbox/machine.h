@@ -277,7 +277,7 @@ namespace Vital::Sandbox {
                 lua_Debug debug;
                 lua_getstack(vm, 1, &debug);
                 lua_getinfo(vm, "nSl", &debug);
-                API::log(type, "[Line: " + std::to_string(debug.currentline) + "] | Reason: " + (message.empty() ? "N/A" : message));
+                API::log(type, fmt::format("{} {}", message.empty() ? "N/A" : message, "[Line: " + std::to_string(debug.currentline) + "]"));
                 push_bool(false);
             }
     
