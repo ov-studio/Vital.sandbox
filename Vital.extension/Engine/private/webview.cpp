@@ -36,7 +36,6 @@ namespace Vital::Godot {
         Canvas::get_singleton() -> call_deferred("add_child", webview);
         webview -> connect("ipc_message", godot::Callable(this, "on_message"));
         webview -> call_deferred("load_url", "https://github.com/ov-studio/Vital.sandbox");
-
     }
 
     Webview::~Webview() {
