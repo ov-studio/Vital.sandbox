@@ -25,12 +25,12 @@ namespace Vital::Godot {
     // Instantiators //
     Webview::Webview() {
         godot::Object* object = godot::ClassDB::instantiate("WebView");
-        if (!object) throw Vital::Error::fetch("webview-failed", "No compatible plugin found");
+        if (!object) throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible plugin found");
         else {
             webview = godot::Object::cast_to<godot::Control>(object);
             if (!webview) {
                 memdelete(object);
-                throw Vital::Error::fetch("webview-failed", "No compatible device found");
+                throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible device found");
             }
         }
         Canvas::get_singleton() -> call_deferred("add_child", webview);

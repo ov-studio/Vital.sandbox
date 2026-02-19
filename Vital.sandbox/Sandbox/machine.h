@@ -169,7 +169,7 @@ namespace Vital::Sandbox {
             }
 
 
-            // Pushers //
+            // Container Pushers //
             inline void table_push_nil(const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
@@ -220,7 +220,6 @@ namespace Vital::Sandbox {
                 set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
-
             inline void table_set_nil(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
@@ -273,6 +272,26 @@ namespace Vital::Sandbox {
             }
 
 
+            // Loggers //
+            inline void log(const std::string& type, const std::string& message = "") {
+                lua_Debug debug;
+                lua_getstack(vm, 1, &debug);
+                lua_getinfo(vm, "nSl", &debug);
+                API::log(type, "[Line: " + std::to_string(debug.currentline) + "] | Reason: " + (message.empty() ? "N/A" : message));
+                push_bool(false);
+            }
+    
+            template<typename F>
+            inline int execute(F&& exec) {
+                try { return exec(); }
+                catch (const Vital::Log::Warning& w) { log(std::string(Vital::Log::Warning::label), w.what()); }
+                catch (const Vital::Log::Error& e) { log(std::string(Vital::Log::Error::label), e.what()); }
+                catch (const std::runtime_error& e) { log(std::string(Vital::Log::Error::label), e.what()); }
+                catch (...) { log(std::string(Vital::Log::Error::label)); }
+                return 1;
+            }
+
+
             // Utils //
             inline void push(int index = 1) { lua_pushvalue(vm, index); }
             inline void pop(int count = 1) { lua_pop(vm, count); }
@@ -283,14 +302,6 @@ namespace Vital::Sandbox {
             inline void set_table_field(const std::string& field, int index = 1) { lua_setfield(vm, index, field.c_str()); }
             inline void set_metatable(int index = 1) { lua_setmetatable(vm, index);}
             inline void set_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
-
-            template<typename F>
-            inline int execute(F&& exec) {
-                try { return exec(); }
-                catch (const std::runtime_error& e) { throw_error(e.what()); }
-                catch (...) { throw_error(); }
-                return 1;
-            }
 
             inline void hook(const std::string& mode) {
                 auto vm_ptr = to_void(this);
@@ -314,35 +325,27 @@ namespace Vital::Sandbox {
                 lua_yield(vm, count);
             }
 
-            inline bool load_string(const std::string& raw, bool autoload = true) {
-                if (raw.empty()) return false;
-                if (luaL_loadstring(vm, raw.c_str()) != LUA_OK) {
-                    API::error(get_string(-1));
-                    pop();
-                    return false;
-                }
-                if (autoload) {
-                    if (!pcall(0, LUA_MULTRET)) {
-                        API::error(get_string(-1));
-                        pop();
-                        return false;
-                    }
-                }                
-                return true;
-            }
-
             inline void remove_reference(const std::string& name) {
                 if (!is_reference(name)) return;
                 luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
                 reference.erase(name);
             }
-
-            inline void throw_error(const std::string& error = "") {
-                lua_Debug debug;
-                lua_getstack(vm, 1, &debug);
-                lua_getinfo(vm, "nSl", &debug);
-                API::error("[Error - L" + std::to_string(debug.currentline) + "] | Reason: " + (error.empty() ? "N/A" : error));
-                push_bool(false);
+    
+            inline bool load_string(const std::string& raw, bool autoload = true) {
+                if (raw.empty()) return false;
+                if (luaL_loadstring(vm, raw.c_str()) != LUA_OK) {
+                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                    pop();
+                    return false;
+                }
+                if (autoload) {
+                    if (!pcall(0, LUA_MULTRET)) {
+                        API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                        pop();
+                        return false;
+                    }
+                }                
+                return true;
             }
     };
 }

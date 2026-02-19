@@ -172,7 +172,7 @@ namespace Vital::Godot {
                 break;
             }
         }
-        if (scene.is_null()) throw Vital::Error::fetch("invalid-arguments");
+        if (scene.is_null()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         cache_loaded[name] = scene;
         return true;
     }

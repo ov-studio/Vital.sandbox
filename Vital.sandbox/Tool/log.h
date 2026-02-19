@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Tool: error.h
+     Script: Tool: log.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Error Tools
+     Desc: Log Tools
 ----------------------------------------------------------------*/
 
 
@@ -21,14 +21,28 @@
 // Vital //
 ////////////
 
-namespace Vital::Error {
+namespace Vital::Log {
+    enum class Type {
+        Error,
+        Warning
+    };
+
     struct Command {
         std::string_view code;
         std::string_view message;
     };
-    
+
+    struct Error : std::runtime_error {
+        using std::runtime_error::runtime_error;
+        static constexpr std::string_view label = "error";
+    };
+
+    struct Warning : std::runtime_error {
+        using std::runtime_error::runtime_error;
+        static constexpr std::string_view label = "warning";
+    };
+
     inline constexpr Command List[] = {
-        {"invalid-result", "Invalid result"},
         {"invalid-arguments", "Invalid arguments"},
         {"invalid-thread", "Invalid thread"},
         {"request-failed", "Request failed ('{}')"},
@@ -45,14 +59,19 @@ namespace Vital::Error {
         {"webview-failed", "Webview failed ('{}')"}
     };
 
-    inline const std::runtime_error fetch(std::string_view code, std::string_view message = "") {
-        std::string_view error = "Unknown error";
+    inline std::string_view resolve(std::string_view code) {
         for (const auto& e : List) {
-            if (code == e.code) {
-                error = e.message;
-                break;
-            }
+            if (code == e.code) 
+                return e.message;
         }
-        return std::runtime_error(fmt::format(std::string(error), std::string(message)));
+        return "N/A";
+    }
+
+    inline std::runtime_error fetch(std::string_view code, Type type = Type::Error, std::string_view message = "") {
+        auto formatted = fmt::format(std::string(resolve(code)), std::string(message));
+        switch (type) {
+            case Type::Warning: return Warning(formatted);
+            default: return Error(formatted);
+        }
     }
 }

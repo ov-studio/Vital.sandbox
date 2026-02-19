@@ -118,7 +118,7 @@ namespace Vital::Godot {
                 break;
             }
         }
-        if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
+        if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         Texture2D payload;
         auto* texture = memnew(Texture);
         payload.texture = godot::ImageTexture::create_from_image(image);
@@ -138,7 +138,7 @@ namespace Vital::Godot {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
-        if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
+        if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         SVG payload;
         auto* texture = memnew(Texture);
         payload.texture = godot::ImageTexture::create_from_image(image);
@@ -151,7 +151,7 @@ namespace Vital::Godot {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status = image -> load_svg_from_buffer(buffer, 1.0);
-        if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
+        if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         SVG payload;
         auto* texture = memnew(Texture);
         payload.texture = godot::ImageTexture::create_from_image(image);
@@ -161,22 +161,22 @@ namespace Vital::Godot {
     }
 
     void Texture::update_svg_from_raw(const std::string& raw) {
-        if (command.type != Type::SVG) throw Vital::Error::fetch("invalid-arguments");
+        if (command.type != Type::SVG) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
-        if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
+        if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         const auto& payload = std::get<SVG>(command.payload);
         payload.texture -> update(image);
         heartbeat();
     }
 
     void Texture::update_svg_from_buffer(const godot::PackedByteArray& buffer) {
-        if (command.type != Type::SVG) throw Vital::Error::fetch("invalid-arguments");
+        if (command.type != Type::SVG) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status = image -> load_svg_from_buffer(buffer, 1.0);
-        if (status != godot::OK) throw Vital::Error::fetch("invalid-arguments");
+        if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         const auto& payload = std::get<SVG>(command.payload);
         payload.texture -> update(image);
         heartbeat();

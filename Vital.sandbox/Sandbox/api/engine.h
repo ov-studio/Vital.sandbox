@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
                 API::bind(vm, "engine", "load_string", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto input = vm -> get_string(1);
                         bool autoload = !vm -> is_bool(2) ? true : vm -> get_bool(2);
                         bool result = vm -> load_string(input, autoload);

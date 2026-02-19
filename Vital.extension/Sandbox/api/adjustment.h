@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "adjustment", "set_enabled", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto state = vm -> get_bool(1);
                         Vital::Godot::Core::get_environment() -> set_adjustment_enabled(state);
                         vm -> push_bool(true);
@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "adjustment", "set_brightness", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_adjustment_brightness(value);
                         vm -> push_bool(true);
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "adjustment", "set_contrast", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_adjustment_contrast(value);
                         vm -> push_bool(true);
@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "adjustment", "set_saturation", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_adjustment_saturation(value);
                         vm -> push_bool(true);

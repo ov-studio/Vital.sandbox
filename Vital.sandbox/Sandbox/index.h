@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
-#include <Vital.sandbox/Tool/error.h>
+#include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Tool/stack.h>
 #include <Vital.sandbox/Tool/module.h>
 #include <Vital.sandbox/Tool/thread.h>
@@ -42,7 +42,7 @@ namespace Vital::Sandbox {
     using vm_apis = std::vector<std::pair<std::function<void(void*)>, std::function<void(void*)>>>;
 
     namespace API {
-        extern void error(const std::string& error);
+        extern void log(const std::string& type, const std::string& message);
         extern void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec);
     }
 }

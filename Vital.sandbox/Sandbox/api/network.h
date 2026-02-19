@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
                         bool client = get_platform() == "client";
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         int queryArg = client ? 3 : 4;
                         auto name = vm -> get_string(1);
                         int peerID = client ? 0 : vm -> get_int(2);

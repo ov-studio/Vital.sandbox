@@ -26,7 +26,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
     Vital::Sandbox::API::bind(vm, "environment", "set_sky_custom_fov", [](auto* ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+            if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             auto fov = vm -> get_float(1);
             Vital::Godot::Core::get_environment() -> set_sky_custom_fov(fov);
             vm -> push_bool(true);
@@ -45,7 +45,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
     Vital::Sandbox::API::bind(vm, "environment", "set_bg_energy_multiplier", [](auto* ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
-            if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+            if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             auto energy = vm -> get_float(1);
             Vital::Godot::Core::get_environment() -> set_bg_energy_multiplier(energy);
             vm -> push_bool(true);

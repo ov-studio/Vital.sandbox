@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssil", "set_enabled", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto state = vm -> get_bool(1);
                         Vital::Godot::Core::get_environment() -> set_ssil_enabled(state);
                         vm -> push_bool(true);
@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssil", "set_radius", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssil_radius(value);
                         vm -> push_bool(true);
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssil", "set_intensity", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssil_intensity(value);
                         vm -> push_bool(true);
@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssil", "set_sharpness", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssil_sharpness(value);
                         vm -> push_bool(true);
@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssil", "set_normal_rejection", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssil_normal_rejection(value);
                         vm -> push_bool(true);

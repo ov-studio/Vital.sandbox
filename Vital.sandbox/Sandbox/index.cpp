@@ -34,8 +34,8 @@ namespace Vital::Sandbox {
     };
 
     namespace API {
-        void error(const std::string& error) {
-            Vital::print("error", error);
+        void log(const std::string& type, const std::string& message) {
+            Vital::print(type, message);
         }
     
         void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec) {

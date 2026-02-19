@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
-#include <Vital.sandbox/Tool/error.h>
+#include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Vendor/msgpack/msgpack.hpp>
 
 

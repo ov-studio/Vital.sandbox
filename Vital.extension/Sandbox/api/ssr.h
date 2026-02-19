@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssr", "set_enabled", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto state = vm -> get_bool(1);
                         Vital::Godot::Core::get_environment() -> set_ssr_enabled(state);
                         vm -> push_bool(true);
@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssr", "set_max_steps", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_int(1);
                         Vital::Godot::Core::get_environment() -> set_ssr_max_steps(value);
                         vm -> push_bool(true);
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssr", "set_fade_in", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssr_fade_in(value);
                         vm -> push_bool(true);
@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssr", "set_fade_out", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssr_fade_out(value);
                         vm -> push_bool(true);
@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
                 Vital::Sandbox::API::bind(vm, "ssr", "set_depth_tolerance", [](auto* ref) -> int {
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Error::fetch("invalid-arguments");
+                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         auto value = vm -> get_float(1);
                         Vital::Godot::Core::get_environment() -> set_ssr_depth_tolerance(value);
                         vm -> push_bool(true);

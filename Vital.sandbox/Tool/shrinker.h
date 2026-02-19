@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/error.h>
+#include <Vital.sandbox/Tool/log.h>
 #include <zlib.h>
 
 
@@ -28,7 +28,7 @@ namespace Vital::Tool::Shrinker {
         std::string output;
         output.resize(dest_size);
         int res = compress2(reinterpret_cast<Bytef*>(&output[0]), &dest_size, reinterpret_cast<const Bytef*>(input.data()), src_size, Z_BEST_COMPRESSION);
-        if (res != Z_OK) throw Vital::Error::fetch("request-failed", "Invalid compression");
+        if (res != Z_OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "Invalid compression");
         output.resize(dest_size);
         return output;
     }
@@ -42,7 +42,7 @@ namespace Vital::Tool::Shrinker {
             dest_size *= 2;
             output.resize(dest_size);
         }
-        if (res != Z_OK) throw Vital::Error::fetch("request-failed", "Invalid decompression");
+        if (res != Z_OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "Invalid decompression");
         output.resize(dest_size);
         return output;
     }

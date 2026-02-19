@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/error.h>
+#include <Vital.sandbox/Tool/log.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/bio.h>
@@ -32,14 +32,14 @@ namespace Vital::Tool::Crypto {
             if (mode == "SHA256") return EVP_sha256();
             if (mode == "SHA384") return EVP_sha384();
             if (mode == "SHA512") return EVP_sha512();
-            throw Vital::Error::fetch("hash-mode-nonexistent", mode);
+            throw Vital::Log::fetch("hash-mode-nonexistent", Vital::Log::Type::Error, mode);
         }
 
         inline const EVP_CIPHER* cipher_mode(std::string_view mode) {
             if (mode == "AES128") return EVP_aes_128_cbc();
             if (mode == "AES192") return EVP_aes_192_cbc();
             if (mode == "AES256") return EVP_aes_256_cbc();
-            throw Vital::Error::fetch("cipher-mode-nonexistent", mode);
+            throw Vital::Log::fetch("cipher-mode-nonexistent", Vital::Log::Type::Error, mode);
         }
 
         inline std::string base64_encode(std::string_view in) {
@@ -70,9 +70,9 @@ namespace Vital::Tool::Crypto {
 
         inline std::string cipher_run(const EVP_CIPHER* algo, bool encrypt, std::string_view data, std::string_view key, std::string_view iv) {
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-            if (!ctx) throw Vital::Error::fetch("cipher-context-failed");
-            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Vital::Error::fetch("cipher-invalid-key", std::string(key));
-            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Vital::Error::fetch("cipher-invalid-iv", std::string(iv));
+            if (!ctx) throw Vital::Log::fetch("cipher-context-failed", Vital::Log::Type::Error);
+            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Vital::Log::fetch("cipher-invalid-key", Vital::Log::Type::Error, std::string(key));
+            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Vital::Log::fetch("cipher-invalid-iv", Vital::Log::Type::Error, std::string(iv));
             std::string out;
             int outLen1 = 0;
             int outLen2 = 0;
