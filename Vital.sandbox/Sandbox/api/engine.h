@@ -27,75 +27,58 @@ namespace Vital::Sandbox::API {
             inline static void bind(void* machine) {
                 auto vm = Machine::to_machine(machine);
 
-                API::bind(vm, "engine", "get_tick", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(static_cast<int>(get_tick()));
-                        return 1;
-                    });
+                API::bind(vm, "engine", "get_tick", [](auto* vm) -> int {
+                    vm -> push_number(static_cast<int>(get_tick()));
+                    return 1;
                 });
             
-                API::bind(vm, "engine", "get_platform", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_string(get_platform());
-                        return 1;
-                    });
+                API::bind(vm, "engine", "get_platform", [](auto* vm) -> int {
+                    vm -> push_string(get_platform());
+                    return 1;
                 });
 
-                API::bind(vm, "engine", "get_timestamp", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        auto timestamp = get_timestamp();
-                        vm -> create_table();
-                        vm -> table_set_number("hour", timestamp.object["hour"].as<int32_t>());
-                        vm -> table_set_number("minute", timestamp.object["minute"].as<int32_t>());
-                        vm -> table_set_number("second", timestamp.object["second"].as<int32_t>());
-                        vm -> table_set_number("day", timestamp.object["day"].as<int32_t>());
-                        vm -> table_set_number("month", timestamp.object["month"].as<int32_t>());
-                        vm -> table_set_number("year", timestamp.object["year"].as<int32_t>());
-                        return 1;
-                    });
+                API::bind(vm, "engine", "get_timestamp", [](auto* vm) -> int {
+                    auto timestamp = get_timestamp();
+                    vm -> create_table();
+                    vm -> table_set_number("hour", timestamp.object["hour"].as<int32_t>());
+                    vm -> table_set_number("minute", timestamp.object["minute"].as<int32_t>());
+                    vm -> table_set_number("second", timestamp.object["second"].as<int32_t>());
+                    vm -> table_set_number("day", timestamp.object["day"].as<int32_t>());
+                    vm -> table_set_number("month", timestamp.object["month"].as<int32_t>());
+                    vm -> table_set_number("year", timestamp.object["year"].as<int32_t>());
+                    return 1;
                 });
 
                 #if defined(Vital_SDK_Client)
-                API::bind(vm, "engine", "get_serial", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_string(Vital::Tool::Inspect::fingerprint());
-                        return 1;
-                    });
+                API::bind(vm, "engine", "get_serial", [](auto* vm) -> int {
+                    vm -> push_string(Vital::Tool::Inspect::fingerprint());
+                    return 1;
                 });
                 #endif
             
-                API::bind(vm, "engine", "load_string", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto input = vm -> get_string(1);
-                        bool autoload = !vm -> is_bool(2) ? true : vm -> get_bool(2);
-                        bool result = vm -> load_string(input, autoload);
-                        if (autoload) vm -> push_bool(result);
-                        vm -> push_bool(result);
-                        return 1;
-                    });
+                API::bind(vm, "engine", "load_string", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto input = vm -> get_string(1);
+                    bool autoload = !vm -> is_bool(2) ? true : vm -> get_bool(2);
+                    bool result = vm -> load_string(input, autoload);
+                    if (autoload) vm -> push_bool(result);
+                    vm -> push_bool(result);
+                    return 1;
                 });
 
-                API::bind(vm, "engine", "print", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        std::ostringstream buffer;
-                        for (int i = 0; i < vm -> get_arg_count(); ++i) {
-                            size_t length;
-                            const char* value = luaL_tolstring(ref, i + 1, &length);
-                            if (i != 0) buffer << " ";
-                            buffer << std::string(value, length);
-                            vm -> pop(1);
-                        }
-                        Vital::print("info", buffer.str());
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                API::bind(vm, "engine", "print", [](auto* vm) -> int {
+                    std::ostringstream buffer;
+                    for (int i = 0; i < vm -> get_arg_count(); ++i) {
+                        size_t length;
+                        // TODO: BETTER WAY TO GET STATE
+                        const char* value = luaL_tolstring(vm -> get_state(), i + 1, &length);
+                        if (i != 0) buffer << " ";
+                        buffer << std::string(value, length);
+                        vm -> pop(1);
+                    }
+                    Vital::print("info", buffer.str());
+                    vm -> push_bool(true);
+                    return 1;
                 });
             }
 

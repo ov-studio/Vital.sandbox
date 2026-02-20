@@ -38,8 +38,8 @@ namespace Vital::Sandbox {
             Vital::print(type, message);
         }
     
-        void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_exec exec) {
-            vm -> table_set_function(name, exec, nspace);
+        void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_bind exec) {
+            vm -> bind_function(nspace, name, std::move(exec));
         }
     }
 }

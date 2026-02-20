@@ -27,37 +27,34 @@ namespace Vital::Sandbox::API {
             static void bind(void* machine) {
                 auto vm = Machine::to_machine(machine);
 
-                API::bind(vm, "network", "emit", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        bool client = get_platform() == "client";
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        int queryArg = client ? 3 : 4;
-                        auto name = vm -> get_string(1);
-                        int peerID = client ? 0 : vm -> get_int(2);
-                        bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> get_bool(queryArg - 1) : false;
-                        auto payload = vm -> is_string(queryArg) ? vm -> get_string(queryArg) : "";
-                        Vital::Tool::Stack arguments;
-                        arguments.object["network.name"] = Vital::Tool::StackValue(name);
-                        arguments.object["network.payload"] = Vital::Tool::StackValue(payload);
-                        /*
-                        Usage Example:
-                        Vital::Tool::Stack arguments;
-                        arguments.array.emplace_back(42);
-                        arguments.array.emplace_back(3.14f);
-                        arguments.array.emplace_back(2.718);
-                        arguments.object["pi"] = Vital::Tool::StackValue(3.14159);
-                        arguments.object["answer"] = Vital::Tool::StackValue(42);
-                        std::string data = arguments.serialize();
-                        Vital::Tool::Stack restored = Vital::Tool::Stack::deserialize(data);
-        
-                        int number = restored.array[0].as<int32_t>();
-                        godot::UtilityFunctions::print(number);
-                        */
-                        Vital::System::Network::emit(arguments, peerID, isLatent);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                API::bind(vm, "network", "emit", [](auto* vm) -> int {
+                    bool client = get_platform() == "client";
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    int queryArg = client ? 3 : 4;
+                    auto name = vm -> get_string(1);
+                    int peerID = client ? 0 : vm -> get_int(2);
+                    bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> get_bool(queryArg - 1) : false;
+                    auto payload = vm -> is_string(queryArg) ? vm -> get_string(queryArg) : "";
+                    Vital::Tool::Stack arguments;
+                    arguments.object["network.name"] = Vital::Tool::StackValue(name);
+                    arguments.object["network.payload"] = Vital::Tool::StackValue(payload);
+                    /*
+                    Usage Example:
+                    Vital::Tool::Stack arguments;
+                    arguments.array.emplace_back(42);
+                    arguments.array.emplace_back(3.14f);
+                    arguments.array.emplace_back(2.718);
+                    arguments.object["pi"] = Vital::Tool::StackValue(3.14159);
+                    arguments.object["answer"] = Vital::Tool::StackValue(42);
+                    std::string data = arguments.serialize();
+                    Vital::Tool::Stack restored = Vital::Tool::Stack::deserialize(data);
+    
+                    int number = restored.array[0].as<int32_t>();
+                    godot::UtilityFunctions::print(number);
+                    */
+                    Vital::System::Network::emit(arguments, peerID, isLatent);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             }
 

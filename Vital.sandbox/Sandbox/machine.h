@@ -89,6 +89,10 @@ namespace Vital::Sandbox {
             }
 
 
+            // TODO: BETTER WAY TO GET STATE
+            inline vm_state* get_state() { return vm; }
+
+
             // Checkers //
             inline bool is_virtual() { return virtualized; }
             inline bool is_nil(int index = 1) { return lua_isnoneornil(vm, index); }
@@ -347,6 +351,23 @@ namespace Vital::Sandbox {
                     }
                 }                
                 return true;
+            }
+
+
+            // TODO: BETTER WAY TO BIND FUNCTION
+            inline void bind_function(const std::string& nspace, const std::string& name, vm_bind fn) {
+                auto* heap_fn = new vm_bind(std::move(fn));
+                create_namespace(nspace);
+                lua_pushlightuserdata(vm, heap_fn);
+                lua_pushcclosure(vm, [](lua_State* ref) -> int {
+                    auto* fn = static_cast<vm_bind*>(lua_touserdata(ref, lua_upvalueindex(1)));
+                    auto vm = Machine::fetch_machine(ref);
+                    return vm -> execute([&]() -> int {
+                        return (*fn)(vm);
+                    });
+                }, 1);
+                set_table_field(name, -2);
+                pop();
             }
     };
 }
