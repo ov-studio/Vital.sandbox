@@ -29,10 +29,12 @@ namespace Vital::Godot {
         singleton = singleton ? singleton : this;
         set_process(true);
         set_process_unhandled_key_input(get_platform() == "client");
+        get_environment();
         Vital::Tool::Event::emit("vital.core:ready");
     }
 
     void Core::_exit_tree() {
+        free_environment();
         Vital::Tool::Event::emit("vital.core:free");
     }
 
