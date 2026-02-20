@@ -21,77 +21,76 @@
 ///////////////////////////////
 
 namespace Vital::Sandbox::API {
-    class SSR : public Vital::Tool::Module {
-        public:
-            inline static void bind(void* machine) {
-                auto vm = Machine::to_machine(machine);
+    struct SSR : Vital::Tool::Module {
+        static void bind(void* machine) {
+            auto vm = Machine::to_machine(machine);
 
-                #if defined(Vital_SDK_Client)
-                Vital::Sandbox::API::bind(vm, "ssr", "set_enabled", [](auto* vm) -> int {
-                    if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    auto state = vm -> get_bool(1);
-                    Vital::Godot::Core::get_environment() -> set_ssr_enabled(state);
-                    vm -> push_bool(true);
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "is_enabled", [](auto* vm) -> int {
-                    vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssr_enabled());
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "set_max_steps", [](auto* vm) -> int {
-                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    auto value = vm -> get_int(1);
-                    Vital::Godot::Core::get_environment() -> set_ssr_max_steps(value);
-                    vm -> push_bool(true);
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "get_max_steps", [](auto* vm) -> int {
-                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_max_steps());
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "set_fade_in", [](auto* vm) -> int {
-                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    auto value = vm -> get_float(1);
-                    Vital::Godot::Core::get_environment() -> set_ssr_fade_in(value);
-                    vm -> push_bool(true);
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "get_fade_in", [](auto* vm) -> int {
-                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_in());
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "set_fade_out", [](auto* vm) -> int {
-                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    auto value = vm -> get_float(1);
-                    Vital::Godot::Core::get_environment() -> set_ssr_fade_out(value);
-                    vm -> push_bool(true);
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "get_fade_out", [](auto* vm) -> int {
-                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_out());
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "set_depth_tolerance", [](auto* vm) -> int {
-                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    auto value = vm -> get_float(1);
-                    Vital::Godot::Core::get_environment() -> set_ssr_depth_tolerance(value);
-                    vm -> push_bool(true);
-                    return 1;
-                });
-            
-                Vital::Sandbox::API::bind(vm, "ssr", "get_depth_tolerance", [](auto* vm) -> int {
-                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_depth_tolerance());
-                    return 1;
-                });
-                #endif
-            }
+            #if defined(Vital_SDK_Client)
+            Vital::Sandbox::API::bind(vm, "ssr", "set_enabled", [](auto* vm) -> int {
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto state = vm -> get_bool(1);
+                Vital::Godot::Core::get_environment() -> set_ssr_enabled(state);
+                vm -> push_bool(true);
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "is_enabled", [](auto* vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssr_enabled());
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "set_max_steps", [](auto* vm) -> int {
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto value = vm -> get_int(1);
+                Vital::Godot::Core::get_environment() -> set_ssr_max_steps(value);
+                vm -> push_bool(true);
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "get_max_steps", [](auto* vm) -> int {
+                vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_max_steps());
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "set_fade_in", [](auto* vm) -> int {
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto value = vm -> get_float(1);
+                Vital::Godot::Core::get_environment() -> set_ssr_fade_in(value);
+                vm -> push_bool(true);
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "get_fade_in", [](auto* vm) -> int {
+                vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_in());
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "set_fade_out", [](auto* vm) -> int {
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto value = vm -> get_float(1);
+                Vital::Godot::Core::get_environment() -> set_ssr_fade_out(value);
+                vm -> push_bool(true);
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "get_fade_out", [](auto* vm) -> int {
+                vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_fade_out());
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "set_depth_tolerance", [](auto* vm) -> int {
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto value = vm -> get_float(1);
+                Vital::Godot::Core::get_environment() -> set_ssr_depth_tolerance(value);
+                vm -> push_bool(true);
+                return 1;
+            });
+        
+            Vital::Sandbox::API::bind(vm, "ssr", "get_depth_tolerance", [](auto* vm) -> int {
+                vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssr_depth_tolerance());
+                return 1;
+            });
+            #endif
+        }
     };
 }
