@@ -27,175 +27,121 @@ namespace Vital::Sandbox::API {
                 auto vm = Machine::to_machine(machine);
 
                 #if defined(Vital_SDK_Client)
-                Vital::Sandbox::API::bind(vm, "ssao", "set_enabled", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto state = vm -> get_bool(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_enabled(state);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_enabled", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto state = vm -> get_bool(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_enabled(state);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "is_enabled", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssao_enabled());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "is_enabled", [](auto* vm) -> int {
+                    vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssao_enabled());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_radius", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_radius(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_radius", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_radius(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_radius", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_radius());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_radius", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_radius());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_intensity", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_intensity(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_intensity", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_intensity(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_intensity", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_intensity());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_intensity", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_intensity());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_power", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_power(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_power", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_power(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_power", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_power());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_power", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_power());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_detail", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_detail(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_detail", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_detail(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_detail", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_detail());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_detail", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_detail());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_horizon", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_horizon(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_horizon", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_horizon(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_horizon", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_horizon());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_horizon", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_horizon());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_sharpness", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_sharpness(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_sharpness", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_sharpness(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_sharpness", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_sharpness());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_sharpness", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_sharpness());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_direct_light_affect", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_direct_light_affect(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_direct_light_affect", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_direct_light_affect(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_direct_light_affect", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_direct_light_affect());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_direct_light_affect", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_direct_light_affect());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "set_channel_affect", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_ssao_ao_channel_affect(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "set_channel_affect", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_ssao_ao_channel_affect(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "ssao", "get_channel_affect", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_ao_channel_affect());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "ssao", "get_channel_affect", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_ssao_ao_channel_affect());
+                    return 1;
                 });
                 #endif
             }

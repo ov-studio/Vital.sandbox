@@ -27,287 +27,209 @@ namespace Vital::Sandbox::API {
                 auto vm = Machine::to_machine(machine);
 
                 #if defined(Vital_SDK_Client)
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_enabled", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto state = vm -> get_bool(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_enabled(state);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_enabled", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto state = vm -> get_bool(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_enabled(state);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "is_enabled", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_volumetric_fog_enabled());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "is_enabled", [](auto* vm) -> int {
+                    vm -> push_bool(Vital::Godot::Core::get_environment() -> is_volumetric_fog_enabled());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_emission", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if (vm -> is_string(1)) {
-                            auto value = to_godot_string(vm -> get_string(1));
-                            if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                            Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission(godot::Color::html(value));
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_emission", [](auto* vm) -> int {
+                    if (vm -> is_string(1)) {
+                        auto value = to_godot_string(vm -> get_string(1));
+                        if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission(godot::Color::html(value));
+                    }
+                    else {
+                        if (vm -> get_arg_count() < 4) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        for (int i = 1; i <= 4; i++) {
+                            if (!vm -> is_number(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         }
-                        else {
-                            if (vm -> get_arg_count() < 4) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                            for (int i = 1; i <= 4; i++) {
-                                if (!vm -> is_number(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                            }
-                            Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission(godot::Color(
-                                vm -> get_float(1), 
-                                vm -> get_float(2), 
-                                vm -> get_float(3), 
-                                vm -> get_float(4)
-                            ));
+                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission(godot::Color(
+                            vm -> get_float(1), 
+                            vm -> get_float(2), 
+                            vm -> get_float(3), 
+                            vm -> get_float(4)
+                        ));
+                    }
+                    vm -> push_bool(true);
+                    return 1;
+                });
+            
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_emission", [](auto* vm) -> int {
+                    auto value = Vital::Godot::Core::get_environment() -> get_volumetric_fog_emission();
+                    vm -> push_number(value.r);
+                    vm -> push_number(value.g);
+                    vm -> push_number(value.b);
+                    vm -> push_number(value.a);
+                    return 4;
+                });
+            
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_albedo", [](auto* vm) -> int {
+                    if (vm -> is_string(1)) {
+                        auto value = to_godot_string(vm -> get_string(1));
+                        if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color::html(value));
+                    }
+                    else {
+                        if (vm -> get_arg_count() < 4) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        for (int i = 1; i <= 4; i++) {
+                            if (!vm -> is_number(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         }
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color(
+                            vm -> get_float(1), 
+                            vm -> get_float(2), 
+                            vm -> get_float(3), 
+                            vm -> get_float(4)
+                        ));
+                    }
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_emission", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        auto value = Vital::Godot::Core::get_environment() -> get_volumetric_fog_emission();
-                        vm -> push_number(value.r);
-                        vm -> push_number(value.g);
-                        vm -> push_number(value.b);
-                        vm -> push_number(value.a);
-                        return 4;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_albedo", [](auto* vm) -> int {
+                    auto value = Vital::Godot::Core::get_environment() -> get_volumetric_fog_albedo();
+                    vm -> push_number(value.r);
+                    vm -> push_number(value.g);
+                    vm -> push_number(value.b);
+                    vm -> push_number(value.a);
+                    return 4;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_albedo", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if (vm -> is_string(1)) {
-                            auto value = to_godot_string(vm -> get_string(1));
-                            if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                            Vital::Godot::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color::html(value));
-                        }
-                        else {
-                            if (vm -> get_arg_count() < 4) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                            for (int i = 1; i <= 4; i++) {
-                                if (!vm -> is_number(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                            }
-                            Vital::Godot::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color(
-                                vm -> get_float(1), 
-                                vm -> get_float(2), 
-                                vm -> get_float(3), 
-                                vm -> get_float(4)
-                            ));
-                        }
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_density", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_density(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_albedo", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        auto value = Vital::Godot::Core::get_environment() -> get_volumetric_fog_albedo();
-                        vm -> push_number(value.r);
-                        vm -> push_number(value.g);
-                        vm -> push_number(value.b);
-                        vm -> push_number(value.a);
-                        return 4;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_density", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_density());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_density", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_density(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_emission_energy", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission_energy(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_density", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_density());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_emission_energy", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_emission_energy());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_emission_energy", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_emission_energy(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_anisotropy", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_anisotropy(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_emission_energy", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_emission_energy());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_anisotropy", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_anisotropy());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_anisotropy", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_anisotropy(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_length", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_length(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_anisotropy", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_anisotropy());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_length", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_length());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_length", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_length(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_detail_spread", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_detail_spread(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_length", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_length());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_detail_spread", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_detail_spread());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_detail_spread", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_detail_spread(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_gi_inject", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_gi_inject(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_detail_spread", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_detail_spread());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_gi_inject", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_gi_inject());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_gi_inject", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_gi_inject(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_ambient_inject", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_ambient_inject(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_gi_inject", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_gi_inject());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_ambient_inject", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_ambient_inject());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_ambient_inject", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_ambient_inject(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_sky_affect", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_sky_affect(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_ambient_inject", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_ambient_inject());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_sky_affect", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_sky_affect());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_sky_affect", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_sky_affect(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_temporal_reprojection_enabled", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto state = vm -> get_bool(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_enabled(state);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_sky_affect", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_sky_affect());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "is_temporal_reprojection_enabled", [](auto* vm) -> int {
+                    vm -> push_bool(Vital::Godot::Core::get_environment() -> is_volumetric_fog_temporal_reprojection_enabled());
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_temporal_reprojection_enabled", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto state = vm -> get_bool(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_enabled(state);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_temporal_reprojection_amount", [](auto* vm) -> int {
+                    if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    auto value = vm -> get_float(1);
+                    Vital::Godot::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_amount(value);
+                    vm -> push_bool(true);
+                    return 1;
                 });
             
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "is_temporal_reprojection_enabled", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_bool(Vital::Godot::Core::get_environment() -> is_volumetric_fog_temporal_reprojection_enabled());
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_temporal_reprojection_amount", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        auto value = vm -> get_float(1);
-                        Vital::Godot::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_amount(value);
-                        vm -> push_bool(true);
-                        return 1;
-                    });
-                });
-            
-                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_temporal_reprojection_amount", [](auto* ref) -> int {
-                    auto vm = Machine::fetch_machine(ref);
-                    return vm -> execute([&]() -> int {
-                        vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
-                        return 1;
-                    });
+                Vital::Sandbox::API::bind(vm, "volumetric_fog", "get_temporal_reprojection_amount", [](auto* vm) -> int {
+                    vm -> push_number(Vital::Godot::Core::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
+                    return 1;
                 });
                 #endif
             }
