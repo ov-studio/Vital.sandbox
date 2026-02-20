@@ -80,10 +80,10 @@ namespace Vital::Sandbox {
 
 
             // APIs //
-            inline static const vm_buffer fetch_buffer() { return buffer; }
-            inline static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
-            inline static void* to_void(Machine* vm) { return static_cast<void*>(vm); }
-            inline static Machine* fetch_machine(vm_state* vm) {
+            static const vm_buffer fetch_buffer() { return buffer; }
+            static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
+            static void* to_void(Machine* vm) { return static_cast<void*>(vm); }
+            static Machine* fetch_machine(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
             }
