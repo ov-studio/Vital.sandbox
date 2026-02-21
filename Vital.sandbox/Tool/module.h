@@ -25,11 +25,6 @@
 ////////////
 
 namespace Vital::Tool {
-    struct Module {
-        static void bind(void* entity) {}
-        static void inject(void* entity) {}
-    };
-
     inline std::mutex module_mutex;
     inline std::unordered_map<std::string, std::string> module_cache;
 

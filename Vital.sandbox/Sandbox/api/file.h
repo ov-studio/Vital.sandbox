@@ -21,10 +21,8 @@
 ////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct File : Vital::Tool::Module {
-        static void bind(void* machine) {
-            auto vm = Machine::to_machine(machine);
-
+    struct File : Module {
+        static void bind(Machine* vm) {
             API::bind(vm, "file", "exists", [](auto* vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);

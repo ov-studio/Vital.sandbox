@@ -21,10 +21,8 @@
 /////////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Coroutine : Vital::Tool::Module {
-        static void bind(void* machine) {
-            auto vm = Machine::to_machine(machine);
-
+    struct Coroutine : Module {
+        static void bind(Machine* vm) {
             API::bind(vm, "coroutine", "create", [](auto* vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_function(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto thread = vm -> create_thread();

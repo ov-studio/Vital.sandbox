@@ -22,10 +22,8 @@
 //////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Engine : Vital::Tool::Module {
-        static void bind(void* machine) {
-            auto vm = Machine::to_machine(machine);
-
+    struct Engine : Module {
+        static void bind(Machine* vm) {
             API::bind(vm, "engine", "get_tick", [](auto* vm) -> int {
                 vm -> push_number(static_cast<int>(get_tick()));
                 return 1;
@@ -77,8 +75,7 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        static void inject(void* machine) {
-            auto vm = Machine::to_machine(machine);
+        static void inject(Machine* vm) {
             #if defined(Vital_SDK_Client)
             vm -> get_global("engine");
             vm -> get_table_field("print", -1);

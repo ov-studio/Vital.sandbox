@@ -21,10 +21,8 @@
 ////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Rest : public Vital::Tool::Module {
-        static void bind(void* machine) {
-            auto vm = Machine::to_machine(machine);
-
+    struct Rest : public Module {
+        static void bind(Machine* vm) {
             API::bind(vm, "rest", "get", [](auto* vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);

@@ -21,10 +21,8 @@
 ////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct SSAO : Vital::Tool::Module {
-        static void bind(void* machine) {
-            auto vm = Machine::to_machine(machine);
-
+    struct SSAO : Module {
+        static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             Vital::Sandbox::API::bind(vm, "ssao", "set_enabled", [](auto* vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);

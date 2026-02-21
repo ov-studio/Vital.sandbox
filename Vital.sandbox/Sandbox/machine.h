@@ -24,7 +24,7 @@ namespace Vital::Sandbox {
     class Machine {
         protected:
             static vm_apis natives;
-            inline static vm_buffer buffer;
+            inline static vm_machines machines;
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
                 {"table", luaopen_table},
@@ -49,7 +49,7 @@ namespace Vital::Sandbox {
             Machine(vm_apis apis = {}) : apis(std::move(apis)) {
                 state = luaL_newstate();
                 this -> apis = apis;
-                buffer.emplace(state, this);
+                machines.emplace(state, this);
                 for (auto& value : whitelist) {
                     luaL_requiref(state, value.name, value.func, 1);
                     pop();
@@ -68,25 +68,23 @@ namespace Vital::Sandbox {
             Machine(vm_state* thread) {
                 state = thread;
                 virtualized = true;
-                buffer.emplace(state, this);
+                machines.emplace(state, this);
             }
 
             ~Machine() {
                 if (!state) return;
                 if (!virtualized) lua_close(state);
-                buffer.erase(state);
+                machines.erase(state);
                 state = nullptr;
             }
 
 
             // APIs //
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
-            static void* to_void(Machine* vm) { return static_cast<void*>(vm); }
-            static const vm_buffer fetch_buffer() { return buffer; }
-            vm_state* fetch_state() { return state; }
+            static const vm_machines fetch_machines() { return machines; }
             static Machine* fetch_machine(vm_state* state) {
-                auto it = buffer.find(state);
-                return it != buffer.end() ? it -> second : nullptr;
+                auto it = machines.find(state);
+                return it != machines.end() ? it -> second : nullptr;
             }
 
 
@@ -294,12 +292,11 @@ namespace Vital::Sandbox {
             }
 
             void hook(const std::string& mode) {
-                auto vm_ptr = to_void(this);
                 for (auto& i : natives) {
-                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
+                    mode == "bind" ? i.first(this) : i.second(this);
                 }
                 for (auto& i : apis) {
-                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
+                    mode == "bind" ? i.first(this) : i.second(this);
                 }
             }
 
