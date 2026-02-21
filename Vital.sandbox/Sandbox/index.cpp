@@ -39,7 +39,7 @@ namespace Vital::Sandbox {
         }
     
         void bind(Machine* vm, const std::string& nspace, const std::string& name, vm_bind exec) {
-            vm -> bind_function(nspace, name, std::move(exec));
+            vm -> bind(nspace, name, std::move(exec));
         }
     }
 }

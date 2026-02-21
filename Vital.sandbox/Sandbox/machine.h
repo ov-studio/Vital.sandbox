@@ -357,8 +357,7 @@ namespace Vital::Sandbox {
                 }
             }
 
-            // TODO: BETTER WAY TO BIND FUNCTION
-            void bind_function(const std::string& nspace, const std::string& name, vm_bind exec) {
+            void bind(const std::string& nspace, const std::string& name, vm_bind exec) {
                 auto* heap_exec = new vm_bind(std::move(exec));
                 create_namespace(nspace);
                 lua_pushlightuserdata(vm, heap_exec);
