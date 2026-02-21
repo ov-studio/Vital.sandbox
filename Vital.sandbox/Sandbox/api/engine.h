@@ -68,12 +68,8 @@ namespace Vital::Sandbox::API {
             API::bind(vm, "engine", "print", [](auto* vm) -> int {
                 std::ostringstream buffer;
                 for (int i = 0; i < vm -> get_arg_count(); ++i) {
-                    size_t length;
-                    // TODO: BETTER WAY TO GET STATE
-                    const char* value = luaL_tolstring(vm -> get_state(), i + 1, &length);
                     if (i != 0) buffer << " ";
-                    buffer << std::string(value, length);
-                    vm -> pop(1);
+                    buffer << vm -> to_string(i + 1);
                 }
                 Vital::print("info", buffer.str());
                 vm -> push_bool(true);

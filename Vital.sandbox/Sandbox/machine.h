@@ -83,14 +83,11 @@ namespace Vital::Sandbox {
             static const vm_buffer fetch_buffer() { return buffer; }
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
             static void* to_void(Machine* vm) { return static_cast<void*>(vm); }
+            vm_state* fetch_state() { return vm; }
             static Machine* fetch_machine(vm_state* vm) {
                 auto it = buffer.find(vm);
                 return it != buffer.end() ? it -> second : nullptr;
             }
-
-
-            // TODO: BETTER WAY TO GET STATE
-            vm_state* get_state() { return vm; }
 
 
             // Checkers //
@@ -121,8 +118,8 @@ namespace Vital::Sandbox {
             bool get_metatable(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
             vm_state* get_thread(int index = 1) { return lua_tothread(vm, index); }
             void* get_userdata(int index = 1) { return lua_touserdata(vm, index); }
-            int get_reference(const std::string& name, bool pushValue = false) {
-                if (!pushValue) return reference.at(name);
+            int get_reference(const std::string& name, bool push_to_stack = false) {
+                if (!push_to_stack) return reference.at(name);
                 lua_rawgeti(vm, LUA_REGISTRYINDEX, reference.at(name));
                 return 0;
             }
@@ -308,14 +305,10 @@ namespace Vital::Sandbox {
             void set_metatable(int index = 1) { lua_setmetatable(vm, index);}
             void set_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
 
-            void hook(const std::string& mode) {
-                auto vm_ptr = to_void(this);
-                for (auto& i : natives) {
-                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
-                }
-                for (auto& i : apis) {
-                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
-                }
+            void remove_reference(const std::string& name) {
+                if (!is_reference(name)) return;
+                luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
+                reference.erase(name);
             }
 
             void resume(int count = 0) {
@@ -329,13 +322,14 @@ namespace Vital::Sandbox {
                 if (!is_virtual()) return;
                 lua_yield(vm, count);
             }
-
-            void remove_reference(const std::string& name) {
-                if (!is_reference(name)) return;
-                luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
-                reference.erase(name);
+        
+            std::string to_string(int index = 1) {
+                size_t length;
+                const char* value = luaL_tolstring(vm, index, &length);
+                pop(1);
+                return std::string(value, length);
             }
-    
+
             bool load_string(const std::string& raw, bool autoload = true) {
                 if (raw.empty()) return false;
                 if (luaL_loadstring(vm, raw.c_str()) != LUA_OK) {
@@ -352,7 +346,16 @@ namespace Vital::Sandbox {
                 }                
                 return true;
             }
-
+        
+            void hook(const std::string& mode) {
+                auto vm_ptr = to_void(this);
+                for (auto& i : natives) {
+                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
+                }
+                for (auto& i : apis) {
+                    mode == "bind" ? i.first(vm_ptr) : i.second(vm_ptr);
+                }
+            }
 
             // TODO: BETTER WAY TO BIND FUNCTION
             void bind_function(const std::string& nspace, const std::string& name, vm_bind fn) {

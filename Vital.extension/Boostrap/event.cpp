@@ -61,6 +61,7 @@ void initialize_vital_events() {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
 
+        // TODO: TESTING
         Vital::Godot::Model::load_model("cube", "cube.glb");
         auto* cube = Vital::Godot::Model::create_object("cube");
         if (cube != nullptr) {
@@ -72,7 +73,6 @@ void initialize_vital_events() {
             auto available_anims = cube->get_animations();
             godot::UtilityFunctions::print("Available animations: ", (int)available_anims.size());
             if (!available_anims.empty()) {
-                // TODO: TESTING
                 cube -> play_animation(available_anims[0], true, 1.0f);
                 godot::UtilityFunctions::print("Playing animation: ", Vital::to_godot_string(available_anims[0]));
             }
