@@ -358,15 +358,15 @@ namespace Vital::Sandbox {
             }
 
             // TODO: BETTER WAY TO BIND FUNCTION
-            void bind_function(const std::string& nspace, const std::string& name, vm_bind fn) {
-                auto* heap_fn = new vm_bind(std::move(fn));
+            void bind_function(const std::string& nspace, const std::string& name, vm_bind exec) {
+                auto* heap_exec = new vm_bind(std::move(exec));
                 create_namespace(nspace);
-                lua_pushlightuserdata(vm, heap_fn);
+                lua_pushlightuserdata(vm, heap_exec);
                 lua_pushcclosure(vm, [](lua_State* ref) -> int {
-                    auto* fn = static_cast<vm_bind*>(lua_touserdata(ref, lua_upvalueindex(1)));
+                    auto* exec = static_cast<vm_bind*>(lua_touserdata(ref, lua_upvalueindex(1)));
                     auto vm = Machine::fetch_machine(ref);
                     return vm -> execute([&]() -> int {
-                        return (*fn)(vm);
+                        return (*exec)(vm);
                     });
                 }, 1);
                 set_table_field(name, -2);
