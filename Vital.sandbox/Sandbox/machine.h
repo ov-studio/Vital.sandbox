@@ -42,16 +42,16 @@ namespace Vital::Sandbox {
             };
         private:
             bool virtualized = false;
-            vm_state* vm = nullptr;
+            vm_state* state = nullptr;
             vm_refs reference = {};
             vm_apis apis = {};
         public:
             Machine(vm_apis apis = {}) : apis(std::move(apis)) {
-                vm = luaL_newstate();
+                state = luaL_newstate();
                 this -> apis = apis;
-                buffer.emplace(vm, this);
+                buffer.emplace(state, this);
                 for (auto& value : whitelist) {
-                    luaL_requiref(vm, value.name, value.func, 1);
+                    luaL_requiref(state, value.name, value.func, 1);
                     pop();
                 }
                 for (auto& value : blacklist) {
@@ -66,65 +66,65 @@ namespace Vital::Sandbox {
             }
 
             Machine(vm_state* thread) {
-                vm = thread;
+                state = thread;
                 virtualized = true;
-                buffer.emplace(vm, this);
+                buffer.emplace(state, this);
             }
 
             ~Machine() {
-                if (!vm) return;
-                if (!virtualized) lua_close(vm);
-                buffer.erase(vm);
-                vm = nullptr;
+                if (!state) return;
+                if (!virtualized) lua_close(state);
+                buffer.erase(state);
+                state = nullptr;
             }
 
 
             // APIs //
-            static const vm_buffer fetch_buffer() { return buffer; }
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
             static void* to_void(Machine* vm) { return static_cast<void*>(vm); }
-            vm_state* fetch_state() { return vm; }
-            static Machine* fetch_machine(vm_state* vm) {
-                auto it = buffer.find(vm);
+            static const vm_buffer fetch_buffer() { return buffer; }
+            vm_state* fetch_state() { return state; }
+            static Machine* fetch_machine(vm_state* state) {
+                auto it = buffer.find(state);
                 return it != buffer.end() ? it -> second : nullptr;
             }
 
 
             // Checkers //
             bool is_virtual() { return virtualized; }
-            bool is_nil(int index = 1) { return lua_isnoneornil(vm, index); }
-            bool is_bool(int index = 1) { return lua_isboolean(vm, index); }
-            bool is_string(int index = 1) { return lua_isstring(vm, index); }
-            bool is_number(int index = 1) { return lua_isnumber(vm, index); }
-            bool is_table(int index = 1) { return lua_istable(vm, index); }
-            bool is_thread(int index = 1) { return lua_isthread(vm, index); }
-            bool is_userdata(int index = 1) { return lua_isuserdata(vm, index); }
-            bool is_function(int index = 1) { return lua_isfunction(vm, index); }
+            bool is_nil(int index = 1) { return lua_isnoneornil(state, index); }
+            bool is_bool(int index = 1) { return lua_isboolean(state, index); }
+            bool is_string(int index = 1) { return lua_isstring(state, index); }
+            bool is_number(int index = 1) { return lua_isnumber(state, index); }
+            bool is_table(int index = 1) { return lua_istable(state, index); }
+            bool is_thread(int index = 1) { return lua_isthread(state, index); }
+            bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
+            bool is_function(int index = 1) { return lua_isfunction(state, index); }
             bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
 
 
             // Getters //
-            int get_arg_count() { return lua_gettop(vm); }
-            bool get_global(const std::string& index) { return lua_getglobal(vm, index.c_str()); }
-            bool get_bool(int index = 1) { return lua_toboolean(vm, index); }
-            std::string get_string(int index = 1) { return lua_tostring(vm, index); }
-            int get_int(int index = 1) { return (int)lua_tonumber(vm, index); }
-            float get_float(int index = 1) { return (float)lua_tonumber(vm, index); }
-            double get_double(int index = 1) { return lua_tonumber(vm, index); }
-            bool get_table(int index = 1) { return lua_gettable(vm, index); }
-            bool get_table_field(int value, int index = 1) { return lua_geti(vm, index, value); }
-            bool get_table_field(const std::string& value, int index = 1) {return lua_getfield(vm, index, value.c_str());}
-            bool get_metatable(int index = 1) { return lua_getmetatable(vm, index); }
-            bool get_metatable(const std::string& index) { return luaL_getmetatable(vm, index.c_str()); }
-            vm_state* get_thread(int index = 1) { return lua_tothread(vm, index); }
-            void* get_userdata(int index = 1) { return lua_touserdata(vm, index); }
+            int get_arg_count() { return lua_gettop(state); }
+            bool get_global(const std::string& index) { return lua_getglobal(state, index.c_str()); }
+            bool get_bool(int index = 1) { return lua_toboolean(state, index); }
+            std::string get_string(int index = 1) { return lua_tostring(state, index); }
+            int get_int(int index = 1) { return (int)lua_tonumber(state, index); }
+            float get_float(int index = 1) { return (float)lua_tonumber(state, index); }
+            double get_double(int index = 1) { return lua_tonumber(state, index); }
+            bool get_table(int index = 1) { return lua_gettable(state, index); }
+            bool get_table_field(int value, int index = 1) { return lua_geti(state, index, value); }
+            bool get_table_field(const std::string& value, int index = 1) {return lua_getfield(state, index, value.c_str());}
+            bool get_metatable(int index = 1) { return lua_getmetatable(state, index); }
+            bool get_metatable(const std::string& index) { return luaL_getmetatable(state, index.c_str()); }
+            vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
+            void* get_userdata(int index = 1) { return lua_touserdata(state, index); }
             int get_reference(const std::string& name, bool push_to_stack = false) {
                 if (!push_to_stack) return reference.at(name);
-                lua_rawgeti(vm, LUA_REGISTRYINDEX, reference.at(name));
+                lua_rawgeti(state, LUA_REGISTRYINDEX, reference.at(name));
                 return 0;
             }
             int get_length(int index = 1) {
-                lua_len(vm, index);
+                lua_len(state, index);
                 int result = get_int(-1);
                 pop();
                 return result;
@@ -132,25 +132,25 @@ namespace Vital::Sandbox {
         
         
             // Pushers //
-            void push_global(const std::string& index) { lua_setglobal(vm, index.c_str()); }
-            void push_nil() { lua_pushnil(vm); }
-            void push_bool(bool value) { lua_pushboolean(vm, value); }
-            void push_string(const std::string& value) { lua_pushstring(vm, value.c_str()); }
-            void push_number(int value) { lua_pushinteger(vm, value); }
-            void push_number(float value) { lua_pushnumber(vm, value); }
-            void push_number(double value) { lua_pushnumber(vm, value); }
-            void push_userdata(void* value) { lua_pushlightuserdata(vm, value); }
-            void push_function(const vm_exec& value) { lua_pushcfunction(vm, value); }
+            void push_global(const std::string& index) { lua_setglobal(state, index.c_str()); }
+            void push_nil() { lua_pushnil(state); }
+            void push_bool(bool value) { lua_pushboolean(state, value); }
+            void push_string(const std::string& value) { lua_pushstring(state, value.c_str()); }
+            void push_number(int value) { lua_pushinteger(state, value); }
+            void push_number(float value) { lua_pushnumber(state, value); }
+            void push_number(double value) { lua_pushnumber(state, value); }
+            void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
+            void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
             void push_reference(const std::string& name, int index = 1) {
                 push(index);
-                reference.emplace(name, luaL_ref(vm, LUA_REGISTRYINDEX));
+                reference.emplace(name, luaL_ref(state, LUA_REGISTRYINDEX));
             }
         
 
             // Containers //
-            void create_table() { lua_newtable(vm); }
-            void create_metatable(const std::string& value) { luaL_newmetatable(vm, value.c_str()); }
-            Machine* create_thread() { return new Machine(lua_newthread(vm)); }
+            void create_table() { lua_newtable(state); }
+            void create_metatable(const std::string& value) { luaL_newmetatable(state, value.c_str()); }
+            Machine* create_thread() { return new Machine(lua_newthread(state)); }
             void create_namespace(const std::string& nspace) {
                 get_global(nspace);
                 if (!is_table(-1)) {
@@ -161,7 +161,7 @@ namespace Vital::Sandbox {
                 }
             }
             void create_userdata(void* value) {
-                void** userdata = static_cast<void**>(lua_newuserdata(vm, sizeof(void*)));
+                void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
                 *userdata = value;
             }
             void create_object(const std::string& index, void* value) {
@@ -273,11 +273,11 @@ namespace Vital::Sandbox {
             }
 
 
-            // Loggers //
+            // Error Handling & Execution  //
             void log(const std::string& type, const std::string& message = "") {
                 lua_Debug debug;
-                lua_getstack(vm, 1, &debug);
-                lua_getinfo(vm, "nSl", &debug);
+                lua_getstack(state, 1, &debug);
+                lua_getinfo(state, "nSl", &debug);
                 API::log(type, fmt::format("{} {}", message.empty() ? "N/A" : message, "[Line: " + std::to_string(debug.currentline) + "]"));
                 push_bool(false);
             }
@@ -293,60 +293,6 @@ namespace Vital::Sandbox {
                 return 1;
             }
 
-
-            // Utils //
-            void push(int index = 1) { lua_pushvalue(vm, index); }
-            void pop(int count = 1) { lua_pop(vm, count); }
-            void move(Machine* target, int count = 1) { lua_xmove(vm, target -> vm, count); }
-            bool pcall(int arguments, int returns) { return lua_pcall(vm, arguments, returns, 0) == LUA_OK; }
-            void set_table(int index = 1) { lua_settable(vm, index); }
-            void set_table_field(int field, int index = 1) { lua_seti(vm, index, field); }
-            void set_table_field(const std::string& field, int index = 1) { lua_setfield(vm, index, field.c_str()); }
-            void set_metatable(int index = 1) { lua_setmetatable(vm, index);}
-            void set_metatable(const std::string& index) { luaL_setmetatable(vm, index.c_str()); }
-
-            void remove_reference(const std::string& name) {
-                if (!is_reference(name)) return;
-                luaL_unref(vm, LUA_REGISTRYINDEX, get_reference(name));
-                reference.erase(name);
-            }
-
-            void resume(int count = 0) {
-                if (!is_virtual()) return;
-                int ncount;
-                lua_resume(vm, nullptr, count, &ncount);
-                if (lua_status(vm) != LUA_YIELD) delete this;
-            }
-
-            void pause(int count = 0) {
-                if (!is_virtual()) return;
-                lua_yield(vm, count);
-            }
-        
-            std::string to_string(int index = 1) {
-                size_t length;
-                const char* value = luaL_tolstring(vm, index, &length);
-                pop(1);
-                return std::string(value, length);
-            }
-
-            bool load_string(const std::string& raw, bool autoload = true) {
-                if (raw.empty()) return false;
-                if (luaL_loadstring(vm, raw.c_str()) != LUA_OK) {
-                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
-                    pop();
-                    return false;
-                }
-                if (autoload) {
-                    if (!pcall(0, LUA_MULTRET)) {
-                        API::log(std::string(Vital::Log::Error::label), get_string(-1));
-                        pop();
-                        return false;
-                    }
-                }                
-                return true;
-            }
-        
             void hook(const std::string& mode) {
                 auto vm_ptr = to_void(this);
                 for (auto& i : natives) {
@@ -360,16 +306,70 @@ namespace Vital::Sandbox {
             void bind(const std::string& nspace, const std::string& name, vm_bind exec) {
                 auto* heap_exec = new vm_bind(std::move(exec));
                 create_namespace(nspace);
-                lua_pushlightuserdata(vm, heap_exec);
-                lua_pushcclosure(vm, [](lua_State* ref) -> int {
-                    auto* exec = static_cast<vm_bind*>(lua_touserdata(ref, lua_upvalueindex(1)));
-                    auto vm = Machine::fetch_machine(ref);
+                lua_pushlightuserdata(state, heap_exec);
+                lua_pushcclosure(state, [](vm_state* state) -> int {
+                    auto* exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
+                    auto vm = Machine::fetch_machine(state);
                     return vm -> execute([&]() -> int {
                         return (*exec)(vm);
                     });
                 }, 1);
                 set_table_field(name, -2);
                 pop();
+            }
+
+
+            // Utils //
+            void push(int index = 1) { lua_pushvalue(state, index); }
+            void pop(int count = 1) { lua_pop(state, count); }
+            void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
+            bool pcall(int arguments, int returns) { return lua_pcall(state, arguments, returns, 0) == LUA_OK; }
+            void set_table(int index = 1) { lua_settable(state, index); }
+            void set_table_field(int field, int index = 1) { lua_seti(state, index, field); }
+            void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
+            void set_metatable(int index = 1) { lua_setmetatable(state, index);}
+            void set_metatable(const std::string& index) { luaL_setmetatable(state, index.c_str()); }
+
+            void remove_reference(const std::string& name) {
+                if (!is_reference(name)) return;
+                luaL_unref(state, LUA_REGISTRYINDEX, get_reference(name));
+                reference.erase(name);
+            }
+
+            void resume(int count = 0) {
+                if (!is_virtual()) return;
+                int ncount;
+                lua_resume(state, nullptr, count, &ncount);
+                if (lua_status(state) != LUA_YIELD) delete this;
+            }
+
+            void pause(int count = 0) {
+                if (!is_virtual()) return;
+                lua_yield(state, count);
+            }
+        
+            std::string to_string(int index = 1) {
+                size_t length;
+                const char* value = luaL_tolstring(state, index, &length);
+                pop(1);
+                return std::string(value, length);
+            }
+
+            bool load_string(const std::string& raw, bool autoload = true) {
+                if (raw.empty()) return false;
+                if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
+                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                    pop();
+                    return false;
+                }
+                if (autoload) {
+                    if (!pcall(0, LUA_MULTRET)) {
+                        API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                        pop();
+                        return false;
+                    }
+                }                
+                return true;
             }
     };
 }
