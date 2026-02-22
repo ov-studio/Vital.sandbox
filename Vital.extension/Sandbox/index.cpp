@@ -32,14 +32,14 @@ namespace Vital::Godot {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine({
-            {Vital::Sandbox::API::SSR::bind, Vital::Sandbox::API::SSR::inject},
-            {Vital::Sandbox::API::SSAO::bind, Vital::Sandbox::API::SSAO::inject},
-            {Vital::Sandbox::API::SSIL::bind, Vital::Sandbox::API::SSIL::inject},
-            {Vital::Sandbox::API::SDFGI::bind, Vital::Sandbox::API::SDFGI::inject},
-            {Vital::Sandbox::API::Emissive::bind, Vital::Sandbox::API::Emissive::inject},
-            {Vital::Sandbox::API::Fog::bind, Vital::Sandbox::API::Fog::inject},
-            {Vital::Sandbox::API::Volumetric_Fog::bind, Vital::Sandbox::API::Volumetric_Fog::inject},
-            {Vital::Sandbox::API::Adjustment::bind, Vital::Sandbox::API::Adjustment::inject}
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSR>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSAO>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSIL>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SDFGI>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Emissive>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Fog>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Volumetric_Fog>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Adjustment>()
         });
     }
 
