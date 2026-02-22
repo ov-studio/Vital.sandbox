@@ -21,7 +21,7 @@
 /////////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Coroutine : Module {
+    struct Coroutine : vm_module {
         static void bind(Machine* vm) {
             API::bind(vm, "coroutine", "create", [](auto* vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_function(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);

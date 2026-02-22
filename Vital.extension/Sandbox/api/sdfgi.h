@@ -21,7 +21,7 @@
 /////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct SDFGI : Module {
+    struct SDFGI : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             Vital::Sandbox::API::bind(vm, "sdfgi", "set_enabled", [](auto* vm) -> int {

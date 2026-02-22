@@ -21,7 +21,7 @@
 ////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct File : Module {
+    struct File : vm_module {
         static void bind(Machine* vm) {
             API::bind(vm, "file", "exists", [](auto* vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);

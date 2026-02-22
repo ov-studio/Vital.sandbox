@@ -21,7 +21,7 @@
 //////////////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Volumetric_Fog : Module {
+    struct Volumetric_Fog : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             Vital::Sandbox::API::bind(vm, "volumetric_fog", "set_enabled", [](auto* vm) -> int {

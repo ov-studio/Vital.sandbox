@@ -22,7 +22,7 @@
 //////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Engine : Module {
+    struct Engine : vm_module {
         static void bind(Machine* vm) {
             API::bind(vm, "engine", "get_tick", [](auto* vm) -> int {
                 vm -> push_number(static_cast<int>(get_tick()));

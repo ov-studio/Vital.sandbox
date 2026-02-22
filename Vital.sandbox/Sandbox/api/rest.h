@@ -21,7 +21,7 @@
 ////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Rest : public Module {
+    struct Rest : public vm_module {
         static void bind(Machine* vm) {
             API::bind(vm, "rest", "get", [](auto* vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);

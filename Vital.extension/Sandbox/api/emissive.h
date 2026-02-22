@@ -21,7 +21,7 @@
 ////////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Emissive : Module {
+    struct Emissive : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             Vital::Sandbox::API::bind(vm, "emissive", "set_enabled", [](auto* vm) -> int {

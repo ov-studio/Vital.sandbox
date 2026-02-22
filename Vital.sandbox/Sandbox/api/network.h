@@ -22,7 +22,7 @@
 ///////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Network : Module {
+    struct Network : vm_module {
         static void bind(Machine* vm) {
             API::bind(vm, "network", "emit", [](auto* vm) -> int {
                 bool client = get_platform() == "client";

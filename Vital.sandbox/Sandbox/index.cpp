@@ -24,13 +24,13 @@
 
 namespace Vital::Sandbox {
     vm_apis Machine::natives = {
-        API::Module::make<API::Engine>(),
-        API::Module::make<API::Coroutine>(),
-        API::Module::make<API::Network>(),
-        API::Module::make<API::Rest>(),
-        API::Module::make<API::File>(),
-        API::Module::make<API::Crypto>(),
-        API::Module::make<API::Shrinker>()
+        vm_module::make_api<API::Engine>(),
+        vm_module::make_api<API::Coroutine>(),
+        vm_module::make_api<API::Network>(),
+        vm_module::make_api<API::Rest>(),
+        vm_module::make_api<API::File>(),
+        vm_module::make_api<API::Crypto>(),
+        vm_module::make_api<API::Shrinker>()
     };
 
     namespace API {

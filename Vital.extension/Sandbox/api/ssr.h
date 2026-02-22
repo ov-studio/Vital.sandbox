@@ -21,7 +21,7 @@
 ///////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct SSR : Module {
+    struct SSR : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             Vital::Sandbox::API::bind(vm, "ssr", "set_enabled", [](auto* vm) -> int {

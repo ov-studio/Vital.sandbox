@@ -21,7 +21,7 @@
 ///////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Fog : Module {
+    struct Fog : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             Vital::Sandbox::API::bind(vm, "fog", "set_enabled", [](auto* vm) -> int {

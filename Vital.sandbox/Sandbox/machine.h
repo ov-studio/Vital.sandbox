@@ -293,10 +293,10 @@ namespace Vital::Sandbox {
 
             void hook(const std::string& mode) {
                 for (auto& i : natives) {
-                    mode == "bind" ? i.first(this) : i.second(this);
+                    mode == "bind" ? i.bind(this) : i.inject(this);
                 }
                 for (auto& i : apis) {
-                    mode == "bind" ? i.first(this) : i.second(this);
+                    mode == "bind" ? i.bind(this) : i.inject(this);
                 }
             }
 
