@@ -23,7 +23,7 @@
 namespace Vital::Sandbox {
     class Machine {
         protected:
-            static vm_apis natives;
+            static vm_apis internal_apis;
             inline static vm_machines machines;
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -44,11 +44,10 @@ namespace Vital::Sandbox {
             bool virtualized = false;
             vm_state* state = nullptr;
             vm_refs reference = {};
-            vm_apis apis = {};
+            vm_apis external_apis = {};
         public:
-            Machine(vm_apis apis = {}) : apis(std::move(apis)) {
+            Machine(vm_apis apis = {}) : external_apis(std::move(apis)) {
                 state = luaL_newstate();
-                this -> apis = apis;
                 machines.emplace(state, this);
                 for (auto& value : whitelist) {
                     luaL_requiref(state, value.name, value.func, 1);
@@ -292,10 +291,10 @@ namespace Vital::Sandbox {
             }
 
             void hook(const std::string& mode) {
-                for (auto& i : natives) {
+                for (auto& i : internal_apis) {
                     mode == "bind" ? i.bind(this) : i.inject(this);
                 }
-                for (auto& i : apis) {
+                for (auto& i : external_apis) {
                     mode == "bind" ? i.bind(this) : i.inject(this);
                 }
             }

@@ -23,7 +23,7 @@
 /////////////////////
 
 namespace Vital::Sandbox {
-    vm_apis Machine::natives = {
+    vm_apis Machine::internal_apis = {
         vm_module::make_api<API::Engine>(),
         vm_module::make_api<API::Coroutine>(),
         vm_module::make_api<API::Network>(),
