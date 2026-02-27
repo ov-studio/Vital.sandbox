@@ -52,7 +52,6 @@ namespace Vital::Log {
         {"invalid-arguments", "Invalid arguments"},
         {"invalid-thread", "Invalid thread"},
         {"request-failed", "Request failed ('{}')"},
-        {"serial-nonexistent", "Device serial not found"},
         {"hash-mode-nonexistent", "Hash mode not found ('{}')"},
         {"cipher-mode-nonexistent", "Cipher mode not found ('{}')"},
         {"cipher-invalid-key", "Invalid cipher key ('{}')"},
