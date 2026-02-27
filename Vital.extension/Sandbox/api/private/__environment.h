@@ -254,8 +254,8 @@ public:
 	//float get_adjustment_contrast() const;
 	//void set_adjustment_saturation(float p_saturation);
 	//float get_adjustment_saturation() const;
-	//XXXX void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
-	//XXXX Ref<Texture> get_adjustment_color_correction() const;
+	//void set_adjustment_color_correction(const Ref<Texture> &p_color_correction);
+	//Ref<Texture> get_adjustment_color_correction() const;
 protected:
 	template <typename T, typename B>
 	static void register_virtuals() {
