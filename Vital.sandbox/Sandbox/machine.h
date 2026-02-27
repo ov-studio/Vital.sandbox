@@ -139,6 +139,7 @@ namespace Vital::Sandbox {
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
             void push_reference(const std::string& name, int index = 1) {
+                if (is_reference(name)) return;
                 push(index);
                 reference.emplace(name, luaL_ref(state, LUA_REGISTRYINDEX));
             }
