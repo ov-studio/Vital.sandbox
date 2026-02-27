@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
+#include <Vital.extension/Engine/public/texture.h>
 
 
 //////////////////////////////////////
@@ -79,10 +80,9 @@ namespace Vital::Sandbox::API {
             API::bind(vm, "adjustment", "set_lut", [](auto* vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                godot::Ref<godot::Image> lut_image;
-                lut_image.instantiate();
-                godot::Error status = lut_image -> load(to_godot_string(path));
-                if (status != godot::OK) throw Vital::Log::fetch("lut-load-failed", Vital::Log::Type::Error);
+                auto lut_texture = Vital::Godot::Texture::get_from_ref(path);
+                if (!lut_texture) lut_texture = Vital::Godot::Texture::create_texture_2d(path, path);
+                godot::Ref<godot::Image> lut_image = lut_texture -> get_texture() -> get_image();
                 int img_w = lut_image -> get_width();
                 int img_h = lut_image -> get_height();
                 int lut_size = 0;
