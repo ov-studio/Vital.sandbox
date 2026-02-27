@@ -23,7 +23,7 @@
 void Vital::Sandbox::API::Environment::bind(void* instance) {
     auto vm = Machine::to_machine(instance);
 
-    API::bind(vm, "environment", "set_sky_custom_fov", [](auto* ref) -> int {
+    API::bind(vm, "environment", "set_sky_custom_fov", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -34,7 +34,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
         });
     });
 
-    API::bind(vm, "environment", "get_sky_custom_fov", [](auto* ref) -> int {
+    API::bind(vm, "environment", "get_sky_custom_fov", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             vm -> push_number(Vital::Godot::Core::get_environment() -> get_sky_custom_fov());
@@ -42,7 +42,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
         });
     });
 
-    API::bind(vm, "environment", "set_bg_energy_multiplier", [](auto* ref) -> int {
+    API::bind(vm, "environment", "set_bg_energy_multiplier", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -53,7 +53,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
         });
     });
 
-    API::bind(vm, "environment", "get_bg_energy_multiplier", [](auto* ref) -> int {
+    API::bind(vm, "environment", "get_bg_energy_multiplier", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
             vm -> push_number(Vital::Godot::Core::get_environment() -> get_bg_energy_multiplier());

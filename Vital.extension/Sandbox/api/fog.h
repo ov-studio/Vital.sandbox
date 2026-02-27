@@ -24,7 +24,7 @@ namespace Vital::Sandbox::API {
     struct Fog : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
-            API::bind(vm, "fog", "set_enabled", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_fog_enabled(state);
@@ -32,12 +32,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "is_enabled", [](auto* vm) -> int {
+            API::bind(vm, "fog", "is_enabled", [](auto vm) -> int {
                 vm -> push_bool(Vital::Godot::Core::get_environment() -> is_fog_enabled());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_mode", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_mode", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_int(1);
                 if ((value < godot::Environment::FOG_MODE_EXPONENTIAL) || (value > godot::Environment::FOG_MODE_DEPTH)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -46,12 +46,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_mode", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_mode", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_mode());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_light_color", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_light_color", [](auto vm) -> int {
                 if (vm -> is_string(1)) {
                     auto value = to_godot_string(vm -> get_string(1));
                     if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_light_color", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_light_color", [](auto vm) -> int {
                 auto value = Vital::Godot::Core::get_environment() -> get_fog_light_color();
                 vm -> push_number(value.r);
                 vm -> push_number(value.g);
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
                 return 4;
             });
         
-            API::bind(vm, "fog", "set_light_energy", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_light_energy", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_light_energy(value);
@@ -90,12 +90,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_light_energy", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_light_energy", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_light_energy());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_sun_scatter", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_sun_scatter", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_sun_scatter(value);
@@ -103,12 +103,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_sun_scatter", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_sun_scatter", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_sun_scatter());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_density", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_density", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_density(value);
@@ -116,12 +116,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_density", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_density", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_density());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_height", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_height", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_height(value);
@@ -129,12 +129,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_height", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_height", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_height());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_height_density", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_height_density", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_height_density(value);
@@ -142,12 +142,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_height_density", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_height_density", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_height_density());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_aerial_perspective", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_aerial_perspective", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_aerial_perspective(value);
@@ -155,12 +155,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_aerial_perspective", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_aerial_perspective", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_aerial_perspective());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_sky_affect", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_sky_affect", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_sky_affect(value);
@@ -168,12 +168,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_sky_affect", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_sky_affect", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_sky_affect());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_depth_curve", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_depth_curve", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_depth_curve(value);
@@ -181,12 +181,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_depth_curve", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_depth_curve", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_depth_curve());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_depth_begin", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_depth_begin", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_depth_begin(value);
@@ -194,12 +194,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_depth_begin", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_depth_begin", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_depth_begin());
                 return 1;
             });
         
-            API::bind(vm, "fog", "set_depth_end", [](auto* vm) -> int {
+            API::bind(vm, "fog", "set_depth_end", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Godot::Core::get_environment() -> set_fog_depth_end(value);
@@ -207,7 +207,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "fog", "get_depth_end", [](auto* vm) -> int {
+            API::bind(vm, "fog", "get_depth_end", [](auto vm) -> int {
                 vm -> push_number(Vital::Godot::Core::get_environment() -> get_fog_depth_end());
                 return 1;
             });

@@ -53,7 +53,7 @@ namespace Vital::Godot {
     }
 
     godot::Node* Core::get_root() {
-        auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree -> get_root() : nullptr;
     }
     

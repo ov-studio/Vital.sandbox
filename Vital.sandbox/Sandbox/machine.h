@@ -300,11 +300,11 @@ namespace Vital::Sandbox {
             }
 
             void bind(const std::string& nspace, const std::string& name, vm_bind exec) {
-                auto* heap_exec = new vm_bind(std::move(exec));
+                auto heap_exec = new vm_bind(std::move(exec));
                 create_namespace(nspace);
                 lua_pushlightuserdata(state, heap_exec);
                 lua_pushcclosure(state, [](vm_state* state) -> int {
-                    auto* exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
+                    auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto vm = Machine::fetch_machine(state);
                     return vm -> execute([&]() -> int {
                         return (*exec)(vm);

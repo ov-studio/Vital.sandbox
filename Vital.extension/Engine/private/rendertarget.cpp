@@ -31,7 +31,7 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::_update() {
-        auto* rs = Core::get_rendering_server();
+        auto rs = Core::get_rendering_server();
         auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
         rs -> viewport_set_active(viewport_main, false);
         rs -> force_draw();
@@ -64,7 +64,7 @@ namespace Vital::Godot {
 
     // APIs //
     RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
-        auto* rt = memnew(RenderTarget);
+        auto rt = memnew(RenderTarget);
         rt -> viewport = memnew(godot::SubViewport);
         rt -> viewport -> set_size({width, height});
         rt -> viewport -> set_disable_3d(true);

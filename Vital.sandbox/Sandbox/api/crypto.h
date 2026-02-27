@@ -23,7 +23,7 @@
 namespace Vital::Sandbox::API {
     struct Crypto : vm_module {
         static void bind(Machine* vm) {
-            API::bind(vm, "crypto", "hash", [](auto* vm) -> int {
+            API::bind(vm, "crypto", "hash", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
@@ -31,21 +31,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, "crypto", "encode", [](auto* vm) -> int {
+            API::bind(vm, "crypto", "encode", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
                 vm -> push_string(Vital::Tool::Crypto::encode(input));
                 return 1;
             });
         
-            API::bind(vm, "crypto", "decode", [](auto* vm) -> int {
+            API::bind(vm, "crypto", "decode", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
                 vm -> push_string(Vital::Tool::Crypto::decode(input));
                 return 1;
             });
         
-            API::bind(vm, "crypto", "encrypt", [](auto* vm) -> int {
+            API::bind(vm, "crypto", "encrypt", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
@@ -56,7 +56,7 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
         
-            API::bind(vm, "crypto", "decrypt", [](auto* vm) -> int {
+            API::bind(vm, "crypto", "decrypt", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 4) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_string(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
