@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                 lut_texture_3d -> create(godot::Image::FORMAT_RGBA8, lut_size, lut_size, lut_size, false, lut_slices);
                 Vital::Godot::Core::get_environment() -> set_adjustment_color_correction(lut_texture_3d);
                 vm -> push_string(path);
-                vm -> push_reference("lut_path", -1);
+                vm -> set_reference("lut_path", -1);
                 vm -> pop(1);
                 vm -> push_bool(true);
                 return 1;
@@ -137,7 +137,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, "adjustment", "reset_lut", [](auto vm) -> int {
                 Vital::Godot::Core::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
-                vm -> remove_reference("lut_path");
+                vm -> del_reference("lut_path");
                 vm -> push_bool(true);
                 return 1;
             });

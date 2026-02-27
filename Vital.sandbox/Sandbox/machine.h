@@ -115,18 +115,18 @@ namespace Vital::Sandbox {
             bool get_metatable(const std::string& index) { return luaL_getmetatable(state, index.c_str()); }
             vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
             void* get_userdata(int index = 1) { return lua_touserdata(state, index); }
-            int get_reference(const std::string& name, bool push_to_stack = false) {
-                if (!push_to_stack) return reference.at(name);
-                lua_rawgeti(state, LUA_REGISTRYINDEX, reference.at(name));
-                return 0;
-            }
             int get_length(int index = 1) {
                 lua_len(state, index);
                 int result = get_int(-1);
                 pop();
                 return result;
             }
-        
+            int get_reference(const std::string& name, bool push_to_stack = false) {
+                if (!push_to_stack) return reference.at(name);
+                lua_rawgeti(state, LUA_REGISTRYINDEX, reference.at(name));
+                return 0;
+            }
+
         
             // Pushers //
             void push_global(const std::string& index) { lua_setglobal(state, index.c_str()); }
@@ -138,13 +138,8 @@ namespace Vital::Sandbox {
             void push_number(double value) { lua_pushnumber(state, value); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
-            void push_reference(const std::string& name, int index = 1) {
-                if (is_reference(name)) return;
-                push(index);
-                reference.emplace(name, luaL_ref(state, LUA_REGISTRYINDEX));
-            }
-        
 
+        
             // Containers //
             void create_table() { lua_newtable(state); }
             void create_metatable(const std::string& value) { luaL_newmetatable(state, value.c_str()); }
@@ -326,8 +321,14 @@ namespace Vital::Sandbox {
             void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
             void set_metatable(int index = 1) { lua_setmetatable(state, index);}
             void set_metatable(const std::string& index) { luaL_setmetatable(state, index.c_str()); }
+    
+            void set_reference(const std::string& name, int index = 1) {
+                del_reference(name);
+                push(index);
+                reference.emplace(name, luaL_ref(state, LUA_REGISTRYINDEX));
+            }
 
-            void remove_reference(const std::string& name) {
+            void del_reference(const std::string& name) {
                 if (!is_reference(name)) return;
                 luaL_unref(state, LUA_REGISTRYINDEX, get_reference(name));
                 reference.erase(name);
@@ -344,14 +345,14 @@ namespace Vital::Sandbox {
                 if (!is_virtual()) return;
                 lua_yield(state, count);
             }
-        
+
             std::string to_string(int index = 1) {
                 size_t length;
                 const char* value = luaL_tolstring(state, index, &length);
                 pop(1);
                 return std::string(value, length);
             }
-
+    
             bool load_string(const std::string& raw, bool autoload = true) {
                 if (raw.empty()) return false;
                 if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {

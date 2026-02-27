@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
         static void inject(Machine* vm) {
             vm -> get_global("network");
             vm -> get_table_field("execute", -1);
-            vm -> push_reference("vital.network:execute", -1);
+            vm -> set_reference("vital.network:execute", -1);
             vm -> pop(2);
             vm -> table_set_nil("execute", "network");
         }
