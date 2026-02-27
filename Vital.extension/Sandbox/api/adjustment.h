@@ -125,6 +125,12 @@ namespace Vital::Sandbox::API {
                 vm -> push_bool(true);
                 return 1;
             });
+
+            API::bind(vm, "adjustment", "reset_lut", [](auto* vm) -> int {
+                Vital::Godot::Core::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
+                vm -> push_bool(true);
+                return 1;
+            });
             #endif
         }
     };
