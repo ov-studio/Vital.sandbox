@@ -56,11 +56,11 @@ namespace Vital::Log {
         {"cipher-mode-nonexistent", "Cipher mode not found ('{}')"},
         {"cipher-invalid-key", "Invalid cipher key ('{}')"},
         {"cipher-invalid-iv", "Invalid cipher IV ('{}')"},
-        {"base-path-invalid", "Invalid base path ('{}')"},
-        {"file-path-invalid", "Invalid file path ('{}')"},
-        {"file-nonexistent", "File not found ('{}')"},
-        {"directory-nonexistent", "Directory not found ('{}')"},
-        {"file-busy", "File busy ('{}')"},
+        {"base-path-invalid", "Invalid base path (`{}`)"},
+        {"file-path-invalid", "Invalid file path (`{}`)"},
+        {"file-nonexistent", "File not found (`{}`)"},
+        {"directory-nonexistent", "Directory not found (`{}`)"},
+        {"file-busy", "File busy (`{}`)"},
         {"webview-failed", "Webview failed ('{}')"}
     };
 
