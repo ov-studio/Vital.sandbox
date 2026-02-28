@@ -75,6 +75,7 @@ namespace Vital::Log {
     inline std::runtime_error fetch(std::string_view code, Type type = Type::Info, std::string_view message = "") {
         auto formatted = fmt::format(std::string(resolve(code)), std::string(message));
         switch (type) {
+            case Type::Info: return Info(formatted);
             case Type::Warning: return Warning(formatted);
             default: return Error(formatted);
         }
