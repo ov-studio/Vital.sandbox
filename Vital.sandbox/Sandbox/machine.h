@@ -295,19 +295,28 @@ namespace Vital::Sandbox {
                 }
             }
 
-            void bind(const std::string& nspace, const std::string& name, vm_bind exec) {
+            void bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
                 auto heap_exec = new vm_bind(std::move(exec));
-                create_namespace(nspace);
+                create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    get_table_field(scope[i], -1);
+                    if (!is_table(-1)) {
+                        pop();
+                        create_table();
+                        push(-1);
+                        set_table_field(scope[i], -3);
+                    }
+                }
                 lua_pushlightuserdata(state, heap_exec);
                 lua_pushcclosure(state, [](vm_state* state) -> int {
                     auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto vm = Machine::fetch_machine(state);
-                    return vm -> execute([&]() -> int {
+                    return vm->execute([&]() -> int {
                         return (*exec)(vm);
                     });
                 }, 1);
                 set_table_field(name, -2);
-                pop();
+                pop(static_cast<int>(scope.size()));
             }
 
 
