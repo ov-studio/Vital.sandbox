@@ -24,16 +24,16 @@ namespace Vital::Sandbox::API {
     struct Emissive : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
+            API::bind(vm, {"engine", "emissive"}, "is_enabled", [](auto vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_glow_enabled());
+                return 1;
+            });
+
             API::bind(vm, {"engine", "emissive"}, "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_glow_enabled(state);
                 vm -> push_bool(true);
-                return 1;
-            });
-        
-            API::bind(vm, {"engine", "emissive"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_glow_enabled());
                 return 1;
             });
         

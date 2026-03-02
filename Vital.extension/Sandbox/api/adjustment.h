@@ -25,16 +25,16 @@ namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {
         static void bind(Machine* vm) {            
             #if defined(Vital_SDK_Client)
+            API::bind(vm, {"engine", "adjustment"}, "is_enabled", [](auto vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_adjustment_enabled());
+                return 1;
+            });
+    
             API::bind(vm, {"engine", "adjustment"}, "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_adjustment_enabled(state);
                 vm -> push_bool(true);
-                return 1;
-            });
-        
-            API::bind(vm, {"engine", "adjustment"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_adjustment_enabled());
                 return 1;
             });
         

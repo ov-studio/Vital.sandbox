@@ -24,16 +24,16 @@ namespace Vital::Sandbox::API {
     struct SSIL : vm_module {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
+            API::bind(vm, {"engine", "ssil"}, "is_enabled", [](auto vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssil_enabled());
+                return 1;
+            });
+
             API::bind(vm, {"engine", "ssil"}, "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_ssil_enabled(state);
                 vm -> push_bool(true);
-                return 1;
-            });
-        
-            API::bind(vm, {"engine", "ssil"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_ssil_enabled());
                 return 1;
             });
         
