@@ -90,16 +90,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
+            API::bind(vm, {"engine", "sdfgi"}, "is_using_occlusion", [](auto vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_using_occlusion());
+                return 1;
+            });
+
             API::bind(vm, {"engine", "sdfgi"}, "set_use_occlusion", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_sdfgi_use_occlusion(state);
                 vm -> push_bool(true);
-                return 1;
-            });
-        
-            API::bind(vm, {"engine", "sdfgi"}, "is_using_occlusion", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_using_occlusion());
                 return 1;
             });
         
@@ -116,16 +116,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
+            API::bind(vm, {"engine", "sdfgi"}, "is_reading_sky_light", [](auto vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_reading_sky_light());
+                return 1;
+            });
+
             API::bind(vm, {"engine", "sdfgi"}, "set_read_sky_light", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_sdfgi_read_sky_light(state);
                 vm -> push_bool(true);
-                return 1;
-            });
-        
-            API::bind(vm, {"engine", "sdfgi"}, "is_reading_sky_light", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_sdfgi_reading_sky_light());
                 return 1;
             });
         
