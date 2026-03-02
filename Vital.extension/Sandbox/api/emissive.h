@@ -53,16 +53,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
+            API::bind(vm, {"engine", "emissive"}, "is_normalized", [](auto vm) -> int {
+                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_glow_normalized());
+                return 1;
+            });
+
             API::bind(vm, {"engine", "emissive"}, "set_normalized", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Godot::Core::get_environment() -> set_glow_normalized(state);
                 vm -> push_bool(true);
-                return 1;
-            });
-        
-            API::bind(vm, {"engine", "emissive"}, "is_normalized", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_glow_normalized());
                 return 1;
             });
         
