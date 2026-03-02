@@ -32,8 +32,8 @@ namespace Vital::Godot {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine({
-            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSR>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSAO>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSR>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSIL>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SDFGI>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Emissive>(),
