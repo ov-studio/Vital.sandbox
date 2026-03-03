@@ -114,15 +114,24 @@ namespace Vital::Godot {
         set_rotation_degrees(rotation);
     }
 
+    bool Model::set_component_visible(const std::string& name, bool state) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
+        mesh -> set_visible(state);
+        return true;
+    }
+
     void Model::set_animation_speed(float speed) {
         if (!animation_player) return;
         animation_player -> set_speed_scale(speed);
     }
 
-    bool Model::set_component_visible(const std::string& name, bool state) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
-        mesh -> set_visible(state);
+    bool Model::set_blend_shape_value(const std::string& component, const std::string& blend_shape, float value) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
+        if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
+        mesh -> set_blend_shape_value(index, value);
         return true;
     }
 
@@ -172,17 +181,7 @@ namespace Vital::Godot {
         return animations;
     }
 
-    std::string Model::get_current_animation() {
-        if (!animation_player) return "";
-        return to_std_string(animation_player -> get_current_animation());
-    }
-
-    float Model::get_animation_speed() {
-        if (!animation_player) return 1.0f;
-        return animation_player -> get_speed_scale();
-    }
-
-    std::vector<std::string> Model::get_component_blend_shapes(const std::string& component) {
+    std::vector<std::string> Model::get_blend_shapes(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> blend_shapes;
@@ -195,21 +194,22 @@ namespace Vital::Godot {
         return blend_shapes;
     }
 
+    std::string Model::get_current_animation() {
+        if (!animation_player) return "";
+        return to_std_string(animation_player -> get_current_animation());
+    }
+
+    float Model::get_animation_speed() {
+        if (!animation_player) return 1.0f;
+        return animation_player -> get_speed_scale();
+    }
+
     float Model::get_blend_shape_value(const std::string& component, const std::string& blend_shape) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
         return mesh -> get_blend_shape_value(index);
-    }
-
-    bool Model::set_blend_shape_value(const std::string& component, const std::string& blend_shape, float value) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
-        if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        mesh -> set_blend_shape_value(index, value);
-        return true;
     }
 
 

@@ -80,7 +80,7 @@ void initialize_vital_events() {
             */
 
             /*
-            auto blend_shapes = cube->get_component_blend_shapes("Hair_bang_R/Skeleton3D/Torso_vest_");
+            auto blend_shapes = cube->get_blend_shapes("Hair_bang_R/Skeleton3D/Torso_vest_");
             godot::UtilityFunctions::print("Blend shapes for Torso_vest_: ", (int)blend_shapes.size());
             for (const auto& shape : blend_shapes) {
                 godot::UtilityFunctions::print("  - ", Vital::to_godot_string(shape));
