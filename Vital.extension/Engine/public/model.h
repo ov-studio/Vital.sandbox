@@ -58,6 +58,7 @@ namespace Vital::Godot {
             void set_rotation(godot::Vector3 rotation);
             void set_animation_speed(float speed);
             bool set_component_visible(const std::string& name, bool state);
+            bool set_blend_shape_value(const std::string& component, const std::string& blend_shape, float value);
 
 
             // Getters //
@@ -70,6 +71,8 @@ namespace Vital::Godot {
             std::vector<std::string> get_animations();
             std::string get_current_animation();
             float get_animation_speed();
+            std::vector<std::string> get_component_blend_shapes(const std::string& component);
+            float get_blend_shape_value(const std::string& component, const std::string& blend_shape);
 
 
             // APIs //
