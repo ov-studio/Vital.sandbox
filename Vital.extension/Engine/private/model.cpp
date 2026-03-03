@@ -35,7 +35,13 @@ namespace Vital::Godot {
         std::string remainder = (separator == std::string::npos) ? "" : path.substr(separator + 1);
         for (int i = 0; i < node -> get_child_count(); i++) {
             godot::Node* child = node -> get_child(i);
-            if (to_std_string(child -> get_name()) != segment) continue;
+            std::string child_name = to_std_string(child -> get_name());
+            if (!child_name.empty() && child_name[0] == '@') {
+                auto* result = find_mesh_node(child, path);
+                if (result) return result;
+                continue;
+            }
+            if (child_name != segment) continue;
             if (remainder.empty()) {
                 auto* mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
                 if (mesh) return mesh;
@@ -51,12 +57,10 @@ namespace Vital::Godot {
         if (!node) return;
         for (int i = 0; i < node -> get_child_count(); i++) {
             godot::Node* child = node -> get_child(i);
-            std::string child_path = current_path.empty()
-                ? to_std_string(child -> get_name())
-                : current_path + "/" + to_std_string(child -> get_name());
-            if (godot::Object::cast_to<godot::MeshInstance3D>(child)) {
-                out.push_back(child_path);
-            }
+            std::string child_name = to_std_string(child -> get_name());
+            bool is_generated = !child_name.empty() && child_name[0] == '@';
+            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : current_path + "/" + child_name;
+            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
             collect_mesh_nodes(child, out, child_path);
         }
     }
