@@ -62,11 +62,32 @@ void initialize_vital_events() {
 
 
         // TODO: TESTING
-        Vital::Godot::Model::load_model("cube", "cube.glb");
+        Vital::Godot::Model::load_model("cube", "ladyforaviril.glb");
         auto cube = Vital::Godot::Model::create_object("cube");
         if (cube != nullptr) {
             godot::UtilityFunctions::print("Spawned cube!");
             cube->set_position({0.0f, 0.0f, 0.0f});
+
+            /*
+            auto components = cube->get_components();
+            godot::UtilityFunctions::print("Available components: ", (int)components.size());
+            for (const auto& path : components) {
+                godot::UtilityFunctions::print("  - ", Vital::to_godot_string(path));
+            }
+
+            //cube->set_component_visible("ACNH Character Armature/Skeleton3D/Hair 01/Hair 01", false);
+            //cube->set_component_visible("ACNH Character Armature/Skeleton3D/Hair_02/Hair_02", false);
+            */
+
+            /*
+            auto blend_shapes = cube->get_component_blend_shapes("Hair_bang_R/Skeleton3D/Torso_vest_");
+            godot::UtilityFunctions::print("Blend shapes for Torso_vest_: ", (int)blend_shapes.size());
+            for (const auto& shape : blend_shapes) {
+                godot::UtilityFunctions::print("  - ", Vital::to_godot_string(shape));
+            }
+            
+            //cube->set_blend_shape_value("Hair_bang_R/Skeleton3D/Torso_vest_", "Smile", 1.0f);
+            */
 
             // Play animation on loop
             // First, let's see what animations are available
