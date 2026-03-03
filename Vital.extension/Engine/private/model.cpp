@@ -23,13 +23,72 @@
 namespace Vital::Godot {
     // Instantiators //
     void Model::_ready() {
-        get_animation_player(this);
+        find_animation_player(this);
+    }
+
+
+    // Helpers //
+    godot::MeshInstance3D* Model::find_mesh_node(godot::Node* node, const std::string& path) {
+        if (!node) return nullptr;
+        auto separator = path.find('/');
+        std::string segment = (separator == std::string::npos) ? path : path.substr(0, separator);
+        std::string remainder = (separator == std::string::npos) ? "" : path.substr(separator + 1);
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            godot::Node* child = node -> get_child(i);
+            if (to_std_string(child -> get_name()) != segment) continue;
+            if (remainder.empty()) {
+                auto* mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
+                if (mesh) return mesh;
+            } else {
+                auto* result = find_mesh_node(child, remainder);
+                if (result) return result;
+            }
+        }
+        return nullptr;
+    }
+
+    void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
+        if (!node) return;
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            godot::Node* child = node -> get_child(i);
+            std::string child_path = current_path.empty()
+                ? to_std_string(child -> get_name())
+                : current_path + "/" + to_std_string(child -> get_name());
+            if (godot::Object::cast_to<godot::MeshInstance3D>(child)) {
+                out.push_back(child_path);
+            }
+            collect_mesh_nodes(child, out, child_path);
+        }
+    }
+
+    godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
+        if (!node) return nullptr;
+        if (!animation_player) {
+            auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
+            if (result) animation_player = result;
+            else {
+                for (int i = 0; i < node -> get_child_count(); i++) {
+                    auto result = find_animation_player(node -> get_child(i));
+                    if (result) {
+                        animation_player = result;
+                        break;
+                    }
+                }
+            }
+        }
+        return animation_player;
     }
 
 
     // Checkers //
     bool Model::is_model_loaded(const std::string& name) {
         return cache_loaded.find(name) != cache_loaded.end();
+    }
+
+    bool Model::is_component_visible(const std::string& name) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
+        return mesh -> is_visible();
     }
 
     bool Model::is_animation_playing() {
@@ -54,6 +113,13 @@ namespace Vital::Godot {
     void Model::set_animation_speed(float speed) {
         if (!animation_player) return;
         animation_player -> set_speed_scale(speed);
+    }
+
+    bool Model::set_component_visible(const std::string& name, bool state) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
+        mesh -> set_visible(state);
+        return true;
     }
 
 
@@ -85,6 +151,12 @@ namespace Vital::Godot {
         return get_rotation_degrees();
     }
 
+    std::vector<std::string> Model::get_components() {
+        std::vector<std::string> components;
+        collect_mesh_nodes(this, components, "");
+        return components;
+    }
+
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (animation_player) {
@@ -94,24 +166,6 @@ namespace Vital::Godot {
             }
         }
         return animations;
-    }
-
-    godot::AnimationPlayer* Model::get_animation_player(godot::Node* node) {
-        if (!node) return nullptr;
-        if (!animation_player) {
-            auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
-            if (result) animation_player = result;
-            else {
-                for (int i = 0; i < node -> get_child_count(); i++) {
-                    auto result = get_animation_player(node -> get_child(i));
-                    if (result) {
-                        animation_player = result;
-                        break;
-                    }
-                }
-            }
-        }
-        return animation_player;
     }
 
     std::string Model::get_current_animation() {

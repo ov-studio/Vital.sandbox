@@ -36,6 +36,9 @@ namespace Vital::Godot {
             std::string model_name;
             godot::AnimationPlayer* animation_player = nullptr;
             inline static Models cache_loaded;
+            godot::AnimationPlayer* find_animation_player(godot::Node* node);
+            godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
+            void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
         public:
             // Instantiators //
             Model() = default;
@@ -45,6 +48,7 @@ namespace Vital::Godot {
 
             // Checkers //
             static bool is_model_loaded(const std::string& name);
+            bool is_component_visible(const std::string& name);
             bool is_animation_playing();
 
 
@@ -53,6 +57,7 @@ namespace Vital::Godot {
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
             void set_animation_speed(float speed);
+            bool set_component_visible(const std::string& name, bool state);
 
 
             // Getters //
@@ -61,8 +66,8 @@ namespace Vital::Godot {
             std::string get_model_name();
             godot::Vector3 get_position();
             godot::Vector3 get_rotation();
+            std::vector<std::string> get_components();
             std::vector<std::string> get_animations();
-            godot::AnimationPlayer* get_animation_player(godot::Node* node);
             std::string get_current_animation();
             float get_animation_speed();
 
