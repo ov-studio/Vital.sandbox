@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: public: webview.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Webview Utilities
@@ -23,24 +23,31 @@
 
 namespace Vital::Godot {
     class Webview : public godot::Node2D {
+        GDCLASS(Webview, godot::Node2D)
+        protected:
+            static void _bind_methods();
         private:
             godot::Control* webview = nullptr;
+            std::function<void(godot::String)> message_handler;
         public:
             // Instantiators //
             Webview();
             ~Webview();
 
-
-            // Getters //
+        
+            // Checkers //
             bool is_visible();
             bool is_fullscreen();
             bool is_transparent();
             bool is_autoplay();
             bool is_zoomable();
             bool is_devtools_visible();
+
+
+            // Getters //
             godot::Vector2 get_position();
             godot::Vector2 get_size();
-
+    
 
             // Setters //
             void set_visible(bool state);
@@ -51,11 +58,12 @@ namespace Vital::Godot {
             void set_devtools_visible(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
+            void set_message_handler(std::function<void(godot::String)> handler);
 
 
             // APIs //
-            void load_from_url(const std::string& url);
-            void load_from_raw(const std::string& raw);
+            void load_url(const std::string& url);
+            void load_html(const std::string& raw);
             void clear_history();
             void focus();
             void reload();
@@ -63,6 +71,10 @@ namespace Vital::Godot {
             void update();
             void eval(const std::string& input);
             void emit(const std::string& input);
+
+
+            // Events //
+            void on_message(godot::String message);
     };
 }
 #endif

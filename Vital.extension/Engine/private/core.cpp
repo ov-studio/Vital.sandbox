@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: private: core.cpp
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Core Utilities
@@ -15,9 +15,8 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>
-#include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.extension/Sandbox/index.h>
 #include <Vital.sandbox/Tool/event.h>
-#include <Vital.sandbox/System/public/discord.h>
 
 
 ///////////////////////////
@@ -25,37 +24,26 @@
 ///////////////////////////
 
 namespace Vital::Godot {
-    // Instantiators //
-    Core::Core() {
-        #if defined(Vital_SDK_Client)
-        // Initialize Discord Rich Presence
-        if (Vital::System::Discord::start()) {
-            godot::UtilityFunctions::print("Discord Rich Presence initialized");
-
-            Vital::System::Discord::ActivityData activity;
-            activity.state = "In Editor";
-            activity.details = "Thinking about what to do..";
-
-            if(Vital::System::Discord::setActivity(activity)){
-                godot::UtilityFunctions::print("Discord Rich Presence activity set");
-            } else {
-                godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
-            }
-        } else {
-            godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
-        }
-        #endif
-    }
-    
+    // Instantiators //    
     void Core::_ready() {
         singleton = singleton ? singleton : this;
-        if (Vital::is_editor()) return;
-        Vital::Tool::Stack arguments;
-        Vital::System::Event::emit("Godot:Core:@ready", arguments);
+        set_process(true);
+        set_process_unhandled_key_input(get_platform() == "client");
+        get_environment();
+        Vital::Tool::Event::emit("vital.core:ready");
+    }
+
+    void Core::_exit_tree() {
+        free_environment();
+        Vital::Tool::Event::emit("vital.core:free");
     }
 
     void Core::_process(double delta) {
-        Sandbox::Lua::Singleton::fetch() -> process(delta);
+        Sandbox::get_singleton() -> process(delta);
+    }
+
+    void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
+        Sandbox::get_singleton() -> input(event);
     }
 
 
@@ -65,7 +53,7 @@ namespace Vital::Godot {
     }
 
     godot::Node* Core::get_root() {
-        auto* tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree -> get_root() : nullptr;
     }
     

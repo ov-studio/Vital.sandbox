@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: private: rendertarget.cpp
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Rendertarget Utilities
@@ -31,8 +31,7 @@ namespace Vital::Godot {
     }
 
     void RenderTarget::_update() {
-        if (!is_inside_tree()) return;
-        auto* rs = Core::get_rendering_server();
+        auto rs = Core::get_rendering_server();
         auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
         rs -> viewport_set_active(viewport_main, false);
         rs -> force_draw();
@@ -65,14 +64,14 @@ namespace Vital::Godot {
 
     // APIs //
     RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
-        auto* rt = memnew(RenderTarget);
+        auto rt = memnew(RenderTarget);
         rt -> viewport = memnew(godot::SubViewport);
         rt -> viewport -> set_size({width, height});
         rt -> viewport -> set_disable_3d(true);
         rt -> viewport -> set_transparent_background(transparent);
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
-        rt -> viewport -> call_deferred("add_child", rt);
-        Canvas::get_singleton() -> call_deferred("add_child", rt -> viewport);
+        rt -> viewport -> add_child(rt);
+        Canvas::get_singleton() -> add_child(rt -> viewport);
         return rt;
     }
 

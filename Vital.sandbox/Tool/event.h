@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: event.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Event Tools
@@ -20,21 +20,21 @@
 // Vital: Tool: Event //
 /////////////////////////
 
-namespace Vital::System::Event {
-    using EventID = unsigned long;
-    using EventHandle = std::function<void(Vital::Tool::Stack)>;
-    using EventMap = std::map<EventID, EventHandle>;
-    using EventPool = std::map<std::string, EventMap>;
-    inline EventID id = 0;
-    inline EventPool pool;
+namespace Vital::Tool::Event {
+    using event_id = unsigned long;
+    using event_handle = std::function<void(Vital::Tool::Stack)>;
+    using event_map = std::unordered_map<event_id, event_handle>;
+    using event_pool = std::unordered_map<std::string, event_map>;
+    inline event_id id = 0;
+    inline event_pool pool;
 
-    inline EventID bind(const std::string& identifier, EventHandle exec) {
-        const EventID eid = ++id;
+    inline event_id bind(const std::string& identifier, event_handle exec) {
+        const event_id eid = ++id;
         pool[identifier].emplace(eid, std::move(exec));
         return eid;
     }
 
-    inline bool unbind(const std::string& identifier, EventID eid) {
+    inline bool unbind(const std::string& identifier, event_id eid) {
         auto it = pool.find(identifier);
         if (it == pool.end()) return false;
         it -> second.erase(eid);

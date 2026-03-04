@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: System: discord.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene, Ianec
      DOC: 15/01/2026
      Desc: Discord Rich Presence System

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: thread.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Thread Tools
@@ -23,8 +23,8 @@
 namespace Vital::Tool {
     class Thread {
         private:
-            static inline std::unordered_map<std::thread::id, Thread*> buffer;
-            static inline std::mutex mutex;
+            inline static std::unordered_map<std::thread::id, Thread*> buffer;
+            inline static std::mutex mutex;
             std::thread thread;
         public:
             Thread(std::function<void(Thread*)> exec) {

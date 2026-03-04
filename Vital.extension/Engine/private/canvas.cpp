@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: private: canvas.cpp
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Canvas Utilities
@@ -15,9 +15,10 @@
 #if defined(Vital_SDK_Client)
 #pragma once
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
-#include <Vital.extension/Sandbox/lua/public/index.h>
+#include <Vital.extension/Sandbox/index.h>
 
 
 ///////////////////////////
@@ -30,6 +31,7 @@ namespace Vital::Godot {
         queue.reserve(256);
         set_as_top_level(true);
         set_visible(true);
+        set_process(true);
         set_z_index(godot::RenderingServer::CANVAS_ITEM_Z_MAX);
     }
 
@@ -40,7 +42,7 @@ namespace Vital::Godot {
 
     void Canvas::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        Sandbox::Lua::Singleton::fetch() -> draw(this);
+        Sandbox::get_singleton() -> draw(this);
     }
 
 
@@ -48,7 +50,7 @@ namespace Vital::Godot {
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             singleton = memnew(Canvas);
-            Core::get_singleton() -> call_deferred("add_child", singleton);
+            Core::get_singleton() -> add_child(singleton);
         }
         return singleton;
     }
@@ -184,7 +186,7 @@ namespace Vital::Godot {
     };
 
     void Canvas::push(Command command) {
-        auto* rt = RenderTarget::get_rendertarget();
+        auto rt = RenderTarget::get_rendertarget();
         if (rt) return rt -> push(command);
         queue.push_back(command);
     }

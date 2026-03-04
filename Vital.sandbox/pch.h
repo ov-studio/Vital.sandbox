@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: pch.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Precompiled Header
@@ -36,5 +36,7 @@
 #include <string>
 #include <string_view>
 #include <sstream>
-#include <Vendor/fmt/core.h>
-#include <Vendor/msgpack/msgpack.hpp>
+#include <memory>
+#include <cstdint>
+#include <stdexcept>
+#include <initializer_list>

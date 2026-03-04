@@ -5,6 +5,7 @@
 ###### We would like to express our sincere appreciation to the following vendors for their invaluable contributions that have enabled the success of this project:
 
 * [**OpenSSL**](https://www.openssl.org) - Offers secure cryptographic functionalities.
+* [**Zlib**](https://zlib.net) - Offers efficient data compression and decompression.
 * [**Libcurl**](https://curl.se/libcurl) - Offers data transfer across various protocols.
 * [**FMT**](https://fmt.dev) - Offers flexible formatting capabilities.
 * [**MessagePack**](https://msgpack.org) - Offers eficient binary serialization format for data exchange.

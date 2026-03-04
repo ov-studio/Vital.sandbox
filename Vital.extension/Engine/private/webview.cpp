@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: private: webview.cpp
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Webview Utilities
@@ -25,15 +25,16 @@ namespace Vital::Godot {
     // Instantiators //
     Webview::Webview() {
         godot::Object* object = godot::ClassDB::instantiate("WebView");
-        if (!object) throw Vital::Error::fetch("webview-failed", "No compatible plugin found");
+        if (!object) throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible plugin found");
         else {
             webview = godot::Object::cast_to<godot::Control>(object);
             if (!webview) {
                 memdelete(object);
-                throw Vital::Error::fetch("webview-failed", "No compatible device found");
+                throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible device found");
             }
         }
         Canvas::get_singleton() -> call_deferred("add_child", webview);
+        webview -> connect("ipc_message", godot::Callable(this, "on_message"));
         webview -> call_deferred("load_url", "https://github.com/ov-studio/Vital.sandbox");
     }
 
@@ -43,10 +44,14 @@ namespace Vital::Godot {
         webview = nullptr;
     }
 
+    void Webview::_bind_methods() {
+        godot::ClassDB::bind_method(godot::D_METHOD("on_message", "message"), &Webview::on_message);
+    }
 
-    // Getters //
+
+    // Checkers //
     bool Webview::is_visible() {
-        return (bool)webview -> call("is_visible");
+        return webview -> is_visible_in_tree();
     }
 
     bool Webview::is_fullscreen() {
@@ -69,6 +74,8 @@ namespace Vital::Godot {
         return (bool)webview -> call("is_devtools_open");
     }
 
+
+    // Getters //
     godot::Vector2 Webview::get_position() {
         return webview -> get_position();
     }
@@ -112,13 +119,17 @@ namespace Vital::Godot {
         webview -> set_size(size);
     }
 
+    void Webview::set_message_handler(std::function<void(godot::String)> handler) {
+        message_handler = std::move(handler);
+    }
+
 
     // APIs //
-    void Webview::load_from_url(const std::string& url) {
+    void Webview::load_url(const std::string& url) {
         webview -> call_deferred("load_url", to_godot_string(url));
     }
 
-    void Webview::load_from_raw(const std::string& raw) {
+    void Webview::load_html(const std::string& raw) {
         webview -> call_deferred("load_html", to_godot_string(raw));
     }
 
@@ -149,6 +160,13 @@ namespace Vital::Godot {
 
     void Webview::emit(const std::string& input) {
         webview -> call_deferred("post_message", to_godot_string(input));
+    }
+
+
+    // Events //
+    void Webview::on_message(godot::String message) {
+        if (!message_handler) return;
+        message_handler(message);
     }
 }
 #endif

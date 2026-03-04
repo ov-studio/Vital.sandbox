@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: public: rendertarget.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Rendertarget Utilities
@@ -24,13 +24,13 @@
 namespace Vital::Godot {
     class RenderTarget : public godot::Node2D {
         GDCLASS(RenderTarget, godot::Node2D)
+        protected:
+            godot::SubViewport* viewport = nullptr;
+            inline static RenderTarget* rendertarget = nullptr;
+            static void _bind_methods() {}
         private:
             std::vector<Canvas::Command> queue;
             bool instant = false;
-        protected:
-            godot::SubViewport* viewport = nullptr;
-            static inline RenderTarget* rendertarget = nullptr;
-            static void _bind_methods() {}
         public:
             // Instantiators //
             RenderTarget() = default;

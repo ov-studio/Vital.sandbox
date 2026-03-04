@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: vital.hpp
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Vital Header
@@ -13,21 +13,14 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/index.h>
-#include <Vital.sandbox/Tool/error.h>
-#include <Vital.sandbox/Tool/stack.h>
-#include <Vital.sandbox/Tool/module.h>
-#include <Vital.sandbox/Tool/thread.h>
-#include <Vital.sandbox/Tool/timer.h>
-#include <Vital.sandbox/Tool/file.h>
-#include <Vital.sandbox/Tool/event.h>
-#include <Vital.sandbox/Tool/network.h>
-#include <Vital.sandbox/Tool/rest.h>
-#include <Vital.sandbox/Tool/inspect.h>
-#include <Vital.sandbox/Tool/crypto.h>
 
+// Internal //
+#include <Vital.sandbox/Sandbox/machine.h>
+// Remove later and bundle with tools instead - header only
 #include <Vital.sandbox/System/public/network.h>
+#include <Vital.sandbox/System/public/discord.h>
 
+// External //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
@@ -37,24 +30,34 @@
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/input.hpp>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/input_event_key.hpp>
+#include <godot_cpp/classes/input_event_mouse_button.hpp>
+#include <godot_cpp/classes/input_event_mouse_motion.hpp>
+#include <godot_cpp/classes/gltf_state.hpp>
+#include <godot_cpp/classes/gltf_document.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/animation.hpp>
+#include <godot_cpp/classes/animation_player.hpp>
+#include <godot_cpp/classes/animation_library.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/image_texture3d.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/viewport_texture.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/font_file.hpp>
-#include <godot_cpp/variant/color.hpp>
-#include <godot_cpp/variant/rect2.hpp>
-#include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>

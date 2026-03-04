@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: index.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Root Tools
+     Desc: Vital Tools
 ----------------------------------------------------------------*/
 
 
@@ -14,7 +14,9 @@
 
 #pragma once
 #include <pch.h>
+#include <Vital.sandbox/Tool/stack.h>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/engine.hpp>
 
 
@@ -23,11 +25,9 @@
 ////////////
 
 namespace Vital {
-    namespace Util {}
     namespace System {}
-    namespace Sandbox {}
-    static const std::string Signature = "vsdk_v.0.0.1";
-    static const std::string Repository = "https://raw.githubusercontent.com/ov-studio/Vital.sandbox/refs/heads/module/{}";
+    static const std::string Build_ver = "v0.0.1";
+    static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
     inline godot::String to_godot_string(const std::string& input) {
         return godot::String::utf8(input.c_str());
@@ -35,6 +35,10 @@ namespace Vital {
 
     inline std::string to_std_string(const godot::String& input) {
         return std::string(input.utf8().get_data());
+    }
+
+    inline uint64_t get_tick() {
+        return godot::Time::get_singleton() -> get_ticks_msec();
     }
 
     inline const std::string get_platform() { 
@@ -45,8 +49,16 @@ namespace Vital {
         #endif
     }
 
-    inline unsigned int get_tick() {
-        return static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000000);
+    inline Vital::Tool::Stack get_timestamp() {
+        Vital::Tool::Stack timestamp;
+        godot::Dictionary datetime = godot::Time::get_singleton() -> get_datetime_dict_from_system();
+        timestamp.object["hour"] = int(datetime["hour"]);
+        timestamp.object["minute"] = int(datetime["minute"]);
+        timestamp.object["second"] = int(datetime["second"]);
+        timestamp.object["day"] = int(datetime["day"]);
+        timestamp.object["month"] = int(datetime["month"]);
+        timestamp.object["year"] = int(datetime["year"]);
+        return timestamp;
     }
 
     inline std::string get_directory() {

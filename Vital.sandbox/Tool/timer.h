@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: timer.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Timer Tools
@@ -24,8 +24,8 @@
 namespace Vital::Tool {
     class Timer {
         private:
-            static inline std::map<Timer*, bool> buffer;
-            static inline std::mutex mutex;
+            inline static std::map<Timer*, bool> buffer;
+            inline static std::mutex mutex;
         public:
             Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
                 {

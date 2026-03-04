@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: public: texture.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Texture Utilities
@@ -47,13 +47,13 @@ namespace Vital::Godot {
         
             struct Command {
                 Type type;
-                unsigned int tick;
+                uint64_t tick;
                 std::variant<Texture2D, SVG> payload;
             };
         protected:
             Command command;
-            static inline const unsigned int flush_interval = 10000;
-            static inline std::unordered_map<std::string, Texture*> cache_temp = {};
+            inline static const unsigned int flush_interval = 10000;
+            inline static std::unordered_map<std::string, Texture*> cache_temp = {};
             void push_temp(const std::string& temp_ref);
         public:
             // Instantiators //

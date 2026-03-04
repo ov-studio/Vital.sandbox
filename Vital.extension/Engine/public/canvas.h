@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
      Script: Engine: public: canvas.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Canvas Utilities
@@ -103,11 +103,11 @@ namespace Vital::Godot {
                 Type type;
                 std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
             };
+        protected:
+            inline static Canvas* singleton = nullptr;
+            static void _bind_methods() {}
         private:
             std::vector<Command> queue;
-        protected:
-            static inline Canvas* singleton = nullptr;
-            static void _bind_methods() {}
         public:
             // Instantiators //
             Canvas() = default;

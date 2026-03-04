@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: rest.h
-     Author: vStudio
+     Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Rest Tools
@@ -21,39 +21,80 @@
 // Vital: Tool: Rest //
 ////////////////////////
 
-namespace Vital::System::Rest {
-    struct CurlGlobal {
-        CurlGlobal() { 
-            if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+namespace Vital::Tool::Rest {
+    using rest_headers = std::vector<std::string>;
+
+    struct Curl {
+        Curl() { 
+            if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
                 throw std::runtime_error("curl_global_init failed");
+            }
         }
-        ~CurlGlobal() { curl_global_cleanup(); }
+
+        ~Curl() { 
+            curl_global_cleanup(); 
+        }
+    
+        static inline curl_slist* apply_headers(const rest_headers &headers) {
+            curl_slist* list = nullptr;
+            for (const auto& header : headers) {
+                list = curl_slist_append(list, header.c_str());
+            }
+            return list;
+        }
+
+        static size_t callback(void* contents, size_t size, size_t nmemb, void* userp) {
+            size_t totalSize = size*nmemb;
+            static_cast<std::string*>(userp) -> append(static_cast<char*>(contents), totalSize);
+            return totalSize;
+        }
     };
+    inline Curl ctx;
 
-    inline CurlGlobal global;
-    inline size_t CallbackHandle(void* contents, size_t size, size_t nmemb, void* userp) {
-        size_t totalSize = size*nmemb;
-        static_cast<std::string*>(userp)->append(static_cast<char*>(contents), totalSize);
-        return totalSize;
-    }
-
-    inline std::string get(const std::string& url) {
+    inline std::string get(const std::string& url, const rest_headers& headers = {}) {
         std::string buffer;
         CURL* curl = curl_easy_init();
         if (!curl) throw std::runtime_error("curl_easy_init failed");
+        curl_slist* rq_headers = Curl::apply_headers(headers);
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CallbackHandle);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, "vital.sdk/1.0");
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         CURLcode res = curl_easy_perform(curl);
+        curl_slist_free_all(rq_headers);
+        curl_easy_cleanup(curl);
         if (res != CURLE_OK) {
             std::string err = curl_easy_strerror(res);
-            curl_easy_cleanup(curl);
             throw std::runtime_error("Request failed: " + err);
         }
+        return buffer;
+    }
+
+    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {"Content-Type: application/json"}) {
+        std::string buffer;
+        CURL* curl = curl_easy_init();
+        if (!curl) throw std::runtime_error("curl_easy_init failed");
+        curl_slist* rq_headers = Curl::apply_headers(headers);
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.size());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        CURLcode res = curl_easy_perform(curl);
+        curl_slist_free_all(rq_headers);
         curl_easy_cleanup(curl);
+        if (res != CURLE_OK) {
+            std::string err = curl_easy_strerror(res);
+            throw std::runtime_error("Request failed: " + err);
+        }
         return buffer;
     }
 }
