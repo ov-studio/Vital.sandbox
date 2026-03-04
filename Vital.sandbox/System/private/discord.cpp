@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
-     Resource: Vital.sandbox
-     Script: System: private: discord.cpp
-     Author: ov-studio
-     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene, Ianec
-     DOC: 15/01/2026
-     Desc: Discord Rich Presence System
+    Resource: Vital.sandbox
+    Script: System: private: discord.cpp
+    Author: ov-studio
+    Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene, Ianec
+    DOC: 15/01/2026
+    Desc: Discord Rich Presence System
 ----------------------------------------------------------------*/
 
 
@@ -17,8 +17,6 @@
 #pragma once
 #include <Vital.sandbox/System/public/discord.h>
 #include <discord-sdk/include/discordpp.h>
-#include <csignal>
-#include <iostream>
 
 //////////////
 // Constants //
@@ -30,122 +28,125 @@ const uint64_t APPLICATION_ID = 1461425342722998474;
 // Vital: System: Discord //
 ////////////////////////////
 
-namespace Vital::System::Discord {
-    std::shared_ptr<discordpp::Client> client;
-    std::atomic<bool> running = false;
+namespace Vital::System {
+    namespace {
+        std::shared_ptr<discordpp::Client> discord_client;
+        bool discord_running = false;
+        Discord::ActivityData discord_current_data;
 
-    void signalHandler(int signum) {
-        running.store(false);
+        void pushUpdate() {
+            if (!discord_client) return;
+
+            discordpp::Activity activity;
+            activity.SetType(discordpp::ActivityTypes::Playing);
+            activity.SetState(discord_current_data.state);
+            activity.SetDetails(discord_current_data.details);
+
+            if (!discord_current_data.largeImageKey.empty() || !discord_current_data.smallImageKey.empty()) {
+                discordpp::ActivityAssets assets;
+                if (!discord_current_data.largeImageKey.empty()) {
+                    assets.SetLargeImage(discord_current_data.largeImageKey);
+                    assets.SetLargeText(discord_current_data.largeImageText);
+                }
+                if (!discord_current_data.smallImageKey.empty()) {
+                    assets.SetSmallImage(discord_current_data.smallImageKey);
+                    assets.SetSmallText(discord_current_data.smallImageText);
+                }
+                activity.SetAssets(assets);
+            }
+
+            if (discord_current_data.startTimestamp > 0 || discord_current_data.endTimestamp > 0) {
+                discordpp::ActivityTimestamps timestamps;
+                if (discord_current_data.startTimestamp > 0) timestamps.SetStart(discord_current_data.startTimestamp);
+                if (discord_current_data.endTimestamp > 0) timestamps.SetEnd(discord_current_data.endTimestamp);
+                activity.SetTimestamps(timestamps);
+            }
+
+            discord_client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
+                if (!result.Successful()) {
+                    // TO DO: std::cerr << "Rich Presence update failed\n";
+                }
+            });
+        }
     }
 
-    void PerformAuthentication();
+
+    // Utils //
+    Discord* Discord::get_singleton() {
+        if (!singleton) singleton = new Discord();
+        return singleton;
+    }
+
+    void Discord::free_singleton() {
+        if (!singleton) return;
+        singleton->stop();
+        delete singleton;
+        singleton = nullptr;
+    }
+
 
     // Managers //
-    bool start() {     
-        client = std::make_shared<discordpp::Client>();
-
-        client->SetApplicationId(APPLICATION_ID);
-        running = true;
-
+    bool Discord::start() {
+        discord_client = std::make_shared<discordpp::Client>();
+        discord_client->SetApplicationId(APPLICATION_ID);
+        discord_running = true;
         return true;
     }
 
-    ActivityData currentData;
-    void pushUpdate() {
-        if (!client) return;
-
-        discordpp::Activity activity;
-        activity.SetType(discordpp::ActivityTypes::Playing);
-        activity.SetState(currentData.state);
-        activity.SetDetails(currentData.details);
-
-        if (!currentData.largeImageKey.empty() || !currentData.smallImageKey.empty()) {
-            discordpp::ActivityAssets assets;
-            if (!currentData.largeImageKey.empty()) {
-                assets.SetLargeImage(currentData.largeImageKey);
-                assets.SetLargeText(currentData.largeImageText);
-            }
-            if (!currentData.smallImageKey.empty()) {
-                assets.SetSmallImage(currentData.smallImageKey);
-                assets.SetSmallText(currentData.smallImageText);
-            }
-            activity.SetAssets(assets);
-        }
-
-        if (currentData.startTimestamp > 0 || currentData.endTimestamp > 0) {
-            discordpp::ActivityTimestamps timestamps;
-            if (currentData.startTimestamp > 0) {
-                timestamps.SetStart(currentData.startTimestamp);
-            }
-            if (currentData.endTimestamp > 0) {
-                timestamps.SetEnd(currentData.endTimestamp);
-            }
-            activity.SetTimestamps(timestamps);
-        }
-
-        client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
-            if (!result.Successful()) {
-                // TO DO: std::cerr << "Rich Presence update failed\n";
-            }
-        });
+    bool Discord::stop() {
+        if (!discord_client) return false;
+        discord_client.reset();
+        discord_running = false;
+        return true;
     }
 
-    bool setActivity(const ActivityData& data) {
-        if (!client) {
-            // TO DO: std::cerr << "Cannot set activity: Client is null.\n";
-            return false;
-        }
-        currentData = data;
+
+    // APIs //
+    bool Discord::isConnected() { return discord_running && discord_client; }
+
+    bool Discord::setActivity(const ActivityData& data) {
+        if (!discord_client) return false;
+        discord_current_data = data;
         pushUpdate();
         return true;
     }
 
-    bool updateState(const std::string& state) {
-        if (!client) return false;
-        currentData.state = state;
+    bool Discord::updateState(const std::string& state) {
+        if (!discord_client) return false;
+        discord_current_data.state = state;
         pushUpdate();
         return true;
     }
 
-    bool updateDetails(const std::string& details) {
-        if (!client) return false;
-        currentData.details = details;
+    bool Discord::updateDetails(const std::string& details) {
+        if (!discord_client) return false;
+        discord_current_data.details = details;
         pushUpdate();
         return true;
     }
 
-    bool updateLargeImage(const std::string& key, const std::string& text) {
-        if (!client) return false;
-        currentData.largeImageKey = key;
-        currentData.largeImageText = text;
+    bool Discord::updateLargeImage(const std::string& key, const std::string& text) {
+        if (!discord_client) return false;
+        discord_current_data.largeImageKey = key;
+        discord_current_data.largeImageText = text;
         pushUpdate();
         return true;
     }
 
-    bool updateSmallImage(const std::string& key, const std::string& text) {
-        if (!client) return false;
-        currentData.smallImageKey = key;
-        currentData.smallImageText = text;
+    bool Discord::updateSmallImage(const std::string& key, const std::string& text) {
+        if (!discord_client) return false;
+        discord_current_data.smallImageKey = key;
+        discord_current_data.smallImageText = text;
         pushUpdate();
         return true;
     }
 
-    bool updateTimestamps(int64_t start, int64_t end) {
-        if (!client) return false;
-        currentData.startTimestamp = start;
-        currentData.endTimestamp = end;
+    bool Discord::updateTimestamps(int64_t start, int64_t end) {
+        if (!discord_client) return false;
+        discord_current_data.startTimestamp = start;
+        discord_current_data.endTimestamp = end;
         pushUpdate();
         return true;
     }
-
-    bool stop() {
-        if (!client) return false;
-        client.reset();
-        running = false;
-        return true;
-    }
-
-    // // APIs //
-    bool isConnected() { return running && client; }
 }
 #endif
