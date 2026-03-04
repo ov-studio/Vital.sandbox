@@ -62,8 +62,8 @@ namespace Vital::Godot {
 
 
             // APIs //
-            void load_from_url(const std::string& url);
-            void load_from_raw(const std::string& raw);
+            void load_url(const std::string& url);
+            void load_html(const std::string& raw);
             void clear_history();
             void focus();
             void reload();

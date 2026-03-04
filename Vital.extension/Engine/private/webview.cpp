@@ -125,11 +125,11 @@ namespace Vital::Godot {
 
 
     // APIs //
-    void Webview::load_from_url(const std::string& url) {
+    void Webview::load_url(const std::string& url) {
         webview -> call_deferred("load_url", to_godot_string(url));
     }
 
-    void Webview::load_from_raw(const std::string& raw) {
+    void Webview::load_html(const std::string& raw) {
         webview -> call_deferred("load_html", to_godot_string(raw));
     }
 

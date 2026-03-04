@@ -34,7 +34,7 @@ namespace Vital::Godot {
         webview -> set_autoplay(false);
         webview -> set_zoomable(false);
         webview -> set_devtools_visible(false);
-        webview -> load_from_raw(Vital::Tool::fetch_module("console")); 
+        webview -> load_html(Vital::Tool::fetch_module("console")); 
         webview -> set_message_handler([this](godot::String message) {
             this -> on_message(message);
         });

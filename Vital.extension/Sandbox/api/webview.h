@@ -171,7 +171,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "load_url", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(2);
-                self -> load_from_url(url);
+                self -> load_url(url);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -179,7 +179,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "load_html", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto html = vm -> get_string(2);
-                self -> load_from_raw(html);
+                self -> load_html(html);
                 vm -> push_bool(true);
                 return 1;
             });
