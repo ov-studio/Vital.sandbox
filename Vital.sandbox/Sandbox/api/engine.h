@@ -55,6 +55,14 @@ namespace Vital::Sandbox::API {
             });
             #endif
         
+            API::bind(vm, {base_name}, "compile_string", [](auto vm) -> int {
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto input = vm -> get_string(1);
+                auto result = vm -> compile_string(input);
+                vm -> push_bool(result);
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "load_string", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);

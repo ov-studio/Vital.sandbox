@@ -359,10 +359,20 @@ namespace Vital::Sandbox {
             std::string to_string(int index = 1) {
                 size_t length;
                 const char* value = luaL_tolstring(state, index, &length);
-                pop(1);
+                pop();
                 return std::string(value, length);
             }
     
+            bool compile_string(const std::string& raw) {
+                if (raw.empty()) return false;
+                if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
+                    pop();
+                    return false;
+                }
+                pop();
+                return true;
+            }
+
             int load_string(const std::string& raw, bool auto_load = true, bool use_env = false, int env_index = 1) {
                 if (raw.empty()) return 0;
                 if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
