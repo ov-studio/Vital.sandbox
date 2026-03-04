@@ -61,6 +61,14 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
+                self -> queue_free();
+                void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
+                if (ud) *ud = nullptr;
+                vm -> push_bool(true);
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "is_component_visible", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(2);
@@ -214,14 +222,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "resume_animation", [](auto vm, auto self) -> int {
                 self -> resume_animation();
-                vm -> push_bool(true);
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
-                self -> queue_free();
-                void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
-                if (ud) *ud = nullptr;
                 vm -> push_bool(true);
                 return 1;
             });
