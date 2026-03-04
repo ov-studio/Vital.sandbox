@@ -31,7 +31,6 @@ const uint64_t APPLICATION_ID = 1461425342722998474;
 namespace Vital::System {
     namespace {
         std::shared_ptr<discordpp::Client> discord_client;
-        bool discord_running = false;
         Discord::ActivityData discord_current_data;
 
         void pushUpdate() {
@@ -87,10 +86,10 @@ namespace Vital::System {
 
     // Managers //
     bool Discord::start() {
+        if (discord_client) return true;
         discord_client = std::make_shared<discordpp::Client>();
         discord_client->SetApplicationId(APPLICATION_ID);
         discord_client->Connect();
-        discord_running = true;
         return true;
     }
 
@@ -102,19 +101,25 @@ namespace Vital::System {
     bool Discord::stop() {
         if (!discord_client) return false;
         discord_client.reset();
-        discord_running = false;
         discord_current_data = {};
         return true;
     }
 
 
     // APIs //
-    bool Discord::isConnected() { return discord_running && discord_client; }
+    bool Discord::isConnected() { return !!discord_client; }
 
     bool Discord::setActivity(const ActivityData& data) {
         if (!discord_client) return false;
         discord_current_data = data;
         pushUpdate();
+        return true;
+    }
+
+    bool Discord::clearActivity() {
+        if (!discord_client) return false;
+        discord_current_data = {};
+        discord_client->ClearRichPresence();
         return true;
     }
 

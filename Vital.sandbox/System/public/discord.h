@@ -54,6 +54,7 @@ namespace Vital::System {
             // APIs //
             bool isConnected();
             bool setActivity(const ActivityData& data);
+            bool clearActivity();
 
             // Partial Updates //
             bool updateState(const std::string& state);

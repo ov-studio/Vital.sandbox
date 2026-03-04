@@ -24,14 +24,7 @@ void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
-        if (Vital::System::Discord::get_singleton() -> start()) {
-            godot::UtilityFunctions::print("Discord Rich Presence initialized");
-            Vital::System::Discord::ActivityData activity;
-            activity.state = "In Main Menu";
-            activity.details = "Thinking about what to do..";
-            if (Vital::System::Discord::get_singleton() -> setActivity(activity)) godot::UtilityFunctions::print("Discord Rich Presence activity set");
-            else godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
-        }
+        if (Vital::System::Discord::get_singleton() -> start()) godot::UtilityFunctions::print("Discord Rich Presence initialized");
         else godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
         #endif
 
@@ -54,7 +47,10 @@ void initialize_vital_events() {
         }
 
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::free_singleton();
+        if (Vital::System::Discord::get_singleton() -> isConnected()) {
+            Vital::System::Discord::get_singleton() -> clearActivity();
+            Vital::System::Discord::get_singleton() -> tick();
+        }
         #endif
     });
 
@@ -68,6 +64,7 @@ void initialize_vital_events() {
         activity.state = "In Game";
         activity.details = "Playing something..";
         Vital::System::Discord::get_singleton() -> setActivity(activity);
+        Vital::System::Discord::get_singleton() -> tick();
         #endif
 
         // TODO: TESTING
