@@ -61,7 +61,8 @@ namespace Vital::Sandbox::API {
                 bool auto_load = vm -> is_bool(2) ? vm -> get_bool(2) : true;
                 bool use_env = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 if (use_env && !vm -> is_table(4)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                int results = vm -> load_string(input, auto_load, use_env, 4);
+                bool silent = vm -> is_bool(5) ? vm -> get_bool(5) : false;
+                int results = vm -> load_string(input, auto_load, use_env, 4, silent);
                 if (results == 0) vm -> push_bool(false);
                 return results == 0 ? 1 : results;
             });
