@@ -49,6 +49,7 @@ namespace Vital::Sandbox {
 
     struct vm_module {
         static void bind(Machine* vm) {}
+        static void methods(Machine* vm) {}
         static void inject(Machine* vm) {}
 
         template<typename T>
@@ -57,6 +58,40 @@ namespace Vital::Sandbox {
                 [](Machine* vm) { T::bind(vm); },
                 [](Machine* vm) { T::inject(vm); }
             };
+        }
+
+        template<typename T>
+        static void register_type(Machine* vm, const std::string& type_name) {
+            vm -> create_metatable(type_name);
+            vm -> create_table();
+            T::methods(vm);
+            vm -> set_table_field("__index", -2);
+            lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
+                void** ud = static_cast<void**>(lua_touserdata(state, 1));
+                if (ud) *ud = nullptr;
+                return 0;
+            }, 0);
+            vm -> set_table_field("__gc", -2);
+            vm -> pop();
+        }
+
+        template<typename T>
+        static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*)> exec) {
+            auto* heap_exec = new std::function<int(Machine*, T*)>(std::move(exec));
+            auto* heap_type = new std::string(type_name);
+            lua_pushlightuserdata(vm -> get_state(), heap_exec);
+            lua_pushlightuserdata(vm -> get_state(), heap_type);
+            lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
+                auto* fn = static_cast<std::function<int(Machine*, T*)>*>(lua_touserdata(state, lua_upvalueindex(1)));
+                auto* type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
+                auto* vm = Machine::fetch_machine(state);
+                return vm -> execute([&]() -> int {
+                    void** ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
+                    if (!ud || !*ud) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Invalid {} instance", *type));
+                    return (*fn)(vm, static_cast<T*>(*ud));
+                });
+            }, 2);
+            lua_setfield(vm -> get_state(), -2, name.c_str());
         }
     };
 

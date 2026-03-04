@@ -22,6 +22,7 @@
 #include <Vital.extension/Sandbox/api/fog.h>
 #include <Vital.extension/Sandbox/api/volumetric_fog.h>
 #include <Vital.extension/Sandbox/api/adjustment.h>
+#include <Vital.extension/Sandbox/api/model.h>
 
 
 ////////////////////////////
@@ -39,7 +40,8 @@ namespace Vital::Godot {
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Emissive>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Fog>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Volumetric_Fog>(),
-            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Adjustment>()
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Adjustment>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>()
         });
     }
 
