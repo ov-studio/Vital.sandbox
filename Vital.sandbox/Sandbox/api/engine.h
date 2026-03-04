@@ -23,18 +23,20 @@
 
 namespace Vital::Sandbox::API {
     struct Engine : vm_module {
+        inline static const std::string base_name = "engine";
+
         static void bind(Machine* vm) {
-            API::bind(vm, {"engine"}, "get_tick", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_tick", [](auto vm) -> int {
                 vm -> push_number(static_cast<int>(get_tick()));
                 return 1;
             });
         
-            API::bind(vm, {"engine"}, "get_platform", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_platform", [](auto vm) -> int {
                 vm -> push_string(get_platform());
                 return 1;
             });
 
-            API::bind(vm, {"engine"}, "get_timestamp", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_timestamp", [](auto vm) -> int {
                 auto timestamp = get_timestamp();
                 vm -> create_table();
                 vm -> table_set_number("hour", timestamp.object["hour"].as<int32_t>());
@@ -47,13 +49,13 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(Vital_SDK_Client)
-            API::bind(vm, {"engine"}, "get_serial", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_serial", [](auto vm) -> int {
                 vm -> push_string(Vital::Tool::Inspect::fingerprint());
                 return 1;
             });
             #endif
         
-            API::bind(vm, {"engine"}, "load_string", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "load_string", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
                 bool autoload = !vm -> is_bool(2) ? true : vm -> get_bool(2);
@@ -63,7 +65,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {"engine"}, "print", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "print", [](auto vm) -> int {
                 std::ostringstream buffer;
                 for (int i = 0; i < vm -> get_arg_count(); ++i) {
                     if (i != 0) buffer << " ";
@@ -77,7 +79,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             #if defined(Vital_SDK_Client)
-            vm -> get_global("engine");
+            vm -> get_global(base_name);
             vm -> get_table_field("print", -1);
             vm -> push_global("print");
             vm -> pop(1);

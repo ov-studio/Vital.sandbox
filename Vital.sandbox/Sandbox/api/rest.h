@@ -22,8 +22,10 @@
 
 namespace Vital::Sandbox::API {
     struct Rest : public vm_module {
+        inline static const std::string base_name = "rest";
+
         static void bind(Machine* vm) {
-            API::bind(vm, {"rest"}, "get", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);
@@ -50,7 +52,7 @@ namespace Vital::Sandbox::API {
                 return 0;
             });
 
-            API::bind(vm, {"rest"}, "post", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "post", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);

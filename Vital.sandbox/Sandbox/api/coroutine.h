@@ -22,8 +22,10 @@
 
 namespace Vital::Sandbox::API {
     struct Coroutine : vm_module {
+        inline static const std::string base_name = "coroutine";
+
         static void bind(Machine* vm) {
-            API::bind(vm, {"coroutine"}, "create", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_function(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto thread = vm -> create_thread();
                 vm -> push(1);
@@ -31,7 +33,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {"coroutine"}, "resume", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "resume", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_thread(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto thread = vm -> get_thread(1);
                 auto thread_vm = Machine::fetch_machine(thread);
@@ -41,14 +43,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {"coroutine"}, "pause", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "pause", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 vm -> pause();
                 vm -> push_bool(true);
                 return 1;
             });
         
-            API::bind(vm, {"coroutine"}, "sleep", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "sleep", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto duration = vm -> get_int(1);

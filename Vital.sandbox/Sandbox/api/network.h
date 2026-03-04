@@ -23,8 +23,10 @@
 
 namespace Vital::Sandbox::API {
     struct Network : vm_module {
+        inline static const std::string base_name = "network";
+
         static void bind(Machine* vm) {
-            API::bind(vm, {"network"}, "emit", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "emit", [](auto vm) -> int {
                 bool client = get_platform() == "client";
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 int queryArg = client ? 3 : 4;
@@ -56,11 +58,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> get_global("network");
+            vm -> get_global(base_name);
             vm -> get_table_field("execute", -1);
             vm -> set_reference("vital.network:execute", -1);
             vm -> pop(2);
-            vm -> table_set_nil("execute", "network");
+            vm -> table_set_nil("execute", base_name);
         }
 
         template<typename... Args>
