@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.extension/Sandbox/api/model.h>
+#include <Vital.extension/Sandbox/api/webview.h>
 #include <Vital.extension/Sandbox/api/gfx/ssr.h>
 #include <Vital.extension/Sandbox/api/gfx/ssao.h>
 #include <Vital.extension/Sandbox/api/gfx/ssil.h>
@@ -33,6 +34,8 @@ namespace Vital::Godot {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine({
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Webview>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSAO>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSR>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSIL>(),
@@ -40,8 +43,7 @@ namespace Vital::Godot {
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Emissive>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Fog>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Volumetric_Fog>(),
-            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Adjustment>(),
-            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>()
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Adjustment>()
         });
     }
 
