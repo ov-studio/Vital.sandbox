@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Webview>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                auto* object = new Vital::Godot::Webview();
+                auto* object = memnew(Vital::Godot::Webview);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -39,7 +39,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
-                delete self;
+                memdelete(self);
                 void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
                 if (ud) *ud = nullptr;
                 vm -> push_bool(true);
