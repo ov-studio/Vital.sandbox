@@ -23,7 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
-        inline static const std::string base_name = "Model";
+        inline static const std::string base_name = "model";
         using base_class = Vital::Godot::Model;
 
         static void bind(Machine* vm) {
