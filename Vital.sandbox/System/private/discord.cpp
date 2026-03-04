@@ -97,6 +97,7 @@ namespace Vital::System {
         if (!discord_client) return false;
         discord_client.reset();
         discord_running = false;
+        discord_current_data = {};
         return true;
     }
 

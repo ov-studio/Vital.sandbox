@@ -34,6 +34,9 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 
 void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
+	#if defined(Vital_SDK_Client)
+	Vital::System::Discord::free_singleton();
+	#endif
 }
 
 extern "C" {
