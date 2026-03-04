@@ -64,6 +64,15 @@ namespace Vital::Log {
         {"webview-failed", "Webview failed ('{}')"}
     };
 
+    inline bool is_type(std::string_view label) {
+        for (const auto& type : {
+            std::string_view(Info::label),
+            std::string_view(Warning::label),
+            std::string_view(Error::label)
+        }) if (label == type) return true;
+        return false;
+    }
+
     inline std::string_view resolve(std::string_view code) {
         for (const auto& e : List) {
             if (code == e.code) 
