@@ -49,6 +49,7 @@ namespace Vital::System {
             // Managers //
             bool start();
             bool stop();
+            void tick();
 
             // APIs //
             bool isConnected();

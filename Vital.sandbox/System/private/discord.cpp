@@ -89,8 +89,14 @@ namespace Vital::System {
     bool Discord::start() {
         discord_client = std::make_shared<discordpp::Client>();
         discord_client->SetApplicationId(APPLICATION_ID);
+        discord_client->Connect();
         discord_running = true;
         return true;
+    }
+
+    void Discord::tick() {
+        if (!discord_client) return;
+        discordpp::RunCallbacks();
     }
 
     bool Discord::stop() {

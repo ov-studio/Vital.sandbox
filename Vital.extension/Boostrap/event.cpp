@@ -63,6 +63,12 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
+        #if defined(Vital_SDK_Client)
+        Vital::System::Discord::ActivityData activity;
+        activity.state = "In Game";
+        activity.details = "Playing something..";
+        Vital::System::Discord::get_singleton() -> setActivity(activity);
+        #endif
 
         // TODO: TESTING
         Vital::Godot::Model::load_model("cube", "ladyforaviril.glb");
@@ -104,11 +110,13 @@ void initialize_vital_events() {
             //tree->set_rotation(0.0f, Math::randf() * 360.0f, 0.0f);
             //props.push_back(tree);
         }
-
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<double>());
+        #if defined(Vital_SDK_Client)
+        Vital::System::Discord::get_singleton() -> tick();
+        #endif
     });
 
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
