@@ -363,10 +363,10 @@ namespace Vital::Sandbox {
                 return std::string(value, length);
             }
     
-            int load_string(const std::string& raw, bool auto_load = true, bool use_env = false, int env_index = 1, bool silent = false) {
+            int load_string(const std::string& raw, bool auto_load = true, bool use_env = false, int env_index = 1) {
                 if (raw.empty()) return 0;
                 if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
-                    if (!silent) API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
                     pop();
                     return 0;
                 }
@@ -375,7 +375,7 @@ namespace Vital::Sandbox {
                     if (!lua_setupvalue(state, -2, 1)) pop();
                 }
                 if (auto_load && !pcall(0, LUA_MULTRET)) {
-                    if (!silent) API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
                     pop();
                     return 0;
                 }
