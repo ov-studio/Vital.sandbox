@@ -109,13 +109,17 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "get_position", [](auto vm, auto self) -> int {
                 auto p = self -> get_position();
-                vm -> push_number(p.x); vm -> push_number(p.y); vm -> push_number(p.z);
+                vm -> push_number(p.x);
+                vm -> push_number(p.y);
+                vm -> push_number(p.z);
                 return 3;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_rotation", [](auto vm, auto self) -> int {
                 auto r = self -> get_rotation();
-                vm -> push_number(r.x); vm -> push_number(r.y); vm -> push_number(r.z);
+                vm -> push_number(r.x);
+                vm -> push_number(r.y);
+                vm -> push_number(r.z);
                 return 3;
             });
 
@@ -185,6 +189,8 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> queue_free();
+                void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
+                if (ud) *ud = nullptr;
                 vm -> push_bool(true);
                 return 1;
             });
