@@ -127,7 +127,8 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_components();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2);
+                    vm -> push_string(list[i]);
+                    vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
             });
@@ -136,7 +137,8 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_animations();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2);
+                    vm -> push_string(list[i]);
+                    vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
             });
@@ -146,7 +148,8 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_blend_shapes(vm -> get_string(2));
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2);
+                    vm -> push_string(list[i]);
+                    vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
             });
