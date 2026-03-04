@@ -126,14 +126,18 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "get_components", [](auto vm, auto self) -> int {
                 auto list = self -> get_components();
                 vm -> create_table();
-                for (int i = 0; i < (int)list.size(); i++) { vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2); }
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2);
+                }
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_animations", [](auto vm, auto self) -> int {
                 auto list = self -> get_animations();
                 vm -> create_table();
-                for (int i = 0; i < (int)list.size(); i++) { vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2); }
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2);
+                }
                 return 1;
             });
 
@@ -141,7 +145,9 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto list = self -> get_blend_shapes(vm -> get_string(2));
                 vm -> create_table();
-                for (int i = 0; i < (int)list.size(); i++) { vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2); }
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_string(list[i]); vm -> set_table_field(i + 1, -2);
+                }
                 return 1;
             });
 
