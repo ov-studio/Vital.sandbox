@@ -14,15 +14,15 @@
 
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
-#include <Vital.extension/Sandbox/api/ssr.h>
-#include <Vital.extension/Sandbox/api/ssao.h>
-#include <Vital.extension/Sandbox/api/ssil.h>
-#include <Vital.extension/Sandbox/api/sdfgi.h>
-#include <Vital.extension/Sandbox/api/emissive.h>
-#include <Vital.extension/Sandbox/api/fog.h>
-#include <Vital.extension/Sandbox/api/volumetric_fog.h>
-#include <Vital.extension/Sandbox/api/adjustment.h>
 #include <Vital.extension/Sandbox/api/model.h>
+#include <Vital.extension/Sandbox/api/gfx/ssr.h>
+#include <Vital.extension/Sandbox/api/gfx/ssao.h>
+#include <Vital.extension/Sandbox/api/gfx/ssil.h>
+#include <Vital.extension/Sandbox/api/gfx/sdfgi.h>
+#include <Vital.extension/Sandbox/api/gfx/emissive.h>
+#include <Vital.extension/Sandbox/api/gfx/fog.h>
+#include <Vital.extension/Sandbox/api/gfx/volumetric_fog.h>
+#include <Vital.extension/Sandbox/api/gfx/adjustment.h>
 
 
 ////////////////////////////
