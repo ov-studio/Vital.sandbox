@@ -27,6 +27,10 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "webview";
         using base_class = Vital::Godot::Webview;
 
+        static std::string handler_key(void* ptr) {
+            return "webview_message_handler_" + std::to_string(reinterpret_cast<uintptr_t>(ptr));
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Webview>(vm, base_name);
 
@@ -39,6 +43,8 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
+                auto key = handler_key(self);
+                if (vm -> is_reference(key)) vm -> del_reference(key);
                 memdelete(self);
                 void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
                 if (ud) *ud = nullptr;
@@ -158,9 +164,10 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "set_message_handler", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_function(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                vm -> set_reference("webview_message_handler", 2);
-                self -> set_message_handler([vm](godot::String message) {
-                    vm -> get_reference("webview_message_handler", true);
+                auto key = handler_key(self);
+                vm -> set_reference(key, 2);
+                self -> set_message_handler([vm, key](godot::String message) {
+                    vm -> get_reference(key, true);
                     vm -> push_string(to_std_string(message));
                     vm -> pcall(1, 0);
                 });
