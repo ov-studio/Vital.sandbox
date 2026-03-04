@@ -34,7 +34,10 @@ void initialize_vital_events() {
         #if defined(Vital_SDK_Client)
         if (Vital::System::Discord::start()) {
             godot::UtilityFunctions::print("Discord Rich Presence initialized");
-            if (Vital::System::Discord::setActivity("In Main Menu", "Thinking about what to do..")) godot::UtilityFunctions::print("Discord Rich Presence activity set");
+            Vital::System::Discord::ActivityData activity;
+            activity.state = "In Main Menu";
+            activity.details = "Thinking about what to do..";
+            if (Vital::System::Discord::setActivity(activity)) godot::UtilityFunctions::print("Discord Rich Presence activity set");
             else godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
         }
         else godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
