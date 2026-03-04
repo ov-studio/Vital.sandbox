@@ -35,16 +35,19 @@ namespace Vital::Godot {
             ~Webview();
 
         
-            // Getters //
+            // Checkers //
             bool is_visible();
             bool is_fullscreen();
             bool is_transparent();
             bool is_autoplay();
             bool is_zoomable();
             bool is_devtools_visible();
+
+
+            // Getters //
             godot::Vector2 get_position();
             godot::Vector2 get_size();
-
+    
 
             // Setters //
             void set_visible(bool state);

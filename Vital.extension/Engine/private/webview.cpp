@@ -49,7 +49,7 @@ namespace Vital::Godot {
     }
 
 
-    // Getters //
+    // Checkers //
     bool Webview::is_visible() {
         return webview -> is_visible_in_tree();
     }
@@ -74,6 +74,8 @@ namespace Vital::Godot {
         return (bool)webview -> call("is_devtools_open");
     }
 
+
+    // Getters //
     godot::Vector2 Webview::get_position() {
         return webview -> get_position();
     }
