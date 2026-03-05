@@ -1,0 +1,50 @@
+from Bootstrap.utils import *
+from Bootstrap.download import *
+
+def Init_Mega(self):
+    os_info = Fetch_OS()
+    if os_info["type"] == "Windows":
+        mega_path = os.path.join(os.environ["LOCALAPPDATA"], "MEGAcmd")
+        return {
+            "path": mega_path,
+            "exe": os.path.join(mega_path, "mega-get.bat")
+        }
+    else:
+        return {
+            "path": "",
+            "exe": shutil.which("mega-get") or "mega-get"
+        }
+BaseEnvironment.Init_Mega = Init_Mega
+
+def Install_Mega(self):
+    os_info = Fetch_OS()
+    megacmd = self.Init_Mega()
+    if os.path.exists(megacmd["exe"]) or shutil.which("mega-get"):
+        return
+    print("Installing MEGAcmd...")
+    if os_info["type"] == "Windows":
+        installer = os.path.join(os.environ["TEMP"], "MEGAcmdSetup64.exe")
+        Download("https://mega.nz/MEGAcmdSetup64.exe", installer)
+        subprocess.run([installer, "/S"], check=True)
+        import time; time.sleep(5)
+    elif os_info["type"] == "Darwin":
+        dmg = "/tmp/MEGAcmdSetup.dmg"
+        Download("https://mega.nz/MEGAcmdSetup.dmg", dmg)
+        subprocess.run(["hdiutil", "attach", dmg], check=True)
+        subprocess.run(["sudo", "installer", "-pkg", "/Volumes/MEGAcmd/MEGAcmd.pkg", "-target", "/"], check=True)
+        subprocess.run(["hdiutil", "detach", "/Volumes/MEGAcmd"], check=True)
+        os.remove(dmg)
+    elif os_info["type"] == "Linux":
+        distro = subprocess.run(["lsb_release", "-si"], capture_output=True, text=True).stdout.strip().lower()
+        if "ubuntu" in distro or "debian" in distro:
+            subprocess.run(["sudo", "apt", "install", "-y", "megacmd"], check=True)
+        else:
+            Throw_Error("Install MEGAcmd manually from https://mega.io/cmd")
+    print("MEGAcmd installed.")
+BaseEnvironment.Install_Mega = Install_Mega
+
+def Mega_Get(self, url, destination):
+    self.Install_Mega()
+    megacmd = self.Init_Mega()
+    subprocess.run([megacmd["exe"], url, destination], check=True)
+BaseEnvironment.Mega_Get = Mega_Get
