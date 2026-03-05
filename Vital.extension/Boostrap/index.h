@@ -21,6 +21,7 @@
 #include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.sandbox/Sandbox/api.h>
+#include <Vital.sandbox/System/public/discord.h>
 
 
 ///////////

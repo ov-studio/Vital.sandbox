@@ -23,24 +23,20 @@
 void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
-        if (!Vital::is_editor()) {
-            #if defined(Vital_SDK_Client)
-            Vital::Godot::Canvas::get_singleton();
-            Vital::Godot::Console::get_singleton();
-            #endif
-            Vital::Godot::Sandbox::get_singleton() -> ready();
-        }
-
         #if defined(Vital_SDK_Client)
-        if (Vital::System::Discord::start()) {
-            godot::UtilityFunctions::print("Discord Rich Presence initialized");
-            if (Vital::System::Discord::setActivity("In Main Menu", "Thinking about what to do..")) godot::UtilityFunctions::print("Discord Rich Presence activity set");
-            else godot::UtilityFunctions::print("Failed to set Discord Rich Presence activity");
-        }
+        if (Vital::System::Discord::get_singleton() -> start()) godot::UtilityFunctions::print("Discord Rich Presence initialized");
         else godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
         #endif
+
+        #if defined(Vital_SDK_Client)
+        if (!Vital::is_editor()) {
+            Vital::Godot::Canvas::get_singleton();
+            Vital::Godot::Console::get_singleton();
+        }
+        #endif
+        Vital::Godot::Sandbox::get_singleton() -> ready();
     });
-    
+
     Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) -> void {
         if (!Vital::is_editor()) {
             #if defined(Vital_SDK_Client)
@@ -49,9 +45,12 @@ void initialize_vital_events() {
             #endif
             Vital::Godot::Sandbox::free_singleton();
         }
-        
+
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::stop();
+        if (Vital::System::Discord::get_singleton() -> isConnected()) {
+            Vital::System::Discord::get_singleton() -> clearActivity();
+            Vital::System::Discord::get_singleton() -> tick();
+        }
         #endif
     });
 
@@ -60,6 +59,13 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
+        #if defined(Vital_SDK_Client)
+        Vital::System::Discord::ActivityData activity;
+        activity.state = "In Game";
+        activity.details = "Playing something..";
+        Vital::System::Discord::get_singleton() -> setActivity(activity);
+        Vital::System::Discord::get_singleton() -> tick();
+        #endif
 
         // TODO: TESTING
         Vital::Godot::Model::load_model("cube", "ladyforaviril.glb");
@@ -101,11 +107,13 @@ void initialize_vital_events() {
             //tree->set_rotation(0.0f, Math::randf() * 360.0f, 0.0f);
             //props.push_back(tree);
         }
-
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<double>());
+        #if defined(Vital_SDK_Client)
+        Vital::System::Discord::get_singleton() -> tick();
+        #endif
     });
 
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
