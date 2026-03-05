@@ -14,9 +14,8 @@
 
 #if defined(Vital_SDK_Client)
 #pragma once
-#include <string>
-#include <cstdint>
-#include <memory>
+#include <Vital.sandbox/Tool/index.h>
+
 
 ////////////////////////////
 // Vital: System: Discord //
