@@ -12,6 +12,7 @@ BaseEnvironment.Install_Conan = Install_Conan
 
 def Build_Conan(self):
     self.Install_Conan()
+    subprocess.run(("conan", "profile", "detect", "--force"), check=True)
     subprocess.run((
         "conan", "install", ".",
         "--build=missing",
