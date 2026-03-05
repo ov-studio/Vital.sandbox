@@ -4,7 +4,7 @@
 .bin/
 .conan/
 .vcpkg/
-**/discord-sdk/bin/
+**/discord-sdk/
 **vital.sdk/
 
 
