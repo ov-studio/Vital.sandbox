@@ -37,3 +37,24 @@ def Extract_Tar(path, destination):
         shutil.move(src, dst)
     shutil.rmtree(temp_dir)
     print("Extraction complete.")
+
+def Extract_Zip(path, destination):
+    print("Unpacking:", path)
+    temp_dir = destination + "_temp"
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
+    os.makedirs(temp_dir, exist_ok=True)
+    with zipfile.ZipFile(path, "r") as zip:
+        zip.extractall(temp_dir)
+    contents = os.listdir(temp_dir)
+    if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])):
+        root_dir = os.path.join(temp_dir, contents[0])
+    else:
+        root_dir = temp_dir
+    if os.path.exists(destination):
+        shutil.rmtree(destination)
+    os.makedirs(destination, exist_ok=True)
+    for item in os.listdir(root_dir):
+        shutil.move(os.path.join(root_dir, item), os.path.join(destination, item))
+    shutil.rmtree(temp_dir)
+    print("Extraction complete.")

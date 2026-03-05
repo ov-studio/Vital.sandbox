@@ -1,5 +1,5 @@
 
-import os, sys, argparse, subprocess, glob, fnmatch, urllib.request, tarfile, shutil
+import os, sys, argparse, subprocess, glob, fnmatch, urllib.request, tarfile, zipfile, shutil
 from platform import machine, system
 from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
