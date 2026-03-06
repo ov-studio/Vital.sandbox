@@ -95,7 +95,7 @@ namespace Vital::Engine {
     // APIs //
     Texture* Texture::create_texture_2d(const std::string& path, const std::string& temp_ref) {
         return create_texture_2d_from_buffer(
-            Vital::Tool::File::read_binary(to_godot_string(get_directory()), to_godot_string(path)), 
+            Vital::Tool::File::read_binary(get_directory(), path), 
             temp_ref
         );
     }
@@ -129,7 +129,7 @@ namespace Vital::Engine {
 
     Texture* Texture::create_svg(const std::string& path, const std::string& temp_ref) {
         return create_svg_from_buffer(
-            Vital::Tool::File::read_binary(to_godot_string(get_directory()), to_godot_string(path)), 
+            Vital::Tool::File::read_binary(get_directory(), path), 
             temp_ref
         );
     }

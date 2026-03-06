@@ -217,7 +217,7 @@ namespace Vital::Engine {
     bool Model::load_model(const std::string& name, const std::string& path) {
         return load_model_from_buffer(
             name, 
-            Vital::Tool::File::read_binary(to_godot_string(get_directory()), to_godot_string(path))
+            Vital::Tool::File::read_binary(get_directory(), path)
         );
     }
 
