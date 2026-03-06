@@ -141,7 +141,7 @@ namespace Vital::System {
             client -> Connect();
             return true;
         }
-        auto token_directory = to_godot_string(Vital::get_directory()) + "/" + "discord";
+        auto token_directory = to_godot_string(Vital::get_directory()) + "/discord";
         auto token_file = to_godot_string(std::to_string(application_id) + ".token");
         std::string token_value = Vital::Tool::File::exists(token_directory, token_file) ? Vital::Tool::File::read_text(token_directory, token_file) : "";
         if (!token_value.empty()) {
@@ -168,7 +168,7 @@ namespace Vital::System {
     }
 
     bool Discord::reset_activity() {
-        set_application_id(default_application_id);
+        set_application_id(default_application_id, true, true);
         set_activity(default_activity);
         return true;
     }
