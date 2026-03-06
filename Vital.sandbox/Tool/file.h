@@ -39,8 +39,7 @@ namespace Vital::Tool::File {
     inline bool exists(const godot::String& base, const godot::String& target) {
         if (!is_path(target)) throw Vital::Log::fetch("file-path-invalid", Vital::Log::Type::Error, to_std_string(target));
         auto dir = godot::DirAccess::open(base);
-        if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
-        return dir -> file_exists(target);
+        return dir.is_valid() && dir -> file_exists(target);
     }
 
     inline uint64_t size(const godot::String& base, const godot::String& target) {
@@ -83,6 +82,7 @@ namespace Vital::Tool::File {
 
     inline bool write_text(const godot::String& base, const godot::String& target, const std::string& text) {
         if (!is_path(target)) throw Vital::Log::fetch("file-path-invalid", Vital::Log::Type::Error, to_std_string(target));
+        godot::DirAccess::make_dir_recursive_absolute(base);
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
@@ -93,6 +93,7 @@ namespace Vital::Tool::File {
 
     inline bool write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
         if (!is_path(target)) throw Vital::Log::fetch("file-path-invalid", Vital::Log::Type::Error, to_std_string(target));
+        godot::DirAccess::make_dir_recursive_absolute(base);
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
