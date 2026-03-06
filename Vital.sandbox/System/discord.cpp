@@ -86,7 +86,7 @@ namespace Vital::System {
     }
 
     bool Discord::is_connected() {
-        auto status = client->GetStatus();
+        auto status = client -> GetStatus();
         return status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected;
     }
 
