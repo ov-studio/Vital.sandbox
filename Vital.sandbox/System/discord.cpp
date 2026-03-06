@@ -36,8 +36,6 @@ namespace Vital::System {
 
     Discord::~Discord() {
         client.reset();
-        activity = {};
-        default_activity = {};
     }
 
 
