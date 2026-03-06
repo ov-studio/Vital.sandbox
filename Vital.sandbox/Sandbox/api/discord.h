@@ -72,8 +72,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "set_largeimage", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto key = vm -> get_string(1);
-                std::string text = "";
-                if ((vm -> get_arg_count() >= 2) && (vm -> is_string(2))) text = vm -> get_string(2);
+                std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
                 vm -> push_bool(Vital::System::Discord::get_singleton() -> set_largeimage(key, text));
                 return 1;
             });
@@ -81,9 +80,9 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "set_smallimage", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto key = vm -> get_string(1);
-                std::string text = "";
-                if ((vm -> get_arg_count() >= 2) && (vm -> is_string(2))) text = vm -> get_string(2);
-                vm -> push_bool(Vital::System::Discord::get_singleton() -> set_smallimage(key, text));
+                std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
+                if (!text.empty()) vm -> push_bool(Vital::System::Discord::get_singleton() -> set_smallimage(key, text));
+                else vm -> push_bool(Vital::System::Discord::get_singleton() -> set_smallimage(key));
                 return 1;
             });
 
