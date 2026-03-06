@@ -133,9 +133,9 @@ namespace Vital::System {
         return true;
     }
 
-    bool Discord::update_timestamps(int64_t start, int64_t end) {
-        activity.startTimestamp = start;
-        activity.endTimestamp = end;
+    bool Discord::update_timestamps(int64_t start_at, int64_t end_at) {
+        activity.startTimestamp = start_at;
+        activity.endTimestamp = end_at;
         update();
         return true;
     }

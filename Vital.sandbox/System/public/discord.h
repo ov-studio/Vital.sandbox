@@ -69,7 +69,7 @@ namespace Vital::System {
             bool update_details(const std::string& details);
             bool update_largeimage(const std::string& key, const std::string& text = "");
             bool update_smallimage(const std::string& key, const std::string& text = "");
-            bool update_timestamps(int64_t start, int64_t end);
+            bool update_timestamps(int64_t start_at, int64_t end_at);
     };
 }
 #endif
