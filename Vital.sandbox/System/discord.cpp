@@ -200,8 +200,9 @@ namespace Vital::System {
     }
 
     bool Discord::set_timestamps(int64_t start_at, int64_t end_at) {
-        activity.timestamp_start = start_at;
-        activity.timestamp_end = end_at;
+        auto now = static_cast<int64_t>(godot::Time::get_singleton() -> get_unix_time_from_system());
+        activity.timestamp_start = now + start_at;
+        activity.timestamp_end = end_at > 0 ? now + end_at : 0;
         update();
         return true;
     }
