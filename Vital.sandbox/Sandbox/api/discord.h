@@ -90,8 +90,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "set_timestamps", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto start_at = static_cast<int64_t>(vm -> get_int(1));
-                int64_t end_at = 0;
-                if ((vm -> get_arg_count() >= 2) && (vm -> is_number(2))) end_at = static_cast<int64_t>(vm -> get_int(2));
+                int64_t end_at = vm -> is_number(2) ? static_cast<int64_t>(vm -> get_int(2)) : 0;
                 vm -> push_bool(Vital::System::Discord::get_singleton() -> set_timestamps(start_at, end_at));
                 return 1;
             });
