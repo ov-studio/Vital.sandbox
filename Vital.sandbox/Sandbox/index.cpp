@@ -30,7 +30,8 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Rest>(),
         vm_module::make_api<API::File>(),
         vm_module::make_api<API::Crypto>(),
-        vm_module::make_api<API::Shrinker>()
+        vm_module::make_api<API::Shrinker>(),
+        vm_module::make_api<API::Discord>()
     };
 
     namespace API {

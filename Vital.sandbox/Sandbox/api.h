@@ -20,3 +20,4 @@
 #include <Vital.sandbox/Sandbox/api/rest.h>
 #include <Vital.sandbox/Sandbox/api/crypto.h>
 #include <Vital.sandbox/Sandbox/api/shrinker.h>
+#include <Vital.sandbox/Sandbox/api/discord.h>
