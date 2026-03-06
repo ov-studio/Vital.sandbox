@@ -76,7 +76,7 @@ namespace Vital::System {
         client_activity.SetTimestamps(client_timestamps);
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult& result) {
             if (!result.Successful()) {
-                // TO DO: std::cerr << "Rich Presence update failed\n";
+                Vital::print("error", "Discord presence failed:", result.ToString());
             }
         });
     }
