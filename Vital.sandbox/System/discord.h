@@ -60,7 +60,7 @@ namespace Vital::System {
             void process();
             bool is_connected();
             void authorize(const godot::String& token_directory, const godot::String& token_file, bool force_reauth = false);
-            bool set_application_id(uint64_t id);
+            bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
             uint64_t get_user_id();
             std::string get_username();
             bool set_activity(const Activity& data);
