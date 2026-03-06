@@ -38,14 +38,6 @@ void initialize_vital_events() {
         Vital::System::Discord::free_singleton();
         #endif
         Vital::Engine::Sandbox::free_singleton();
-
-        /*
-        #if defined(Vital_SDK_Client)
-        if (Vital::System::Discord::get_singleton() -> is_connected()) {
-            Vital::System::Discord::get_singleton() -> reset_application();
-        }
-        #endif
-        */
     });
 
 
