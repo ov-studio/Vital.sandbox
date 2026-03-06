@@ -54,14 +54,11 @@ namespace Vital::System {
             // Utils //
             static Discord* get_singleton();
             static void free_singleton();
-            void update_singleton();
-
-
-            // Managers //
-            void tick();
 
 
             // APIs //
+            void update();
+            void process();
             bool is_connected();
             bool set_activity(const Activity& data);
             bool reset_activity();

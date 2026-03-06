@@ -47,7 +47,6 @@ void initialize_vital_events() {
         #if defined(Vital_SDK_Client)
         if (Vital::System::Discord::get_singleton() -> is_connected()) {
             Vital::System::Discord::get_singleton() -> reset_activity();
-            Vital::System::Discord::get_singleton() -> tick();
         }
         #endif
         */
@@ -63,7 +62,6 @@ void initialize_vital_events() {
         activity.state = "In Lobby";
         activity.details = "Browsing games";
         Vital::System::Discord::get_singleton() -> set_activity(activity);
-        Vital::System::Discord::get_singleton() -> tick();
         #endif
 
         // TODO: TESTING
@@ -111,7 +109,7 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<double>());
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::get_singleton() -> tick();
+        Vital::System::Discord::get_singleton() -> process();
         #endif
     });
 

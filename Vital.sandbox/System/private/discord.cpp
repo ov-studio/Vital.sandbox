@@ -54,8 +54,10 @@ namespace Vital::System {
         delete singleton;
         singleton = nullptr;
     }
+    
 
-    void Discord::update_singleton() {
+    // APIs //
+    void Discord::update() {
         discordpp::Activity client_activity;
         client_activity.SetType(discordpp::ActivityTypes::Playing);
         client_activity.SetState(activity.state);
@@ -80,26 +82,22 @@ namespace Vital::System {
         }
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
             if (!result.Successful()) {
-                // TO DO: std::cerr << "Rich Presence update_singleton failed\n";
+                // TO DO: std::cerr << "Rich Presence update failed\n";
             }
         });
     }
-    
 
-    // Managers //
-    void Discord::tick() {
+    void Discord::process() {
         discordpp::RunCallbacks();
     }
 
-
-    // APIs //
     bool Discord::is_connected() {
         return !!client;
     }
 
     bool Discord::set_activity(const Activity& data) {
         activity = data;
-        update_singleton();
+        update();
         return true;
     }
 
@@ -111,34 +109,34 @@ namespace Vital::System {
 
     bool Discord::update_state(const std::string& state) {
         activity.state = state;
-        update_singleton();
+        update();
         return true;
     }
 
     bool Discord::update_details(const std::string& details) {
         activity.details = details;
-        update_singleton();
+        update();
         return true;
     }
 
     bool Discord::update_largeimage(const std::string& key, const std::string& text) {
         activity.largeImageKey = key;
         activity.largeImageText = text;
-        update_singleton();
+        update();
         return true;
     }
 
     bool Discord::update_smallimage(const std::string& key, const std::string& text) {
         activity.smallImageKey = key;
         activity.smallImageText = text;
-        update_singleton();
+        update();
         return true;
     }
 
     bool Discord::update_timestamps(int64_t start, int64_t end) {
         activity.startTimestamp = start;
         activity.endTimestamp = end;
-        update_singleton();
+        update();
         return true;
     }
 }
