@@ -61,6 +61,7 @@ namespace Vital::System {
             bool is_connected();
             bool set_application_id(uint64_t id);
             uint64_t get_user_id();
+            std::string get_username();
             bool set_activity(const Activity& data);
             bool reset_activity();
 
