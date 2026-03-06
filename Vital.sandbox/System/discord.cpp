@@ -31,8 +31,7 @@ namespace Vital::System {
             Vital::Tool::fetch_config("discord", "state").as<std::string>(),
             Vital::Tool::fetch_config("discord", "details").as<std::string>()
         };
-        client = std::make_shared<discordpp::Client>();
-        reset_activity();
+        reset_application();
     }
 
     Discord::~Discord() {
@@ -131,6 +130,8 @@ namespace Vital::System {
     // Setters //
     bool Discord::set_application_id(uint64_t id, bool authenticate, bool force_reauth) {
         application_id = id;
+        client.reset();
+        client = std::make_shared<discordpp::Client>();
         client -> SetApplicationId(application_id);
         client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
             Vital::print("info", "[Discord] Status ~", std::string(discordpp::EnumToString(status)), "| Code ~", errorCode);
@@ -167,7 +168,7 @@ namespace Vital::System {
         return true;
     }
 
-    bool Discord::reset_activity() {
+    bool Discord::reset_application() {
         set_application_id(default_application_id);
         set_activity(default_activity);
         return true;

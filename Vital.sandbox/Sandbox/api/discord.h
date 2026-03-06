@@ -50,8 +50,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "reset_activity", [](auto vm) -> int {
-                vm -> push_bool(Vital::System::Discord::get_singleton() -> reset_activity());
+            API::bind(vm, {base_name}, "reset_application", [](auto vm) -> int {
+                vm -> push_bool(Vital::System::Discord::get_singleton() -> reset_application());
                 return 1;
             });
 

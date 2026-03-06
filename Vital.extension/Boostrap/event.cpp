@@ -42,7 +42,7 @@ void initialize_vital_events() {
         /*
         #if defined(Vital_SDK_Client)
         if (Vital::System::Discord::get_singleton() -> is_connected()) {
-            Vital::System::Discord::get_singleton() -> reset_activity();
+            Vital::System::Discord::get_singleton() -> reset_application();
         }
         #endif
         */
