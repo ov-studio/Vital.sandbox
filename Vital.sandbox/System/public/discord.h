@@ -14,7 +14,9 @@
 
 #if defined(Vital_SDK_Client)
 #pragma once
+#define DISCORDPP_IMPLEMENTATION
 #include <Vital.sandbox/Tool/index.h>
+#include <discord-sdk/include/discordpp.h>
 
 
 ////////////////////////////
@@ -22,11 +24,10 @@
 ////////////////////////////
 
 namespace Vital::System {
+    class Discord;
     class Discord {
-        protected:
-            inline static Discord* singleton = nullptr;
         public:
-            struct ActivityData {
+            struct Activity {
                 std::string state;
                 std::string details;
 
@@ -40,20 +41,32 @@ namespace Vital::System {
                 int64_t startTimestamp = 0;
                 int64_t endTimestamp = 0;
             };
+        protected:
+            inline static Discord* singleton = nullptr;
+        private:
+            std::shared_ptr<discordpp::Client> client;
+            Activity activity = {};
+        public:
+            // Instantiators //
+            Discord();
+            ~Discord();
 
+        
             // Utils //
             static Discord* get_singleton();
             static void free_singleton();
 
+
             // Managers //
-            bool start();
             bool stop();
             void tick();
 
+
             // APIs //
             bool isConnected();
-            bool setActivity(const ActivityData& data);
+            bool setActivity(const Activity& data);
             bool clearActivity();
+
 
             // Partial Updates //
             bool updateState(const std::string& state);
@@ -61,6 +74,8 @@ namespace Vital::System {
             bool updateLargeImage(const std::string& key, const std::string& text = "");
             bool updateSmallImage(const std::string& key, const std::string& text = "");
             bool updateTimestamps(int64_t start, int64_t end);
+            
+            void pushUpdate();
     };
 }
 #endif

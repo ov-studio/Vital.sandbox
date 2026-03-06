@@ -27,7 +27,7 @@ void initialize_vital_events() {
         if (!Vital::is_editor()) {
             Vital::Godot::Canvas::get_singleton();
             Vital::Godot::Console::get_singleton();
-            Vital::System::Discord::get_singleton() -> start();
+            Vital::System::Discord::get_singleton();
         }
         #endif
         Vital::Godot::Sandbox::get_singleton() -> ready();
@@ -59,7 +59,7 @@ void initialize_vital_events() {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::ActivityData activity;
+        Vital::System::Discord::Activity activity;
         activity.state = "In Lobby";
         activity.details = "Browsing games";
         Vital::System::Discord::get_singleton() -> setActivity(activity);

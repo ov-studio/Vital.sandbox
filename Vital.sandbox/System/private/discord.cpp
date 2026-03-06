@@ -13,10 +13,8 @@
 //////////////
 
 #if defined(Vital_SDK_Client)
-#define DISCORDPP_IMPLEMENTATION // this is needed, do not remove
 #pragma once
 #include <Vital.sandbox/System/public/discord.h>
-#include <discord-sdk/include/discordpp.h>
 
 
 //////////////
@@ -31,38 +29,47 @@ const uint64_t APPLICATION_ID = 1461425342722998474;
 ////////////////////////////
 
 namespace Vital::System {
-    static std::shared_ptr<discordpp::Client> discord_client;
-    static Discord::ActivityData discord_current_data;
 
-    static void pushUpdate() {
-        if (!discord_client) return;
+    Discord::Discord() {
+        client = std::make_shared<discordpp::Client>();
+        client -> SetApplicationId(APPLICATION_ID);
+        client -> Connect();
+    }
+
+    Discord::~Discord() {
+        client.reset();
+        activity = {};
+    }
+
+    void Discord::pushUpdate() {
+        if (!client) return;
 
         discordpp::Activity activity;
         activity.SetType(discordpp::ActivityTypes::Playing);
-        activity.SetState(discord_current_data.state);
-        activity.SetDetails(discord_current_data.details);
+        activity.SetState(activity.state);
+        activity.SetDetails(activity.details);
 
-        if (!discord_current_data.largeImageKey.empty() || !discord_current_data.smallImageKey.empty()) {
+        if (!activity.largeImageKey.empty() || !activity.smallImageKey.empty()) {
             discordpp::ActivityAssets assets;
-            if (!discord_current_data.largeImageKey.empty()) {
-                assets.SetLargeImage(discord_current_data.largeImageKey);
-                assets.SetLargeText(discord_current_data.largeImageText);
+            if (!activity.largeImageKey.empty()) {
+                assets.SetLargeImage(activity.largeImageKey);
+                assets.SetLargeText(activity.largeImageText);
             }
-            if (!discord_current_data.smallImageKey.empty()) {
-                assets.SetSmallImage(discord_current_data.smallImageKey);
-                assets.SetSmallText(discord_current_data.smallImageText);
+            if (!activity.smallImageKey.empty()) {
+                assets.SetSmallImage(activity.smallImageKey);
+                assets.SetSmallText(activity.smallImageText);
             }
             activity.SetAssets(assets);
         }
 
-        if (discord_current_data.startTimestamp > 0 || discord_current_data.endTimestamp > 0) {
+        if (activity.startTimestamp > 0 || activity.endTimestamp > 0) {
             discordpp::ActivityTimestamps timestamps;
-            if (discord_current_data.startTimestamp > 0) timestamps.SetStart(discord_current_data.startTimestamp);
-            if (discord_current_data.endTimestamp > 0) timestamps.SetEnd(discord_current_data.endTimestamp);
+            if (activity.startTimestamp > 0) timestamps.SetStart(activity.startTimestamp);
+            if (activity.endTimestamp > 0) timestamps.SetEnd(activity.endTimestamp);
             activity.SetTimestamps(timestamps);
         }
 
-        discord_client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
+        client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
             if (!result.Successful()) {
                 // TO DO: std::cerr << "Rich Presence update failed\n";
             }
@@ -78,85 +85,69 @@ namespace Vital::System {
 
     void Discord::free_singleton() {
         if (!singleton) return;
-        singleton->stop();
         delete singleton;
         singleton = nullptr;
     }
 
 
     // Managers //
-    bool Discord::start() {
-        if (discord_client) return true;
-        discord_client = std::make_shared<discordpp::Client>();
-        discord_client->SetApplicationId(APPLICATION_ID);
-        discord_client->Connect();
-        return true;
-    }
-
     void Discord::tick() {
-        if (!discord_client) return;
+        if (!client) return;
         discordpp::RunCallbacks();
-    }
-
-    bool Discord::stop() {
-        if (!discord_client) return false;
-        discord_client.reset();
-        discord_current_data = {};
-        return true;
     }
 
 
     // APIs //
-    bool Discord::isConnected() { return !!discord_client; }
+    bool Discord::isConnected() { return !!client; }
 
-    bool Discord::setActivity(const ActivityData& data) {
-        if (!discord_client) return false;
-        discord_current_data = data;
+    bool Discord::setActivity(const Activity& data) {
+        if (!client) return false;
+        activity = data;
         pushUpdate();
         return true;
     }
 
     bool Discord::clearActivity() {
-        if (!discord_client) return false;
-        discord_current_data = {};
-        discord_client->ClearRichPresence();
+        if (!client) return false;
+        activity = {};
+        client->ClearRichPresence();
         return true;
     }
 
     bool Discord::updateState(const std::string& state) {
-        if (!discord_client) return false;
-        discord_current_data.state = state;
+        if (!client) return false;
+        activity.state = state;
         pushUpdate();
         return true;
     }
 
     bool Discord::updateDetails(const std::string& details) {
-        if (!discord_client) return false;
-        discord_current_data.details = details;
+        if (!client) return false;
+        activity.details = details;
         pushUpdate();
         return true;
     }
 
     bool Discord::updateLargeImage(const std::string& key, const std::string& text) {
-        if (!discord_client) return false;
-        discord_current_data.largeImageKey = key;
-        discord_current_data.largeImageText = text;
+        if (!client) return false;
+        activity.largeImageKey = key;
+        activity.largeImageText = text;
         pushUpdate();
         return true;
     }
 
     bool Discord::updateSmallImage(const std::string& key, const std::string& text) {
-        if (!discord_client) return false;
-        discord_current_data.smallImageKey = key;
-        discord_current_data.smallImageText = text;
+        if (!client) return false;
+        activity.smallImageKey = key;
+        activity.smallImageText = text;
         pushUpdate();
         return true;
     }
 
     bool Discord::updateTimestamps(int64_t start, int64_t end) {
-        if (!discord_client) return false;
-        discord_current_data.startTimestamp = start;
-        discord_current_data.endTimestamp = end;
+        if (!client) return false;
+        activity.startTimestamp = start;
+        activity.endTimestamp = end;
         pushUpdate();
         return true;
     }
