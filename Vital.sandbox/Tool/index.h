@@ -61,8 +61,11 @@ namespace Vital {
         return timestamp;
     }
 
-    inline std::string get_directory() {
-        return to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
+    template<typename... Args>
+    inline std::string get_directory(Args&&... args) {
+        std::string base = to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
+        ((base += "/" + std::string(std::forward<Args>(args))), ...);
+        return base;
     }
 
     inline bool is_editor() { 
