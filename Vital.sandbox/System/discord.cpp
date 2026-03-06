@@ -16,6 +16,7 @@
 #pragma once
 #define DISCORDPP_IMPLEMENTATION
 #include <Vital.sandbox/System/discord.h>
+#include <Vital.extension/Engine/public/console.h>
 
 
 /////////////////////////////
