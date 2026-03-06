@@ -30,9 +30,9 @@ namespace Vital::System {
                 std::string state;
                 std::string details;
                 std::string largeimage_key = "";
-                std::string largeimage_text = "";
+                std::string largeimage_text = "N/A";
                 std::string smallimage_key = "";
-                std::string smallimage_text = "";
+                std::string smallimage_text = "N/A";
                 int64_t timestamp_start = 0;
                 int64_t timestamp_end = 0;
             };
