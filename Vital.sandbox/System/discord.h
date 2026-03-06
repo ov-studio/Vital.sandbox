@@ -38,9 +38,9 @@ namespace Vital::System {
             };
         protected:
             inline static Discord* singleton = nullptr;
-        private:
             uint64_t default_application_id;
             Activity default_activity = {};
+        private:
             uint64_t application_id;
             Activity activity = {};
             std::shared_ptr<discordpp::Client> client;
