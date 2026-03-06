@@ -38,6 +38,25 @@ namespace Vital::Tool {
         return it -> second;
     }
     
+    template<typename... Keys>
+    inline Vital::Tool::StackValue fetch_config(const std::string& name, Keys&&... keys) {
+        rapidjson::Document document;
+        document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
+        if (document.HasParseError() || !document.HasMember(name.c_str())) return {};
+        const rapidjson::Value* node = &document[name.c_str()];
+        for (const std::string& key : {std::string(std::forward<Keys>(keys))...}) {
+            if (!node -> IsObject() || !node -> HasMember(key.c_str())) return {};
+            node = &(*node)[key.c_str()];
+        }
+        if (node -> IsString()) return std::string(node -> GetString());
+        else if (node -> IsInt()) return node -> GetInt();
+        else if (node -> IsInt64()) return node -> GetInt64();
+        else if (node -> IsFloat()) return node -> GetFloat();
+        else if (node -> IsDouble()) return node -> GetDouble();
+        else if (node -> IsBool()) return node -> GetBool();
+        return {};
+    }
+
     inline std::string fetch_module(const std::string& name) {
         rapidjson::Document document;
         document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
