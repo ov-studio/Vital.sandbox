@@ -89,57 +89,33 @@ namespace Vital::System {
         return status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected;
     }
 
-    bool Discord::set_application_id(uint64_t id) {
-        application_id = id;
-        auto token_directory = to_godot_string(Vital::get_directory());
-        auto token_file = to_godot_string(std::to_string(application_id) + ".token");
-        std::string token_value = Vital::Tool::File::exists(token_directory, token_file) ? Vital::Tool::File::read_text(token_directory, token_file) : "";
-        client -> SetApplicationId(application_id);
-        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
-            Vital::print("info", "[Discord] Status ~", std::string(discordpp::EnumToString(status)), "| Code ~", errorCode);
-            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected)
-                update();
-        });
-    
-        // Authenticate cached token
-        if (!token_value.empty()) {
-            Vital::print("info", "[Discord] Authenticating ~ Cached token found");
-            client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file](discordpp::ClientResult result) {
-                if (!result.Successful()) {
-                    Vital::print("warn", "[Discord] Authenticating ~ Cached token expired, re-authenticating");
-                    Vital::Tool::File::remove(token_directory, token_file);
-                    set_application_id(application_id);
-                    return;
-                }
-                Vital::print("info", "[Discord] Authenticating ~ Success");
-                client -> Connect();
-            });
-            return true;
-        }
-    
-        // Re-Authenticate
-        Vital::print("info", "[Discord] Authenticating ~ Awaiting user authorization");
+    void Discord::authorize(const godot::String& token_directory, const godot::String& token_file, bool force_reauth) {
         auto verifier = client -> CreateAuthorizationCodeVerifier();
         discordpp::AuthorizationArgs args;
         args.SetClientId(application_id);
         args.SetScopes(discordpp::Client::GetDefaultPresenceScopes());
         args.SetCodeChallenge(verifier.Challenge());
-        client -> Authorize(args, [this, verifier, token_directory, token_file](discordpp::ClientResult result, std::string code, std::string redirectUri) {
+        client -> Authorize(args, [this, verifier, token_directory, token_file, force_reauth](discordpp::ClientResult result, std::string code, std::string redirectUri) {
             if (!result.Successful()) {
-                Vital::print("warn", "[Discord] Authenticating ~ Authorization rejected, retrying");
-                set_application_id(application_id);
+                if (force_reauth) {
+                    Vital::print("warn", "[Discord] Authorization rejected ~ Retrying");
+                    authorize(token_directory, token_file, force_reauth);
+                }
+                else {
+                    Vital::print("warn", "[Discord] Authorization rejected ~ Presence only");
+                    client -> Connect();
+                }
                 return;
             }
             client -> GetToken(application_id, code, verifier.Verifier(), redirectUri, [this, token_directory, token_file](discordpp::ClientResult result, std::string accessToken, std::string refreshToken, discordpp::AuthorizationTokenType tokenType, int32_t expiresIn, std::string scopes) {
                     if (!result.Successful()) {
-                        Vital::print("error", "[Discord] Authenticating ~ Token exchange failed ~", result.ToString());
+                        Vital::print("error", "[Discord] Token exchange failed ~", result.ToString());
                         return;
                     }
-                    Vital::print("info", "[Discord] Authenticating ~ Token acquired, connecting");
                     Vital::Tool::File::write_text(token_directory, token_file, accessToken);
                     client -> UpdateToken(tokenType, accessToken, [this](discordpp::ClientResult result) {
                         if (!result.Successful()) {
-                            Vital::print("error", "[Discord] Authenticating ~ Token update failed ~", result.ToString());
+                            Vital::print("error", "[Discord] Token update failed ~", result.ToString());
                             return;
                         }
                         client -> Connect();
@@ -147,6 +123,37 @@ namespace Vital::System {
                 }
             );
         });
+    }
+    
+    bool Discord::set_application_id(uint64_t id, bool authenticate, bool force_reauth) {
+        application_id = id;
+        client -> SetApplicationId(application_id);
+        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
+            Vital::print("info", "[Discord] Status ~", std::string(discordpp::EnumToString(status)), "| Code ~", errorCode);
+            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected)
+                update();
+        });
+        if (!authenticate) {
+            client -> Connect();
+            return true;
+        }
+        auto token_directory = to_godot_string(Vital::get_directory());
+        auto token_file = to_godot_string(std::to_string(application_id) + ".token");
+        std::string token_value = Vital::Tool::File::exists(token_directory, token_file) ? Vital::Tool::File::read_text(token_directory, token_file) : "";
+        if (!token_value.empty()) {
+            client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
+                if (!result.Successful()) {
+                    Vital::print("warn", "[Discord] Cached token expired ~ Re-authenticating");
+                    Vital::Tool::File::remove(token_directory, token_file);
+                    authorize(token_directory, token_file, force_reauth);
+                    return;
+                }
+                client -> Connect();
+            });
+            return true;
+        }
+        Vital::print("info", "[Discord] Awaiting authorization");
+        authorize(token_directory, token_file, force_reauth);
         return true;
     }
 
