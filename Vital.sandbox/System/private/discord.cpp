@@ -42,8 +42,6 @@ namespace Vital::System {
     }
 
     void Discord::pushUpdate() {
-        if (!client) return;
-
         discordpp::Activity activity;
         activity.SetType(discordpp::ActivityTypes::Playing);
         activity.SetState(activity.state);
@@ -101,35 +99,30 @@ namespace Vital::System {
     bool Discord::isConnected() { return !!client; }
 
     bool Discord::setActivity(const Activity& data) {
-        if (!client) return false;
         activity = data;
         pushUpdate();
         return true;
     }
 
     bool Discord::clearActivity() {
-        if (!client) return false;
         activity = {};
         client -> ClearRichPresence();
         return true;
     }
 
     bool Discord::updateState(const std::string& state) {
-        if (!client) return false;
         activity.state = state;
         pushUpdate();
         return true;
     }
 
     bool Discord::updateDetails(const std::string& details) {
-        if (!client) return false;
         activity.details = details;
         pushUpdate();
         return true;
     }
 
     bool Discord::updateLargeImage(const std::string& key, const std::string& text) {
-        if (!client) return false;
         activity.largeImageKey = key;
         activity.largeImageText = text;
         pushUpdate();
@@ -137,7 +130,6 @@ namespace Vital::System {
     }
 
     bool Discord::updateSmallImage(const std::string& key, const std::string& text) {
-        if (!client) return false;
         activity.smallImageKey = key;
         activity.smallImageText = text;
         pushUpdate();
@@ -145,7 +137,6 @@ namespace Vital::System {
     }
 
     bool Discord::updateTimestamps(int64_t start, int64_t end) {
-        if (!client) return false;
         activity.startTimestamp = start;
         activity.endTimestamp = end;
         pushUpdate();
