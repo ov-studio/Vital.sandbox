@@ -25,14 +25,13 @@
 namespace Vital::System {
     // Instantiators //
     Discord::Discord() {
-        //Vital::Tool::fetch_module("discord_application_id"
         default_application_id = 1461425342722998474;
         default_activity = {
             "In Lobby",      // state
             "Browsing games" // details
         };
         client = std::make_shared<discordpp::Client>();
-        set_application_id(default_application_id);
+        reset_activity();
     }
 
     Discord::~Discord() {
@@ -99,6 +98,12 @@ namespace Vital::System {
         return true;
     }
 
+    uint64_t Discord::get_user_id() {
+        if (!is_connected()) return 0;
+        auto user = client -> GetCurrentUser();
+        return user.Id();
+    }
+
     bool Discord::set_activity(const Activity& data) {
         activity = data;
         update();
@@ -108,14 +113,7 @@ namespace Vital::System {
     bool Discord::reset_activity() {
         set_application_id(default_application_id);
         set_activity(default_activity);
-        update();
         return true;
-    }
-
-    uint64_t Discord::get_user_id() {
-        if (!is_connected()) return 0;
-        auto user = client -> GetCurrentUser();
-        return user.Id();
     }
 
     bool Discord::update_state(const std::string& state) {
