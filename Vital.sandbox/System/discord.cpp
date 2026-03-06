@@ -113,6 +113,13 @@ namespace Vital::System {
         return true;
     }
 
+    uint64_t Discord::get_user_id() {
+        if (!is_connected()) return 0;
+        auto user = client -> GetCurrentUser();
+        if (!user) return 0;
+        return user->Id();
+    }
+
     bool Discord::update_state(const std::string& state) {
         activity.state = state;
         update();

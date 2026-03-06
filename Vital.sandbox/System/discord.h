@@ -62,6 +62,7 @@ namespace Vital::System {
             bool set_application_id(uint64_t id);
             bool set_activity(const Activity& data);
             bool reset_activity();
+            uint64_t get_user_id();
 
 
             // Updaters //
