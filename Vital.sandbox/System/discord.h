@@ -29,10 +29,10 @@ namespace Vital::System {
             struct Activity {
                 std::string state;
                 std::string details;
-                std::string largeimage_key;
-                std::string largeimage_text;
-                std::string smallimage_key;
-                std::string smallimage_text;
+                std::string largeimage_key = "";
+                std::string largeimage_text = "";
+                std::string smallimage_key = "";
+                std::string smallimage_text = "";
                 int64_t timestamp_start = 0;
                 int64_t timestamp_end = 0;
             };
@@ -49,7 +49,7 @@ namespace Vital::System {
             Discord();
             ~Discord();
 
-        
+
             // Utils //
             static Discord* get_singleton();
             static void free_singleton();
@@ -60,9 +60,9 @@ namespace Vital::System {
             void process();
             bool is_connected();
             bool set_application_id(uint64_t id);
+            uint64_t get_user_id();
             bool set_activity(const Activity& data);
             bool reset_activity();
-            uint64_t get_user_id();
 
 
             // Updaters //
