@@ -88,7 +88,7 @@ namespace Vital::System {
     }
 
     bool Discord::is_connected() {
-        return !!client;
+        return client -> GetStatus() == discordpp::Client::Status::Ready;
     }
 
     bool Discord::set_activity(const Activity& data) {
