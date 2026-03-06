@@ -33,8 +33,8 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "set_application_id", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto id = static_cast<uint64_t>(vm -> get_int(1));
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto id = static_cast<uint64_t>(std::stoull(vm -> get_string(1)));
                 bool authenticate = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 bool force_reauth = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 vm -> push_bool(Vital::System::Discord::get_singleton() -> set_application_id(id, authenticate, force_reauth));
