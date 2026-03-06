@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "get_userid", [](auto vm) -> int {
                 if (!Vital::System::Discord::get_singleton() -> is_connected()) vm -> push_bool(false);
-                else vm -> push_number(static_cast<double>(Vital::System::Discord::get_singleton() -> get_userid()));
+                else vm -> push_string(std::to_string(Vital::System::Discord::get_singleton() -> get_userid()));
                 return 1;
             });
 
