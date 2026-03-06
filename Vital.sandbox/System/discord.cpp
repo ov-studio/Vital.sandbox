@@ -168,7 +168,7 @@ namespace Vital::System {
     }
 
     bool Discord::reset_activity() {
-        set_application_id(default_application_id, true, true);
+        set_application_id(default_application_id);
         set_activity(default_activity);
         return true;
     }
