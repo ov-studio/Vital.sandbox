@@ -17,7 +17,7 @@
 // Internals //
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/System/public/network.h>
-#include <Vital.sandbox/System/public/discord.h>
+#include <Vital.sandbox/System/discord.h>
 
 // Externals //
 #include <godot_cpp/godot.hpp>

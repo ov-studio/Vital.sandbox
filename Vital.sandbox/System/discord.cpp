@@ -15,7 +15,7 @@
 #if defined(Vital_SDK_Client)
 #pragma once
 #define DISCORDPP_IMPLEMENTATION
-#include <Vital.sandbox/System/public/discord.h>
+#include <Vital.sandbox/System/discord.h>
 
 
 //////////////
