@@ -45,8 +45,8 @@ void initialize_vital_events() {
 
         /*
         #if defined(Vital_SDK_Client)
-        if (Vital::System::Discord::get_singleton() -> isConnected()) {
-            Vital::System::Discord::get_singleton() -> clearActivity();
+        if (Vital::System::Discord::get_singleton() -> is_connected()) {
+            Vital::System::Discord::get_singleton() -> reset_activity();
             Vital::System::Discord::get_singleton() -> tick();
         }
         #endif
@@ -62,7 +62,7 @@ void initialize_vital_events() {
         Vital::System::Discord::Activity activity;
         activity.state = "In Lobby";
         activity.details = "Browsing games";
-        Vital::System::Discord::get_singleton() -> setActivity(activity);
+        Vital::System::Discord::get_singleton() -> set_activity(activity);
         Vital::System::Discord::get_singleton() -> tick();
         #endif
 

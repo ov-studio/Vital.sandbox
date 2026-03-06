@@ -14,6 +14,7 @@
 
 #if defined(Vital_SDK_Client)
 #pragma once
+#define DISCORDPP_IMPLEMENTATION
 #include <Vital.sandbox/System/public/discord.h>
 
 
@@ -29,7 +30,7 @@ const uint64_t APPLICATION_ID = 1461425342722998474;
 ////////////////////////////
 
 namespace Vital::System {
-
+    // Instantiators //
     Discord::Discord() {
         client = std::make_shared<discordpp::Client>();
         client -> SetApplicationId(APPLICATION_ID);
@@ -39,39 +40,6 @@ namespace Vital::System {
     Discord::~Discord() {
         client.reset();
         activity = {};
-    }
-
-    void Discord::pushUpdate() {
-        discordpp::Activity client_activity;
-        client_activity.SetType(discordpp::ActivityTypes::Playing);
-        client_activity.SetState(activity.state);
-        client_activity.SetDetails(activity.details);
-
-        if (!activity.largeImageKey.empty() || !activity.smallImageKey.empty()) {
-            discordpp::ActivityAssets assets;
-            if (!activity.largeImageKey.empty()) {
-                assets.SetLargeImage(activity.largeImageKey);
-                assets.SetLargeText(activity.largeImageText);
-            }
-            if (!activity.smallImageKey.empty()) {
-                assets.SetSmallImage(activity.smallImageKey);
-                assets.SetSmallText(activity.smallImageText);
-            }
-            client_activity.SetAssets(assets);
-        }
-
-        if (activity.startTimestamp > 0 || activity.endTimestamp > 0) {
-            discordpp::ActivityTimestamps client_timestamps;
-            if (activity.startTimestamp > 0) client_timestamps.SetStart(activity.startTimestamp);
-            if (activity.endTimestamp > 0) client_timestamps.SetEnd(activity.endTimestamp);
-            client_activity.SetTimestamps(client_timestamps);
-        }
-
-        client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
-            if (!result.Successful()) {
-                // TO DO: std::cerr << "Rich Presence update failed\n";
-            }
-        });
     }
 
 
@@ -87,6 +55,36 @@ namespace Vital::System {
         singleton = nullptr;
     }
 
+    void Discord::update_singleton() {
+        discordpp::Activity client_activity;
+        client_activity.SetType(discordpp::ActivityTypes::Playing);
+        client_activity.SetState(activity.state);
+        client_activity.SetDetails(activity.details);
+        if (!activity.largeImageKey.empty() || !activity.smallImageKey.empty()) {
+            discordpp::ActivityAssets assets;
+            if (!activity.largeImageKey.empty()) {
+                assets.SetLargeImage(activity.largeImageKey);
+                assets.SetLargeText(activity.largeImageText);
+            }
+            if (!activity.smallImageKey.empty()) {
+                assets.SetSmallImage(activity.smallImageKey);
+                assets.SetSmallText(activity.smallImageText);
+            }
+            client_activity.SetAssets(assets);
+        }
+        if (activity.startTimestamp > 0 || activity.endTimestamp > 0) {
+            discordpp::ActivityTimestamps client_timestamps;
+            if (activity.startTimestamp > 0) client_timestamps.SetStart(activity.startTimestamp);
+            if (activity.endTimestamp > 0) client_timestamps.SetEnd(activity.endTimestamp);
+            client_activity.SetTimestamps(client_timestamps);
+        }
+        client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
+            if (!result.Successful()) {
+                // TO DO: std::cerr << "Rich Presence update_singleton failed\n";
+            }
+        });
+    }
+    
 
     // Managers //
     void Discord::tick() {
@@ -95,50 +93,52 @@ namespace Vital::System {
 
 
     // APIs //
-    bool Discord::isConnected() { return !!client; }
+    bool Discord::is_connected() {
+        return !!client;
+    }
 
-    bool Discord::setActivity(const Activity& data) {
+    bool Discord::set_activity(const Activity& data) {
         activity = data;
-        pushUpdate();
+        update_singleton();
         return true;
     }
 
-    bool Discord::clearActivity() {
+    bool Discord::reset_activity() {
         activity = {};
         client -> ClearRichPresence();
         return true;
     }
 
-    bool Discord::updateState(const std::string& state) {
+    bool Discord::update_state(const std::string& state) {
         activity.state = state;
-        pushUpdate();
+        update_singleton();
         return true;
     }
 
-    bool Discord::updateDetails(const std::string& details) {
+    bool Discord::update_details(const std::string& details) {
         activity.details = details;
-        pushUpdate();
+        update_singleton();
         return true;
     }
 
-    bool Discord::updateLargeImage(const std::string& key, const std::string& text) {
+    bool Discord::update_largeimage(const std::string& key, const std::string& text) {
         activity.largeImageKey = key;
         activity.largeImageText = text;
-        pushUpdate();
+        update_singleton();
         return true;
     }
 
-    bool Discord::updateSmallImage(const std::string& key, const std::string& text) {
+    bool Discord::update_smallimage(const std::string& key, const std::string& text) {
         activity.smallImageKey = key;
         activity.smallImageText = text;
-        pushUpdate();
+        update_singleton();
         return true;
     }
 
-    bool Discord::updateTimestamps(int64_t start, int64_t end) {
+    bool Discord::update_timestamps(int64_t start, int64_t end) {
         activity.startTimestamp = start;
         activity.endTimestamp = end;
-        pushUpdate();
+        update_singleton();
         return true;
     }
 }

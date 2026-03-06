@@ -14,7 +14,6 @@
 
 #if defined(Vital_SDK_Client)
 #pragma once
-#define DISCORDPP_IMPLEMENTATION
 #include <Vital.sandbox/Tool/index.h>
 #include <discord-sdk/include/discordpp.h>
 
@@ -55,27 +54,25 @@ namespace Vital::System {
             // Utils //
             static Discord* get_singleton();
             static void free_singleton();
+            void update_singleton();
 
 
             // Managers //
-            bool stop();
             void tick();
 
 
             // APIs //
-            bool isConnected();
-            bool setActivity(const Activity& data);
-            bool clearActivity();
+            bool is_connected();
+            bool set_activity(const Activity& data);
+            bool reset_activity();
 
 
-            // Partial Updates //
-            bool updateState(const std::string& state);
-            bool updateDetails(const std::string& details);
-            bool updateLargeImage(const std::string& key, const std::string& text = "");
-            bool updateSmallImage(const std::string& key, const std::string& text = "");
-            bool updateTimestamps(int64_t start, int64_t end);
-            
-            void pushUpdate();
+            // Updaters //
+            bool update_state(const std::string& state);
+            bool update_details(const std::string& details);
+            bool update_largeimage(const std::string& key, const std::string& text = "");
+            bool update_smallimage(const std::string& key, const std::string& text = "");
+            bool update_timestamps(int64_t start, int64_t end);
     };
 }
 #endif
