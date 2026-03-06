@@ -14,13 +14,12 @@
 
 #pragma once
 
-// Internal //
+// Internals //
 #include <Vital.sandbox/Sandbox/machine.h>
-// Remove later and bundle with tools instead - header only
 #include <Vital.sandbox/System/public/network.h>
 #include <Vital.sandbox/System/public/discord.h>
 
-// External //
+// Externals //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
