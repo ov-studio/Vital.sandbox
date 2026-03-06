@@ -57,13 +57,6 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
-        #if defined(Vital_SDK_Client)
-        Vital::System::Discord::Activity activity;
-        activity.state = "In Lobby";
-        activity.details = "Browsing games";
-        Vital::System::Discord::get_singleton() -> set_activity(activity);
-        #endif
-
         // TODO: TESTING
         Vital::Engine::Model::load_model("cube", "ladyforaviril.glb");
         auto cube = Vital::Engine::Model::create_object("cube");
