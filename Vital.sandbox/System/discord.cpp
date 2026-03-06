@@ -18,18 +18,6 @@
 #include <Vital.sandbox/System/discord.h>
 
 
-//////////////
-// Constants //
-//////////////
-
-static const uint64_t DEFAULT_APPLICATION_ID = 1461425342722998474;
-
-static const Vital::System::Discord::Activity DEFAULT_ACTIVITY = {
-    "In Lobby",     // state
-    "Browsing games" // details
-};
-
-
 ////////////////////////////
 // Vital: System: Discord //
 ////////////////////////////
@@ -37,8 +25,13 @@ static const Vital::System::Discord::Activity DEFAULT_ACTIVITY = {
 namespace Vital::System {
     // Instantiators //
     Discord::Discord() {
-        application_id = DEFAULT_APPLICATION_ID;
-        default_activity = DEFAULT_ACTIVITY;
+        //Vital::Tool::fetch_module("discord_application_id"
+        default_application_id = 1461425342722998474;
+        default_activity = {
+            "In Lobby",      // state
+            "Browsing games" // details
+        };
+        application_id = default_application_id;
         activity = default_activity;
         client = std::make_shared<discordpp::Client>();
         client -> SetApplicationId(application_id);
@@ -107,11 +100,6 @@ namespace Vital::System {
         return true;
     }
 
-    bool Discord::set_default_activity(const Activity& data) {
-        default_activity = data;
-        return true;
-    }
-
     bool Discord::set_activity(const Activity& data) {
         activity = data;
         update();
@@ -119,7 +107,8 @@ namespace Vital::System {
     }
 
     bool Discord::reset_activity() {
-        activity = default_activity;
+        set_application_id(default_application_id);
+        set_activity(default_activity);
         update();
         return true;
     }

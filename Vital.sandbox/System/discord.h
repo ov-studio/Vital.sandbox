@@ -43,10 +43,11 @@ namespace Vital::System {
         protected:
             inline static Discord* singleton = nullptr;
         private:
-            uint64_t application_id;
             std::shared_ptr<discordpp::Client> client;
-            Activity activity = {};
+            uint64_t default_application_id;
             Activity default_activity = {};
+            uint64_t application_id;
+            Activity activity = {};
         public:
             // Instantiators //
             Discord();
@@ -63,7 +64,6 @@ namespace Vital::System {
             void process();
             bool is_connected();
             bool set_application_id(uint64_t id);
-            bool set_default_activity(const Activity& data);
             bool set_activity(const Activity& data);
             bool reset_activity();
 
