@@ -90,7 +90,6 @@ namespace Vital::System {
 
     // Managers //
     void Discord::tick() {
-        if (!client) return;
         discordpp::RunCallbacks();
     }
 
