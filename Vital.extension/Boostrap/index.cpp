@@ -22,12 +22,12 @@
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
-	godot::ClassDB::register_class<Vital::Godot::Core>();
-	godot::ClassDB::register_class<Vital::Godot::Model>(true);
+	godot::ClassDB::register_class<Vital::Engine::Core>();
+	godot::ClassDB::register_class<Vital::Engine::Model>(true);
 	#if defined(Vital_SDK_Client)
-	godot::ClassDB::register_class<Vital::Godot::Canvas>(true);
-	godot::ClassDB::register_class<Vital::Godot::RenderTarget>(true);
-	godot::ClassDB::register_class<Vital::Godot::Webview>(true);
+	godot::ClassDB::register_class<Vital::Engine::Canvas>(true);
+	godot::ClassDB::register_class<Vital::Engine::RenderTarget>(true);
+	godot::ClassDB::register_class<Vital::Engine::Webview>(true);
 	#endif
 	initialize_vital_events();
 }

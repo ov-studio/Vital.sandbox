@@ -18,11 +18,11 @@
 #include <Vital.extension/Engine/public/core.h>
 
 
-/////////////////////////////////
-// Vital: Godot: RenderTarget //
-/////////////////////////////////
+//////////////////////////////////
+// Vital: Engine: RenderTarget //
+//////////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     RenderTarget::~RenderTarget() {
         if (!viewport) return;

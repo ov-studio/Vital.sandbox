@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/webview.h>
 
 
-////////////////////////////
-// Vital: Godot: Console //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Console //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class Console;
     class Console : public godot::Control {
         protected:
@@ -59,7 +59,7 @@ namespace Vital {
         const std::string message = oss.str();
         if (message.empty()) return;
         #if defined(Vital_SDK_Client)
-            Godot::Console::get_singleton() -> print(mode, message);
+            Engine::Console::get_singleton() -> print(mode, message);
         #else
             godot::UtilityFunctions::print(to_godot_string(message));
         #endif

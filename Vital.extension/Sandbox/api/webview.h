@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Webview : vm_module {
         inline static const std::string base_name = "webview";
-        using base_class = Vital::Godot::Webview;
+        using base_class = Vital::Engine::Webview;
 
         static std::string handler_key(void* ptr) {
             return "webview_message_handler_" + std::to_string(reinterpret_cast<uintptr_t>(ptr));
@@ -35,7 +35,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Webview>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                auto* object = memnew(Vital::Godot::Webview);
+                auto* object = memnew(Vital::Engine::Webview);
                 vm -> create_object(base_name, object);
                 return 1;
             });

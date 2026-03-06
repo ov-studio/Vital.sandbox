@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/texture.h>
 
 
-////////////////////////////
-// Vital: Godot: Texture //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Texture //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     void Texture::heartbeat() {
         command.tick = get_tick();

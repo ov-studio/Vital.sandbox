@@ -16,11 +16,11 @@
 #include <Vital.extension/Engine/public/core.h>
 
 
-//////////////////////////
-// Vital: Godot: Model //
-//////////////////////////
+///////////////////////////
+// Vital: Engine: Model //
+///////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:

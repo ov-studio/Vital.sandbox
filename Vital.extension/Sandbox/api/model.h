@@ -24,7 +24,7 @@
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
         inline static const std::string base_name = "model";
-        using base_class = Vital::Godot::Model;
+        using base_class = Vital::Engine::Model;
 
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "is_loaded", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                vm -> push_bool(Vital::Godot::Model::is_model_loaded(name));
+                vm -> push_bool(Vital::Engine::Model::is_model_loaded(name));
                 return 1;
             });
 
@@ -40,21 +40,21 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
                 auto path = vm -> get_string(2);
-                vm -> push_bool(Vital::Godot::Model::load_model(name, path));
+                vm -> push_bool(Vital::Engine::Model::load_model(name, path));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "unload", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                vm -> push_bool(Vital::Godot::Model::unload_model(name));
+                vm -> push_bool(Vital::Engine::Model::unload_model(name));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                auto* object = Vital::Godot::Model::create_object(name);
+                auto* object = Vital::Engine::Model::create_object(name);
                 vm -> create_object(base_name, object);
                 return 1;
             });

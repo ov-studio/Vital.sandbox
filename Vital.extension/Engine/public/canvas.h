@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/index.h>
 
 
-///////////////////////////
-// Vital: Godot: Canvas //
-///////////////////////////
+////////////////////////////
+// Vital: Engine: Canvas //
+////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class Texture;
     class RenderTarget;
     class Canvas;

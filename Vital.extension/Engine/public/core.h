@@ -16,11 +16,11 @@
 #include <Vital.extension/Engine/public/index.h>
 
 
-///////////////////////////
-// Vital: Godot: Engine //
-///////////////////////////
+////////////////////////////
+// Vital: Engine: Engine //
+////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class Core;
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)

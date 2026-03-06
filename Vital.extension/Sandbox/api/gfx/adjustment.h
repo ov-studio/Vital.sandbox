@@ -28,14 +28,14 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             API::bind(vm, {base_name, "adjustment"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(Vital::Godot::Core::get_environment() -> is_adjustment_enabled());
+                vm -> push_bool(Vital::Engine::Core::get_environment() -> is_adjustment_enabled());
                 return 1;
             });
     
             API::bind(vm, {base_name, "adjustment"}, "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
-                Vital::Godot::Core::get_environment() -> set_adjustment_enabled(state);
+                Vital::Engine::Core::get_environment() -> set_adjustment_enabled(state);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -43,47 +43,47 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name, "adjustment"}, "set_brightness", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Godot::Core::get_environment() -> set_adjustment_brightness(value);
+                Vital::Engine::Core::get_environment() -> set_adjustment_brightness(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "adjustment"}, "get_brightness", [](auto vm) -> int {
-                vm -> push_number(Vital::Godot::Core::get_environment() -> get_adjustment_brightness());
+                vm -> push_number(Vital::Engine::Core::get_environment() -> get_adjustment_brightness());
                 return 1;
             });
         
             API::bind(vm, {base_name, "adjustment"}, "set_contrast", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Godot::Core::get_environment() -> set_adjustment_contrast(value);
+                Vital::Engine::Core::get_environment() -> set_adjustment_contrast(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "adjustment"}, "get_contrast", [](auto vm) -> int {
-                vm -> push_number(Vital::Godot::Core::get_environment() -> get_adjustment_contrast());
+                vm -> push_number(Vital::Engine::Core::get_environment() -> get_adjustment_contrast());
                 return 1;
             });
         
             API::bind(vm, {base_name, "adjustment"}, "set_saturation", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Godot::Core::get_environment() -> set_adjustment_saturation(value);
+                Vital::Engine::Core::get_environment() -> set_adjustment_saturation(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "adjustment"}, "get_saturation", [](auto vm) -> int {
-                vm -> push_number(Vital::Godot::Core::get_environment() -> get_adjustment_saturation());
+                vm -> push_number(Vital::Engine::Core::get_environment() -> get_adjustment_saturation());
                 return 1;
             });
 
             API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                auto lut_texture = Vital::Godot::Texture::get_from_ref(path);
-                if (!lut_texture) lut_texture = Vital::Godot::Texture::create_texture_2d(path, path);
+                auto lut_texture = Vital::Engine::Texture::get_from_ref(path);
+                if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);
                 godot::Ref<godot::Image> lut_image = lut_texture -> get_texture() -> get_image();
                 int img_w = lut_image -> get_width();
                 int img_h = lut_image -> get_height();
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                 godot::Ref<godot::ImageTexture3D> lut_texture_3d;
                 lut_texture_3d.instantiate();
                 lut_texture_3d -> create(godot::Image::FORMAT_RGBA8, lut_size, lut_size, lut_size, false, lut_slices);
-                Vital::Godot::Core::get_environment() -> set_adjustment_color_correction(lut_texture_3d);
+                Vital::Engine::Core::get_environment() -> set_adjustment_color_correction(lut_texture_3d);
                 vm -> push_string(path);
                 vm -> set_reference("lut_path", -1);
                 vm -> pop(1);
@@ -138,7 +138,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "adjustment"}, "reset_lut", [](auto vm) -> int {
-                Vital::Godot::Core::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
+                Vital::Engine::Core::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
                 vm -> del_reference("lut_path");
                 vm -> push_bool(true);
                 return 1;

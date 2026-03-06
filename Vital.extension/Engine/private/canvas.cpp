@@ -21,11 +21,11 @@
 #include <Vital.extension/Sandbox/index.h>
 
 
-///////////////////////////
-// Vital: Godot: Canvas //
-///////////////////////////
+////////////////////////////
+// Vital: Engine: Canvas //
+////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     void Canvas::_ready() {
         queue.reserve(256);

@@ -26,11 +26,11 @@
 #include <Vital.extension/Sandbox/api/gfx/adjustment.h>
 
 
-////////////////////////////
-// Vital: Godot: Sandbox //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Sandbox //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine({

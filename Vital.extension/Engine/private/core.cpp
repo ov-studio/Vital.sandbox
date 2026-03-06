@@ -19,11 +19,11 @@
 #include <Vital.sandbox/Tool/event.h>
 
 
-///////////////////////////
-// Vital: Godot: Engine //
-///////////////////////////
+////////////////////////////
+// Vital: Engine: Engine //
+////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //    
     void Core::_ready() {
         singleton = singleton ? singleton : this;

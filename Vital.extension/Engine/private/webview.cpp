@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/webview.h>
 
 
-////////////////////////////
-// Vital: Godot: Webview //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Webview //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     Webview::Webview() {
         godot::Object* object = godot::ClassDB::instantiate("WebView");

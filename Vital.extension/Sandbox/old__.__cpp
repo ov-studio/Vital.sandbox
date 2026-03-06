@@ -28,18 +28,18 @@
 #include <Vital.extension/Engine/public/texture.h>
 
 
-////////////////////////////
-// Vital: Godot: Sandbox //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Sandbox //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     Vital::Sandbox::Machine* vm = nullptr;
 
     // TODO: REMOVE LATER
     godot::Ref<godot::FontFile> font;
-    Vital::Godot::Texture* tex;
-    Vital::Godot::Texture* svg;
-    Vital::Godot::RenderTarget* rt = nullptr;
+    Vital::Engine::Texture* tex;
+    Vital::Engine::Texture* svg;
+    Vital::Engine::RenderTarget* rt = nullptr;
     //
 
     Sandbox* Sandbox::fetch() {
@@ -114,8 +114,8 @@ namespace Vital::Godot {
 
         font.instantiate();
         font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
-        tex = Vital::Godot::Texture::create_texture_2d("flower.jpg");
-        svg = Vital::Godot::Texture::create_svg("square.svg");
+        tex = Vital::Engine::Texture::create_texture_2d("flower.jpg");
+        svg = Vital::Engine::Texture::create_svg("square.svg");
     }
 
     void Sandbox::process(double delta) {
@@ -129,7 +129,7 @@ namespace Vital::Godot {
     }
 
     #if defined(Vital_SDK_Client)
-    void Sandbox::draw(Vital::Godot::Canvas* canvas) {
+    void Sandbox::draw(Vital::Engine::Canvas* canvas) {
         //godot::UtilityFunctions::print("rendered");
         
         /*
@@ -175,10 +175,10 @@ namespace Vital::Godot {
         );
 
         if (!rt) {
-            rt = Vital::Godot::RenderTarget::create(512, 512, false);
+            rt = Vital::Engine::RenderTarget::create(512, 512, false);
         }
 
-        Vital::Godot::RenderTarget::set_rendertarget(rt, true, true);
+        Vital::Engine::RenderTarget::set_rendertarget(rt, true, true);
         canvas -> draw_image({0, 20}, {300, 300}, "flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text,
@@ -195,7 +195,7 @@ namespace Vital::Godot {
             0.0f,
             {0.0f, 0.0f}
         );
-        Vital::Godot::RenderTarget::set_rendertarget();
+        Vital::Engine::RenderTarget::set_rendertarget();
 
         canvas -> draw_image({100, 500}, {512, 512}, rt);
         

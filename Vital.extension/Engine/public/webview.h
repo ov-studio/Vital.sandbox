@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/canvas.h>
 
 
-////////////////////////////
-// Vital: Godot: Webview //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Webview //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class Webview : public godot::Node2D {
         GDCLASS(Webview, godot::Node2D)
         protected:

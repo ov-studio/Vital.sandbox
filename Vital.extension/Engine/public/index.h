@@ -16,8 +16,8 @@
 #include <Vital.sandbox/vital.hpp>
 
 
-///////////////////////////
-// Vital: Godot: Engine //
-///////////////////////////
+////////////////////////////
+// Vital: Engine: Engine //
+////////////////////////////
 
-namespace Vital::Godot {}
+namespace Vital::Engine {}

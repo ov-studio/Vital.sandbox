@@ -25,22 +25,22 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
         if (!Vital::is_editor()) {
-            Vital::Godot::Canvas::get_singleton();
-            Vital::Godot::Console::get_singleton();
+            Vital::Engine::Canvas::get_singleton();
+            Vital::Engine::Console::get_singleton();
             Vital::System::Discord::get_singleton();
         }
         #endif
-        Vital::Godot::Sandbox::get_singleton() -> ready();
+        Vital::Engine::Sandbox::get_singleton() -> ready();
     });
 
     Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) -> void {
         if (!Vital::is_editor()) {
             #if defined(Vital_SDK_Client)
-            Vital::Godot::Canvas::free_singleton();
-            Vital::Godot::Console::free_singleton();
+            Vital::Engine::Canvas::free_singleton();
+            Vital::Engine::Console::free_singleton();
             Vital::System::Discord::free_singleton();
             #endif
-            Vital::Godot::Sandbox::free_singleton();
+            Vital::Engine::Sandbox::free_singleton();
         }
 
         /*
@@ -65,8 +65,8 @@ void initialize_vital_events() {
         #endif
 
         // TODO: TESTING
-        Vital::Godot::Model::load_model("cube", "ladyforaviril.glb");
-        auto cube = Vital::Godot::Model::create_object("cube");
+        Vital::Engine::Model::load_model("cube", "ladyforaviril.glb");
+        auto cube = Vital::Engine::Model::create_object("cube");
         if (cube != nullptr) {
             godot::UtilityFunctions::print("Spawned cube!");
             cube->set_position({0.0f, 0.0f, 0.0f});

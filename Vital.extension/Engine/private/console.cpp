@@ -19,11 +19,11 @@
 #include <Vital.extension/Engine/public/canvas.h>
 
 
-////////////////////////////
-// Vital: Godot: Console //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Console //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     Console::Console() {
         webview = memnew(Webview);

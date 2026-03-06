@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/index.h>
 
 
-////////////////////////////
-// Vital: Godot: Texture //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Texture //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class Texture;
     class Texture : public godot::Node2D {
         public:

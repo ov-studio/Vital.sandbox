@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/canvas.h>
 
 
-/////////////////////////////////
-// Vital: Godot: RenderTarget //
-/////////////////////////////////
+//////////////////////////////////
+// Vital: Engine: RenderTarget //
+//////////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     class RenderTarget : public godot::Node2D {
         GDCLASS(RenderTarget, godot::Node2D)
         protected:

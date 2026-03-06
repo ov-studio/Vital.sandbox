@@ -16,11 +16,11 @@
 #include <Vital.extension/Engine/public/model.h>
 
 
-//////////////////////////
-// Vital: Godot: Model //
-//////////////////////////
+///////////////////////////
+// Vital: Engine: Model //
+///////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
     // Instantiators //
     void Model::_ready() {
         find_animation_player(this);

@@ -17,11 +17,11 @@
 #include <Vital.extension/Engine/public/canvas.h>
 
 
-////////////////////////////
-// Vital: Godot: Sandbox //
-////////////////////////////
+/////////////////////////////
+// Vital: Engine: Sandbox //
+/////////////////////////////
 
-namespace Vital::Godot {
+namespace Vital::Engine {
 	class Sandbox;
 	class Sandbox : public godot::Node {
 		protected:
