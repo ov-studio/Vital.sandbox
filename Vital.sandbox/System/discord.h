@@ -71,8 +71,8 @@ namespace Vital::System {
             bool set_activity(const Activity& data);
             bool set_state(const std::string& state);
             bool set_details(const std::string& details);
-            bool set_largeimage(const std::string& key, const std::string& text = "");
-            bool set_smallimage(const std::string& key, const std::string& text = "");
+            bool set_largeimage(const std::string& key, const std::string& text = "N/A");
+            bool set_smallimage(const std::string& key, const std::string& text = "N/A");
             bool set_timestamps(int64_t start_at, int64_t end_at = 0);
 
 
