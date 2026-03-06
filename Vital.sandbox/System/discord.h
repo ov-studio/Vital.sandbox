@@ -58,7 +58,7 @@ namespace Vital::System {
             // Managers //
             void process();
             void update();
-            void authorize(const godot::String& token_directory, const godot::String& token_file, bool force_reauth = false);
+            void authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth = false);
 
 
             // Checkers //

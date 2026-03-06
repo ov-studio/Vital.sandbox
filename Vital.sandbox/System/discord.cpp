@@ -84,7 +84,7 @@ namespace Vital::System {
         });
     }
 
-    void Discord::authorize(const godot::String& token_directory, const godot::String& token_file, bool force_reauth) {
+    void Discord::authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth) {
         auto verifier = client -> CreateAuthorizationCodeVerifier();
         discordpp::AuthorizationArgs args;
         args.SetClientId(application_id);
@@ -141,8 +141,8 @@ namespace Vital::System {
             client -> Connect();
             return true;
         }
-        auto token_directory = to_godot_string(Vital::get_directory()) + "/discord";
-        auto token_file = to_godot_string(std::to_string(application_id) + ".token");
+        auto token_directory = Vital::get_directory() + "/discord";
+        auto token_file = std::to_string(application_id) + ".token";
         std::string token_value = Vital::Tool::File::exists(token_directory, token_file) ? Vital::Tool::File::read_text(token_directory, token_file) : "";
         if (!token_value.empty()) {
             client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
