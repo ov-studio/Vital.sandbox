@@ -18,9 +18,11 @@
 #include <Vital.sandbox/System/public/discord.h>
 #include <discord-sdk/include/discordpp.h>
 
+
 //////////////
 // Constants //
 //////////////
+
 const uint64_t APPLICATION_ID = 1461425342722998474;
 
 
@@ -29,44 +31,42 @@ const uint64_t APPLICATION_ID = 1461425342722998474;
 ////////////////////////////
 
 namespace Vital::System {
-    namespace {
-        std::shared_ptr<discordpp::Client> discord_client;
-        Discord::ActivityData discord_current_data;
+    static std::shared_ptr<discordpp::Client> discord_client;
+    static Discord::ActivityData discord_current_data;
 
-        void pushUpdate() {
-            if (!discord_client) return;
+    static void pushUpdate() {
+        if (!discord_client) return;
 
-            discordpp::Activity activity;
-            activity.SetType(discordpp::ActivityTypes::Playing);
-            activity.SetState(discord_current_data.state);
-            activity.SetDetails(discord_current_data.details);
+        discordpp::Activity activity;
+        activity.SetType(discordpp::ActivityTypes::Playing);
+        activity.SetState(discord_current_data.state);
+        activity.SetDetails(discord_current_data.details);
 
-            if (!discord_current_data.largeImageKey.empty() || !discord_current_data.smallImageKey.empty()) {
-                discordpp::ActivityAssets assets;
-                if (!discord_current_data.largeImageKey.empty()) {
-                    assets.SetLargeImage(discord_current_data.largeImageKey);
-                    assets.SetLargeText(discord_current_data.largeImageText);
-                }
-                if (!discord_current_data.smallImageKey.empty()) {
-                    assets.SetSmallImage(discord_current_data.smallImageKey);
-                    assets.SetSmallText(discord_current_data.smallImageText);
-                }
-                activity.SetAssets(assets);
+        if (!discord_current_data.largeImageKey.empty() || !discord_current_data.smallImageKey.empty()) {
+            discordpp::ActivityAssets assets;
+            if (!discord_current_data.largeImageKey.empty()) {
+                assets.SetLargeImage(discord_current_data.largeImageKey);
+                assets.SetLargeText(discord_current_data.largeImageText);
             }
-
-            if (discord_current_data.startTimestamp > 0 || discord_current_data.endTimestamp > 0) {
-                discordpp::ActivityTimestamps timestamps;
-                if (discord_current_data.startTimestamp > 0) timestamps.SetStart(discord_current_data.startTimestamp);
-                if (discord_current_data.endTimestamp > 0) timestamps.SetEnd(discord_current_data.endTimestamp);
-                activity.SetTimestamps(timestamps);
+            if (!discord_current_data.smallImageKey.empty()) {
+                assets.SetSmallImage(discord_current_data.smallImageKey);
+                assets.SetSmallText(discord_current_data.smallImageText);
             }
-
-            discord_client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
-                if (!result.Successful()) {
-                    // TO DO: std::cerr << "Rich Presence update failed\n";
-                }
-            });
+            activity.SetAssets(assets);
         }
+
+        if (discord_current_data.startTimestamp > 0 || discord_current_data.endTimestamp > 0) {
+            discordpp::ActivityTimestamps timestamps;
+            if (discord_current_data.startTimestamp > 0) timestamps.SetStart(discord_current_data.startTimestamp);
+            if (discord_current_data.endTimestamp > 0) timestamps.SetEnd(discord_current_data.endTimestamp);
+            activity.SetTimestamps(timestamps);
+        }
+
+        discord_client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
+            if (!result.Successful()) {
+                // TO DO: std::cerr << "Rich Presence update failed\n";
+            }
+        });
     }
 
 

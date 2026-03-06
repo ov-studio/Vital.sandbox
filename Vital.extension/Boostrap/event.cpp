@@ -24,14 +24,10 @@ void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
-        if (Vital::System::Discord::get_singleton() -> start()) godot::UtilityFunctions::print("Discord Rich Presence initialized");
-        else godot::UtilityFunctions::print("Failed to initialize Discord (Maybe discord is not running?)");
-        #endif
-
-        #if defined(Vital_SDK_Client)
         if (!Vital::is_editor()) {
             Vital::Godot::Canvas::get_singleton();
             Vital::Godot::Console::get_singleton();
+            Vital::System::Discord::get_singleton() -> start();
         }
         #endif
         Vital::Godot::Sandbox::get_singleton() -> ready();
@@ -42,16 +38,19 @@ void initialize_vital_events() {
             #if defined(Vital_SDK_Client)
             Vital::Godot::Canvas::free_singleton();
             Vital::Godot::Console::free_singleton();
+            Vital::System::Discord::free_singleton();
             #endif
             Vital::Godot::Sandbox::free_singleton();
         }
 
+        /*
         #if defined(Vital_SDK_Client)
         if (Vital::System::Discord::get_singleton() -> isConnected()) {
             Vital::System::Discord::get_singleton() -> clearActivity();
             Vital::System::Discord::get_singleton() -> tick();
         }
         #endif
+        */
     });
 
 
@@ -61,8 +60,8 @@ void initialize_vital_events() {
 
         #if defined(Vital_SDK_Client)
         Vital::System::Discord::ActivityData activity;
-        activity.state = "In Game";
-        activity.details = "Playing something..";
+        activity.state = "In Lobby";
+        activity.details = "Browsing games";
         Vital::System::Discord::get_singleton() -> setActivity(activity);
         Vital::System::Discord::get_singleton() -> tick();
         #endif
