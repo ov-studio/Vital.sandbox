@@ -76,7 +76,7 @@ namespace Vital::System {
         client_activity.SetTimestamps(client_timestamps);
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult& result) {
             if (!result.Successful()) {
-                Vital::print("error", "[Discord] RPC update failed: " + result.ToString());
+                Vital::print("error", "Discord RPC update failed: " + result.ToString());
             }
         });
     }
