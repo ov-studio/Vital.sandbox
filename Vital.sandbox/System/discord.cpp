@@ -93,7 +93,8 @@ namespace Vital::System {
         application_id = id;
         client -> SetApplicationId(application_id);
         client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t) {
-            if (status == discordpp::Client::Status::Ready) update();
+            if (status == discordpp::Client::Status::Connected || status == discordpp::Client::Status::Ready)
+                update();
         });
         client -> Connect();
         return true;
