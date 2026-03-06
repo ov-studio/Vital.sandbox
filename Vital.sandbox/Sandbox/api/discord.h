@@ -73,7 +73,8 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto key = vm -> get_string(1);
                 std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
-                vm -> push_bool(Vital::System::Discord::get_singleton() -> set_largeimage(key, text));
+                if (!text.empty()) vm -> push_bool(Vital::System::Discord::get_singleton() -> set_largeimage(key, text));
+                else vm -> push_bool(Vital::System::Discord::get_singleton() -> set_largeimage(key));
                 return 1;
             });
 
