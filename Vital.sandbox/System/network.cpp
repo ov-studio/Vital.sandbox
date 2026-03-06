@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/System/public/network.h>
+#include <Vital.sandbox/System/network.h>
 #include <Vital.sandbox/Tool/crypto.h>
 #include <Vital.sandbox/Tool/event.h>
 #include <Vital.sandbox/Vendor/enet/enet.h>
