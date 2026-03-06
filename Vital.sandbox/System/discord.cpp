@@ -32,6 +32,7 @@ namespace Vital::System {
             "Browsing games" // details
         };
         client = std::make_shared<discordpp::Client>();
+        set_application_id(default_application_id);
     }
 
     Discord::~Discord() {
@@ -41,12 +42,7 @@ namespace Vital::System {
 
     // Utils //
     Discord* Discord::get_singleton() {
-        if (!singleton) {
-            singleton = new Discord();
-            singleton -> set_application_id(singleton -> default_application_id);
-            singleton -> set_activity(singleton -> default_activity);
-
-        }
+        if (!singleton) singleton = new Discord();
         return singleton;
     }
 
@@ -96,6 +92,9 @@ namespace Vital::System {
     bool Discord::set_application_id(uint64_t id) {
         application_id = id;
         client -> SetApplicationId(application_id);
+        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t) {
+            if (status == discordpp::Client::Status::Ready) update();
+        });
         client -> Connect();
         return true;
     }
@@ -116,8 +115,7 @@ namespace Vital::System {
     uint64_t Discord::get_user_id() {
         if (!is_connected()) return 0;
         auto user = client -> GetCurrentUser();
-        if (!user) return 0;
-        return user->Id();
+        return user.Id();
     }
 
     bool Discord::update_state(const std::string& state) {
