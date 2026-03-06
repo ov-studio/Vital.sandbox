@@ -168,12 +168,6 @@ namespace Vital::System {
         return true;
     }
 
-    bool Discord::set_activity(const Activity& data) {
-        activity = data;
-        update();
-        return true;
-    }
-
     bool Discord::set_state(const std::string& state) {
         activity.state = state;
         update();

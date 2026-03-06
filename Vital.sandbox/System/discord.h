@@ -68,7 +68,6 @@ namespace Vital::System {
             // Setters //
             bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
             bool reset_application();
-            bool set_activity(const Activity& data);
             bool set_state(const std::string& state);
             bool set_details(const std::string& details);
             bool set_largeimage(const std::string& key, const std::string& text = "N/A");

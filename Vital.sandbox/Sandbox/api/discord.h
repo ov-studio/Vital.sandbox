@@ -46,15 +46,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "set_activity", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                Vital::System::Discord::Activity data;
-                data.state = vm -> get_string(1);
-                data.details = vm -> get_string(2);
-                vm -> push_bool(Vital::System::Discord::get_singleton() -> set_activity(data));
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_state", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_string(1);
