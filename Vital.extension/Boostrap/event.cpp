@@ -24,24 +24,20 @@ void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
-        if (!Vital::is_editor()) {
-            Vital::Engine::Canvas::get_singleton();
-            Vital::Engine::Console::get_singleton();
-            Vital::System::Discord::get_singleton();
-        }
+        Vital::Engine::Canvas::get_singleton();
+        Vital::Engine::Console::get_singleton();
+        Vital::System::Discord::get_singleton();
         #endif
         Vital::Engine::Sandbox::get_singleton() -> ready();
     });
 
     Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) -> void {
-        if (!Vital::is_editor()) {
-            #if defined(Vital_SDK_Client)
-            Vital::Engine::Canvas::free_singleton();
-            Vital::Engine::Console::free_singleton();
-            Vital::System::Discord::free_singleton();
-            #endif
-            Vital::Engine::Sandbox::free_singleton();
-        }
+        #if defined(Vital_SDK_Client)
+        Vital::Engine::Canvas::free_singleton();
+        Vital::Engine::Console::free_singleton();
+        Vital::System::Discord::free_singleton();
+        #endif
+        Vital::Engine::Sandbox::free_singleton();
 
         /*
         #if defined(Vital_SDK_Client)
