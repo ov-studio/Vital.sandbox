@@ -53,7 +53,11 @@ namespace Vital::System {
     }
 
 
-    // APIs //
+    // Managers //
+    void Discord::process() {
+        discordpp::RunCallbacks();
+    }
+
     void Discord::update() {
         discordpp::Activity client_activity;
         discordpp::ActivityAssets client_assets;
@@ -78,15 +82,6 @@ namespace Vital::System {
                 Vital::print("error", "[Discord] RPC update failed ~", result.ToString());
             }
         });
-    }
-
-    void Discord::process() {
-        discordpp::RunCallbacks();
-    }
-
-    bool Discord::is_connected() {
-        auto status = client -> GetStatus();
-        return status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected;
     }
 
     void Discord::authorize(const godot::String& token_directory, const godot::String& token_file, bool force_reauth) {
@@ -124,7 +119,16 @@ namespace Vital::System {
             );
         });
     }
-    
+
+
+    // Checkers //
+    bool Discord::is_connected() {
+        auto status = client -> GetStatus();
+        return status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected;
+    }
+
+
+    // Setters //
     bool Discord::set_application_id(uint64_t id, bool authenticate, bool force_reauth) {
         application_id = id;
         client -> SetApplicationId(application_id);
@@ -157,18 +161,6 @@ namespace Vital::System {
         return true;
     }
 
-    uint64_t Discord::get_user_id() {
-        if (!is_connected()) return 0;
-        auto user = client -> GetCurrentUser();
-        return user.Id();
-    }
-
-    std::string Discord::get_username() {
-        if (!is_connected()) return "";
-        auto user = client -> GetCurrentUser();
-        return user.Username();
-    }
-
     bool Discord::set_activity(const Activity& data) {
         activity = data;
         update();
@@ -181,37 +173,51 @@ namespace Vital::System {
         return true;
     }
 
-    bool Discord::update_state(const std::string& state) {
+    bool Discord::set_state(const std::string& state) {
         activity.state = state;
         update();
         return true;
     }
 
-    bool Discord::update_details(const std::string& details) {
+    bool Discord::set_details(const std::string& details) {
         activity.details = details;
         update();
         return true;
     }
 
-    bool Discord::update_largeimage(const std::string& key, const std::string& text) {
+    bool Discord::set_largeimage(const std::string& key, const std::string& text) {
         activity.largeimage_key = key;
         activity.largeimage_text = text;
         update();
         return true;
     }
 
-    bool Discord::update_smallimage(const std::string& key, const std::string& text) {
+    bool Discord::set_smallimage(const std::string& key, const std::string& text) {
         activity.smallimage_key = key;
         activity.smallimage_text = text;
         update();
         return true;
     }
 
-    bool Discord::update_timestamps(int64_t start_at, int64_t end_at) {
+    bool Discord::set_timestamps(int64_t start_at, int64_t end_at) {
         activity.timestamp_start = start_at;
         activity.timestamp_end = end_at;
         update();
         return true;
+    }
+
+
+    // Getters //
+    uint64_t Discord::get_user_id() {
+        if (!is_connected()) return 0;
+        auto user = client -> GetCurrentUser();
+        return user.Id();
+    }
+
+    std::string Discord::get_username() {
+        if (!is_connected()) return "";
+        auto user = client -> GetCurrentUser();
+        return user.Username();
     }
 }
 #endif

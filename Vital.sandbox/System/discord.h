@@ -55,24 +55,30 @@ namespace Vital::System {
             static void free_singleton();
 
 
-            // APIs //
-            void update();
+            // Managers //
             void process();
-            bool is_connected();
+            void update();
             void authorize(const godot::String& token_directory, const godot::String& token_file, bool force_reauth = false);
+
+
+            // Checkers //
+            bool is_connected();
+
+
+            // Setters //
             bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
-            uint64_t get_user_id();
-            std::string get_username();
             bool set_activity(const Activity& data);
             bool reset_activity();
+            bool set_state(const std::string& state);
+            bool set_details(const std::string& details);
+            bool set_largeimage(const std::string& key, const std::string& text = "");
+            bool set_smallimage(const std::string& key, const std::string& text = "");
+            bool set_timestamps(int64_t start_at, int64_t end_at = 0);
 
 
-            // Updaters //
-            bool update_state(const std::string& state);
-            bool update_details(const std::string& details);
-            bool update_largeimage(const std::string& key, const std::string& text = "");
-            bool update_smallimage(const std::string& key, const std::string& text = "");
-            bool update_timestamps(int64_t start_at, int64_t end_at = 0);
+            // Getters //
+            uint64_t get_user_id();
+            std::string get_username();
     };
 }
 #endif
