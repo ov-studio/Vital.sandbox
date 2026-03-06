@@ -55,7 +55,6 @@ namespace Vital::System {
 
     // APIs //
     void Discord::update() {
-        if (!is_connected()) return;
         discordpp::Activity client_activity;
         discordpp::ActivityAssets client_assets;
         discordpp::ActivityTimestamps client_timestamps;
@@ -76,7 +75,7 @@ namespace Vital::System {
         client_activity.SetTimestamps(client_timestamps);
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult& result) {
             if (!result.Successful()) {
-                Vital::print("error", "Discord RPC update failed: " + result.ToString());
+                Vital::print("error", "[Discord] RPC update failed ~", result.ToString());
             }
         });
     }
@@ -92,12 +91,62 @@ namespace Vital::System {
 
     bool Discord::set_application_id(uint64_t id) {
         application_id = id;
+        auto token_directory = to_godot_string(Vital::get_directory());
+        auto token_file = to_godot_string(std::to_string(application_id) + ".token");
+        std::string token_value = Vital::Tool::File::exists(token_directory, token_file) ? Vital::Tool::File::read_text(token_directory, token_file) : "";
         client -> SetApplicationId(application_id);
-        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t) {
-            if (status == discordpp::Client::Status::Connected || status == discordpp::Client::Status::Ready)
+        client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
+            Vital::print("info", "[Discord] Status ~", std::string(discordpp::EnumToString(status)), "| Code ~", errorCode);
+            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected)
                 update();
         });
-        client -> Connect();
+    
+        // Authenticate cached token
+        if (!token_value.empty()) {
+            Vital::print("info", "[Discord] Authenticating ~ Cached token found");
+            client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file](discordpp::ClientResult result) {
+                if (!result.Successful()) {
+                    Vital::print("warn", "[Discord] Authenticating ~ Cached token expired, re-authenticating");
+                    Vital::Tool::File::remove(token_directory, token_file);
+                    set_application_id(application_id);
+                    return;
+                }
+                Vital::print("info", "[Discord] Authenticating ~ Success");
+                client -> Connect();
+            });
+            return true;
+        }
+    
+        // Re-Authenticate
+        Vital::print("info", "[Discord] Authenticating ~ Awaiting user authorization");
+        auto verifier = client -> CreateAuthorizationCodeVerifier();
+        discordpp::AuthorizationArgs args;
+        args.SetClientId(application_id);
+        args.SetScopes(discordpp::Client::GetDefaultPresenceScopes());
+        args.SetCodeChallenge(verifier.Challenge());
+        client -> Authorize(args, [this, verifier, token_directory, token_file](discordpp::ClientResult result, std::string code, std::string redirectUri) {
+            if (!result.Successful()) {
+                Vital::print("warn", "[Discord] Authenticating ~ Authorization rejected, retrying");
+                set_application_id(application_id);
+                return;
+            }
+            client -> GetToken(application_id, code, verifier.Verifier(), redirectUri, [this, token_directory, token_file](discordpp::ClientResult result, std::string accessToken, std::string refreshToken, discordpp::AuthorizationTokenType tokenType, int32_t expiresIn, std::string scopes) {
+                    if (!result.Successful()) {
+                        Vital::print("error", "[Discord] Authenticating ~ Token exchange failed ~", result.ToString());
+                        return;
+                    }
+                    Vital::print("info", "[Discord] Authenticating ~ Token acquired, connecting");
+                    Vital::Tool::File::write_text(token_directory, token_file, accessToken);
+                    client -> UpdateToken(tokenType, accessToken, [this](discordpp::ClientResult result) {
+                        if (!result.Successful()) {
+                            Vital::print("error", "[Discord] Authenticating ~ Token update failed ~", result.ToString());
+                            return;
+                        }
+                        client -> Connect();
+                    });
+                }
+            );
+        });
         return true;
     }
 
