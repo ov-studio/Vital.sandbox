@@ -31,14 +31,14 @@ namespace Vital::System {
                 std::string details;
 
                 // Assets
-                std::string largeImageKey;
-                std::string largeImageText;
-                std::string smallImageKey;
-                std::string smallImageText;
+                std::string largeimage_key;
+                std::string largeimage_text;
+                std::string smallimage_key;
+                std::string smallimage_text;
 
                 // Timestamps (0 = ignored)
-                int64_t startTimestamp = 0;
-                int64_t endTimestamp = 0;
+                int64_t timestamp_start = 0;
+                int64_t timestamp_end = 0;
             };
         protected:
             inline static Discord* singleton = nullptr;
@@ -69,7 +69,7 @@ namespace Vital::System {
             bool update_details(const std::string& details);
             bool update_largeimage(const std::string& key, const std::string& text = "");
             bool update_smallimage(const std::string& key, const std::string& text = "");
-            bool update_timestamps(int64_t start_at, int64_t end_at);
+            bool update_timestamps(int64_t start_at, int64_t end_at = 0);
     };
 }
 #endif

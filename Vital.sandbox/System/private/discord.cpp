@@ -64,17 +64,17 @@ namespace Vital::System {
         client_activity.SetType(discordpp::ActivityTypes::Playing);
         client_activity.SetState(activity.state);
         client_activity.SetDetails(activity.details);
-        if (!activity.largeImageKey.empty()) {
-            client_assets.SetLargeImage(activity.largeImageKey);
-            client_assets.SetLargeText(activity.largeImageText);
+        if (!activity.largeimage_key.empty()) {
+            client_assets.SetLargeImage(activity.largeimage_key);
+            client_assets.SetLargeText(activity.largeimage_text);
         }
-        if (!activity.smallImageKey.empty()) {
-            client_assets.SetSmallImage(activity.smallImageKey);
-            client_assets.SetSmallText(activity.smallImageText);
+        if (!activity.smallimage_key.empty()) {
+            client_assets.SetSmallImage(activity.smallimage_key);
+            client_assets.SetSmallText(activity.smallimage_text);
         }
         client_activity.SetAssets(client_assets);
-        if (activity.startTimestamp > 0) client_timestamps.SetStart(activity.startTimestamp);
-        if (activity.endTimestamp > 0) client_timestamps.SetEnd(activity.endTimestamp);
+        if (activity.timestamp_start > 0) client_timestamps.SetStart(activity.timestamp_start);
+        if (activity.timestamp_end > 0) client_timestamps.SetEnd(activity.timestamp_end);
         client_activity.SetTimestamps(client_timestamps);
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
             if (!result.Successful()) {
@@ -116,22 +116,22 @@ namespace Vital::System {
     }
 
     bool Discord::update_largeimage(const std::string& key, const std::string& text) {
-        activity.largeImageKey = key;
-        activity.largeImageText = text;
+        activity.largeimage_key = key;
+        activity.largeimage_text = text;
         update();
         return true;
     }
 
     bool Discord::update_smallimage(const std::string& key, const std::string& text) {
-        activity.smallImageKey = key;
-        activity.smallImageText = text;
+        activity.smallimage_key = key;
+        activity.smallimage_text = text;
         update();
         return true;
     }
 
     bool Discord::update_timestamps(int64_t start_at, int64_t end_at) {
-        activity.startTimestamp = start_at;
-        activity.endTimestamp = end_at;
+        activity.timestamp_start = start_at;
+        activity.timestamp_end = end_at;
         update();
         return true;
     }
