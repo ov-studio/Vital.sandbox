@@ -208,7 +208,7 @@ namespace Vital::System {
 
 
     // Getters //
-    uint64_t Discord::get_user_id() {
+    uint64_t Discord::get_userid() {
         if (!is_connected()) return 0;
         auto user = client -> GetCurrentUser();
         return user.Id();
