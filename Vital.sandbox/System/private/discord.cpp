@@ -69,7 +69,7 @@ namespace Vital::System {
             activity.SetTimestamps(timestamps);
         }
 
-        client->UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
+        client -> UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
             if (!result.Successful()) {
                 // TO DO: std::cerr << "Rich Presence update failed\n";
             }
@@ -110,7 +110,7 @@ namespace Vital::System {
     bool Discord::clearActivity() {
         if (!client) return false;
         activity = {};
-        client->ClearRichPresence();
+        client -> ClearRichPresence();
         return true;
     }
 
