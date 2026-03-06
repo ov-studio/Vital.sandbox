@@ -163,14 +163,14 @@ namespace Vital::System {
         return true;
     }
 
-    bool Discord::set_activity(const Activity& data) {
-        activity = data;
-        update();
+    bool Discord::reset_application() {
+        set_application_id(default_application_id);
         return true;
     }
 
-    bool Discord::reset_application() {
-        set_application_id(default_application_id);
+    bool Discord::set_activity(const Activity& data) {
+        activity = data;
+        update();
         return true;
     }
 
