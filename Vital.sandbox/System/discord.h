@@ -29,14 +29,10 @@ namespace Vital::System {
             struct Activity {
                 std::string state;
                 std::string details;
-
-                // Assets
                 std::string largeimage_key;
                 std::string largeimage_text;
                 std::string smallimage_key;
                 std::string smallimage_text;
-
-                // Timestamps (0 = ignored)
                 int64_t timestamp_start = 0;
                 int64_t timestamp_end = 0;
             };
