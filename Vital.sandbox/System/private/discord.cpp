@@ -59,27 +59,23 @@ namespace Vital::System {
     // APIs //
     void Discord::update() {
         discordpp::Activity client_activity;
+        discordpp::ActivityAssets client_assets;
+        discordpp::ActivityTimestamps client_timestamps;
         client_activity.SetType(discordpp::ActivityTypes::Playing);
         client_activity.SetState(activity.state);
         client_activity.SetDetails(activity.details);
-        if (!activity.largeImageKey.empty() || !activity.smallImageKey.empty()) {
-            discordpp::ActivityAssets assets;
-            if (!activity.largeImageKey.empty()) {
-                assets.SetLargeImage(activity.largeImageKey);
-                assets.SetLargeText(activity.largeImageText);
-            }
-            if (!activity.smallImageKey.empty()) {
-                assets.SetSmallImage(activity.smallImageKey);
-                assets.SetSmallText(activity.smallImageText);
-            }
-            client_activity.SetAssets(assets);
+        if (!activity.largeImageKey.empty()) {
+            client_assets.SetLargeImage(activity.largeImageKey);
+            client_assets.SetLargeText(activity.largeImageText);
         }
-        if (activity.startTimestamp > 0 || activity.endTimestamp > 0) {
-            discordpp::ActivityTimestamps client_timestamps;
-            if (activity.startTimestamp > 0) client_timestamps.SetStart(activity.startTimestamp);
-            if (activity.endTimestamp > 0) client_timestamps.SetEnd(activity.endTimestamp);
-            client_activity.SetTimestamps(client_timestamps);
+        if (!activity.smallImageKey.empty()) {
+            client_assets.SetSmallImage(activity.smallImageKey);
+            client_assets.SetSmallText(activity.smallImageText);
         }
+        client_activity.SetAssets(client_assets);
+        if (activity.startTimestamp > 0) client_timestamps.SetStart(activity.startTimestamp);
+        if (activity.endTimestamp > 0) client_timestamps.SetEnd(activity.endTimestamp);
+        client_activity.SetTimestamps(client_timestamps);
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
             if (!result.Successful()) {
                 // TO DO: std::cerr << "Rich Presence update failed\n";
