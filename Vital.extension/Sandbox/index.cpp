@@ -67,7 +67,7 @@ namespace Vital::Engine {
     }
 
 
-    // APIs //
+    // Managers //
     void Sandbox::ready() {
         Vital::Tool::Event::emit("vital.sandbox:ready");
     }

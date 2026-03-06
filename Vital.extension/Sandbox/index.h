@@ -39,7 +39,7 @@ namespace Vital::Engine {
             static void free_singleton();
 
 
-			// APIs //
+			// Managers //
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)

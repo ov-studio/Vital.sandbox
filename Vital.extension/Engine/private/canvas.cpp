@@ -61,6 +61,8 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
+
+    // Managers //
     void Canvas::execute(godot::Node2D* node, std::vector<Command>& queue) {
         for (const auto &command : queue) {
             switch (command.type) {
