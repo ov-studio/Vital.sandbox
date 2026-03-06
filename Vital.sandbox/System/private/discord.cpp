@@ -42,10 +42,10 @@ namespace Vital::System {
     }
 
     void Discord::pushUpdate() {
-        discordpp::Activity activity;
-        activity.SetType(discordpp::ActivityTypes::Playing);
-        activity.SetState(activity.state);
-        activity.SetDetails(activity.details);
+        discordpp::Activity client_activity;
+        client_activity.SetType(discordpp::ActivityTypes::Playing);
+        client_activity.SetState(activity.state);
+        client_activity.SetDetails(activity.details);
 
         if (!activity.largeImageKey.empty() || !activity.smallImageKey.empty()) {
             discordpp::ActivityAssets assets;
@@ -57,17 +57,17 @@ namespace Vital::System {
                 assets.SetSmallImage(activity.smallImageKey);
                 assets.SetSmallText(activity.smallImageText);
             }
-            activity.SetAssets(assets);
+            client_activity.SetAssets(assets);
         }
 
         if (activity.startTimestamp > 0 || activity.endTimestamp > 0) {
-            discordpp::ActivityTimestamps timestamps;
-            if (activity.startTimestamp > 0) timestamps.SetStart(activity.startTimestamp);
-            if (activity.endTimestamp > 0) timestamps.SetEnd(activity.endTimestamp);
-            activity.SetTimestamps(timestamps);
+            discordpp::ActivityTimestamps client_timestamps;
+            if (activity.startTimestamp > 0) client_timestamps.SetStart(activity.startTimestamp);
+            if (activity.endTimestamp > 0) client_timestamps.SetEnd(activity.endTimestamp);
+            client_activity.SetTimestamps(client_timestamps);
         }
 
-        client -> UpdateRichPresence(activity, [](const discordpp::ClientResult &result) {
+        client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
             if (!result.Successful()) {
                 // TO DO: std::cerr << "Rich Presence update failed\n";
             }
