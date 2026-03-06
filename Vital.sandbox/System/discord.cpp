@@ -22,7 +22,12 @@
 // Constants //
 //////////////
 
-const uint64_t APPLICATION_ID = 1461425342722998474;
+static const uint64_t DEFAULT_APPLICATION_ID = 1461425342722998474;
+
+static const Vital::System::Discord::Activity DEFAULT_ACTIVITY = {
+    "In Lobby",     // state
+    "Browsing games" // details
+};
 
 
 ////////////////////////////
@@ -32,14 +37,18 @@ const uint64_t APPLICATION_ID = 1461425342722998474;
 namespace Vital::System {
     // Instantiators //
     Discord::Discord() {
+        application_id = DEFAULT_APPLICATION_ID;
+        default_activity = DEFAULT_ACTIVITY;
+        activity = default_activity;
         client = std::make_shared<discordpp::Client>();
-        client -> SetApplicationId(APPLICATION_ID);
+        client -> SetApplicationId(application_id);
         client -> Connect();
     }
 
     Discord::~Discord() {
         client.reset();
         activity = {};
+        default_activity = {};
     }
 
 
@@ -54,10 +63,11 @@ namespace Vital::System {
         delete singleton;
         singleton = nullptr;
     }
-    
+
 
     // APIs //
     void Discord::update() {
+        if (!is_connected()) return;
         discordpp::Activity client_activity;
         discordpp::ActivityAssets client_assets;
         discordpp::ActivityTimestamps client_timestamps;
@@ -76,7 +86,7 @@ namespace Vital::System {
         if (activity.timestamp_start > 0) client_timestamps.SetStart(activity.timestamp_start);
         if (activity.timestamp_end > 0) client_timestamps.SetEnd(activity.timestamp_end);
         client_activity.SetTimestamps(client_timestamps);
-        client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult &result) {
+        client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult& result) {
             if (!result.Successful()) {
                 // TO DO: std::cerr << "Rich Presence update failed\n";
             }
@@ -91,6 +101,17 @@ namespace Vital::System {
         return client -> GetStatus() == discordpp::Client::Status::Ready;
     }
 
+    bool Discord::set_application_id(uint64_t id) {
+        application_id = id;
+        client -> SetApplicationId(application_id);
+        return true;
+    }
+
+    bool Discord::set_default_activity(const Activity& data) {
+        default_activity = data;
+        return true;
+    }
+
     bool Discord::set_activity(const Activity& data) {
         activity = data;
         update();
@@ -98,8 +119,8 @@ namespace Vital::System {
     }
 
     bool Discord::reset_activity() {
-        activity = {};
-        client -> ClearRichPresence();
+        activity = default_activity;
+        update();
         return true;
     }
 
