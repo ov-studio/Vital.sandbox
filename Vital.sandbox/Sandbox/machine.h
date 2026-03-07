@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/index.h>
+#include <Vital.sandbox/Sandbox/mixin.h>
 
 
 //////////////////////////////
@@ -21,7 +22,7 @@
 //////////////////////////////
 
 namespace Vital::Sandbox {
-    class Machine {
+    class Machine : public MachineMixin<Machine> {
         protected:
             static vm_apis internal_apis;
             inline static vm_machines machines;
@@ -169,7 +170,7 @@ namespace Vital::Sandbox {
                 return value;
             }
 
-        
+
             // Pushers //
             void push_global(const std::string& index) { lua_setglobal(state, index.c_str()); }
             void push_nil() { lua_pushnil(state); }
@@ -213,7 +214,7 @@ namespace Vital::Sandbox {
                 }
             }
 
-        
+
             // Containers //
             void create_table() { lua_newtable(state); }
             void create_metatable(const std::string& value) { luaL_newmetatable(state, value.c_str()); }
@@ -237,170 +238,7 @@ namespace Vital::Sandbox {
             }
 
 
-            // Container Pushers //
-            void table_push_nil(const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_nil();
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_bool(bool value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_bool(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_string(const std::string& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_string(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_number(int value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_number(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_number(float value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_number(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_number(double value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_number(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_table(const std::string& nspace = "") {
-                if (!nspace.empty()) {
-                    create_namespace(nspace);
-                    get_table(-2);
-                }
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop(2);
-            }
-            void table_push_function(vm_exec& exec, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_function(exec);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_color(const godot::Color& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_color(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_vector2(const godot::Vector2& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector2(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_vector2_array(const godot::PackedVector2Array& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector2_array(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_vector3(const godot::Vector3& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector3(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_push_vector3_array(const godot::PackedVector3Array& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector3_array(value);
-                set_table_field(get_length(-2) + 1, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_nil(const std::string& index, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_nil();
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_bool(const std::string& index, bool value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_bool(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_string(const std::string& index, const std::string& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_string(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_number(const std::string& index, int value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_number(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_number(const std::string& index, float value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_number(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_number(const std::string& index, double value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_number(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_table(const std::string& index, const std::string& nspace = "") {
-                if (!nspace.empty()) {
-                    create_namespace(nspace);
-                    get_table(-2);
-                }
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop(2);
-            }
-            void table_set_function(const std::string& index, vm_exec& exec, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_function(exec);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_color(const std::string& index, const godot::Color& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_color(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_vector2(const std::string& index, const godot::Vector2& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector2(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_vector2_array(const std::string& index, const godot::PackedVector2Array& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector2_array(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_vector3(const std::string& index, const godot::Vector3& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector3(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-            void table_set_vector3_array(const std::string& index, const godot::PackedVector3Array& value, const std::string& nspace = "") {
-                if (!nspace.empty()) create_namespace(nspace);
-                push_vector3_array(value);
-                set_table_field(index, -2);
-                if (!nspace.empty()) pop();
-            }
-
-
-            // Error Handling & Execution  //
+            // Error Handling & Execution //
             void log(const std::string& type, const std::string& message = "") {
                 lua_Debug debug;
                 lua_getstack(state, 1, &debug);
