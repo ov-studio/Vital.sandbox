@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 auto* object = Vital::Engine::Webview::create();
-                vm -> create_model(base_name, object);
+                vm -> create_object(base_name, object);
                 return 1;
             });
         }

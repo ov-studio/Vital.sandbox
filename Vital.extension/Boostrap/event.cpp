@@ -46,8 +46,8 @@ void initialize_vital_events() {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
 
         // TODO: TESTING
-        Vital::Engine::Model::load_model("cube", "ladyforaviril.glb");
-        auto cube = Vital::Engine::Model::create_model("cube");
+        Vital::Engine::Model::load("cube", "ladyforaviril.glb");
+        auto cube = Vital::Engine::Model::create("cube");
         if (cube != nullptr) {
             godot::UtilityFunctions::print("Spawned cube!");
             cube->set_position({0.0f, 0.0f, 0.0f});

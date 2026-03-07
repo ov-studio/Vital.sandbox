@@ -84,6 +84,72 @@ namespace Vital::Engine {
     }
 
 
+    // Managers //
+    bool Model::load(const std::string& name, const std::string& path) {
+        return load_from_buffer(
+            name, 
+            Vital::Tool::File::read_binary(get_directory(), path)
+        );
+    }
+
+    bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
+        if (is_model_loaded(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' is already loaded", name));
+        godot::Ref<godot::PackedScene> scene;
+        switch (get_format(buffer)) {
+            case Format::GLB: {
+                godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
+                godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
+                godot::Error status = document -> append_from_buffer(buffer, "", state);
+                if (status != godot::OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
+                godot::Node* root = document -> generate_scene(state);
+                if (root == nullptr) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
+                scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
+                scene -> pack(root);
+                memdelete(root);
+                break;
+            }
+        }
+        if (scene.is_null()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        cache_loaded[name] = scene;
+        return true;
+    }
+
+    bool Model::unload(const std::string& name) {
+        auto it = cache_loaded.find(name);
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        cache_loaded.erase(it);
+        return true;
+    }
+
+    Model* Model::create(const std::string& name) {
+        auto it = cache_loaded.find(name);
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        Model* object = memnew(Model);
+        object -> set_model_name(name);
+        godot::Node* instance = it -> second -> instantiate();
+        if (!instance) {
+            memdelete(object);
+            throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
+        }
+        object -> add_child(instance);
+        Core::get_singleton() -> add_child(object);
+        return object;
+    }
+
+    bool Model::play_animation(const std::string& name, bool loop, float speed) {
+        if (!animation_player) return false;
+        if (!animation_player -> has_animation(to_godot_string(name))) {
+            godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
+            return false;
+        }
+        godot::Ref<godot::Animation> animation = animation_player -> get_animation(to_godot_string(name));
+        if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+        animation_player -> set_speed_scale(speed);
+        animation_player -> play(to_godot_string(name));
+        return true;
+    }
+
+
     // Checkers //
     bool Model::is_model_loaded(const std::string& name) {
         return cache_loaded.find(name) != cache_loaded.end();
@@ -214,70 +280,6 @@ namespace Vital::Engine {
 
 
     // APIs //
-    bool Model::load_model(const std::string& name, const std::string& path) {
-        return load_model_from_buffer(
-            name, 
-            Vital::Tool::File::read_binary(get_directory(), path)
-        );
-    }
-
-    bool Model::load_model_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        if (is_model_loaded(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' is already loaded", name));
-        godot::Ref<godot::PackedScene> scene;
-        switch (get_format(buffer)) {
-            case Format::GLB: {
-                godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
-                godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-                godot::Error status = document -> append_from_buffer(buffer, "", state);
-                if (status != godot::OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
-                godot::Node* root = document -> generate_scene(state);
-                if (root == nullptr) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
-                scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-                scene -> pack(root);
-                memdelete(root);
-                break;
-            }
-        }
-        if (scene.is_null()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-        cache_loaded[name] = scene;
-        return true;
-    }
-
-    bool Model::unload_model(const std::string& name) {
-        auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
-        cache_loaded.erase(it);
-        return true;
-    }
-
-    Model* Model::create_model(const std::string& name) {
-        auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
-        Model* object = memnew(Model);
-        object -> set_model_name(name);
-        godot::Node* instance = it -> second -> instantiate();
-        if (!instance) {
-            memdelete(object);
-            throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
-        }
-        object -> add_child(instance);
-        Core::get_singleton() -> add_child(object);
-        return object;
-    }
-
-    bool Model::play_animation(const std::string& name, bool loop, float speed) {
-        if (!animation_player) return false;
-        if (!animation_player -> has_animation(to_godot_string(name))) {
-            godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
-            return false;
-        }
-        godot::Ref<godot::Animation> animation = animation_player -> get_animation(to_godot_string(name));
-        if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        animation_player -> set_speed_scale(speed);
-        animation_player -> play(to_godot_string(name));
-        return true;
-    }
-
     void Model::stop_animation() {
         if (!animation_player) return;
         animation_player -> stop();

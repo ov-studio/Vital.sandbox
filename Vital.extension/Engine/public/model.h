@@ -46,6 +46,13 @@ namespace Vital::Engine {
             void _ready() override;
 
 
+            // Managers //
+            static bool load(const std::string& name, const std::string& path);
+            static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
+            static bool unload(const std::string& name);
+            static Model* create(const std::string& name);
+
+
             // Checkers //
             static bool is_model_loaded(const std::string& name);
             bool is_component_visible(const std::string& name);
@@ -76,10 +83,6 @@ namespace Vital::Engine {
 
 
             // APIs //
-            static bool load_model(const std::string& name, const std::string& path);
-            static bool load_model_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
-            static bool unload_model(const std::string& name);
-            static Model* create_model(const std::string& name);
             bool play_animation(const std::string& name, bool loop = true, float speed = 1.0f);
             void stop_animation();
             void pause_animation();
