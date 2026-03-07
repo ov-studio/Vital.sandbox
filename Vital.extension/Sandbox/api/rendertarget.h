@@ -75,6 +75,11 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
 
+            vm_module::bind_method<base_class>(vm, base_name, "is_target", [](auto vm, auto self) -> int {
+                vm -> push_bool(Vital::Engine::RenderTarget::get_target() == self);
+                return 1;
+            });
+        
             vm_module::bind_method<base_class>(vm, base_name, "set_target", [](auto vm, auto self) -> int {
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
