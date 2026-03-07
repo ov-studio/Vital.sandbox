@@ -218,7 +218,6 @@ namespace Vital::Sandbox {
             // Containers //
             void create_table() { lua_newtable(state); }
             void create_metatable(const std::string& value) { luaL_newmetatable(state, value.c_str()); }
-            Machine* create_thread() { return new Machine(lua_newthread(state)); }
             void create_namespace(const std::string& nspace) {
                 get_global(nspace);
                 if (!is_table(-1)) {
@@ -228,13 +227,16 @@ namespace Vital::Sandbox {
                     get_global(nspace);
                 }
             }
-            void create_userdata(void* value) {
-                void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
-                *userdata = value;
+            Machine* create_thread() { 
+                return new Machine(lua_newthread(state)); 
             }
             void create_object(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
+            }
+            void create_userdata(void* value) {
+                void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
+                *userdata = value;
             }
 
 
