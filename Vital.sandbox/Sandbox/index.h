@@ -101,6 +101,16 @@ namespace Vital::Sandbox {
         }
     
         template<typename T = void>
+        static std::string get_userdata_type(Machine* vm, int index = 1) {
+            if (!lua_isuserdata(vm -> get_state(), index)) return "";
+            if (!lua_getmetatable(vm -> get_state(), index)) return "";
+            lua_getfield(vm -> get_state(), -1, "__name");
+            const char* name = lua_tostring(vm -> get_state(), -1);
+            lua_pop(vm -> get_state(), 2);
+            return name ? name : "";
+        }
+
+        template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
             void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
             if (ud) *ud = nullptr;
