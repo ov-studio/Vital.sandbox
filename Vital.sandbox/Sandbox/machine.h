@@ -141,13 +141,6 @@ namespace Vital::Sandbox {
                 get_table_field(2, index); value.y = get_float(-1); pop();
                 return value;
             }
-            godot::Vector3 get_vector3(int index = 1) {
-                godot::Vector3 value = {0.0f, 0.0f, 0.0f};
-                get_table_field(1, index); value.x = get_float(-1); pop();
-                get_table_field(2, index); value.y = get_float(-1); pop();
-                get_table_field(3, index); value.z = get_float(-1); pop();
-                return value;
-            }
             godot::PackedVector2Array get_vector2_array(int index = 1) {
                 godot::PackedVector2Array value;
                 int len = get_length(index);
@@ -156,6 +149,13 @@ namespace Vital::Sandbox {
                     value.push_back(get_vector2(-1));
                     pop();
                 }
+                return value;
+            }
+            godot::Vector3 get_vector3(int index = 1) {
+                godot::Vector3 value = {0.0f, 0.0f, 0.0f};
+                get_table_field(1, index); value.x = get_float(-1); pop();
+                get_table_field(2, index); value.y = get_float(-1); pop();
+                get_table_field(3, index); value.z = get_float(-1); pop();
                 return value;
             }
             godot::PackedVector3Array get_vector3_array(int index = 1) {
@@ -288,6 +288,36 @@ namespace Vital::Sandbox {
                 set_table_field(get_length(-2) + 1, -2);
                 if (!nspace.empty()) pop();
             }
+            void table_push_color(const godot::Color& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_color(value);
+                set_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_push_vector2(const godot::Vector2& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector2(value);
+                set_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_push_vector2_array(const godot::PackedVector2Array& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector2_array(value);
+                set_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_push_vector3(const godot::Vector3& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector3(value);
+                set_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_push_vector3_array(const godot::PackedVector3Array& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector3_array(value);
+                set_table_field(get_length(-2) + 1, -2);
+                if (!nspace.empty()) pop();
+            }
             void table_set_nil(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_nil();
@@ -335,6 +365,36 @@ namespace Vital::Sandbox {
             void table_set_function(const std::string& index, vm_exec& exec, const std::string& nspace = "") {
                 if (!nspace.empty()) create_namespace(nspace);
                 push_function(exec);
+                set_table_field(index, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_set_color(const std::string& index, const godot::Color& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_color(value);
+                set_table_field(index, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_set_vector2(const std::string& index, const godot::Vector2& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector2(value);
+                set_table_field(index, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_set_vector2_array(const std::string& index, const godot::PackedVector2Array& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector2_array(value);
+                set_table_field(index, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_set_vector3(const std::string& index, const godot::Vector3& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector3(value);
+                set_table_field(index, -2);
+                if (!nspace.empty()) pop();
+            }
+            void table_set_vector3_array(const std::string& index, const godot::PackedVector3Array& value, const std::string& nspace = "") {
+                if (!nspace.empty()) create_namespace(nspace);
+                push_vector3_array(value);
                 set_table_field(index, -2);
                 if (!nspace.empty()) pop();
             }
