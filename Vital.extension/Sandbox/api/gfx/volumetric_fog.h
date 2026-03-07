@@ -40,65 +40,43 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_emission", [](auto vm) -> int {
+                if ((vm -> get_arg_count() < 1) || ((!vm -> is_string(1)) && (!vm -> is_color(1)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 if (vm -> is_string(1)) {
                     auto value = to_godot_string(vm -> get_string(1));
-                    if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    if (!godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     Vital::Engine::Core::get_environment() -> set_volumetric_fog_emission(godot::Color::html(value));
                 }
                 else {
-                    if (vm -> get_arg_count() < 4) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    for (int i = 1; i <= 4; i++) {
-                        if (!vm -> is_number(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    }
-                    Vital::Engine::Core::get_environment() -> set_volumetric_fog_emission(godot::Color(
-                        vm -> get_float(1), 
-                        vm -> get_float(2), 
-                        vm -> get_float(3), 
-                        vm -> get_float(4)
-                    ));
+                    auto color = vm -> get_color(1);
+                    Vital::Engine::Core::get_environment() -> set_volumetric_fog_emission(color);
                 }
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_emission", [](auto vm) -> int {
-                auto value = Vital::Engine::Core::get_environment() -> get_volumetric_fog_emission();
-                vm -> push_number(value.r);
-                vm -> push_number(value.g);
-                vm -> push_number(value.b);
-                vm -> push_number(value.a);
-                return 4;
+                vm -> push_color(Vital::Engine::Core::get_environment() -> get_volumetric_fog_emission());
+                return 1;
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_albedo", [](auto vm) -> int {
+                if ((vm -> get_arg_count() < 1) || ((!vm -> is_string(1)) && (!vm -> is_color(1)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 if (vm -> is_string(1)) {
                     auto value = to_godot_string(vm -> get_string(1));
-                    if (godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    if (!godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     Vital::Engine::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color::html(value));
                 }
                 else {
-                    if (vm -> get_arg_count() < 4) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    for (int i = 1; i <= 4; i++) {
-                        if (!vm -> is_number(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    }
-                    Vital::Engine::Core::get_environment() -> set_volumetric_fog_albedo(godot::Color(
-                        vm -> get_float(1), 
-                        vm -> get_float(2), 
-                        vm -> get_float(3), 
-                        vm -> get_float(4)
-                    ));
+                    auto color = vm -> get_color(1);
+                    Vital::Engine::Core::get_environment() -> set_volumetric_fog_albedo(color);
                 }
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_albedo", [](auto vm) -> int {
-                auto value = Vital::Engine::Core::get_environment() -> get_volumetric_fog_albedo();
-                vm -> push_number(value.r);
-                vm -> push_number(value.g);
-                vm -> push_number(value.b);
-                vm -> push_number(value.a);
-                return 4;
+                vm -> push_color(Vital::Engine::Core::get_environment() -> get_volumetric_fog_albedo());
+                return 1;
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_density", [](auto vm) -> int {
