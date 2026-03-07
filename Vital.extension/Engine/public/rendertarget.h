@@ -26,7 +26,7 @@ namespace Vital::Engine {
         GDCLASS(RenderTarget, godot::Node2D)
         protected:
             godot::SubViewport* viewport = nullptr;
-            inline static RenderTarget* target = nullptr;
+            inline static RenderTarget* active = nullptr;
             static void _bind_methods() {}
         private:
             std::vector<Canvas::Command> queue;

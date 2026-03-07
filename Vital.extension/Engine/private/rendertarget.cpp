@@ -26,6 +26,7 @@ namespace Vital::Engine {
     // Instantiators //
     RenderTarget::~RenderTarget() {
         if (!viewport) return;
+        if (active == this) active = nullptr;
         viewport -> queue_free();
         viewport = nullptr;
     }
@@ -77,13 +78,13 @@ namespace Vital::Engine {
 
     // Checkers //
     bool RenderTarget::is_active() {
-        return target && (target == this);
+        return active && (active == this);
     }
 
 
     // Setters //
     void RenderTarget::set_active(RenderTarget* rt, bool clear, bool instant) {
-        target = rt;
+        active = rt;
         if (!rt) return;
         rt -> clear(clear, instant);
     }
@@ -103,7 +104,7 @@ namespace Vital::Engine {
     }
 
     RenderTarget* RenderTarget::get_active() {
-        return target;
+        return active;
     }
 }
 #endif
