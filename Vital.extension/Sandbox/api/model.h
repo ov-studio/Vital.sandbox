@@ -81,21 +81,17 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_position", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 4) || (!vm -> is_number(2)) || (!vm -> is_number(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto x = vm -> get_float(2);
-                auto y = vm -> get_float(3);
-                auto z = vm -> get_float(4);
-                self -> set_position({x, y, z});
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector3(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto position = vm -> get_vector3(2)
+                self -> set_position(position);
                 vm -> push_bool(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_rotation", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 4) || (!vm -> is_number(2)) || (!vm -> is_number(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto x = vm -> get_float(2);
-                auto y = vm -> get_float(3);
-                auto z = vm -> get_float(4);
-                self -> set_rotation({x, y, z});
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector3(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto rotation = vm -> get_vector3(2)
+                self -> set_rotation(rotation);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -133,19 +129,15 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_position", [](auto vm, auto self) -> int {
-                auto p = self -> get_position();
-                vm -> push_number(p.x);
-                vm -> push_number(p.y);
-                vm -> push_number(p.z);
-                return 3;
+                auto position = self -> get_position();
+                vm -> push_vector3(position);
+                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_rotation", [](auto vm, auto self) -> int {
-                auto r = self -> get_rotation();
-                vm -> push_number(r.x);
-                vm -> push_number(r.y);
-                vm -> push_number(r.z);
-                return 3;
+                auto rotation = self -> get_rotation();
+                vm -> push_number(rotation);
+                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_components", [](auto vm, auto self) -> int {
