@@ -41,11 +41,14 @@ namespace Vital::Engine {
 
     void Texture::flush() {
         auto tick = get_tick();
-        for (const auto& cache : cache) {
-            auto duration = tick - cache.second -> command.tick;
-            if (duration > flush_interval) {
-                cache.second -> destroy();
+        std::vector<std::string> expired;
+        for (const auto& cache : cache_temp) {
+            if (tick - cache.second -> command.tick > flush_interval) {
+                expired.push_back(cache.first);
             }
+        }
+        for (const auto& key : expired) {
+            cache_temp[key] -> destroy();
         }
     }
 
