@@ -35,7 +35,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Webview>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                auto* object = memnew(Vital::Engine::Webview);
+                auto* object = Vital::Engine::Webview::create();
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 auto key = handler_key(self);
                 if (vm -> is_reference(key)) vm -> del_reference(key);
-                memdelete(self);
+                self -> destroy();
                 void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
                 if (ud) *ud = nullptr;
                 vm -> push_bool(true);
