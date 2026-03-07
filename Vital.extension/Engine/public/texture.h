@@ -56,7 +56,7 @@ namespace Vital::Engine {
             inline static std::unordered_map<std::string, Texture*> reference_cache = {};
         public:
             // Instantiators //
-            Texture(const std::string& reference = "");
+            Texture(Command cmd, const std::string& reference = "");
             ~Texture();
 
 
