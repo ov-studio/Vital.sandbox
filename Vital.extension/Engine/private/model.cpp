@@ -250,7 +250,7 @@ namespace Vital::Engine {
         return true;
     }
 
-    Model* Model::create_object(const std::string& name) {
+    Model* Model::create_model(const std::string& name) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         Model* object = memnew(Model);

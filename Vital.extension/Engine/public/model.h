@@ -79,7 +79,7 @@ namespace Vital::Engine {
             static bool load_model(const std::string& name, const std::string& path);
             static bool load_model_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload_model(const std::string& name);
-            static Model* create_object(const std::string& name);
+            static Model* create_model(const std::string& name);
             bool play_animation(const std::string& name, bool loop = true, float speed = 1.0f);
             void stop_animation();
             void pause_animation();

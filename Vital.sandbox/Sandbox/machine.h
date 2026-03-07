@@ -158,7 +158,7 @@ namespace Vital::Sandbox {
                 void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
                 *userdata = value;
             }
-            void create_object(const std::string& index, void* value) {
+            void create_model(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
             }

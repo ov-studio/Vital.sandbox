@@ -47,7 +47,7 @@ void initialize_vital_events() {
 
         // TODO: TESTING
         Vital::Engine::Model::load_model("cube", "ladyforaviril.glb");
-        auto cube = Vital::Engine::Model::create_object("cube");
+        auto cube = Vital::Engine::Model::create_model("cube");
         if (cube != nullptr) {
             godot::UtilityFunctions::print("Spawned cube!");
             cube->set_position({0.0f, 0.0f, 0.0f});
