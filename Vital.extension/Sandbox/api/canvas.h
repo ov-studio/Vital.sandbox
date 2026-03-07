@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_table(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2_array(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
                 float stroke = vm -> get_float(2);
                 godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : {1, 1, 1, 1};
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
 
             // draw_polygon(points, color?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_polygon", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_table(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
                 godot::Color color = vm -> is_color(2) ? vm -> get_color(2) : {1, 1, 1, 1};
                 float stroke = vm -> is_number(3) ? vm -> get_float(3) : 0.0f;
@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
 
             // draw_rectangle(position, size, color?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_rectangle", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_table(1)) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
                 godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : {1, 1, 1, 1};
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
 
             // draw_circle(position, radius, color?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_circle", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_table(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 float radius = vm -> get_float(2);
                 godot::Color color = {1, 1, 1, 1};
@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
             // draw_image(position, size, texture, rotation?, pivot?, color?) //
             // texture arg accepts: string path | Texture* userdata | Rendertarget* userdata //
             API::bind(vm, {base_name}, "draw_image", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 3) || (!vm -> is_table(1)) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 3) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
                 float rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
@@ -118,7 +118,7 @@ namespace Vital::Sandbox::API {
             // draw_text(text, start_at, end_at, font, font_size, color?, alignment?, clip?, wordwrap?, stroke?, stroke_color?, rotation?, pivot?) //
             // alignment is a {h, v} table using godot HorizontalAlignment / VerticalAlignment int values //
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_table(2)) || (!vm -> is_table(3)) || (!vm -> is_userdata(4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm -> is_userdata(4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto text     = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at   = vm -> get_vector2(3);
