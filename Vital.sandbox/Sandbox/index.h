@@ -65,6 +65,7 @@ namespace Vital::Sandbox {
             vm -> create_metatable(type_name);
             vm -> create_table();
             T::methods(vm);
+    
             bind_method<T>(vm, type_name, "get_type", [](auto vm, auto self) -> int {
                 if (type_name.empty()) vm -> push_bool(false);
                 else vm -> push_string(type_name);
