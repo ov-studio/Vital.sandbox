@@ -99,6 +99,27 @@ namespace Vital::Sandbox {
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
             bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
+            bool is_color(int index = 1) { return is_table(index) && get_length(index) >= 4; }
+            bool is_vector2(int index = 1) { return is_table(index) && get_length(index) >= 2; }
+            bool is_vector2_array(int index = 1) {
+                if (!is_table(index)) return false;
+                int len = get_length(index);
+                if (len == 0) return false;
+                get_table_field(1, index);
+                bool result = is_vector2(-1);
+                pop();
+                return result;
+            }
+            bool is_vector3(int index = 1) { return is_table(index) && get_length(index) >= 3; }
+            bool is_vector3_array(int index = 1) {
+                if (!is_table(index)) return false;
+                int len = get_length(index);
+                if (len == 0) return false;
+                get_table_field(1, index);
+                bool result = is_vector3(-1);
+                pop();
+                return result;
+            }
 
 
             // Getters //
