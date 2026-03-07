@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "get_rotation", [](auto vm, auto self) -> int {
                 auto rotation = self -> get_rotation();
-                vm -> push_number(rotation);
+                vm -> push_vector3(rotation);
                 return 1;
             });
 
