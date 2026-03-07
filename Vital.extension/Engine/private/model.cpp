@@ -136,19 +136,6 @@ namespace Vital::Engine {
         return object;
     }
 
-    bool Model::play_animation(const std::string& name, bool loop, float speed) {
-        if (!animation_player) return false;
-        if (!animation_player -> has_animation(to_godot_string(name))) {
-            godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
-            return false;
-        }
-        godot::Ref<godot::Animation> animation = animation_player -> get_animation(to_godot_string(name));
-        if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        animation_player -> set_speed_scale(speed);
-        animation_player -> play(to_godot_string(name));
-        return true;
-    }
-
 
     // Checkers //
     bool Model::is_model_loaded(const std::string& name) {
@@ -280,6 +267,19 @@ namespace Vital::Engine {
 
 
     // APIs //
+    bool Model::play_animation(const std::string& name, bool loop, float speed) {
+        if (!animation_player) return false;
+        if (!animation_player -> has_animation(to_godot_string(name))) {
+            godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
+            return false;
+        }
+        godot::Ref<godot::Animation> animation = animation_player -> get_animation(to_godot_string(name));
+        if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+        animation_player -> set_speed_scale(speed);
+        animation_player -> play(to_godot_string(name));
+        return true;
+    }
+
     void Model::stop_animation() {
         if (!animation_player) return;
         animation_player -> stop();
