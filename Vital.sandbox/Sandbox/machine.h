@@ -227,9 +227,6 @@ namespace Vital::Sandbox {
                     get_global(nspace);
                 }
             }
-            Machine* create_thread() { 
-                return new Machine(lua_newthread(state)); 
-            }
             void create_object(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
@@ -237,6 +234,9 @@ namespace Vital::Sandbox {
             void create_userdata(void* value) {
                 void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
                 *userdata = value;
+            }
+            Machine* create_thread() { 
+                return new Machine(lua_newthread(state)); 
             }
 
 
