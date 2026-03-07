@@ -127,6 +127,47 @@ namespace Vital::Sandbox {
                 lua_rawgeti(state, LUA_REGISTRYINDEX, reference.at(name));
                 return 0;
             }
+            godot::Color get_color(int index = 1) {
+                godot::Color value = {1, 1, 1, 1};
+                get_table_field(1, index); value.r = get_float(-1); pop();
+                get_table_field(2, index); value.g = get_float(-1); pop();
+                get_table_field(3, index); value.b = get_float(-1); pop();
+                get_table_field(4, index); value.a = get_float(-1); pop();
+                return value;
+            }
+            godot::Vector2 get_vector2(int index = 1) {
+                godot::Vector2 value = {0.0f, 0.0f};
+                get_table_field(1, index); value.x = get_float(-1); pop();
+                get_table_field(2, index); value.y = get_float(-1); pop();
+                return value;
+            }
+            godot::Vector3 get_vector3(int index = 1) {
+                godot::Vector3 value = {0.0f, 0.0f, 0.0f};
+                get_table_field(1, index); value.x = get_float(-1); pop();
+                get_table_field(2, index); value.y = get_float(-1); pop();
+                get_table_field(3, index); value.z = get_float(-1); pop();
+                return value;
+            }
+            godot::PackedVector2Array get_vector2_array(int index = 1) {
+                godot::PackedVector2Array value;
+                int len = get_length(index);
+                for (int i = 1; i <= len; ++i) {
+                    get_table_field(i, index);
+                    value.push_back(get_vector2(-1));
+                    pop();
+                }
+                return value;
+            }
+            godot::PackedVector3Array get_vector3_array(int index = 1) {
+                godot::PackedVector3Array value;
+                int len = get_length(index);
+                for (int i = 1; i <= len; ++i) {
+                    get_table_field(i, index);
+                    value.push_back(get_vector3(-1));
+                    pop();
+                }
+                return value;
+            }
 
         
             // Pushers //
@@ -139,6 +180,38 @@ namespace Vital::Sandbox {
             void push_number(double value) { lua_pushnumber(state, value); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
+            void push_color(const godot::Color& value) {
+                create_table();
+                push_number(value.r); set_table_field(1, -2);
+                push_number(value.g); set_table_field(2, -2);
+                push_number(value.b); set_table_field(3, -2);
+                push_number(value.a); set_table_field(4, -2);
+            }
+            void push_vector2(const godot::Vector2& value) {
+                create_table();
+                push_number(value.x); set_table_field(1, -2);
+                push_number(value.y); set_table_field(2, -2);
+            }
+            void push_vector2_array(const godot::PackedVector2Array& value) {
+                create_table();
+                for (int i = 0; i < value.size(); ++i) {
+                    push_vector2(value[i]);
+                    set_table_field(i + 1, -2);
+                }
+            }
+            void push_vector3(const godot::Vector3& value) {
+                create_table();
+                push_number(value.x); set_table_field(1, -2);
+                push_number(value.y); set_table_field(2, -2);
+                push_number(value.z); set_table_field(3, -2);
+            }
+            void push_vector3_array(const godot::PackedVector3Array& value) {
+                create_table();
+                for (int i = 0; i < value.size(); ++i) {
+                    push_vector3(value[i]);
+                    set_table_field(i + 1, -2);
+                }
+            }
 
         
             // Containers //
