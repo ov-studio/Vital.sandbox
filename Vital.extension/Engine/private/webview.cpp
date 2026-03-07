@@ -54,6 +54,10 @@ namespace Vital::Engine {
         return memnew(Webview);
     }
 
+    void Webview::destroy() {
+        memdelete(this);
+    }
+
 
     // Checkers //
     bool Webview::is_visible() {
@@ -78,16 +82,6 @@ namespace Vital::Engine {
 
     bool Webview::is_devtools_visible() {
         return (bool)webview -> call("is_devtools_open");
-    }
-
-
-    // Getters //
-    godot::Vector2 Webview::get_position() {
-        return webview -> get_position();
-    }
-
-    godot::Vector2 Webview::get_size() {
-        return webview -> get_size();
     }
 
 
@@ -127,6 +121,16 @@ namespace Vital::Engine {
 
     void Webview::set_message_handler(std::function<void(godot::String)> handler) {
         message_handler = std::move(handler);
+    }
+
+
+    // Getters //
+    godot::Vector2 Webview::get_position() {
+        return webview -> get_position();
+    }
+
+    godot::Vector2 Webview::get_size() {
+        return webview -> get_size();
     }
 
 

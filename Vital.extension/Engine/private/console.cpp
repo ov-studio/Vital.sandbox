@@ -26,7 +26,7 @@
 namespace Vital::Engine {
     // Instantiators //
     Console::Console() {
-        webview = memnew(Webview);
+        webview = Webview::create();
         webview -> set_position({0, 0});
         webview -> set_visible(true);
         webview -> set_fullscreen(true);
@@ -42,7 +42,7 @@ namespace Vital::Engine {
 
     Console::~Console() {
         if (!webview) return;
-        memdelete(webview);
+        webview -> destroy(); 
         webview = nullptr;
     }
 
