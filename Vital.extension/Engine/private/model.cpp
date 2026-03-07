@@ -137,7 +137,7 @@ namespace Vital::Engine {
     }
 
     void Model::destroy() {
-        self -> queue_free();
+        this -> queue_free();
     }
 
 
