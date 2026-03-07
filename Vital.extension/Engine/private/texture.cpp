@@ -22,21 +22,28 @@
 /////////////////////////////
 
 namespace Vital::Engine {
+    // Instantiators //
+    Texture::Texture(const std::string& reference) {
+        if (!reference.empty()) {
+            reference_key = reference;
+            reference_cache.emplace(reference_key, this);
+            command.tick = get_tick();
+        }
+    }
+
+    Texture::~Texture() {
+        if (reference_key.empty()) return;
+        reference_cache.erase(reference_key);
+    }
+
+
     // Managers //
     void Texture::destroy() {
-        if (!reference_key.empty() && reference_cache.count(reference_key)) reference_cache.erase(reference_key);
         memdelete(this);
     }
 
     void Texture::heartbeat() {
         command.tick = get_tick();
-    }
-
-    void Texture::push(const std::string& reference) {
-        if (reference.empty()) return;
-        reference_key = reference;
-        reference_cache.emplace(reference_key, this);
-        heartbeat();
     }
 
     void Texture::flush() {
@@ -125,10 +132,9 @@ namespace Vital::Engine {
         }
         if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         Texture2D payload;
-        auto texture = memnew(Texture);
+        auto texture = memnew(Texture(reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::Texture2D, 0, payload};
-        texture -> push(reference);
         return texture;
     }
 
@@ -142,7 +148,7 @@ namespace Vital::Engine {
         godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
         if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         SVG payload;
-        auto texture = memnew(Texture);
+        auto texture = memnew(Texture(reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::SVG, 0, payload};
         return texture;
@@ -154,7 +160,7 @@ namespace Vital::Engine {
         godot::Error status = image -> load_svg_from_buffer(buffer, 1.0);
         if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         SVG payload;
-        auto texture = memnew(Texture);
+        auto texture = memnew(Texture(reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::SVG, 0, payload};
         return texture;
