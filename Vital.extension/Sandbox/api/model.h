@@ -129,14 +129,12 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_position", [](auto vm, auto self) -> int {
-                auto position = self -> get_position();
-                vm -> push_vector3(position);
+                vm -> push_vector3(self -> get_position());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_rotation", [](auto vm, auto self) -> int {
-                auto rotation = self -> get_rotation();
-                vm -> push_vector3(rotation);
+                vm -> push_vector3(self -> get_rotation());
                 return 1;
             });
 
