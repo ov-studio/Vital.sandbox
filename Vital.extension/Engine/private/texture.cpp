@@ -24,7 +24,7 @@
 namespace Vital::Engine {
     // Managers //
     void Texture::destroy() {
-        if (!ref_key.is_empty() && cache.has(ref_key)) cache.erase(ref_key);
+        if (!reference_key.empty() && reference_cache.count(reference_key)) reference_cache.erase(reference_key);
         memdelete(this);
     }
 
@@ -34,21 +34,21 @@ namespace Vital::Engine {
 
     void Texture::push(const std::string& reference) {
         if (reference.empty()) return;
-        ref_key = reference;
-        cache.emplace(ref_key, this);
+        reference_key = reference;
+        reference_cache.emplace(reference_key, this);
         heartbeat();
     }
 
     void Texture::flush() {
         auto tick = get_tick();
         std::vector<std::string> expired;
-        for (const auto& cache : cache_temp) {
-            if (tick - cache.second -> command.tick > flush_interval) {
-                expired.push_back(cache.first);
+        for (const auto& reference_cache : reference_cache) {
+            if (tick - reference_cache.second -> command.tick > flush_interval) {
+                expired.push_back(reference_cache.first);
             }
         }
         for (const auto& key : expired) {
-            cache_temp[key] -> destroy();
+            reference_cache[key] -> destroy();
         }
     }
 
@@ -81,8 +81,8 @@ namespace Vital::Engine {
     }
 
     Texture* Texture::get_from_reference(const std::string& reference) {
-        auto it = cache.find(reference);
-        return it != cache.end() ? it -> second : nullptr;
+        auto it = reference_cache.find(reference);
+        return it != reference_cache.end() ? it -> second : nullptr;
     }
 
     godot::Ref<godot::Texture2D> Texture::get_texture() {
@@ -102,10 +102,7 @@ namespace Vital::Engine {
 
     // APIs //
     Texture* Texture::create_texture_2d(const std::string& path, const std::string& reference) {
-        return create_texture_2d_from_buffer(
-            Vital::Tool::File::read_binary(get_directory(), path), 
-            reference
-        );
+        return create_texture_2d_from_buffer(Vital::Tool::File::read_binary(get_directory(), path), reference);
     }
 
     Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
@@ -136,10 +133,7 @@ namespace Vital::Engine {
     }
 
     Texture* Texture::create_svg(const std::string& path, const std::string& reference) {
-        return create_svg_from_buffer(
-            Vital::Tool::File::read_binary(get_directory(), path), 
-            reference
-        );
+        return create_svg_from_buffer(Vital::Tool::File::read_binary(get_directory(), path), reference);
     }
 
     Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference) {

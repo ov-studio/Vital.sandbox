@@ -51,9 +51,9 @@ namespace Vital::Engine {
             };
         protected:
             Command command;
-            std::string ref_key = "";
+            std::string reference_key = "";
             inline static const unsigned int flush_interval = 10000;
-            inline static std::unordered_map<std::string, Texture*> cache = {};
+            inline static std::unordered_map<std::string, Texture*> reference_cache = {};
             void push(const std::string& reference);
         public:
             // Instantiators //
@@ -62,6 +62,7 @@ namespace Vital::Engine {
 
 
             // Managers //
+            void destroy();
             void heartbeat();
             static void flush();
 
