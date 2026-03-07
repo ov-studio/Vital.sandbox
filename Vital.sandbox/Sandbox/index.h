@@ -59,7 +59,7 @@ namespace Vital::Sandbox {
                 [](Machine* vm) { T::inject(vm); }
             };
         }
-
+        
         template<typename T>
         static void register_type(Machine* vm, const std::string& type_name) {
             vm -> create_metatable(type_name);
@@ -75,6 +75,11 @@ namespace Vital::Sandbox {
             vm -> pop();
         }
 
+        static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
+            void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
+            return ud && *ud;
+        }
+    
         template<typename T>
         static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*)> exec) {
             auto* heap_exec = new std::function<int(Machine*, T*)>(std::move(exec));
