@@ -46,8 +46,7 @@ namespace Vital::Sandbox::API {
                 auto key = handler_key(self);
                 if (vm -> is_reference(key)) vm -> del_reference(key);
                 self -> destroy();
-                void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
-                if (ud) *ud = nullptr;
+                vm_module::release_userdata(vm, 1);
                 vm -> push_bool(true);
                 return 1;
             });

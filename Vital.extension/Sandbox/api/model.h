@@ -63,8 +63,7 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> queue_free();
-                void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), 1));
-                if (ud) *ud = nullptr;
+                vm_module::release_userdata(vm, 1);
                 vm -> push_bool(true);
                 return 1;
             });

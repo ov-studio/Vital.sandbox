@@ -75,12 +75,6 @@ namespace Vital::Sandbox {
             vm -> pop();
         }
 
-        template<typename T = void>
-        static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
-            void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
-            return ud && *ud;
-        }
-    
         template<typename T>
         static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*)> exec) {
             auto* heap_exec = new std::function<int(Machine*, T*)>(std::move(exec));
@@ -98,6 +92,18 @@ namespace Vital::Sandbox {
                 });
             }, 2);
             lua_setfield(vm -> get_state(), -2, name.c_str());
+        }
+
+        template<typename T = void>
+        static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
+            void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
+            return ud && *ud;
+        }
+    
+        template<typename T = void>
+        static void release_userdata(Machine* vm, int index = 1) {
+            void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
+            if (ud) *ud = nullptr;
         }
     };
 
