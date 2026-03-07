@@ -47,18 +47,18 @@ namespace Vital::Engine {
         
 
             // Checkers //
-            bool is_target();
+            bool is_active();
 
 
             // Setters //
-            static void set_target(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
+            static void set_active(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
 
 
             // Getters //
             godot::Vector2i get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
-            static RenderTarget* get_target();
+            static RenderTarget* get_active();
     };
 }
 #endif

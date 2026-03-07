@@ -39,7 +39,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "set_target", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "set_active", [](auto vm) -> int {
                 Vital::Engine::RenderTarget* rt = nullptr;
                 if (vm -> get_arg_count() >= 1) {
                     if (!vm -> is_userdata(1) || !vm_module::is_userdata(vm, base_name, 1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -47,13 +47,13 @@ namespace Vital::Sandbox::API {
                 }
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                Vital::Engine::RenderTarget::set_target(rt, clear, instant);
+                Vital::Engine::RenderTarget::set_active(rt, clear, instant);
                 vm -> push_bool(true);
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_target", [](auto vm) -> int {
-                auto* object = Vital::Engine::RenderTarget::get_target();
+            API::bind(vm, {base_name}, "get_active", [](auto vm) -> int {
+                auto* object = Vital::Engine::RenderTarget::get_active();
                 if (!object) vm -> push_bool(false);
                 else vm -> create_object(base_name, object);
                 return 1;
@@ -75,15 +75,15 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_target", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_target());
+            vm_module::bind_method<base_class>(vm, base_name, "is_active", [](auto vm, auto self) -> int {
+                vm -> push_bool(self -> is_active());
                 return 1;
             });
         
-            vm_module::bind_method<base_class>(vm, base_name, "set_target", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "set_active", [](auto vm, auto self) -> int {
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                Vital::Engine::RenderTarget::set_target(self, clear, instant);
+                Vital::Engine::RenderTarget::set_active(self, clear, instant);
                 vm -> push_bool(true);
                 return 1;
             });

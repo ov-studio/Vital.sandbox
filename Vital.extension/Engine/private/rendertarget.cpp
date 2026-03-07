@@ -76,13 +76,13 @@ namespace Vital::Engine {
 
 
     // Checkers //
-    bool RenderTarget::is_target() {
+    bool RenderTarget::is_active() {
         return target && (target == this);
     }
 
 
     // Setters //
-    void RenderTarget::set_target(RenderTarget* rt, bool clear, bool instant) {
+    void RenderTarget::set_active(RenderTarget* rt, bool clear, bool instant) {
         target = rt;
         if (!rt) return;
         rt -> clear(clear, instant);
@@ -102,7 +102,7 @@ namespace Vital::Engine {
         return viewport -> get_texture();
     }
 
-    RenderTarget* RenderTarget::get_target() {
+    RenderTarget* RenderTarget::get_active() {
         return target;
     }
 }

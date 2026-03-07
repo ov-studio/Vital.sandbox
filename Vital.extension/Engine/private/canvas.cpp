@@ -188,7 +188,7 @@ namespace Vital::Engine {
     };
 
     void Canvas::push(Command command) {
-        auto rt = RenderTarget::get_target();
+        auto rt = RenderTarget::get_active();
         if (rt) return rt -> push(command);
         queue.push_back(command);
     }
