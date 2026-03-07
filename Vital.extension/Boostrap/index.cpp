@@ -26,7 +26,7 @@ void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	godot::ClassDB::register_class<Vital::Engine::Model>(true);
 	#if defined(Vital_SDK_Client)
 	godot::ClassDB::register_class<Vital::Engine::Canvas>(true);
-	godot::ClassDB::register_class<Vital::Engine::RenderTarget>(true);
+	godot::ClassDB::register_class<Vital::Engine::Rendertarget>(true);
 	godot::ClassDB::register_class<Vital::Engine::Webview>(true);
 	#endif
 	initialize_vital_events();

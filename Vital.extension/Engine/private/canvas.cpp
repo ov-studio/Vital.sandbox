@@ -188,7 +188,7 @@ namespace Vital::Engine {
     };
 
     void Canvas::push(Command command) {
-        auto rt = RenderTarget::get_active();
+        auto rt = Rendertarget::get_active();
         if (rt) return rt -> push(command);
         queue.push_back(command);
     }
@@ -323,7 +323,7 @@ namespace Vital::Engine {
     void Canvas::draw_image(
         godot::Vector2 position,
         godot::Vector2 size,
-        RenderTarget* rt,
+        Rendertarget* rt,
         float rotation,
         godot::Vector2 pivot,
         const godot::Color& color

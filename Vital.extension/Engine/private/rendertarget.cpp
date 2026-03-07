@@ -19,19 +19,19 @@
 
 
 //////////////////////////////////
-// Vital: Engine: RenderTarget //
+// Vital: Engine: Rendertarget //
 //////////////////////////////////
 
 namespace Vital::Engine {
     // Instantiators //
-    RenderTarget::~RenderTarget() {
+    Rendertarget::~Rendertarget() {
         if (!viewport) return;
         if (active == this) active = nullptr;
         viewport -> queue_free();
         viewport = nullptr;
     }
 
-    void RenderTarget::_update() {
+    void Rendertarget::_update() {
         auto rs = Core::get_rendering_server();
         auto viewport_main = get_tree() -> get_root() -> get_viewport_rid();
         rs -> viewport_set_active(viewport_main, false);
@@ -39,15 +39,15 @@ namespace Vital::Engine {
         rs -> viewport_set_active(viewport_main, true);
     }
 
-    void RenderTarget::_draw() {
+    void Rendertarget::_draw() {
         Canvas::execute(static_cast<godot::Node2D*>(this), queue);
         instant = false;
     }
 
 
     // Managers //
-    RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
-        auto rt = memnew(RenderTarget);
+    Rendertarget* Rendertarget::create(int width, int height, bool transparent) {
+        auto rt = memnew(Rendertarget);
         rt -> viewport = memnew(godot::SubViewport);
         rt -> viewport -> set_size({width, height});
         rt -> viewport -> set_disable_3d(true);
@@ -58,18 +58,18 @@ namespace Vital::Engine {
         return rt;
     }
 
-    void RenderTarget::destroy() {
+    void Rendertarget::destroy() {
         this -> queue_free();
     }
 
-    void RenderTarget::clear(bool clear, bool instant) {
+    void Rendertarget::clear(bool clear, bool instant) {
         this -> instant = instant;
         viewport -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         if (clear) queue_redraw();
         if (instant) _update();
     }
 
-    void RenderTarget::push(Canvas::Command command) {
+    void Rendertarget::push(Canvas::Command command) {
         queue.push_back(command);
         queue_redraw();
         if (instant) _update();
@@ -77,13 +77,13 @@ namespace Vital::Engine {
 
 
     // Checkers //
-    bool RenderTarget::is_active() {
+    bool Rendertarget::is_active() {
         return active && (active == this);
     }
 
 
     // Setters //
-    void RenderTarget::set_active(RenderTarget* rt, bool clear, bool instant) {
+    void Rendertarget::set_active(Rendertarget* rt, bool clear, bool instant) {
         active = rt;
         if (!rt) return;
         rt -> clear(clear, instant);
@@ -91,19 +91,19 @@ namespace Vital::Engine {
 
 
     // Getters //
-    godot::Vector2i RenderTarget::get_size() {
+    godot::Vector2i Rendertarget::get_size() {
         return viewport -> get_size();
     }
 
-    godot::SubViewport* RenderTarget::get_viewport() {
+    godot::SubViewport* Rendertarget::get_viewport() {
         return viewport;
     }
 
-    godot::Ref<godot::ViewportTexture> RenderTarget::get_texture() {
+    godot::Ref<godot::ViewportTexture> Rendertarget::get_texture() {
         return viewport -> get_texture();
     }
 
-    RenderTarget* RenderTarget::get_active() {
+    Rendertarget* Rendertarget::get_active() {
         return active;
     }
 }

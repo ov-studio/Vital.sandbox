@@ -23,7 +23,7 @@
 
 namespace Vital::Engine {
     class Texture;
-    class RenderTarget;
+    class Rendertarget;
     class Canvas : public godot::Node2D {
         GDCLASS(Canvas, godot::Node2D)
         public:
@@ -174,7 +174,7 @@ namespace Vital::Engine {
             void draw_image(
                 godot::Vector2 position,
                 godot::Vector2 size,
-                RenderTarget* rt,
+                Rendertarget* rt,
                 float rotation = 0.0f,
                 godot::Vector2 pivot = {0.0f, 0.0f},
                 const godot::Color& color = {1, 1, 1, 1}

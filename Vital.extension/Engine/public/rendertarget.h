@@ -18,29 +18,29 @@
 
 
 //////////////////////////////////
-// Vital: Engine: RenderTarget //
+// Vital: Engine: Rendertarget //
 //////////////////////////////////
 
 namespace Vital::Engine {
-    class RenderTarget : public godot::Node2D {
-        GDCLASS(RenderTarget, godot::Node2D)
+    class Rendertarget : public godot::Node2D {
+        GDCLASS(Rendertarget, godot::Node2D)
         protected:
             godot::SubViewport* viewport = nullptr;
-            inline static RenderTarget* active = nullptr;
+            inline static Rendertarget* active = nullptr;
             static void _bind_methods() {}
         private:
             std::vector<Canvas::Command> queue;
             bool instant = false;
         public:
             // Instantiators //
-            RenderTarget() = default;
-            ~RenderTarget() override;
+            Rendertarget() = default;
+            ~Rendertarget() override;
             void _update();
             void _draw() override;
 
 
             // Managers //
-            static RenderTarget* create(int width, int height, bool transparent = false);
+            static Rendertarget* create(int width, int height, bool transparent = false);
             void destroy();
             void push(Canvas::Command command);
             void clear(bool clear, bool instant);
@@ -51,14 +51,14 @@ namespace Vital::Engine {
 
 
             // Setters //
-            static void set_active(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
+            static void set_active(Rendertarget* rt = nullptr, bool clear = false, bool instant = false);
 
 
             // Getters //
             godot::Vector2i get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
-            static RenderTarget* get_active();
+            static Rendertarget* get_active();
     };
 }
 #endif

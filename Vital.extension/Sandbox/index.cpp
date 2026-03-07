@@ -37,7 +37,7 @@ namespace Vital::Engine {
         vm = new Vital::Sandbox::Machine({
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Webview>(),
-            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::RenderTarget>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Rendertarget>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSAO>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSR>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSIL>(),

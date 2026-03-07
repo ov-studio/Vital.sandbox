@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: RenderTarget APIs
+     Desc: Rendertarget APIs
 ----------------------------------------------------------------*/
 
 
@@ -18,42 +18,42 @@
 
 
 ////////////////////////////////////////
-// Vital: Sandbox: API: RenderTarget //
+// Vital: Sandbox: API: Rendertarget //
 ////////////////////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct RenderTarget : vm_module {
+    struct Rendertarget : vm_module {
         inline static const std::string base_name = "rendertarget";
-        using base_class = Vital::Engine::RenderTarget;
+        using base_class = Vital::Engine::Rendertarget;
 
         static void bind(Machine* vm) {
-            vm_module::register_type<RenderTarget>(vm, base_name);
+            vm_module::register_type<Rendertarget>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_number(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto width = vm -> get_int(1);
                 auto height = vm -> get_int(2);
                 auto transparent = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                auto* object = Vital::Engine::RenderTarget::create(width, height, transparent);
+                auto* object = Vital::Engine::Rendertarget::create(width, height, transparent);
                 vm -> create_object(base_name, object);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "set_active", [](auto vm) -> int {
-                Vital::Engine::RenderTarget* rt = nullptr;
+                Vital::Engine::Rendertarget* rt = nullptr;
                 if (vm -> get_arg_count() >= 1) {
                     if (!vm -> is_userdata(1) || !vm_module::is_userdata(vm, base_name, 1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                Vital::Engine::RenderTarget::set_active(rt, clear, instant);
+                Vital::Engine::Rendertarget::set_active(rt, clear, instant);
                 vm -> push_bool(true);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_active", [](auto vm) -> int {
-                auto* object = Vital::Engine::RenderTarget::get_active();
+                auto* object = Vital::Engine::Rendertarget::get_active();
                 if (!object) vm -> push_bool(false);
                 else vm -> create_object(base_name, object);
                 return 1;
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "set_active", [](auto vm, auto self) -> int {
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                Vital::Engine::RenderTarget::set_active(self, clear, instant);
+                Vital::Engine::Rendertarget::set_active(self, clear, instant);
                 vm -> push_bool(true);
                 return 1;
             });
