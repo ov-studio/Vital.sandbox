@@ -80,7 +80,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "update_from_raw", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "update", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto raw = vm -> get_string(2);
                 self -> update_svg_from_raw(raw);
