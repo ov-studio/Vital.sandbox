@@ -2,7 +2,7 @@
 
 ![Vital.sandbox Banner](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
 
-#### "Next-generation open-source sandbox by [ov-studio](https://ko-fi.com/ovstudio)"
+#### Next-generation open-source sandbox by [ov-studio](https://ko-fi.com/ovstudio)
 ###### Founded & maintained by **Aviril**, **Mario**, **Tron**, **Anisa** & **A-Variakojiene**
 
 [![License](https://img.shields.io/badge/license-open--source-brightgreen?style=flat-square)](https://github.com/ov-studio/Vital.sandbox/blob/main/LICENSE)
