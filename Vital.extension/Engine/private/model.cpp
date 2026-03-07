@@ -136,7 +136,7 @@ namespace Vital::Engine {
         return object;
     }
 
-    void Mode::destroy() {
+    void Model::destroy() {
         self -> queue_free();
     }
 
