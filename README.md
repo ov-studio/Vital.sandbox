@@ -1,8 +1,10 @@
-<div align="center">
+## Overview
 
 ![Vital.sandbox Banner](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
 
-#### Next-generation open-source sandbox by [ov-studio](https://ko-fi.com/ovstudio)
+<div align="center">
+
+**Next-generation open-source sandbox by [ov-studio](https://ko-fi.com/ovstudio)**
 ###### Founded & maintained by **Aviril**, **Mario**, **Tron**, **Anisa** & **A-Variakojiene**
 
 [![License](https://img.shields.io/badge/license-open--source-brightgreen?style=flat-square)](https://github.com/ov-studio/Vital.sandbox/blob/main/LICENSE)
@@ -11,10 +13,6 @@
 [![Discord](https://img.shields.io/badge/community-Discord-5865F2?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
 
 </div>
-
----
-
-## Overview
 
 **Vital.sandbox** is a battle-tested, fully open-source game sandbox built on the **Godot Engine** and engineered from the ground up in **C++17** for maximum performance and control. It exposes the full power of the engine through a clean, expressive **Lua scripting layer** — rendering, networking, threading, asset delivery, all of it, from a single language.
 
