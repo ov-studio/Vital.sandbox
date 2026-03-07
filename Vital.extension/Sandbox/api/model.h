@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "set_position", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector3(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto position = vm -> get_vector3(2)
+                auto position = vm -> get_vector3(2);
                 self -> set_position(position);
                 vm -> push_bool(true);
                 return 1;
