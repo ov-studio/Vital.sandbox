@@ -46,11 +46,11 @@ namespace Vital::Engine {
         
             struct Command {
                 Type type;
-                uint64_t tick;
                 std::variant<Texture2D, SVG> payload;
             };
         protected:
             Command command;
+            uint64_t reference_tick = 0;
             std::string reference_key = "";
             inline static const unsigned int flush_interval = 10000;
             inline static std::unordered_map<std::string, Texture*> reference_cache = {};

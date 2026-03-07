@@ -43,14 +43,14 @@ namespace Vital::Engine {
     }
 
     void Texture::heartbeat() {
-        command.tick = get_tick();
+        reference_tick = get_tick();
     }
 
     void Texture::flush() {
         auto tick = get_tick();
         std::vector<std::string> expired;
         for (const auto& reference_cache : reference_cache) {
-            if (tick - reference_cache.second -> command.tick > flush_interval) {
+            if (tick - reference_cache.second -> reference_tick > flush_interval) {
                 expired.push_back(reference_cache.first);
             }
         }
@@ -134,7 +134,7 @@ namespace Vital::Engine {
         Texture2D payload;
         auto texture = memnew(Texture(reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
-        texture -> command = {Type::Texture2D, 0, payload};
+        texture -> command = {Type::Texture2D, payload};
         return texture;
     }
 
@@ -150,7 +150,7 @@ namespace Vital::Engine {
         SVG payload;
         auto texture = memnew(Texture(reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
-        texture -> command = {Type::SVG, 0, payload};
+        texture -> command = {Type::SVG, payload};
         return texture;
     }
 
@@ -162,7 +162,7 @@ namespace Vital::Engine {
         SVG payload;
         auto texture = memnew(Texture(reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
-        texture -> command = {Type::SVG, 0, payload};
+        texture -> command = {Type::SVG, payload};
         return texture;
     }
 
