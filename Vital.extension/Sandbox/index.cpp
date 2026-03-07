@@ -16,6 +16,7 @@
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.extension/Sandbox/api/model.h>
 #include <Vital.extension/Sandbox/api/webview.h>
+#include <Vital.extension/Sandbox/api/texture.h>
 #include <Vital.extension/Sandbox/api/rendertarget.h>
 #include <Vital.extension/Sandbox/api/gfx/ssr.h>
 #include <Vital.extension/Sandbox/api/gfx/ssao.h>
@@ -37,6 +38,8 @@ namespace Vital::Engine {
         vm = new Vital::Sandbox::Machine({
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Webview>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Texture>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SVG>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Rendertarget>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSAO>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SSR>(),
