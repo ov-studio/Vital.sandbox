@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_target", [](auto vm, auto self) -> int {
-                vm -> push_bool(Vital::Engine::RenderTarget::get_target() == self);
+                vm -> push_bool(Vital::Engine::RenderTarget::is_target(self));
                 return 1;
             });
         

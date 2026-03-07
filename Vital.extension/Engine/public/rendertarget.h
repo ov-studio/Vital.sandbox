@@ -46,6 +46,10 @@ namespace Vital::Engine {
             void clear(bool clear, bool instant);
         
 
+            // Checkers //
+            bool is_target();
+
+
             // Setters //
             static void set_target(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
 

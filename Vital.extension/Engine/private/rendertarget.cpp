@@ -75,6 +75,12 @@ namespace Vital::Engine {
     }
 
 
+    // Checkers //
+    bool RenderTarget::is_target() {
+        return rendertarget && (rendertarget == this);
+    }
+
+
     // Setters //
     void RenderTarget::set_target(RenderTarget* rt, bool clear, bool instant) {
         target = rt;
