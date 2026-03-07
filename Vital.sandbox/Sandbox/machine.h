@@ -22,7 +22,7 @@
 //////////////////////////////
 
 namespace Vital::Sandbox {
-    class Machine : public MachineMixin<Machine> {
+    class Machine : public Mixin<Machine> {
         protected:
             static vm_apis internal_apis;
             inline static vm_machines machines;
