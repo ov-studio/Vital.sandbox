@@ -51,6 +51,7 @@ namespace Vital::Engine {
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
             static Model* create(const std::string& name);
+            void destroy();
 
 
             // Checkers //

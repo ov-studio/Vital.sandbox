@@ -136,6 +136,10 @@ namespace Vital::Engine {
         return object;
     }
 
+    void Mode::destroy() {
+        self -> queue_free();
+    }
+
 
     // Checkers //
     bool Model::is_model_loaded(const std::string& name) {
