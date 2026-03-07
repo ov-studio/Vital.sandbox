@@ -65,13 +65,7 @@ namespace Vital::Sandbox {
             vm -> create_metatable(type_name);
             vm -> create_table();
             T::methods(vm);
-    
-            bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self) -> int {
-                if (type_name.empty()) vm -> push_bool(false);
-                else vm -> push_string(type_name);
-                return 1;
-            });
-    
+            bind_natives<T>(vm, type_name);
             vm -> set_table_field("__index", -2);
             lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                 void** ud = static_cast<void**>(lua_touserdata(state, 1));
@@ -99,6 +93,15 @@ namespace Vital::Sandbox {
                 });
             }, 2);
             lua_setfield(vm -> get_state(), -2, name.c_str());
+        }
+
+        template<typename T>
+        static void bind_natives(Machine* vm, const std::string& type_name) {
+            bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self) -> int {
+                if (type_name.empty()) vm -> push_bool(false);
+                else vm -> push_string(type_name);
+                return 1;
+            });
         }
 
         template<typename T = void>
