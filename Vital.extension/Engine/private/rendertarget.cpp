@@ -77,7 +77,7 @@ namespace Vital::Engine {
 
     // Checkers //
     bool RenderTarget::is_target() {
-        return rendertarget && (rendertarget == this);
+        return target && (target == this);
     }
 
 
