@@ -82,17 +82,15 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_position", [](auto vm, auto self) -> int {
-                auto p = self -> get_position();
-                vm -> push_number(p.x);
-                vm -> push_number(p.y);
-                return 2;
+                auto position = self -> get_position();
+                vm -> push_vector2(position);
+                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_size", [](auto vm, auto self) -> int {
-                auto s = self -> get_size();
-                vm -> push_number(s.x);
-                vm -> push_number(s.y);
-                return 2;
+                auto size = self -> get_size();
+                vm -> push_vector2(size);
+                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_visible", [](auto vm, auto self) -> int {
@@ -144,19 +142,17 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_position", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 3) || (!vm -> is_number(2)) || (!vm -> is_number(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto x = vm -> get_float(2);
-                auto y = vm -> get_float(3);
-                self -> set_position({x, y});
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto position = vm -> get_vector2(2);
+                self -> set_position(position);
                 vm -> push_bool(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_size", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 3) || (!vm -> is_number(2)) || (!vm -> is_number(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto x = vm -> get_float(2);
-                auto y = vm -> get_float(3);
-                self -> set_size({x, y});
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto size = vm -> get_vector2(2);
+                self -> set_size(size);
                 vm -> push_bool(true);
                 return 1;
             });
