@@ -27,7 +27,7 @@ namespace Vital::Engine {
         if (!reference.empty()) {
             reference_key = reference;
             reference_cache.emplace(reference_key, this);
-            command.tick = get_tick();
+            heartbeat();
         }
     }
 
