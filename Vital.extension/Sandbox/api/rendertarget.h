@@ -41,8 +41,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "set_target", [](auto vm) -> int {
                 Vital::Engine::RenderTarget* rt = nullptr;
-                if ((vm -> get_arg_count() >= 1) && vm -> is_userdata(1)) {
-                    if (!vm_module::is_userdata(vm, base_name, 1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if (vm -> get_arg_count() >= 1) {
+                    if (!vm -> is_userdata(1) || !vm_module::is_userdata(vm, base_name, 1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;

@@ -75,6 +75,7 @@ namespace Vital::Sandbox {
             vm -> pop();
         }
 
+        template<typename T = void>
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
             void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             return ud && *ud;
