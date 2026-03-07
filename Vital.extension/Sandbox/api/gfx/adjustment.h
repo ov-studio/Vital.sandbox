@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                auto lut_texture = Vital::Engine::Texture::get_from_ref(path);
+                auto lut_texture = Vital::Engine::Texture::get_from_reference(path);
                 if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);
                 godot::Ref<godot::Image> lut_image = lut_texture -> get_texture() -> get_image();
                 int img_w = lut_image -> get_width();

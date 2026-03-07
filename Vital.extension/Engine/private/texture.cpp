@@ -22,26 +22,31 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    // Instantiators //
+    // Managers //
+    void Texture::destroy() {
+        if (!ref_key.is_empty() && cache.has(ref_key)) cache.erase(ref_key);
+        memdelete(this);
+    }
+
     void Texture::heartbeat() {
         command.tick = get_tick();
     }
 
-    void Texture::flush() {
-        auto tick = get_tick();
-        for (const auto& cache : cache_temp) {
-            auto duration = tick - cache.second -> command.tick;
-            if (duration > flush_interval) {
-                cache_temp.erase(cache.first);
-                memdelete(cache.second);
-            }
-        }
+    void Texture::push(const std::string& reference) {
+        if (reference.empty()) return;
+        ref_key = reference;
+        cache.emplace(ref_key, this);
+        heartbeat();
     }
 
-    void Texture::push_temp(const std::string& temp_ref) {
-        if (temp_ref.empty()) return;
-        cache_temp.emplace(temp_ref, this);
-        heartbeat();
+    void Texture::flush() {
+        auto tick = get_tick();
+        for (const auto& cache : cache) {
+            auto duration = tick - cache.second -> command.tick;
+            if (duration > flush_interval) {
+                cache.second -> destroy();
+            }
+        }
     }
 
 
@@ -72,9 +77,9 @@ namespace Vital::Engine {
         return Format::UNKNOWN;
     }
 
-    Texture* Texture::get_from_ref(const std::string& temp_ref) {
-        auto it = cache_temp.find(temp_ref);
-        return it != cache_temp.end() ? it -> second : nullptr;
+    Texture* Texture::get_from_reference(const std::string& reference) {
+        auto it = cache.find(reference);
+        return it != cache.end() ? it -> second : nullptr;
     }
 
     godot::Ref<godot::Texture2D> Texture::get_texture() {
@@ -93,14 +98,14 @@ namespace Vital::Engine {
 
 
     // APIs //
-    Texture* Texture::create_texture_2d(const std::string& path, const std::string& temp_ref) {
+    Texture* Texture::create_texture_2d(const std::string& path, const std::string& reference) {
         return create_texture_2d_from_buffer(
             Vital::Tool::File::read_binary(get_directory(), path), 
-            temp_ref
+            reference
         );
     }
 
-    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& temp_ref) {
+    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
@@ -123,18 +128,18 @@ namespace Vital::Engine {
         auto texture = memnew(Texture);
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::Texture2D, 0, payload};
-        texture -> push_temp(temp_ref);
+        texture -> push(reference);
         return texture;
     }
 
-    Texture* Texture::create_svg(const std::string& path, const std::string& temp_ref) {
+    Texture* Texture::create_svg(const std::string& path, const std::string& reference) {
         return create_svg_from_buffer(
             Vital::Tool::File::read_binary(get_directory(), path), 
-            temp_ref
+            reference
         );
     }
 
-    Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& temp_ref) {
+    Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
@@ -143,11 +148,10 @@ namespace Vital::Engine {
         auto texture = memnew(Texture);
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::SVG, 0, payload};
-        texture -> push_temp(temp_ref);
         return texture;
     }
 
-    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& temp_ref) {
+    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status = image -> load_svg_from_buffer(buffer, 1.0);
@@ -156,7 +160,6 @@ namespace Vital::Engine {
         auto texture = memnew(Texture);
         payload.texture = godot::ImageTexture::create_from_image(image);
         texture -> command = {Type::SVG, 0, payload};
-        texture -> push_temp(temp_ref);
         return texture;
     }
 

@@ -341,7 +341,7 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         try {
-            auto texture = Texture::get_from_ref(path);
+            auto texture = Texture::get_from_reference(path);
             if (!texture) texture = Texture::create_texture_2d(path, path);
             draw_image(position, size, texture, rotation, pivot, color);
         }
