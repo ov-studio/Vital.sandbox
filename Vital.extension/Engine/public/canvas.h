@@ -24,7 +24,6 @@
 namespace Vital::Engine {
     class Texture;
     class RenderTarget;
-    class Canvas;
     class Canvas : public godot::Node2D {
         GDCLASS(Canvas, godot::Node2D)
         public:

@@ -26,7 +26,7 @@ namespace Vital::Engine {
         GDCLASS(RenderTarget, godot::Node2D)
         protected:
             godot::SubViewport* viewport = nullptr;
-            inline static RenderTarget* rendertarget = nullptr;
+            inline static RenderTarget* target = nullptr;
             static void _bind_methods() {}
         private:
             std::vector<Canvas::Command> queue;
@@ -39,18 +39,21 @@ namespace Vital::Engine {
             void _draw() override;
 
 
+            // Managers //
+            static RenderTarget* create(int width, int height, bool transparent);
+            void push(Canvas::Command command);
+            void clear(bool clear, bool instant);
+        
+
+            // Setters //
+            static void set_target(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
+
+
             // Getters //
             godot::Vector2i get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
-            static RenderTarget* get_rendertarget();
-
-
-            // APIs //
-            static RenderTarget* create(int width, int height, bool transparent);
-            static void set_rendertarget(RenderTarget* rt = nullptr, bool clear = false, bool instant = false);
-            void push(Canvas::Command command);
-            void clear(bool clear, bool instant);
+            static RenderTarget* get_target();
     };
 }
 #endif

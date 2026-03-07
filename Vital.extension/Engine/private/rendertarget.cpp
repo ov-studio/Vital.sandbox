@@ -43,6 +43,41 @@ namespace Vital::Engine {
         instant = false;
     }
 
+    
+    // Managers //
+    RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
+        auto rt = memnew(RenderTarget);
+        rt -> viewport = memnew(godot::SubViewport);
+        rt -> viewport -> set_size({width, height});
+        rt -> viewport -> set_disable_3d(true);
+        rt -> viewport -> set_transparent_background(transparent);
+        rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
+        rt -> viewport -> add_child(rt);
+        Canvas::get_singleton() -> add_child(rt -> viewport);
+        return rt;
+    }
+
+    void RenderTarget::clear(bool clear, bool instant) {
+        this -> instant = instant;
+        viewport -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
+        if (clear) queue_redraw();
+        if (instant) _update();
+    }
+
+    void RenderTarget::push(Canvas::Command command) {
+        queue.push_back(command);
+        queue_redraw();
+        if (instant) _update();
+    }
+
+
+    // Setters //
+    void RenderTarget::set_target(RenderTarget* rt, bool clear, bool instant) {
+        target = rt;
+        if (!rt) return;
+        rt -> clear(clear, instant);
+    }
+
 
     // Getters //
     godot::Vector2i RenderTarget::get_size() {
@@ -57,41 +92,8 @@ namespace Vital::Engine {
         return viewport -> get_texture();
     }
 
-    RenderTarget* RenderTarget::get_rendertarget() {
-        return rendertarget;
-    }
-
-
-    // APIs //
-    RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
-        auto rt = memnew(RenderTarget);
-        rt -> viewport = memnew(godot::SubViewport);
-        rt -> viewport -> set_size({width, height});
-        rt -> viewport -> set_disable_3d(true);
-        rt -> viewport -> set_transparent_background(transparent);
-        rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
-        rt -> viewport -> add_child(rt);
-        Canvas::get_singleton() -> add_child(rt -> viewport);
-        return rt;
-    }
-
-    void RenderTarget::set_rendertarget(RenderTarget* rt, bool clear, bool instant) {
-        rendertarget = rt;
-        if (!rt) return;
-        rt -> clear(clear, instant);
-    }
-
-    void RenderTarget::clear(bool clear, bool instant) {
-        this -> instant = instant;
-        viewport -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
-        if (clear) queue_redraw();
-        if (instant) _update();
-    }
-
-    void RenderTarget::push(Canvas::Command command) {
-        queue.push_back(command);
-        queue_redraw();
-        if (instant) _update();
+    RenderTarget* RenderTarget::get_target() {
+        return target;
     }
 }
 #endif

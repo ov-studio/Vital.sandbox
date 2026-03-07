@@ -22,7 +22,6 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Console;
     class Console : public godot::Control {
         protected:
             inline static Console* singleton = nullptr;

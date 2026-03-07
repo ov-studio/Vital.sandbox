@@ -49,6 +49,12 @@ namespace Vital::Engine {
     }
 
 
+    // Managers //
+    Webview* Webview::create() {
+        return memnew(Webview);
+    }
+
+
     // Checkers //
     bool Webview::is_visible() {
         return webview -> is_visible_in_tree();

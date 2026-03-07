@@ -178,7 +178,7 @@ namespace Vital::Engine {
             rt = Vital::Engine::RenderTarget::create(512, 512, false);
         }
 
-        Vital::Engine::RenderTarget::set_rendertarget(rt, true, true);
+        Vital::Engine::RenderTarget::set_target(rt, true, true);
         canvas -> draw_image({0, 20}, {300, 300}, "flower.jpg", rotation, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text,
@@ -195,7 +195,7 @@ namespace Vital::Engine {
             0.0f,
             {0.0f, 0.0f}
         );
-        Vital::Engine::RenderTarget::set_rendertarget();
+        Vital::Engine::RenderTarget::set_target();
 
         canvas -> draw_image({100, 500}, {512, 512}, rt);
         

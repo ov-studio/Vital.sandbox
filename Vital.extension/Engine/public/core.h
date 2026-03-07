@@ -21,7 +21,6 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    class Core;
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)
         protected:

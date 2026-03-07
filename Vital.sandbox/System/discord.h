@@ -23,7 +23,6 @@
 /////////////////////////////
 
 namespace Vital::System {
-    class Discord;
     class Discord {
         public:
             struct Activity {

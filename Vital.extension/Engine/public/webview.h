@@ -34,7 +34,11 @@ namespace Vital::Engine {
             Webview();
             ~Webview();
 
-        
+
+            // Managers //
+            static Webview* create();
+
+
             // Checkers //
             bool is_visible();
             bool is_fullscreen();
