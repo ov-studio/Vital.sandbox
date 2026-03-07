@@ -41,6 +41,7 @@ namespace Vital::Engine {
 
             // Managers //
             static RenderTarget* create(int width, int height, bool transparent);
+            void destroy();
             void push(Canvas::Command command);
             void clear(bool clear, bool instant);
         

@@ -57,6 +57,10 @@ namespace Vital::Engine {
         return rt;
     }
 
+    void RenderTarget::destroy() {
+        memdelete(this);
+    }
+
     void RenderTarget::clear(bool clear, bool instant) {
         this -> instant = instant;
         viewport -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
