@@ -54,7 +54,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "set_light_color", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!vm -> is_color(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 1) || ((!vm -> is_string(1)) && (!vm -> is_color(1)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 if (vm -> is_string(1)) {
                     auto value = to_godot_string(vm -> get_string(1));
                     if (!godot::Color::html_is_valid(value)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
