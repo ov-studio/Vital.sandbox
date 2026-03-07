@@ -43,7 +43,7 @@ namespace Vital::Engine {
         instant = false;
     }
 
-    
+
     // Managers //
     RenderTarget* RenderTarget::create(int width, int height, bool transparent) {
         auto rt = memnew(RenderTarget);
