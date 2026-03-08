@@ -41,13 +41,13 @@ namespace Vital::Sandbox {
                 "load",
                 "loadfile"
             };
-            inline static const std::unordered_map<std::string, godot::HorizontalAlignment> horizontal_alignment_map = {
+            inline static const std::unordered_map<std::string, godot::HorizontalAlignment> horizontal_alignment = {
                 {"left", godot::HORIZONTAL_ALIGNMENT_LEFT},
                 {"center", godot::HORIZONTAL_ALIGNMENT_CENTER},
                 {"right", godot::HORIZONTAL_ALIGNMENT_RIGHT},
                 {"fill", godot::HORIZONTAL_ALIGNMENT_FILL}
             };
-            inline static const std::unordered_map<std::string, godot::VerticalAlignment> vertical_alignment_map = {
+            inline static const std::unordered_map<std::string, godot::VerticalAlignment> vertical_alignment = {
                 {"top", godot::VERTICAL_ALIGNMENT_TOP},
                 {"center", godot::VERTICAL_ALIGNMENT_CENTER},
                 {"bottom", godot::VERTICAL_ALIGNMENT_BOTTOM},
@@ -134,7 +134,7 @@ namespace Vital::Sandbox {
                 return result;
             }
             bool is_horizontal_alignment(int index = 1) {
-                if (is_string(index)) return horizontal_alignment_map.count(get_string(index)) > 0;
+                if (is_string(index)) return horizontal_alignment.count(get_string(index)) > 0;
                 else if (is_number(index)) {
                     int value = get_int(index);
                     return value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL;
@@ -142,7 +142,7 @@ namespace Vital::Sandbox {
                 return false;
             }
             bool is_vertical_alignment(int index = 1) {
-                if (is_string(index)) return vertical_alignment_map.count(get_string(index)) > 0;
+                if (is_string(index)) return vertical_alignment.count(get_string(index)) > 0;
                 else if (is_number(index)) {
                     int value = get_int(index);
                     return value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL;
@@ -222,24 +222,16 @@ namespace Vital::Sandbox {
                 return value;
             }
             godot::HorizontalAlignment get_horizontal_alignment(int index = 1) {
-                if (is_string(index)) {
-                    auto it = horizontal_alignment_map.find(get_string(index));
-                    if (it != horizontal_alignment_map.end()) return it -> second;
-                }
-                else if (is_number(index)) {
-                    int value = get_int(index);
-                    if (value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL) return static_cast<godot::HorizontalAlignment>(value);
+                if (is_horizontal_alignment(index)) {
+                    if (is_string(index)) return horizontal_alignment_map.find(get_string(index)) -> second;
+                    return static_cast<godot::HorizontalAlignment>(get_int(index));
                 }
                 return godot::HORIZONTAL_ALIGNMENT_LEFT;
             }
             godot::VerticalAlignment get_vertical_alignment(int index = 1) {
-                if (is_string(index)) {
-                    auto it = vertical_alignment_map.find(get_string(index));
-                    if (it != vertical_alignment_map.end()) return it -> second;
-                }
-                else if (is_number(index)) {
-                    int value = get_int(index);
-                    if (value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL) return static_cast<godot::VerticalAlignment>(value);
+                if (is_vertical_alignment(index)) {
+                    if (is_string(index)) return vertical_alignment_map.find(get_string(index)) -> second;
+                    return static_cast<godot::VerticalAlignment>(get_int(index));
                 }
                 return godot::VERTICAL_ALIGNMENT_TOP;
             }
