@@ -63,7 +63,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // draw_circle(position, radius, color?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_circle", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
@@ -78,8 +77,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // draw_image(position, size, texture, rotation?, pivot?, color?) //
-            // texture arg accepts: string path | Texture* userdata | Rendertarget* userdata //
             API::bind(vm, {base_name}, "draw_image", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
