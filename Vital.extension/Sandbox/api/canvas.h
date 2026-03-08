@@ -109,9 +109,9 @@ namespace Vital::Sandbox::API {
             // alignment is a {h, v} table using godot HorizontalAlignment / VerticalAlignment int values //
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm -> is_userdata(4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto text     = vm -> get_string(1);
+                auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
-                auto end_at   = vm -> get_vector2(3);
+                auto end_at = vm -> get_vector2(3);
                 auto* font_raw = static_cast<godot::Font*>(vm -> get_userdata(4));
                 if (!font_raw) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 godot::Ref<godot::Font> font(font_raw);
@@ -119,10 +119,10 @@ namespace Vital::Sandbox::API {
                 godot::Color color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER};
                 if (vm -> is_table(7)) {
-                    vm -> get_table_field("h", 7);
+                    vm -> get_table_index(1, 7);
                     alignment.first = static_cast<godot::HorizontalAlignment>(vm -> get_int(-1));
                     vm -> pop();
-                    vm -> get_table_field("v", 7);
+                    vm -> get_table_index(2, 7);
                     alignment.second = static_cast<godot::VerticalAlignment>(vm -> get_int(-1));
                     vm -> pop();
                 }
