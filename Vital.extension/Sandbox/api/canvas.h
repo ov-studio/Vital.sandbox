@@ -106,12 +106,12 @@ namespace Vital::Sandbox::API {
             });
 
             // draw_text(text, start_at, end_at, font, font_size, color?, alignment?, clip?, wordwrap?, stroke?, stroke_color?, rotation?, pivot?) //
-            // alignment is a {h, v} table using godot HorizontalAlignment / VerticalAlignment int values //
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm -> is_userdata(4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);
+                // TODO: CHECK FOR FONT USERDATATYPE, TBCS
                 auto* font_raw = static_cast<godot::Font*>(vm -> get_userdata(4));
                 if (!font_raw) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 godot::Ref<godot::Font> font(font_raw);
