@@ -99,7 +99,10 @@ namespace Vital::Sandbox {
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
             bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
-            bool is_color(int index = 1) { return is_table(index) && get_length(index) >= 4; }
+            bool is_color(int index = 1) {
+                if (is_string(index)) return godot::Color::html_is_valid(to_godot_string(get_string(index)));
+                return is_table(index) && get_length(index) >= 4;
+            }
             bool is_vector2(int index = 1) { return is_table(index) && get_length(index) >= 2; }
             bool is_vector2_array(int index = 1) {
                 if (!is_table(index)) return false;
@@ -150,6 +153,10 @@ namespace Vital::Sandbox {
                 return 0;
             }
             godot::Color get_color(int index = 1) {
+                if (is_string(index)) {
+                    auto html = to_godot_string(get_string(index));
+                    if (godot::Color::html_is_valid(html)) return godot::Color::html(html);
+                }
                 godot::Color value = {1, 1, 1, 1};
                 get_table_field(1, index); value.r = get_float(-1); pop();
                 get_table_field(2, index); value.g = get_float(-1); pop();
