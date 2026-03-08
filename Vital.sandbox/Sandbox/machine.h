@@ -123,6 +123,28 @@ namespace Vital::Sandbox {
                 pop();
                 return result;
             }
+            bool is_horizontal_alignment(int index = 1) {
+                if (is_string(index)) {
+                    auto value = get_string(index);
+                    return value == "left" || value == "center" || value == "right" || value == "fill";
+                }
+                if (is_number(index)) {
+                    int value = get_int(index);
+                    return value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL;
+                }
+                return false;
+            }
+            bool is_vertical_alignment(int index = 1) {
+                if (is_string(index)) {
+                    auto value = get_string(index);
+                    return value == "top" || value == "center" || value == "bottom" || value == "fill";
+                }
+                if (is_number(index)) {
+                    int value = get_int(index);
+                    return value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL;
+                }
+                return false;
+            }
 
 
             // Getters //
@@ -196,6 +218,37 @@ namespace Vital::Sandbox {
                     pop();
                 }
                 return value;
+            }
+            godot::HorizontalAlignment get_horizontal_alignment(int index = 1) {
+                if (is_string(index)) {
+                    auto value = get_string(index);
+                    if (value == "left") return godot::HORIZONTAL_ALIGNMENT_LEFT;
+                    if (value == "center") return godot::HORIZONTAL_ALIGNMENT_CENTER;
+                    if (value == "right") return godot::HORIZONTAL_ALIGNMENT_RIGHT;
+                    if (value == "fill") return godot::HORIZONTAL_ALIGNMENT_FILL;
+                }
+                if (is_number(index)) {
+                    int value = get_int(index);
+                    if (value < godot::HORIZONTAL_ALIGNMENT_LEFT || value > godot::HORIZONTAL_ALIGNMENT_FILL) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    return static_cast<godot::HorizontalAlignment>(value);
+                }
+                return godot::HORIZONTAL_ALIGNMENT_LEFT;
+            }
+            godot::VerticalAlignment get_vertical_alignment(int index = 1) {
+                if (is_string(index)) {
+                    auto value = get_string(index);
+                    if (value == "top")    return godot::VERTICAL_ALIGNMENT_TOP;
+                    if (value == "center") return godot::VERTICAL_ALIGNMENT_CENTER;
+                    if (value == "bottom") return godot::VERTICAL_ALIGNMENT_BOTTOM;
+                    if (value == "fill")   return godot::VERTICAL_ALIGNMENT_FILL;
+                    throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                }
+                if (is_number(index)) {
+                    int v = get_int(index);
+                    if (v < godot::VERTICAL_ALIGNMENT_TOP || v > godot::VERTICAL_ALIGNMENT_FILL) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    return static_cast<godot::VerticalAlignment>(v);
+                }
+                return godot::VERTICAL_ALIGNMENT_TOP;
             }
 
 
