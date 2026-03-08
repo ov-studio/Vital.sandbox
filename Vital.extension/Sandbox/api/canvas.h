@@ -105,7 +105,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // draw_text(text, start_at, end_at, font, font_size, color?, alignment?, clip?, wordwrap?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm -> is_userdata(4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto text = vm -> get_string(1);
