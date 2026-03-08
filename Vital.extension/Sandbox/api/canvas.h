@@ -116,7 +116,7 @@ namespace Vital::Sandbox::API {
                 godot::Ref<godot::Font> font(font_raw);
                 int font_size = vm -> get_int(5);
                 godot::Color color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
-                std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER};
+                std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
                 if (vm -> is_table(7)) {
                     vm -> get_table_index(1, 7);
                     alignment.first = vm -> get_horizontal_alignment(-1);
@@ -125,8 +125,8 @@ namespace Vital::Sandbox::API {
                     alignment.second = vm -> get_vertical_alignment(-1);
                     vm -> pop();
                 }
-                bool clip = vm -> is_bool(8)  ? vm -> get_bool(8)  : false;
-                bool wordwrap = vm -> is_bool(9)  ? vm -> get_bool(9)  : false;
+                bool clip = vm -> is_bool(8) ? vm -> get_bool(8)  : false;
+                bool wordwrap = vm -> is_bool(9) ? vm -> get_bool(9)  : false;
                 int stroke = vm -> is_number(10) ? vm -> get_int(10) : 0;
                 godot::Color stroke_color = vm -> is_color(11) ? vm -> get_color(11) : godot::Color{1, 1, 1, 1};
                 float rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
