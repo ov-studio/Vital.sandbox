@@ -38,6 +38,8 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector2Array& value) { self() -> push_vector2_array(value); }
             void push_value(const godot::Vector3& value) { self() -> push_vector3(value); }
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
+            void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
+            void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
 
 
             // Pushers //
@@ -65,6 +67,8 @@ namespace Vital::Sandbox {
             void table_push_vector2_array(const godot::PackedVector2Array& value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_vector3(const godot::Vector3& value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_vector3_array(const godot::PackedVector3Array& value, const std::string& nspace = "") { table_push(value, nspace); }
+            void table_push_horizontal_alignment(godot::HorizontalAlignment value, const std::string& nspace = "") { table_push(value, nspace); }
+            void table_push_vertical_alignment(godot::VerticalAlignment value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_table(const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
@@ -100,6 +104,8 @@ namespace Vital::Sandbox {
             void table_set_vector2_array(const std::string& index, const godot::PackedVector2Array& value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_vector3(const std::string& index, const godot::Vector3& value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_vector3_array(const std::string& index, const godot::PackedVector3Array& value, const std::string& nspace = "") { table_set(index, value, nspace); }
+            void table_set_horizontal_alignment(const std::string& index, godot::HorizontalAlignment value, const std::string& nspace = "") { table_set(index, value, nspace); }
+            void table_set_vertical_alignment(const std::string& index, godot::VerticalAlignment value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_table(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
