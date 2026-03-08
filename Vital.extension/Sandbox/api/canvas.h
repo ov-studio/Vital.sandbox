@@ -70,14 +70,11 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 float radius = vm -> get_float(2);
-                godot::Color color = {1, 1, 1, 1};
-                if (vm -> is_color(3)) color = vm -> get_color(3);
+                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
                 float stroke = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                godot::Color stroke_color = {1, 1, 1, 1};
-                if (vm -> is_color(5)) stroke_color = vm -> get_color(5);
+                godot::Color stroke_color = vm -> is_color(5) ? vm -> get_color(5) : godot::Color{1, 1, 1, 1};
                 float rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
-                godot::Vector2 pivot = {0.0f, 0.0f};
-                if (vm -> is_vector2(7)) pivot = vm -> get_vector2(7);
+                godot::Vector2 pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_circle(position, radius, color, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
@@ -90,10 +87,8 @@ namespace Vital::Sandbox::API {
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
                 float rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                godot::Vector2 pivot = {0.0f, 0.0f};
-                if (vm -> is_vector2(5)) pivot = vm -> get_vector2(5);
-                godot::Color color = {1, 1, 1, 1};
-                if (vm -> is_color(6)) color = vm -> get_color(6);
+                godot::Vector2 pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
+                godot::Color color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 if (vm -> is_string(3)) {
                     auto path = vm -> get_string(3);
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, path, rotation, pivot, color);
@@ -126,8 +121,7 @@ namespace Vital::Sandbox::API {
                 if (!font_raw) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 godot::Ref<godot::Font> font(font_raw);
                 int font_size = vm -> get_int(5);
-                godot::Color color = {1, 1, 1, 1};
-                if (vm -> is_color(6)) color = vm -> get_color(6);
+                godot::Color color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER};
                 if (vm -> is_table(7)) {
                     vm -> get_table_field("h", 7);
@@ -140,11 +134,9 @@ namespace Vital::Sandbox::API {
                 bool clip = vm -> is_bool(8)  ? vm -> get_bool(8)  : false;
                 bool wordwrap = vm -> is_bool(9)  ? vm -> get_bool(9)  : false;
                 int stroke = vm -> is_number(10) ? vm -> get_int(10) : 0;
-                godot::Color stroke_color = {1, 1, 1, 1};
-                if (vm -> is_color(11)) stroke_color = vm -> get_color(11);
+                godot::Color stroke_color = vm -> is_color(11) ? vm -> get_color(11) : godot::Color{1, 1, 1, 1};
                 float rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
-                godot::Vector2 pivot = {0.0f, 0.0f};
-                if (vm -> is_vector2(13)) pivot = vm -> get_vector2(13);
+                godot::Vector2 pivot = vm -> is_vector2(13) ? vm -> get_vector2(13) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_text(text, start_at, end_at, font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
