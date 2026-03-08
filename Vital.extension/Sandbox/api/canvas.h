@@ -29,8 +29,8 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
-                float stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
-                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
+                auto stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
+                auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
                 Vital::Engine::Canvas::get_singleton() -> draw_line(points, stroke, color);
                 vm -> push_bool(true);
                 return 1;
@@ -39,11 +39,11 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "draw_polygon", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
-                godot::Color color = vm -> is_color(2) ? vm -> get_color(2) : godot::Color{1, 1, 1, 1};
-                float stroke = vm -> is_number(3) ? vm -> get_float(3) : 0.0f;
-                godot::Color stroke_color = vm -> is_color(4) ? vm -> get_color(4) : godot::Color{1, 1, 1, 1};
-                float rotation = vm -> is_number(5) ? vm -> get_float(5) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(6) ? vm -> get_vector2(6) : godot::Vector2{0.0f, 0.0f};
+                auto color = vm -> is_color(2) ? vm -> get_color(2) : godot::Color{1, 1, 1, 1};
+                auto stroke = vm -> is_number(3) ? vm -> get_float(3) : 0.0f;
+                auto stroke_color = vm -> is_color(4) ? vm -> get_color(4) : godot::Color{1, 1, 1, 1};
+                auto rotation = vm -> is_number(5) ? vm -> get_float(5) : 0.0f;
+                auto pivot = vm -> is_vector2(6) ? vm -> get_vector2(6) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_polygon(points, color, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
@@ -53,11 +53,11 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
-                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
-                float stroke = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                godot::Color stroke_color = vm -> is_color(5) ? vm -> get_color(5) : godot::Color{1, 1, 1, 1};
-                float rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
+                auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
+                auto stroke = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                auto stroke_color = vm -> is_color(5) ? vm -> get_color(5) : godot::Color{1, 1, 1, 1};
+                auto rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
+                auto pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_rectangle(position, size, color, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
@@ -66,12 +66,12 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "draw_circle", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
-                float radius = vm -> get_float(2);
-                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
-                float stroke = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                godot::Color stroke_color = vm -> is_color(5) ? vm -> get_color(5) : godot::Color{1, 1, 1, 1};
-                float rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
+                auto radius = vm -> get_float(2);
+                auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
+                auto stroke = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                auto stroke_color = vm -> is_color(5) ? vm -> get_color(5) : godot::Color{1, 1, 1, 1};
+                auto rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
+                auto pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_circle(position, radius, color, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
@@ -81,9 +81,9 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
-                float rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
-                godot::Color color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
+                auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
+                auto pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
+                auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 if (vm -> is_string(3)) {
                     auto path = vm -> get_string(3);
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, path, rotation, pivot, color);
@@ -113,8 +113,8 @@ namespace Vital::Sandbox::API {
                 auto* font_raw = static_cast<godot::Font*>(vm -> get_userdata(4));
                 if (!font_raw) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 godot::Ref<godot::Font> font(font_raw);
-                int font_size = vm -> get_int(5);
-                godot::Color color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
+                auto font_size = vm -> get_int(5);
+                auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
                 if (vm -> is_table(7)) {
                     vm -> get_table_field(1, 7);
@@ -124,12 +124,12 @@ namespace Vital::Sandbox::API {
                     alignment.second = vm -> get_vertical_alignment(-1);
                     vm -> pop();
                 }
-                bool clip = vm -> is_bool(8) ? vm -> get_bool(8) : false;
-                bool wordwrap = vm -> is_bool(9) ? vm -> get_bool(9) : false;
-                int stroke = vm -> is_number(10) ? vm -> get_int(10) : 0;
-                godot::Color stroke_color = vm -> is_color(11) ? vm -> get_color(11) : godot::Color{1, 1, 1, 1};
-                float rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(13) ? vm -> get_vector2(13) : godot::Vector2{0.0f, 0.0f};
+                auto clip = vm -> is_bool(8) ? vm -> get_bool(8) : false;
+                auto wordwrap = vm -> is_bool(9) ? vm -> get_bool(9) : false;
+                auto stroke = vm -> is_number(10) ? vm -> get_int(10) : 0;
+                auto stroke_color = vm -> is_color(11) ? vm -> get_color(11) : godot::Color{1, 1, 1, 1};
+                auto rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
+                auto pivot = vm -> is_vector2(13) ? vm -> get_vector2(13) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_text(text, start_at, end_at, font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
