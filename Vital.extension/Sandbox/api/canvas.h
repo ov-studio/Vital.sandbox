@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
                 float stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
-                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : {1, 1, 1, 1};
+                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
                 Vital::Engine::Canvas::get_singleton() -> draw_line(points, stroke, color);
                 vm -> push_bool(true);
                 return 1;
@@ -39,11 +39,11 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "draw_polygon", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
-                godot::Color color = vm -> is_color(2) ? vm -> get_color(2) : {1, 1, 1, 1};
+                godot::Color color = vm -> is_color(2) ? vm -> get_color(2) : godot::Color{1, 1, 1, 1};
                 float stroke = vm -> is_number(3) ? vm -> get_float(3) : 0.0f;
-                godot::Color stroke_color = vm -> is_color(4) ? vm -> get_color(4) : {1, 1, 1, 1};
+                godot::Color stroke_color = vm -> is_color(4) ? vm -> get_color(4) : godot::Color{1, 1, 1, 1};
                 float rotation = vm -> is_number(5) ? vm -> get_float(5) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(6) ? vm -> get_vector2(6) : {0.0f, 0.0f};
+                godot::Vector2 pivot = vm -> is_vector2(6) ? vm -> get_vector2(6) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_polygon(points, color, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
@@ -53,11 +53,11 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
-                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : {1, 1, 1, 1};
+                godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
                 float stroke = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
-                godot::Color stroke_color = vm -> is_color(5) ? vm -> get_color(5) : {1, 1, 1, 1};
+                godot::Color stroke_color = vm -> is_color(5) ? vm -> get_color(5) : godot::Color{1, 1, 1, 1};
                 float rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
-                godot::Vector2 pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : {0.0f, 0.0f};
+                godot::Vector2 pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
                 Vital::Engine::Canvas::get_singleton() -> draw_rectangle(position, size, color, stroke, stroke_color, rotation, pivot);
                 vm -> push_bool(true);
                 return 1;
@@ -96,8 +96,8 @@ namespace Vital::Sandbox::API {
                     auto* rt = static_cast<Vital::Engine::Rendertarget*>(vm -> get_userdata(3));
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, rt, rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<Vital::Engine::SVG>(vm, "svg", 3)) {
-                    auto* svg = static_cast<Vital::Engine::SVG*>(vm -> get_userdata(3));
+                else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "svg", 3)) {
+                    auto* svg = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, svg, rotation, pivot, color);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
