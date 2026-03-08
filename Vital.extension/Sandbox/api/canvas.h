@@ -90,20 +90,20 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_string(3)) {
                     auto path = vm -> get_string(3);
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, path, rotation, pivot, color);
-                } else if (vm -> is_userdata(3)) {
-                    // Raw userdata pointer — try Texture* first, then Rendertarget* //
-                    void* raw = vm -> get_userdata(3);
-                    auto* texture = static_cast<Vital::Engine::Texture*>(raw);
-                    if (texture) {
-                        Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, texture, rotation, pivot, color);
-                    } else {
-                        auto* rt = static_cast<Vital::Engine::Rendertarget*>(raw);
-                        if (!rt) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, rt, rotation, pivot, color);
-                    }
-                } else {
-                    throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                }
+                } 
+                else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "texture", 3)) {
+                    auto* texture = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
+                    Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, texture, rotation, pivot, color);
+                } 
+                else if (vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, "rendertarget", 3)) {
+                    auto* rt = static_cast<Vital::Engine::Rendertarget*>(vm -> get_userdata(3));
+                    Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, rt, rotation, pivot, color);
+                } 
+                else if (vm_module::is_userdata<Vital::Engine::SVG>(vm, "svg", 3)) {
+                    auto* svg = static_cast<Vital::Engine::SVG*>(vm -> get_userdata(3));
+                    Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, svg, rotation, pivot, color);
+                } 
+                else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 vm -> push_bool(true);
                 return 1;
             });
