@@ -125,8 +125,8 @@ namespace Vital::Sandbox::API {
                     alignment.second = vm -> get_vertical_alignment(-1);
                     vm -> pop();
                 }
-                bool clip = vm -> is_bool(8) ? vm -> get_bool(8)  : false;
-                bool wordwrap = vm -> is_bool(9) ? vm -> get_bool(9)  : false;
+                bool clip = vm -> is_bool(8) ? vm -> get_bool(8) : false;
+                bool wordwrap = vm -> is_bool(9) ? vm -> get_bool(9) : false;
                 int stroke = vm -> is_number(10) ? vm -> get_int(10) : 0;
                 godot::Color stroke_color = vm -> is_color(11) ? vm -> get_color(11) : godot::Color{1, 1, 1, 1};
                 float rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
