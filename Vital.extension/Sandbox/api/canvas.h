@@ -25,22 +25,6 @@ namespace Vital::Sandbox::API {
     struct Canvas : vm_module {
         inline static const std::string base_name = "engine";
 
-        static godot::HorizontalAlignment parse_horizontal_alignment(const std::string& value) {
-            if (value == "left")   return godot::HORIZONTAL_ALIGNMENT_LEFT;
-            if (value == "center") return godot::HORIZONTAL_ALIGNMENT_CENTER;
-            if (value == "right")  return godot::HORIZONTAL_ALIGNMENT_RIGHT;
-            if (value == "fill")   return godot::HORIZONTAL_ALIGNMENT_FILL;
-            throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-        }
-
-        static godot::VerticalAlignment parse_vertical_alignment(const std::string& value) {
-            if (value == "top")    return godot::VERTICAL_ALIGNMENT_TOP;
-            if (value == "center") return godot::VERTICAL_ALIGNMENT_CENTER;
-            if (value == "bottom") return godot::VERTICAL_ALIGNMENT_BOTTOM;
-            if (value == "fill")   return godot::VERTICAL_ALIGNMENT_FILL;
-            throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-        }
-
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -135,20 +119,10 @@ namespace Vital::Sandbox::API {
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER};
                 if (vm -> is_table(7)) {
                     vm -> get_table_index(1, 7);
-                    if (vm -> is_string(-1)) alignment.first = parse_horizontal_alignment(vm -> get_string(-1));
-                    else {
-                        int h = vm -> get_int(-1);
-                        if (h < godot::HORIZONTAL_ALIGNMENT_LEFT || h > godot::HORIZONTAL_ALIGNMENT_FILL) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        alignment.first = static_cast<godot::HorizontalAlignment>(h);
-                    }
+                    alignment.first = vm -> get_horizontal_alignment(-1);
                     vm -> pop();
                     vm -> get_table_index(2, 7);
-                    if (vm -> is_string(-1)) alignment.second = parse_vertical_alignment(vm -> get_string(-1));
-                    else {
-                        int v = vm -> get_int(-1);
-                        if (v < godot::VERTICAL_ALIGNMENT_TOP || v > godot::VERTICAL_ALIGNMENT_FILL) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        alignment.second = static_cast<godot::VerticalAlignment>(v);
-                    }
+                    alignment.second = vm -> get_vertical_alignment(-1);
                     vm -> pop();
                 }
                 bool clip = vm -> is_bool(8)  ? vm -> get_bool(8)  : false;
