@@ -126,7 +126,7 @@ namespace Vital::Sandbox {
                     auto value = get_string(index);
                     return value == "left" || value == "center" || value == "right" || value == "fill";
                 }
-                if (is_number(index)) {
+                else if (is_number(index)) {
                     int value = get_int(index);
                     return value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL;
                 }
@@ -137,7 +137,7 @@ namespace Vital::Sandbox {
                     auto value = get_string(index);
                     return value == "top" || value == "center" || value == "bottom" || value == "fill";
                 }
-                if (is_number(index)) {
+                else if (is_number(index)) {
                     int value = get_int(index);
                     return value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL;
                 }
