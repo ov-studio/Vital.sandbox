@@ -223,14 +223,14 @@ namespace Vital::Sandbox {
             }
             godot::HorizontalAlignment get_horizontal_alignment(int index = 1) {
                 if (is_horizontal_alignment(index)) {
-                    if (is_string(index)) return horizontal_alignment_map.find(get_string(index)) -> second;
+                    if (is_string(index)) return horizontal_alignment.find(get_string(index)) -> second;
                     return static_cast<godot::HorizontalAlignment>(get_int(index));
                 }
                 return godot::HORIZONTAL_ALIGNMENT_LEFT;
             }
             godot::VerticalAlignment get_vertical_alignment(int index = 1) {
                 if (is_vertical_alignment(index)) {
-                    if (is_string(index)) return vertical_alignment_map.find(get_string(index)) -> second;
+                    if (is_string(index)) return vertical_alignment.find(get_string(index)) -> second;
                     return static_cast<godot::VerticalAlignment>(get_int(index));
                 }
                 return godot::VERTICAL_ALIGNMENT_TOP;
