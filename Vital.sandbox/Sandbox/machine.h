@@ -134,10 +134,7 @@ namespace Vital::Sandbox {
                 return result;
             }
             bool is_horizontal_alignment(int index = 1) {
-                if (is_string(index)) {
-                    auto value = get_string(index);
-                    return value == "left" || value == "center" || value == "right" || value == "fill";
-                }
+                if (is_string(index)) return horizontal_alignment_map.count(get_string(index)) > 0;
                 else if (is_number(index)) {
                     int value = get_int(index);
                     return value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL;
@@ -145,10 +142,7 @@ namespace Vital::Sandbox {
                 return false;
             }
             bool is_vertical_alignment(int index = 1) {
-                if (is_string(index)) {
-                    auto value = get_string(index);
-                    return value == "top" || value == "center" || value == "bottom" || value == "fill";
-                }
+                if (is_string(index)) return vertical_alignment_map.count(get_string(index)) > 0;
                 else if (is_number(index)) {
                     int value = get_int(index);
                     return value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL;
