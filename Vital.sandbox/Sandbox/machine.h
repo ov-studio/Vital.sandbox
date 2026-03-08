@@ -223,29 +223,23 @@ namespace Vital::Sandbox {
             }
             godot::HorizontalAlignment get_horizontal_alignment(int index = 1) {
                 if (is_string(index)) {
-                    auto value = get_string(index);
-                    if (value == "left") return godot::HORIZONTAL_ALIGNMENT_LEFT;
-                    else if (value == "center") return godot::HORIZONTAL_ALIGNMENT_CENTER;
-                    else if (value == "right") return godot::HORIZONTAL_ALIGNMENT_RIGHT;
-                    else if (value == "fill") return godot::HORIZONTAL_ALIGNMENT_FILL;
+                    auto it = horizontal_alignment_map.find(get_string(index));
+                    if (it != horizontal_alignment_map.end()) return it -> second;
                 }
                 else if (is_number(index)) {
                     int value = get_int(index);
-                    if (value < godot::HORIZONTAL_ALIGNMENT_LEFT || value > godot::HORIZONTAL_ALIGNMENT_FILL) return static_cast<godot::HorizontalAlignment>(value);
+                    if (value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL) return static_cast<godot::HorizontalAlignment>(value);
                 }
                 return godot::HORIZONTAL_ALIGNMENT_LEFT;
             }
             godot::VerticalAlignment get_vertical_alignment(int index = 1) {
                 if (is_string(index)) {
-                    auto value = get_string(index);
-                    if (value == "top") return godot::VERTICAL_ALIGNMENT_TOP;
-                    else if (value == "center") return godot::VERTICAL_ALIGNMENT_CENTER;
-                    else if (value == "bottom") return godot::VERTICAL_ALIGNMENT_BOTTOM;
-                    else if (value == "fill") return godot::VERTICAL_ALIGNMENT_FILL;
+                    auto it = vertical_alignment_map.find(get_string(index));
+                    if (it != vertical_alignment_map.end()) return it -> second;
                 }
                 else if (is_number(index)) {
                     int value = get_int(index);
-                    if (value < godot::VERTICAL_ALIGNMENT_TOP || value > godot::VERTICAL_ALIGNMENT_FILL) return static_cast<godot::VerticalAlignment>(value);
+                    if (value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL) return static_cast<godot::VerticalAlignment>(value);
                 }
                 return godot::VERTICAL_ALIGNMENT_TOP;
             }
