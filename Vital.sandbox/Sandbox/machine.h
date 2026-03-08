@@ -41,6 +41,18 @@ namespace Vital::Sandbox {
                 "load",
                 "loadfile"
             };
+            inline static const std::unordered_map<std::string, godot::HorizontalAlignment> horizontal_alignment_map = {
+                {"left", godot::HORIZONTAL_ALIGNMENT_LEFT},
+                {"center", godot::HORIZONTAL_ALIGNMENT_CENTER},
+                {"right", godot::HORIZONTAL_ALIGNMENT_RIGHT},
+                {"fill", godot::HORIZONTAL_ALIGNMENT_FILL}
+            };
+            inline static const std::unordered_map<std::string, godot::VerticalAlignment> vertical_alignment_map = {
+                {"top", godot::VERTICAL_ALIGNMENT_TOP},
+                {"center", godot::VERTICAL_ALIGNMENT_CENTER},
+                {"bottom", godot::VERTICAL_ALIGNMENT_BOTTOM},
+                {"fill", godot::VERTICAL_ALIGNMENT_FILL}
+            };
         private:
             bool virtualized = false;
             vm_state* state = nullptr;
