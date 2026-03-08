@@ -27,16 +27,15 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2_array(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
-                float stroke = vm -> get_float(2);
+                float stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
                 godot::Color color = vm -> is_color(3) ? vm -> get_color(3) : {1, 1, 1, 1};
                 Vital::Engine::Canvas::get_singleton() -> draw_line(points, stroke, color);
                 vm -> push_bool(true);
                 return 1;
             });
 
-            // draw_polygon(points, color?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_polygon", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
@@ -50,7 +49,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // draw_rectangle(position, size, color?, stroke?, stroke_color?, rotation?, pivot?) //
             API::bind(vm, {base_name}, "draw_rectangle", [](auto vm) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
