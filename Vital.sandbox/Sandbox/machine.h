@@ -247,6 +247,24 @@ namespace Vital::Sandbox {
             void push_number(double value) { lua_pushnumber(state, value); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
+            void push_horizontal_alignment(godot::HorizontalAlignment value) {
+                for (auto& it : horizontal_alignment) {
+                    if (it.second == value) {
+                        push_string(it.first);
+                        return;
+                    }
+                }
+                push_string("left");
+            }
+            void push_vertical_alignment(godot::VerticalAlignment value) {
+                for (auto& it : vertical_alignment) {
+                    if (it.second == value) { 
+                        push_string(it.first);
+                        return;
+                    }
+                }
+                push_string("top");
+            }
             void push_color(const godot::Color& value) {
                 create_table();
                 push_number(value.r); set_table_field(1, -2);
