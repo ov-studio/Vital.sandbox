@@ -129,7 +129,7 @@ namespace Vital::Engine {
             // APIs //
             void draw_line(
                 godot::PackedVector2Array points,
-                float stroke,
+                float stroke = 0.0f,
                 const godot::Color& color = {1, 1, 1, 1}
             );
     
