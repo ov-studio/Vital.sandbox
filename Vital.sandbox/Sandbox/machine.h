@@ -106,8 +106,7 @@ namespace Vital::Sandbox {
             bool is_vector2(int index = 1) { return is_table(index) && get_length(index) >= 2; }
             bool is_vector2_array(int index = 1) {
                 if (!is_table(index)) return false;
-                int len = get_length(index);
-                if (len == 0) return false;
+                if (get_length(index) == 0) return false;
                 get_table_field(1, index);
                 bool result = is_vector2(-1);
                 pop();
@@ -116,8 +115,7 @@ namespace Vital::Sandbox {
             bool is_vector3(int index = 1) { return is_table(index) && get_length(index) >= 3; }
             bool is_vector3_array(int index = 1) {
                 if (!is_table(index)) return false;
-                int len = get_length(index);
-                if (len == 0) return false;
+                if (get_length(index) == 0) return false;
                 get_table_field(1, index);
                 bool result = is_vector3(-1);
                 pop();
@@ -194,8 +192,7 @@ namespace Vital::Sandbox {
             }
             godot::PackedVector2Array get_vector2_array(int index = 1) {
                 godot::PackedVector2Array value;
-                int len = get_length(index);
-                for (int i = 1; i <= len; ++i) {
+                for (int i = 1; i <= get_length(index); ++i) {
                     get_table_field(i, index);
                     value.push_back(get_vector2(-1));
                     pop();
@@ -211,8 +208,7 @@ namespace Vital::Sandbox {
             }
             godot::PackedVector3Array get_vector3_array(int index = 1) {
                 godot::PackedVector3Array value;
-                int len = get_length(index);
-                for (int i = 1; i <= len; ++i) {
+                for (int i = 1; i <= get_length(index); ++i) {
                     get_table_field(i, index);
                     value.push_back(get_vector3(-1));
                     pop();
