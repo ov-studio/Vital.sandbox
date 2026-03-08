@@ -229,7 +229,7 @@ namespace Vital::Sandbox {
                 }
                 else if (is_number(index)) {
                     int value = get_int(index);
-                    return static_cast<godot::HorizontalAlignment>(value);
+                    if (value < godot::HORIZONTAL_ALIGNMENT_LEFT || value > godot::HORIZONTAL_ALIGNMENT_FILL) return static_cast<godot::HorizontalAlignment>(value);
                 }
                 return godot::HORIZONTAL_ALIGNMENT_LEFT;
             }
