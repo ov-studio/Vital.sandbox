@@ -28,7 +28,7 @@ namespace Vital::Engine {
         public:
             // Instantiators //
             Font() = default;
-            ~Font() override;
+            ~Font() override = default;
 
 
             // Managers //
