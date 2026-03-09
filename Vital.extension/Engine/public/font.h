@@ -27,7 +27,7 @@ namespace Vital::Engine {
             godot::Ref<godot::FontFile> font;
         public:
             // Instantiators //
-            Font() = default;
+            Font(const std::string& path);
             ~Font() override = default;
 
 
