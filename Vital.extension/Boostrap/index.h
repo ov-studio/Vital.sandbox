@@ -14,10 +14,12 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
-#include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/canvas.h>
-#include <Vital.extension/Engine/public/rendertarget.h>
+#include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/webview.h>
+#include <Vital.extension/Engine/public/font.h>
+#include <Vital.extension/Engine/public/texture.h>
+#include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.sandbox/Sandbox/api.h>
