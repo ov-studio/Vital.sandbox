@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/System/discord.h>
 
@@ -26,7 +27,6 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "discord";
 
         static void bind(Machine* vm) {
-            #if defined(Vital_SDK_Client)
             API::bind(vm, {base_name}, "is_connected", [](auto vm) -> int {
                 vm -> push_bool(Vital::System::Discord::get_singleton() -> is_connected());
                 return 1;
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
                 else vm -> push_string(Vital::System::Discord::get_singleton() -> get_username());
                 return 1;
             });
-            #endif
         }
     };
 }
+#endif
