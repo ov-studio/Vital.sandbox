@@ -1,62 +1,49 @@
-
-import os, sys, argparse, subprocess, glob, fnmatch, urllib.request, tarfile, zipfile, shutil
+import os, sys, time, socket, argparse, subprocess, glob, fnmatch, urllib.request, tarfile, zipfile, shutil
 from platform import machine, system
 from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
 
 def Fetch_OS():
-    type = system()
     archi = machine()
     if archi == "AMD64":
         archi = "x86_64"
     return {
-        "type" : type,
-        "archi" : archi,
-        "nproc" : str(cpu_count())
+        "type":  system(),
+        "archi": archi,
+        "nproc": str(cpu_count())
     }
+
+def Fetch_Compiler():
+    compiler = ["default"]
+    if Fetch_OS()["type"] == "Windows":
+        compiler.append("msvc")
+    return compiler
 
 def Throw_Error(msg):
     print(msg)
     sys.exit(2)
 
-def Fetch_Compiler():
-    os_info = Fetch_OS()
-    compiler = ["default"]
-    if os_info["type"] == "Windows":
-        compiler.append("msvc")
-    return compiler
-
-def RGlob(self, root_path, pattern, ondisk=True, source=False, strings=False, exclude=None):
+def _RGlob(self, root_path, pattern, ondisk=True, source=False, exclude=None):
     result_nodes = []
     paths = [root_path]
     while paths:
         path = paths.pop()
-        all_nodes = self.Glob(f"{os.path.abspath(path)}/*", ondisk=ondisk, source=source, exclude=exclude)
-        for entry in all_nodes:
+        for entry in self.Glob(f"{os.path.abspath(path)}/*", ondisk=ondisk, source=source, exclude=exclude):
             entry_path = os.path.abspath(getattr(entry, "path", None) or str(entry))
-            is_dir = False
-            if hasattr(entry, "isdir"):
-                is_dir = entry.isdir()
-            elif hasattr(entry, "srcnode") and callable(entry.srcnode):
-                src_node = entry.srcnode()
-                if src_node:
-                    is_dir = src_node.isdir()
+            is_dir = (entry.isdir() if hasattr(entry, "isdir") else
+                      entry.srcnode().isdir() if hasattr(entry, "srcnode") and entry.srcnode() else False)
             if is_dir:
                 paths.append(entry_path)
             result_nodes.append(entry_path)
-    filtered_nodes = [node for node in result_nodes if fnmatch.fnmatch(os.path.basename(node), pattern)]
-    return sorted(filtered_nodes)
-BaseEnvironment.RGlob = RGlob
+    return sorted(node for node in result_nodes if fnmatch.fnmatch(os.path.basename(node), pattern))
 
-def RCopy(self, destination, src):
-    dst = os.path.join(destination, os.path.basename(src))
-    return self.Command(dst, src, Action(Copy("$TARGET", "$SOURCE"), None))
-BaseEnvironment.RCopy = RCopy
+def _RCopy(self, destination, src):
+    return self.Command(os.path.join(destination, os.path.basename(src)), src, Action(Copy("$TARGET", "$SOURCE"), None))
 
-def RGlobCopy(self, destination, pattern):
-    nodes = []
-    for f in glob.glob(pattern):
-        nodes.append(self.RCopy(destination, f))
-    return nodes
-BaseEnvironment.RGlobCopy = RGlobCopy
+def _RGlobCopy(self, destination, pattern):
+    return [self.RCopy(destination, f) for f in glob.glob(pattern)]
+
+BaseEnvironment.RGlob = _RGlob
+BaseEnvironment.RCopy = _RCopy
+BaseEnvironment.RGlobCopy = _RGlobCopy

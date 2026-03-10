@@ -4,46 +4,50 @@ from Bootstrap.mega import *
 
 DISCORD_SDK_URL = "https://mega.nz/file/964FxYbB#JH3sNtOncuXcUKjn7loOJQZgAFmZLsJOpWpMDTGWZxo"
 
-def Init_Discord(self):
-    cwd = os.path.abspath(os.getcwd())
-    root = os.path.join(cwd, "Vendor", "discord-sdk")
-    return { "root": root }
-BaseEnvironment.Init_Discord = Init_Discord
+class Discord:
+    def __init__(self, env):
+        self.env = env
 
-def Install_Discord(self):
-    discord = self.Init_Discord()
-    if os.path.isdir(discord["root"]):
-        return
-    zip_path = discord["root"] + ".zip"
-    print("Downloading Discord SDK from Mega...")
-    self.Mega_Get(DISCORD_SDK_URL, zip_path)
-    Extract_Zip(zip_path, discord["root"])
-    os.remove(zip_path)
-    print("Discord SDK ready.")
-BaseEnvironment.Install_Discord = Install_Discord
+    def init(self):
+        cwd = os.path.abspath(os.getcwd())
+        return { "root": os.path.join(cwd, "Vendor", "discord-sdk") }
 
-def Build_Discord(self):
-    self.Install_Discord()
-    if self.Args["platform_type"] == "Client":
+    def install(self):
+        discord = self.init()
+        if os.path.isdir(discord["root"]):
+            return
+        zip_path = discord["root"] + ".zip"
+        print("Downloading Discord SDK from Mega...")
+        self.env.Mega.get(DISCORD_SDK_URL, zip_path)
+        Extract_Zip(zip_path, discord["root"])
+        os.remove(zip_path)
+        print("Discord SDK ready.")
+
+    def build(self):
+        self.install()
+        if self.env.Args["platform_type"] != "Client":
+            return
         os_info = Fetch_OS()
         cwd = os.path.abspath(os.getcwd())
-        self.Append(LIBPATH=[os.path.join(cwd, f"Vendor/discord-sdk/bin/{self.Args['build_type'].lower()}")])
-        self.Append(LIBPATH=[os.path.join(cwd, f"Vendor/discord-sdk/lib/{self.Args['build_type'].lower()}")])
+        build_type = self.env.Args["build_type"].lower()
+        self.env.Append(LIBPATH=[os.path.join(cwd, f"Vendor/discord-sdk/bin/{build_type}")])
+        self.env.Append(LIBPATH=[os.path.join(cwd, f"Vendor/discord-sdk/lib/{build_type}")])
         if os_info["type"] == "Windows":
-            self.Append(LIBS=["discord_partner_sdk"])
-BaseEnvironment.Build_Discord = Build_Discord
+            self.env.Append(LIBS=["discord_partner_sdk"])
 
-def Stage_Discord(self, build, build_dir):
-    if self.Args["platform_type"] == "Client":
+    def stage(self, build, build_dir):
+        if self.env.Args["platform_type"] != "Client":
+            return
         os_info = Fetch_OS()
         cwd = os.path.abspath(os.getcwd())
-        discord_bin = os.path.join(cwd, f"../Vital.sandbox/Vendor/discord-sdk/bin/{self.Args['build_type'].lower()}")
+        discord_bin = os.path.join(cwd, f"../Vital.sandbox/Vendor/discord-sdk/bin/{self.env.Args['build_type'].lower()}")
         copy_nodes = []
         if os_info["type"] == "Windows":
-            copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dll"))
+            copy_nodes += self.env.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dll"))
         elif os_info["type"] == "Darwin":
-            copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dylib"))
+            copy_nodes += self.env.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dylib"))
         elif os_info["type"] == "Linux":
-            copy_nodes += self.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.so"))
-        self.Depends(build, copy_nodes)
-BaseEnvironment.Stage_Discord = Stage_Discord
+            copy_nodes += self.env.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.so"))
+        self.env.Depends(build, copy_nodes)
+
+BaseEnvironment.Discord = property(lambda self: Discord(self))

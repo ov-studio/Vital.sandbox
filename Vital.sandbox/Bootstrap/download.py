@@ -14,43 +14,16 @@ def Download(url, destination):
             os.remove(destination)
         Throw_Error(f"Download failed: {e}")
 
-def Extract_Tar(path, destination):
+def _Extract(path, destination, open_fn):
     print("Unpacking:", path)
     temp_dir = destination + "_temp"
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
     os.makedirs(temp_dir, exist_ok=True)
-    with tarfile.open(path) as tar:
-        tar.extractall(temp_dir)
+    with open_fn(path) as archive:
+        archive.extractall(temp_dir)
     contents = os.listdir(temp_dir)
-    if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])):
-        root_dir = os.path.join(temp_dir, contents[0])
-    else:
-        root_dir = temp_dir
-    if os.path.exists(destination):
-        shutil.rmtree(destination)
-    os.makedirs(destination, exist_ok=True)
-    for item in os.listdir(root_dir):
-        src = os.path.join(root_dir, item)
-        dst = os.path.join(destination, item)
-        print("Moving:", dst)
-        shutil.move(src, dst)
-    shutil.rmtree(temp_dir)
-    print("Extraction complete.")
-
-def Extract_Zip(path, destination):
-    print("Unpacking:", path)
-    temp_dir = destination + "_temp"
-    if os.path.exists(temp_dir):
-        shutil.rmtree(temp_dir)
-    os.makedirs(temp_dir, exist_ok=True)
-    with zipfile.ZipFile(path, "r") as zip:
-        zip.extractall(temp_dir)
-    contents = os.listdir(temp_dir)
-    if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])):
-        root_dir = os.path.join(temp_dir, contents[0])
-    else:
-        root_dir = temp_dir
+    root_dir = os.path.join(temp_dir, contents[0]) if len(contents) == 1 and os.path.isdir(os.path.join(temp_dir, contents[0])) else temp_dir
     if os.path.exists(destination):
         shutil.rmtree(destination)
     os.makedirs(destination, exist_ok=True)
@@ -58,3 +31,9 @@ def Extract_Zip(path, destination):
         shutil.move(os.path.join(root_dir, item), os.path.join(destination, item))
     shutil.rmtree(temp_dir)
     print("Extraction complete.")
+
+def Extract_Tar(path, destination):
+    _Extract(path, destination, tarfile.open)
+
+def Extract_Zip(path, destination):
+    _Extract(path, destination, lambda p: zipfile.ZipFile(p, "r"))

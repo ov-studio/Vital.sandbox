@@ -3,20 +3,24 @@ from Bootstrap.vendor import *
 from Bootstrap.conan import *
 from Bootstrap.vcpkg import *
 
-def Build_Module(self):
-    self.Build_Vendor()
-    self.Build_Conan()
-    self.Build_VCPKG()
-    self.Build_Discord()
-BaseEnvironment.Build_Module = Build_Module
+class Module:
+    def __init__(self, env):
+        self.env = env
 
-def Stage_Module(self, build):
-    cwd = os.path.abspath(os.getcwd())
-    vital_dir = os.path.normpath(os.path.join(cwd, "..", f"Vital.{self.Args["platform_type"].lower()}", self.name.lower(), self["platform"]))
-    build_dir = os.path.dirname(str(build[0].abspath))
-    self.Stage_VCPKG(build, build_dir)
-    self.Stage_Discord(build, build_dir)
-    vital_stage = self.Alias("stage", self.Install(vital_dir, self.Glob(os.path.join(build_dir, "*"))))
-    self.Depends(vital_stage, build)
-    self.Default(vital_stage)
-BaseEnvironment.Stage_Module = Stage_Module
+    def build(self):
+        self.env.Vendor.build()
+        self.env.Conan.build()
+        self.env.VCPKG.build()
+        self.env.Discord.build()
+
+    def stage(self, build):
+        cwd = os.path.abspath(os.getcwd())
+        vital_dir = os.path.normpath(os.path.join(cwd, "..", f"Vital.{self.env.Args['platform_type'].lower()}", self.env.name.lower(), self.env['platform']))
+        build_dir = os.path.dirname(str(build[0].abspath))
+        self.env.VCPKG.stage(build, build_dir)
+        self.env.Discord.stage(build, build_dir)
+        vital_stage = self.env.Alias("stage", self.env.Install(vital_dir, self.env.Glob(os.path.join(build_dir, "*"))))
+        self.env.Depends(vital_stage, build)
+        self.env.Default(vital_stage)
+
+BaseEnvironment.Module = property(lambda self: Module(self))
