@@ -46,9 +46,27 @@ namespace Vital::Engine {
     }
 
 
+    // Setters //
+    void Font::set_antialiasing(godot::TextServer::FontAntialiasing antialiasing) {
+        font -> set_antialiasing(antialiasing);
+    }
+
+    void Font::set_oversampling(float oversampling) {
+        font -> set_oversampling(oversampling);
+    }
+
+
     // Getters //
     godot::Ref<godot::FontFile> Font::get_font() {
         return font;
+    }
+
+    godot::TextServer::FontAntialiasing Font::get_antialiasing() {
+        return font -> get_antialiasing();
+    }
+
+    float Font::get_oversampling() {
+        return font -> get_oversampling();
     }
 }
 #endif
