@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.extension/Engine/public/canvas.h>
 
@@ -137,3 +138,4 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#endif
