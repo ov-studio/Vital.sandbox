@@ -108,9 +108,9 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "set_blendshape_value", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
-                auto blend_shape = vm -> get_string(3);
+                auto blendshape = vm -> get_string(3);
                 auto value = vm -> get_float(4);
-                self -> set_blendshape_value(component, blend_shape, value);
+                self -> set_blendshape_value(component, blendshape, value);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -173,8 +173,8 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "get_blendshape_value", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
-                auto blend_shape = vm -> get_string(3);
-                vm -> push_number(self -> get_blendshape_value(component, blend_shape));
+                auto blendshape = vm -> get_string(3);
+                vm -> push_number(self -> get_blendshape_value(component, blendshape));
                 return 1;
             });
         
