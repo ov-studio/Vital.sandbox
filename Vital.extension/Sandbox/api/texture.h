@@ -91,4 +91,9 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#else
+namespace Vital::Sandbox::API {
+    struct Texture : vm_module {};
+    struct SVG : vm_module {};
+}
 #endif

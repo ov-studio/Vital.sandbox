@@ -138,4 +138,8 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#else
+namespace Vital::Sandbox::API {
+    struct Canvas : vm_module {};
+}
 #endif

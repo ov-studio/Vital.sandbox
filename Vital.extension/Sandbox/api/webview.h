@@ -234,4 +234,8 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#else
+namespace Vital::Sandbox::API {
+    struct Webview : vm_module {};
+}
 #endif

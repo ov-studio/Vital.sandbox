@@ -100,4 +100,8 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#else
+namespace Vital::Sandbox::API {
+    struct Discord : vm_module {};
+}
 #endif
