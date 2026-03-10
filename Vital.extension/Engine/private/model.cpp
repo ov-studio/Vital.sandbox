@@ -224,7 +224,7 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        mesh -> set_blendshape_value(index, value);
+        mesh -> set_blend_shape_value(index, value);
         return true;
     }
 
@@ -313,7 +313,7 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        return mesh -> get_blendshape_value(index);
+        return mesh -> get_blend_shape_value(index);
     }
 
 
