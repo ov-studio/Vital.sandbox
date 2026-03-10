@@ -70,8 +70,8 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "is_component_visible", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto name = vm -> get_string(2);
-                vm -> push_bool(self -> is_component_visible(name));
+                auto component = vm -> get_string(2);
+                vm -> push_bool(self -> is_component_visible(component));
                 return 1;
             });
 
@@ -98,9 +98,9 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "set_component_visible", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_bool(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto name = vm -> get_string(2);
+                auto component = vm -> get_string(2);
                 auto state = vm -> get_bool(3);
-                self -> set_component_visible(name, state);
+                self -> set_component_visible(component, state);
                 vm -> push_bool(true);
                 return 1;
             });
