@@ -69,7 +69,7 @@ namespace Vital::Engine {
             bool set_component_visible(const std::string& component, bool state);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             void set_animation_speed(float speed);
-            bool set_blend_shape_value(const std::string& component, const std::string& blend_shape, float value);
+            bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
 
 
             // Getters //
@@ -81,10 +81,10 @@ namespace Vital::Engine {
             std::vector<std::string> get_components();
             std::vector<std::string> get_materials(const std::string& component);
             std::vector<std::string> get_animations();
-            std::vector<std::string> get_blend_shapes(const std::string& component);
+            std::vector<std::string> get_blendshapes(const std::string& component);
             std::string get_current_animation();
             float get_animation_speed();
-            float get_blend_shape_value(const std::string& component, const std::string& blend_shape);
+            float get_blendshape_value(const std::string& component, const std::string& blend_shape);
 
 
             // APIs //

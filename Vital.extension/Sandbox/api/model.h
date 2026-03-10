@@ -113,12 +113,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_blend_shape_value", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "set_blendshape_value", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
                 auto blend_shape = vm -> get_string(3);
                 auto value = vm -> get_float(4);
-                self -> set_blend_shape_value(component, blend_shape, value);
+                self -> set_blendshape_value(component, blend_shape, value);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -158,10 +158,10 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_blend_shapes", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "get_blendshapes", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
-                auto list = self -> get_blend_shapes(component);
+                auto list = self -> get_blendshapes(component);
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
                     vm -> push_string(list[i]);
@@ -180,11 +180,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_blend_shape_value", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "get_blendshape_value", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
                 auto blend_shape = vm -> get_string(3);
-                vm -> push_number(self -> get_blend_shape_value(component, blend_shape));
+                vm -> push_number(self -> get_blendshape_value(component, blend_shape));
                 return 1;
             });
 

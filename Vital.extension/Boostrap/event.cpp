@@ -64,13 +64,13 @@ void initialize_vital_events() {
             */
 
             /*
-            auto blend_shapes = cube->get_blend_shapes("Hair_bang_R/Skeleton3D/Torso_vest_");
-            godot::UtilityFunctions::print("Blend shapes for Torso_vest_: ", (int)blend_shapes.size());
-            for (const auto& shape : blend_shapes) {
+            auto blendshapes = cube->get_blendshapes("Hair_bang_R/Skeleton3D/Torso_vest_");
+            godot::UtilityFunctions::print("Blend shapes for Torso_vest_: ", (int)blendshapes.size());
+            for (const auto& shape : blendshapes) {
                 godot::UtilityFunctions::print("  - ", Vital::to_godot_string(shape));
             }
             
-            //cube->set_blend_shape_value("Hair_bang_R/Skeleton3D/Torso_vest_", "Smile", 1.0f);
+            //cube->set_blendshape_value("Hair_bang_R/Skeleton3D/Torso_vest_", "Smile", 1.0f);
             */
 
             // Play animation on loop
