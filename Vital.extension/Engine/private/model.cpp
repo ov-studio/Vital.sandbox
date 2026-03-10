@@ -54,16 +54,15 @@ namespace Vital::Engine {
         return nullptr;
     }
 
-    void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
-        if (!node) return;
-        for (int i = 0; i < node -> get_child_count(); i++) {
-            godot::Node* child = node -> get_child(i);
-            std::string child_name = to_std_string(child -> get_name());
-            bool is_generated = !child_name.empty() && child_name[0] == '@';
-            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : current_path + "/" + child_name;
-            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
-            collect_mesh_nodes(child, out, child_path);
+    int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material_name) {
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        if (!array_mesh) return -1;
+        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
+            if (to_std_string(array_mesh -> surface_get_name(i)) == material_name) {
+                return i;
+            }
         }
+        return -1;
     }
 
     godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
@@ -82,6 +81,18 @@ namespace Vital::Engine {
             }
         }
         return animation_player;
+    }
+
+    void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
+        if (!node) return;
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            godot::Node* child = node -> get_child(i);
+            std::string child_name = to_std_string(child -> get_name());
+            bool is_generated = !child_name.empty() && child_name[0] == '@';
+            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : current_path + "/" + child_name;
+            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
+            collect_mesh_nodes(child, out, child_path);
+        }
     }
 
 
@@ -153,6 +164,14 @@ namespace Vital::Engine {
         return mesh -> is_visible();
     }
 
+    bool Model::is_material_visible(const std::string& component, const std::string& material_name) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        int surface_index = find_material_index(mesh, material_name);
+        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material_name, component));
+        return !mesh->get_surface_override_material(surface_index).is_valid();
+    }
+
     bool Model::is_animation_playing() {
         if (!animation_player) return false;
         return animation_player -> is_playing();
@@ -176,6 +195,22 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, name);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
         mesh -> set_visible(state);
+        return true;
+    }
+
+    bool Model::set_material_visible(const std::string& component, const std::string& material_name, bool state) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        int surface_index = find_material_index(mesh, material_name);
+        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material_name, component));
+        if (!state) {
+            godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
+            invisible->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+            invisible->set_albedo(godot::Color(0, 0, 0, 0));
+            mesh->set_surface_override_material(surface_index, invisible);
+        } else {
+            mesh->set_surface_override_material(surface_index, godot::Ref<godot::Material>());
+        }
         return true;
     }
 
@@ -228,6 +263,18 @@ namespace Vital::Engine {
         return components;
     }
 
+    std::vector<std::string> Model::get_materials(const std::string& component) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        std::vector<std::string> surfaces;
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        if (!array_mesh) return surfaces;
+        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
+            surfaces.push_back(to_std_string(array_mesh->surface_get_name(i)));
+        }
+        return surfaces;
+    }
+
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (animation_player) {
@@ -243,7 +290,6 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> blend_shapes;
-        // ArrayMesh holds the actual blend shape names; cast from the Mesh ref
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return blend_shapes;
         for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
