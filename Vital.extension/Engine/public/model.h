@@ -68,8 +68,8 @@ namespace Vital::Engine {
             void set_rotation(godot::Vector3 rotation);
             bool set_component_visible(const std::string& component, bool state);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
-            void set_animation_speed(float speed);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
+            void set_animation_speed(float speed);
 
 
             // Getters //
@@ -80,11 +80,11 @@ namespace Vital::Engine {
             godot::Vector3 get_rotation();
             std::vector<std::string> get_components();
             std::vector<std::string> get_materials(const std::string& component);
-            std::vector<std::string> get_animations();
             std::vector<std::string> get_blendshapes(const std::string& component);
+            std::vector<std::string> get_animations();
+            float get_blendshape_value(const std::string& component, const std::string& blend_shape);
             std::string get_current_animation();
             float get_animation_speed();
-            float get_blendshape_value(const std::string& component, const std::string& blend_shape);
 
 
             // APIs //
