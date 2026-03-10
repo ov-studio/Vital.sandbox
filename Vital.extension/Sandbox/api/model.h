@@ -75,6 +75,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<base_class>(vm, base_name, "is_material_visible", [](auto vm, auto self) -> int {
+                if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto material = vm -> get_string(3);
+                vm -> push_bool(self -> is_material_visible(component, material));
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "is_animation_playing", [](auto vm, auto self) -> int {
                 vm -> push_bool(self -> is_animation_playing());
                 return 1;
@@ -102,6 +110,15 @@ namespace Vital::Sandbox::API {
                 auto state = vm -> get_bool(3);
                 self -> set_component_visible(component, state);
                 vm -> push_bool(true);
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "set_material_visible", [](auto vm, auto self) -> int {
+                if ((vm -> get_arg_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_bool(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto material = vm -> get_string(3);
+                auto state = vm -> get_bool(4);
+                vm -> push_bool(self -> set_material_visible(component, material, state));
                 return 1;
             });
 
@@ -140,6 +157,18 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "get_components", [](auto vm, auto self) -> int {
                 auto list = self -> get_components();
+                vm -> create_table();
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_string(list[i]);
+                    vm -> set_table_field(i + 1, -2);
+                }
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "get_materials", [](auto vm, auto self) -> int {
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto list = self -> get_materials(component);
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
                     vm -> push_string(list[i]);
