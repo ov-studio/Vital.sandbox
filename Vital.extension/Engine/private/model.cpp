@@ -169,7 +169,7 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         int surface_index = find_material_index(mesh, material);
         if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        return !mesh->get_surface_override_material(surface_index).is_valid();
+        return !mesh -> get_surface_override_material(surface_index).is_valid();
     }
 
     bool Model::is_animation_playing() {
@@ -205,12 +205,11 @@ namespace Vital::Engine {
         if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
         if (!state) {
             godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
-            invisible->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
-            invisible->set_albedo(godot::Color(0, 0, 0, 0));
-            mesh->set_surface_override_material(surface_index, invisible);
-        } else {
-            mesh->set_surface_override_material(surface_index, godot::Ref<godot::Material>());
+            invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+            invisible -> set_albedo(godot::Color(0, 0, 0, 0));
+            mesh -> set_surface_override_material(surface_index, invisible);
         }
+        else mesh -> set_surface_override_material(surface_index, godot::Ref<godot::Material>());
         return true;
     }
 
@@ -267,10 +266,10 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> surfaces;
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return surfaces;
-        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
-            surfaces.push_back(to_std_string(array_mesh->surface_get_name(i)));
+        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
+            surfaces.push_back(to_std_string(array_mesh -> surface_get_name(i)));
         }
         return surfaces;
     }
