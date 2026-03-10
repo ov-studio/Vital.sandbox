@@ -54,11 +54,11 @@ namespace Vital::Engine {
         return nullptr;
     }
 
-    int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material_name) {
+    int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return -1;
         for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
-            if (to_std_string(array_mesh -> surface_get_name(i)) == material_name) {
+            if (to_std_string(array_mesh -> surface_get_name(i)) == material) {
                 return i;
             }
         }
@@ -164,11 +164,11 @@ namespace Vital::Engine {
         return mesh -> is_visible();
     }
 
-    bool Model::is_material_visible(const std::string& component, const std::string& material_name) {
+    bool Model::is_material_visible(const std::string& component, const std::string& material) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int surface_index = find_material_index(mesh, material_name);
-        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material_name, component));
+        int surface_index = find_material_index(mesh, material);
+        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
         return !mesh->get_surface_override_material(surface_index).is_valid();
     }
 
@@ -198,11 +198,11 @@ namespace Vital::Engine {
         return true;
     }
 
-    bool Model::set_material_visible(const std::string& component, const std::string& material_name, bool state) {
+    bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int surface_index = find_material_index(mesh, material_name);
-        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material_name, component));
+        int surface_index = find_material_index(mesh, material);
+        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
         if (!state) {
             godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
             invisible->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
