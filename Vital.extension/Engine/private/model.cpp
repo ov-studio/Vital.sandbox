@@ -167,9 +167,9 @@ namespace Vital::Engine {
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int surface_index = find_material_index(mesh, material);
-        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        return !mesh -> get_surface_override_material(surface_index).is_valid();
+        int material_index = find_material_index(mesh, material);
+        if (material_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        return !mesh -> get_surface_override_material(material_index).is_valid();
     }
 
     bool Model::is_animation_playing() {
@@ -201,15 +201,15 @@ namespace Vital::Engine {
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int surface_index = find_material_index(mesh, material);
-        if (surface_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        int material_index = find_material_index(mesh, material);
+        if (material_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
         if (!state) {
             godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
             invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
             invisible -> set_albedo(godot::Color(0, 0, 0, 0));
-            mesh -> set_surface_override_material(surface_index, invisible);
+            mesh -> set_surface_override_material(material_index, invisible);
         }
-        else mesh -> set_surface_override_material(surface_index, godot::Ref<godot::Material>());
+        else mesh -> set_surface_override_material(material_index, godot::Ref<godot::Material>());
         return true;
     }
 
