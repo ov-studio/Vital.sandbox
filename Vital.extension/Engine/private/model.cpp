@@ -37,16 +37,17 @@ namespace Vital::Engine {
             godot::Node* child = node -> get_child(i);
             std::string child_name = to_std_string(child -> get_name());
             if (!child_name.empty() && child_name[0] == '@') {
-                auto* result = find_mesh_node(child, path);
+                auto result = find_mesh_node(child, path);
                 if (result) return result;
                 continue;
             }
             if (child_name != segment) continue;
             if (remainder.empty()) {
-                auto* mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
+                auto mesh = godot::Object::cast_to<godot::MeshInstance3D>(child);
                 if (mesh) return mesh;
-            } else {
-                auto* result = find_mesh_node(child, remainder);
+            }
+            else {
+                auto result = find_mesh_node(child, remainder);
                 if (result) return result;
             }
         }
