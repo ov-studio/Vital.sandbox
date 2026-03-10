@@ -16,6 +16,7 @@
 #pragma once
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/font.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Sandbox/index.h>
@@ -328,7 +329,6 @@ namespace Vital::Engine {
         godot::Vector2 pivot,
         const godot::Color& color
     ) {
-        if (!rt) return;
         draw_image(position, size, rt -> get_texture(), rotation, pivot, color);
     }
 
@@ -364,6 +364,24 @@ namespace Vital::Engine {
         payload.pivot = pivot;
         payload.color = color;
         push({Type::IMAGE, payload});
+    }
+
+    void Canvas::draw_text(
+        const std::string& text,
+        godot::Vector2 start_at,
+        godot::Vector2 end_at,
+        Font* font,
+        int font_size,
+        const godot::Color& color,
+        std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment,
+        bool clip,
+        bool wordwrap,
+        int stroke,
+        const godot::Color& stroke_color,
+        float rotation,
+        godot::Vector2 pivot
+    ) {
+        draw_text(text, start_at, end_at, font -> get_font(), font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
     }
 
     void Canvas::draw_text(

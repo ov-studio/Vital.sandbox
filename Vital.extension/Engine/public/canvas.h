@@ -22,6 +22,7 @@
 ////////////////////////////
 
 namespace Vital::Engine {
+    class Font;
     class Texture;
     class Rendertarget;
     class Canvas : public godot::Node2D {
@@ -198,6 +199,22 @@ namespace Vital::Engine {
                 const godot::Color& color = {1, 1, 1, 1}
             );
             
+            void draw_text(
+                const std::string& text,
+                godot::Vector2 start_at,
+                godot::Vector2 end_at,
+                Font* font,
+                int font_size,
+                const godot::Color& color = {1, 1, 1, 1},
+                std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_CENTER},
+                bool clip = false,
+                bool wordwrap = false,
+                int stroke = 0,
+                const godot::Color& stroke_color = {1, 1, 1, 1},
+                float rotation = 0.0f,
+                godot::Vector2 pivot = {0.0f, 0.0f}
+            );
+
             void draw_text(
                 const std::string& text,
                 godot::Vector2 start_at,
