@@ -40,16 +40,12 @@ namespace Vital::Engine {
             // Setters //
             void set_antialiasing(bool enabled);
             void set_oversampling(float oversampling);
-            void set_font_style(godot::BitField<godot::TextServer::FontStyle> style);
-            void set_font_weight(int32_t weight);
 
 
             // Getters //
             godot::Ref<godot::FontFile> get_font();
             bool get_antialiasing();
             float get_oversampling();
-            godot::BitField<godot::TextServer::FontStyle> get_font_style();
-            int32_t get_font_weight();
     };
 }
 #endif

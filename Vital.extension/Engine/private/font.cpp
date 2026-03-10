@@ -56,15 +56,6 @@ namespace Vital::Engine {
     }
 
 
-    void Font::set_font_style(godot::BitField<godot::TextServer::FontStyle> style) {
-        font -> set_font_style(style);
-    }
-
-    void Font::set_font_weight(int32_t weight) {
-        font -> set_font_weight(weight);
-    }
-
-
     // Getters //
     godot::Ref<godot::FontFile> Font::get_font() {
         return font;
@@ -76,14 +67,6 @@ namespace Vital::Engine {
 
     float Font::get_oversampling() {
         return font -> get_oversampling();
-    }
-
-    godot::BitField<godot::TextServer::FontStyle> Font::get_font_style() {
-        return font -> get_font_style();
-    }
-
-    int32_t Font::get_font_weight() {
-        return font -> get_font_weight();
     }
 }
 #endif
