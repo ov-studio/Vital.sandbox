@@ -17,6 +17,7 @@
 #include <Vital.extension/Sandbox/api/canvas.h>
 #include <Vital.extension/Sandbox/api/model.h>
 #include <Vital.extension/Sandbox/api/webview.h>
+#include <Vital.extension/Sandbox/api/font.h>
 #include <Vital.extension/Sandbox/api/texture.h>
 #include <Vital.extension/Sandbox/api/rendertarget.h>
 #include <Vital.extension/Sandbox/api/gfx/ssr.h>
@@ -40,6 +41,7 @@ namespace Vital::Engine {
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Canvas>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Webview>(),
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Font>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Texture>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::SVG>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Rendertarget>(),
