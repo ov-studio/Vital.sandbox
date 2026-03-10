@@ -90,15 +90,15 @@ namespace Vital::Sandbox::API {
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, path, rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "texture", 3)) {
-                    auto* texture = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
+                    auto texture = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, texture, rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, "rendertarget", 3)) {
-                    auto* rt = static_cast<Vital::Engine::Rendertarget*>(vm -> get_userdata(3));
+                    auto rt = static_cast<Vital::Engine::Rendertarget*>(vm -> get_userdata(3));
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, rt, rotation, pivot, color);
                 }
                 else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "svg", 3)) {
-                    auto* svg = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
+                    auto svg = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
                     Vital::Engine::Canvas::get_singleton() -> draw_image(position, size, svg, rotation, pivot, color);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -107,13 +107,11 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm -> is_userdata(4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm_module::is_userdata<Vital::Engine::Font>(vm, "font", 4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);
-                auto* font_raw = static_cast<godot::Font*>(vm -> get_userdata(4));
-                if (!font_raw) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                godot::Ref<godot::Font> font(font_raw);
+                auto font = static_cast<Vital::Engine::Font*>(vm -> get_userdata(4));
                 auto font_size = vm -> get_int(5);
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};

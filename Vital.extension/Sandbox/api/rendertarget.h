@@ -35,7 +35,7 @@ namespace Vital::Sandbox::API {
                 auto width = vm -> get_int(1);
                 auto height = vm -> get_int(2);
                 auto transparent = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                auto* object = Vital::Engine::Rendertarget::create(width, height, transparent);
+                auto object = Vital::Engine::Rendertarget::create(width, height, transparent);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -54,7 +54,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "get_active", [](auto vm) -> int {
-                auto* object = Vital::Engine::Rendertarget::get_active();
+                auto object = Vital::Engine::Rendertarget::get_active();
                 if (!object) vm -> push_bool(false);
                 else vm -> create_object(base_name, object);
                 return 1;
