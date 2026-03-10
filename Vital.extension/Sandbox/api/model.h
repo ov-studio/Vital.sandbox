@@ -105,20 +105,20 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_animation_speed", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto speed = vm -> get_float(2);
-                self -> set_animation_speed(speed);
-                vm -> push_bool(true);
-                return 1;
-            });
-
             vm_module::bind_method<base_class>(vm, base_name, "set_blendshape_value", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
                 auto blend_shape = vm -> get_string(3);
                 auto value = vm -> get_float(4);
                 self -> set_blendshape_value(component, blend_shape, value);
+                vm -> push_bool(true);
+                return 1;
+            });
+        
+            vm_module::bind_method<base_class>(vm, base_name, "set_animation_speed", [](auto vm, auto self) -> int {
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto speed = vm -> get_float(2);
+                self -> set_animation_speed(speed);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -148,16 +148,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_animations", [](auto vm, auto self) -> int {
-                auto list = self -> get_animations();
-                vm -> create_table();
-                for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]);
-                    vm -> set_table_field(i + 1, -2);
-                }
-                return 1;
-            });
-
             vm_module::bind_method<base_class>(vm, base_name, "get_blendshapes", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
@@ -169,14 +159,14 @@ namespace Vital::Sandbox::API {
                 }
                 return 1;
             });
-
-            vm_module::bind_method<base_class>(vm, base_name, "get_current_animation", [](auto vm, auto self) -> int {
-                vm -> push_string(self -> get_current_animation());
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "get_animation_speed", [](auto vm, auto self) -> int {
-                vm -> push_number(self -> get_animation_speed());
+        
+            vm_module::bind_method<base_class>(vm, base_name, "get_animations", [](auto vm, auto self) -> int {
+                auto list = self -> get_animations();
+                vm -> create_table();
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_string(list[i]);
+                    vm -> set_table_field(i + 1, -2);
+                }
                 return 1;
             });
 
@@ -185,6 +175,16 @@ namespace Vital::Sandbox::API {
                 auto component = vm -> get_string(2);
                 auto blend_shape = vm -> get_string(3);
                 vm -> push_number(self -> get_blendshape_value(component, blend_shape));
+                return 1;
+            });
+        
+            vm_module::bind_method<base_class>(vm, base_name, "get_current_animation", [](auto vm, auto self) -> int {
+                vm -> push_string(self -> get_current_animation());
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "get_animation_speed", [](auto vm, auto self) -> int {
+                vm -> push_number(self -> get_animation_speed());
                 return 1;
             });
 
