@@ -23,16 +23,22 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Font::Font(const std::string& path) {
-        font.instantiate();
-        font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
+    Font::Font(const godot::Ref<godot::FontFile>& font) {
+        this -> font = font;
     }
 
 
     // Managers //
     Font* Font::create(const std::string& path) {
-        auto font = memnew(Font(path));
-        return font;
+        return create_from_buffer(Vital::Tool::File::read_binary(get_directory(), path));
+    }
+
+    Font* Font::create_from_buffer(const godot::PackedByteArray& buffer) {
+        godot::Ref<godot::FontFile> font;
+        font.instantiate();
+        font -> set_data(buffer);
+        if (!font.is_valid()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        return memnew(Font(font));
     }
 
     void Font::destroy() {
