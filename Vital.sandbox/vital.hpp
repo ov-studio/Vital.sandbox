@@ -44,6 +44,7 @@
 #include <godot_cpp/classes/gltf_state.hpp>
 #include <godot_cpp/classes/gltf_document.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/animation_player.hpp>
 #include <godot_cpp/classes/animation_library.hpp>
