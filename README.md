@@ -7,11 +7,11 @@
 **Next-generation open-source sandbox by [ov-studio](https://ko-fi.com/ovstudio)**
 ###### Founded & maintained by **Aviril**, **Mario**, **Tron**, **Anisa** & **A-Variakojiene**
 
-[![License](https://img.shields.io/badge/license-open--source-brightgreen?style=flat-square&logo=apache&logoColor=white)](https://github.com/ov-studio/Vital.sandbox/blob/main/LICENSE)
-[![Engine](https://img.shields.io/badge/engine-Godot-478CBF?style=flat-square&logo=godotengine&logoColor=white)](https://godotengine.org)
-[![Language](https://img.shields.io/badge/core-C%2B%2B17-00599C?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
-[![Discord](https://img.shields.io/badge/community-Discord-5865F2?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
-[![Website](https://img.shields.io/badge/website-vital--sandbox-C8C8C8?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-site.vercel.app)
+[![License](https://img.shields.io/badge/License-Open--Source-brightgreen?style=flat-square&logo=apache&logoColor=white)](https://github.com/ov-studio/Vital.sandbox/blob/main/LICENSE)
+[![Engine](https://img.shields.io/badge/Engine-Godot-478CBF?style=flat-square&logo=godotengine&logoColor=white)](https://godotengine.org)
+[![Language](https://img.shields.io/badge/Core-C%2B%2B17-00599C?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
+[![Discord](https://img.shields.io/badge/Community-Discord-5865F2?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
+[![Website](https://img.shields.io/badge/Website-Vital.sandbox-C8C8C8?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-site.vercel.app)
 
 </div>
 
