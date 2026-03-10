@@ -158,9 +158,9 @@ namespace Vital::Engine {
         return cache_loaded.find(name) != cache_loaded.end();
     }
 
-    bool Model::is_component_visible(const std::string& name) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
+    bool Model::is_component_visible(const std::string& component) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         return mesh -> is_visible();
     }
 
@@ -191,9 +191,9 @@ namespace Vital::Engine {
         set_rotation_degrees(rotation);
     }
 
-    bool Model::set_component_visible(const std::string& name, bool state) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", name, model_name));
+    bool Model::set_component_visible(const std::string& component, bool state) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         mesh -> set_visible(state);
         return true;
     }

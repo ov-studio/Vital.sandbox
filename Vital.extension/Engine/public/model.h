@@ -57,7 +57,7 @@ namespace Vital::Engine {
 
             // Checkers //
             static bool is_model_loaded(const std::string& name);
-            bool is_component_visible(const std::string& name);
+            bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
             bool is_animation_playing();
 
@@ -66,7 +66,7 @@ namespace Vital::Engine {
             void set_model_name(const std::string& name);
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
-            bool set_component_visible(const std::string& name, bool state);
+            bool set_component_visible(const std::string& component, bool state);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             void set_animation_speed(float speed);
             bool set_blend_shape_value(const std::string& component, const std::string& blend_shape, float value);
