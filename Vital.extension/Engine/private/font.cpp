@@ -47,12 +47,21 @@ namespace Vital::Engine {
 
 
     // Setters //
-    void Font::set_antialiasing(godot::TextServer::FontAntialiasing antialiasing) {
-        font -> set_antialiasing(antialiasing);
+    void Font::set_antialiasing(bool enabled) {
+        font -> set_antialiasing(enabled ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
     }
 
     void Font::set_oversampling(float oversampling) {
         font -> set_oversampling(oversampling);
+    }
+
+
+    void Font::set_font_style(godot::BitField<godot::TextServer::FontStyle> style) {
+        font -> set_font_style(style);
+    }
+
+    void Font::set_font_weight(int32_t weight) {
+        font -> set_font_weight(weight);
     }
 
 
@@ -61,12 +70,20 @@ namespace Vital::Engine {
         return font;
     }
 
-    godot::TextServer::FontAntialiasing Font::get_antialiasing() {
-        return font -> get_antialiasing();
+    bool Font::get_antialiasing() {
+        return font -> get_antialiasing() != godot::TextServer::FONT_ANTIALIASING_NONE;
     }
 
     float Font::get_oversampling() {
         return font -> get_oversampling();
+    }
+
+    godot::BitField<godot::TextServer::FontStyle> Font::get_font_style() {
+        return font -> get_font_style();
+    }
+
+    int32_t Font::get_font_weight() {
+        return font -> get_font_weight();
     }
 }
 #endif
