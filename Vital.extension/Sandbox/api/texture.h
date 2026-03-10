@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.extension/Engine/public/texture.h>
 
@@ -90,3 +91,4 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#endif
