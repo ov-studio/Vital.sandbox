@@ -10,11 +10,14 @@ class BuildConan(ConanFile):
         self.requires("openssl/3.5.1")
         self.requires("libcurl/8.12.1")
         self.requires("zlib/1.3.1")
+        self.requires("soci/4.1.2")
 
     def configure(self):
         os_info = Fetch_OS()
         self.options["openssl"].shared = False
         self.options["libcurl"].shared = False
+        self.options["zlib"].shared = False
+        self.options["soci"].shared = False
         self.settings.compiler.cppstd = "17"
         
         if os_info["type"] == "Windows":
