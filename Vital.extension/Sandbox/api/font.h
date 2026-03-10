@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.extension/Engine/public/font.h>
 
@@ -60,7 +61,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "set_oversampling", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                self -> set_oversampling(static_cast<float>(vm -> get_number(2)));
+                self -> set_oversampling(static_cast<float>(vm -> get_float(2)));
                 vm -> push_bool(true);
                 return 1;
             });
@@ -72,3 +73,4 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#endif
