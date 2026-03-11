@@ -25,6 +25,7 @@
 namespace Vital::Sandbox {
     vm_apis Machine::internal_apis = {
         vm_module::make_api<API::Engine>(),
+        vm_module::make_api<API::DatabaseQuery>(),
         vm_module::make_api<API::Database>(),
         vm_module::make_api<API::Discord>(),
         vm_module::make_api<API::Coroutine>(),
