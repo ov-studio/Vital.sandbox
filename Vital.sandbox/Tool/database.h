@@ -41,6 +41,12 @@ namespace Vital::Tool {
                 std::vector<std::tuple<std::string, std::string, std::string>> wheres;
                 std::unordered_map<std::string, std::string> data;
 
+                inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
+
+                static void validate_op(const std::string& op) {
+                    if (!valid_ops.count(op)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                }
+
                 void destroy() {
                     delete this;
                 }
@@ -51,7 +57,7 @@ namespace Vital::Tool {
                     for (int i = 0; i < (int)wheres.size(); i++) {
                         const auto& [col, op, val] = wheres[i];
                         if (!db -> is_column_allowed(table_name, col)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        Database::validate_op(op);
+                        validate_op(op);
                         if (i > 0) clause += " AND ";
                         clause += fmt::format("`{}` {} :w{}", col, op, i);
                         binds.push_back(val);
@@ -76,18 +82,12 @@ namespace Vital::Tool {
             std::unique_ptr<soci::session> session;
             GlobalSchema schema;
 
-            inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
-
             static bool is_safe_identifier(const std::string& name) {
                 if (name.empty() || name.size() > 64) return false;
                 for (char c : name) {
                     if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') return false;
                 }
                 return true;
-            }
-
-            static void validate_op(const std::string& op) {
-                if (!valid_ops.count(op)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             }
 
             bool is_table_allowed(const std::string& table) const {
