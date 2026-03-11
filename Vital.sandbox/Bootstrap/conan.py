@@ -16,12 +16,14 @@ class Conan:
     def build(self):
         self.install()
         subprocess.run(("conan", "profile", "detect", "--force"), check=True)
-        subprocess.run((
-            "conan", "install", ".",
-            "--build=missing",
-            "--output-folder=.conan",
-            f"--settings=build_type={self.env.Args['build_type']}",
-            "--settings=compiler.cppstd=17"
-        ))
+        for build_type in ("Debug", "Release"):
+            subprocess.run((
+                "conan", "install", ".",
+                "--build=missing",
+                "--output-folder=.conan",
+                f"--settings=build_type={build_type}",
+                "--settings=compiler.cppstd=17",
+                "--settings=compiler.runtime=dynamic",
+            ), check=True)
 
 BaseEnvironment.Conan = property(lambda self: Conan(self))

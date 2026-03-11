@@ -25,6 +25,3 @@ class BuildConan(ConanFile):
         self.options["soci"].with_postgresql = False
         self.options["soci"].with_odbc = False
         self.options["soci"].with_boost = False
-        
-        if os_info["type"] == "Windows":
-            self.settings.compiler.runtime = "static"
