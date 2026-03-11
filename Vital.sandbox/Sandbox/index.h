@@ -79,14 +79,14 @@ namespace Vital::Sandbox {
 
         template<typename T>
         static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*)> exec) {
-            auto* heap_exec = new std::function<int(Machine*, T*)>(std::move(exec));
-            auto* heap_type = new std::string(type_name);
+            auto heap_exec = new std::function<int(Machine*, T*)>(std::move(exec));
+            auto heap_type = new std::string(type_name);
             lua_pushlightuserdata(vm -> get_state(), heap_exec);
             lua_pushlightuserdata(vm -> get_state(), heap_type);
             lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
-                auto* fn = static_cast<std::function<int(Machine*, T*)>*>(lua_touserdata(state, lua_upvalueindex(1)));
-                auto* type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
-                auto* vm = Machine::fetch_machine(state);
+                auto fn = static_cast<std::function<int(Machine*, T*)>*>(lua_touserdata(state, lua_upvalueindex(1)));
+                auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
+                auto vm = Machine::fetch_machine(state);
                 return vm -> execute([&]() -> int {
                     void** ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                     if (!ud || !*ud) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Invalid {} instance", *type));

@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
 
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
             std::unordered_map<std::string, std::string> result;
-            auto* state = vm -> get_state();
+            auto state = vm -> get_state();
             lua_pushnil(state);
             while (lua_next(state, index)) {
                 if (vm -> is_string(-2)) {
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
                 auto column = vm -> get_string(2);
                 auto op = vm -> get_string(3);
                 auto value = vm -> get_string(4);
-                self -> wheres.emplace_back(column, op, value);
+                self -> where.emplace_back(column, op, value);
                 vm -> create_object(base_name, self);
                 return 1;
             });
@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
                 auto password = vm -> get_string(3);
                 auto database = vm -> get_string(4);
                 auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
-                auto* object = Vital::Tool::Database::create(host, user, password, database, port);
+                auto object = Vital::Tool::Database::create(host, user, password, database, port);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -162,7 +162,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto* state = vm -> get_state();
+                auto state = vm -> get_state();
                 auto table = vm -> get_string(2);
                 Vital::Tool::Database::TableSchema columns;
                 vm -> push_nil();
@@ -203,7 +203,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "table", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(2);
-                auto* query = self -> table(name);
+                auto query = self -> table(name);
                 vm -> create_object(DatabaseQuery::base_name, query);
                 return 1;
             });

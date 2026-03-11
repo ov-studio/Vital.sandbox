@@ -37,8 +37,8 @@ namespace Vital::Tool {
                 Database* db;
                 std::string table;
                 std::string query_type;
-                std::vector<std::string> select_cols;
-                std::vector<std::tuple<std::string, std::string, std::string>> wheres;
+                std::vector<std::string> select;
+                std::vector<std::tuple<std::string, std::string, std::string>> where;
                 std::unordered_map<std::string, std::string> data;
                 inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
 
@@ -49,8 +49,8 @@ namespace Vital::Tool {
                 std::pair<std::string, std::vector<std::string>> build_where() {
                     std::string clause = " WHERE ";
                     std::vector<std::string> binds;
-                    for (int i = 0; i < (int)wheres.size(); i++) {
-                        const auto& [column, op, value] = wheres[i];
+                    for (int i = 0; i < (int)where.size(); i++) {
+                        const auto& [column, op, value] = where[i];
                         if (!db -> is_column_allowed(table, column) || !valid_ops.count(op)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         if (i > 0) clause += " AND ";
                         clause += fmt::format("`{}` {} :w{}", column, op, i);
@@ -60,7 +60,7 @@ namespace Vital::Tool {
                 }
 
                 void apply_where(std::string& sql, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
-                    if (wheres.empty()) return;
+                    if (where.empty()) return;
                     auto [where_clause, where_binds] = build_where();
                     sql += where_clause;
                     for (int i = 0; i < (int)where_binds.size(); i++) {
@@ -183,12 +183,12 @@ namespace Vital::Tool {
                 if (!is_table_allowed(query -> table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 
                 std::string columns;
-                if (query -> select_cols.empty()) columns = "*";
+                if (query -> select.empty()) columns = "*";
                 else {
-                    for (int i = 0; i < (int)query -> select_cols.size(); i++) {
-                        if (!is_column_allowed(query -> table, query -> select_cols[i])) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    for (int i = 0; i < (int)query -> select.size(); i++) {
+                        if (!is_column_allowed(query -> table, query -> select[i])) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         if (i > 0) columns += ", ";
-                        columns += fmt::format("`{}`", query -> select_cols[i]);
+                        columns += fmt::format("`{}`", query -> select[i]);
                     }
                 }
 
