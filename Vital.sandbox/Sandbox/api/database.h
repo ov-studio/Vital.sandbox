@@ -194,16 +194,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                self -> truncate(vm -> get_string(2));
-                vm -> push_bool(true);
-                return 1;
-            });
-
             vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> drop(vm -> get_string(2));
+                vm -> push_bool(true);
+                return 1;
+            });
+    
+            vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self) -> int {
+                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                self -> truncate(vm -> get_string(2));
                 vm -> push_bool(true);
                 return 1;
             });
