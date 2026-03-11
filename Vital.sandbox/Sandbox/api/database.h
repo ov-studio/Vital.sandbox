@@ -164,14 +164,15 @@ namespace Vital::Sandbox::API {
                 auto table = vm -> get_string(2);
                 auto* state = vm -> get_state();
                 Vital::Tool::Database::TableSchema columns;
-                lua_pushnil(state);
+                auto* state = vm -> get_state();
+                vm -> push_nil();
                 while (lua_next(state, 3)) {
-                    if (!lua_isstring(state, -2) || !lua_istable(state, -1)) {
-                        lua_pop(state, 1);
+                    if (!vm -> is_string(-2) || !vm -> is_table(-1)) {
+                        vm -> pop(1);
                         continue;
                     }
-                    auto column = std::string(lua_tostring(state, -2));
-                    int index = lua_gettop(state);
+                    auto column = vm -> get_string(-2);
+                    int index = vm -> get_arg_count();
                     Vital::Tool::Database::Column definition;
                     vm -> get_table_field("type", index);
                     definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
