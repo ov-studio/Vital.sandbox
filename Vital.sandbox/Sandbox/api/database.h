@@ -94,7 +94,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "delete", [](auto vm, auto self) -> int {
                 self -> query_type = "delete";
-                vm -> create_object(DatabaseQuery::base_name, self);
+                vm -> create_object(base_name, self);
                 return 1;
             });
 
