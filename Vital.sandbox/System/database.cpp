@@ -128,7 +128,7 @@ namespace Vital::System {
     }
 
     std::vector<std::unordered_map<std::string, std::string>> Database::fetch(QueryBuilder* query) {
-        if (!session) throw Vital::Log::fetch("request-failed",   Vital::Log::Type::Error);
+        if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
         if (!is_table_allowed(query -> table_name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
 
         std::string cols;
@@ -186,7 +186,7 @@ namespace Vital::System {
     }
 
     bool Database::execute(QueryBuilder* query) {
-        if (!session) throw Vital::Log::fetch("request-failed",   Vital::Log::Type::Error);
+        if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
         if (!is_table_allowed(query -> table_name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
 
         std::string sql;
