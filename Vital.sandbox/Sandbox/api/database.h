@@ -30,7 +30,12 @@ namespace Vital::Sandbox::API {
             std::unordered_map<std::string, std::string> result;
             lua_pushnil(L);
             while (lua_next(L, index)) {
-                if (lua_isstring(L, -2)) result[lua_tostring(L, -2)] = lua_tostring(L, -1);
+                if (lua_isstring(L, -2)) {
+                    std::string key = lua_tostring(L, -2);
+                    std::string val;
+                    if (lua_isstring(L, -1) || lua_isnumber(L, -1)) val = lua_tostring(L, -1);
+                    result[key] = val;
+                }
                 lua_pop(L, 1);
             }
             return result;
