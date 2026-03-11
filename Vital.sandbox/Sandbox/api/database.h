@@ -138,9 +138,9 @@ namespace Vital::Sandbox::API {
                 auto host = vm -> get_string(1);
                 auto user = vm -> get_string(2);
                 auto password = vm -> get_string(3);
-                auto db_name = vm -> get_string(4);
+                auto database = vm -> get_string(4);
                 auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
-                auto* object = Vital::Tool::Database::create(host, user, password, db_name, port);
+                auto* object = Vital::Tool::Database::create(host, user, password, database, port);
                 vm -> create_object(base_name, object);
                 return 1;
             });
