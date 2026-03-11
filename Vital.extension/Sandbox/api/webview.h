@@ -92,7 +92,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_visible", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_visible(state);
                 vm -> push_bool(true);
@@ -100,7 +100,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_fullscreen", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_fullscreen(state);
                 vm -> push_bool(true);
@@ -108,7 +108,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_transparent", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_transparent(state);
                 vm -> push_bool(true);
@@ -116,7 +116,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_autoplay", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_autoplay(state);
                 vm -> push_bool(true);
@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_zoomable", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_zoomable(state);
                 vm -> push_bool(true);
@@ -132,7 +132,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_devtools_visible", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_devtools_visible(state);
                 vm -> push_bool(true);
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_position", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(2);
                 self -> set_position(position);
                 vm -> push_bool(true);
@@ -148,7 +148,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_size", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto size = vm -> get_vector2(2);
                 self -> set_size(size);
                 vm -> push_bool(true);
@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_message_handler", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_function(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_function(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto key = handler_key(self);
                 vm -> set_reference(key, 2);
                 self -> set_message_handler([vm, key](godot::String message) {
@@ -169,7 +169,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "load_url", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(2);
                 self -> load_url(url);
                 vm -> push_bool(true);
@@ -177,7 +177,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "load_html", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto html = vm -> get_string(2);
                 self -> load_html(html);
                 vm -> push_bool(true);
@@ -203,7 +203,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "zoom", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(2);
                 self -> zoom(value);
                 vm -> push_bool(true);
@@ -217,7 +217,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "eval", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(2);
                 self -> eval(input);
                 vm -> push_bool(true);
@@ -225,7 +225,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "emit", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(2);
                 self -> emit(input);
                 vm -> push_bool(true);

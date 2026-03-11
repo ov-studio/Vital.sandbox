@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "sdfgi"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_enabled(state);
                 vm -> push_bool(true);
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_cascades", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_int(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_cascades(value);
                 vm -> push_bool(true);
@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_min_cell_size", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_min_cell_size(value);
                 vm -> push_bool(true);
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_max_distance", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_max_distance(value);
                 vm -> push_bool(true);
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_y_scale", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_int(1);
                 if ((value < godot::Environment::SDFGI_Y_SCALE_50_PERCENT) || (value > godot::Environment::SDFGI_Y_SCALE_100_PERCENT)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_y_scale(static_cast<godot::Environment::SDFGIYScale>(value));
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "sdfgi"}, "set_use_occlusion", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_use_occlusion(state);
                 vm -> push_bool(true);
@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_bounce_feedback", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_bounce_feedback(value);
                 vm -> push_bool(true);
@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "sdfgi"}, "set_read_sky_light", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_read_sky_light(state);
                 vm -> push_bool(true);
@@ -132,7 +132,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_energy", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_energy(value);
                 vm -> push_bool(true);
@@ -145,7 +145,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_normal_bias", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_normal_bias(value);
                 vm -> push_bool(true);
@@ -158,7 +158,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "sdfgi"}, "set_probe_bias", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_sdfgi_probe_bias(value);
                 vm -> push_bool(true);

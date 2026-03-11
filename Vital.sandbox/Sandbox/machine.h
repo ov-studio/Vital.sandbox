@@ -153,7 +153,7 @@ namespace Vital::Sandbox {
 
             // Getters //
             vm_state* get_state() { return state; }
-            int get_arg_count() { return lua_gettop(state); }
+            int get_count() { return lua_gettop(state); }
             bool get_global(const std::string& index) { return lua_getglobal(state, index.c_str()); }
             bool get_bool(int index = 1) { return lua_toboolean(state, index); }
             std::string get_string(int index = 1) { return lua_tostring(state, index); }

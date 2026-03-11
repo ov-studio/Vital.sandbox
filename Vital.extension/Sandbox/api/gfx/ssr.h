@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "ssr"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_ssr_enabled(state);
                 vm -> push_bool(true);
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "set_max_steps", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_int(1);
                 Vital::Engine::Core::get_environment() -> set_ssr_max_steps(value);
                 vm -> push_bool(true);
@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "set_fade_in", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssr_fade_in(value);
                 vm -> push_bool(true);
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "set_fade_out", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssr_fade_out(value);
                 vm -> push_bool(true);
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "set_depth_tolerance", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssr_depth_tolerance(value);
                 vm -> push_bool(true);

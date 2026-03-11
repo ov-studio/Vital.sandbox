@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
                 auto stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
                 auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_polygon", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
                 auto color = vm -> is_color(2) ? vm -> get_color(2) : godot::Color{1, 1, 1, 1};
                 auto stroke = vm -> is_number(3) ? vm -> get_float(3) : 0.0f;
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_rectangle", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
                 auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_circle", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_vector2(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto radius = vm -> get_float(2);
                 auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_image", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 3) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 3) || (!vm -> is_vector2(1)) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
                 auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
@@ -107,7 +107,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm_module::is_userdata<Vital::Engine::Font>(vm, "font", 4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm_module::is_userdata<Vital::Engine::Font>(vm, "font", 4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);

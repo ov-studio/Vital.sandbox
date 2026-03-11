@@ -26,7 +26,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_function(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_function(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto thread = vm -> create_thread();
                 vm -> push(1);
                 vm -> move(thread, 1);
@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name}, "resume", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_thread(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_thread(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto thread = vm -> get_thread(1);
                 auto thread_vm = Machine::fetch_machine(thread);
                 if (!thread_vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
         
             API::bind(vm, {base_name}, "sleep", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto duration = vm -> get_int(1);
                 Vital::Tool::Timer([=](Vital::Tool::Timer* self) -> void {
                     vm -> push_bool(true);

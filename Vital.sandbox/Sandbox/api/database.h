@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "select", [](auto vm, auto self) -> int {
-                int count = vm -> get_arg_count();
+                int count = vm -> get_count();
                 if (count < 2) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 for (int i = 2; i <= count; i++) {
                     if (!vm -> is_string(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "where", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto column = vm -> get_string(2);
                 auto op = vm -> get_string(3);
                 auto value = vm -> get_string(4);
@@ -107,7 +107,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "insert", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> data = read_table(vm, 2);
                 self -> query_type = "insert";
                 vm -> create_object(base_name, self);
@@ -121,7 +121,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "update", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> data = read_table(vm, 2);
                 self -> query_type = "update";
                 vm -> create_object(base_name, self);
@@ -138,7 +138,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Database>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 4) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_string(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 4) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_string(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto host = vm -> get_string(1);
                 auto user = vm -> get_string(2);
                 auto password = vm -> get_string(3);
@@ -164,7 +164,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_state();
                 auto table = vm -> get_string(2);
                 Vital::Tool::Database::TableSchema columns;
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
                         continue;
                     }
                     auto column = vm -> get_string(-2);
-                    int index = vm -> get_arg_count();
+                    int index = vm -> get_count();
                     Vital::Tool::Database::Column definition;
                     vm -> get_table_field("type", index);
                     definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
@@ -204,7 +204,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "table", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(2);
                 auto query = self -> table(name);
                 vm -> create_object(DatabaseQuery::base_name, query);

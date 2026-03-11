@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Font>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
                 auto object = Vital::Engine::Font::create(path);
                 vm -> create_object(base_name, object);
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_antialiasing", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> set_antialiasing(vm -> get_bool(2));
                 vm -> push_bool(true);
                 return 1;
@@ -60,7 +60,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_oversampling", [](auto vm, auto self) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> set_oversampling(static_cast<float>(vm -> get_float(2)));
                 vm -> push_bool(true);
                 return 1;

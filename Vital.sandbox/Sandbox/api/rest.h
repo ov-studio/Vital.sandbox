@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);
                 Vital::Tool::Rest::rest_headers headers = {};
                 if (vm -> is_table(2)) {
@@ -54,7 +54,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "post", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
                 Vital::Tool::Rest::rest_headers headers = {};

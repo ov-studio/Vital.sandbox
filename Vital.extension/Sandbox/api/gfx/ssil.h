@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "ssil"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_ssil_enabled(state);
                 vm -> push_bool(true);
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "set_radius", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssil_radius(value);
                 vm -> push_bool(true);
@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "set_intensity", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssil_intensity(value);
                 vm -> push_bool(true);
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "set_sharpness", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssil_sharpness(value);
                 vm -> push_bool(true);
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "set_normal_rejection", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_ssil_normal_rejection(value);
                 vm -> push_bool(true);

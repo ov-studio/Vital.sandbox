@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "emissive"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_glow_enabled(state);
                 vm -> push_bool(true);
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_level_intensity", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_number(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_number(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto idx = vm -> get_int(1);
                 auto value = vm -> get_float(2);
                 Vital::Engine::Core::get_environment() -> set_glow_level(idx, value);
@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_level_intensity", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto idx = vm -> get_int(1);
                 vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_level(idx));
                 return 1;
@@ -61,7 +61,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "emissive"}, "set_normalized", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_glow_normalized(state);
                 vm -> push_bool(true);
@@ -69,7 +69,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_intensity", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_intensity(value);
                 vm -> push_bool(true);
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_strength", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_strength(value);
                 vm -> push_bool(true);
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_mix", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_mix(value);
                 vm -> push_bool(true);
@@ -108,7 +108,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_bloom", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_bloom(value);
                 vm -> push_bool(true);
@@ -121,7 +121,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_blend_mode", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_int(1);
                 if ((value < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (value > godot::Environment::GLOW_BLEND_MODE_MIX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 Vital::Engine::Core::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_hdr_bleed_threshold", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_hdr_bleed_threshold(value);
                 vm -> push_bool(true);
@@ -148,7 +148,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_hdr_bleed_scale", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_hdr_bleed_scale(value);
                 vm -> push_bool(true);
@@ -161,7 +161,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_hdr_luminance_cap", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_hdr_luminance_cap(value);
                 vm -> push_bool(true);
@@ -174,7 +174,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_map_strength", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_glow_map_strength(value);
                 vm -> push_bool(true);

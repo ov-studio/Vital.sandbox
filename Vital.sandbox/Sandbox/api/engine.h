@@ -56,7 +56,7 @@ namespace Vital::Sandbox::API {
             #endif
         
             API::bind(vm, {base_name}, "compile_string", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
                 auto result = vm -> compile_string(input);
                 vm -> push_bool(result);
@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "load_string", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
                 bool auto_load = vm -> is_bool(2) ? vm -> get_bool(2) : true;
                 bool use_env = vm -> is_bool(3) ? vm -> get_bool(3) : false;
@@ -75,10 +75,10 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "print", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1)) || (!Vital::Log::is_type(vm -> get_string(1)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1)) || (!Vital::Log::is_type(vm -> get_string(1)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 std::string type = vm -> get_string(1);
                 std::ostringstream buffer;
-                for (int i = 2; i <= vm -> get_arg_count(); ++i) {
+                for (int i = 2; i <= vm -> get_count(); ++i) {
                     if (i != 2) buffer << " ";
                     buffer << vm -> to_string(i);
                 }

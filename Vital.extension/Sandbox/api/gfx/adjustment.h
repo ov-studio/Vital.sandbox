@@ -33,7 +33,7 @@ namespace Vital::Sandbox::API {
             });
     
             API::bind(vm, {base_name, "adjustment"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_adjustment_enabled(state);
                 vm -> push_bool(true);
@@ -41,7 +41,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "adjustment"}, "set_brightness", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_adjustment_brightness(value);
                 vm -> push_bool(true);
@@ -54,7 +54,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "adjustment"}, "set_contrast", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_adjustment_contrast(value);
                 vm -> push_bool(true);
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "adjustment"}, "set_saturation", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_adjustment_saturation(value);
                 vm -> push_bool(true);
@@ -80,7 +80,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
                 auto lut_texture = Vital::Engine::Texture::get_from_reference(path);
                 if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);

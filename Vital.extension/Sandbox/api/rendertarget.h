@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Rendertarget>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 2) || (!vm -> is_number(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 2) || (!vm -> is_number(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto width = vm -> get_int(1);
                 auto height = vm -> get_int(2);
                 auto transparent = vm -> is_bool(3) ? vm -> get_bool(3) : false;
@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "set_active", [](auto vm) -> int {
                 Vital::Engine::Rendertarget* rt = nullptr;
-                if (vm -> get_arg_count() >= 1) {
+                if (vm -> get_count() >= 1) {
                     if (!vm -> is_userdata(1) || !vm_module::is_userdata(vm, base_name, 1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }

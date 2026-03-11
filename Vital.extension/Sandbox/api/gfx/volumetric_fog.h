@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "volumetric_fog"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_enabled(state);
                 vm -> push_bool(true);
@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_emission", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_color(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_color(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto color = vm -> get_color(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_emission(color);
                 vm -> push_bool(true);
@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_albedo", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_color(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_color(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto color = vm -> get_color(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_albedo(color);
                 vm -> push_bool(true);
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_density", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_density(value);
                 vm -> push_bool(true);
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_emission_energy", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_emission_energy(value);
                 vm -> push_bool(true);
@@ -92,7 +92,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_anisotropy", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_anisotropy(value);
                 vm -> push_bool(true);
@@ -105,7 +105,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_length", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_length(value);
                 vm -> push_bool(true);
@@ -118,7 +118,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_detail_spread", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_detail_spread(value);
                 vm -> push_bool(true);
@@ -131,7 +131,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_gi_inject", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_gi_inject(value);
                 vm -> push_bool(true);
@@ -144,7 +144,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_ambient_inject", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_ambient_inject(value);
                 vm -> push_bool(true);
@@ -157,7 +157,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_sky_affect", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_sky_affect(value);
                 vm -> push_bool(true);
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name, "volumetric_fog"}, "set_temporal_reprojection_enabled", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_enabled(state);
                 vm -> push_bool(true);
@@ -183,7 +183,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "set_temporal_reprojection_amount", [](auto vm) -> int {
-                if ((vm -> get_arg_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 Vital::Engine::Core::get_environment() -> set_volumetric_fog_temporal_reprojection_amount(value);
                 vm -> push_bool(true);
