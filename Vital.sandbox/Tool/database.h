@@ -109,9 +109,9 @@ namespace Vital::Tool {
             Database() = default;
             ~Database() = default;
 
-            static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& db_name, unsigned int port = 3306) {
+            static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& database, unsigned int port = 3306) {
                 auto db = new Database();
-                std::string connection = fmt::format("host={} port={} user={} dbname={}", host, port, user, db_name);
+                std::string connection = fmt::format("host={} port={} user={} dbname={}", host, port, user, database);
                 if (!password.empty()) connection += fmt::format(" password={}", password);
                 db -> session = std::make_unique<soci::session>(soci::mysql, connection);
                 return db;
