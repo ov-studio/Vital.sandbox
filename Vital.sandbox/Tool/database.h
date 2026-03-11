@@ -227,18 +227,6 @@ namespace Vital::Tool {
 
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
-
-                auto append_where = [&]() {
-                    if (!query -> wheres.empty()) {
-                        auto [where_clause, where_binds] = query -> build_where();
-                        sql += where_clause;
-                        for (int i = 0; i < (int)where_binds.size(); i++) {
-                            bind_names.push_back(fmt::format("w{}", i));
-                            binds.push_back(where_binds[i]);
-                        }
-                    }
-                };
-
                 if (query -> query_type == "insert") {
                     std::string cols, placeholders;
                     bool first = true;
