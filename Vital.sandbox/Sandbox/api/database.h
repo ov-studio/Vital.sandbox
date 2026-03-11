@@ -46,15 +46,15 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self) -> int {
-                self -> db -> truncate(self -> table);
+            vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self) -> int {
+                self -> db -> drop(self -> table);
                 self -> destroy();
                 vm -> push_bool(true);
                 return 1;
             });
-
-            vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self) -> int {
-                self -> db -> drop(self -> table);
+            
+            vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self) -> int {
+                self -> db -> truncate(self -> table);
                 self -> destroy();
                 vm -> push_bool(true);
                 return 1;
