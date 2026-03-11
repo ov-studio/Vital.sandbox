@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
             std::unordered_map<std::string, std::string> result;
             auto state = vm -> get_state();
-            lua_pushnil(state);
+            vm -> push_nil();
             while (lua_next(state, index)) {
                 if (vm -> is_string(-2)) {
                     std::string key = vm -> get_string(-2);
