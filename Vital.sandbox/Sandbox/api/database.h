@@ -99,7 +99,7 @@ namespace Vital::Sandbox::API {
                 auto op = vm -> get_string(3);
                 auto value = vm -> get_string(4);
                 self -> wheres.emplace_back(column, op, value);
-                vm -> create_object(DatabaseQuery::base_name, self);
+                vm -> create_object(base_name, self);
                 return 1;
             });
 
