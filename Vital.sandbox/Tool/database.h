@@ -58,6 +58,16 @@ namespace Vital::Tool {
                     }
                     return {clause, binds};
                 }
+
+                void apply_where(std::string& sql, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
+                    if (wheres.empty()) return;
+                    auto [where_clause, where_binds] = build_where();
+                    sql += where_clause;
+                    for (int i = 0; i < (int)where_binds.size(); i++) {
+                        bind_names.push_back(fmt::format("w{}", i));
+                        binds.push_back(where_binds[i]);
+                    }
+                }
             };
 
             using TableSchema = std::unordered_map<std::string, Column>;
@@ -177,15 +187,7 @@ namespace Vital::Tool {
 
                 std::string sql = fmt::format("SELECT {} FROM `{}`", cols, query -> table_name);
                 std::vector<std::string> binds, bind_names;
-                if (!query -> wheres.empty()) {
-                    auto [where_clause, where_binds] = query -> build_where();
-                    sql += where_clause;
-                    for (int i = 0; i < (int)where_binds.size(); i++) {
-                        bind_names.push_back(fmt::format("w{}", i));
-                        binds.push_back(where_binds[i]);
-                    }
-                }
-
+                query -> apply_where(sql, binds, bind_names);
                 soci::row row_out;
                 soci::statement st(*session);
                 st.alloc();
@@ -267,11 +269,11 @@ namespace Vital::Tool {
                         binds.push_back(v);
                     }
                     sql = fmt::format("UPDATE `{}` SET {}", query -> table_name, sets);
-                    append_where();
+                    query -> apply_where(sql, binds, bind_names);
                 }
                 else if (query -> query_type == "delete") {
                     sql = fmt::format("DELETE FROM `{}`", query -> table_name);
-                    append_where();
+                    query -> apply_where(sql, binds, bind_names);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 run_statement(sql, binds, bind_names, nullptr);
