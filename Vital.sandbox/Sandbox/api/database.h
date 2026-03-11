@@ -173,13 +173,13 @@ namespace Vital::Sandbox::API {
                     auto column = std::string(lua_tostring(state, -2));
                     int index = lua_gettop(state);
                     Vital::Tool::Database::Column definition;
-                    vm -> get_table_field("type", count);
+                    vm -> get_table_field("type", index);
                     definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
                     vm -> pop(1);
-                    vm -> get_table_field("primary", count);
+                    vm -> get_table_field("primary", index);
                     definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
                     vm -> pop(1);
-                    vm -> get_table_field("autoincrement", count);
+                    vm -> get_table_field("autoincrement", index);
                     definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
                     vm -> pop(1);
                     vm -> get_table_field("nullable", count);
