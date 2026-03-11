@@ -104,13 +104,13 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self) -> int {
                 push_rows(vm, self -> db -> fetch(self));
-                self -> db -> destroy_query(self);
+                self -> destroy();
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self) -> int {
                 vm -> push_bool(self -> db -> execute(self));
-                self -> db -> destroy_query(self);
+                self -> destroy();
                 return 1;
             });
         }
@@ -159,7 +159,7 @@ namespace Vital::Sandbox::API {
                     if (!lua_isstring(L, -2) || !lua_istable(L, -1)) { lua_pop(L, 1); continue; }
                     auto col_name = std::string(lua_tostring(L, -2));
                     int col_idx = lua_gettop(L);
-                    Vital::Tool::Database::ColumnDef def;
+                    Vital::Tool::Database::Column def;
                     lua_getfield(L, col_idx, "type");
                     def.type = lua_isstring(L, -1) ? std::string(lua_tostring(L, -1)) : "VARCHAR(255)";
                     lua_pop(L, 1);

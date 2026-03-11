@@ -26,7 +26,7 @@
 namespace Vital::Tool {
     class Database {
         public:
-            struct ColumnDef {
+            struct Column {
                 std::string type;
                 bool nullable = true;
                 bool primary = false;
@@ -41,7 +41,11 @@ namespace Vital::Tool {
                 std::vector<std::tuple<std::string, std::string, std::string>> wheres;
                 std::unordered_map<std::string, std::string> data;
 
-                std::pair<std::string, std::vector<std::string>> build_where() const {
+                void destroy() {
+                    delete this;
+                }
+
+                std::pair<std::string, std::vector<std::string>> build_where() {
                     std::string clause = " WHERE ";
                     std::vector<std::string> binds;
                     for (int i = 0; i < (int)wheres.size(); i++) {
@@ -56,7 +60,7 @@ namespace Vital::Tool {
                 }
             };
 
-            using TableSchema = std::unordered_map<std::string, ColumnDef>;
+            using TableSchema = std::unordered_map<std::string, Column>;
             using GlobalSchema = std::unordered_map<std::string, TableSchema>;
         private:
             std::unique_ptr<soci::session> session;
@@ -97,17 +101,15 @@ namespace Vital::Tool {
                 st.define_and_bind();
                 st.execute(row_out == nullptr);
             }
-
-
         public:
             Database() = default;
             ~Database() = default;
 
             static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& db_name, unsigned int port = 3306) {
-                auto* db = new Database();
-                std::string conn = fmt::format("host={} port={} user={} dbname={}", host, port, user, db_name);
-                if (!password.empty()) conn += fmt::format(" password={}", password);
-                db -> session = std::make_unique<soci::session>(soci::mysql, conn);
+                auto db = new Database();
+                std::string connection = fmt::format("host={} port={} user={} dbname={}", host, port, user, db_name);
+                if (!password.empty()) connection += fmt::format(" password={}", password);
+                db -> session = std::make_unique<soci::session>(soci::mysql, connection);
                 return db;
             }
 
@@ -117,6 +119,10 @@ namespace Vital::Tool {
                     session.reset();
                 }
                 delete this;
+            }
+
+            bool is_connected() const {
+                return session != nullptr && session -> is_connected();
             }
 
             void define(const std::string& table, const TableSchema& columns) {
@@ -146,14 +152,10 @@ namespace Vital::Tool {
                     *session << sql;
                 }
             }
-
-            bool is_connected() const {
-                return session != nullptr && session -> is_connected();
-            }
-
+        
             QueryBuilder* table(const std::string& name) {
                 if (!is_table_allowed(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto* query = new QueryBuilder();
+                auto query = new QueryBuilder();
                 query -> db = this;
                 query -> table_name = name;
                 return query;
@@ -194,7 +196,6 @@ namespace Vital::Tool {
                 st.exchange(soci::into(row_out));
                 st.define_and_bind();
                 st.execute();
-
                 std::vector<std::unordered_map<std::string, std::string>> rows;
                 while (st.fetch()) {
                     std::unordered_map<std::string, std::string> row_map;
@@ -275,10 +276,6 @@ namespace Vital::Tool {
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 run_statement(sql, binds, bind_names, nullptr);
                 return true;
-            }
-
-            void destroy_query(QueryBuilder* query) {
-                delete query;
             }
     };
 }
