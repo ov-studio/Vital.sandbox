@@ -109,6 +109,7 @@ namespace Vital::Sandbox::API {
                 self -> data = read_table(vm, 2);
                 self -> query_type = "insert";
                 vm -> create_object(base_name, self);
+                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "delete", [](auto vm, auto self) -> int {
@@ -122,6 +123,7 @@ namespace Vital::Sandbox::API {
                 self -> data = read_table(vm, 2);
                 self -> query_type = "update";
                 vm -> create_object(base_name, self);
+                return 1;
             });
         }
     };
