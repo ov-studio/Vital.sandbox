@@ -35,7 +35,7 @@ namespace Vital::Tool {
 
             struct QueryBuilder {
                 Database* db;
-                std::string table_name;
+                std::string table;
                 std::string query_type;
                 std::vector<std::string> select_cols;
                 std::vector<std::tuple<std::string, std::string, std::string>> wheres;
@@ -50,11 +50,11 @@ namespace Vital::Tool {
                     std::string clause = " WHERE ";
                     std::vector<std::string> binds;
                     for (int i = 0; i < (int)wheres.size(); i++) {
-                        const auto& [col, op, val] = wheres[i];
-                        if (!db -> is_column_allowed(table_name, col) || !valid_ops.count(op)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        const auto& [column, op, value] = wheres[i];
+                        if (!db -> is_column_allowed(table, column) || !valid_ops.count(op)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         if (i > 0) clause += " AND ";
-                        clause += fmt::format("`{}` {} :w{}", col, op, i);
-                        binds.push_back(val);
+                        clause += fmt::format("`{}` {} :w{}", column, op, i);
+                        binds.push_back(value);
                     }
                     return {clause, binds};
                 }
@@ -88,10 +88,10 @@ namespace Vital::Tool {
                 return schema.find(table) != schema.end();
             }
 
-            bool is_column_allowed(const std::string& table, const std::string& col) const {
+            bool is_column_allowed(const std::string& table, const std::string& column) const {
                 auto it = schema.find(table);
                 if (it == schema.end()) return false;
-                return it -> second.find(col) != it -> second.end();
+                return it -> second.find(column) != it -> second.end();
             }
 
             void run_statement(const std::string& sql, const std::vector<std::string>& binds, const std::vector<std::string>& bind_names, soci::row* row_out = nullptr) {
@@ -131,8 +131,8 @@ namespace Vital::Tool {
 
             void define(const std::string& table, const TableSchema& columns) {
                 if (!is_safe_identifier(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                for (const auto& [col, def] : columns) {
-                    if (!is_safe_identifier(col)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                for (const auto& [column, definition] : columns) {
+                    if (!is_safe_identifier(column)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 }
                 schema[table] = columns;
             }
@@ -143,13 +143,13 @@ namespace Vital::Tool {
                     std::string sql = fmt::format("CREATE TABLE IF NOT EXISTS `{}` (", table);
                     std::string primary_key;
                     bool first = true;
-                    for (const auto& [col, def] : columns) {
+                    for (const auto& [column, definition] : columns) {
                         if (!first) sql += ", ";
                         first = false;
-                        sql += fmt::format("`{}` {}", col, def.type);
-                        if (def.autoincrement) sql += " AUTO_INCREMENT";
-                        if (!def.nullable) sql += " NOT NULL";
-                        if (def.primary) primary_key = col;
+                        sql += fmt::format("`{}` {}", column, definition.type);
+                        if (definition.autoincrement) sql += " AUTO_INCREMENT";
+                        if (!definition.nullable) sql += " NOT NULL";
+                        if (definition.primary) primary_key = column;
                     }
                     if (!primary_key.empty()) sql += fmt::format(", PRIMARY KEY (`{}`)", primary_key);
                     sql += ")";
@@ -161,7 +161,7 @@ namespace Vital::Tool {
                 if (!is_table_allowed(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto query = new QueryBuilder();
                 query -> db = this;
-                query -> table_name = name;
+                query -> table = name;
                 return query;
             }
 
@@ -180,19 +180,19 @@ namespace Vital::Tool {
 
             std::vector<std::unordered_map<std::string, std::string>> fetch(QueryBuilder* query) {
                 if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
-                if (!is_table_allowed(query -> table_name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if (!is_table_allowed(query -> table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 
-                std::string cols;
-                if (query -> select_cols.empty()) cols = "*";
+                std::string columns;
+                if (query -> select_cols.empty()) columns = "*";
                 else {
                     for (int i = 0; i < (int)query -> select_cols.size(); i++) {
-                        if (!is_column_allowed(query -> table_name, query -> select_cols[i])) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        if (i > 0) cols += ", ";
-                        cols += fmt::format("`{}`", query -> select_cols[i]);
+                        if (!is_column_allowed(query -> table, query -> select_cols[i])) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        if (i > 0) columns += ", ";
+                        columns += fmt::format("`{}`", query -> select_cols[i]);
                     }
                 }
 
-                std::string sql = fmt::format("SELECT {} FROM `{}`", cols, query -> table_name);
+                std::string sql = fmt::format("SELECT {} FROM `{}`", columns, query -> table);
                 std::vector<std::string> binds, bind_names;
                 query -> apply_where(sql, binds, bind_names);
                 soci::row row_out;
@@ -210,18 +210,18 @@ namespace Vital::Tool {
                     std::unordered_map<std::string, std::string> row_map;
                     for (std::size_t i = 0; i < row_out.size(); i++) {
                         const soci::column_properties& props = row_out.get_properties(i);
-                        std::string val;
-                        if (row_out.get_indicator(i) == soci::i_null) val = "";
+                        std::string value;
+                        if (row_out.get_indicator(i) == soci::i_null) value = "";
                         else {
                             switch (props.get_data_type()) {
-                                case soci::dt_string:    val = row_out.get<std::string>(i);               break;
-                                case soci::dt_integer:   val = std::to_string(row_out.get<int>(i));       break;
-                                case soci::dt_long_long: val = std::to_string(row_out.get<long long>(i)); break;
-                                case soci::dt_double:    val = std::to_string(row_out.get<double>(i));    break;
-                                default:                 val = row_out.get<std::string>(i);               break;
+                                case soci::dt_string:    value = row_out.get<std::string>(i);               break;
+                                case soci::dt_integer:   value = std::to_string(row_out.get<int>(i));       break;
+                                case soci::dt_long_long: value = std::to_string(row_out.get<long long>(i)); break;
+                                case soci::dt_double:    value = std::to_string(row_out.get<double>(i));    break;
+                                default:                 value = row_out.get<std::string>(i);               break;
                             }
                         }
-                        row_map[props.get_name()] = val;
+                        row_map[props.get_name()] = value;
                     }
                     rows.push_back(row_map);
                 }
@@ -230,44 +230,44 @@ namespace Vital::Tool {
 
             bool execute(QueryBuilder* query) {
                 if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
-                if (!is_table_allowed(query -> table_name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if (!is_table_allowed(query -> table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
 
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
                 if (query -> query_type == "insert") {
-                    std::string cols, placeholders;
+                    std::string columns, placeholders;
                     bool first = true;
-                    int idx = 0;
+                    int index = 0;
                     for (const auto& [k, v] : query -> data) {
-                        if (!is_column_allowed(query -> table_name, k)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                        if (!first) { cols += ", "; placeholders += ", "; }
+                        if (!is_column_allowed(query -> table, k)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        if (!first) { columns += ", "; placeholders += ", "; }
                         first = false;
-                        auto pname = fmt::format("d{}", idx++);
-                        cols += fmt::format("`{}`", k);
+                        auto pname = fmt::format("d{}", index++);
+                        columns += fmt::format("`{}`", k);
                         placeholders += fmt::format(":{}", pname);
                         bind_names.push_back(pname);
                         binds.push_back(v);
                     }
-                    sql = fmt::format("INSERT INTO `{}` ({}) VALUES ({})", query -> table_name, cols, placeholders);
+                    sql = fmt::format("INSERT INTO `{}` ({}) VALUES ({})", query -> table, columns, placeholders);
                 }
                 else if (query -> query_type == "delete") {
-                    sql = fmt::format("DELETE FROM `{}`", query -> table_name);
+                    sql = fmt::format("DELETE FROM `{}`", query -> table);
                     query -> apply_where(sql, binds, bind_names);
                 }
                 else if (query -> query_type == "update") {
                     std::string sets;
                     bool first = true;
-                    int idx = 0;
+                    int index = 0;
                     for (const auto& [k, v] : query -> data) {
-                        if (!is_column_allowed(query -> table_name, k)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                        if (!is_column_allowed(query -> table, k)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                         if (!first) sets += ", ";
                         first = false;
-                        auto pname = fmt::format("d{}", idx++);
+                        auto pname = fmt::format("d{}", index++);
                         sets += fmt::format("`{}` = :{}", k, pname);
                         bind_names.push_back(pname);
                         binds.push_back(v);
                     }
-                    sql = fmt::format("UPDATE `{}` SET {}", query -> table_name, sets);
+                    sql = fmt::format("UPDATE `{}` SET {}", query -> table, sets);
                     query -> apply_where(sql, binds, bind_names);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);

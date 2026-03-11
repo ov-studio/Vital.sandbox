@@ -31,9 +31,9 @@ namespace Vital::Sandbox::API {
             while (lua_next(state, index)) {
                 if (lua_isstring(state, -2)) {
                     std::string key = lua_tostring(state, -2);
-                    std::string val;
-                    if (lua_isstring(state, -1) || lua_isnumber(state, -1)) val = lua_tostring(state, -1);
-                    result[key] = val;
+                    std::string value;
+                    if (lua_isstring(state, -1) || lua_isnumber(state, -1)) value = lua_tostring(state, -1);
+                    result[key] = value;
                 }
                 lua_pop(state, 1);
             }
@@ -65,9 +65,9 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 for (const auto& row : rows) {
                     vm -> create_table();
-                    for (const auto& [col, val] : row) {
-                        vm -> push_string(val);
-                        vm -> set_table_field(col, -2);
+                    for (const auto& [column, value] : row) {
+                        vm -> push_string(value);
+                        vm -> set_table_field(column, -2);
                     }
                     vm -> set_table_field(index++, -2);
                 }
@@ -94,10 +94,10 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "where", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto col = vm -> get_string(2);
+                auto column = vm -> get_string(2);
                 auto op = vm -> get_string(3);
-                auto val = vm -> get_string(4);
-                self -> wheres.emplace_back(col, op, val);
+                auto value = vm -> get_string(4);
+                self -> wheres.emplace_back(column, op, value);
                 vm -> create_object(DatabaseQuery::base_name, self);
                 return 1;
             });
@@ -160,8 +160,8 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto table = vm -> get_string(2);
-                Vital::Tool::Database::TableSchema columns;
                 auto* state = vm -> get_state();
+                Vital::Tool::Database::TableSchema columns;
                 lua_pushnil(state);
                 while (lua_next(state, 3)) {
                     if (!lua_isstring(state, -2) || !lua_istable(state, -1)) {
@@ -169,21 +169,21 @@ namespace Vital::Sandbox::API {
                         continue;
                     }
                     auto column = std::string(lua_tostring(state, -2));
-                    int col_idx = lua_gettop(state);
-                    Vital::Tool::Database::Column def;
-                    lua_getfield(state, col_idx, "type");
-                    def.type = lua_isstring(state, -1) ? std::string(lua_tostring(state, -1)) : "VARCHAR(255)";
+                    int index = lua_gettop(state);
+                    Vital::Tool::Database::Column definition;
+                    lua_getfield(state, index, "type");
+                    definition.type = lua_isstring(state, -1) ? std::string(lua_tostring(state, -1)) : "VARCHAR(255)";
                     lua_pop(state, 1);
-                    lua_getfield(state, col_idx, "primary");
-                    def.primary = lua_isboolean(state, -1) ? lua_toboolean(state, -1) : false;
+                    lua_getfield(state, index, "primary");
+                    definition.primary = lua_isboolean(state, -1) ? lua_toboolean(state, -1) : false;
                     lua_pop(state, 1);
-                    lua_getfield(state, col_idx, "autoincrement");
-                    def.autoincrement = lua_isboolean(state, -1) ? lua_toboolean(state, -1) : false;
+                    lua_getfield(state, index, "autoincrement");
+                    definition.autoincrement = lua_isboolean(state, -1) ? lua_toboolean(state, -1) : false;
                     lua_pop(state, 1);
-                    lua_getfield(state, col_idx, "nullable");
-                    def.nullable = lua_isboolean(state, -1) ? lua_toboolean(state, -1) : true;
+                    lua_getfield(state, index, "nullable");
+                    definition.nullable = lua_isboolean(state, -1) ? lua_toboolean(state, -1) : true;
                     lua_pop(state, 1);
-                    columns[column] = def;
+                    columns[column] = definition;
                     lua_pop(state, 1);
                 }
                 self -> define(table, columns);
