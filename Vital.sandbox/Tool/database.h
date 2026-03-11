@@ -250,6 +250,10 @@ namespace Vital::Tool {
                     }
                     sql = fmt::format("INSERT INTO `{}` ({}) VALUES ({})", query -> table_name, cols, placeholders);
                 }
+                else if (query -> query_type == "delete") {
+                    sql = fmt::format("DELETE FROM `{}`", query -> table_name);
+                    query -> apply_where(sql, binds, bind_names);
+                }
                 else if (query -> query_type == "update") {
                     std::string sets;
                     bool first = true;
@@ -264,10 +268,6 @@ namespace Vital::Tool {
                         binds.push_back(v);
                     }
                     sql = fmt::format("UPDATE `{}` SET {}", query -> table_name, sets);
-                    query -> apply_where(sql, binds, bind_names);
-                }
-                else if (query -> query_type == "delete") {
-                    sql = fmt::format("DELETE FROM `{}`", query -> table_name);
                     query -> apply_where(sql, binds, bind_names);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
