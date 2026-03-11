@@ -38,7 +38,7 @@ namespace Vital::System {
     bool Database::is_column_allowed(const std::string& table, const std::string& col) const {
         auto it = schema.find(table);
         if (it == schema.end()) return false;
-        return it->second.find(col) != it->second.end();
+        return it -> second.find(col) != it -> second.end();
     }
 
     void Database::validate_op(const std::string& op) {
