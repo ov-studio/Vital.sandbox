@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                     if (!vm -> is_string(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     self -> select_cols.push_back(vm -> get_string(i));
                 }
-                vm -> create_object(DatabaseQuery::base_name, self);
+                vm -> create_object(base_name, self);
                 return 1;
             });
 
