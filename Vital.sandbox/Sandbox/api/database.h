@@ -162,10 +162,9 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto* state = vm -> get_state();
                 auto table = vm -> get_string(2);
-                auto* state = vm -> get_state();
                 Vital::Tool::Database::TableSchema columns;
-                auto* state = vm -> get_state();
                 vm -> push_nil();
                 while (lua_next(state, 3)) {
                     if (!vm -> is_string(-2) || !vm -> is_table(-1)) {
