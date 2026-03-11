@@ -89,16 +89,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "update", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto* L = vm -> get_state();
-                lua_pushnil(L);
-                while (lua_next(L, 2)) {
-                    if (lua_isstring(L, -2) && lua_isstring(L, -1))
-                        self -> data[lua_tostring(L, -2)] = lua_tostring(L, -1);
-                    lua_pop(L, 1);
-                }
-                self -> query_type = "update";
-                vm -> create_object(DatabaseQuery::base_name, self);
-                return 1;
+                return set_data_query(vm, self, "update", 2);
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "delete", [](auto vm, auto self) -> int {
@@ -108,17 +99,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self) -> int {
-                auto rows = self -> db -> fetch(self);
-                vm -> create_table();
-                int row_i = 1;
-                for (const auto& row : rows) {
-                    vm -> create_table();
-                    for (const auto& [col, val] : row) {
-                        vm -> push_string(val);
-                        vm -> set_table_field(col, -2);
-                    }
-                    vm -> set_table_field(row_i++, -2);
-                }
+                push_rows(vm, self -> db -> fetch(self));
                 self -> db -> destroy_query(self);
                 return 1;
             });
