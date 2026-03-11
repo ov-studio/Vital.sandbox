@@ -105,7 +105,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "insert", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                self -> data = read_table(vm -> get_state(), 2);
                 self -> data = read_table(vm, 2);
                 self -> query_type = "insert";
                 vm -> create_object(base_name, self);
