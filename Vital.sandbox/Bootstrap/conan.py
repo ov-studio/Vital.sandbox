@@ -20,7 +20,8 @@ class Conan:
             "conan", "install", ".",
             "--build=missing",
             "--output-folder=.conan",
-            f"--settings=build_type={self.env.Args['build_type']}"
+            f"--settings=build_type={self.env.Args['build_type']}",
+            "--settings=compiler.cppstd=17"
         ))
 
 BaseEnvironment.Conan = property(lambda self: Conan(self))
