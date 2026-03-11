@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
+#include <Vital.sandbox/Tool/stack.h>
 #include <soci/soci.h>
 #include <soci/mysql/soci-mysql.h>
 
@@ -72,6 +73,8 @@ namespace Vital::Tool {
 
             using TableSchema = std::unordered_map<std::string, Column>;
             using GlobalSchema = std::unordered_map<std::string, TableSchema>;
+            using Row = std::vector<std::pair<std::string, Vital::Tool::StackValue>>;
+            using Rows = std::vector<Row>;
         private:
             std::unique_ptr<soci::session> session;
             GlobalSchema schema;
@@ -178,7 +181,7 @@ namespace Vital::Tool {
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
 
-            std::vector<std::unordered_map<std::string, std::string>> fetch(QueryBuilder* query) {
+            Rows fetch(QueryBuilder* query) {
                 if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
                 if (!is_table_allowed(query -> table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 
@@ -205,25 +208,39 @@ namespace Vital::Tool {
                 st.exchange(soci::into(row_out));
                 st.define_and_bind();
                 st.execute();
-                std::vector<std::unordered_map<std::string, std::string>> rows;
+
+                Rows rows;
                 while (st.fetch()) {
-                    std::unordered_map<std::string, std::string> row_map;
+                    Row row;
                     for (std::size_t i = 0; i < row_out.size(); i++) {
                         const soci::column_properties& props = row_out.get_properties(i);
-                        std::string value;
-                        if (row_out.get_indicator(i) == soci::i_null) value = "";
+                        Vital::Tool::StackValue cell;
+                        if (row_out.get_indicator(i) == soci::i_null) cell = nullptr;
                         else {
-                            switch (props.get_data_type()) {
-                                case soci::dt_string:    value = row_out.get<std::string>(i);               break;
-                                case soci::dt_integer:   value = std::to_string(row_out.get<int>(i));       break;
-                                case soci::dt_long_long: value = std::to_string(row_out.get<long long>(i)); break;
-                                case soci::dt_double:    value = std::to_string(row_out.get<double>(i));    break;
-                                default:                 value = row_out.get<std::string>(i);               break;
+                            case soci::dt_string: {
+                                cell = row_out.get<std::string>(i);
+                                break;
+                            }
+                            case soci::dt_integer: {
+                                cell = (int32_t)row_out.get<int>(i);
+                                break;
+                            }
+                            case soci::dt_long_long: {
+                                cell = (int64_t)row_out.get<long long>(i);
+                                break;
+                            }
+                            case soci::dt_double: {
+                                cell = row_out.get<double>(i);
+                                break;
+                            }
+                            default: {
+                                cell = row_out.get<std::string>(i);
+                                break;
                             }
                         }
-                        row_map[props.get_name()] = value;
+                        row.emplace_back(props.get_name(), cell);
                     }
-                    rows.push_back(row_map);
+                    rows.push_back(row);
                 }
                 return rows;
             }

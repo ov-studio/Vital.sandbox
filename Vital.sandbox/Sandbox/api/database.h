@@ -66,14 +66,17 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 for (const auto& row : rows) {
                     vm -> create_table();
-                    for (const auto& [column, value] : row) {
-                        vm -> push_string(value);
+                    for (const auto& [column, cell] : row) {
+                        if (cell.is<std::nullptr_t>()) vm -> push_nil();
+                        else if (cell.is<std::string>()) vm -> push_string(cell.as<std::string>());
+                        else if (cell.is<int32_t>()) vm -> push_number(cell.as<int32_t>());
+                        else if (cell.is<int64_t>()) vm -> push_number((double)cell.as<int64_t>());
+                        else if (cell.is<double>()) vm -> push_number(cell.as<double>());
                         vm -> set_table_field(column, -2);
                     }
                     vm -> set_table_field(index++, -2);
                 }
                 self -> destroy();
-                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self) -> int {
