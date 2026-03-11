@@ -61,7 +61,6 @@ namespace Vital::System {
 
             static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& db_name, unsigned int port = 3306);
             void destroy();
-            void disconnect();
             void define(const std::string& table, const TableSchema& columns);
             void sync();
 

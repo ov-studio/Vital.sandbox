@@ -145,12 +145,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "disconnect", [](auto vm, auto self) -> int {
-                self -> disconnect();
-                vm -> push_bool(true);
-                return 1;
-            });
-
             vm_module::bind_method<base_class>(vm, base_name, "is_connected", [](auto vm, auto self) -> int {
                 vm -> push_bool(self -> is_connected());
                 return 1;

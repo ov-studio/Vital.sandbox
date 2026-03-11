@@ -68,18 +68,15 @@ namespace Vital::System {
     }
 
     void Database::destroy() {
-        disconnect();
+        if (session) {
+            session -> close();
+            session.reset();
+        }
         delete this;
     }
 
 
     // Managers //
-    void Database::disconnect() {
-        if (!session) return;
-        session -> close();
-        session.reset();
-    }
-
     void Database::define(const std::string& table, const TableSchema& columns) {
         if (!is_safe_identifier(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         for (const auto& [col, def] : columns) {
