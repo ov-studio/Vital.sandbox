@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
                 if (count < 2) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 for (int i = 2; i <= count; i++) {
                     if (!vm -> is_string(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                    self -> select_cols.push_back(vm -> get_string(i));
+                    self -> select.push_back(vm -> get_string(i));
                 }
                 vm -> create_object(base_name, self);
                 return 1;
