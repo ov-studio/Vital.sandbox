@@ -17,10 +17,11 @@
 
 
 /////////////////////////////
-// Vital: Engine: Database //
+// Vital: System: Database //
 /////////////////////////////
 
 namespace Vital::System {
+
     // Helpers //
     bool Database::is_safe_identifier(const std::string& name) {
         if (name.empty() || name.size() > 64) return false;
@@ -42,6 +43,18 @@ namespace Vital::System {
 
     void Database::validate_op(const std::string& op) {
         if (!valid_ops.count(op)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+    }
+
+    void Database::run_statement(const std::string& sql, const std::vector<std::string>& binds, const std::vector<std::string>& bind_names, soci::row* row_out) {
+        soci::statement st(*session);
+        st.alloc();
+        st.prepare(sql);
+        for (int i = 0; i < (int)binds.size(); i++) {
+            st.exchange(soci::use(binds[i], bind_names[i]));
+        }
+        if (row_out) st.exchange(soci::into(*row_out));
+        st.define_and_bind();
+        st.execute(row_out == nullptr);
     }
 
 
@@ -142,11 +155,14 @@ namespace Vital::System {
         }
 
         std::string sql = fmt::format("SELECT {} FROM `{}`", cols, query -> table_name);
-        std::vector<std::string> binds;
+        std::vector<std::string> binds, bind_names;
         if (!query -> wheres.empty()) {
             auto [where_clause, where_binds] = query -> build_where();
             sql += where_clause;
-            binds = where_binds;
+            for (int i = 0; i < (int)where_binds.size(); i++) {
+                bind_names.push_back(fmt::format("w{}", i));
+                binds.push_back(where_binds[i]);
+            }
         }
 
         soci::row row_out;
@@ -154,7 +170,7 @@ namespace Vital::System {
         st.alloc();
         st.prepare(sql);
         for (int i = 0; i < (int)binds.size(); i++) {
-            st.exchange(soci::use(binds[i], fmt::format("w{}", i)));
+            st.exchange(soci::use(binds[i], bind_names[i]));
         }
         st.exchange(soci::into(row_out));
         st.define_and_bind();
@@ -162,20 +178,19 @@ namespace Vital::System {
 
         std::vector<std::unordered_map<std::string, std::string>> rows;
         while (st.fetch()) {
-            const soci::row& r = row_out;
             std::unordered_map<std::string, std::string> row_map;
-            for (std::size_t i = 0; i < r.size(); i++) {
-                const soci::column_properties& props = r.get_properties(i);
+            for (std::size_t i = 0; i < row_out.size(); i++) {
+                const soci::column_properties& props = row_out.get_properties(i);
                 std::string val;
-                if (r.get_indicator(i) == soci::i_null) val = "";
-                else {
-                    // convert all types to string for Lua
+                if (row_out.get_indicator(i) == soci::i_null) {
+                    val = "";
+                } else {
                     switch (props.get_data_type()) {
-                        case soci::dt_string: val = r.get<std::string>(i); break;
-                        case soci::dt_integer: val = std::to_string(r.get<int>(i)); break;
-                        case soci::dt_long_long: val = std::to_string(r.get<long long>(i)); break;
-                        case soci::dt_double: val = std::to_string(r.get<double>(i)); break;
-                        default: val = r.get<std::string>(i); break;
+                        case soci::dt_string:    val = row_out.get<std::string>(i);                   break;
+                        case soci::dt_integer:   val = std::to_string(row_out.get<int>(i));           break;
+                        case soci::dt_long_long: val = std::to_string(row_out.get<long long>(i));     break;
+                        case soci::dt_double:    val = std::to_string(row_out.get<double>(i));        break;
+                        default:                 val = row_out.get<std::string>(i);                   break;
                     }
                 }
                 row_map[props.get_name()] = val;
@@ -190,19 +205,29 @@ namespace Vital::System {
         if (!is_table_allowed(query -> table_name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
 
         std::string sql;
-        std::vector<std::string> binds;
-        std::vector<std::string> bind_names;
+        std::vector<std::string> binds, bind_names;
+
+        auto append_where = [&]() {
+            if (!query -> wheres.empty()) {
+                auto [where_clause, where_binds] = query -> build_where();
+                sql += where_clause;
+                for (int i = 0; i < (int)where_binds.size(); i++) {
+                    bind_names.push_back(fmt::format("w{}", i));
+                    binds.push_back(where_binds[i]);
+                }
+            }
+        };
 
         if (query -> query_type == "insert") {
             std::string cols, placeholders;
             bool first = true;
-            int  idx   = 0;
+            int idx = 0;
             for (const auto& [k, v] : query -> data) {
                 if (!is_column_allowed(query -> table_name, k)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 if (!first) { cols += ", "; placeholders += ", "; }
                 first = false;
                 auto pname = fmt::format("d{}", idx++);
-                cols         += fmt::format("`{}`", k);
+                cols += fmt::format("`{}`", k);
                 placeholders += fmt::format(":{}", pname);
                 bind_names.push_back(pname);
                 binds.push_back(v);
@@ -212,7 +237,7 @@ namespace Vital::System {
         else if (query -> query_type == "update") {
             std::string sets;
             bool first = true;
-            int  idx   = 0;
+            int idx = 0;
             for (const auto& [k, v] : query -> data) {
                 if (!is_column_allowed(query -> table_name, k)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 if (!first) sets += ", ";
@@ -223,36 +248,14 @@ namespace Vital::System {
                 binds.push_back(v);
             }
             sql = fmt::format("UPDATE `{}` SET {}", query -> table_name, sets);
-            if (!query -> wheres.empty()) {
-                auto [where_clause, where_binds] = query -> build_where();
-                sql += where_clause;
-                for (int i = 0; i < (int)where_binds.size(); i++) {
-                    bind_names.push_back(fmt::format("w{}", i));
-                    binds.push_back(where_binds[i]);
-                }
-            }
+            append_where();
         }
         else if (query -> query_type == "delete") {
             sql = fmt::format("DELETE FROM `{}`", query -> table_name);
-            if (!query -> wheres.empty()) {
-                auto [where_clause, where_binds] = query -> build_where();
-                sql += where_clause;
-                for (int i = 0; i < (int)where_binds.size(); i++) {
-                    bind_names.push_back(fmt::format("w{}", i));
-                    binds.push_back(where_binds[i]);
-                }
-            }
+            append_where();
         }
         else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-
-        soci::statement st(*session);
-        st.alloc();
-        st.prepare(sql);
-        for (int i = 0; i < (int)binds.size(); i++) {
-            st.exchange(soci::use(binds[i], bind_names[i]));
-        }
-        st.define_and_bind();
-        st.execute(true);
+        run_statement(sql, binds, bind_names, nullptr);
         return true;
     }
 

@@ -44,14 +44,17 @@ namespace Vital::System {
 
             using TableSchema = std::unordered_map<std::string, ColumnDef>;
             using GlobalSchema = std::unordered_map<std::string, TableSchema>;
+
+
         private:
             std::unique_ptr<soci::session> session;
             GlobalSchema schema;
             inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
             static bool is_safe_identifier(const std::string& name);
+            static void validate_op(const std::string& op);
             bool is_table_allowed(const std::string& table) const;
             bool is_column_allowed(const std::string& table, const std::string& col) const;
-            static void validate_op(const std::string& op);
+            void run_statement(const std::string& sql, const std::vector<std::string>& binds, const std::vector<std::string>& bind_names, soci::row* row_out = nullptr);
         public:
             Database() = default;
             ~Database() = default;
