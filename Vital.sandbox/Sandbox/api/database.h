@@ -182,7 +182,7 @@ namespace Vital::Sandbox::API {
                     vm -> get_table_field("autoincrement", index);
                     definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
                     vm -> pop(1);
-                    vm -> get_table_field("nullable", count);
+                    vm -> get_table_field("nullable", index);
                     definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : true;
                     vm -> pop(1);
                     columns[column] = definition;
