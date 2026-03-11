@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
                     if (!vm -> is_string(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     self -> select_cols.push_back(vm -> get_string(i));
                 }
-                vm -> push_userdata(self);
+                vm -> create_object(DatabaseQuery::base_name, self);
                 return 1;
             });
 
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
                 auto op  = vm -> get_string(3);
                 auto val = vm -> get_string(4);
                 self -> wheres.emplace_back(col, op, val);
-                vm -> push_userdata(self);
+                vm -> create_object(DatabaseQuery::base_name, self);
                 return 1;
             });
 
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::API {
                     lua_pop(L, 1);
                 }
                 self -> query_type = "insert";
-                vm -> push_userdata(self);
+                vm -> create_object(DatabaseQuery::base_name, self);
                 return 1;
             });
 
@@ -76,13 +76,13 @@ namespace Vital::Sandbox::API {
                     lua_pop(L, 1);
                 }
                 self -> query_type = "update";
-                vm -> push_userdata(self);
+                vm -> create_object(DatabaseQuery::base_name, self);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "delete", [](auto vm, auto self) -> int {
                 self -> query_type = "delete";
-                vm -> push_userdata(self);
+                vm -> create_object(DatabaseQuery::base_name, self);
                 return 1;
             });
 
