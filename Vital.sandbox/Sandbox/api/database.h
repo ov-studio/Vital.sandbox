@@ -26,6 +26,36 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "database_query";
         using base_class = Vital::System::Database::QueryBuilder;
 
+        static std::unordered_map<std::string, std::string> read_table(lua_State* L, int index) {
+            std::unordered_map<std::string, std::string> result;
+            lua_pushnil(L);
+            while (lua_next(L, index)) {
+                if (lua_isstring(L, -2)) result[lua_tostring(L, -2)] = lua_tostring(L, -1);
+                lua_pop(L, 1);
+            }
+            return result;
+        }
+
+        static void push_rows(Machine* vm, const std::vector<std::unordered_map<std::string, std::string>>& rows) {
+            vm -> create_table();
+            int row_i = 1;
+            for (const auto& row : rows) {
+                vm -> create_table();
+                for (const auto& [col, val] : row) {
+                    vm -> push_string(val);
+                    vm -> set_table_field(col, -2);
+                }
+                vm -> set_table_field(row_i++, -2);
+            }
+        }
+
+        static int set_data_query(Machine* vm, base_class* self, const std::string& query_type, int table_index) {
+            self -> data = read_table(vm -> get_state(), table_index);
+            self -> query_type = query_type;
+            vm -> create_object(base_name, self);
+            return 1;
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<DatabaseQuery>(vm, base_name);
         }
@@ -54,16 +84,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "insert", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto* L = vm -> get_state();
-                lua_pushnil(L);
-                while (lua_next(L, 2)) {
-                    if (lua_isstring(L, -2) && lua_isstring(L, -1))
-                        self -> data[lua_tostring(L, -2)] = lua_tostring(L, -1);
-                    lua_pop(L, 1);
-                }
-                self -> query_type = "insert";
-                vm -> create_object(DatabaseQuery::base_name, self);
-                return 1;
+                return set_data_query(vm, self, "insert", 2);
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "update", [](auto vm, auto self) -> int {
