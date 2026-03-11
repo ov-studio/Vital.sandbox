@@ -25,17 +25,18 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "database_query";
         using base_class = Vital::Tool::Database::QueryBuilder;
 
-        static std::unordered_map<std::string, std::string> read_table(lua_State* state, int index) {
+        static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
             std::unordered_map<std::string, std::string> result;
+            auto* state = vm -> get_state();
             lua_pushnil(state);
             while (lua_next(state, index)) {
-                if (lua_isstring(state, -2)) {
-                    std::string key = lua_tostring(state, -2);
+                if (vm -> is_string(-2)) {
+                    std::string key = vm -> get_string(-2);
                     std::string value;
-                    if (lua_isstring(state, -1) || lua_isnumber(state, -1)) value = lua_tostring(state, -1);
+                    if (vm -> is_string(-1) || vm -> is_number(-1)) value = vm -> get_string(-1);
                     result[key] = value;
                 }
-                lua_pop(state, 1);
+                vm -> pop(1);
             }
             return result;
         }
