@@ -77,6 +77,7 @@ namespace Vital::Sandbox::API {
                     vm -> set_table_field(index++, -2);
                 }
                 self -> destroy();
+                return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self) -> int {
