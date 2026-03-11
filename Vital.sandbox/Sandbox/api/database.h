@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/System/database.h>
 
 
 ////////////////////////////////////
@@ -24,7 +23,7 @@
 namespace Vital::Sandbox::API {
     struct DatabaseQuery : vm_module {
         inline static const std::string base_name = "database_query";
-        using base_class = Vital::System::Database::QueryBuilder;
+        using base_class = Vital::Tool::Database::QueryBuilder;
 
         static std::unordered_map<std::string, std::string> read_table(lua_State* L, int index) {
             std::unordered_map<std::string, std::string> result;
@@ -119,7 +118,7 @@ namespace Vital::Sandbox::API {
 
     struct Database : vm_module {
         inline static const std::string base_name = "database";
-        using base_class = Vital::System::Database;
+        using base_class = Vital::Tool::Database;
 
         static void bind(Machine* vm) {
             vm_module::register_type<Database>(vm, base_name);
@@ -131,7 +130,7 @@ namespace Vital::Sandbox::API {
                 auto password = vm -> get_string(3);
                 auto db_name = vm -> get_string(4);
                 auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
-                auto* object = Vital::System::Database::create(host, user, password, db_name, port);
+                auto* object = Vital::Tool::Database::create(host, user, password, db_name, port);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -153,14 +152,14 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self) -> int {
                 if ((vm -> get_arg_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto table_name = vm -> get_string(2);
-                Vital::System::Database::TableSchema columns;
+                Vital::Tool::Database::TableSchema columns;
                 auto* L = vm -> get_state();
                 lua_pushnil(L);
                 while (lua_next(L, 3)) {
                     if (!lua_isstring(L, -2) || !lua_istable(L, -1)) { lua_pop(L, 1); continue; }
                     auto col_name = std::string(lua_tostring(L, -2));
                     int col_idx = lua_gettop(L);
-                    Vital::System::Database::ColumnDef def;
+                    Vital::Tool::Database::ColumnDef def;
                     lua_getfield(L, col_idx, "type");
                     def.type = lua_isstring(L, -1) ? std::string(lua_tostring(L, -1)) : "VARCHAR(255)";
                     lua_pop(L, 1);

@@ -21,6 +21,7 @@
 #include <Vital.sandbox/Tool/timer.h>
 #include <Vital.sandbox/Tool/file.h>
 #include <Vital.sandbox/Tool/event.h>
+#include <Vital.sandbox/Tool/database.h>
 #include <Vital.sandbox/Tool/network.h>
 #include <Vital.sandbox/Tool/rest.h>
 #include <Vital.sandbox/Tool/inspect.h>
