@@ -166,7 +166,7 @@ namespace Vital::Tool {
             }
 
             void drop(const std::string& table) {
-                if (!session) throw Vital::Log::fetch("request-failed",    Vital::Log::Type::Error);
+                if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
                 if (!is_table_allowed(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 *session << fmt::format("DROP TABLE IF EXISTS `{}`", table);
                 schema.erase(table);
@@ -177,7 +177,7 @@ namespace Vital::Tool {
                 if (!is_table_allowed(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
-        
+
             std::vector<std::unordered_map<std::string, std::string>> fetch(QueryBuilder* query) {
                 if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
                 if (!is_table_allowed(query -> table_name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
