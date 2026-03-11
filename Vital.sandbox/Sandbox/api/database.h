@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_bool(true);
                 return 1;
             });
-
+            
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self) -> int {
                 int index = 1;
                 auto rows = self -> db -> fetch(self);
@@ -75,13 +75,13 @@ namespace Vital::Sandbox::API {
                 self -> destroy();
                 return 1;
             });
-        
+
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self) -> int {
                 vm -> push_bool(self -> db -> execute(self));
                 self -> destroy();
                 return 1;
             });
-        
+
             vm_module::bind_method<base_class>(vm, base_name, "select", [](auto vm, auto self) -> int {
                 int count = vm -> get_arg_count();
                 if (count < 2) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
