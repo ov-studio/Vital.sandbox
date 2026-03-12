@@ -255,13 +255,12 @@ namespace Vital::Sandbox::API {
                 vm -> get_table_field("drop", index);
                 if (vm -> is_table(-1)) {
                     int drop_index = vm -> get_count();
-                    vm -> push_nil();
-                    while (lua_next(state, drop_index)) {
-                        // Accept both  { col = true }  and  { col = {} }  forms
-                        if (vm -> is_string(-2)) {
+                    for (int i = 1; i <= vm -> get_length(drop_index); i++) {
+                        vm -> get_table_field(i, drop_index);
+                        if (vm -> is_string(-1)) {
                             base_class::SchemaAction step;
                             step.type = base_class::SchemaAction::Type::Drop;
-                            step.column = vm -> get_string(-2);
+                            step.column = vm -> get_string(-1);
                             actions.push_back(step);
                         }
                         vm -> pop(1);
