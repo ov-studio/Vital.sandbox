@@ -135,6 +135,36 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "database";
         using base_class = Vital::Tool::Database;
 
+        static std::vector<base_class::SchemaAction> read_schema_actions(Machine* vm, int index, base_class::SchemaAction::Type action) {
+            std::vector<base_class::SchemaAction> actions;
+            auto state = vm -> get_state();
+            vm -> push_nil();
+            while (lua_next(state, index)) {
+                if (!vm -> is_string(-2) || !vm -> is_table(-1)) {
+                    vm -> pop(1);
+                    continue;
+                }
+                auto column = vm -> get_string(-2);
+                int index = vm -> get_count();
+                base_class::Column definition;
+                vm -> get_table_field("type", index);
+                definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
+                vm -> pop(1);
+                vm -> get_table_field("primary", index);
+                definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
+                vm -> pop(1);
+                vm -> get_table_field("autoincrement", index);
+                definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
+                vm -> pop(1);
+                vm -> get_table_field("nullable", index);
+                definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : true;
+                vm -> pop(1);
+                actions.push_back({action, column, definition});
+                vm -> pop(1);
+            }
+            return actions;
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Database>(vm, base_name);
 
@@ -145,7 +175,7 @@ namespace Vital::Sandbox::API {
                 auto password = vm -> get_string(3);
                 auto database = vm -> get_string(4);
                 auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
-                auto object = Vital::Tool::Database::create(host, user, password, database, port);
+                auto object = base_class::create(host, user, password, database, port);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -168,7 +198,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_state();
                 auto table = vm -> get_string(2);
-                Vital::Tool::Database::TableSchema columns;
+                base_class::TableSchema columns;
                 vm -> push_nil();
                 while (lua_next(state, 3)) {
                     if (!vm -> is_string(-2) || !vm -> is_table(-1)) {
@@ -177,7 +207,7 @@ namespace Vital::Sandbox::API {
                     }
                     auto column = vm -> get_string(-2);
                     int index = vm -> get_count();
-                    Vital::Tool::Database::Column definition;
+                    base_class::Column definition;
                     vm -> get_table_field("type", index);
                     definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
                     vm -> pop(1);
@@ -200,6 +230,46 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "sync", [](auto vm, auto self) -> int {
                 self -> sync();
+                vm -> push_bool(true);
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto state = vm -> get_state();
+                auto table = vm -> get_string(2);
+                int index = 3;
+                std::vector<base_class::SchemaAction> actions;
+                vm -> get_table_field("add", index);
+                if (vm -> is_table(-1)) {
+                    auto steps = read_schema_actions(vm, vm -> get_count(), base_class::SchemaAction::Type::Add);
+                    actions.insert(actions.end(), steps.begin(), steps.end());
+                }
+                vm -> pop(1);
+                vm -> get_table_field("modify", index);
+                if (vm -> is_table(-1)) {
+                    auto steps = read_schema_actions(vm, vm -> get_count(), base_class::SchemaAction::Type::Modify);
+                    actions.insert(actions.end(), steps.begin(), steps.end());
+                }
+                vm -> pop(1);
+                vm -> get_table_field("drop", index);
+                if (vm -> is_table(-1)) {
+                    int drop_index = vm -> get_count();
+                    vm -> push_nil();
+                    while (lua_next(state, drop_index)) {
+                        // Accept both  { col = true }  and  { col = {} }  forms
+                        if (vm -> is_string(-2)) {
+                            base_class::SchemaAction step;
+                            step.type = base_class::SchemaAction::Type::Drop;
+                            step.column = vm -> get_string(-2);
+                            actions.push_back(step);
+                        }
+                        vm -> pop(1);
+                    }
+                }
+                vm -> pop(1);
+                if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                self -> alter(table, actions);
                 vm -> push_bool(true);
                 return 1;
             });
