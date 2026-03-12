@@ -34,6 +34,13 @@ namespace Vital::Tool {
                 bool autoincrement = false;
             };
 
+            struct SchemaAction {
+                enum class Type { Add, Drop, Modify };
+                Type type;
+                std::string column;
+                Column definition;
+            };
+
             struct QueryBuilder {
                 Database* db;
                 std::string table;
@@ -97,6 +104,13 @@ namespace Vital::Tool {
                 return it -> second.find(column) != it -> second.end();
             }
 
+            std::string build_column_definition(const std::string& column, const Column& definition) {
+                std::string statement = fmt::format("`{}` {}", column, definition.type);
+                if (definition.autoincrement) statement += " AUTO_INCREMENT";
+                if (!definition.nullable) statement += " NOT NULL";
+                return statement;
+            }
+
             void run_statement(const std::string& sql, const std::vector<std::string>& binds, const std::vector<std::string>& bind_names, soci::row* row_out = nullptr) {
                 soci::statement st(*session);
                 st.alloc();
@@ -149,9 +163,7 @@ namespace Vital::Tool {
                     for (const auto& [column, definition] : columns) {
                         if (!first) sql += ", ";
                         first = false;
-                        sql += fmt::format("`{}` {}", column, definition.type);
-                        if (definition.autoincrement) sql += " AUTO_INCREMENT";
-                        if (!definition.nullable) sql += " NOT NULL";
+                        sql += build_column_definition(column, definition);
                         if (definition.primary) primary_key = column;
                     }
                     if (!primary_key.empty()) sql += fmt::format(", PRIMARY KEY (`{}`)", primary_key);
@@ -159,7 +171,7 @@ namespace Vital::Tool {
                     *session << sql;
                 }
             }
-        
+
             QueryBuilder* table(const std::string& name) {
                 if (!is_table_allowed(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto query = new QueryBuilder();
@@ -179,6 +191,45 @@ namespace Vital::Tool {
                 if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
                 if (!is_table_allowed(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
+            }
+
+            void alter(const std::string& table, const std::vector<SchemaAction>& actions) {
+                if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
+                if (!is_table_allowed(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+                std::string sql = fmt::format("ALTER TABLE `{}` ", table);
+                bool first = true;
+                for (const auto& action : actions) {
+                    if (!is_safe_identifier(action.column)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    if (!first) sql += ", ";
+                    first = false;
+                    switch (action.type) {
+                        case SchemaAction::Type::Add:
+                            sql += fmt::format("ADD COLUMN {}", build_column_definition(action.column, action.definition));
+                            break;
+                        case SchemaAction::Type::Drop:
+                            sql += fmt::format("DROP COLUMN `{}`", action.column);
+                            break;
+                        case SchemaAction::Type::Modify:
+                            sql += fmt::format("MODIFY COLUMN {}", build_column_definition(action.column, action.definition));
+                            break;
+                    }
+                }
+                *session << sql;
+
+                auto& table_schema = schema[table];
+                for (const auto& action : actions) {
+                    switch (action.type) {
+                        case SchemaAction::Type::Add:
+                        case SchemaAction::Type::Modify:
+                            table_schema[action.column] = action.definition;
+                            break;
+                        case SchemaAction::Type::Drop:
+                            table_schema.erase(action.column);
+                            break;
+                    }
+                }
             }
 
             Rows fetch(QueryBuilder* query) {
