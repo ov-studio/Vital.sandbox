@@ -60,6 +60,46 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             
+            vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                int index = 2;
+                std::vector<Vital::Tool::Database::SchemaAction> actions;
+                vm -> get_table_field("add", index);
+                if (vm -> is_table(-1)) {
+                    auto step_index = vm -> get_count();
+                    auto steps = Database::read_schema_actions(vm, step_index, Vital::Tool::Database::SchemaAction::Type::Add);
+                    actions.insert(actions.end(), steps.begin(), steps.end());
+                }
+                vm -> pop(1);
+                vm -> get_table_field("modify", index);
+                if (vm -> is_table(-1)) {
+                    auto step_index = vm -> get_count();
+                    auto steps = Database::read_schema_actions(vm, step_index, Vital::Tool::Database::SchemaAction::Type::Modify);
+                    actions.insert(actions.end(), steps.begin(), steps.end());
+                }
+                vm -> pop(1);
+                vm -> get_table_field("drop", index);
+                if (vm -> is_table(-1)) {
+                    auto step_index = vm -> get_count();
+                    for (int i = 1; i <= vm -> get_length(step_index); i++) {
+                        vm -> get_table_field(i, step_index);
+                        if (vm -> is_string(-1)) {
+                            Vital::Tool::Database::SchemaAction step;
+                            step.type = Vital::Tool::Database::SchemaAction::Type::Drop;
+                            step.column = vm -> get_string(-1);
+                            actions.push_back(step);
+                        }
+                        vm -> pop(1);
+                    }
+                }
+                vm -> pop(1);
+                if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                self -> db -> alter(self -> table, actions);
+                self -> destroy();
+                vm -> push_bool(true);
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self) -> int {
                 int index = 1;
                 auto rows = self -> db -> fetch(self);
@@ -145,7 +185,7 @@ namespace Vital::Sandbox::API {
                     continue;
                 }
                 auto column = vm -> get_string(-2);
-                int index = vm -> get_count();
+                auto index = vm -> get_count();
                 base_class::Column definition;
                 vm -> get_table_field("type", index);
                 definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
@@ -206,7 +246,7 @@ namespace Vital::Sandbox::API {
                         continue;
                     }
                     auto column = vm -> get_string(-2);
-                    int index = vm -> get_count();
+                    auto index = vm -> get_count();
                     base_class::Column definition;
                     vm -> get_table_field("type", index);
                     definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
@@ -230,45 +270,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "sync", [](auto vm, auto self) -> int {
                 self -> sync();
-                vm -> push_bool(true);
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_table(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto state = vm -> get_state();
-                auto table = vm -> get_string(2);
-                int index = 3;
-                std::vector<base_class::SchemaAction> actions;
-                vm -> get_table_field("add", index);
-                if (vm -> is_table(-1)) {
-                    auto steps = read_schema_actions(vm, vm -> get_count(), base_class::SchemaAction::Type::Add);
-                    actions.insert(actions.end(), steps.begin(), steps.end());
-                }
-                vm -> pop(1);
-                vm -> get_table_field("modify", index);
-                if (vm -> is_table(-1)) {
-                    auto steps = read_schema_actions(vm, vm -> get_count(), base_class::SchemaAction::Type::Modify);
-                    actions.insert(actions.end(), steps.begin(), steps.end());
-                }
-                vm -> pop(1);
-                vm -> get_table_field("drop", index);
-                if (vm -> is_table(-1)) {
-                    int drop_index = vm -> get_count();
-                    for (int i = 1; i <= vm -> get_length(drop_index); i++) {
-                        vm -> get_table_field(i, drop_index);
-                        if (vm -> is_string(-1)) {
-                            base_class::SchemaAction step;
-                            step.type = base_class::SchemaAction::Type::Drop;
-                            step.column = vm -> get_string(-1);
-                            actions.push_back(step);
-                        }
-                        vm -> pop(1);
-                    }
-                }
-                vm -> pop(1);
-                if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                self -> alter(table, actions);
                 vm -> push_bool(true);
                 return 1;
             });
