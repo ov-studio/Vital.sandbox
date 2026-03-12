@@ -46,6 +46,13 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
+                self -> destroy();
+                vm_module::release_userdata(vm, 1);
+                vm -> push_bool(true);
+                return 1;
+            });
+            
             vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self) -> int {
                 self -> db -> drop(self -> table);
                 self -> destroy();
