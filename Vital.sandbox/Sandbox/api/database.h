@@ -22,7 +22,7 @@
 
 namespace Vital::Sandbox::API {
     struct DatabaseQuery : vm_module {
-        inline static const std::string base_name = "database_query";
+        inline static const std::string base_name = "db_query";
         using base_class = Vital::Tool::Database::QueryBuilder;
 
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
