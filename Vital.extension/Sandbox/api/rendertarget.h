@@ -35,26 +35,26 @@ namespace Vital::Sandbox::API {
                 auto width = vm -> get_int(1);
                 auto height = vm -> get_int(2);
                 auto transparent = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                auto object = Vital::Engine::Rendertarget::create(width, height, transparent);
+                auto object = base_class::create(width, height, transparent);
                 vm -> create_object(base_name, object);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "set_active", [](auto vm) -> int {
-                Vital::Engine::Rendertarget* rt = nullptr;
+                base_class* rt = nullptr;
                 if (vm -> get_count() >= 1) {
                     if (!vm -> is_userdata(1) || !vm_module::is_userdata(vm, base_name, 1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                Vital::Engine::Rendertarget::set_active(rt, clear, instant);
+                base_class::set_active(rt, clear, instant);
                 vm -> push_bool(true);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_active", [](auto vm) -> int {
-                auto object = Vital::Engine::Rendertarget::get_active();
+                auto object = base_class::get_active();
                 if (!object) vm -> push_bool(false);
                 else vm -> create_object(base_name, object);
                 return 1;
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "set_active", [](auto vm, auto self) -> int {
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                Vital::Engine::Rendertarget::set_active(self, clear, instant);
+                base_class::set_active(self, clear, instant);
                 vm -> push_bool(true);
                 return 1;
             });

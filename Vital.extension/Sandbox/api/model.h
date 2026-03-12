@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "is_loaded", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                vm -> push_bool(Vital::Engine::Model::is_model_loaded(name));
+                vm -> push_bool(base_class::is_model_loaded(name));
                 return 1;
             });
 
@@ -40,21 +40,21 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
                 auto path = vm -> get_string(2);
-                vm -> push_bool(Vital::Engine::Model::load(name, path));
+                vm -> push_bool(base_class::load(name, path));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "unload", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                vm -> push_bool(Vital::Engine::Model::unload(name));
+                vm -> push_bool(base_class::unload(name));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                auto object = Vital::Engine::Model::create(name);
+                auto object = base_class::create(name);
                 vm -> create_object(base_name, object);
                 return 1;
             });

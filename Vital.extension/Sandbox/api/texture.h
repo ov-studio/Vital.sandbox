@@ -33,7 +33,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                auto object = Vital::Engine::Texture::create_texture_2d(path);
+                auto object = base_class::create_texture_2d(path);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                auto object = Vital::Engine::Texture::create_svg(path);
+                auto object = base_class::create_svg(path);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "create_from_raw", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto raw = vm -> get_string(1);
-                auto object = Vital::Engine::Texture::create_svg_from_raw(raw);
+                auto object = base_class::create_svg_from_raw(raw);
                 vm -> create_object(base_name, object);
                 return 1;
             });
