@@ -80,6 +80,7 @@ namespace Vital::Tool {
 
             using TableSchema = std::unordered_map<std::string, Column>;
             using GlobalSchema = std::unordered_map<std::string, TableSchema>;
+            using SchemaActions = std::vector<SchemaAction>;
             using Row = std::vector<std::pair<std::string, Vital::Tool::StackValue>>;
             using Rows = std::vector<Row>;
         private:
@@ -104,7 +105,7 @@ namespace Vital::Tool {
                 return it -> second.find(column) != it -> second.end();
             }
 
-            std::string build_column_definition(const std::string& column, const Column& definition) {
+            std::string build_schema_definition(const std::string& column, const Column& definition) {
                 std::string statement = fmt::format("`{}` {}", column, definition.type);
                 if (definition.autoincrement) statement += " AUTO_INCREMENT";
                 if (!definition.nullable) statement += " NOT NULL";
@@ -163,7 +164,7 @@ namespace Vital::Tool {
                     for (const auto& [column, definition] : columns) {
                         if (!first) sql += ", ";
                         first = false;
-                        sql += build_column_definition(column, definition);
+                        sql += build_schema_definition(column, definition);
                         if (definition.primary) primary_key = column;
                     }
                     if (!primary_key.empty()) sql += fmt::format(", PRIMARY KEY (`{}`)", primary_key);
@@ -193,7 +194,7 @@ namespace Vital::Tool {
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
 
-            void alter(const std::string& table, const std::vector<SchemaAction>& actions) {
+            void alter(const std::string& table, const SchemaActions& actions) {
                 if (!session) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error);
                 if (!is_table_allowed(table)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -206,13 +207,13 @@ namespace Vital::Tool {
                     first = false;
                     switch (action.type) {
                         case SchemaAction::Type::Add:
-                            sql += fmt::format("ADD COLUMN {}", build_column_definition(action.column, action.definition));
+                            sql += fmt::format("ADD COLUMN {}", build_schema_definition(action.column, action.definition));
                             break;
                         case SchemaAction::Type::Drop:
                             sql += fmt::format("DROP COLUMN `{}`", action.column);
                             break;
                         case SchemaAction::Type::Modify:
-                            sql += fmt::format("MODIFY COLUMN {}", build_column_definition(action.column, action.definition));
+                            sql += fmt::format("MODIFY COLUMN {}", build_schema_definition(action.column, action.definition));
                             break;
                     }
                 }

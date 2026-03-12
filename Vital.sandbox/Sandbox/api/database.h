@@ -52,29 +52,27 @@ namespace Vital::Sandbox::API {
                 vm -> push_bool(true);
                 return 1;
             });
-            
+
             vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self) -> int {
                 self -> db -> truncate(self -> table);
                 self -> destroy();
                 vm -> push_bool(true);
                 return 1;
             });
-            
+
             vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 int index = 2;
-                std::vector<Vital::Tool::Database::SchemaAction> actions;
+                Vital::Tool::Database::SchemaActions actions;
                 vm -> get_table_field("add", index);
                 if (vm -> is_table(-1)) {
-                    auto step_index = vm -> get_count();
-                    auto steps = Database::read_schema_actions(vm, step_index, Vital::Tool::Database::SchemaAction::Type::Add);
+                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Vital::Tool::Database::SchemaAction::Type::Add);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
                 vm -> get_table_field("modify", index);
                 if (vm -> is_table(-1)) {
-                    auto step_index = vm -> get_count();
-                    auto steps = Database::read_schema_actions(vm, step_index, Vital::Tool::Database::SchemaAction::Type::Modify);
+                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Vital::Tool::Database::SchemaAction::Type::Modify);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
@@ -175,8 +173,25 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "database";
         using base_class = Vital::Tool::Database;
 
-        static std::vector<base_class::SchemaAction> read_schema_actions(Machine* vm, int index, base_class::SchemaAction::Type action) {
-            std::vector<base_class::SchemaAction> actions;
+        static base_class::Column read_schema_definition(Machine* vm, int index) {
+            base_class::Column definition;
+            vm -> get_table_field("type", index);
+            definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
+            vm -> pop(1);
+            vm -> get_table_field("primary", index);
+            definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
+            vm -> pop(1);
+            vm -> get_table_field("autoincrement", index);
+            definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
+            vm -> pop(1);
+            vm -> get_table_field("nullable", index);
+            definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : true;
+            vm -> pop(1);
+            return definition;
+        }
+
+        static base_class::SchemaActions read_schema_actions(Machine* vm, int index, base_class::SchemaAction::Type action) {
+            base_class::SchemaActions actions;
             auto state = vm -> get_state();
             vm -> push_nil();
             while (lua_next(state, index)) {
@@ -185,21 +200,7 @@ namespace Vital::Sandbox::API {
                     continue;
                 }
                 auto column = vm -> get_string(-2);
-                auto index = vm -> get_count();
-                base_class::Column definition;
-                vm -> get_table_field("type", index);
-                definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
-                vm -> pop(1);
-                vm -> get_table_field("primary", index);
-                definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
-                vm -> pop(1);
-                vm -> get_table_field("autoincrement", index);
-                definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
-                vm -> pop(1);
-                vm -> get_table_field("nullable", index);
-                definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : true;
-                vm -> pop(1);
-                actions.push_back({action, column, definition});
+                actions.push_back({action, column, read_schema_definition(vm, vm -> get_count())});
                 vm -> pop(1);
             }
             return actions;
@@ -246,21 +247,7 @@ namespace Vital::Sandbox::API {
                         continue;
                     }
                     auto column = vm -> get_string(-2);
-                    auto index = vm -> get_count();
-                    base_class::Column definition;
-                    vm -> get_table_field("type", index);
-                    definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : "VARCHAR(255)";
-                    vm -> pop(1);
-                    vm -> get_table_field("primary", index);
-                    definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
-                    vm -> pop(1);
-                    vm -> get_table_field("autoincrement", index);
-                    definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : false;
-                    vm -> pop(1);
-                    vm -> get_table_field("nullable", index);
-                    definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : true;
-                    vm -> pop(1);
-                    columns[column] = definition;
+                    columns[column] = read_schema_definition(vm, vm -> get_count());
                     vm -> pop(1);
                 }
                 self -> define(table, columns);
