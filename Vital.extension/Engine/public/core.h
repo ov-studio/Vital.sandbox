@@ -44,7 +44,7 @@ namespace Vital::Engine {
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
-            godot::Vector3 Core::get_screen_position_from_world(godot::Vector3 position, float edge_margin);
+            godot::Vector3 Core::get_screen_position_from_world(godot::Vector3 position, float edge_margin = 0.0f);
             #endif
     };
 }
