@@ -23,6 +23,7 @@
 
 namespace Vital::Log {
     enum class Type {
+        SBox,
         Info,
         Error,
         Warning
@@ -31,6 +32,11 @@ namespace Vital::Log {
     struct Command {
         std::string_view code;
         std::string_view message;
+    };
+
+    struct SBox : std::runtime_error {
+        using std::runtime_error::runtime_error;
+        static constexpr std::string_view label = "sbox";
     };
 
     struct Info : std::runtime_error {
@@ -66,6 +72,7 @@ namespace Vital::Log {
 
     inline bool is_type(std::string_view label) {
         for (const auto& type : {
+            std::string_view(SBox::label),
             std::string_view(Info::label),
             std::string_view(Warning::label),
             std::string_view(Error::label)
@@ -84,6 +91,7 @@ namespace Vital::Log {
     inline std::runtime_error fetch(std::string_view code, Type type = Type::Info, std::string_view message = "") {
         auto formatted = fmt::format(std::string(resolve(code)), std::string(message));
         switch (type) {
+            case Type::SBox: return SBox(formatted);
             case Type::Info: return Info(formatted);
             case Type::Warning: return Warning(formatted);
             default: return Error(formatted);
