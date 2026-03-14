@@ -131,7 +131,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_bool(true);
                 return 1;
             });
-        
+
             vm_module::bind_method<base_class>(vm, base_name, "set_animation_speed", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto speed = vm -> get_float(2);
@@ -188,7 +188,7 @@ namespace Vital::Sandbox::API {
                 }
                 return 1;
             });
-        
+
             vm_module::bind_method<base_class>(vm, base_name, "get_bones", [](auto vm, auto self) -> int {
                 auto list = self -> get_bones();
                 vm -> create_table();
@@ -216,7 +216,14 @@ namespace Vital::Sandbox::API {
                 vm -> push_number(self -> get_blendshape_value(component, blendshape));
                 return 1;
             });
-        
+
+            vm_module::bind_method<base_class>(vm, base_name, "get_bone_position", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto bone = vm -> get_string(2);
+                vm -> push_vector3(self -> get_bone_position(bone));
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "get_current_animation", [](auto vm, auto self) -> int {
                 vm -> push_string(self -> get_current_animation());
                 return 1;
