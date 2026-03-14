@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if !defined(Vital_SDK_Client)
 #include <Vital.sandbox/Sandbox/machine.h>
 
 
@@ -279,3 +280,9 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+#else
+namespace Vital::Sandbox::API {
+    struct DatabaseQuery : vm_module {};
+    struct Database : vm_module {};
+}
+#endif

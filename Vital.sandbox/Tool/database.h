@@ -12,6 +12,7 @@
 // Imports //
 //////////////
 
+#if !defined(Vital_SDK_Client)
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
@@ -354,3 +355,4 @@ namespace Vital::Tool {
             }
     };
 }
+#endif
