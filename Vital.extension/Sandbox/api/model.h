@@ -189,6 +189,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
+            vm_module::bind_method<base_class>(vm, base_name, "get_bones", [](auto vm, auto self) -> int {
+                auto list = self -> get_bones();
+                vm -> create_table();
+                for (int i = 0; i < (int)list.size(); i++) {
+                    vm -> push_string(list[i]);
+                    vm -> set_table_field(i + 1, -2);
+                }
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "get_animations", [](auto vm, auto self) -> int {
                 auto list = self -> get_animations();
                 vm -> create_table();
