@@ -28,21 +28,6 @@ namespace Vital::Engine {
 
 
     // Helpers //
-    bool Model::match_wildcard(const std::string& pattern, const std::string& name) {
-        const char* p = pattern.c_str();
-        const char* n = name.c_str();
-        const char* star = nullptr;
-        const char* match = n;
-        while (*n) {
-            if (*p == '*') { star = p++; match = n; }
-            else if (*p == *n) { p++; n++; }
-            else if (star) { p = star + 1; n = ++match; }
-            else return false;
-        }
-        while (*p == '*') p++;
-        return *p == '\0';
-    }
-
     godot::MeshInstance3D* Model::find_mesh_node(godot::Node* node, const std::string& path) {
         if (!node) return nullptr;
         auto separator = path.find('/');

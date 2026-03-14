@@ -36,7 +36,6 @@ namespace Vital::Engine {
             std::string model_name;
             godot::AnimationPlayer* animation_player = nullptr;
             inline static Models cache_loaded;
-            static bool match_wildcard(const std::string& pattern, const std::string& name);
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
