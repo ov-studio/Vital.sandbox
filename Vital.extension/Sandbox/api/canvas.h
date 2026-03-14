@@ -28,11 +28,11 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Canvas;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "get_screen_position_from_world", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "world_to_screen", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector3(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector3(1);
                 auto padding = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
-                auto result = base_class::get_singleton() -> get_screen_position_from_world(position, padding);
+                auto result = base_class::get_singleton() -> world_to_screen(position, padding);
                 vm -> push_vector2({result.x, result.y});
                 vm -> push_number(result.z);
                 return 2;

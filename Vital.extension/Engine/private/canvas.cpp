@@ -196,7 +196,7 @@ namespace Vital::Engine {
 
 
     // APIs //
-    godot::Vector3 Canvas::get_screen_position_from_world(godot::Vector3 position, float padding) {
+    godot::Vector3 Canvas::world_to_screen(godot::Vector3 position, float padding) {
         godot::Vector3 result = {-1, -1, -1};
         auto viewport = get_singleton() -> get_viewport();
         auto camera = viewport ? viewport -> get_camera_3d() : nullptr;

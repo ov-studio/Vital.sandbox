@@ -128,7 +128,7 @@ namespace Vital::Engine {
 
 
             // APIs //
-            godot::Vector3 get_screen_position_from_world(godot::Vector3 position, float padding = 0.0f);
+            godot::Vector3 world_to_screen(godot::Vector3 position, float padding = 0.0f);
 
             void draw_line(
                 godot::PackedVector2Array points,
