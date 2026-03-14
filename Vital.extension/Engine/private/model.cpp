@@ -28,6 +28,21 @@ namespace Vital::Engine {
 
 
     // Helpers //
+    bool Model::match_wildcard(const std::string& pattern, const std::string& name) {
+        const char* p = pattern.c_str();
+        const char* n = name.c_str();
+        const char* star = nullptr;
+        const char* match = n;
+        while (*n) {
+            if (*p == '*') { star = p++; match = n; }
+            else if (*p == *n) { p++; n++; }
+            else if (star) { p = star + 1; n = ++match; }
+            else return false;
+        }
+        while (*p == '*') p++;
+        return *p == '\0';
+    }
+
     godot::MeshInstance3D* Model::find_mesh_node(godot::Node* node, const std::string& path) {
         if (!node) return nullptr;
         auto separator = path.find('/');
@@ -192,24 +207,46 @@ namespace Vital::Engine {
     }
 
     bool Model::set_component_visible(const std::string& component, bool state) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        mesh -> set_visible(state);
+        auto exec = [&](const std::string& name) {
+            godot::MeshInstance3D* mesh = find_mesh_node(this, name);
+            if (mesh) mesh -> set_visible(state);
+            return mesh;
+        };
+        if (component.find('*') != std::string::npos) {
+            for (const auto& name : get_components()) {
+                if (match_wildcard(component, name)) {
+                    exec(name);
+                }
+            }
+        }
+        else if (!exec(component)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         return true;
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int material_index = find_material_index(mesh, material);
-        if (material_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        if (!state) {
-            godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
-            invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
-            invisible -> set_albedo(godot::Color(0, 0, 0, 0));
-            mesh -> set_surface_override_material(material_index, invisible);
+        auto exec = [&](int index) {
+            if (!state) {
+                godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
+                invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+                invisible -> set_albedo(godot::Color(0, 0, 0, 0));
+                mesh -> set_surface_override_material(index, invisible);
+            }
+            else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
+        };
+        if (material.find('*') != std::string::npos) {
+            for (const auto& name : get_materials(component)) {
+                if (!match_wildcard(material, name)) continue;
+                int index = find_material_index(mesh, name);
+                if (index >= 0) exec(index);
+            }
         }
-        else mesh -> set_surface_override_material(material_index, godot::Ref<godot::Material>());
+        else {
+            int index = find_material_index(mesh, material);
+            if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+            exec(index);
+        }
         return true;
     }
 
