@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Sandbox/api/core.h>
 #include <Vital.extension/Sandbox/api/canvas.h>
 #include <Vital.extension/Sandbox/api/model.h>
 #include <Vital.extension/Sandbox/api/webview.h>
@@ -39,6 +40,7 @@ namespace Vital::Engine {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine({
+            Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Core>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Canvas>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Model>(),
             Vital::Sandbox::vm_module::make_api<Vital::Sandbox::API::Webview>(),
