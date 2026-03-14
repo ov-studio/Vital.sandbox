@@ -216,6 +216,18 @@ namespace Vital::Engine {
         return result;
     }
 
+    godot::Vector3 Canvas::screen_to_world(godot::Vector2 position, float depth) {
+        godot::Vector3 result = {-1, -1, -1};
+        auto viewport = get_singleton() -> get_viewport();
+        auto camera = viewport ? viewport -> get_camera_3d() : nullptr;
+        if (camera) {
+            auto origin = camera -> project_ray_origin(position);
+            auto direction = camera -> project_ray_normal(position);
+            result = origin + direction*depth;
+        }
+        return result;
+    }
+
     void Canvas::draw_line(
         godot::PackedVector2Array points,
         float stroke,
