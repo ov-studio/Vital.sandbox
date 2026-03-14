@@ -84,16 +84,23 @@ namespace Vital::Engine {
     }
 
     godot::Vector3 Core::get_screen_position_from_world(godot::Vector3 position, float padding) {
+        godot::Vector3 result = {-1, -1, -1};
         auto viewport = get_singleton() -> get_viewport();
         auto camera = viewport ? viewport -> get_camera_3d() : nullptr;
-        if (!camera) return {-1, -1, -1};
-        auto cam_position = camera -> get_global_position();
-        auto cam_forward = -camera -> get_global_transform().basis.get_column(2);
-        if (cam_forward.dot((position - cam_position).normalized()) <= 0.0f) return {-1, -1, -1};
-        auto screen_pos = camera -> unproject_position(position);
-        auto screen_size = viewport -> get_visible_rect().size;
-        if (screen_pos.x < -padding || screen_pos.y < -padding || screen_pos.x > screen_size.x + padding || screen_pos.y > screen_size.y + padding) return {-1, -1, -1};
-        return {screen_pos.x, screen_pos.y, cam_position.distance_to(position)};
+        if (camera) {
+            auto camera_position = camera -> get_global_position();
+            auto camera_forward = -camera -> get_global_transform().basis.get_column(2);
+            auto screen_position = camera -> unproject_position(position);
+            auto screen_size = viewport -> get_visible_rect().size;
+            if (
+                (camera_forward.dot((position - camera_position).normalized()) > 0.0f) && 
+                (screen_position.x >= -padding) && 
+                (screen_position.y >= -padding) && 
+                (screen_position.x <= screen_size.x + padding) && 
+                (screen_position.y <= screen_size.y + padding)
+            ) result = {screen_position.x, screen_position.y, camera_position.distance_to(position)};
+        }
+        return result;
     }
     #endif
 }
