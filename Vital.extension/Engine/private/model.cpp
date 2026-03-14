@@ -197,7 +197,7 @@ namespace Vital::Engine {
             if (mesh) mesh -> set_visible(state);
             return mesh;
         };
-        if contains_wildcard(component) {
+        if (contains_wildcard(component)) {
             for (const auto& name : get_components()) {
                 if (match_wildcard(component, name)) {
                     exec(name);
@@ -220,7 +220,7 @@ namespace Vital::Engine {
             }
             else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
         };
-        if contains_wildcard(material) {
+        if (contains_wildcard(material)) {
             for (const auto& name : get_materials(component)) {
                 if (!match_wildcard(material, name)) continue;
                 int index = find_material_index(mesh, name);
