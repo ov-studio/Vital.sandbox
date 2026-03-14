@@ -27,7 +27,6 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            #if defined(Vital_SDK_Client
             API::bind(vm, {base_name, "ssil"}, "is_enabled", [](auto vm) -> int {
                 vm -> push_bool(base_class::get_environment() -> is_ssil_enabled());
                 return 1;
