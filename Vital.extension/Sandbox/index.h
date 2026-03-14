@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
-#include <Vital.extension/Engine/public/canvas.h>
 
 
 /////////////////////////////
@@ -22,6 +21,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
+	class Canvas;
 	class Sandbox;
 	class Sandbox : public godot::Node {
 		protected:

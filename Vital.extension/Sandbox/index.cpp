@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
+#include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/api/canvas.h>
 #include <Vital.extension/Sandbox/api/model.h>
 #include <Vital.extension/Sandbox/api/webview.h>
