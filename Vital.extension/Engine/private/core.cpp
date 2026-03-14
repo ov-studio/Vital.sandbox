@@ -87,13 +87,13 @@ namespace Vital::Engine {
         auto viewport = get_singleton() -> get_viewport();
         auto camera = viewport ? viewport -> get_camera_3d() : nullptr;
         if (!camera) return {-1, -1, -1};
-        auto cam_pos = camera -> get_global_position();
+        auto cam_position = camera -> get_global_position();
         auto cam_forward = -camera -> get_global_transform().basis.get_column(2);
-        if (cam_forward.dot((position - cam_pos).normalized()) <= 0.0f) return {-1, -1, -1};
+        if (cam_forward.dot((position - cam_position).normalized()) <= 0.0f) return {-1, -1, -1};
         auto screen_pos = camera -> unproject_position(position);
         auto screen_size = viewport -> get_visible_rect().size;
         if (screen_pos.x < -padding || screen_pos.y < -padding || screen_pos.x > screen_size.x + padding || screen_pos.y > screen_size.y + padding) return {-1, -1, -1};
-        return {screen_pos.x, screen_pos.y, cam_pos.distance_to(position)};
+        return {screen_pos.x, screen_pos.y, cam_position.distance_to(position)};
     }
     #endif
 }
