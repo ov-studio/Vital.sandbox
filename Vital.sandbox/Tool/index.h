@@ -77,7 +77,7 @@ namespace Vital {
     }
 
     inline bool contains_wildcard(const std::string& input) {
-        return input.find('*') != std::string::npos
+        return input.find('*') != std::string::npos;
     }
 
     inline bool match_wildcard(const std::string& pattern, const std::string& input) {
