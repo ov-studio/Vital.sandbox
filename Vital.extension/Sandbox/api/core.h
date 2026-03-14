@@ -31,8 +31,10 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector3(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector3(1);
                 auto padding = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
-                vm -> push_vector3(Vital::Engine::Core::get_singleton() -> get_screen_position_from_world(position, padding));
-                return 1;
+                auto result = Vital::Engine::Core::get_singleton() -> get_screen_position_from_world(position, padding);
+                vm -> push_vector2({result.x, result.y});
+                vm -> push_number(result.z);
+                return 2;
             });
         }
     };
