@@ -82,5 +82,26 @@ namespace Vital::Engine {
         environment -> queue_free();
         environment = nullptr;
     }
+
+    godot::Vector3 Core::get_screen_position_from_world(godot::Vector3 position, float edge_margin) {
+        auto viewport = get_singleton() -> get_viewport();
+        if (!viewport) return godot::Vector3(-1, -1, -1);
+        godot::Camera3D* camera = viewport -> get_camera_3d();
+        if (!camera) return godot::Vector3(-1, -1, -1);
+        godot::Vector3 cam_forward = -camera -> get_global_transform().basis.get_column(2);
+        godot::Vector3 to_point = (position - camera -> get_global_position()).normalized();
+        if (cam_forward.dot(to_point) <= 0.0f) return godot::Vector3(-1, -1, -1);
+        godot::Vector2 screen_pos = camera -> unproject_position(position);
+        godot::Vector2 screen_size = viewport -> get_visible_rect().size;
+        float distance = camera -> get_global_position().distance_to(position);
+        bool in_bounds = (
+            (screen_pos.x >= -edge_margin) &&
+            (screen_pos.y >= -edge_margin) &&
+            (screen_pos.x <= screen_size.x + edge_margin) &&
+            (screen_pos.y <= screen_size.y + edge_margin)
+        );
+        if (!in_bounds) return godot::Vector3(-1, -1, -1);
+        return godot::Vector3(screen_pos.x, screen_pos.y, distance);
+    }
     #endif
 }
