@@ -106,6 +106,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self) -> int {
+                if (vm -> is_number(2)) self -> limit = vm -> get_int(2);
                 int index = 1;
                 auto rows = self -> db -> fetch(self);
                 vm -> create_table();

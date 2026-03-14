@@ -48,6 +48,7 @@ namespace Vital::Tool {
                 std::vector<std::string> select;
                 std::vector<std::tuple<std::string, std::string, std::string>> where;
                 std::unordered_map<std::string, std::string> data;
+                int limit = 0;
                 inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
 
                 void destroy() {
@@ -75,6 +76,11 @@ namespace Vital::Tool {
                         bind_names.push_back(fmt::format("w{}", i));
                         binds.push_back(where_binds[i]);
                     }
+                }
+
+                void apply_limit(std::string& sql) {
+                    if (limit <= 0) return;
+                    sql += fmt::format(" LIMIT {}", limit);
                 }
             };
 
@@ -250,6 +256,7 @@ namespace Vital::Tool {
                 std::string sql = fmt::format("SELECT {} FROM `{}`", columns, query -> table);
                 std::vector<std::string> binds, bind_names;
                 query -> apply_where(sql, binds, bind_names);
+                query -> apply_limit(sql);
                 soci::row row_out;
                 soci::statement st(*session);
                 st.alloc();
