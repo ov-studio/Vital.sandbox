@@ -354,6 +354,13 @@ namespace Vital::Engine {
         return mesh -> get_blend_shape_value(index);
     }
 
+    godot::Vector3 Model::get_bone_position(const std::string& bone) {
+        if (!skeleton) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("No skeleton found in model '{}'", model_name));
+        int index = skeleton -> find_bone(to_godot_string(bone));
+        if (index == -1) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Bone '{}' not found in model '{}'", bone, model_name));
+        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
+    }
+
     std::string Model::get_current_animation() {
         if (!animation_player) return "";
         return to_std_string(animation_player -> get_current_animation());

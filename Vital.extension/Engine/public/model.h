@@ -86,6 +86,7 @@ namespace Vital::Engine {
             std::vector<std::string> get_bones();
             std::vector<std::string> get_animations();
             float get_blendshape_value(const std::string& component, const std::string& blend_shape);
+            godot::Vector3 get_bone_position(const std::string& bone);
             std::string get_current_animation();
             float get_animation_speed();
 
