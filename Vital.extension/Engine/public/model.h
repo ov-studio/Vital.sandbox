@@ -34,10 +34,12 @@ namespace Vital::Engine {
             static void _bind_methods() {};
         private:
             std::string model_name;
+            godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* animation_player = nullptr;
             inline static Models cache_loaded;
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
+            godot::Skeleton3D* find_skeleton(godot::Node* node);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
         public:

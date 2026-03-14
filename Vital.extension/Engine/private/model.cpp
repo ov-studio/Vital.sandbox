@@ -23,6 +23,7 @@
 namespace Vital::Engine {
     // Instantiators //
     void Model::_ready() {
+        find_skeleton(this);
         find_animation_player(this);
     }
 
@@ -63,6 +64,22 @@ namespace Vital::Engine {
             }
         }
         return -1;
+    }
+
+    godot::Skeleton3D* Model::find_skeleton(godot::Node* node) {
+        if (!node) return nullptr;
+        if (!skeleton) {
+            auto result = godot::Object::cast_to<godot::Skeleton3D>(node);
+            if (result) return result;
+            for (int i = 0; i < node -> get_child_count(); i++) {
+                auto result = find_skeleton(node -> get_child(i));
+                if (result) {
+                    skeleton = result;
+                    break;
+                }
+            }
+        }
+        return skeleton;
     }
 
     godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
