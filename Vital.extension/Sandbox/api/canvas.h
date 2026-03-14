@@ -27,7 +27,6 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "engine";
         using base_class = Vital::Engine::Canvas;
 
-
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get_screen_position_from_world", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector3(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
