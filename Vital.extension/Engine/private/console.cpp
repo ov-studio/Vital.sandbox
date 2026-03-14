@@ -12,8 +12,8 @@
 // Imports //
 //////////////
 
-#if defined(Vital_SDK_Client)
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>

@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.extension/Sandbox/index.h>
 
 
@@ -26,7 +27,6 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            #if defined(Vital_SDK_Client)
             API::bind(vm, {base_name, "volumetric_fog"}, "is_enabled", [](auto vm) -> int {
                 vm -> push_bool(base_class::get_environment() -> is_volumetric_fog_enabled());
                 return 1;
@@ -195,7 +195,11 @@ namespace Vital::Sandbox::API {
                 vm -> push_number(base_class::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
                 return 1;
             });
-            #endif
         }
     };
 }
+#else
+namespace Vital::Sandbox::API {
+    struct Volumetric_Fog : vm_module {};
+}
+#endif

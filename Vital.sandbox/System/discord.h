@@ -12,8 +12,8 @@
 // Imports //
 //////////////
 
-#if defined(Vital_SDK_Client)
 #pragma once
+#if defined(Vital_SDK_Client)
 #include <Vital.sandbox/Tool/index.h>
 #include <discord-sdk/include/discordpp.h>
 
