@@ -97,6 +97,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct SSAO : vm_module {};
+    struct SSIL : vm_module {};
 }
 #endif
