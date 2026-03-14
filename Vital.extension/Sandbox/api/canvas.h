@@ -38,6 +38,14 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
 
+            API::bind(vm, {base_name}, "screen_to_world", [](auto vm) -> int {
+                if ((vm -> get_count() < 1) || (!vm -> is_vector2(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto position = vm -> get_vector2(1);
+                auto depth = vm -> is_number(2) ? vm -> get_float(2) : 1.0f;
+                vm -> push_vector3(base_class::get_singleton() -> screen_to_world(position, depth));
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
