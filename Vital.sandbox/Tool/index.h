@@ -76,9 +76,13 @@ namespace Vital {
         #endif
     }
 
-    inline bool match_wildcard(const std::string& pattern, const std::string& name) {
+    inline bool contains_wildcard(const std::string& input) {
+        return input.find('*') != std::string::npos
+    }
+
+    inline bool match_wildcard(const std::string& pattern, const std::string& input) {
         const char* p = pattern.c_str();
-        const char* n = name.c_str();
+        const char* n = input.c_str();
         const char* star = nullptr;
         const char* match = n;
         while (*n) {
