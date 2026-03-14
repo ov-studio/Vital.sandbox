@@ -27,6 +27,16 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "engine";
 
         static void bind(Machine* vm) {
+            API::bind(vm, {base_name}, "get_screen_position_from_world", [](auto vm) -> int {
+                if ((vm -> get_count() < 1) || (!vm -> is_vector3(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto position = vm -> get_vector3(1);
+                auto padding = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
+                auto result = Vital::Engine::Canvas::get_singleton() -> get_screen_position_from_world(position, padding);
+                vm -> push_vector2({result.x, result.y});
+                vm -> push_number(result.z);
+                return 2;
+            });
+
             API::bind(vm, {base_name}, "draw_line", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector2_array(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto points = vm -> get_vector2_array(1);
