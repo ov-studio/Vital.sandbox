@@ -23,18 +23,19 @@
 namespace Vital::Sandbox::API {
     struct Emissive : vm_module {
         inline static const std::string base_name = "gfx";
+        using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
             #if defined(Vital_SDK_Client)
             API::bind(vm, {base_name, "emissive"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(Vital::Engine::Core::get_environment() -> is_glow_enabled());
+                vm -> push_bool(base_class::get_environment() -> is_glow_enabled());
                 return 1;
             });
 
             API::bind(vm, {base_name, "emissive"}, "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
-                Vital::Engine::Core::get_environment() -> set_glow_enabled(state);
+                base_class::get_environment() -> set_glow_enabled(state);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -43,7 +44,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_number(1)) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto idx = vm -> get_int(1);
                 auto value = vm -> get_float(2);
-                Vital::Engine::Core::get_environment() -> set_glow_level(idx, value);
+                base_class::get_environment() -> set_glow_level(idx, value);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -51,19 +52,19 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name, "emissive"}, "get_level_intensity", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto idx = vm -> get_int(1);
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_level(idx));
+                vm -> push_number(base_class::get_environment() -> get_glow_level(idx));
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "is_normalized", [](auto vm) -> int {
-                vm -> push_bool(Vital::Engine::Core::get_environment() -> is_glow_normalized());
+                vm -> push_bool(base_class::get_environment() -> is_glow_normalized());
                 return 1;
             });
 
             API::bind(vm, {base_name, "emissive"}, "set_normalized", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
-                Vital::Engine::Core::get_environment() -> set_glow_normalized(state);
+                base_class::get_environment() -> set_glow_normalized(state);
                 vm -> push_bool(true);
                 return 1;
             });
@@ -71,52 +72,52 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name, "emissive"}, "set_intensity", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_intensity(value);
+                base_class::get_environment() -> set_glow_intensity(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_intensity", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_intensity());
+                vm -> push_number(base_class::get_environment() -> get_glow_intensity());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_strength", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_strength(value);
+                base_class::get_environment() -> set_glow_strength(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_strength", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_strength());
+                vm -> push_number(base_class::get_environment() -> get_glow_strength());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_mix", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_mix(value);
+                base_class::get_environment() -> set_glow_mix(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_mix", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_mix());
+                vm -> push_number(base_class::get_environment() -> get_glow_mix());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_bloom", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_bloom(value);
+                base_class::get_environment() -> set_glow_bloom(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_bloom", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_bloom());
+                vm -> push_number(base_class::get_environment() -> get_glow_bloom());
                 return 1;
             });
         
@@ -124,65 +125,65 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_int(1);
                 if ((value < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (value > godot::Environment::GLOW_BLEND_MODE_MIX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                Vital::Engine::Core::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
+                base_class::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_blend_mode", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_blend_mode());
+                vm -> push_number(base_class::get_environment() -> get_glow_blend_mode());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_hdr_bleed_threshold", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_hdr_bleed_threshold(value);
+                base_class::get_environment() -> set_glow_hdr_bleed_threshold(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_hdr_bleed_threshold", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_hdr_bleed_threshold());
+                vm -> push_number(base_class::get_environment() -> get_glow_hdr_bleed_threshold());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_hdr_bleed_scale", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_hdr_bleed_scale(value);
+                base_class::get_environment() -> set_glow_hdr_bleed_scale(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_hdr_bleed_scale", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_hdr_bleed_scale());
+                vm -> push_number(base_class::get_environment() -> get_glow_hdr_bleed_scale());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_hdr_luminance_cap", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_hdr_luminance_cap(value);
+                base_class::get_environment() -> set_glow_hdr_luminance_cap(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_hdr_luminance_cap", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_hdr_luminance_cap());
+                vm -> push_number(base_class::get_environment() -> get_glow_hdr_luminance_cap());
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "set_map_strength", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                Vital::Engine::Core::get_environment() -> set_glow_map_strength(value);
+                base_class::get_environment() -> set_glow_map_strength(value);
                 vm -> push_bool(true);
                 return 1;
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_map_strength", [](auto vm) -> int {
-                vm -> push_number(Vital::Engine::Core::get_environment() -> get_glow_map_strength());
+                vm -> push_number(base_class::get_environment() -> get_glow_map_strength());
                 return 1;
             });
             #endif
