@@ -83,6 +83,7 @@ namespace Vital::Engine {
             std::vector<std::string> get_components();
             std::vector<std::string> get_materials(const std::string& component);
             std::vector<std::string> get_blendshapes(const std::string& component);
+            std::vector<std::string> get_bones();
             std::vector<std::string> get_animations();
             float get_blendshape_value(const std::string& component, const std::string& blend_shape);
             std::string get_current_animation();

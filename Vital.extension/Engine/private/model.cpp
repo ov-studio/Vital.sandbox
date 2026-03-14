@@ -325,6 +325,16 @@ namespace Vital::Engine {
         return blendshapes;
     }
 
+    std::vector<std::string> Model::get_bones() {
+        std::vector<std::string> bones;
+        if (skeleton) {
+            for (int i = 0; i < skeleton -> get_bone_count(); i++) {
+                bones.push_back(to_std_string(skeleton -> get_bone_name(i)));
+            }
+        }
+        return bones;
+    }
+
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (animation_player) {
