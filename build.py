@@ -3,11 +3,22 @@ sys.path.append("./Vital.sandbox")
 from vital import *
 
 PLATFORM_INFO = {
-    "Windows": { "lib_exts": [".dll"],                "preset": "Windows {platform_type}",   "output_ext": ".exe" },
-    "Linux":   { "lib_exts": [".so"],                 "preset": "Linux/X11 {platform_type}", "output_ext": ""     },
-    "Darwin":  { "lib_exts": [".dylib",".framework"], "preset": "macOS {platform_type}",     "output_ext": ".app" },
+    "Windows": {
+        "lib_exts":   [".dll"],
+        "preset":     "Windows {platform_type}",
+        "output_ext": ".exe",
+    },
+    "Linux": {
+        "lib_exts":   [".so"],
+        "preset":     "Linux/X11 {platform_type}",
+        "output_ext": "",
+    },
+    "Darwin": {
+        "lib_exts":   [".dylib", ".framework"],
+        "preset":     "macOS {platform_type}",
+        "output_ext": ".app",
+    },
 }
-
 
 class Build:
     def __init__(self, script_dir, platform_type, build_type):
