@@ -1,12 +1,13 @@
 # Builds
 *.gen.*
+.godot/
 .build/
 .bin/
 dist/
 .conan/
 .vcpkg/
-**/discord-sdk/
-**vital.sdk/
+discord-sdk/
+vital.sdk/
 
 
 # Binaries
@@ -26,9 +27,9 @@ dist/
 *.includes
 *.idb
 *.exp
+*.log
 
 
 # IDE
-.vs/*
-.vscode/*
-*.log
+.vs/
+.vscode/
