@@ -6,11 +6,11 @@ class Godot:
         self.env = env
 
     def init(self):
-        os_info   = Fetch_OS()
+        os_info = Fetch_OS()
         script_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        version   = self._get_version(script_dir)
+        version = self._get_version(script_dir)
         cache_dir = os.path.join(script_dir, ".godot", version) if version else None
-        exe_name  = self._get_exe_name(version, os_info["type"]) if version else None
+        exe_name = self._get_exe_name(version, os_info["type"]) if version else None
         return {
             "script_dir":   script_dir,
             "version":      version,
@@ -25,9 +25,9 @@ class Godot:
             ns = {}
             with open(version_file) as f:
                 exec(f.read(), ns)
-            major  = ns.get("major", 4)
-            minor  = ns.get("minor", 0)
-            patch  = ns.get("patch", 0)
+            major = ns.get("major", 4)
+            minor = ns.get("minor", 0)
+            patch = ns.get("patch", 0)
             status = ns.get("status", "stable")
             for part in str(status).split("-"):
                 if part in ("stable", "rc", "beta", "alpha", "dev"):
@@ -66,20 +66,20 @@ class Godot:
 
     def _get_binary_url(self, version, os_type):
         base = self._release_base(version)
-        vs   = self._ver_short(version)
+        vs = self._ver_short(version)
         if os_type == "Windows": name = f"Godot_v{vs}-stable_win64.exe.zip"
         elif os_type == "Darwin": name = f"Godot_v{vs}-stable_macos.universal.zip"
         else:                     name = f"Godot_v{vs}-stable_linux.x86_64.zip"
         return f"{base}/{name}", name
 
     def _get_templates_url(self, version):
-        vs   = self._ver_short(version)
+        vs = self._ver_short(version)
         name = f"Godot_v{vs}-stable_export_templates.tpz"
         return f"{self._release_base(version)}/{name}", name
 
     def _get_templates_dir(self, version, os_type):
-        vd     = self._ver_dash(version)
-        vs     = self._ver_short(version)
+        vd = self._ver_dash(version)
+        vs = self._ver_short(version)
         status = vd.split("-", 1)[1] if "-" in vd else "stable"
         folder = f"{vs}.{status}"
         if os_type == "Windows":
@@ -126,7 +126,7 @@ class Godot:
 
     def install(self):
         os_info = Fetch_OS()
-        godot   = self.init()
+        godot = self.init()
 
         if not godot["version"]:
             Throw_Error("[ERROR] Could not detect Godot version from Vital.extension/Vendor/godot")
@@ -151,7 +151,7 @@ class Godot:
 
         # ── Export templates ──
         templates_dir = godot["templates_dir"]
-        templates_ok  = os.path.isdir(templates_dir) and any(
+        templates_ok = os.path.isdir(templates_dir) and any(
             f.endswith((".exe", ".so", ".dylib", "version"))
             for f in os.listdir(templates_dir)
         ) if os.path.isdir(templates_dir) else False
