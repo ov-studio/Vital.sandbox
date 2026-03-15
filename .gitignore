@@ -2,6 +2,7 @@
 *.gen.*
 .build/
 .bin/
+dist/
 .conan/
 .vcpkg/
 **/discord-sdk/
