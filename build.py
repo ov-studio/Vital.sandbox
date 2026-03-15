@@ -4,6 +4,30 @@ from vital import *
 
 GODOT_BIN = os.environ.get("GODOT_BIN", "godot")
 
+# Platform-specific library extensions and export preset names
+PLATFORM_INFO = {
+    "windows": {
+        "lib_exts":   [".dll"],
+        "preset":     "Windows {platform_type}",
+        "output_ext": ".exe",
+    },
+    "linux": {
+        "lib_exts":   [".so"],
+        "preset":     "Linux/X11 {platform_type}",
+        "output_ext": "",
+    },
+    "macos": {
+        "lib_exts":   [".dylib", ".framework"],
+        "preset":     "macOS {platform_type}",
+        "output_ext": ".app",
+    },
+}
+
+def get_host_platform():
+    if sys.platform.startswith("win"):   return "windows"
+    if sys.platform.startswith("darwin"): return "macos"
+    return "linux"
+
 def build_extension(platform_type, build_type, script_dir):
     print(f"\n==> Building Vital.extension [{platform_type} | {build_type}]")
     extension_dir = os.path.join(script_dir, "Vital.extension")
@@ -17,59 +41,54 @@ def build_extension(platform_type, build_type, script_dir):
         print(f"[ERROR] Extension build failed for {platform_type}")
         sys.exit(result.returncode)
 
-def copy_dlls(platform_type, build_type, script_dir, dist_dir):
-    print(f"\n==> Copying DLLs [{platform_type} | {build_type}]")
+def copy_libs(platform_type, build_type, script_dir, dist_dir, host_platform):
+    print(f"\n==> Copying libraries [{platform_type} | {build_type} | {host_platform}]")
     client_dir = os.path.join(script_dir, "Vital.client")
     build_suffix = "release" if build_type == "Release" else "debug"
+    lib_exts = PLATFORM_INFO[host_platform]["lib_exts"]
 
-    # Find folders that directly contain a .gdextension file — skip only those exact folders
+    # Skip folders that directly contain a .gdextension file
     gdextension_roots = set()
     for root, dirs, files in os.walk(client_dir):
         if any(f.endswith(".gdextension") for f in files):
             gdextension_roots.add(os.path.normpath(root))
 
     for root, dirs, files in os.walk(client_dir):
-        norm_root = os.path.normpath(root)
-        # Only skip the exact folder containing the .gdextension, not its subfolders
-        if norm_root in gdextension_roots:
+        if os.path.normpath(root) in gdextension_roots:
             continue
 
-        dlls = []
+        libs = []
         for f in files:
-            if not f.lower().endswith(".dll"):
-                continue
             name_lower = f.lower()
+            if not any(name_lower.endswith(ext) for ext in lib_exts):
+                continue
             has_release = "release" in name_lower
-            has_debug = "debug" in name_lower
+            has_debug   = "debug"   in name_lower
             if (has_release or has_debug) and build_suffix not in name_lower:
                 continue
-            dlls.append(f)
+            libs.append(f)
 
-        if not dlls:
+        if not libs:
             continue
 
-        for dll in dlls:
-            src_file = os.path.join(root, dll)
-            dst_file = os.path.join(dist_dir, dll)
+        for lib in libs:
+            src_file = os.path.join(root, lib)
+            dst_file = os.path.join(dist_dir, lib)
             shutil.copy2(src_file, dst_file)
-            print(f"  Copied: {dll}")
+            print(f"  Copied: {lib}")
 
 def export_godot(platform_type, build_type, script_dir):
-    preset = f"Windows {platform_type}"
-    output_name = "client.exe" if platform_type == "Client" else "server.exe"
-    dist_dir = os.path.join(script_dir, "dist")
+    host_platform = get_host_platform()
+    info          = PLATFORM_INFO[host_platform]
+    preset        = info["preset"].format(platform_type=platform_type)
+    output_name   = ("client" if platform_type == "Client" else "server") + info["output_ext"]
+    dist_dir     = os.path.join(script_dir, "dist")
     os.makedirs(dist_dir, exist_ok=True)
-    output_path = os.path.join(dist_dir, output_name)
-    project_dir = os.path.join(script_dir, "Vital.client")
-    export_mode = "--export-release" if build_type == "Release" else "--export-debug"
+    output_path  = os.path.join(dist_dir, output_name)
+    project_dir  = os.path.join(script_dir, "Vital.client")
+    export_mode  = "--export-release" if build_type == "Release" else "--export-debug"
 
     print(f"\n==> Exporting Godot [{platform_type} | {build_type}] -> {output_path}")
-
-    # Backup files that Godot may move/delete during export (gdextension dependencies)
-    wry_dll = os.path.join(project_dir, "vital.wry", "bin", "x86_64-pc-windows-msvc", "godot_wry.dll")
-    wry_backup = wry_dll + ".bak"
-    if os.path.exists(wry_dll):
-        shutil.copy2(wry_dll, wry_backup)
 
     result = subprocess.run([
         GODOT_BIN,
@@ -79,17 +98,12 @@ def export_godot(platform_type, build_type, script_dir):
         output_path
     ])
 
-    # Restore backed up files
-    if os.path.exists(wry_backup):
-        shutil.copy2(wry_backup, wry_dll)
-        os.remove(wry_backup)
-
     if result.returncode != 0:
         print(f"[ERROR] Godot export failed for {platform_type}")
         sys.exit(result.returncode)
 
-    # Copy all DLLs from Vital.client after export
-    copy_dlls(platform_type, build_type, script_dir, dist_dir)
+    # Copy platform libraries from Vital.client to dist
+    copy_libs(platform_type, build_type, script_dir, dist_dir, host_platform)
 
 def main():
     parser = argparse.ArgumentParser(description="Build Vital")
@@ -110,16 +124,13 @@ def main():
     parser.add_argument("--skip-export",    action="store_true", help="Skip Godot export")
 
     args = parser.parse_args()
-    build_type = "Release" if args.release else "Debug"
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    build_type  = "Release" if args.release else "Debug"
+    script_dir  = os.path.dirname(os.path.abspath(__file__))
 
     platforms = []
-    if args.all:
-        platforms = ["Client", "Server"]
-    elif args.client:
-        platforms = ["Client"]
-    else:
-        platforms = ["Server"]
+    if args.all:       platforms = ["Client", "Server"]
+    elif args.client:  platforms = ["Client"]
+    else:              platforms = ["Server"]
 
     for platform_type in platforms:
         if not args.skip_extension:
