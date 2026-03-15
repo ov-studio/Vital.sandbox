@@ -79,7 +79,7 @@ def export_godot(platform_type, build_type, script_dir):
     host_platform = get_host_platform()
     info          = PLATFORM_INFO[host_platform]
     preset        = info["preset"].format(platform_type=platform_type)
-    output_name   = ("client" if platform_type == "Client" else "server") + info["output_ext"]
+    output_name   = f"vital.{platform_type.lower()}" + info["output_ext"]
     dist_dir      = os.path.join(script_dir, ".dist", build_type.lower(), platform_type.lower())
     os.makedirs(dist_dir, exist_ok=True)
     output_path   = os.path.join(dist_dir, output_name)
