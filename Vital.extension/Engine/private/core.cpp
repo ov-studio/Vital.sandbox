@@ -28,8 +28,8 @@ namespace Vital::Engine {
     void Core::_ready() {
         singleton = singleton ? singleton : this;
         set_process(true);
-        set_process_unhandled_key_input(get_platform() == "client");
         #if defined(Vital_SDK_Client)
+        set_process_unhandled_key_input(true);
         get_environment();
         #endif
         if (Vital::is_editor()) return;
@@ -49,10 +49,12 @@ namespace Vital::Engine {
         Sandbox::get_singleton() -> process(delta);
     }
 
+    #if defined(Vital_SDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (Vital::is_editor()) return;
         Sandbox::get_singleton() -> input(event);
     }
+    #endif
 
 
     // Getters //

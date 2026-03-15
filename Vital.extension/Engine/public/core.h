@@ -34,7 +34,9 @@ namespace Vital::Engine {
             void _ready() override;
             void _exit_tree() override;
             void _process(double delta) override;
+            #if defined(Vital_SDK_Client)
             void _unhandled_input(godot::Ref<godot::InputEvent> event);
+            #endif
 
 
             // Getters //
