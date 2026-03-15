@@ -85,7 +85,7 @@ def export_godot(platform_type, build_type, script_dir):
     export_mode   = "--export-release" if build_type == "Release" else "--export-debug"
 
     print(f"\n==> Exporting Godot [{platform_type} | {build_type}] -> {output_path}")
-    godot_bin = get_godot_bin(script_dir)
+    godot_bin = Godot(None).get_bin()
 
     result = subprocess.run([
         godot_bin,
