@@ -166,7 +166,7 @@ def setup_godot(script_dir, host_platform):
         return godot_bin
 
     print(f"\n==> Godot [{version}]")
-    cache_dir = os.path.join(script_dir, ".godot_cache", version)
+    cache_dir = os.path.join(script_dir, ".godot", version)
     os.makedirs(cache_dir, exist_ok=True)
 
     # ── Binary ──
