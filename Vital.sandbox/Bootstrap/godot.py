@@ -144,7 +144,16 @@ def get_templates_url(version):
     return f"{base}/{name}", name
 
 def get_templates_dir(script_dir, version):
-    return os.path.join(script_dir, ".godot", "templates")
+    vd     = _ver_dash(version)
+    vs     = _ver_short(version)
+    status = vd.split("-", 1)[1] if "-" in vd else "stable"
+    folder = f"{vs}.{status}"
+    if sys.platform.startswith("win"):
+        return os.path.join(os.environ["APPDATA"], "Godot", "export_templates", folder)
+    elif sys.platform.startswith("darwin"):
+        return os.path.expanduser(f"~/Library/Application Support/Godot/export_templates/{folder}")
+    else:
+        return os.path.expanduser(f"~/.local/share/godot/export_templates/{folder}")
 
 
 # ── Main setup entry point ─────────────────────────────────────────────────
@@ -180,10 +189,13 @@ def setup_godot(script_dir, host_platform):
         print(f"  Binary cached.")
 
     # ── Export templates ──
-    templates_dir = get_templates_dir(version)
-    version_file  = os.path.join(templates_dir, "version")
+    templates_dir = get_templates_dir(script_dir, version)
+    templates_ok = os.path.isdir(templates_dir) and any(
+        f.endswith((".exe", ".so", ".dylib", "version"))
+        for f in os.listdir(templates_dir)
+    ) if os.path.isdir(templates_dir) else False
 
-    if not os.path.exists(version_file):
+    if not templates_ok:
         url, filename = get_templates_url(version)
         tpz_path = os.path.join(cache_dir, filename)
         if not os.path.exists(tpz_path):

@@ -2,8 +2,6 @@ import sys
 sys.path.append("./Vital.sandbox")
 from vital import *
 
-GODOT_BIN = os.environ.get("GODOT_BIN", "godot")
-
 PLATFORM_INFO = {
     "windows": {
         "lib_exts":   [".dll"],
@@ -87,10 +85,10 @@ def export_godot(platform_type, build_type, script_dir):
     export_mode   = "--export-release" if build_type == "Release" else "--export-debug"
 
     print(f"\n==> Exporting Godot [{platform_type} | {build_type}] -> {output_path}")
-    ensure_templates(script_dir)
+    godot_bin = get_godot_bin(script_dir)
 
     result = subprocess.run([
-        GODOT_BIN,
+        godot_bin,
         "--headless",
         "--path", project_dir,
         export_mode, preset,
