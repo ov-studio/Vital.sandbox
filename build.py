@@ -1,105 +1,89 @@
 import sys
 sys.path.append("./Vital.sandbox")
 from vital import *
+from Bootstrap.godot import Godot
 
 PLATFORM_INFO = {
-    "windows": {
-        "lib_exts":   [".dll"],
-        "preset":     "Windows {platform_type}",
-        "output_ext": ".exe",
-    },
-    "linux": {
-        "lib_exts":   [".so"],
-        "preset":     "Linux/X11 {platform_type}",
-        "output_ext": "",
-    },
-    "macos": {
-        "lib_exts":   [".dylib", ".framework"],
-        "preset":     "macOS {platform_type}",
-        "output_ext": ".app",
-    },
+    "Windows": { "lib_exts": [".dll"],               "preset": "Windows {platform_type}",    "output_ext": ".exe" },
+    "Linux":   { "lib_exts": [".so"],                "preset": "Linux/X11 {platform_type}",  "output_ext": ""     },
+    "Darwin":  { "lib_exts": [".dylib",".framework"],"preset": "macOS {platform_type}",      "output_ext": ".app" },
 }
 
-def get_host_platform():
-    if sys.platform.startswith("win"):    return "windows"
-    if sys.platform.startswith("darwin"): return "macos"
-    return "linux"
 
-def build_extension(platform_type, build_type, script_dir):
-    print(f"\n==> Building Vital.extension [{platform_type} | {build_type}]")
-    extension_dir = os.path.join(script_dir, "Vital.extension")
-    result = subprocess.run([
-        "scons",
-        "-C", extension_dir,
-        f"platform_type={platform_type}",
-        f"build_type={build_type}"
-    ])
-    if result.returncode != 0:
-        print(f"[ERROR] Extension build failed for {platform_type}")
-        sys.exit(result.returncode)
+class Build:
+    def __init__(self, script_dir, platform_type, build_type):
+        self.script_dir    = script_dir
+        self.platform_type = platform_type
+        self.build_type    = build_type
+        self.os_info       = Fetch_OS()
+        self.info          = PLATFORM_INFO[self.os_info["type"]]
 
-def copy_libs(platform_type, build_type, project_dir, dist_dir, host_platform):
-    print(f"\n==> Copying libraries [{platform_type} | {build_type} | {host_platform}]")
-    build_suffix = "release" if build_type == "Release" else "debug"
-    lib_exts = PLATFORM_INFO[host_platform]["lib_exts"]
+    def init(self):
+        dist_dir = os.path.join(self.script_dir, ".dist", self.build_type.lower(), self.platform_type.lower())
+        return {
+            "dist_dir":     dist_dir,
+            "output_path":  os.path.join(dist_dir, f"Vital.{self.platform_type.lower()}" + self.info["output_ext"]),
+            "project_dir":  os.path.join(self.script_dir, f"Vital.{self.platform_type.lower()}"),
+            "extension_dir":os.path.join(self.script_dir, "Vital.extension"),
+            "preset":       self.info["preset"].format(platform_type=self.platform_type),
+            "export_mode":  "--export-release" if self.build_type == "Release" else "--export-debug",
+        }
 
-    # Skip folders that directly contain a .gdextension file
-    gdextension_roots = set()
-    for root, dirs, files in os.walk(project_dir):
-        if any(f.endswith(".gdextension") for f in files):
-            gdextension_roots.add(os.path.normpath(root))
+    def build_extension(self):
+        b = self.init()
+        print(f"\n==> Building Vital.extension [{self.platform_type} | {self.build_type}]")
+        result = subprocess.run([
+            "scons", "-C", b["extension_dir"],
+            f"platform_type={self.platform_type}",
+            f"build_type={self.build_type}"
+        ])
+        if result.returncode != 0:
+            print(f"[ERROR] Extension build failed for {self.platform_type}")
+            sys.exit(result.returncode)
 
-    for root, dirs, files in os.walk(project_dir):
-        if os.path.normpath(root) in gdextension_roots:
-            continue
+    def copy_libs(self, project_dir, dist_dir):
+        print(f"\n==> Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
+        build_suffix = "release" if self.build_type == "Release" else "debug"
+        lib_exts     = self.info["lib_exts"]
 
-        libs = []
-        for f in files:
-            name_lower = f.lower()
-            if not any(name_lower.endswith(ext) for ext in lib_exts):
+        gdextension_roots = set()
+        for root, dirs, files in os.walk(project_dir):
+            if any(f.endswith(".gdextension") for f in files):
+                gdextension_roots.add(os.path.normpath(root))
+
+        for root, dirs, files in os.walk(project_dir):
+            if os.path.normpath(root) in gdextension_roots:
                 continue
-            has_release = "release" in name_lower
-            has_debug   = "debug"   in name_lower
-            if (has_release or has_debug) and build_suffix not in name_lower:
-                continue
-            libs.append(f)
+            libs = []
+            for f in files:
+                name_lower = f.lower()
+                if not any(name_lower.endswith(ext) for ext in lib_exts):
+                    continue
+                has_release = "release" in name_lower
+                has_debug   = "debug"   in name_lower
+                if (has_release or has_debug) and build_suffix not in name_lower:
+                    continue
+                libs.append(f)
+            for lib in libs:
+                shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
+                print(f"  Copied: {lib}")
 
-        if not libs:
-            continue
+    def export(self):
+        b = self.init()
+        os.makedirs(b["dist_dir"], exist_ok=True)
+        print(f"\n==> Exporting Godot [{self.platform_type} | {self.build_type}] -> {b['output_path']}")
+        godot_bin = Godot(None).get_bin()
+        result = subprocess.run([
+            godot_bin, "--headless",
+            "--path", b["project_dir"],
+            b["export_mode"], b["preset"],
+            b["output_path"]
+        ])
+        if result.returncode != 0:
+            print(f"[ERROR] Godot export failed for {self.platform_type}")
+            sys.exit(result.returncode)
+        self.copy_libs(b["project_dir"], b["dist_dir"])
 
-        for lib in libs:
-            src_file = os.path.join(root, lib)
-            dst_file = os.path.join(dist_dir, lib)
-            shutil.copy2(src_file, dst_file)
-            print(f"  Copied: {lib}")
-
-def export_godot(platform_type, build_type, script_dir):
-    host_platform = get_host_platform()
-    info          = PLATFORM_INFO[host_platform]
-    preset        = info["preset"].format(platform_type=platform_type)
-    output_name   = f"Vital.{platform_type.lower()}" + info["output_ext"]
-    dist_dir      = os.path.join(script_dir, ".dist", build_type.lower(), platform_type.lower())
-    output_path   = os.path.join(dist_dir, output_name)
-    os.makedirs(dist_dir, exist_ok=True)
-    project_dir   = os.path.join(script_dir, f"Vital.{platform_type.lower()}")
-    export_mode   = "--export-release" if build_type == "Release" else "--export-debug"
-
-    print(f"\n==> Exporting Godot [{platform_type} | {build_type}] -> {output_path}")
-    godot_bin = Godot(None).get_bin()
-
-    result = subprocess.run([
-        godot_bin,
-        "--headless",
-        "--path", project_dir,
-        export_mode, preset,
-        output_path
-    ])
-
-    if result.returncode != 0:
-        print(f"[ERROR] Godot export failed for {platform_type}")
-        sys.exit(result.returncode)
-
-    copy_libs(platform_type, build_type, project_dir, dist_dir, host_platform)
 
 def main():
     parser = argparse.ArgumentParser(description="Build Vital")
@@ -116,20 +100,18 @@ def main():
     parser.add_argument("--skip-extension", action="store_true", help="Skip building Vital.extension")
     parser.add_argument("--skip-export",    action="store_true", help="Skip Godot export")
 
-    args = parser.parse_args()
+    args       = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    platforms = []
-    if args.all:      platforms = ["Client", "Server"]
-    elif args.client: platforms = ["Client"]
-    else:             platforms = ["Server"]
+    platforms  = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
     for platform_type in platforms:
+        b = Build(script_dir, platform_type, build_type)
         if not args.skip_extension:
-            build_extension(platform_type, build_type, script_dir)
+            b.build_extension()
         if not args.skip_export:
-            export_godot(platform_type, build_type, script_dir)
+            b.export()
 
     print("\n==> Build complete")
 
