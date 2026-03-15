@@ -80,7 +80,7 @@ def export_godot(platform_type, build_type, script_dir):
     info          = PLATFORM_INFO[host_platform]
     preset        = info["preset"].format(platform_type=platform_type)
     output_name   = f"Vital.{platform_type.lower()}" + info["output_ext"]
-    dist_dir      = os.path.join(script_dir, "dist", build_type.lower(), platform_type.lower())
+    dist_dir      = os.path.join(script_dir, ".dist", build_type.lower(), platform_type.lower())
     output_path   = os.path.join(dist_dir, output_name)
     os.makedirs(dist_dir, exist_ok=True)
     project_dir   = os.path.join(script_dir, f"Vital.{platform_type.lower()}")
