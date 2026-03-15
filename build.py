@@ -4,29 +4,29 @@ from vital import *
 from Bootstrap.godot import Godot
 
 PLATFORM_INFO = {
-    "Windows": { "lib_exts": [".dll"],               "preset": "Windows {platform_type}",    "output_ext": ".exe" },
-    "Linux":   { "lib_exts": [".so"],                "preset": "Linux/X11 {platform_type}",  "output_ext": ""     },
-    "Darwin":  { "lib_exts": [".dylib",".framework"],"preset": "macOS {platform_type}",      "output_ext": ".app" },
+    "Windows": { "lib_exts": [".dll"],                "preset": "Windows {platform_type}",   "output_ext": ".exe" },
+    "Linux":   { "lib_exts": [".so"],                 "preset": "Linux/X11 {platform_type}", "output_ext": ""     },
+    "Darwin":  { "lib_exts": [".dylib",".framework"], "preset": "macOS {platform_type}",     "output_ext": ".app" },
 }
 
 
 class Build:
     def __init__(self, script_dir, platform_type, build_type):
-        self.script_dir    = script_dir
+        self.script_dir = script_dir
         self.platform_type = platform_type
-        self.build_type    = build_type
-        self.os_info       = Fetch_OS()
-        self.info          = PLATFORM_INFO[self.os_info["type"]]
+        self.build_type = build_type
+        self.os_info = Fetch_OS()
+        self.info = PLATFORM_INFO[self.os_info["type"]]
 
     def init(self):
         dist_dir = os.path.join(self.script_dir, ".dist", self.build_type.lower(), self.platform_type.lower())
         return {
-            "dist_dir":     dist_dir,
-            "output_path":  os.path.join(dist_dir, f"Vital.{self.platform_type.lower()}" + self.info["output_ext"]),
-            "project_dir":  os.path.join(self.script_dir, f"Vital.{self.platform_type.lower()}"),
-            "extension_dir":os.path.join(self.script_dir, "Vital.extension"),
-            "preset":       self.info["preset"].format(platform_type=self.platform_type),
-            "export_mode":  "--export-release" if self.build_type == "Release" else "--export-debug",
+            "dist_dir": dist_dir,
+            "output_path": os.path.join(dist_dir, f"Vital.{self.platform_type.lower()}" + self.info["output_ext"]),
+            "project_dir": os.path.join(self.script_dir, f"Vital.{self.platform_type.lower()}"),
+            "extension_dir": os.path.join(self.script_dir, "Vital.extension"),
+            "preset": self.info["preset"].format(platform_type=self.platform_type),
+            "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
         }
 
     def build_extension(self):
@@ -44,7 +44,7 @@ class Build:
     def copy_libs(self, project_dir, dist_dir):
         print(f"\n==> Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
         build_suffix = "release" if self.build_type == "Release" else "debug"
-        lib_exts     = self.info["lib_exts"]
+        lib_exts = self.info["lib_exts"]
 
         gdextension_roots = set()
         for root, dirs, files in os.walk(project_dir):
@@ -60,7 +60,7 @@ class Build:
                 if not any(name_lower.endswith(ext) for ext in lib_exts):
                     continue
                 has_release = "release" in name_lower
-                has_debug   = "debug"   in name_lower
+                has_debug = "debug" in name_lower
                 if (has_release or has_debug) and build_suffix not in name_lower:
                     continue
                 libs.append(f)
@@ -91,20 +91,20 @@ def main():
     platform_group = parser.add_mutually_exclusive_group(required=True)
     platform_group.add_argument("--client", action="store_true")
     platform_group.add_argument("--server", action="store_true")
-    platform_group.add_argument("--all",    action="store_true", help="Build both client and server")
+    platform_group.add_argument("--all", action="store_true", help="Build both client and server")
 
     build_group = parser.add_mutually_exclusive_group(required=True)
-    build_group.add_argument("--debug",   action="store_true")
+    build_group.add_argument("--debug", action="store_true")
     build_group.add_argument("--release", action="store_true")
 
     parser.add_argument("--skip-extension", action="store_true", help="Skip building Vital.extension")
-    parser.add_argument("--skip-export",    action="store_true", help="Skip Godot export")
+    parser.add_argument("--skip-export", action="store_true", help="Skip Godot export")
 
-    args       = parser.parse_args()
+    args = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    platforms  = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
+    platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
     for platform_type in platforms:
         b = Build(script_dir, platform_type, build_type)
