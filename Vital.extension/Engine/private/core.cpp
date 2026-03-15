@@ -65,6 +65,8 @@ namespace Vital::Engine {
         // Allocate a real console window for the server
         AllocConsole();
         SetConsoleTitleA("Vital.server");
+        SetConsoleOutputCP(CP_UTF8);
+        SetConsoleCP(CP_UTF8);
         freopen("CONOUT$", "w", stdout);
         freopen("CONOUT$", "w", stderr);
         freopen("CONIN$",  "r", stdin);
