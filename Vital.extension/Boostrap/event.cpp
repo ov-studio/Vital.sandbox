@@ -44,47 +44,6 @@ void initialize_vital_events() {
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
-
-        // TODO: TESTING
-        Vital::Engine::Model::load("cube", "ladyforaviril.glb");
-        auto cube = Vital::Engine::Model::create("cube");
-        if (cube != nullptr) {
-            godot::UtilityFunctions::print("Spawned cube!");
-            cube->set_position({0.0f, 0.0f, 0.0f});
-
-            /*
-            auto components = cube->get_components();
-            godot::UtilityFunctions::print("Available components: ", (int)components.size());
-            for (const auto& path : components) {
-                godot::UtilityFunctions::print("  - ", Vital::to_godot_string(path));
-            }
-
-            //cube->set_component_visible("ACNH Character Armature/Skeleton3D/Hair 01/Hair 01", false);
-            //cube->set_component_visible("ACNH Character Armature/Skeleton3D/Hair_02/Hair_02", false);
-            */
-
-            /*
-            auto blendshapes = cube->get_blendshapes("Hair_bang_R/Skeleton3D/Torso_vest_");
-            godot::UtilityFunctions::print("Blend shapes for Torso_vest_: ", (int)blendshapes.size());
-            for (const auto& shape : blendshapes) {
-                godot::UtilityFunctions::print("  - ", Vital::to_godot_string(shape));
-            }
-            
-            //cube->set_blendshape_value("Hair_bang_R/Skeleton3D/Torso_vest_", "Smile", 1.0f);
-            */
-
-            // Play animation on loop
-            // First, let's see what animations are available
-            auto available_anims = cube->get_animations();
-            godot::UtilityFunctions::print("Available animations: ", (int)available_anims.size());
-            if (!available_anims.empty()) {
-                cube -> play_animation(available_anims[0], true, 1.0f);
-                godot::UtilityFunctions::print("Playing animation: ", Vital::to_godot_string(available_anims[0]));
-            }
-
-            //tree->set_rotation(0.0f, Math::randf() * 360.0f, 0.0f);
-            //props.push_back(tree);
-        }
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
