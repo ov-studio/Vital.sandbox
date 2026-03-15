@@ -4,6 +4,24 @@ from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
 
+BUILD_INFO = {
+    "Windows": {
+        "lib_exts": [".dll"],
+        "preset": "Windows {platform_type}",
+        "output_ext": ".exe",
+    },
+    "Linux": {
+        "lib_exts": [".so"],
+        "preset": "Linux/X11 {platform_type}",
+        "output_ext": "",
+    },
+    "Darwin": {
+        "lib_exts": [".dylib", ".framework"],
+        "preset": "macOS {platform_type}",
+        "output_ext": ".app",
+    },
+}
+
 def Fetch_OS():
     archi = machine()
     if archi == "AMD64":
@@ -13,6 +31,12 @@ def Fetch_OS():
         "archi": archi,
         "nproc": str(cpu_count())
     }
+
+def Fetch_Build_Info():
+    os_type = Fetch_OS()["type"]
+    if os_type not in BUILD_INFO:
+        Throw_Error(f"[ERROR] Unsupported platform: {os_type}")
+    return BUILD_INFO[os_type]
 
 def Fetch_Compiler():
     compiler = ["default"]

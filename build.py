@@ -2,31 +2,13 @@ import sys
 sys.path.append("./Vital.sandbox")
 from vital import *
 
-PLATFORM_INFO = {
-    "Windows": {
-        "lib_exts":   [".dll"],
-        "preset":     "Windows {platform_type}",
-        "output_ext": ".exe",
-    },
-    "Linux": {
-        "lib_exts":   [".so"],
-        "preset":     "Linux/X11 {platform_type}",
-        "output_ext": "",
-    },
-    "Darwin": {
-        "lib_exts":   [".dylib", ".framework"],
-        "preset":     "macOS {platform_type}",
-        "output_ext": ".app",
-    },
-}
-
 class Build:
     def __init__(self, script_dir, platform_type, build_type):
         self.script_dir = script_dir
         self.platform_type = platform_type
         self.build_type = build_type
         self.os_info = Fetch_OS()
-        self.info = PLATFORM_INFO[self.os_info["type"]]
+        self.info = Fetch_Build_Info()
 
     def init(self):
         dist_dir = os.path.join(self.script_dir, ".dist", self.build_type.lower(), self.platform_type.lower())
