@@ -201,5 +201,12 @@ def get_godot_bin(script_dir):
     host_platform = get_host_platform()
     return setup_godot(script_dir, host_platform)
 
+def get_godot_env(script_dir):
+    host_platform = get_host_platform()
+    version       = get_godot_version(script_dir)
+    godot_bin     = setup_godot(script_dir, host_platform)
+    templates_dir = get_templates_dir(script_dir, version)
+    return godot_bin, templates_dir
+
 def ensure_templates(script_dir):
     get_godot_bin(script_dir)
