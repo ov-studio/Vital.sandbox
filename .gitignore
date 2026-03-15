@@ -1,9 +1,11 @@
 # Builds
+.vs/
+.vscode/
+.conan/
+.vcpkg/
 .godot/
 .build/
 .bin/
-.conan/
-.vcpkg/
 dist/
 discord-sdk/
 vital.sdk/
@@ -28,8 +30,3 @@ vital.sdk/
 *.exp
 *.log
 *.gen.*
-
-
-# IDE
-.vs/
-.vscode/
