@@ -143,17 +143,8 @@ def get_templates_url(version):
     name = f"Godot_v{vs}-stable_export_templates.tpz"
     return f"{base}/{name}", name
 
-def get_templates_dir(version):
-    vd     = _ver_dash(version)
-    vs     = _ver_short(version)
-    status = vd.split("-", 1)[1] if "-" in vd else "stable"
-    folder = f"{vs}.{status}"   # e.g. "4.4.1.stable"
-    if sys.platform.startswith("win"):
-        return os.path.join(os.environ["APPDATA"], "Godot", "export_templates", folder)
-    elif sys.platform.startswith("darwin"):
-        return os.path.expanduser(f"~/Library/Application Support/Godot/export_templates/{folder}")
-    else:
-        return os.path.expanduser(f"~/.local/share/godot/export_templates/{folder}")
+def get_templates_dir(script_dir, version):
+    return os.path.join(script_dir, ".godot", "templates")
 
 
 # ── Main setup entry point ─────────────────────────────────────────────────
