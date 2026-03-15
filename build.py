@@ -22,15 +22,16 @@ def copy_dlls(platform_type, build_type, script_dir, dist_dir):
     client_dir = os.path.join(script_dir, "Vital.client")
     build_suffix = "release" if build_type == "Release" else "debug"
 
-    # Find all folders managed by .gdextension — skip them
+    # Find folders that directly contain a .gdextension file — skip only those exact folders
     gdextension_roots = set()
     for root, dirs, files in os.walk(client_dir):
         if any(f.endswith(".gdextension") for f in files):
-            gdextension_roots.add(root)
+            gdextension_roots.add(os.path.normpath(root))
 
     for root, dirs, files in os.walk(client_dir):
-        # Skip if this folder or any parent is a gdextension root
-        if any(root == g or root.startswith(g + os.sep) for g in gdextension_roots):
+        norm_root = os.path.normpath(root)
+        # Only skip the exact folder containing the .gdextension, not its subfolders
+        if norm_root in gdextension_roots:
             continue
 
         dlls = []
@@ -47,12 +48,9 @@ def copy_dlls(platform_type, build_type, script_dir, dist_dir):
         if not dlls:
             continue
 
-        rel = os.path.relpath(root, client_dir)
-        dest = os.path.join(dist_dir, rel) if rel != "." else dist_dir
-        os.makedirs(dest, exist_ok=True)
         for dll in dlls:
             src_file = os.path.join(root, dll)
-            dst_file = os.path.join(dest, dll)
+            dst_file = os.path.join(dist_dir, dll)
             shutil.copy2(src_file, dst_file)
             print(f"  Copied: {dll}")
 
@@ -66,6 +64,13 @@ def export_godot(platform_type, build_type, script_dir):
     export_mode = "--export-release" if build_type == "Release" else "--export-debug"
 
     print(f"\n==> Exporting Godot [{platform_type} | {build_type}] -> {output_path}")
+
+    # Backup files that Godot may move/delete during export (gdextension dependencies)
+    wry_dll = os.path.join(project_dir, "vital.wry", "bin", "x86_64-pc-windows-msvc", "godot_wry.dll")
+    wry_backup = wry_dll + ".bak"
+    if os.path.exists(wry_dll):
+        shutil.copy2(wry_dll, wry_backup)
+
     result = subprocess.run([
         GODOT_BIN,
         "--headless",
@@ -73,6 +78,12 @@ def export_godot(platform_type, build_type, script_dir):
         export_mode, preset,
         output_path
     ])
+
+    # Restore backed up files
+    if os.path.exists(wry_backup):
+        shutil.copy2(wry_backup, wry_dll)
+        os.remove(wry_backup)
+
     if result.returncode != 0:
         print(f"[ERROR] Godot export failed for {platform_type}")
         sys.exit(result.returncode)
