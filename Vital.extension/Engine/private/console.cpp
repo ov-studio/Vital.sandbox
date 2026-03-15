@@ -92,6 +92,7 @@ namespace Vital::Engine {
                 parameters.push_back(values[i].GetString());
             }
             Vital::Tool::Stack arguments;
+            // TODO; PASS INPUT FROM HTML TO C++ for parsing instead
             arguments.object["command"] = values[0].GetString();
             arguments.object["parameters"] = parameters;
             Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);

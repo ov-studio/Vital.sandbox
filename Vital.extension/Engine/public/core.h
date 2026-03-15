@@ -27,6 +27,14 @@ namespace Vital::Engine {
             inline static Core* singleton = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
             static void _bind_methods() {};
+        private:
+            #if !defined(Vital_SDK_Client)
+            // TODO; Maybe have server side version of console within console.h itself instead of core.h
+            std::thread stdin_thread;
+            std::atomic<bool> stdin_running{false};
+            void start_console();
+            void stop_console();
+            #endif
         public:
             // Instantiators //
             Core() = default;
