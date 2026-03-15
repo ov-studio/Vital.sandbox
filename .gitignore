@@ -1,11 +1,10 @@
 # Builds
-*.gen.*
 .godot/
 .build/
 .bin/
-dist/
 .conan/
 .vcpkg/
+dist/
 discord-sdk/
 vital.sdk/
 
@@ -28,6 +27,7 @@ vital.sdk/
 *.idb
 *.exp
 *.log
+*.gen.*
 
 
 # IDE
