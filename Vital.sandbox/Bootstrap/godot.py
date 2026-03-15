@@ -12,10 +12,10 @@ class Godot:
         cache_dir = os.path.join(script_dir, ".godot", version) if version else None
         exe_name = self._get_exe_name(version, os_info["type"]) if version else None
         return {
-            "script_dir":   script_dir,
-            "version":      version,
-            "cache_dir":    cache_dir,
-            "exe_path":     os.path.join(cache_dir, exe_name) if cache_dir and exe_name else None,
+            "script_dir": script_dir,
+            "version": version,
+            "cache_dir": cache_dir,
+            "exe_path": os.path.join(cache_dir, exe_name) if cache_dir and exe_name else None,
             "templates_dir": self._get_templates_dir(version, os_info["type"]) if version else None,
         }
 
@@ -61,7 +61,7 @@ class Godot:
     def _get_exe_name(self, version, os_type):
         vs = self._ver_short(version)
         if os_type == "Windows": return f"Godot_v{vs}-stable_win64.exe"
-        if os_type == "Darwin":  return f"Godot_v{vs}-stable_macos.universal"
+        if os_type == "Darwin": return f"Godot_v{vs}-stable_macos.universal"
         return f"Godot_v{vs}-stable_linux.x86_64"
 
     def _get_binary_url(self, version, os_type):
@@ -82,10 +82,8 @@ class Godot:
         vs = self._ver_short(version)
         status = vd.split("-", 1)[1] if "-" in vd else "stable"
         folder = f"{vs}.{status}"
-        if os_type == "Windows":
-            return os.path.join(os.environ["APPDATA"], "Godot", "export_templates", folder)
-        elif os_type == "Darwin":
-            return os.path.expanduser(f"~/Library/Application Support/Godot/export_templates/{folder}")
+        if os_type == "Windows": return os.path.join(os.environ["APPDATA"], "Godot", "export_templates", folder)
+        elif os_type == "Darwin": return os.path.expanduser(f"~/Library/Application Support/Godot/export_templates/{folder}")
         else:
             return os.path.expanduser(f"~/.local/share/godot/export_templates/{folder}")
 
@@ -143,8 +141,7 @@ class Godot:
             self._extract_zip(dl_path, godot["cache_dir"])
             if os.path.exists(dl_path):
                 os.remove(dl_path)
-            if os_info["type"] != "Windows":
-                os.chmod(godot["exe_path"], 0o755)
+            if os_info["type"] != "Windows": os.chmod(godot["exe_path"], 0o755)
             print(f"  Binary ready: {godot['exe_path']}")
         else:
             print("  Binary cached.")
