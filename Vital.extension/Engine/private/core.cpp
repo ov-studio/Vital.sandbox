@@ -29,13 +29,17 @@ namespace Vital::Engine {
         singleton = singleton ? singleton : this;
         set_process(true);
         set_process_unhandled_key_input(get_platform() == "client");
+        #if defined(Vital_SDK_Client)
         get_environment();
+        #endif
         if (Vital::is_editor()) return;
         Vital::Tool::Event::emit("vital.core:ready");
     }
 
     void Core::_exit_tree() {
+        #if defined(Vital_SDK_Client)
         free_environment();
+        #endif
         if (Vital::is_editor()) return;
         Vital::Tool::Event::emit("vital.core:free");
     }
