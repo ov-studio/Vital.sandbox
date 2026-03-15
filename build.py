@@ -1,7 +1,6 @@
 import sys
 sys.path.append("./Vital.sandbox")
 from vital import *
-from Bootstrap.godot import Godot
 
 PLATFORM_INFO = {
     "Windows": { "lib_exts": [".dll"],                "preset": "Windows {platform_type}",   "output_ext": ".exe" },
