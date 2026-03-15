@@ -197,6 +197,6 @@ def setup_godot(script_dir, host_platform):
 
 
 # Alias for build.py compatibility
-def ensure_templates(script_dir):
+def get_godot_bin(script_dir):
     host_platform = get_host_platform()
-    setup_godot(script_dir, host_platform)
+    setup_godot(script_dir, host_platform)def ensure_templates(script_dir):
