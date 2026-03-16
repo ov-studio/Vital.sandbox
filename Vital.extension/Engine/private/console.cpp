@@ -151,8 +151,7 @@ namespace Vital::Engine {
                 size_t end = content.find('`', i + 1);
                 if (end != std::string::npos) {
                     const std::string code = content.substr(i + 1, end - i - 1);
-                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + code
-                            + mode_color;
+                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + code + mode_color;
                     i = end + 1;
                     continue;
                 }
@@ -175,24 +174,11 @@ namespace Vital::Engine {
         const std::string indent(indent_size, ' ');
         const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET)  : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
         if (!is_continuation) {
-            oss << " "
-                << ANSI_DIM  << FG_GRAY    << "[" << timestamp << "]"  << ANSI_RESET
-                << "  "
-                << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
-                << "  ";
-            if (is_highlighted) {
-                oss << marker
-                    << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
-            } else {
-                oss << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
-            }
+            oss << " " << ANSI_DIM  << FG_GRAY    << "[" << timestamp << "]"  << ANSI_RESET << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET << "  ";
+            if (is_highlighted) oss << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
+            else oss << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
             oss << "\n";
-        } else {
-            oss << indent
-                << marker
-                << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET
-                << "\n";
-        }
+        else oss << indent << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
         return oss.str();
     }
 
