@@ -44,9 +44,23 @@ namespace Vital::Tool {
         document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
         if (document.HasParseError() || !document.HasMember(name.c_str())) return {};
         const rapidjson::Value* node = &document[name.c_str()];
-        for (const std::string& key : {std::string(std::forward<Keys>(keys))...}) {
-            if (!node -> IsObject() || !node -> HasMember(key.c_str())) return {};
-            node = &(*node)[key.c_str()];
+        auto to_key = [](auto&& k) -> std::string {
+            using T = std::decay_t<decltype(k)>;
+            if constexpr (std::is_integral_v<T>) return std::to_string(k);
+            else return std::string(k);
+        };
+        for (const std::string& key : {to_key(std::forward<Keys>(keys))...}) {
+            bool is_index = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
+            if (is_index) {
+                if (!node -> IsArray()) return {};
+                const auto index = static_cast<rapidjson::SizeType>(std::stoul(key));
+                if (index >= node -> Size()) return {};
+                node = &(*node)[index];
+            }
+            else {
+                if (!node -> IsObject() || !node -> HasMember(key.c_str())) return {};
+                node = &(*node)[key.c_str()];
+            }
         }
         if (node -> IsString()) return std::string(node -> GetString());
         else if (node -> IsInt()) return node -> GetInt();
