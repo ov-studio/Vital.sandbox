@@ -89,13 +89,10 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            #if defined(Vital_SDK_Client)
             vm -> get_global(base_name);
             vm -> get_table_field("print", -1);
             vm -> push_global("print");
             vm -> pop(1);
-            #endif
-            
             vm -> table_set_nil("dump", "string");
             vm -> table_set_nil("dump", "utf8");
         }
