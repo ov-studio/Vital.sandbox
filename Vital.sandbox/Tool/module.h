@@ -56,16 +56,15 @@ namespace Vital::Tool {
 
     template<typename... Keys>
     inline Vital::Tool::StackValue fetch_config(const std::string& name, Keys&&... keys) {
-        rapidjson::Document document;
-        document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
-        if (document.HasParseError() || !document.HasMember(name.c_str())) return {};
-        const rapidjson::Value* node = &document[name.c_str()];
-        auto to_key = [](auto&& k) -> std::string {
+        const rapidjson::Value* node = fetch_config_base(name);
+        if (!node) return {};
+        std::vector<std::string> key_list;
+        (key_list.push_back([](auto&& k) -> std::string {
             using T = std::decay_t<decltype(k)>;
             if constexpr (std::is_integral_v<T>) return std::to_string(k);
             else return std::string(k);
-        };
-        for (const std::string& key : {to_key(std::forward<Keys>(keys))...}) {
+        }(std::forward<Keys>(keys))), ...);
+        for (const std::string& key : key_list) {
             bool is_index = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
             if (is_index) {
                 if (!node -> IsArray()) return {};
