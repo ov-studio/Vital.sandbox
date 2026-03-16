@@ -158,16 +158,16 @@ namespace Vital::Engine {
                 << "\n";
         }
         else {
-                const size_t indent_size = 17 + mode_label.size();
-                const std::string indent(indent_size, ' ');
-                const std::string marker = is_highlighted
-                    ? (std::string(ANSI_BOLD) + mode_color + "│ " + ANSI_RESET)
-                    : (std::string(ANSI_DIM)  + FG_GRAY    + "│ " + ANSI_RESET);
-                oss << indent
-                    << marker
-                    << mode_color << content << ANSI_RESET
-                    << "\n";
-            }
+            const size_t indent_size = 17 + mode_label.size();
+            const std::string indent(indent_size, ' ');
+            const std::string marker = is_highlighted
+                ? (std::string(ANSI_BOLD) + mode_color + "│ " + ANSI_RESET)
+                : (std::string(ANSI_DIM)  + FG_GRAY    + "│ " + ANSI_RESET);
+            oss << indent
+                << marker
+                << mode_color << content << ANSI_RESET
+                << "\n";
+        }
         return oss.str();
     }
 
