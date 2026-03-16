@@ -199,7 +199,8 @@ namespace Vital::Engine {
 
     // APIs //
     void Console::print(const std::string& mode, const std::string& message) {
-        if (mode.empty() || message.empty()) return;
+        if (Vital::Log::is_type(mode)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        if (message.empty()) return;
         #if defined(Vital_SDK_Client)
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;

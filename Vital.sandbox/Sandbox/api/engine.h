@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "print", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1)) || (!Vital::Log::is_type(vm -> get_string(1)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 std::string type = vm -> get_string(1);
                 std::ostringstream buffer;
                 for (int i = 2; i <= vm -> get_count(); ++i) {
