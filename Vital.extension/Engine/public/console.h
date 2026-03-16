@@ -30,6 +30,9 @@ namespace Vital::Engine {
         private:
             #if defined(Vital_SDK_Client)
             Webview* webview = nullptr;
+            #else
+            std::thread stdin_thread;
+            std::atomic<bool> stdin_running{false};
             #endif
         public:
             // Instantiators //

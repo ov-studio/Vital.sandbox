@@ -37,7 +37,29 @@ namespace Vital::Engine {
                 this -> on_message(message);
             });
         #else
-
+            #if defined(_WIN32)
+            AllocConsole();
+            SetConsoleTitleA("Vital.server");
+            SetConsoleOutputCP(CP_UTF8);
+            SetConsoleCP(CP_UTF8);
+            freopen("CONOUT$", "w", stdout);
+            freopen("CONOUT$", "w", stderr);
+            freopen("CONIN$",  "r", stdin);
+            HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+            DWORD mode;
+            GetConsoleMode(hStdin, &mode);
+            SetConsoleMode(hStdin, mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+            #endif
+            stdin_running = true;
+            stdin_thread = std::thread([this]() {
+                std::string line;
+                while (stdin_running) {
+                    std::cout << "> " << std::flush;
+                    if (!std::getline(std::cin, line)) break;
+                    command(line);
+                }
+            });
+            stdin_thread.detach();
         #endif
     }
 
@@ -47,7 +69,10 @@ namespace Vital::Engine {
             webview -> destroy(); 
             webview = nullptr;
         #else
-
+            stdin_running = false;
+            #if defined(_WIN32)
+            FreeConsole();
+            #endif
         #endif
     }
 
