@@ -16,7 +16,6 @@
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/index.h>
-#include <Vital.sandbox/Tool/event.h>
 
 
 ////////////////////////////
