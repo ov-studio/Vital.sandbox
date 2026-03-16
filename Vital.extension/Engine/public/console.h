@@ -33,7 +33,7 @@ namespace Vital::Engine {
             #else
             std::thread stdin_thread;
             std::atomic<bool> stdin_running{false};
-            #if defined(__APPLE__) || defined(__linux__)
+            #if defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
             struct termios stdin_termios{};
             #endif
             #endif
