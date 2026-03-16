@@ -149,18 +149,18 @@ namespace Vital::Engine {
         }
 
         if (!is_continuation) {
-            oss << "  "
-                << ANSI_DIM  << FG_GRAY    << timestamp  << ANSI_RESET
-                << "  "
-                << ANSI_DIM  << FG_GRAY    << "["        << ANSI_RESET
+            oss << " "
+                << ANSI_DIM << "[" << timestamp  << "]" << ANSI_RESET
+                << "   "
+                << ANSI_BOLD << mode_color      << "["        << ANSI_RESET
                 << ANSI_BOLD << mode_color << mode_label << ANSI_RESET
-                << ANSI_DIM  << FG_GRAY    << "]"        << ANSI_RESET
+                << ANSI_BOLD << mode_color     << "]"        << ANSI_RESET
                 << "  "
                 << mode_color              << content    << ANSI_RESET
                 << "\n";
         } else {
             // +1 for the leading space
-            const size_t indent_size = 16 + mode_label.size();
+            const size_t indent_size = 18 + mode_label.size();
             const std::string indent(indent_size, ' ');
             const std::string marker = is_highlighted
                 ? (std::string(ANSI_BOLD) + mode_color + "│ " + ANSI_RESET)
