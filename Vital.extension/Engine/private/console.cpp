@@ -235,13 +235,24 @@ namespace Vital::Engine {
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
-            auto mode_label = fetch_mode_label(mode);
-            auto mode_badge = fetch_mode_badge(mode);
+            const auto mode_label = fetch_mode_label(mode);
+            const auto mode_badge = fetch_mode_badge(mode);
+            const auto mode_color = fetch_mode_rgb(mode);
+            const auto mode_background = fetch_mode_background(mode);
+            auto make_color = [&](const Vital::Tool::Stack& color) {
+                rapidjson::Value result(rapidjson::kArrayType);
+                result.PushBack(color.array[0].as<int32_t>(), alloc);
+                result.PushBack(color.array[1].as<int32_t>(), alloc);
+                result.PushBack(color.array[2].as<int32_t>(), alloc);
+                return result;
+            };
             document.AddMember("action", "print", alloc);
             document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
             document.AddMember("label", rapidjson::Value(mode_label.c_str(), alloc), alloc);
             document.AddMember("badge", rapidjson::Value(mode_badge.c_str(), alloc), alloc);
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
+            document.AddMember("color", make_color(mode_color), alloc);
+            document.AddMember("background", make_color(mode_background), alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
         #else
