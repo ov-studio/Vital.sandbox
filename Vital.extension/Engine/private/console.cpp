@@ -223,7 +223,7 @@ namespace Vital::Engine {
             document.SetObject();
             auto& alloc = document.GetAllocator();
             document.AddMember("action", "print", alloc);
-            document.AddMember("mode", rapidjson::Value(mode.c_str(),    alloc), alloc);
+            document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
