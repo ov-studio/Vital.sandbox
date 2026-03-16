@@ -101,6 +101,20 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
+    std::string Console::fetch_mode_label(const std::string& mode) {
+        const auto label = Vital::Tool::fetch_config("log", mode, "label");
+        if (label.is<std::string>()) return label.as<std::string>();
+        return mode;
+    }
+
+    std::string Console::fetch_mode_badge(const std::string& mode) {
+        const auto badge = Vital::Tool::fetch_config("log", mode, "badge");
+        if (badge.is<std::string>()) return badge.as<std::string>();
+        std::string upper = mode;
+        std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+        return upper;
+    }
+
     Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
         Vital::Tool::Stack color;
         const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
@@ -191,8 +205,7 @@ namespace Vital::Engine {
     std::string Console::format_output(const std::string& mode, const std::string& message) {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
         const Vital::Tool::Stack mode_rgb = fetch_mode_color(mode);
-        std::string mode_label = mode;
-        std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
+        std::string mode_badge = fetch_mode_badge(mode);
         std::ostringstream ts_oss;
         ts_oss << std::setfill('0')
                << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":"
@@ -203,7 +216,7 @@ namespace Vital::Engine {
         std::string line;
         bool first = true;
         while (std::getline(stream, line)) {
-            oss << format_line(mode_rgb, ts_oss.str(), mode_label, line, !first);
+            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first);
             first = false;
         }
         oss << "\n";
