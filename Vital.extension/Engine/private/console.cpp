@@ -61,14 +61,6 @@ namespace Vital::Engine {
 
 
     // APIs //
-    std::vector<std::string> Console::parse(const std::string& input) {
-        std::istringstream iss(input);
-        std::vector<std::string> tokens;
-        std::string token;
-        while (iss >> token) tokens.push_back(token);
-        return tokens;
-    }
-
     void Console::print(const std::string& mode, const std::string& message) {
         if (mode.empty() || message.empty()) return;
         rapidjson::Document document;
@@ -83,6 +75,19 @@ namespace Vital::Engine {
         webview -> emit(buffer.GetString());
     }
 
+    void Console::command(const std::string& input) {
+        if (input.empty()) return;
+        std::istringstream iss(input);
+        std::vector<std::string> tokens;
+        std::string token;
+        while (iss >> token) tokens.push_back(token);
+        if (tokens.empty()) return;
+        Vital::Tool::Stack arguments;
+        arguments.object["command"] = tokens[0];
+        arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
+        Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
+    }
+
 
     // Events //
     void Console::on_message(godot::String message) {
@@ -92,14 +97,7 @@ namespace Vital::Engine {
         std::string action = document["action"].GetString();
         if (action == "input") {
             if (!document.HasMember("message") || !document["message"].IsString()) return;
-            const std::string raw = document["message"].GetString();
-            if (raw.empty()) return;
-            const std::vector<std::string> tokens = parse(raw);
-            if (tokens.empty()) return;
-            Vital::Tool::Stack arguments;
-            arguments.object["command"] = tokens[0];
-            arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
-            Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
+            command(document["message"].GetString());
         }
     }
 }
