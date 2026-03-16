@@ -40,3 +40,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <initializer_list>
+
+#if defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+#include <termios.h>
+#include <unistd.h>
+#endif
