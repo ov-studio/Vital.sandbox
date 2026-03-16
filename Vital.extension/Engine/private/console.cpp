@@ -178,6 +178,7 @@ namespace Vital::Engine {
             if (is_highlighted) oss << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
             else oss << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
             oss << "\n";
+        }
         else oss << indent << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
         return oss.str();
     }
