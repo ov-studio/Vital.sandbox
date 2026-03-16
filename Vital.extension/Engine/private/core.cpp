@@ -79,26 +79,16 @@ namespace Vital::Engine {
         #endif
     
         stdin_running = true;
+        stdin_running = true;
         stdin_thread = std::thread([this]() {
             std::string line;
             while (stdin_running) {
                 std::cout << "> " << std::flush;
                 if (!std::getline(std::cin, line)) break;
-                if (line.empty()) continue;
-        
-                std::istringstream iss(line);
-                std::vector<std::string> tokens;
-                std::string token;
-                while (iss >> token) tokens.push_back(token);
-                if (tokens.empty()) continue;
-        
-                std::vector<std::string> parameters(tokens.begin() + 1, tokens.end());
-                Vital::Tool::Stack arguments;
-                arguments.object["command"] = tokens[0];
-                arguments.object["parameters"] = parameters;
-                Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
+                Console::get_singleton()->command(line);
             }
         });
+        stdin_thread.detach();
         stdin_thread.detach();
     }
     
