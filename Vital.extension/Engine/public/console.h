@@ -64,8 +64,9 @@ namespace Vital::Engine {
 
 
             // APIs //
-            void print(const std::string& mode, const std::string& message);
+            void init();
             void execute(const std::string& input);
+            void print(const std::string& mode, const std::string& message);
 
 
             // Events //

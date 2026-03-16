@@ -226,6 +226,57 @@ namespace Vital::Engine {
 
 
     // APIs //
+    void Console::init() {
+        #if defined(Vital_SDK_Client)
+        rapidjson::Document document;
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        document.SetObject();
+        auto& alloc = document.GetAllocator();
+        auto make_color = [&](const Vital::Tool::Stack& color) {
+            rapidjson::Value arr(rapidjson::kArrayType);
+            arr.PushBack(color.array[0].as<int32_t>(), alloc);
+            arr.PushBack(color.array[1].as<int32_t>(), alloc);
+            arr.PushBack(color.array[2].as<int32_t>(), alloc);
+            return arr;
+        };
+        document.AddMember("action", "init", alloc);
+        rapidjson::Value types(rapidjson::kObjectType);
+        // Iterate known modes — fetch each from manifest
+        const std::vector<std::string> modes = {"sbox", "info", "warn", "error", "debug", "system"};
+        for (const auto& mode : modes) {
+            const auto label      = fetch_mode_label(mode);
+            const auto badge      = fetch_mode_badge(mode);
+            const auto color      = fetch_mode_color(mode);
+            const auto background = fetch_mode_background(mode);
+            const auto priority   = Vital::Tool::fetch_config("log", mode, "priority");
+            rapidjson::Value entry(rapidjson::kObjectType);
+            entry.AddMember("label",      rapidjson::Value(label.c_str(), alloc), alloc);
+            entry.AddMember("badge",      rapidjson::Value(badge.c_str(), alloc), alloc);
+            entry.AddMember("priority",   priority.is<int32_t>() ? priority.as<int32_t>() : 99, alloc);
+            entry.AddMember("color",      make_color(color),      alloc);
+            entry.AddMember("background", make_color(background), alloc);
+            rapidjson::Value key(mode.c_str(), alloc);
+            types.AddMember(key, entry, alloc);
+        }
+        document.AddMember("types", types, alloc);
+        document.Accept(writer);
+        webview -> emit(buffer.GetString());
+        #endif
+    }
+
+    void Console::execute(const std::string& input) {
+        std::istringstream iss(input);
+        std::vector<std::string> tokens;
+        std::string token;
+        while (iss >> token) tokens.push_back(token);
+        if (tokens.empty()) return;
+        Vital::Tool::Stack arguments;
+        arguments.object["command"] = tokens[0];
+        arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
+        Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
+    }
+
     void Console::print(const std::string& mode, const std::string& message) {
         if (!Vital::Log::is_type(mode)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         if (message.empty()) return;
@@ -245,18 +296,6 @@ namespace Vital::Engine {
         #endif
     }
 
-    void Console::execute(const std::string& input) {
-        std::istringstream iss(input);
-        std::vector<std::string> tokens;
-        std::string token;
-        while (iss >> token) tokens.push_back(token);
-        if (tokens.empty()) return;
-        Vital::Tool::Stack arguments;
-        arguments.object["command"] = tokens[0];
-        arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
-        Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
-    }
-
 
     // Events //
     #if defined(Vital_SDK_Client)
@@ -265,7 +304,8 @@ namespace Vital::Engine {
         document.Parse(to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
-        if (action == "input") {
+        if (action == "ready") init();
+        else if (action == "input") {
             if (!document.HasMember("message") || !document["message"].IsString()) return;
             execute(document["message"].GetString());
         }
