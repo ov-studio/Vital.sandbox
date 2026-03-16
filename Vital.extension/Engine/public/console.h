@@ -39,6 +39,7 @@ namespace Vital::Engine {
 
 
             // APIs //
+            static std::vector<std::string> parse(const std::string& input);
             void print(const std::string& mode, const std::string& message);
 
 

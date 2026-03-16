@@ -61,6 +61,14 @@ namespace Vital::Engine {
 
 
     // APIs //
+    std::vector<std::string> Console::parse(const std::string& input) {
+        std::istringstream iss(input);
+        std::vector<std::string> tokens;
+        std::string token;
+        while (iss >> token) tokens.push_back(token);
+        return tokens;
+    }
+
     void Console::print(const std::string& mode, const std::string& message) {
         if (mode.empty() || message.empty()) return;
         rapidjson::Document document;
@@ -81,20 +89,16 @@ namespace Vital::Engine {
         rapidjson::Document document;
         document.Parse(to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
-
         std::string action = document["action"].GetString();
         if (action == "input") {
-            if (!document.HasMember("message") || !document["message"].IsArray()) return;
-            const auto& values = document["message"].GetArray();
-            if (values.Empty()) return;
-            std::vector<std::string> parameters;
-            for (size_t i = 1; i < values.Size(); ++i) {
-                parameters.push_back(values[i].GetString());
-            }
+            if (!document.HasMember("message") || !document["message"].IsString()) return;
+            const std::string raw = document["message"].GetString();
+            if (raw.empty()) return;
+            const std::vector<std::string> tokens = parse(raw);
+            if (tokens.empty()) return;
             Vital::Tool::Stack arguments;
-            // TODO; PASS INPUT FROM HTML TO C++ for parsing instead
-            arguments.object["command"] = values[0].GetString();
-            arguments.object["parameters"] = parameters;
+            arguments.object["command"] = tokens[0];
+            arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
             Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
         }
     }
