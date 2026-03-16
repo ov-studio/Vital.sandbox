@@ -141,7 +141,6 @@ namespace Vital::Engine {
     std::string Console::format_line(const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
         std::ostringstream oss;
 
-        // Strip leading '>' from line and flag it
         std::string content = line;
         bool is_highlighted = (!content.empty() && content[0] == '>');
         if (is_highlighted) {
@@ -150,20 +149,22 @@ namespace Vital::Engine {
         }
 
         if (!is_continuation) {
-            oss << ANSI_DIM   << FG_GRAY     << timestamp   << ANSI_RESET
-                << FG_GRAY    << "  "                       << ANSI_RESET
-                << ANSI_DIM   << FG_GRAY     << "["         << ANSI_RESET
-                << ANSI_BOLD  << mode_color  << mode_label  << ANSI_RESET
-                << ANSI_DIM   << FG_GRAY     << "]"         << ANSI_RESET
-                << FG_GRAY    << "  "                       << ANSI_RESET
-                << mode_color                << content     << ANSI_RESET
+            oss << ANSI_DIM  << FG_GRAY    << timestamp  << ANSI_RESET
+                << "  "
+                << ANSI_DIM  << FG_GRAY    << "["        << ANSI_RESET
+                << ANSI_BOLD << mode_color << mode_label << ANSI_RESET
+                << ANSI_DIM  << FG_GRAY    << "]"        << ANSI_RESET
+                << "  "
+                << mode_color              << content    << ANSI_RESET
                 << "\n";
-        }
-        else {
+        } else {
+            // timestamp(8) + "  "(2) + "["(1) + mode_label + "]"(1) + "  "(2) = 14 + mode_label.size()
+            const size_t indent_size = 14 + mode_label.size();
+            const std::string indent(indent_size, ' ');
             const std::string marker = is_highlighted
-            ? (std::string(ANSI_BOLD) + mode_color + "│ " + ANSI_RESET)
-            : (std::string(ANSI_DIM)  + FG_GRAY    + "│ " + ANSI_RESET);
-            oss << ANSI_DIM << FG_GRAY << "                     " << ANSI_RESET
+                ? (std::string(ANSI_BOLD) + mode_color + "│ " + ANSI_RESET)
+                : (std::string(ANSI_DIM)  + FG_GRAY    + "│ " + ANSI_RESET);
+            oss << indent
                 << marker
                 << mode_color << content << ANSI_RESET
                 << "\n";
@@ -176,7 +177,6 @@ namespace Vital::Engine {
         const std::string mode_color = get_mode_color(mode);
         std::string mode_label = mode;
         std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
-        while (mode_label.size() < 7) mode_label += " ";
 
         std::ostringstream oss;
         std::istringstream stream(message);
