@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(Vital_SDK_Client)
 #include <Vital.extension/Engine/public/console.h>
 
 
@@ -24,24 +23,32 @@
 namespace Vital::Engine {
     // Instantiators //
     Console::Console() {
-        webview = Webview::create();
-        webview -> set_position({0, 0});
-        webview -> set_visible(true);
-        webview -> set_fullscreen(true);
-        webview -> set_transparent(true);
-        webview -> set_autoplay(false);
-        webview -> set_zoomable(false);
-        webview -> set_devtools_visible(false);
-        webview -> load_html(Vital::Tool::fetch_module("console")); 
-        webview -> set_message_handler([this](godot::String message) {
-            this -> on_message(message);
-        });
+        #if defined(Vital_SDK_Client)
+            webview = Webview::create();
+            webview -> set_position({0, 0});
+            webview -> set_visible(true);
+            webview -> set_fullscreen(true);
+            webview -> set_transparent(true);
+            webview -> set_autoplay(false);
+            webview -> set_zoomable(false);
+            webview -> set_devtools_visible(false);
+            webview -> load_html(Vital::Tool::fetch_module("console")); 
+            webview -> set_message_handler([this](godot::String message) {
+                this -> on_message(message);
+            });
+        #else
+
+        #endif
     }
 
     Console::~Console() {
-        if (!webview) return;
-        webview -> destroy(); 
-        webview = nullptr;
+        #if defined(Vital_SDK_Client)
+            if (!webview) return;
+            webview -> destroy(); 
+            webview = nullptr;
+        #else
+
+        #endif
     }
 
 
@@ -92,6 +99,7 @@ namespace Vital::Engine {
 
 
     // Events //
+    #if defined(Vital_SDK_Client)
     void Console::on_message(godot::String message) {
         rapidjson::Document document;
         document.Parse(to_std_string(message).c_str());
@@ -102,5 +110,5 @@ namespace Vital::Engine {
             command(document["message"].GetString());
         }
     }
+    #endif
 }
-#endif

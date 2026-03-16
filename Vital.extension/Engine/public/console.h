@@ -15,6 +15,7 @@
 #pragma once
 #if defined(Vital_SDK_Client)
 #include <Vital.extension/Engine/public/webview.h>
+#endif
 
 
 /////////////////////////////
@@ -26,7 +27,9 @@ namespace Vital::Engine {
         protected:
             inline static Console* singleton = nullptr;
         private:
+            #if defined(Vital_SDK_Client)
             Webview* webview = nullptr;
+            #endif
         public:
             // Instantiators //
             Console();
@@ -44,10 +47,11 @@ namespace Vital::Engine {
 
 
             // Events //
+            #if defined(Vital_SDK_Client)
             void on_message(godot::String message);
+            #endif
     };
 }
-#endif
 
 namespace Vital {
     template<typename... Args>
