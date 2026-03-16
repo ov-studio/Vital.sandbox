@@ -206,11 +206,11 @@ namespace Vital::Engine {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
         std::ostringstream ts_oss;
         ts_oss << std::setfill('0')
-               << std::setw(2) << std::get<int>(ts.object.at("hour"))   << ":"
-               << std::setw(2) << std::get<int>(ts.object.at("minute")) << ":"
-               << std::setw(2) << std::get<int>(ts.object.at("second"));
+               << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":"
+               << std::setw(2) << ts.object.at("minute").as<int32_t>() << ":"
+               << std::setw(2) << ts.object.at("second").as<int32_t>();
         const std::string timestamp  = ts_oss.str();
-        const RGB         mode_rgb   = get_mode_rgb(mode);
+        const RGB mode_rgb = get_mode_rgb(mode);
         const std::string mode_color = ansi_rgb(mode_rgb);
         std::string mode_label = mode;
         std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
