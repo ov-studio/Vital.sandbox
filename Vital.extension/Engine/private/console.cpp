@@ -145,9 +145,9 @@ namespace Vital::Engine {
         const int g = color.array[1].as<int32_t>();
         const int b = color.array[2].as<int32_t>();
         return ansi_rgb(
-            r + static_cast<int>((255 - r) * factor),
-            g + static_cast<int>((255 - g) * factor),
-            b + static_cast<int>((255 - b) * factor)
+            r + static_cast<int>((255 - r)*factor),
+            g + static_cast<int>((255 - g)*factor),
+            b + static_cast<int>((255 - b)*factor)
         );
     }
 
