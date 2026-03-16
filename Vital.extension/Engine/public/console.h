@@ -17,6 +17,10 @@
 #if defined(Vital_SDK_Client)
 #include <Vital.extension/Engine/public/webview.h>
 #endif
+#if !defined(Vital_SDK_Client) && (defined(__APPLE__) || defined(__linux__))
+#include <termios.h>
+#include <unistd.h>
+#endif
 
 
 /////////////////////////////
@@ -33,6 +37,9 @@ namespace Vital::Engine {
             #else
             std::thread stdin_thread;
             std::atomic<bool> stdin_running{false};
+            #if defined(__APPLE__) || defined(__linux__)
+            struct termios stdin_termios{};
+            #endif
             #endif
         public:
             // Instantiators //

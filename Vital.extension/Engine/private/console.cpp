@@ -32,23 +32,28 @@ namespace Vital::Engine {
             webview -> set_autoplay(false);
             webview -> set_zoomable(false);
             webview -> set_devtools_visible(false);
-            webview -> load_html(Vital::Tool::fetch_module("console")); 
+            webview -> load_html(Vital::Tool::fetch_module("console"));
             webview -> set_message_handler([this](godot::String message) {
                 this -> on_message(message);
             });
         #else
             #if defined(_WIN32)
-            AllocConsole();
-            SetConsoleTitleA("Vital.server");
-            SetConsoleOutputCP(CP_UTF8);
-            SetConsoleCP(CP_UTF8);
-            freopen("CONOUT$", "w", stdout);
-            freopen("CONOUT$", "w", stderr);
-            freopen("CONIN$",  "r", stdin);
-            HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-            DWORD mode;
-            GetConsoleMode(hStdin, &mode);
-            SetConsoleMode(hStdin, mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+                AllocConsole();
+                SetConsoleTitleA("Vital.server");
+                SetConsoleOutputCP(CP_UTF8);
+                SetConsoleCP(CP_UTF8);
+                freopen("CONOUT$", "w", stdout);
+                freopen("CONOUT$", "w", stderr);
+                freopen("CONIN$",  "r", stdin);
+                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+                DWORD mode;
+                GetConsoleMode(hStdin, &mode);
+                SetConsoleMode(hStdin, mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+            #elif defined(__APPLE__) || defined(__linux__)
+                tcgetattr(STDIN_FILENO, &stdin_termios);
+                struct termios term = stdin_termios;
+                term.c_lflag |= (ICANON | ECHO | ECHOE | ECHOK | ISIG);
+                tcsetattr(STDIN_FILENO, TCSANOW, &term);
             #endif
             stdin_running = true;
             stdin_thread = std::thread([this]() {
@@ -66,12 +71,14 @@ namespace Vital::Engine {
     Console::~Console() {
         #if defined(Vital_SDK_Client)
             if (!webview) return;
-            webview -> destroy(); 
+            webview -> destroy();
             webview = nullptr;
         #else
             stdin_running = false;
             #if defined(_WIN32)
-            FreeConsole();
+                FreeConsole();
+            #elif defined(__APPLE__) || defined(__linux__)
+                tcsetattr(STDIN_FILENO, TCSANOW, &stdin_termios);
             #endif
         #endif
     }
