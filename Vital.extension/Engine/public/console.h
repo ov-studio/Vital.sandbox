@@ -45,13 +45,13 @@ namespace Vital::Engine {
 
             // Color: RGB //
             struct RGB { int r, g, b; };
-            static std::string      ansi_rgb(int r, int g, int b, bool bg = false);
-            static std::string      ansi_rgb(const RGB& color, bool bg = false);
-            static std::string      ansi_rgb_lighten(const RGB& color, float factor = 0.3f);
-            static RGB              get_mode_rgb(const std::string& mode);
-            static std::string      format_inline(const RGB& mode_rgb, const std::string& mode_color, const std::string& content);
-            static std::string      format_line(const RGB& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
-            static std::string      format_output(const std::string& mode, const std::string& message);
+            static std::string ansi_rgb(int r, int g, int b, bool bg = false);
+            static std::string ansi_rgb(const RGB& color, bool bg = false);
+            static std::string ansi_rgb_lighten(const RGB& color, float factor = 0.3f);
+            static RGB get_mode_rgb(const std::string& mode);
+            static std::string format_inline(const RGB& mode_rgb, const std::string& mode_color, const std::string& content);
+            static std::string format_line(const RGB& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
+            static std::string format_output(const std::string& mode, const std::string& message);
             #endif
         public:
             // Instantiators //
