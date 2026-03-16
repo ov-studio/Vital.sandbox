@@ -131,14 +131,11 @@ namespace Vital::Engine {
 
     Vital::Tool::Stack Console::get_mode_rgb(const std::string& mode) {
         Vital::Tool::Stack color;
-        color.array = {220, 220, 220};
-        if (mode == "info")    color.array = {80,  200, 220};
-        else if (mode == "success") color.array = {100, 220, 100};
-        else if (mode == "warn")    color.array = {240, 200, 80};
-        else if (mode == "error")   color.array = {220, 80,  80};
-        else if (mode == "debug")   color.array = {200, 100, 220};
-        else if (mode == "sbox")    color.array = {80,  140, 220};
-        else if (mode == "system")  color.array = {240, 160, 60};
+        const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
+        const auto g = Vital::Tool::fetch_config("log", mode, "color", 1);
+        const auto b = Vital::Tool::fetch_config("log", mode, "color", 2);
+        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
+        else color.array = {220, 220, 220};
         return color;
     }
 
