@@ -37,7 +37,23 @@ namespace Vital::Tool {
         }
         return it -> second;
     }
-    
+
+    inline rapidjson::Document& fetch_manifest() {
+        static rapidjson::Document document;
+        static bool parsed = false;
+        if (!parsed) {
+            document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
+            parsed = true;
+        }
+        return document;
+    }
+
+    inline const rapidjson::Value* fetch_config_base(const std::string& name) {
+        const auto& document = fetch_manifest();
+        if (document.HasParseError() || !document.HasMember(name.c_str()) || !document[name.c_str()].IsObject()) return nullptr;
+        return &document[name.c_str()];
+    }
+
     template<typename... Keys>
     inline Vital::Tool::StackValue fetch_config(const std::string& name, Keys&&... keys) {
         rapidjson::Document document;
