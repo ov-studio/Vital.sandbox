@@ -114,17 +114,9 @@ namespace Vital::Engine {
 
     std::string Console::ansi_rgb_lighten(const RGB& color, float factor) {
         return ansi_rgb(
-            color.r + static_cast<int>((255 - color.r) * factor),
-            color.g + static_cast<int>((255 - color.g) * factor),
-            color.b + static_cast<int>((255 - color.b) * factor)
-        );
-    }
-
-    std::string Console::ansi_rgb_darken(const RGB& color, float factor) {
-        return ansi_rgb(
-            static_cast<int>(color.r * (1.0f - factor)),
-            static_cast<int>(color.g * (1.0f - factor)),
-            static_cast<int>(color.b * (1.0f - factor))
+            color.r + static_cast<int>((255 - color.r)*factor),
+            color.g + static_cast<int>((255 - color.g)*factor),
+            color.b + static_cast<int>((255 - color.b)*factor)
         );
     }
 
@@ -139,10 +131,6 @@ namespace Vital::Engine {
         return {220, 220, 220};
     }
 
-    std::string Console::get_mode_color(const std::string& mode) {
-        return ansi_rgb(get_mode_rgb(mode));
-    }
-
     std::string Console::format_inline(const RGB& mode_rgb, const std::string& mode_color, const std::string& content) {
         std::string result;
         size_t i = 0;
@@ -150,8 +138,9 @@ namespace Vital::Engine {
             if (content[i] == '`') {
                 size_t end = content.find('`', i + 1);
                 if (end != std::string::npos) {
-                    const std::string code = content.substr(i + 1, end - i - 1);
-                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + code + mode_color;
+                    result += ansi_rgb_lighten(mode_rgb, 0.35f)
+                            + content.substr(i + 1, end - i - 1)
+                            + mode_color;
                     i = end + 1;
                     continue;
                 }
@@ -164,31 +153,35 @@ namespace Vital::Engine {
     std::string Console::format_line(const RGB& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
         std::ostringstream oss;
         std::string content = line;
-        bool is_highlighted = (!content.empty() && content[0] == '>');
+        const bool is_highlighted = (!content.empty() && content[0] == '>');
         if (is_highlighted) {
             content = content.substr(1);
             if (!content.empty() && content[0] == ' ') content = content.substr(1);
         }
-
-        const size_t indent_size = 17 + mode_label.size();
-        const std::string indent(indent_size, ' ');
-        const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET)  : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
+        const std::string marker = is_highlighted
+            ? (ANSI_BOLD + mode_color          + "│ " + ANSI_RESET)
+            : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
         if (!is_continuation) {
-            oss << " " << ANSI_DIM  << FG_GRAY    << "[" << timestamp << "]"  << ANSI_RESET << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET << "  ";
-            if (is_highlighted) oss << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
-            else oss << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
-            oss << "\n";
+            oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
+                << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
+                << "  " << (is_highlighted ? marker : "")
+                << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
+        } else {
+            const std::string indent(17 + mode_label.size(), ' ');
+            oss << indent << marker
+                << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
         }
-        else oss << indent << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
         return oss.str();
     }
 
     std::string Console::format_output(const std::string& mode, const std::string& message) {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
         std::ostringstream ts_oss;
-        ts_oss << std::setfill('0') << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":" << std::setw(2) << ts.object.at("minute").as<int32_t>() << ":" << std::setw(2) << ts.object.at("second").as<int32_t>();
-        const std::string timestamp  = ts_oss.str();
-        const RGB mode_rgb = get_mode_rgb(mode);
+        ts_oss << std::setfill('0')
+               << std::setw(2) << ts.object.at("hour").as<int32_t>()   << ":"
+               << std::setw(2) << ts.object.at("minute").as<int32_t>() << ":"
+               << std::setw(2) << ts.object.at("second").as<int32_t>();
+        const RGB         mode_rgb   = get_mode_rgb(mode);
         const std::string mode_color = ansi_rgb(mode_rgb);
         std::string mode_label = mode;
         std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
@@ -197,7 +190,7 @@ namespace Vital::Engine {
         std::string line;
         bool first = true;
         while (std::getline(stream, line)) {
-            oss << format_line(mode_rgb, mode_color, timestamp, mode_label, line, !first);
+            oss << format_line(mode_rgb, mode_color, ts_oss.str(), mode_label, line, !first);
             first = false;
         }
         oss << "\n";
@@ -215,8 +208,8 @@ namespace Vital::Engine {
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
-            document.AddMember("action", "print", alloc);
-            document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
+            document.AddMember("action",  "print", alloc);
+            document.AddMember("mode",    rapidjson::Value(mode.c_str(),    alloc), alloc);
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
@@ -232,7 +225,7 @@ namespace Vital::Engine {
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
         Vital::Tool::Stack arguments;
-        arguments.object["command"] = tokens[0];
+        arguments.object["command"]    = tokens[0];
         arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
         Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
     }
