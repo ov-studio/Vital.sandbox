@@ -111,6 +111,16 @@ namespace Vital::Engine {
         return color;
     }
 
+    Vital::Tool::Stack Console::fetch_mode_background(const std::string& mode) {
+        Vital::Tool::Stack background;
+        const auto r = Vital::Tool::fetch_config("log", mode, "background", 0);
+        const auto g = Vital::Tool::fetch_config("log", mode, "background", 1);
+        const auto b = Vital::Tool::fetch_config("log", mode, "background", 2);
+        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) background.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
+        else background.array = {20, 20, 20};
+        return background;
+    }
+
     #if !defined(Vital_SDK_Client)
     std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;

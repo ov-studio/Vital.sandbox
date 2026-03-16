@@ -58,6 +58,7 @@ namespace Vital::Engine {
             static Console* get_singleton();
             static void free_singleton();
             static Vital::Tool::Stack fetch_mode_color(const std::string& mode);
+            static Vital::Tool::Stack fetch_mode_background(const std::string& mode);
 
 
             // APIs //
