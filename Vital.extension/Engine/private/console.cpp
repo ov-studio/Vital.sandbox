@@ -205,7 +205,7 @@ namespace Vital::Engine {
     std::string Console::format_output(const std::string& mode, const std::string& message) {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
         const Vital::Tool::Stack mode_rgb = fetch_mode_color(mode);
-        std::string mode_badge = fetch_mode_badge(mode);
+        auto mode_badge = fetch_mode_badge(mode);
         std::ostringstream ts_oss;
         ts_oss << std::setfill('0')
                << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":"
@@ -235,8 +235,12 @@ namespace Vital::Engine {
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
+            auto mode_label = fetch_mode_label(mode);
+            auto mode_badge = fetch_mode_badge(mode);
             document.AddMember("action", "print", alloc);
             document.AddMember("mode", rapidjson::Value(mode.c_str(), alloc), alloc);
+            document.AddMember("label", rapidjson::Value(mode_label.c_str(), alloc), alloc);
+            document.AddMember("badge", rapidjson::Value(mode_badge.c_str(), alloc), alloc);
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
