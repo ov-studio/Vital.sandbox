@@ -44,7 +44,6 @@ namespace Vital::Engine {
             static std::string ansi_rgb(int r, int g, int b);
             static std::string ansi_rgb(const Vital::Tool::Stack& color);
             static std::string ansi_rgb_lighten(const Vital::Tool::Stack& color, float factor = 0.3f);
-            static Vital::Tool::Stack get_mode_rgb(const std::string& mode);
             static std::string format_inline(const Vital::Tool::Stack& mode_rgb, const std::string& content);
             static std::string format_line(const Vital::Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
             static std::string format_output(const std::string& mode, const std::string& message);
@@ -54,13 +53,17 @@ namespace Vital::Engine {
             Console();
             ~Console();
 
+
             // Utils //
             static Console* get_singleton();
             static void free_singleton();
+            static Vital::Tool::Stack fetch_mode_color(const std::string& mode);
+
 
             // APIs //
             void print(const std::string& mode, const std::string& message);
             void execute(const std::string& input);
+
 
             // Events //
             #if defined(Vital_SDK_Client)

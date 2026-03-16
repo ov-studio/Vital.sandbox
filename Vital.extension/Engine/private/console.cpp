@@ -101,8 +101,16 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
+    Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
+        Vital::Tool::Stack color;
+        const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
+        const auto g = Vital::Tool::fetch_config("log", mode, "color", 1);
+        const auto b = Vital::Tool::fetch_config("log", mode, "color", 2);
+        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
+        else color.array = {220, 220, 220};
+        return color;
+    }
 
-    // Helpers //
     #if !defined(Vital_SDK_Client)
     std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
@@ -127,16 +135,6 @@ namespace Vital::Engine {
             g + static_cast<int>((255 - g) * factor),
             b + static_cast<int>((255 - b) * factor)
         );
-    }
-
-    Vital::Tool::Stack Console::get_mode_rgb(const std::string& mode) {
-        Vital::Tool::Stack color;
-        const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
-        const auto g = Vital::Tool::fetch_config("log", mode, "color", 1);
-        const auto b = Vital::Tool::fetch_config("log", mode, "color", 2);
-        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
-        else color.array = {220, 220, 220};
-        return color;
     }
 
     std::string Console::format_inline(const Vital::Tool::Stack& mode_rgb, const std::string& content) {
@@ -182,7 +180,7 @@ namespace Vital::Engine {
 
     std::string Console::format_output(const std::string& mode, const std::string& message) {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
-        const Vital::Tool::Stack mode_rgb = get_mode_rgb(mode);
+        const Vital::Tool::Stack mode_rgb = fetch_mode_color(mode);
         std::string mode_label = mode;
         std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
         std::ostringstream ts_oss;
