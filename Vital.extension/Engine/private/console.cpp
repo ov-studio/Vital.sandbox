@@ -37,7 +37,7 @@ namespace Vital::Engine {
                 this -> on_message(message);
             });
         #else
-            #if defined(_WIN32)
+            #if defined(Vital_SDK_WINDOWS)
                 AllocConsole();
                 SetConsoleTitleA("Vital.server");
                 SetConsoleOutputCP(CP_UTF8);
@@ -49,7 +49,7 @@ namespace Vital::Engine {
                 DWORD mode;
                 GetConsoleMode(hStdin, &mode);
                 SetConsoleMode(hStdin, mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
-            #elif defined(__APPLE__) || defined(__linux__)
+            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
                 term.c_lflag |= (ICANON | ECHO | ECHOE | ECHOK | ISIG);
@@ -75,9 +75,9 @@ namespace Vital::Engine {
             webview = nullptr;
         #else
             stdin_running = false;
-            #if defined(_WIN32)
+            #if defined(Vital_SDK_WINDOWS)
                 FreeConsole();
-            #elif defined(__APPLE__) || defined(__linux__)
+            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcsetattr(STDIN_FILENO, TCSANOW, &stdin_termios);
             #endif
         #endif
@@ -117,7 +117,6 @@ namespace Vital::Engine {
     }
 
     void Console::command(const std::string& input) {
-        if (input.empty()) return;
         std::istringstream iss(input);
         std::vector<std::string> tokens;
         std::string token;
