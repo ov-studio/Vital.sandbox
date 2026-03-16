@@ -142,7 +142,8 @@ namespace Vital::Engine {
         return color;
     }
 
-    std::string Console::format_inline(const Vital::Tool::Stack& mode_rgb, const std::string& mode_color, const std::string& content) {
+    std::string Console::format_inline(const Vital::Tool::Stack& mode_rgb, const std::string& content) {
+        const std::string mode_color = ansi_rgb(mode_rgb);
         std::string result;
         size_t i = 0;
         while (i < content.size()) {
@@ -159,7 +160,8 @@ namespace Vital::Engine {
         return result;
     }
 
-    std::string Console::format_line(const Vital::Tool::Stack& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
+    std::string Console::format_line(const Vital::Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
+        const std::string mode_color = ansi_rgb(mode_rgb);
         std::ostringstream oss;
         std::string content = line;
         const bool is_highlighted = (!content.empty() && content[0] == '>');
@@ -172,11 +174,11 @@ namespace Vital::Engine {
             oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
                 << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
                 << "  " << (is_highlighted ? marker : "")
-                << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
+                << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
         else {
             const std::string indent(17 + mode_label.size(), ' ');
-            oss << indent << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
+            oss << indent << marker << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
         return oss.str();
     }
@@ -184,7 +186,6 @@ namespace Vital::Engine {
     std::string Console::format_output(const std::string& mode, const std::string& message) {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
         const Vital::Tool::Stack mode_rgb = get_mode_rgb(mode);
-        const std::string mode_color = ansi_rgb(mode_rgb);
         std::string mode_label = mode;
         std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
         std::ostringstream ts_oss;
@@ -197,7 +198,7 @@ namespace Vital::Engine {
         std::string line;
         bool first = true;
         while (std::getline(stream, line)) {
-            oss << format_line(mode_rgb, mode_color, ts_oss.str(), mode_label, line, !first);
+            oss << format_line(mode_rgb, ts_oss.str(), mode_label, line, !first);
             first = false;
         }
         oss << "\n";
