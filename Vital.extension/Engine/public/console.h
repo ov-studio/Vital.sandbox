@@ -53,14 +53,19 @@ namespace Vital::Engine {
             static constexpr const char* FG_BLUE     = "\033[38;2;80;140;220m";
             static constexpr const char* FG_ORANGE   = "\033[38;2;240;160;60m";
 
-            // Colors: Background //
-            static constexpr const char* BG_DARK     = "\033[48;2;15;15;22m";
+            // Color: RGB struct //
+            struct RGB { int r, g, b; };
 
             // Helpers //
             static std::string ansi_rgb(int r, int g, int b, bool bg = false);
+            static std::string ansi_rgb(const RGB& color, bool bg = false);
+            static std::string ansi_rgb_lighten(const RGB& color, float factor = 0.3f);
+            static std::string ansi_rgb_darken(const RGB& color, float factor = 0.3f);
+            static RGB get_mode_rgb(const std::string& mode);
             static std::string get_timestamp();
             static std::string get_mode_color(const std::string& mode);
-            static std::string format_line(const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
+            static std::string format_inline(const RGB& mode_rgb, const std::string& mode_color, const std::string& content);
+            static std::string format_line(const RGB& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
             static std::string format_output(const std::string& mode, const std::string& message);
             #endif
         public:
