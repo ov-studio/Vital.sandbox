@@ -243,18 +243,18 @@ namespace Vital::Engine {
         document.AddMember("action", "init", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
         // Iterate known modes — fetch each from manifest
-        const std::vector<std::string> modes = {"sbox", "info", "warn", "error", "debug", "system"};
+        const std::vector<std::string> modes = {"sbox", "info", "warn", "error"};
         for (const auto& mode : modes) {
-            const auto label      = fetch_mode_label(mode);
-            const auto badge      = fetch_mode_badge(mode);
-            const auto color      = fetch_mode_color(mode);
+            const auto label = fetch_mode_label(mode);
+            const auto badge = fetch_mode_badge(mode);
+            const auto color = fetch_mode_color(mode);
             const auto background = fetch_mode_background(mode);
-            const auto priority   = Vital::Tool::fetch_config("log", mode, "priority");
+            const auto priority = Vital::Tool::fetch_config("log", mode, "priority");
             rapidjson::Value entry(rapidjson::kObjectType);
-            entry.AddMember("label",      rapidjson::Value(label.c_str(), alloc), alloc);
-            entry.AddMember("badge",      rapidjson::Value(badge.c_str(), alloc), alloc);
-            entry.AddMember("priority",   priority.is<int32_t>() ? priority.as<int32_t>() : 99, alloc);
-            entry.AddMember("color",      make_color(color),      alloc);
+            entry.AddMember("label", rapidjson::Value(label.c_str(), alloc), alloc);
+            entry.AddMember("badge", rapidjson::Value(badge.c_str(), alloc), alloc);
+            entry.AddMember("priority", priority.is<int32_t>() ? priority.as<int32_t>() : 99, alloc);
+            entry.AddMember("color", make_color(color),      alloc);
             entry.AddMember("background", make_color(background), alloc);
             rapidjson::Value key(mode.c_str(), alloc);
             types.AddMember(key, entry, alloc);
