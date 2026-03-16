@@ -37,13 +37,10 @@ namespace Vital::Engine {
             struct termios stdin_termios{};
             #endif
 
-            // ANSI //
             static constexpr const char* ANSI_RESET = "\033[0m";
-            static constexpr const char* ANSI_BOLD  = "\033[1m";
-            static constexpr const char* ANSI_DIM   = "\033[2m";
-            static constexpr const char* FG_GRAY    = "\033[38;2;100;100;110m";
-
-            // Color: RGB //
+            static constexpr const char* ANSI_BOLD = "\033[1m";
+            static constexpr const char* ANSI_DIM = "\033[2m";
+            static constexpr const char* FG_GRAY = "\033[38;2;100;100;110m";
             struct RGB { int r, g, b; };
             static std::string ansi_rgb(int r, int g, int b, bool bg = false);
             static std::string ansi_rgb(const RGB& color, bool bg = false);

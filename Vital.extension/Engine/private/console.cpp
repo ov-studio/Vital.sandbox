@@ -101,6 +101,8 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
+
+    // Helpers //
     #if !defined(Vital_SDK_Client)
     std::string Console::ansi_rgb(int r, int g, int b, bool bg) {
         std::ostringstream oss;
@@ -138,9 +140,7 @@ namespace Vital::Engine {
             if (content[i] == '`') {
                 size_t end = content.find('`', i + 1);
                 if (end != std::string::npos) {
-                    result += ansi_rgb_lighten(mode_rgb, 0.35f)
-                            + content.substr(i + 1, end - i - 1)
-                            + mode_color;
+                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + content.substr(i + 1, end - i - 1) + mode_color;
                     i = end + 1;
                     continue;
                 }
@@ -158,18 +158,16 @@ namespace Vital::Engine {
             content = content.substr(1);
             if (!content.empty() && content[0] == ' ') content = content.substr(1);
         }
-        const std::string marker = is_highlighted
-            ? (ANSI_BOLD + mode_color          + "│ " + ANSI_RESET)
-            : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
+        const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color  + "│ " + ANSI_RESET) : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
         if (!is_continuation) {
             oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
                 << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
                 << "  " << (is_highlighted ? marker : "")
                 << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
-        } else {
+        }
+        else {
             const std::string indent(17 + mode_label.size(), ' ');
-            oss << indent << marker
-                << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
+            oss << indent << marker << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET << "\n";
         }
         return oss.str();
     }
@@ -178,10 +176,10 @@ namespace Vital::Engine {
         const Vital::Tool::Stack ts = Vital::get_timestamp();
         std::ostringstream ts_oss;
         ts_oss << std::setfill('0')
-               << std::setw(2) << ts.object.at("hour").as<int32_t>()   << ":"
+               << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":"
                << std::setw(2) << ts.object.at("minute").as<int32_t>() << ":"
                << std::setw(2) << ts.object.at("second").as<int32_t>();
-        const RGB         mode_rgb   = get_mode_rgb(mode);
+        const RGB mode_rgb = get_mode_rgb(mode);
         const std::string mode_color = ansi_rgb(mode_rgb);
         std::string mode_label = mode;
         std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
