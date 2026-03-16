@@ -191,20 +191,26 @@ namespace Vital::Engine {
             if (!content.empty() && content[0] == ' ') content = content.substr(1);
         }
 
+        const size_t indent_size = 17 + mode_label.size();
+        const std::string indent(indent_size, ' ');
+        const std::string marker = is_highlighted
+            ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET)
+            : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
+
         if (!is_continuation) {
             oss << " "
                 << ANSI_DIM  << FG_GRAY    << "[" << timestamp << "]"  << ANSI_RESET
                 << "  "
                 << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
-                << "  "
-                << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET
-                << "\n";
+                << "  ";
+            if (is_highlighted) {
+                oss << marker
+                    << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
+            } else {
+                oss << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET;
+            }
+            oss << "\n";
         } else {
-            const size_t indent_size = 17 + mode_label.size();
-            const std::string indent(indent_size, ' ');
-            const std::string marker = is_highlighted
-                ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET)
-                : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
             oss << indent
                 << marker
                 << mode_color << format_inline(mode_rgb, mode_color, content) << ANSI_RESET
