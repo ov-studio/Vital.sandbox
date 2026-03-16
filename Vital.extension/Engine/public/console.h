@@ -62,7 +62,6 @@ namespace Vital::Engine {
             static std::string ansi_rgb_lighten(const RGB& color, float factor = 0.3f);
             static std::string ansi_rgb_darken(const RGB& color, float factor = 0.3f);
             static RGB get_mode_rgb(const std::string& mode);
-            static std::string get_timestamp();
             static std::string get_mode_color(const std::string& mode);
             static std::string format_inline(const RGB& mode_rgb, const std::string& mode_color, const std::string& content);
             static std::string format_line(const RGB& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);

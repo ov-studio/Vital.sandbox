@@ -141,23 +141,6 @@ namespace Vital::Engine {
         return {220, 220, 220};
     }
 
-    std::string Console::get_timestamp() {
-        auto now = std::chrono::system_clock::now();
-        std::time_t t = std::chrono::system_clock::to_time_t(now);
-        std::tm tm{};
-        #if defined(Vital_SDK_WINDOWS)
-            localtime_s(&tm, &t);
-        #else
-            localtime_r(&t, &tm);
-        #endif
-        std::ostringstream oss;
-        oss << std::setfill('0')
-            << std::setw(2) << tm.tm_hour << ":"
-            << std::setw(2) << tm.tm_min  << ":"
-            << std::setw(2) << tm.tm_sec;
-        return oss.str();
-    }
-
     std::string Console::get_mode_color(const std::string& mode) {
         return ansi_rgb(get_mode_rgb(mode));
     }
@@ -220,7 +203,13 @@ namespace Vital::Engine {
     }
 
     std::string Console::format_output(const std::string& mode, const std::string& message) {
-        const std::string timestamp  = get_timestamp();
+        const Vital::Tool::Stack ts = Vital::get_timestamp();
+        std::ostringstream ts_oss;
+        ts_oss << std::setfill('0')
+               << std::setw(2) << std::get<int>(ts.object.at("hour"))   << ":"
+               << std::setw(2) << std::get<int>(ts.object.at("minute")) << ":"
+               << std::setw(2) << std::get<int>(ts.object.at("second"));
+        const std::string timestamp  = ts_oss.str();
         const RGB         mode_rgb   = get_mode_rgb(mode);
         const std::string mode_color = ansi_rgb(mode_rgb);
         std::string mode_label = mode;
