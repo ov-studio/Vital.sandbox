@@ -104,33 +104,43 @@ namespace Vital::Engine {
 
     // Helpers //
     #if !defined(Vital_SDK_Client)
-    std::string Console::ansi_rgb(int r, int g, int b, bool bg) {
+    std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
-        oss << "\033[" << (bg ? 48 : 38) << ";2;" << r << ";" << g << ";" << b << "m";
+        oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
         return oss.str();
     }
 
-    std::string Console::ansi_rgb(const RGB& color, bool bg) {
-        return ansi_rgb(color.r, color.g, color.b, bg);
-    }
-
-    std::string Console::ansi_rgb_lighten(const RGB& color, float factor) {
+    std::string Console::ansi_rgb(const Vital::Tool::Stack& color) {
         return ansi_rgb(
-            color.r + static_cast<int>((255 - color.r)*factor),
-            color.g + static_cast<int>((255 - color.g)*factor),
-            color.b + static_cast<int>((255 - color.b)*factor)
+            color.array[0].as<int32_t>(),
+            color.array[1].as<int32_t>(),
+            color.array[2].as<int32_t>()
         );
     }
 
-    Console::RGB Console::get_mode_rgb(const std::string& mode) {
-        if (mode == "info")    return {80,  200, 220};
-        if (mode == "success") return {100, 220, 100};
-        if (mode == "warn")    return {240, 200, 80};
-        if (mode == "error")   return {220, 80,  80};
-        if (mode == "debug")   return {200, 100, 220};
-        if (mode == "sbox")    return {80,  140, 220};
-        if (mode == "system")  return {240, 160, 60};
-        return {220, 220, 220};
+    std::string Console::ansi_rgb_lighten(const Vital::Tool::Stack& color, float factor) {
+        const int r = color.array[0].as<int32_t>();
+        const int g = color.array[1].as<int32_t>();
+        const int b = color.array[2].as<int32_t>();
+        return ansi_rgb(
+            r + static_cast<int>((255 - r) * factor),
+            g + static_cast<int>((255 - g) * factor),
+            b + static_cast<int>((255 - b) * factor)
+        );
+    }
+    }
+
+    Vital::Tool::Stack Console::get_mode_rgb(const std::string& mode) {
+        Vital::Tool::Stack color;
+        color.array = {220, 220, 220};
+        if (mode == "info")    color.array = {80,  200, 220};
+        else if (mode == "success") color.array = {100, 220, 100};
+        else if (mode == "warn")    color.array = {240, 200, 80};
+        else if (mode == "error")   color.array = {220, 80,  80};
+        else if (mode == "debug")   color.array = {200, 100, 220};
+        else if (mode == "sbox")    color.array = {80,  140, 220};
+        else if (mode == "system")  color.array = {240, 160, 60};
+        return color;
     }
 
     std::string Console::format_inline(const RGB& mode_rgb, const std::string& mode_color, const std::string& content) {
