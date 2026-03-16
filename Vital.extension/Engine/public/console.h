@@ -36,6 +36,32 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
             struct termios stdin_termios{};
             #endif
+
+            // ANSI //
+            static constexpr const char* ANSI_RESET  = "\033[0m";
+            static constexpr const char* ANSI_BOLD   = "\033[1m";
+            static constexpr const char* ANSI_DIM    = "\033[2m";
+
+            // Colors: Foreground //
+            static constexpr const char* FG_WHITE    = "\033[38;2;220;220;220m";
+            static constexpr const char* FG_GRAY     = "\033[38;2;100;100;110m";
+            static constexpr const char* FG_CYAN     = "\033[38;2;80;200;220m";
+            static constexpr const char* FG_GREEN    = "\033[38;2;100;220;100m";
+            static constexpr const char* FG_YELLOW   = "\033[38;2;240;200;80m";
+            static constexpr const char* FG_RED      = "\033[38;2;220;80;80m";
+            static constexpr const char* FG_MAGENTA  = "\033[38;2;200;100;220m";
+            static constexpr const char* FG_BLUE     = "\033[38;2;80;140;220m";
+            static constexpr const char* FG_ORANGE   = "\033[38;2;240;160;60m";
+
+            // Colors: Background //
+            static constexpr const char* BG_DARK     = "\033[48;2;15;15;22m";
+
+            // Helpers //
+            static std::string ansi_rgb(int r, int g, int b, bool bg = false);
+            static std::string get_timestamp();
+            static std::string get_mode_color(const std::string& mode);
+            static std::string format_line(const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
+            static std::string format_output(const std::string& mode, const std::string& message);
             #endif
         public:
             // Instantiators //
@@ -50,7 +76,7 @@ namespace Vital::Engine {
 
             // APIs //
             void print(const std::string& mode, const std::string& message);
-            void command(const std::string& input);
+            void execute(const std::string& input);
 
 
             // Events //

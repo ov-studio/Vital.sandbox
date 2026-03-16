@@ -49,6 +49,10 @@ namespace Vital::Engine {
                 DWORD mode;
                 GetConsoleMode(hStdin, &mode);
                 SetConsoleMode(hStdin, mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+                HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+                DWORD out_mode;
+                GetConsoleMode(hStdout, &out_mode);
+                SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
@@ -59,9 +63,12 @@ namespace Vital::Engine {
             stdin_thread = std::thread([this]() {
                 std::string line;
                 while (stdin_running) {
-                    std::cout << "> " << std::flush;
+                    std::cout
+                        << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET
+                        << " " << std::flush;
                     if (!std::getline(std::cin, line)) break;
-                    command(line);
+                    std::cout << "\033[1A\033[2K" << std::flush;
+                    execute(line);
                 }
             });
             stdin_thread.detach();
@@ -96,6 +103,93 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
+    #if !defined(Vital_SDK_Client)
+    std::string Console::ansi_rgb(int r, int g, int b, bool bg) {
+        std::ostringstream oss;
+        oss << "\033[" << (bg ? 48 : 38) << ";2;" << r << ";" << g << ";" << b << "m";
+        return oss.str();
+    }
+
+    std::string Console::get_timestamp() {
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm tm{};
+        #if defined(Vital_SDK_WINDOWS)
+            localtime_s(&tm, &t);
+        #else
+            localtime_r(&t, &tm);
+        #endif
+        std::ostringstream oss;
+        oss << std::setfill('0')
+            << std::setw(2) << tm.tm_hour << ":"
+            << std::setw(2) << tm.tm_min  << ":"
+            << std::setw(2) << tm.tm_sec;
+        return oss.str();
+    }
+
+    std::string Console::get_mode_color(const std::string& mode) {
+        if (mode == "info")    return FG_CYAN;
+        if (mode == "success") return FG_GREEN;
+        if (mode == "warn")    return FG_YELLOW;
+        if (mode == "error")   return FG_RED;
+        if (mode == "debug")   return FG_MAGENTA;
+        if (mode == "sbox")    return FG_BLUE;
+        if (mode == "system")  return FG_ORANGE;
+        return FG_WHITE;
+    }
+
+    std::string Console::format_line(const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
+        std::ostringstream oss;
+
+        // Strip leading '>' from line and flag it
+        std::string content = line;
+        bool is_highlighted = (!content.empty() && content[0] == '>');
+        if (is_highlighted) {
+            content = content.substr(1);
+            if (!content.empty() && content[0] == ' ') content = content.substr(1);
+        }
+
+        if (!is_continuation) {
+            oss << ANSI_DIM   << FG_GRAY     << timestamp   << ANSI_RESET
+                << FG_GRAY    << "  "                       << ANSI_RESET
+                << ANSI_DIM   << FG_GRAY     << "["         << ANSI_RESET
+                << ANSI_BOLD  << mode_color  << mode_label  << ANSI_RESET
+                << ANSI_DIM   << FG_GRAY     << "]"         << ANSI_RESET
+                << FG_GRAY    << "  "                       << ANSI_RESET
+                << mode_color                << content     << ANSI_RESET
+                << "\n";
+        }
+        else {
+            const std::string marker = is_highlighted
+            ? (std::string(ANSI_BOLD) + mode_color + "│ " + ANSI_RESET)
+            : (std::string(ANSI_DIM)  + FG_GRAY    + "│ " + ANSI_RESET);
+            oss << ANSI_DIM << FG_GRAY << "                     " << ANSI_RESET
+                << marker
+                << mode_color << content << ANSI_RESET
+                << "\n";
+        }
+        return oss.str();
+    }
+
+    std::string Console::format_output(const std::string& mode, const std::string& message) {
+        const std::string timestamp  = get_timestamp();
+        const std::string mode_color = get_mode_color(mode);
+        std::string mode_label = mode;
+        std::transform(mode_label.begin(), mode_label.end(), mode_label.begin(), ::toupper);
+        while (mode_label.size() < 7) mode_label += " ";
+
+        std::ostringstream oss;
+        std::istringstream stream(message);
+        std::string line;
+        bool first = true;
+        while (std::getline(stream, line)) {
+            oss << format_line(mode_color, timestamp, mode_label, line, !first);
+            first = false;
+        }
+        return oss.str();
+    }
+    #endif
+
 
     // APIs //
     void Console::print(const std::string& mode, const std::string& message) {
@@ -112,11 +206,11 @@ namespace Vital::Engine {
             document.Accept(writer);
             webview -> emit(buffer.GetString());
         #else
-            godot::UtilityFunctions::print(to_godot_string(message));
+            std::cout << format_output(mode, message) << std::flush;
         #endif
     }
 
-    void Console::command(const std::string& input) {
+    void Console::execute(const std::string& input) {
         std::istringstream iss(input);
         std::vector<std::string> tokens;
         std::string token;
@@ -138,7 +232,7 @@ namespace Vital::Engine {
         std::string action = document["action"].GetString();
         if (action == "input") {
             if (!document.HasMember("message") || !document["message"].IsString()) return;
-            command(document["message"].GetString());
+            execute(document["message"].GetString());
         }
     }
     #endif
