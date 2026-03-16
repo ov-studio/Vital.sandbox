@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.extension/Engine/public/index.h>
 #if defined(Vital_SDK_Client)
 #include <Vital.extension/Engine/public/webview.h>
 #endif
