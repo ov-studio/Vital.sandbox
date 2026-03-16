@@ -224,7 +224,7 @@ namespace Vital::Engine {
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
         Vital::Tool::Stack arguments;
-        arguments.object["command"]    = tokens[0];
+        arguments.object["command"] = tokens[0];
         arguments.object["parameters"] = std::vector<std::string>(tokens.begin() + 1, tokens.end());
         Vital::Tool::Event::emit("vital.sandbox:console_input", arguments);
     }
