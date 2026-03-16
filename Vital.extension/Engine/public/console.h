@@ -52,7 +52,6 @@ namespace Vital::Engine {
 namespace Vital {
     template<typename... Args>
     inline void print(const std::string& mode, Args&&... args) {
-        if (mode.empty()) return;
         std::ostringstream oss;
         bool first = true;
         ((oss << (first ? (first = false, "") : " ") << std::forward<Args>(args)), ...);
