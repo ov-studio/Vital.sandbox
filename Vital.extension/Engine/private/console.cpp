@@ -186,6 +186,7 @@ namespace Vital::Engine {
             oss << format_line(mode_color, timestamp, mode_label, line, !first);
             first = false;
         }
+        oss << "\n";
         return oss.str();
     }
     #endif
