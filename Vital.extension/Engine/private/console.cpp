@@ -63,9 +63,7 @@ namespace Vital::Engine {
             stdin_thread = std::thread([this]() {
                 std::string line;
                 while (stdin_running) {
-                    std::cout
-                        << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET
-                        << " " << std::flush;
+                    std::cout << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
                     if (!std::getline(std::cin, line)) break;
                     std::cout << "\033[1A\033[2K" << std::flush;
                     execute(line);
@@ -166,7 +164,6 @@ namespace Vital::Engine {
 
     std::string Console::format_line(const RGB& mode_rgb, const std::string& mode_color, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
         std::ostringstream oss;
-
         std::string content = line;
         bool is_highlighted = (!content.empty() && content[0] == '>');
         if (is_highlighted) {
@@ -176,10 +173,7 @@ namespace Vital::Engine {
 
         const size_t indent_size = 17 + mode_label.size();
         const std::string indent(indent_size, ' ');
-        const std::string marker = is_highlighted
-            ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET)
-            : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
-
+        const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET)  : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
         if (!is_continuation) {
             oss << " "
                 << ANSI_DIM  << FG_GRAY    << "[" << timestamp << "]"  << ANSI_RESET
