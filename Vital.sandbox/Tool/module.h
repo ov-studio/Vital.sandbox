@@ -72,12 +72,9 @@ namespace Vital::Tool {
     }
 
     inline std::string fetch_module(const std::string& name) {
-        rapidjson::Document document;
-        document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
-        if (!document.HasParseError() && document.HasMember(name.c_str()) && document[name.c_str()].HasMember("source")) {
-            return fetch_content(fmt::format(Repo_Kit, name + "/" + document[name.c_str()]["source"].GetString()));
-        }
-        return "";
+        const rapidjson::Value* node = fetch_config_base(name);
+        if (!node || !node -> HasMember("source")) return "";
+        return fetch_content(fmt::format(Repo_Kit, name + "/" + (*node)["source"].GetString()));
     }
 
     inline std::vector<std::string> fetch_modules(const std::string& name) {
