@@ -56,12 +56,6 @@ namespace Vital {
         std::ostringstream oss;
         bool first = true;
         ((oss << (first ? (first = false, "") : " ") << std::forward<Args>(args)), ...);
-        const std::string message = oss.str();
-        if (message.empty()) return;
-        #if defined(Vital_SDK_Client)
-            Engine::Console::get_singleton() -> print(mode, message);
-        #else
-            godot::UtilityFunctions::print(to_godot_string(message));
-        #endif
+        Engine::Console::get_singleton() -> print(mode, oss.str());
     }
 }
