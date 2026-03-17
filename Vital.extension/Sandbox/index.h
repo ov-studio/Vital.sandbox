@@ -46,5 +46,17 @@ namespace Vital::Engine {
 			void draw(Canvas* canvas);
 			void input(godot::Ref<godot::InputEvent> event);
 			#endif
+
+			template<typename... Args>
+			void signal(const std::string& name, Args&&... args) {
+				if (!vm) return;
+				const std::string ref = "vital.network:execute";
+				if (vm -> is_reference(ref)) {
+					vm -> get_reference(ref, true);
+					vm -> push_value(name);
+					(vm -> push_value(std::forward<Args>(args)), ...);
+					vm -> pcall(sizeof...(Args) + 1, 0);
+				}
+			}
 	};	
 }

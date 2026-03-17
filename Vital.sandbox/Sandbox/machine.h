@@ -370,7 +370,7 @@ namespace Vital::Sandbox {
                 lua_pushcclosure(state, [](vm_state* state) -> int {
                     auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto vm = Machine::fetch_machine(state);
-                    return vm->execute([&]() -> int {
+                    return vm -> execute([&]() -> int {
                         return (*exec)(vm);
                     });
                 }, 1);

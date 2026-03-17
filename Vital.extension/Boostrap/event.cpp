@@ -43,29 +43,29 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:ready");
+        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:ready");
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"]);
+        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:process", arguments.object["delta"]);
         #if defined(Vital_SDK_Client)
         Vital::System::Discord::get_singleton() -> process();
         #endif
     });
 
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:draw");
+        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:draw");
     });
 
     Vital::Tool::Event::bind("vital.sandbox:key_input", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:key_input", arguments.object["keycode"], arguments.object["state"]);
+        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:key_input", arguments.object["keycode"], arguments.object["state"]);
     });
 
     Vital::Tool::Event::bind("vital.sandbox:mouse_move", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:mouse_move", arguments.object["x"], arguments.object["y"]);
+        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:mouse_move", arguments.object["x"], arguments.object["y"]);
     });
 
     Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["command"], arguments.object["parameters"]);
+        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:console_input", arguments.object["command"], arguments.object["parameters"]);
     });
 }

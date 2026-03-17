@@ -64,18 +64,5 @@ namespace Vital::Sandbox::API {
             vm -> pop(2);
             vm -> table_set_nil("execute", base_name);
         }
-
-        template<typename... Args>
-        static void execute(const std::string& name, Args&&... args) {
-            static_assert((std::is_same_v<std::decay_t<Args>, Vital::Tool::StackValue> && ...), "execute: expected Vital::Tool::StackValue for all parameters");
-            for (auto vm : Machine::fetch_machines()) {
-                if (!vm.second -> is_virtual()) {
-                    vm.second -> get_reference("vital.network:execute", true);
-                    vm.second -> push_value(name);
-                    (vm.second -> push_value(std::forward<Args>(args)), ...);
-                    vm.second -> pcall(sizeof...(Args) + 1, 0);
-                }
-            }
-        }
     };
 }
