@@ -46,17 +46,15 @@ void setup() {
         Vital::print("sbox", "Player left: ", id);
     });
     Vital::Tool::Event::bind("network:packet", [net](Vital::Tool::Stack& args) {
-        int32_t sender     = args.object.at("sender_id").as<int32_t>();
-        std::string type   = args.object.at("type").as<std::string>();
-        std::string body   = args.array[0].as<std::string>();
+        int32_t sender   = args.object.at("sender_id").as<int32_t>();
+        std::string type = args.object.at("type").as<std::string>();
+        std::string body = args.array[0].as<std::string>();
         Vital::print("sbox", "Msg from ", sender, " type=", type.c_str(), ": ", body.c_str());
         if (body == "ping") {
-            // Client is ready — now send welcome
             Vital::Tool::Stack reply;
             reply.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
             reply.object["type"]    = Vital::Tool::StackValue(std::string("system"));
             reply.object["peer_id"] = Vital::Tool::StackValue(sender);
-            net->broadcast(reply);
             net->send(reply, sender);
         }
     });
@@ -70,11 +68,9 @@ void setup() {
         Vital::print("sbox", "Connecting...");
     });
     Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) {
+        // Ping is NOT sent here — network.cpp poll() sends it on the next
+        // frame once ENet has fully assigned the peer ID (pending_handshake)
         Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
-        Vital::Tool::Stack msg;
-        msg.array.push_back(Vital::Tool::StackValue(std::string("ping")));
-        msg.object["type"] = Vital::Tool::StackValue(std::string("system"));
-        net->send_to_server(msg);
     });
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
         std::string body = args.array[0].as<std::string>();
@@ -108,7 +104,7 @@ void initialize_vital_events() {
         Vital::System::Discord::get_singleton();
         #endif
         Vital::Engine::Console::get_singleton();
-        Vital::Engine::Sandbox::get_singleton() -> ready();
+        Vital::Engine::Sandbox::get_singleton()->ready();
         setup();
     });
 
@@ -125,18 +121,25 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-        auto* net = Vital::Engine::Network::get_singleton();
-        #if !defined(Vital_SDK_Client)
-        net->host(7777, 32);
-        #endif
-        #if defined(Vital_SDK_Client)
-        net->connect_to_server("127.0.0.1", 7777, true);
-        #endif
+        // intentionally empty — network init is deferred to first process tick
+        // so that the SceneTree and multiplayer peer are fully ready
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
+        static bool network_initialized = false;
+        if (!network_initialized) {
+            network_initialized = true;
+            auto* net = Vital::Engine::Network::get_singleton();
+            #if !defined(Vital_SDK_Client)
+            net->host(7777, 32);
+            #endif
+            #if defined(Vital_SDK_Client)
+            net->connect_to_server("127.0.0.1", 7777, true);
+            #endif
+        }
+
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::get_singleton() -> process();
+        Vital::System::Discord::get_singleton()->process();
         #endif
         Vital::Engine::Network::get_singleton()->poll(arguments.array[0].as<double>());
     });

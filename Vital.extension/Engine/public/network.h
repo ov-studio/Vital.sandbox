@@ -63,6 +63,7 @@ namespace Vital::Engine {
 
             #if defined(Vital_SDK_Client)
             bool        auto_reconnect     = false;
+            bool        pending_handshake  = false;
             std::string reconnect_ip;
             int         reconnect_port     = 0;
             int         reconnect_attempts = 0;
