@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
                 auto timestamp = get_timestamp();
                 vm -> create_table();
                 for (auto& [key, value] : timestamp.object) {
-                    vm -> table_set(key, value);
+                    vm -> table_set_value(key, value);
                 }
                 return 1;
             });

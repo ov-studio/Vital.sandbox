@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
                 for (const auto& row : rows) {
                     vm -> create_table();
                     for (const auto& [column, cell] : row) {
-                        vm -> table_set(column, cell);
+                        vm -> table_set_value(column, cell);
                     }
                     vm -> set_table_field(index++, -2);
                 }

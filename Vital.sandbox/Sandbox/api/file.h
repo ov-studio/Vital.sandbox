@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
                 bool directory_search = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 vm -> create_table();
                 for (const auto& i : Vital::Tool::File::contents(get_directory(), path, directory_search)) {
-                    vm -> table_push_string(i);
+                    vm -> table_push_value(i);
                 }
                 return 1;
             });

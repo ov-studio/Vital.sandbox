@@ -1,25 +1,3 @@
-/*----------------------------------------------------------------
-     Resource: Vital.sandbox
-     Script: Sandbox: mixin.h
-     Author: ov-studio
-     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     DOC: 14/09/2022
-     Desc: Mixin Utilities
-----------------------------------------------------------------*/
-
-
-//////////////
-// Imports //
-//////////////
-
-#pragma once
-#include <Vital.sandbox/Sandbox/index.h>
-
-
-////////////////////////////
-// Vital: Sandbox: Mixin //
-////////////////////////////
-
 namespace Vital::Sandbox {
     template<typename Derived>
     struct Mixin {
@@ -66,7 +44,7 @@ namespace Vital::Sandbox {
                     }
                 }, value.value);
             }
-        
+
 
             // Pushers //
             void table_push_nil(const std::string& nspace = "") {
@@ -76,26 +54,12 @@ namespace Vital::Sandbox {
                 if (!nspace.empty()) self() -> pop();
             }
             template<typename T>
-            void table_push(T value, const std::string& nspace = "") {
+            void table_push_value(T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 push_value(value);
                 self() -> set_table_field(self() -> get_length(-2) + 1, -2);
                 if (!nspace.empty()) self() -> pop();
             }
-            void table_push_bool(bool value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_string(const std::string& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_number(int value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_number(float value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_number(double value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_function(vm_exec& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_color(const godot::Color& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_vector2(const godot::Vector2& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_vector2_array(const godot::PackedVector2Array& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_vector3(const godot::Vector3& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_vector3_array(const godot::PackedVector3Array& value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_horizontal_alignment(godot::HorizontalAlignment value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_vertical_alignment(godot::VerticalAlignment value, const std::string& nspace = "") { table_push(value, nspace); }
-            void table_push_stack_value(const Vital::Tool::StackValue& value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_table(const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
@@ -114,26 +78,12 @@ namespace Vital::Sandbox {
                 if (!nspace.empty()) self() -> pop();
             }
             template<typename T>
-            void table_set(const std::string& index, T value, const std::string& nspace = "") {
+            void table_set_value(const std::string& index, T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 push_value(value);
                 self() -> set_table_field(index, -2);
                 if (!nspace.empty()) self() -> pop();
             }
-            void table_set_bool(const std::string& index, bool value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_string(const std::string& index, const std::string& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_number(const std::string& index, int value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_number(const std::string& index, float value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_number(const std::string& index, double value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_function(const std::string& index, vm_exec& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_color(const std::string& index, const godot::Color& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_vector2(const std::string& index, const godot::Vector2& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_vector2_array(const std::string& index, const godot::PackedVector2Array& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_vector3(const std::string& index, const godot::Vector3& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_vector3_array(const std::string& index, const godot::PackedVector3Array& value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_horizontal_alignment(const std::string& index, godot::HorizontalAlignment value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_vertical_alignment(const std::string& index, godot::VerticalAlignment value, const std::string& nspace = "") { table_set(index, value, nspace); }
-            void table_set_stack_value(const std::string& index, const Vital::Tool::StackValue& value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_table(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
