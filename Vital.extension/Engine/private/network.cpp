@@ -413,9 +413,11 @@ namespace Vital::Engine {
         for (int i = 0; i < packet_count; i++) {
             if (!peer.is_valid()) break;
             try {
+                // Read sender BEFORE get_packet() — ENet clears it after
+                int32_t sender = static_cast<int32_t>(peer -> get_packet_peer());
                 godot::PackedByteArray raw = peer -> get_packet();
                 if (raw.size() == 0) continue;
-                int32_t sender = static_cast<int32_t>(peer -> get_packet_peer());
+        
                 Vital::Tool::Stack stack = Vital::Tool::Stack::deserialize(
                     reinterpret_cast<const char*>(raw.ptr()), raw.size()
                 );
