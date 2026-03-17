@@ -43,6 +43,6 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:draw");
+
     });
 }
