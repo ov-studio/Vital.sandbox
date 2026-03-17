@@ -74,12 +74,6 @@ void setup() {
         Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
         Vital::Tool::Stack msg;
         msg.array.push_back(Vital::Tool::StackValue(std::string("ping")));
-        net->send_to_server(msg);
-    });
-    Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) {
-        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
-        Vital::Tool::Stack msg;
-        msg.array.push_back(Vital::Tool::StackValue(std::string("ping")));
         msg.object["type"] = Vital::Tool::StackValue(std::string("system"));
         net->send_to_server(msg);
     });
