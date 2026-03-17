@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "adjustment"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(base_class::get_environment() -> is_adjustment_enabled());
+                vm -> push_value(base_class::get_environment() -> is_adjustment_enabled());
                 return 1;
             });
     
@@ -37,7 +37,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_adjustment_enabled(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_brightness(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_contrast(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_saturation(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -128,20 +128,20 @@ namespace Vital::Sandbox::API {
                 vm -> push_string(path);
                 vm -> set_reference("lut_path", -1);
                 vm -> pop(1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, {base_name, "adjustment"}, "get_lut", [](auto vm) -> int {
                 if (vm -> is_reference("lut_path")) vm -> get_reference("lut_path", true);
-                else vm -> push_bool(false);
+                else vm -> push_value(false);
                 return 1;
             });
 
             API::bind(vm, {base_name, "adjustment"}, "reset_lut", [](auto vm) -> int {
                 base_class::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
                 vm -> del_reference("lut_path");
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }

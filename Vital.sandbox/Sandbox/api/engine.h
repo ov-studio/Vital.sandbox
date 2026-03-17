@@ -56,7 +56,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
                 auto result = vm -> compile_string(input);
-                vm -> push_bool(result);
+                vm -> push_value(result);
                 return 1;
             });
 
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
                 bool use_env = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 if (use_env && !vm -> is_table(4)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 int results = vm -> load_string(input, auto_load, use_env, 4);
-                if (results == 0) vm -> push_bool(false);
+                if (results == 0) vm -> push_value(false);
                 return results == 0 ? 1 : results;
             });
 
@@ -80,7 +80,7 @@ namespace Vital::Sandbox::API {
                     buffer << vm -> to_string(i);
                 }
                 Vital::print(type, buffer.str());
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }

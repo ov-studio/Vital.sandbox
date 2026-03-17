@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "fog"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(base_class::get_environment() -> is_fog_enabled());
+                vm -> push_value(base_class::get_environment() -> is_fog_enabled());
                 return 1;
             });
 
@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_fog_enabled(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_int(1);
                 if ((value < godot::Environment::FOG_MODE_EXPONENTIAL) || (value > godot::Environment::FOG_MODE_DEPTH)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 base_class::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_color(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto color = vm -> get_color(1);
                 base_class::get_environment() -> set_fog_light_color(color);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_light_energy(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_sun_scatter(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_density(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_height(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_height_density(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_aerial_perspective(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -149,7 +149,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_sky_affect(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -162,7 +162,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_depth_curve(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_depth_begin(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -188,7 +188,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_fog_depth_end(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         

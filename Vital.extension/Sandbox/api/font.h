@@ -43,26 +43,26 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_antialiasing", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> set_antialiasing(vm -> get_bool(2));
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_antialiasing", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> get_antialiasing());
+                vm -> push_value(self -> get_antialiasing());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_oversampling", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> set_oversampling(static_cast<float>(vm -> get_float(2)));
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 

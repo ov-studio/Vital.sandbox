@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "exists", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                vm -> push_bool(Vital::Tool::File::exists(get_directory(), path));
+                vm -> push_value(Vital::Tool::File::exists(get_directory(), path));
                 return 1;
             });
         
@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "delete", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                vm -> push_bool(Vital::Tool::File::remove(get_directory(), path));
+                vm -> push_value(Vital::Tool::File::remove(get_directory(), path));
                 return 1;
             });
         
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
                 auto buffer = vm -> get_string(2);
-                vm -> push_bool(Vital::Tool::File::write_text(get_directory(), path, buffer));
+                vm -> push_value(Vital::Tool::File::write_text(get_directory(), path, buffer));
                 return 1;
             });
         

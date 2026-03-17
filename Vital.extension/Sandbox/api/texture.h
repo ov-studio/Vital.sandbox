@@ -43,7 +43,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }
@@ -77,7 +77,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto raw = vm -> get_string(2);
                 self -> update_svg_from_raw(raw);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }

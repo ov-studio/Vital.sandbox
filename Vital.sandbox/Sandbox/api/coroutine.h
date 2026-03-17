@@ -39,14 +39,14 @@ namespace Vital::Sandbox::API {
                 auto thread_vm = Machine::fetch_machine(thread);
                 if (!thread_vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 thread_vm -> resume();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
             API::bind(vm, {base_name}, "pause", [](auto vm) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 vm -> pause();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto duration = vm -> get_int(1);
                 Vital::Tool::Timer([=](Vital::Tool::Timer* self) -> void {
-                    vm -> push_bool(true);
+                    vm -> push_value(true);
                     vm -> resume(1);
                 }, duration, 1);
                 vm -> pause();

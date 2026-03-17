@@ -101,12 +101,12 @@ namespace Vital::Sandbox {
             bind_method<T>(vm, type_name, "is_type", [type_name](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(2);
-                vm -> push_bool(type_name == name);
+                vm -> push_value(type_name == name);
                 return 1;
             });
         
             bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self) -> int {
-                if (type_name.empty()) vm -> push_bool(false);
+                if (type_name.empty()) vm -> push_value(false);
                 else vm -> push_string(type_name);
                 return 1;
             });

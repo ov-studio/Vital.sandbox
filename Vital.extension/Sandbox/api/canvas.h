@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
                 auto stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
                 auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
                 base_class::get_singleton() -> draw_line(points, stroke, color);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(5) ? vm -> get_float(5) : 0.0f;
                 auto pivot = vm -> is_vector2(6) ? vm -> get_vector2(6) : godot::Vector2{0.0f, 0.0f};
                 base_class::get_singleton() -> draw_polygon(points, color, stroke, stroke_color, rotation, pivot);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
                 auto pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
                 base_class::get_singleton() -> draw_rectangle(position, size, color, stroke, stroke_color, rotation, pivot);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -93,7 +93,7 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(6) ? vm -> get_float(6) : 0.0f;
                 auto pivot = vm -> is_vector2(7) ? vm -> get_vector2(7) : godot::Vector2{0.0f, 0.0f};
                 base_class::get_singleton() -> draw_circle(position, radius, color, stroke, stroke_color, rotation, pivot);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -121,7 +121,7 @@ namespace Vital::Sandbox::API {
                     base_class::get_singleton() -> draw_image(position, size, svg, rotation, pivot, color);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -149,7 +149,7 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
                 auto pivot = vm -> is_vector2(13) ? vm -> get_vector2(13) : godot::Vector2{0.0f, 0.0f};
                 base_class::get_singleton() -> draw_text(text, start_at, end_at, font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }

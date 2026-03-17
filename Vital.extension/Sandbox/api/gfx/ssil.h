@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "ssil"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(base_class::get_environment() -> is_ssil_enabled());
+                vm -> push_value(base_class::get_environment() -> is_ssil_enabled());
                 return 1;
             });
 
@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_ssil_enabled(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_radius(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_intensity(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_sharpness(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_normal_rejection(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         

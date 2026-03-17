@@ -40,10 +40,10 @@ namespace Vital::Sandbox::API {
                 Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                     try {
                         vm -> push_string(headers.empty() ? Vital::Tool::Rest::get(url) : Vital::Tool::Rest::get(url, headers));
-                        vm -> push_bool(false);
+                        vm -> push_value(false);
                     }
                     catch(const std::runtime_error& error) {
-                        vm -> push_bool(false);
+                        vm -> push_value(false);
                         vm -> push_string(error.what());
                     }
                     vm -> resume(2);
@@ -68,10 +68,10 @@ namespace Vital::Sandbox::API {
                 Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                     try {
                         vm -> push_string(headers.empty() ? Vital::Tool::Rest::post(url, body) : Vital::Tool::Rest::post(url, body, headers));
-                        vm -> push_bool(false);
+                        vm -> push_value(false);
                     }
                     catch(const std::runtime_error& error) {
-                        vm -> push_bool(false);
+                        vm -> push_value(false);
                         vm -> push_string(error.what());
                     }
                     vm -> resume(2);

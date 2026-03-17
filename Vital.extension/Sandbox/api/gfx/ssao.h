@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "ssao"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(base_class::get_environment() -> is_ssao_enabled());
+                vm -> push_value(base_class::get_environment() -> is_ssao_enabled());
                 return 1;
             });
 
@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_ssao_enabled(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_radius(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_intensity(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_power(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_detail(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -96,7 +96,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_horizon(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -109,7 +109,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_sharpness(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -122,7 +122,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_direct_light_affect(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssao_ao_channel_affect(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         

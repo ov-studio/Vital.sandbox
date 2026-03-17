@@ -49,13 +49,13 @@ namespace Vital::Sandbox::API {
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 base_class::set_active(rt, clear, instant);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_active", [](auto vm) -> int {
                 auto object = base_class::get_active();
-                if (!object) vm -> push_bool(false);
+                if (!object) vm -> push_value(false);
                 else vm -> create_object(base_name, object);
                 return 1;
             });
@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -77,7 +77,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_active", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_active());
+                vm -> push_value(self -> is_active());
                 return 1;
             });
         
@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 base_class::set_active(self, clear, instant);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }

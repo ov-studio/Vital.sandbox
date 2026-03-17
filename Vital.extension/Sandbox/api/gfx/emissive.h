@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "emissive"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_bool(base_class::get_environment() -> is_glow_enabled());
+                vm -> push_value(base_class::get_environment() -> is_glow_enabled());
                 return 1;
             });
 
@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_glow_enabled(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
                 auto idx = vm -> get_int(1);
                 auto value = vm -> get_float(2);
                 base_class::get_environment() -> set_glow_level(idx, value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "is_normalized", [](auto vm) -> int {
-                vm -> push_bool(base_class::get_environment() -> is_glow_normalized());
+                vm -> push_value(base_class::get_environment() -> is_glow_normalized());
                 return 1;
             });
 
@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_glow_normalized(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_intensity(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_strength(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -99,7 +99,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_mix(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -112,7 +112,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_bloom(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -126,7 +126,7 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_int(1);
                 if ((value < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (value > godot::Environment::GLOW_BLEND_MODE_MIX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 base_class::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -139,7 +139,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_hdr_bleed_threshold(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -152,7 +152,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_hdr_bleed_scale(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -165,7 +165,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_hdr_luminance_cap(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         
@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_map_strength(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         

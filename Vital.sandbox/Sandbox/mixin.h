@@ -23,18 +23,6 @@ namespace Vital::Sandbox {
                     using T = std::decay_t<decltype(v)>;
                     if constexpr (std::is_same_v<T, std::nullptr_t>)
                         self() -> push_nil();
-                    else if constexpr (std::is_same_v<T, bool>)
-                        self() -> push_bool(v);
-                    else if constexpr (std::is_same_v<T, int32_t>)
-                        self() -> push_number(static_cast<int>(v));
-                    else if constexpr (std::is_same_v<T, int64_t>)
-                        self() -> push_number(static_cast<double>(v));
-                    else if constexpr (std::is_same_v<T, float>)
-                        self() -> push_number(v);
-                    else if constexpr (std::is_same_v<T, double>)
-                        self() -> push_number(v);
-                    else if constexpr (std::is_same_v<T, std::string>)
-                        self() -> push_string(v);
                     else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                         self() -> create_table();
                         for (int i = 0; i < static_cast<int>(v.size()); ++i) {
@@ -42,6 +30,7 @@ namespace Vital::Sandbox {
                             self() -> set_table_field(i + 1, -2);
                         }
                     }
+                    else push_value(v);
                 }, value.value);
             }
 

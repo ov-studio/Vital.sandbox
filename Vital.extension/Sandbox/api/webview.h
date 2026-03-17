@@ -47,37 +47,37 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_reference(key)) vm -> del_reference(key);
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
             
             vm_module::bind_method<base_class>(vm, base_name, "is_visible", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_visible());
+                vm -> push_value(self -> is_visible());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_fullscreen", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_fullscreen());
+                vm -> push_value(self -> is_fullscreen());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_transparent", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_transparent());
+                vm -> push_value(self -> is_transparent());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_autoplay", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_autoplay());
+                vm -> push_value(self -> is_autoplay());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_zoomable", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_zoomable());
+                vm -> push_value(self -> is_zoomable());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_devtools_visible", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_devtools_visible());
+                vm -> push_value(self -> is_devtools_visible());
                 return 1;
             });
 
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_visible(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -103,7 +103,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_fullscreen(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -111,7 +111,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_transparent(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -119,7 +119,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_autoplay(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -127,7 +127,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_zoomable(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_devtools_visible(state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(2);
                 self -> set_position(position);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -151,7 +151,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_vector2(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto size = vm -> get_vector2(2);
                 self -> set_size(size);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -164,7 +164,7 @@ namespace Vital::Sandbox::API {
                     vm -> push_string(to_std_string(message));
                     vm -> pcall(1, 0);
                 });
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -172,7 +172,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(2);
                 self -> load_url(url);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -180,25 +180,25 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto html = vm -> get_string(2);
                 self -> load_html(html);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "clear_history", [](auto vm, auto self) -> int {
                 self -> clear_history();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "focus", [](auto vm, auto self) -> int {
                 self -> focus();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "reload", [](auto vm, auto self) -> int {
                 self -> reload();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -206,13 +206,13 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(2);
                 self -> zoom(value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "update", [](auto vm, auto self) -> int {
                 self -> update();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(2);
                 self -> eval(input);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -228,7 +228,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(2);
                 self -> emit(input);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }

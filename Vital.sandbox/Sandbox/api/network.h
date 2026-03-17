@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
                 godot::UtilityFunctions::print(number);
                 */
                 Vital::System::Network::emit(arguments, peerID, isLatent);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::API {
                     ([&vm](auto&& arg) {
                         using T = std::decay_t<decltype(arg)>;
                         if constexpr (std::is_null_pointer_v<T>) vm.second -> push_nil();
-                        else if constexpr (std::is_same_v<T, bool>) vm.second -> push_bool(arg);
+                        else if constexpr (std::is_same_v<T, bool>) vm.second -> push_value(arg);
                         else if constexpr (std::is_same_v<T, int>) vm.second -> push_number(arg);
                         else if constexpr (std::is_same_v<T, float>) vm.second -> push_number(arg);
                         else if constexpr (std::is_same_v<T, double>) vm.second -> push_number(arg);

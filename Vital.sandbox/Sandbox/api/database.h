@@ -50,21 +50,21 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
             
             vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self) -> int {
                 self -> db -> drop(self -> table);
                 self -> destroy();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self) -> int {
                 self -> db -> truncate(self -> table);
                 self -> destroy();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -102,7 +102,7 @@ namespace Vital::Sandbox::API {
                 if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 self -> db -> alter(self -> table, actions);
                 self -> destroy();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> db -> execute(self));
+                vm -> push_value(self -> db -> execute(self));
                 self -> destroy();
                 return 1;
             });
@@ -230,12 +230,12 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_connected", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_connected());
+                vm -> push_value(self -> is_connected());
                 return 1;
             });
 
@@ -255,13 +255,13 @@ namespace Vital::Sandbox::API {
                     vm -> pop(1);
                 }
                 self -> define(table, columns);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "sync", [](auto vm, auto self) -> int {
                 self -> sync();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 

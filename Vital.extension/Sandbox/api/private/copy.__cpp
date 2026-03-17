@@ -29,7 +29,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
             if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             auto fov = vm -> get_float(1);
             Vital::Engine::Core::get_environment() -> set_sky_custom_fov(fov);
-            vm -> push_bool(true);
+            vm -> push_value(true);
             return 1;
         });
     });
@@ -48,7 +48,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
             if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             auto energy = vm -> get_float(1);
             Vital::Engine::Core::get_environment() -> set_bg_energy_multiplier(energy);
-            vm -> push_bool(true);
+            vm -> push_value(true);
             return 1;
         });
     });

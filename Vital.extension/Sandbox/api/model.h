@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "is_loaded", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                vm -> push_bool(base_class::is_model_loaded(name));
+                vm -> push_value(base_class::is_model_loaded(name));
                 return 1;
             });
 
@@ -40,14 +40,14 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
                 auto path = vm -> get_string(2);
-                vm -> push_bool(base_class::load(name, path));
+                vm -> push_value(base_class::load(name, path));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "unload", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
-                vm -> push_bool(base_class::unload(name));
+                vm -> push_value(base_class::unload(name));
                 return 1;
             });
 
@@ -64,14 +64,14 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_component_visible", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
-                vm -> push_bool(self -> is_component_visible(component));
+                vm -> push_value(self -> is_component_visible(component));
                 return 1;
             });
 
@@ -79,12 +79,12 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
                 auto material = vm -> get_string(3);
-                vm -> push_bool(self -> is_material_visible(component, material));
+                vm -> push_value(self -> is_material_visible(component, material));
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_animation_playing", [](auto vm, auto self) -> int {
-                vm -> push_bool(self -> is_animation_playing());
+                vm -> push_value(self -> is_animation_playing());
                 return 1;
             });
 
@@ -92,7 +92,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_vector3(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector3(2);
                 self -> set_position(position);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -100,7 +100,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_vector3(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto rotation = vm -> get_vector3(2);
                 self -> set_rotation(rotation);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -109,7 +109,7 @@ namespace Vital::Sandbox::API {
                 auto component = vm -> get_string(2);
                 auto state = vm -> get_bool(3);
                 self -> set_component_visible(component, state);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -118,7 +118,7 @@ namespace Vital::Sandbox::API {
                 auto component = vm -> get_string(2);
                 auto material = vm -> get_string(3);
                 auto state = vm -> get_bool(4);
-                vm -> push_bool(self -> set_material_visible(component, material, state));
+                vm -> push_value(self -> set_material_visible(component, material, state));
                 return 1;
             });
 
@@ -128,7 +128,7 @@ namespace Vital::Sandbox::API {
                 auto blendshape = vm -> get_string(3);
                 auto value = vm -> get_float(4);
                 self -> set_blendshape_value(component, blendshape, value);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto speed = vm -> get_float(2);
                 self -> set_animation_speed(speed);
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
@@ -239,25 +239,25 @@ namespace Vital::Sandbox::API {
                 auto name = vm -> get_string(2);
                 auto loop = vm -> is_bool(3) ? vm -> get_bool(3) : true;
                 auto speed = vm -> is_number(4) ? vm -> get_float(4) : 1.0f;
-                vm -> push_bool(self -> play_animation(name, loop, speed));
+                vm -> push_value(self -> play_animation(name, loop, speed));
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "stop_animation", [](auto vm, auto self) -> int {
                 self -> stop_animation();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "pause_animation", [](auto vm, auto self) -> int {
                 self -> pause_animation();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "resume_animation", [](auto vm, auto self) -> int {
                 self -> resume_animation();
-                vm -> push_bool(true);
+                vm -> push_value(true);
                 return 1;
             });
         }
