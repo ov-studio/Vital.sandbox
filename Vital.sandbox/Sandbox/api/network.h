@@ -75,9 +75,9 @@ namespace Vital::Sandbox::API {
                         using T = std::decay_t<decltype(arg)>;
                         if constexpr (std::is_null_pointer_v<T>) vm.second -> push_nil();
                         else if constexpr (std::is_same_v<T, bool>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, int>) vm.second -> push_number(arg);
-                        else if constexpr (std::is_same_v<T, float>) vm.second -> push_number(arg);
-                        else if constexpr (std::is_same_v<T, double>) vm.second -> push_number(arg);
+                        else if constexpr (std::is_same_v<T, int>) vm.second -> push_value(arg);
+                        else if constexpr (std::is_same_v<T, float>) vm.second -> push_value(arg);
+                        else if constexpr (std::is_same_v<T, double>) vm.second -> push_value(arg);
                         else if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>) vm.second -> push_string(std::string(arg));
                         else if constexpr (std::is_same_v<T, std::string>) vm.second -> push_string(arg);
                         else if constexpr (std::is_same_v<T, std::vector<std::string>>) {

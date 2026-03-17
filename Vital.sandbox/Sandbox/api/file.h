@@ -35,7 +35,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "size", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                vm -> push_number(static_cast<double>(Vital::Tool::File::size(get_directory(), path)));
+                vm -> push_value(static_cast<double>(Vital::Tool::File::size(get_directory(), path)));
                 return 1;
             });
         
