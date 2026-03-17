@@ -39,12 +39,9 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "get_timestamp", [](auto vm) -> int {
                 auto timestamp = get_timestamp();
                 vm -> create_table();
-                vm -> table_set_number("hour", timestamp.object["hour"].as<int32_t>());
-                vm -> table_set_number("minute", timestamp.object["minute"].as<int32_t>());
-                vm -> table_set_number("second", timestamp.object["second"].as<int32_t>());
-                vm -> table_set_number("day", timestamp.object["day"].as<int32_t>());
-                vm -> table_set_number("month", timestamp.object["month"].as<int32_t>());
-                vm -> table_set_number("year", timestamp.object["year"].as<int32_t>());
+                for (auto& [key, value] : timestamp.object) {
+                    vm -> table_set(key, value);
+                }
                 return 1;
             });
 

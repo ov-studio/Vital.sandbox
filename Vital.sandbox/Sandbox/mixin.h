@@ -95,6 +95,7 @@ namespace Vital::Sandbox {
             void table_push_vector3_array(const godot::PackedVector3Array& value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_horizontal_alignment(godot::HorizontalAlignment value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_vertical_alignment(godot::VerticalAlignment value, const std::string& nspace = "") { table_push(value, nspace); }
+            void table_push_stack_value(const Vital::Tool::StackValue& value, const std::string& nspace = "") { table_push(value, nspace); }
             void table_push_table(const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
@@ -132,6 +133,7 @@ namespace Vital::Sandbox {
             void table_set_vector3_array(const std::string& index, const godot::PackedVector3Array& value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_horizontal_alignment(const std::string& index, godot::HorizontalAlignment value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_vertical_alignment(const std::string& index, godot::VerticalAlignment value, const std::string& nspace = "") { table_set(index, value, nspace); }
+            void table_set_stack_value(const std::string& index, const Vital::Tool::StackValue& value, const std::string& nspace = "") { table_set(index, value, nspace); }
             void table_set_table(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
