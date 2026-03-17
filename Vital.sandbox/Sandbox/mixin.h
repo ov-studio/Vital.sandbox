@@ -40,7 +40,7 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
-            void push_stack_value(const Vital::Tool::StackValue& value) {
+            void push_value(const Vital::Tool::StackValue& value) {
                 std::visit([this](auto&& v) {
                     using T = std::decay_t<decltype(v)>;
                     if constexpr (std::is_same_v<T, std::nullptr_t>)
