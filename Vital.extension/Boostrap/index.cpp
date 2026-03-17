@@ -23,7 +23,7 @@
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
 	godot::ClassDB::register_class<Vital::Engine::Core>();
-	godot::ClassDB::register_class<Vital::Engine::NetworkBridge>(true);
+	godot::ClassDB::register_class<Vital::Engine::NetworkNode>(true);
 	godot::ClassDB::register_class<Vital::Engine::Model>(true);
 	#if defined(Vital_SDK_Client)
 	godot::ClassDB::register_class<Vital::Engine::Canvas>(true);

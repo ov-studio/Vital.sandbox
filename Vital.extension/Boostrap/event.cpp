@@ -37,7 +37,7 @@ void setup() {
     Vital::Tool::Event::bind("network:hosted", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Server is live");
     });
-    Vital::Tool::Event::bind("network:peer_joined", [net](Vital::Tool::Stack& args) {
+    Vital::Tool::Event::bind("network:peer_joined", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player joined: ", id);
     });
@@ -55,7 +55,7 @@ void setup() {
             reply.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
             reply.object["type"]    = Vital::Tool::StackValue(std::string("system"));
             reply.object["peer_id"] = Vital::Tool::StackValue(sender);
-            net->queue_send(reply, sender);
+            net->send(reply, sender);
         }
     });
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {
@@ -68,8 +68,6 @@ void setup() {
         Vital::print("sbox", "Connecting...");
     });
     Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) {
-        // Ping is NOT sent here — network.cpp poll() sends it on the next
-        // frame once ENet has fully assigned the peer ID (pending_handshake)
         Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
     });
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
@@ -122,7 +120,6 @@ void initialize_vital_events() {
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         // intentionally empty — network init is deferred to first process tick
-        // so that the SceneTree and multiplayer peer are fully ready
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {

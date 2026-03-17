@@ -22,6 +22,8 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 
 /////////////////////////////
@@ -29,10 +31,21 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class NetworkBridge : public godot::Node {
-        GDCLASS(NetworkBridge, godot::Node)
+
+    // NetworkNode — lives in the SceneTree so Godot RPC can route packets.
+    // _receive() is the single RPC entry point for all incoming packets.
+    class NetworkNode : public godot::Node {
+        GDCLASS(NetworkNode, godot::Node)
+
         public:
             static void _bind_methods();
+
+            // Called by Godot's RPC system when a packet arrives
+            void _receive(godot::Dictionary data);
+
+            // Called once after being added to the scene tree
+            // to register RPC config (requires a valid node path)
+            void setup_rpc();
 
             #if !defined(Vital_SDK_Client)
             std::function<void(int)> on_peer_connected;
@@ -51,20 +64,12 @@ namespace Vital::Engine {
             #endif
     };
 
+
     class Network {
         private:
             inline static Network* singleton = nullptr;
             godot::Ref<godot::ENetMultiplayerPeer> peer;
-            NetworkBridge* bridge = nullptr;
-
-            // Outgoing packet queue — flushed at the start of each poll()
-            // Prevents re-entrancy when sending from inside a packet handler
-            struct PendingPacket {
-                Vital::Tool::Stack stack;
-                int  peerID   = 0;
-                bool isLatent = false;
-            };
-            std::vector<PendingPacket> send_queue;
+            NetworkNode* node = nullptr;
 
             #if !defined(Vital_SDK_Client)
             std::unordered_set<int> connected_peers;
@@ -82,9 +87,13 @@ namespace Vital::Engine {
             #endif
 
             static godot::SceneTree* get_scene_tree();
-            static Vital::Tool::Stack make_stack(int32_t id);
-            void create_bridge();
-            void destroy_bridge();
+
+            // Convert Dictionary ↔ Stack at the RPC boundary
+            static Vital::Tool::Stack dict_to_stack(const godot::Dictionary& dict);
+            static godot::Dictionary stack_to_dict(const Vital::Tool::Stack& stack);
+
+            void create_node();
+            void destroy_node();
 
             #if !defined(Vital_SDK_Client)
             void wire_server_signals();
@@ -102,6 +111,9 @@ namespace Vital::Engine {
 
             static Network* get_singleton();
             static void free_singleton();
+
+            // Called by NetworkNode::_receive when an RPC packet arrives
+            void _on_packet_received(godot::Dictionary data);
 
             // State
             bool is_active() const;
@@ -133,12 +145,11 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             #endif
 
-            // Shared
-            bool send(const Vital::Tool::Stack& stack, int peerID = 0, bool isLatent = false);
-            bool queue_send(const Vital::Tool::Stack& stack, int peerID = 0, bool isLatent = false);
-            bool broadcast(const Vital::Tool::Stack& stack, bool isLatent = false);
-            bool send_to_server(const Vital::Tool::Stack& stack, bool isLatent = false);
+            // Shared — Stack-based API (same as before, RPC transport is internal)
+            bool send(const Vital::Tool::Stack& stack, int peerID = 0);
+            bool broadcast(const Vital::Tool::Stack& stack);
+            bool send_to_server(const Vital::Tool::Stack& stack);
             void poll(double delta = 0.0);
-            static void emit(Vital::Tool::Stack& arguments, int peerID = 0, bool isLatent = false);
+            static void emit(Vital::Tool::Stack& arguments, int peerID = 0);
     };
 }
