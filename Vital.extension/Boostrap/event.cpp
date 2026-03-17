@@ -37,10 +37,6 @@ void setup() {
     Vital::Tool::Event::bind("network:hosted", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Server is live");
     });
-    Vital::Tool::Event::bind("network:peer_joined", [](Vital::Tool::Stack& args) {
-        int32_t id = args.array[0].as<int32_t>();
-        Vital::print("sbox", "Player joined: ", id);
-    });
     Vital::Tool::Event::bind("network:peer_joined", [net](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player joined: ", id);
