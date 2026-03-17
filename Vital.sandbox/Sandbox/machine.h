@@ -104,8 +104,8 @@ namespace Vital::Sandbox {
             bool is_virtual() { return virtualized; }
             bool is_nil(int index = 1) { return lua_isnoneornil(state, index); }
             bool is_bool(int index = 1) { return lua_isboolean(state, index); }
-            bool is_string(int index = 1) { return lua_isstring(state, index); }
             bool is_number(int index = 1) { return lua_isnumber(state, index); }
+            bool is_string(int index = 1) { return lua_isstring(state, index); }
             bool is_table(int index = 1) { return lua_istable(state, index); }
             bool is_thread(int index = 1) { return lua_isthread(state, index); }
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
@@ -156,10 +156,10 @@ namespace Vital::Sandbox {
             int get_count() { return lua_gettop(state); }
             bool get_global(const std::string& index) { return lua_getglobal(state, index.c_str()); }
             bool get_bool(int index = 1) { return lua_toboolean(state, index); }
-            std::string get_string(int index = 1) { return lua_tostring(state, index); }
             int get_int(int index = 1) { return (int)lua_tonumber(state, index); }
             float get_float(int index = 1) { return (float)lua_tonumber(state, index); }
             double get_double(int index = 1) { return lua_tonumber(state, index); }
+            std::string get_string(int index = 1) { return lua_tostring(state, index); }
             bool get_table(int index = 1) { return lua_gettable(state, index); }
             bool get_table_field(int value, int index = 1) { return lua_geti(state, index, value); }
             bool get_table_field(const std::string& value, int index = 1) {return lua_getfield(state, index, value.c_str());}
@@ -241,11 +241,11 @@ namespace Vital::Sandbox {
             void push_global(const std::string& index) { lua_setglobal(state, index.c_str()); }
             void push_nil() { lua_pushnil(state); }
             void push_bool(bool value) { lua_pushboolean(state, value); }
-            void push_string(const std::string& value) { lua_pushstring(state, value.c_str()); }
             void push_number(int value) { lua_pushinteger(state, value); }
             void push_number(int64_t value) { lua_pushinteger(state, value); }
             void push_number(float value) { lua_pushnumber(state, value); }
             void push_number(double value) { lua_pushnumber(state, value); }
+            void push_string(const std::string& value) { lua_pushstring(state, value.c_str()); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
             void push_horizontal_alignment(godot::HorizontalAlignment value) {

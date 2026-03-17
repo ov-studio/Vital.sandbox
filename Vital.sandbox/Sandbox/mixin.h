@@ -5,9 +5,9 @@ namespace Vital::Sandbox {
             Derived* self() { return static_cast<Derived*>(this); }
         public:
             // Dispatchers //
+            void push_value(bool value) { self() -> push_bool(value); }
             template<typename T, typename = std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool> && !std::is_enum_v<T>>>
             void push_value(T value) { self() -> push_number(static_cast<int64_t>(value)); }
-            void push_value(bool value) { self() -> push_bool(value); }
             void push_value(float value) { self() -> push_number(value); }
             void push_value(double value) { self() -> push_number(value); }
             void push_value(const std::string& value) { self() -> push_string(value); }
