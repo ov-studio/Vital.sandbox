@@ -79,9 +79,7 @@ void setup() {
     });
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
         std::string body = args.array[0].as<std::string>();
-        std::string type = "unknown";
-        if (args.object.count("type"))
-            type = args.object.at("type").as<std::string>();
+        std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "unknown";
         Vital::print("sbox", "Server says [", type.c_str(), "]: ", body.c_str());
     });
     Vital::Tool::Event::bind("network:connection_failed", [](Vital::Tool::Stack&) {
