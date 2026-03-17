@@ -11,6 +11,7 @@ namespace Vital::Sandbox {
             void push_value(float value) { self() -> push_number(value); }
             void push_value(double value) { self() -> push_number(value); }
             void push_value(const std::string& value) { self() -> push_string(value); }
+            void push_value(void* value) { self() -> push_userdata(state, value); }
             void push_value(vm_exec& value) { self() -> push_function(value); }
             void push_value(const godot::Color& value) { self() -> push_color(value); }
             void push_value(const godot::Vector2& value) { self() -> push_vector2(value); }
