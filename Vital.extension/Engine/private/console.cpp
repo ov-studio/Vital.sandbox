@@ -224,11 +224,11 @@ namespace Vital::Engine {
         document.SetObject();
         auto& alloc = document.GetAllocator();
         auto make_color = [&](const Vital::Tool::Stack& color) {
-            rapidjson::Value arr(rapidjson::kArrayType);
-            arr.PushBack(color.array[0].as<int32_t>(), alloc);
-            arr.PushBack(color.array[1].as<int32_t>(), alloc);
-            arr.PushBack(color.array[2].as<int32_t>(), alloc);
-            return arr;
+            rapidjson::Value result(rapidjson::kArrayType);
+            result.PushBack(color.array[0].as<int32_t>(), alloc);
+            result.PushBack(color.array[1].as<int32_t>(), alloc);
+            result.PushBack(color.array[2].as<int32_t>(), alloc);
+            return result;
         };
         document.AddMember("action", "init", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
