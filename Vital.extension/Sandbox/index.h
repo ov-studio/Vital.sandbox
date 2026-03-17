@@ -26,6 +26,7 @@ namespace Vital::Engine {
 	class Sandbox : public godot::Node {
 		protected:
 			inline static Sandbox* singleton = nullptr;
+			inline static const std::string signal_reference = "vital.network:execute";
 		private:
 			Vital::Sandbox::Machine* vm = nullptr;
 		public:
@@ -49,14 +50,11 @@ namespace Vital::Engine {
 
 			template<typename... Args>
 			void signal(const std::string& name, Args&&... args) {
-				if (!vm) return;
-				const std::string ref = "vital.network:execute";
-				if (vm -> is_reference(ref)) {
-					vm -> get_reference(ref, true);
-					vm -> push_value(name);
-					(vm -> push_value(std::forward<Args>(args)), ...);
-					vm -> pcall(sizeof...(Args) + 1, 0);
-				}
+				if (!vm || !vm -> is_reference(signal_reference)) return;
+				vm -> get_reference(signal_reference, true);
+				vm -> push_value(name);
+				(vm -> push_value(std::forward<Args>(args)), ...);
+				vm -> pcall(sizeof...(Args) + 1, 0);
 			}
 	};	
 }
