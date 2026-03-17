@@ -268,15 +268,15 @@ namespace Vital::Sandbox {
             }
             void push_color(const godot::Color& value) {
                 create_table();
-                push_number(value.r); set_table_field(1, -2);
-                push_number(value.g); set_table_field(2, -2);
-                push_number(value.b); set_table_field(3, -2);
-                push_number(value.a); set_table_field(4, -2);
+                push_value(value.r); set_table_field(1, -2);
+                push_value(value.g); set_table_field(2, -2);
+                push_value(value.b); set_table_field(3, -2);
+                push_value(value.a); set_table_field(4, -2);
             }
             void push_vector2(const godot::Vector2& value) {
                 create_table();
-                push_number(value.x); set_table_field(1, -2);
-                push_number(value.y); set_table_field(2, -2);
+                push_value(value.x); set_table_field(1, -2);
+                push_value(value.y); set_table_field(2, -2);
             }
             void push_vector2_array(const godot::PackedVector2Array& value) {
                 create_table();
@@ -287,9 +287,9 @@ namespace Vital::Sandbox {
             }
             void push_vector3(const godot::Vector3& value) {
                 create_table();
-                push_number(value.x); set_table_field(1, -2);
-                push_number(value.y); set_table_field(2, -2);
-                push_number(value.z); set_table_field(3, -2);
+                push_value(value.x); set_table_field(1, -2);
+                push_value(value.y); set_table_field(2, -2);
+                push_value(value.z); set_table_field(3, -2);
             }
             void push_vector3_array(const godot::PackedVector3Array& value) {
                 create_table();
