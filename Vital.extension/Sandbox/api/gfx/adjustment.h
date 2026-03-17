@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {
         inline static const std::string base_name = "gfx";
-        inline static const std::string lut_path_ref = "gfx.adjustment:lut_path";
+        inline static const std::string lut_reference = fmt::format("{}.adjustment:lut", base_name);
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
@@ -127,21 +127,21 @@ namespace Vital::Sandbox::API {
                 lut_texture_3d -> create(godot::Image::FORMAT_RGBA8, lut_size, lut_size, lut_size, false, lut_slices);
                 base_class::get_environment() -> set_adjustment_color_correction(lut_texture_3d);
                 vm -> push_value(path);
-                vm -> set_reference(lut_path_ref, -1);
+                vm -> set_reference(lut_reference, -1);
                 vm -> pop(1);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, {base_name, "adjustment"}, "get_lut", [](auto vm) -> int {
-                if (vm -> is_reference(lut_path_ref)) vm -> get_reference(lut_path_ref, true);
+                if (vm -> is_reference(lut_reference)) vm -> get_reference(lut_reference, true);
                 else vm -> push_value(false);
                 return 1;
             });
 
             API::bind(vm, {base_name, "adjustment"}, "reset_lut", [](auto vm) -> int {
                 base_class::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
-                vm -> del_reference(lut_path_ref);
+                vm -> del_reference(lut_reference);
                 vm -> push_value(true);
                 return 1;
             });
