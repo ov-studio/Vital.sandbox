@@ -243,6 +243,7 @@ namespace Vital::Sandbox {
             void push_bool(bool value) { lua_pushboolean(state, value); }
             void push_string(const std::string& value) { lua_pushstring(state, value.c_str()); }
             void push_number(int value) { lua_pushinteger(state, value); }
+            void push_number(int64_t value) { lua_pushinteger(state, value); }
             void push_number(float value) { lua_pushnumber(state, value); }
             void push_number(double value) { lua_pushnumber(state, value); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }

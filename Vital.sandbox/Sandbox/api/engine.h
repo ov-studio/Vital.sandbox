@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get_tick", [](auto vm) -> int {
-                vm -> push_number(static_cast<int>(get_tick()));
+                vm -> push_value(get_tick());
                 return 1;
             });
         
