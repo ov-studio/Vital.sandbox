@@ -22,7 +22,6 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <Vital.extension/Engine/public/console.h>
 
 
 /////////////////////////////
@@ -30,23 +29,26 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    // Bridge node — registered in GDExtension _register_types
     class NetworkBridge : public godot::Node {
         GDCLASS(NetworkBridge, godot::Node)
         public:
             static void _bind_methods();
 
+            #if !defined(Vital_SDK_Client)
             std::function<void(int)> on_peer_connected;
             std::function<void(int)> on_peer_disconnected;
-            std::function<void()>    on_connected_to_server;
-            std::function<void()>    on_connection_failed;
-            std::function<void()>    on_server_disconnected;
-
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
+            #endif
+
+            #if defined(Vital_SDK_Client)
+            std::function<void()> on_connected_to_server;
+            std::function<void()> on_connection_failed;
+            std::function<void()> on_server_disconnected;
             void _on_connected_to_server();
             void _on_connection_failed();
             void _on_server_disconnected();
+            #endif
     };
 
     class Network {
@@ -54,8 +56,12 @@ namespace Vital::Engine {
             inline static Network* singleton = nullptr;
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             NetworkBridge* bridge = nullptr;
-            std::unordered_set<int> connected_peers;
 
+            #if !defined(Vital_SDK_Client)
+            std::unordered_set<int> connected_peers;
+            #endif
+
+            #if defined(Vital_SDK_Client)
             bool        auto_reconnect     = false;
             std::string reconnect_ip;
             int         reconnect_port     = 0;
@@ -63,18 +69,25 @@ namespace Vital::Engine {
             int         reconnect_max      = 5;
             float       reconnect_delay    = 3.0f;
             float       reconnect_timer    = 0.0f;
+            #endif
 
             static godot::SceneTree* get_scene_tree();
             static Vital::Tool::Stack make_stack(int32_t id);
-
             void create_bridge();
             void destroy_bridge();
+
+            #if !defined(Vital_SDK_Client)
             void wire_server_signals();
+            #endif
+
+            #if defined(Vital_SDK_Client)
             void wire_client_signals();
+            #endif
+
             void unwire_signals();
 
         public:
-            Network() = default;
+            Network()  = default;
             ~Network() = default;
 
             static Network* get_singleton();
@@ -85,16 +98,19 @@ namespace Vital::Engine {
             bool is_connecting() const;
             static bool is_server();
             int get_peer_id() const;
-            const std::unordered_set<int>& get_connected_peers() const;
-            int get_peer_count() const;
             void print_status() const;
 
+            #if !defined(Vital_SDK_Client)
             // Server
             bool host(int port, int max_clients = 32);
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
+            const std::unordered_set<int>& get_connected_peers() const;
+            int get_peer_count() const;
+            #endif
 
+            #if defined(Vital_SDK_Client)
             // Client
             bool connect_to_server(const std::string& ip, int port, bool enable_reconnect = false);
             bool disconnect_from_server();
@@ -105,16 +121,13 @@ namespace Vital::Engine {
             // Reconnect
             void set_reconnect_config(int max_attempts, float delay_seconds);
             void _schedule_reconnect();
+            #endif
 
-            // Send / Receive
+            // Shared
             bool send(const Vital::Tool::Stack& stack, int peerID = 0, bool isLatent = false);
             bool broadcast(const Vital::Tool::Stack& stack, bool isLatent = false);
             bool send_to_server(const Vital::Tool::Stack& stack, bool isLatent = false);
-
-            // Poll
             void poll(double delta = 0.0);
-
-            // Emit outbound
             static void emit(Vital::Tool::Stack& arguments, int peerID = 0, bool isLatent = false);
     };
 }
