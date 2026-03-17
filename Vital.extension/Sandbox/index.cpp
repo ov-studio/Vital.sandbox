@@ -84,15 +84,11 @@ namespace Vital::Engine {
 
     void Sandbox::process(double delta) {
         signal("vital.sandbox:process", Vital::Tool::StackValue(delta));
-        #if defined(Vital_SDK_Client)
-        Vital::System::Discord::get_singleton() -> process();
-        #endif
     }
 
     #if defined(Vital_SDK_Client)
     void Sandbox::draw(Canvas* canvas) {
         signal("vital.sandbox:draw");
-        //Vital::Tool::Event::emit("vital.sandbox:draw");
     }
 
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
@@ -102,25 +98,12 @@ namespace Vital::Engine {
                 Vital::Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
                 Vital::Tool::StackValue(event_key -> is_pressed())
             );
-
-            /*
-            Vital::Tool::Stack arguments;
-            arguments.object["keycode"] = to_std_string(godot::String::num_int64(event_key -> get_keycode()));
-            arguments.object["state"] = event_key -> is_pressed();
-            Vital::Tool::Event::emit("vital.sandbox:key_input", arguments);
-            */
         }
         else if (auto event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
             signal("vital.sandbox:key_input", 
                 Vital::Tool::StackValue(fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())))),
                 Vital::Tool::StackValue(event_mouse_button -> is_pressed())
             );
-            /*
-            Vital::Tool::Stack arguments;
-            arguments.object["keycode"] = fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())));
-            arguments.object["state"] = event_mouse_button -> is_pressed();
-            Vital::Tool::Event::emit("vital.sandbox:key_input", arguments);
-            */
         }
         else if (auto event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event.ptr())) {
             auto position = event_mouse_motion -> get_position();
@@ -128,12 +111,6 @@ namespace Vital::Engine {
                 Vital::Tool::StackValue(position.x),
                 Vital::Tool::StackValue(position.y)
             );
-            /*
-            Vital::Tool::Stack arguments;
-            arguments.object["x"] = position.x;
-            arguments.object["y"] = position.y;
-            Vital::Tool::Event::emit("vital.sandbox:mouse_move", arguments);
-            */
         }
     }
     #endif
