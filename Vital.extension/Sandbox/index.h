@@ -58,7 +58,9 @@ namespace Vital::Engine {
 				if (!vm || !vm -> is_reference(signal_reference)) return;
 				vm -> get_reference(signal_reference, true);
 				vm -> push_value(name);
-				(vm -> push_value(std::forward<Args>(args)), ...);
+				for (auto& value : stack.array) {
+					vm -> push_value(value);
+				}
 				vm -> pcall(sizeof...(Args) + 1, 0);
 			}
 	};	
