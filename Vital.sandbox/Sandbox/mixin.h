@@ -7,6 +7,8 @@ namespace Vital::Sandbox {
             // Dispatchers //
             void push_value(bool value) { self() -> push_bool(value); }
             void push_value(int value) { self() -> push_number(value); }
+            void push_value(int32_t value) { self() -> push_number(static_cast<int>(value)); }
+            void push_value(int64_t value) { self() -> push_number(static_cast<double>(value)); }
             void push_value(float value) { self() -> push_number(value); }
             void push_value(double value) { self() -> push_number(value); }
             void push_value(const std::string& value) { self() -> push_string(value); }
