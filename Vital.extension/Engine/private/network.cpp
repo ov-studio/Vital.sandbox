@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/network.h>
+#include <Vital.extension/Engine/public/console.h>
 
 
 /////////////////////////////
