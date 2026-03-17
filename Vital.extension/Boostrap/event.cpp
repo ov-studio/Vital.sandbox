@@ -45,8 +45,4 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("vital.sandbox:draw", [](Vital::Tool::Stack arguments) -> void {
         Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:draw");
     });
-
-    Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:console_input", arguments.object["command"], arguments.object["parameters"]);
-    });
 }
