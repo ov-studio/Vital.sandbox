@@ -43,7 +43,7 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Engine::Sandbox::get_singleton() -> signal("vital.sandbox:ready");
+
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
