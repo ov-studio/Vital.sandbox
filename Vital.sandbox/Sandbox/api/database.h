@@ -114,12 +114,7 @@ namespace Vital::Sandbox::API {
                 for (const auto& row : rows) {
                     vm -> create_table();
                     for (const auto& [column, cell] : row) {
-                        if (cell.is<std::nullptr_t>()) vm -> push_nil();
-                        else if (cell.is<std::string>()) vm -> push_string(cell.as<std::string>());
-                        else if (cell.is<int32_t>()) vm -> push_number(cell.as<int32_t>());
-                        else if (cell.is<int64_t>()) vm -> push_number((double)cell.as<int64_t>());
-                        else if (cell.is<double>()) vm -> push_number(cell.as<double>());
-                        vm -> set_table_field(column, -2);
+                        vm -> table_set(column, cell);
                     }
                     vm -> set_table_field(index++, -2);
                 }
