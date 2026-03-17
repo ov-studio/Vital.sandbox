@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_oversampling", [](auto vm, auto self) -> int {
-                vm -> push_number(self -> get_oversampling());
+                vm -> push_value(self -> get_oversampling());
                 return 1;
             });
         }

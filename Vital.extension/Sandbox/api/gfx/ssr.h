@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "get_max_steps", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssr_max_steps());
+                vm -> push_value(base_class::get_environment() -> get_ssr_max_steps());
                 return 1;
             });
         
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "get_fade_in", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssr_fade_in());
+                vm -> push_value(base_class::get_environment() -> get_ssr_fade_in());
                 return 1;
             });
         
@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "get_fade_out", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssr_fade_out());
+                vm -> push_value(base_class::get_environment() -> get_ssr_fade_out());
                 return 1;
             });
         
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssr"}, "get_depth_tolerance", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssr_depth_tolerance());
+                vm -> push_value(base_class::get_environment() -> get_ssr_depth_tolerance());
                 return 1;
             });
         }

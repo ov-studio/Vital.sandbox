@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_density", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_density());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_density());
                 return 1;
             });
         
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_emission_energy", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_emission_energy());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_emission_energy());
                 return 1;
             });
         
@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_anisotropy", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_anisotropy());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_anisotropy());
                 return 1;
             });
         
@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_length", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_length());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_length());
                 return 1;
             });
         
@@ -127,7 +127,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_detail_spread", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_detail_spread());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_detail_spread());
                 return 1;
             });
         
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_gi_inject", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_gi_inject());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_gi_inject());
                 return 1;
             });
         
@@ -153,7 +153,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_ambient_inject", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_ambient_inject());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_ambient_inject());
                 return 1;
             });
         
@@ -166,7 +166,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_sky_affect", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_sky_affect());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_sky_affect());
                 return 1;
             });
         
@@ -192,7 +192,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_temporal_reprojection_amount", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
                 return 1;
             });
         }

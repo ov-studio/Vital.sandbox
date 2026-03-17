@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_radius", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_radius());
+                vm -> push_value(base_class::get_environment() -> get_ssao_radius());
                 return 1;
             });
         
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_intensity", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_intensity());
+                vm -> push_value(base_class::get_environment() -> get_ssao_intensity());
                 return 1;
             });
         
@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_power", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_power());
+                vm -> push_value(base_class::get_environment() -> get_ssao_power());
                 return 1;
             });
         
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_detail", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_detail());
+                vm -> push_value(base_class::get_environment() -> get_ssao_detail());
                 return 1;
             });
         
@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_horizon", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_horizon());
+                vm -> push_value(base_class::get_environment() -> get_ssao_horizon());
                 return 1;
             });
         
@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_sharpness", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_sharpness());
+                vm -> push_value(base_class::get_environment() -> get_ssao_sharpness());
                 return 1;
             });
         
@@ -127,7 +127,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_direct_light_affect", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_direct_light_affect());
+                vm -> push_value(base_class::get_environment() -> get_ssao_direct_light_affect());
                 return 1;
             });
         
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssao"}, "get_channel_affect", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssao_ao_channel_affect());
+                vm -> push_value(base_class::get_environment() -> get_ssao_ao_channel_affect());
                 return 1;
             });
         }

@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "get_radius", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssil_radius());
+                vm -> push_value(base_class::get_environment() -> get_ssil_radius());
                 return 1;
             });
         
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "get_intensity", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssil_intensity());
+                vm -> push_value(base_class::get_environment() -> get_ssil_intensity());
                 return 1;
             });
         
@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "get_sharpness", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssil_sharpness());
+                vm -> push_value(base_class::get_environment() -> get_ssil_sharpness());
                 return 1;
             });
         
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "ssil"}, "get_normal_rejection", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_ssil_normal_rejection());
+                vm -> push_value(base_class::get_environment() -> get_ssil_normal_rejection());
                 return 1;
             });
         }

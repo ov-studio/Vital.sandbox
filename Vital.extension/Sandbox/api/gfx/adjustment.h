@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "adjustment"}, "get_brightness", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_adjustment_brightness());
+                vm -> push_value(base_class::get_environment() -> get_adjustment_brightness());
                 return 1;
             });
         
@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "adjustment"}, "get_contrast", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_adjustment_contrast());
+                vm -> push_value(base_class::get_environment() -> get_adjustment_contrast());
                 return 1;
             });
         
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "adjustment"}, "get_saturation", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_adjustment_saturation());
+                vm -> push_value(base_class::get_environment() -> get_adjustment_saturation());
                 return 1;
             });
 

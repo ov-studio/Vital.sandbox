@@ -71,8 +71,8 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "get_size", [](auto vm, auto self) -> int {
                 auto size = self -> get_size();
-                vm -> push_number(size.x);
-                vm -> push_number(size.y);
+                vm -> push_value(size.x);
+                vm -> push_value(size.y);
                 return 2;
             });
 

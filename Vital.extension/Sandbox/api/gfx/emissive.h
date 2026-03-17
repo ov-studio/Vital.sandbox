@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name, "emissive"}, "get_level_intensity", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto idx = vm -> get_int(1);
-                vm -> push_number(base_class::get_environment() -> get_glow_level(idx));
+                vm -> push_value(base_class::get_environment() -> get_glow_level(idx));
                 return 1;
             });
         
@@ -78,7 +78,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_intensity", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_intensity());
+                vm -> push_value(base_class::get_environment() -> get_glow_intensity());
                 return 1;
             });
         
@@ -91,7 +91,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_strength", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_strength());
+                vm -> push_value(base_class::get_environment() -> get_glow_strength());
                 return 1;
             });
         
@@ -104,7 +104,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_mix", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_mix());
+                vm -> push_value(base_class::get_environment() -> get_glow_mix());
                 return 1;
             });
         
@@ -117,7 +117,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_bloom", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_bloom());
+                vm -> push_value(base_class::get_environment() -> get_glow_bloom());
                 return 1;
             });
         
@@ -131,7 +131,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_blend_mode", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_blend_mode());
+                vm -> push_value(base_class::get_environment() -> get_glow_blend_mode());
                 return 1;
             });
         
@@ -144,7 +144,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_hdr_bleed_threshold", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_hdr_bleed_threshold());
+                vm -> push_value(base_class::get_environment() -> get_glow_hdr_bleed_threshold());
                 return 1;
             });
         
@@ -157,7 +157,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_hdr_bleed_scale", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_hdr_bleed_scale());
+                vm -> push_value(base_class::get_environment() -> get_glow_hdr_bleed_scale());
                 return 1;
             });
         
@@ -170,7 +170,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_hdr_luminance_cap", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_hdr_luminance_cap());
+                vm -> push_value(base_class::get_environment() -> get_glow_hdr_luminance_cap());
                 return 1;
             });
         
@@ -183,7 +183,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "emissive"}, "get_map_strength", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_glow_map_strength());
+                vm -> push_value(base_class::get_environment() -> get_glow_map_strength());
                 return 1;
             });
         }

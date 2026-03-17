@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_mode", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_mode());
+                vm -> push_value(base_class::get_environment() -> get_fog_mode());
                 return 1;
             });
         
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_light_energy", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_light_energy());
+                vm -> push_value(base_class::get_environment() -> get_fog_light_energy());
                 return 1;
             });
         
@@ -89,7 +89,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_sun_scatter", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_sun_scatter());
+                vm -> push_value(base_class::get_environment() -> get_fog_sun_scatter());
                 return 1;
             });
         
@@ -102,7 +102,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_density", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_density());
+                vm -> push_value(base_class::get_environment() -> get_fog_density());
                 return 1;
             });
         
@@ -115,7 +115,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_height", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_height());
+                vm -> push_value(base_class::get_environment() -> get_fog_height());
                 return 1;
             });
         
@@ -128,7 +128,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_height_density", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_height_density());
+                vm -> push_value(base_class::get_environment() -> get_fog_height_density());
                 return 1;
             });
         
@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_aerial_perspective", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_aerial_perspective());
+                vm -> push_value(base_class::get_environment() -> get_fog_aerial_perspective());
                 return 1;
             });
         
@@ -154,7 +154,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_sky_affect", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_sky_affect());
+                vm -> push_value(base_class::get_environment() -> get_fog_sky_affect());
                 return 1;
             });
         
@@ -167,7 +167,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_depth_curve", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_depth_curve());
+                vm -> push_value(base_class::get_environment() -> get_fog_depth_curve());
                 return 1;
             });
         
@@ -180,7 +180,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_depth_begin", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_depth_begin());
+                vm -> push_value(base_class::get_environment() -> get_fog_depth_begin());
                 return 1;
             });
         
@@ -193,7 +193,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_depth_end", [](auto vm) -> int {
-                vm -> push_number(base_class::get_environment() -> get_fog_depth_end());
+                vm -> push_value(base_class::get_environment() -> get_fog_depth_end());
                 return 1;
             });
         }

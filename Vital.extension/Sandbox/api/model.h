@@ -213,7 +213,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 3) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto component = vm -> get_string(2);
                 auto blendshape = vm -> get_string(3);
-                vm -> push_number(self -> get_blendshape_value(component, blendshape));
+                vm -> push_value(self -> get_blendshape_value(component, blendshape));
                 return 1;
             });
 
@@ -230,7 +230,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_animation_speed", [](auto vm, auto self) -> int {
-                vm -> push_number(self -> get_animation_speed());
+                vm -> push_value(self -> get_animation_speed());
                 return 1;
             });
 

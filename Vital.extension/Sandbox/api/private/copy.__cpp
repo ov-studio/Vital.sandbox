@@ -37,7 +37,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
     API::bind(vm, "environment", "get_sky_custom_fov", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
-            vm -> push_number(Vital::Engine::Core::get_environment() -> get_sky_custom_fov());
+            vm -> push_value(Vital::Engine::Core::get_environment() -> get_sky_custom_fov());
             return 1;
         });
     });
@@ -56,7 +56,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
     API::bind(vm, "environment", "get_bg_energy_multiplier", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
-            vm -> push_number(Vital::Engine::Core::get_environment() -> get_bg_energy_multiplier());
+            vm -> push_value(Vital::Engine::Core::get_environment() -> get_bg_energy_multiplier());
             return 1;
         });
     });

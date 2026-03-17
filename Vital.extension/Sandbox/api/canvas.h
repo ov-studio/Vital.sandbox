@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
                 auto padding = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
                 auto result = base_class::get_singleton() -> world_to_screen(position, padding);
                 vm -> push_vector2({result.x, result.y});
-                vm -> push_number(result.z);
+                vm -> push_value(result.z);
                 return 2;
             });
 
