@@ -40,7 +40,33 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
-
+            void push_stack_value(const Vital::Tool::StackValue& value) {
+                std::visit([this](auto&& v) {
+                    using T = std::decay_t<decltype(v)>;
+                    if constexpr (std::is_same_v<T, std::nullptr_t>)
+                        self() -> push_nil();
+                    else if constexpr (std::is_same_v<T, bool>)
+                        self() -> push_bool(v);
+                    else if constexpr (std::is_same_v<T, int32_t>)
+                        self() -> push_number(static_cast<int>(v));
+                    else if constexpr (std::is_same_v<T, int64_t>)
+                        self() -> push_number(static_cast<double>(v));
+                    else if constexpr (std::is_same_v<T, float>)
+                        self() -> push_number(v);
+                    else if constexpr (std::is_same_v<T, double>)
+                        self() -> push_number(v);
+                    else if constexpr (std::is_same_v<T, std::string>)
+                        self() -> push_string(v);
+                    else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+                        self() -> create_table();
+                        for (int i = 0; i < static_cast<int>(v.size()); ++i) {
+                            self() -> push_string(v[i]);
+                            self() -> set_table_field(i + 1, -2);
+                        }
+                    }
+                }, value.value);
+            }
+        
 
             // Pushers //
             void table_push_nil(const std::string& nspace = "") {
