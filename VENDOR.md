@@ -10,7 +10,6 @@
 * [**FMT**](https://fmt.dev) - Offers flexible formatting capabilities.
 * [**MessagePack**](https://msgpack.org) - Offers eficient binary serialization format for data exchange.
 * [**RapidJSON**](https://rapidjson.org) - Offers efficient parsing and generation of JSON.
-* [**ENet**](http://enet.bespin.org) - Offers reliable network communication.
 * [**Lua**](https://www.lua.org) - Offers runtime scripting and sandboxing capabilities.
 * [**Lua-RapidJSON**](https://github.com/xpol/lua-rapidjson) - Offers Lua bindings for RapidJSON.
 * [**Discord-SDK**](https://discord.com/developers/docs/developer-tools/game-sdk) - Offers discord integration.

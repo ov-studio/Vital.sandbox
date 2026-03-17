@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/System/network.h>
 
 
 ///////////////////////////////////
@@ -51,7 +50,7 @@ namespace Vital::Sandbox::API {
                 int number = restored.array[0].as<int32_t>();
                 godot::UtilityFunctions::print(number);
                 */
-                Vital::System::Network::emit(arguments, peerID, isLatent);
+                //Vital::System::Network::emit(arguments, peerID, isLatent);
                 vm -> push_value(true);
                 return 1;
             });

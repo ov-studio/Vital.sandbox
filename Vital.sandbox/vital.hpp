@@ -16,7 +16,6 @@
 
 // Internals //
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/System/network.h>
 #include <Vital.sandbox/System/discord.h>
 
 // Externals //
