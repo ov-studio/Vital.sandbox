@@ -116,26 +116,19 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-
+        auto* net = Vital::Engine::Network::get_singleton();
+        #if !defined(Vital_SDK_Client)
+        net->host(7777, 32);
+        #endif
+        #if defined(Vital_SDK_Client)
+        net->connect_to_server("127.0.0.1", 7777, true);
+        #endif
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
         Vital::System::Discord::get_singleton() -> process();
         #endif
-    
-        static bool network_started = false;
-        if (!network_started) {
-            network_started = true;
-            auto* net = Vital::Engine::Network::get_singleton();
-            #if !defined(Vital_SDK_Client)
-            net->host(7777, 32);
-            #endif
-            #if defined(Vital_SDK_Client)
-            net->connect_to_server("127.0.0.1", 7777, true);
-            #endif
-        }
-    
         Vital::Engine::Network::get_singleton()->poll(arguments.array[0].as<double>());
     });
 }
