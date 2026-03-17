@@ -41,17 +41,29 @@ void setup() {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player joined: ", id);
     });
+    Vital::Tool::Event::bind("network:peer_joined", [net](Vital::Tool::Stack& args) {
+        int32_t id = args.array[0].as<int32_t>();
+        Vital::print("sbox", "Player joined: ", id);
+        Vital::Tool::Stack msg;
+        msg.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
+        msg.object["type"]    = Vital::Tool::StackValue(std::string("system"));
+        msg.object["peer_id"] = Vital::Tool::StackValue(id);
+        net->broadcast(msg);
+        net->send(msg, id);
+    });
     Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player left: ", id);
     });
     Vital::Tool::Event::bind("network:packet", [net](Vital::Tool::Stack& args) {
-        int32_t sender = args.object.at("sender_id").as<int32_t>();
-        std::string msg = args.array[0].as<std::string>();
-        Vital::print("sbox", "Msg from ", sender, ": ", msg.c_str());
+        int32_t sender     = args.object.at("sender_id").as<int32_t>();
+        std::string type   = args.object.at("type").as<std::string>();
+        std::string body   = args.array[0].as<std::string>();
+        Vital::print("sbox", "Msg from ", sender, " type=", type.c_str(), ": ", body.c_str());
         Vital::Tool::Stack reply;
         reply.array.push_back(Vital::Tool::StackValue(std::string("pong")));
-        net->send(reply, sender);
+        reply.object["type"] = Vital::Tool::StackValue(std::string("system"));
+        net->send(reply, sender);  // reply only to sender
     });
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Server closed");
@@ -68,9 +80,19 @@ void setup() {
         msg.array.push_back(Vital::Tool::StackValue(std::string("ping")));
         net->send_to_server(msg);
     });
+    Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) {
+        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
+        Vital::Tool::Stack msg;
+        msg.array.push_back(Vital::Tool::StackValue(std::string("ping")));
+        msg.object["type"] = Vital::Tool::StackValue(std::string("system"));
+        net->send_to_server(msg);
+    });
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
-        std::string msg = args.array[0].as<std::string>();
-        Vital::print("sbox", "Server replied: ", msg.c_str());
+        std::string body = args.array[0].as<std::string>();
+        std::string type = "unknown";
+        if (args.object.count("type"))
+            type = args.object.at("type").as<std::string>();
+        Vital::print("sbox", "Server says [", type.c_str(), "]: ", body.c_str());
     });
     Vital::Tool::Event::bind("network:connection_failed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Failed to connect");
