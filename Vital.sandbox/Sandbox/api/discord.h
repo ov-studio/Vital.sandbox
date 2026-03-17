@@ -88,13 +88,13 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "get_userid", [](auto vm) -> int {
                 if (!Vital::System::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
-                else vm -> push_string(std::to_string(Vital::System::Discord::get_singleton() -> get_userid()));
+                else vm -> push_value(std::to_string(Vital::System::Discord::get_singleton() -> get_userid()));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_username", [](auto vm) -> int {
                 if (!Vital::System::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
-                else vm -> push_string(Vital::System::Discord::get_singleton() -> get_username());
+                else vm -> push_value(Vital::System::Discord::get_singleton() -> get_username());
                 return 1;
             });
         }

@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
                 auto buffer = Vital::Tool::File::read_text(get_directory(), path);
-                vm -> push_string(buffer);
+                vm -> push_value(buffer);
                 return 1;
             });
         

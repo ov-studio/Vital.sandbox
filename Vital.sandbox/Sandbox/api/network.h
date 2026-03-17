@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
             for (auto vm : Machine::fetch_machines()) {
                 if (!vm.second -> is_virtual()) {
                     vm.second -> get_reference("vital.network:execute", true);
-                    vm.second -> push_string(name);
+                    vm.second -> push_value(name);
                     ([&vm](auto&& arg) {
                         using T = std::decay_t<decltype(arg)>;
                         if constexpr (std::is_null_pointer_v<T>) vm.second -> push_nil();
@@ -78,12 +78,12 @@ namespace Vital::Sandbox::API {
                         else if constexpr (std::is_same_v<T, int>) vm.second -> push_value(arg);
                         else if constexpr (std::is_same_v<T, float>) vm.second -> push_value(arg);
                         else if constexpr (std::is_same_v<T, double>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>) vm.second -> push_string(std::string(arg));
-                        else if constexpr (std::is_same_v<T, std::string>) vm.second -> push_string(arg);
+                        else if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>) vm.second -> push_value(std::string(arg));
+                        else if constexpr (std::is_same_v<T, std::string>) vm.second -> push_value(arg);
                         else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                             vm.second -> create_table();
                             for (size_t i = 0; i < arg.size(); ++i) {
-                                vm.second -> push_string(arg[i]);
+                                vm.second -> push_value(arg[i]);
                                 vm.second -> set_table_field(i + 1, -2);
                             }
                         }

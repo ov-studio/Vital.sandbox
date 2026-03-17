@@ -161,7 +161,7 @@ namespace Vital::Sandbox::API {
                 vm -> set_reference(key, 2);
                 self -> set_message_handler([vm, key](godot::String message) {
                     vm -> get_reference(key, true);
-                    vm -> push_string(to_std_string(message));
+                    vm -> push_value(to_std_string(message));
                     vm -> pcall(1, 0);
                 });
                 vm -> push_value(true);

@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name}, "get_platform", [](auto vm) -> int {
-                vm -> push_string(get_platform());
+                vm -> push_value(get_platform());
                 return 1;
             });
 
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::API {
 
             #if defined(Vital_SDK_Client)
             API::bind(vm, {base_name}, "get_serial", [](auto vm) -> int {
-                vm -> push_string(Vital::Tool::Inspect::fingerprint());
+                vm -> push_value(Vital::Tool::Inspect::fingerprint());
                 return 1;
             });
             #endif

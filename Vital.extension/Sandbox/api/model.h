@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_model_name", [](auto vm, auto self) -> int {
-                vm -> push_string(self -> get_model_name());
+                vm -> push_value(self -> get_model_name());
                 return 1;
             });
 
@@ -159,7 +159,7 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_components();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]);
+                    vm -> push_value(list[i]);
                     vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
@@ -171,7 +171,7 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_materials(component);
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]);
+                    vm -> push_value(list[i]);
                     vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
@@ -183,7 +183,7 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_blendshapes(component);
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]);
+                    vm -> push_value(list[i]);
                     vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
@@ -193,7 +193,7 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_bones();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]);
+                    vm -> push_value(list[i]);
                     vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
@@ -203,7 +203,7 @@ namespace Vital::Sandbox::API {
                 auto list = self -> get_animations();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_string(list[i]);
+                    vm -> push_value(list[i]);
                     vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
@@ -225,7 +225,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_current_animation", [](auto vm, auto self) -> int {
-                vm -> push_string(self -> get_current_animation());
+                vm -> push_value(self -> get_current_animation());
                 return 1;
             });
 

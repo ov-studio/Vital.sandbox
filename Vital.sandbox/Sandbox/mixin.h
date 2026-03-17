@@ -27,7 +27,7 @@ namespace Vital::Sandbox {
                     else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                         self() -> create_table();
                         for (int i = 0; i < static_cast<int>(v.size()); ++i) {
-                            self() -> push_string(v[i]);
+                            self() -> push_value(v[i]);
                             self() -> set_table_field(i + 1, -2);
                         }
                     }

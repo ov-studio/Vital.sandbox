@@ -251,20 +251,20 @@ namespace Vital::Sandbox {
             void push_horizontal_alignment(godot::HorizontalAlignment value) {
                 for (auto& it : horizontal_alignment) {
                     if (it.second == value) {
-                        push_string(it.first);
+                        push_value(it.first);
                         return;
                     }
                 }
-                push_string("left");
+                push_value("left");
             }
             void push_vertical_alignment(godot::VerticalAlignment value) {
                 for (auto& it : vertical_alignment) {
                     if (it.second == value) { 
-                        push_string(it.first);
+                        push_value(it.first);
                         return;
                     }
                 }
-                push_string("top");
+                push_value("top");
             }
             void push_color(const godot::Color& value) {
                 create_table();

@@ -107,7 +107,7 @@ namespace Vital::Sandbox {
         
             bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self) -> int {
                 if (type_name.empty()) vm -> push_value(false);
-                else vm -> push_string(type_name);
+                else vm -> push_value(type_name);
                 return 1;
             });
         }
