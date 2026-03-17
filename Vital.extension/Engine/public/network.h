@@ -57,6 +57,15 @@ namespace Vital::Engine {
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             NetworkBridge* bridge = nullptr;
 
+            // Outgoing packet queue — flushed at the start of each poll()
+            // Prevents re-entrancy when sending from inside a packet handler
+            struct PendingPacket {
+                Vital::Tool::Stack stack;
+                int  peerID   = 0;
+                bool isLatent = false;
+            };
+            std::vector<PendingPacket> send_queue;
+
             #if !defined(Vital_SDK_Client)
             std::unordered_set<int> connected_peers;
             #endif
@@ -126,6 +135,7 @@ namespace Vital::Engine {
 
             // Shared
             bool send(const Vital::Tool::Stack& stack, int peerID = 0, bool isLatent = false);
+            bool queue_send(const Vital::Tool::Stack& stack, int peerID = 0, bool isLatent = false);
             bool broadcast(const Vital::Tool::Stack& stack, bool isLatent = false);
             bool send_to_server(const Vital::Tool::Stack& stack, bool isLatent = false);
             void poll(double delta = 0.0);

@@ -55,7 +55,7 @@ void setup() {
             reply.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
             reply.object["type"]    = Vital::Tool::StackValue(std::string("system"));
             reply.object["peer_id"] = Vital::Tool::StackValue(sender);
-            net->send(reply, sender);
+            net->queue_send(reply, sender);
         }
     });
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {

@@ -228,6 +228,7 @@ namespace Vital::Engine {
     bool Network::close() {
         if (!peer.is_valid()) return false;
         unwire_signals();
+        send_queue.clear();
         connected_peers.clear();
         peer->close();
         peer.unref();
@@ -288,6 +289,7 @@ namespace Vital::Engine {
         reconnect_attempts = 0;
         reconnect_timer    = 0.0f;
         pending_handshake  = false;
+        send_queue.clear();
         Vital::print("sbox", "Network: connecting to ", ip.c_str(), ":", port);
         Vital::Tool::Event::emit("network:connecting", {});
         return true;
@@ -297,6 +299,7 @@ namespace Vital::Engine {
         if (!peer.is_valid()) return false;
         auto_reconnect    = false;
         pending_handshake = false;
+        send_queue.clear();
         unwire_signals();
         peer->close();
         peer.unref();
@@ -309,7 +312,7 @@ namespace Vital::Engine {
 
     void Network::_on_connected_to_server() {
         reconnect_attempts = 0;
-        pending_handshake  = true; // defer send until next poll() — peer ID not ready yet
+        pending_handshake  = true;
         Vital::print("sbox", "Network: connected (handshake deferred)");
         Vital::Tool::Event::emit("network:connected", {});
     }
@@ -317,6 +320,7 @@ namespace Vital::Engine {
     void Network::_on_connection_failed() {
         Vital::print("sbox", "Network: connection failed");
         pending_handshake = false;
+        send_queue.clear();
         unwire_signals();
         if (peer.is_valid()) peer.unref();
         Vital::Tool::Event::emit("network:connection_failed", {});
@@ -326,6 +330,7 @@ namespace Vital::Engine {
     void Network::_on_server_disconnected() {
         Vital::print("sbox", "Network: server dropped connection");
         pending_handshake = false;
+        send_queue.clear();
         unwire_signals();
         if (peer.is_valid()) peer.unref();
         Vital::Tool::Event::emit("network:server_disconnected", {});
@@ -370,6 +375,7 @@ namespace Vital::Engine {
         if (!is_active()) return false;
         #endif
         std::string bytes = stack.serialize();
+        if (bytes.empty()) return false;
         godot::PackedByteArray packet;
         packet.resize(bytes.size());
         memcpy(packet.ptrw(), bytes.data(), bytes.size());
@@ -379,6 +385,12 @@ namespace Vital::Engine {
             : godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE
         );
         peer->put_packet(packet);
+        return true;
+    }
+
+    bool Network::queue_send(const Vital::Tool::Stack& stack, int peerID, bool isLatent) {
+        if (!peer.is_valid()) return false;
+        send_queue.push_back({ stack, peerID, isLatent });
         return true;
     }
 
@@ -413,6 +425,16 @@ namespace Vital::Engine {
         if (!is_active()) return;
         #endif
 
+        // Flush outgoing queue from previous tick BEFORE polling
+        // This ensures packets queued inside packet handlers are sent
+        // at the correct time without causing re-entrancy
+        if (!send_queue.empty()) {
+            auto queue = std::move(send_queue);
+            send_queue.clear();
+            for (auto& p : queue)
+                send(p.stack, p.peerID, p.isLatent);
+        }
+
         peer->poll();
         if (!peer.is_valid()) return;
 
@@ -433,7 +455,6 @@ namespace Vital::Engine {
         for (int i = 0; i < packet_count; i++) {
             if (!peer.is_valid()) break;
             try {
-                // Read sender BEFORE get_packet() — ENet clears it after
                 int32_t sender             = static_cast<int32_t>(peer->get_packet_peer());
                 godot::PackedByteArray raw = peer->get_packet();
                 if (raw.size() == 0) continue;
