@@ -146,12 +146,12 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_position", [](auto vm, auto self) -> int {
-                vm -> push_vector3(self -> get_position());
+                vm -> push_value(self -> get_position());
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "get_rotation", [](auto vm, auto self) -> int {
-                vm -> push_vector3(self -> get_rotation());
+                vm -> push_value(self -> get_rotation());
                 return 1;
             });
 
@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "get_bone_position", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto bone = vm -> get_string(2);
-                vm -> push_vector3(self -> get_bone_position(bone));
+                vm -> push_value(self -> get_bone_position(bone));
                 return 1;
             });
 

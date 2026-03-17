@@ -33,7 +33,7 @@ namespace Vital::Sandbox::API {
                 auto position = vm -> get_vector3(1);
                 auto padding = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
                 auto result = base_class::get_singleton() -> world_to_screen(position, padding);
-                vm -> push_vector2({result.x, result.y});
+                vm -> push_value(godot::Vector2(result.x, result.y));
                 vm -> push_value(result.z);
                 return 2;
             });
@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector2(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector2(1);
                 auto depth = vm -> is_number(2) ? vm -> get_float(2) : 1.0f;
-                vm -> push_vector3(base_class::get_singleton() -> screen_to_world(position, depth));
+                vm -> push_value(base_class::get_singleton() -> screen_to_world(position, depth));
                 return 1;
             });
 

@@ -281,7 +281,7 @@ namespace Vital::Sandbox {
             void push_vector2_array(const godot::PackedVector2Array& value) {
                 create_table();
                 for (int i = 0; i < value.size(); ++i) {
-                    push_vector2(value[i]);
+                    push_value(value[i]);
                     set_table_field(i + 1, -2);
                 }
             }
@@ -294,7 +294,7 @@ namespace Vital::Sandbox {
             void push_vector3_array(const godot::PackedVector3Array& value) {
                 create_table();
                 for (int i = 0; i < value.size(); ++i) {
-                    push_vector3(value[i]);
+                    push_value(value[i]);
                     set_table_field(i + 1, -2);
                 }
             }
