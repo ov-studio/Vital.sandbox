@@ -47,7 +47,7 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"].as<double>());
+        Vital::Sandbox::API::Network::execute("vital.sandbox:process", arguments.object["delta"]);
         #if defined(Vital_SDK_Client)
         Vital::System::Discord::get_singleton() -> process();
         #endif
@@ -58,14 +58,14 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("vital.sandbox:key_input", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:key_input", arguments.object["keycode"].as<std::string>(), arguments.object["state"].as<bool>());
+        Vital::Sandbox::API::Network::execute("vital.sandbox:key_input", arguments.object["keycode"], arguments.object["state"]);
     });
 
     Vital::Tool::Event::bind("vital.sandbox:mouse_move", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:mouse_move", arguments.object["x"].as<float>(), arguments.object["y"].as<float>());
+        Vital::Sandbox::API::Network::execute("vital.sandbox:mouse_move", arguments.object["x"], arguments.object["y"]);
     });
 
     Vital::Tool::Event::bind("vital.sandbox:console_input", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["command"].as<std::string>(), arguments.object["parameters"].as<std::vector<std::string>>());
+        Vital::Sandbox::API::Network::execute("vital.sandbox:console_input", arguments.object["command"], arguments.object["parameters"]);
     });
 }

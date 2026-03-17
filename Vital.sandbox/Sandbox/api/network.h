@@ -67,30 +67,12 @@ namespace Vital::Sandbox::API {
 
         template<typename... Args>
         static void execute(const std::string& name, Args&&... args) {
+            static_assert((std::is_same_v<std::decay_t<Args>, Vital::Tool::StackValue> && ...), "execute: expected Vital::Tool::StackValue for all parameters");
             for (auto vm : Machine::fetch_machines()) {
                 if (!vm.second -> is_virtual()) {
                     vm.second -> get_reference("vital.network:execute", true);
                     vm.second -> push_value(name);
-                    ([&vm](auto&& arg) {
-                        using T = std::decay_t<decltype(arg)>;
-                        if constexpr (std::is_null_pointer_v<T>) vm.second -> push_nil();
-                        else if constexpr (std::is_same_v<T, bool>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, int>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, float>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, double>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, const char*> || std::is_same_v<T, char*>) vm.second -> push_value(std::string(arg));
-                        else if constexpr (std::is_same_v<T, std::string>) vm.second -> push_value(arg);
-                        else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-                            vm.second -> create_table();
-                            for (size_t i = 0; i < arg.size(); ++i) {
-                                vm.second -> push_value(arg[i]);
-                                vm.second -> set_table_field(i + 1, -2);
-                            }
-                        }
-                        else if constexpr (std::is_pointer_v<T> && !std::is_same_v<T, const char*>) vm.second -> push_value(static_cast<void*>(const_cast<std::remove_const_t<std::remove_pointer_t<T>>*>(arg)));
-                        else if constexpr (std::is_same_v<T, vm_exec>) vm.second -> push_value(arg);
-                        else vm.second -> push_nil();
-                    }(std::forward<Args>(args)), ...);
+                    (vm.second -> push_value(std::forward<Args>(args)), ...);
                     vm.second -> pcall(sizeof...(Args) + 1, 0);
                 }
             }
