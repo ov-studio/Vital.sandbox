@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "fog"}, "get_light_color", [](auto vm) -> int {
-                vm -> push_color(base_class::get_environment() -> get_fog_light_color());
+                vm -> push_value(base_class::get_environment() -> get_fog_light_color());
                 return 1;
             });
         

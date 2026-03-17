@@ -49,7 +49,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_emission", [](auto vm) -> int {
-                vm -> push_color(base_class::get_environment() -> get_volumetric_fog_emission());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_emission());
                 return 1;
             });
         
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::API {
             });
         
             API::bind(vm, {base_name, "volumetric_fog"}, "get_albedo", [](auto vm) -> int {
-                vm -> push_color(base_class::get_environment() -> get_volumetric_fog_albedo());
+                vm -> push_value(base_class::get_environment() -> get_volumetric_fog_albedo());
                 return 1;
             });
         
