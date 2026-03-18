@@ -79,7 +79,6 @@ namespace Vital::Engine {
 
     // Convert Stack → Dictionary for RPC transport.
     // We pack array and object into a Dictionary so Godot's Variant
-    // system can serialize it natively without msgpack.
     godot::Dictionary Network::stack_to_dict(const Vital::Tool::Stack& stack) {
         godot::Dictionary dict;
 

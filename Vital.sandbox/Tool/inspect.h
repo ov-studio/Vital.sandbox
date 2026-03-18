@@ -112,8 +112,7 @@ namespace Vital::Tool::Inspect {
         std::ifstream cpuinfo("/proc/cpuinfo");
         std::string line;
         while (std::getline(cpuinfo, line)) {
-            if (line.rfind("Serial", 0) == 0 ||
-                line.rfind("model name", 0) == 0)
+            if (line.rfind("Serial", 0) == 0 || line.rfind("model name", 0) == 0)
                 return hash(normalize(line));
         }
         #endif
@@ -126,17 +125,13 @@ namespace Vital::Tool::Inspect {
         auto vendor = wmi.query(L"Win32_BaseBoard", L"Manufacturer");
         auto product = wmi.query(L"Win32_BaseBoard", L"Product");
         std::string s;
-        if (!vendor.empty())
-            s += std::string(vendor[0].begin(), vendor[0].end());
-        if (!product.empty())
-            s += std::string(product[0].begin(), product[0].end());
+        if (!vendor.empty()) s += std::string(vendor[0].begin(), vendor[0].end());
+        if (!product.empty()) s += std::string(product[0].begin(), product[0].end());
         return s.empty() ? std::string{} : hash(normalize(s));
         #else
         struct utsname u{};
         uname(&u);
-        return hash(normalize(
-            std::string(u.sysname) +
-            std::string(u.machine)));
+        return hash(normalize(std::string(u.sysname) + std::string(u.machine)));
         #endif
     }
 
@@ -144,9 +139,7 @@ namespace Vital::Tool::Inspect {
         #if defined(Vital_SDK_WINDOWS)
         WMI wmi;
         auto serials = wmi.query(L"Win32_DiskDrive", L"SerialNumber");
-        if (!serials.empty())
-            return hash(normalize(
-                std::string(serials[0].begin(), serials[0].end())));
+        if (!serials.empty()) return hash(normalize(std::string(serials[0].begin(), serials[0].end())));
         #else
         for (auto& b : std::filesystem::directory_iterator("/sys/block")) {
             std::ifstream sn(b.path() / "serial");
