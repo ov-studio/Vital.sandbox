@@ -417,11 +417,8 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
         if (!is_active()) return false;
         #endif
-        if (peerID == 0) {
-            node->rpc("_receive", stack.to_dict());
-        } else {
-            node->rpc_id(peerID, "_receive", stack.to_dict());
-        }
+        if (peerID == 0) node->rpc("_receive", stack.to_dict());
+        else node->rpc_id(peerID, "_receive", stack.to_dict());
         return true;
     }
 
