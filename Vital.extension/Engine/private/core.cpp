@@ -92,6 +92,20 @@ namespace Vital::Engine {
     #endif
 
 
+    // Helpers //
+    void Core::add_child_node(godot::Node* node) {
+        add_child(node);
+    }
+
+    void Core::setup_model_spawner() {
+        Model::setup_spawner();
+    }
+
+    void Core::spawn_model(const godot::String& name, int authority_peer) {
+        Model::spawn_synced(to_std_string(name), authority_peer);
+    }
+
+
     // Teardown //
     void Core::teardown() {
         Model::teardown_spawner();

@@ -27,9 +27,13 @@ namespace Vital::Engine {
     //------------------------------//
 
     godot::Object* ModelSpawnerDelegate::spawn(godot::Variant data) {
+        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn called with -> ", data);
         std::string name = to_std_string(data.operator godot::String());
         auto it = Model::cache_loaded.find(name);
-        if (it == Model::cache_loaded.end()) return nullptr;
+        if (it == Model::cache_loaded.end()) {
+            godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — not in cache: ", data);
+            return nullptr;
+        }
         Model* object = memnew(Model);
         object->set_model_name(name);
         godot::Node* instance = it->second->instantiate();
@@ -38,14 +42,17 @@ namespace Vital::Engine {
             return nullptr;
         }
         object->add_child(instance);
+        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
         return object;
     }
 
 
     // Instantiators //
     void Model::_ready() {
+        godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
         find_skeleton(this);
         find_animation_player(this);
+        call_deferred("_deferred_setup_sync", pending_authority);
     }
 
 
@@ -133,7 +140,7 @@ namespace Vital::Engine {
     //  Spawner Setup (private)  //
     //---------------------------//
 
-    void Model::_setup_spawner() {
+    void Model::setup_spawner() {
         if (net_spawner) return;
         auto* core = Core::get_singleton();
         if (!core) return;
@@ -144,12 +151,19 @@ namespace Vital::Engine {
 
         net_spawner = memnew(godot::MultiplayerSpawner);
         net_spawner->set_name("ModelSpawner");
-        net_spawner->set_spawn_path(core->get_path());
         net_spawner->set_spawn_function(godot::Callable(net_spawner_delegate, "spawn"));
         core->add_child(net_spawner);
+        net_spawner->set_multiplayer_authority(1);
+
+        // Use ".." relative path — spawner is child of Core so ".." = Core
+        net_spawner->set_spawn_path(godot::NodePath(".."));
+
+        godot::UtilityFunctions::print("ModelSpawner: watching path -> ", net_spawner->get_spawn_path());
+        godot::UtilityFunctions::print("ModelSpawner: authority -> ", net_spawner->get_multiplayer_authority());
     }
 
     void Model::teardown_spawner() {
+        cache_synced.clear();
         if (net_spawner_delegate) {
             net_spawner_delegate->queue_free();
             net_spawner_delegate = nullptr;
@@ -165,7 +179,20 @@ namespace Vital::Engine {
     //  Sync Setup (private)  //
     //------------------------//
 
+    void Model::_add_net_sync() {
+        if (!net_sync) return;
+        godot::UtilityFunctions::print("Model::_add_net_sync fired");
+        add_child(net_sync);
+    }
+
+    void Model::_deferred_setup_sync(int authority_peer) {
+        godot::UtilityFunctions::print("Model::_deferred_setup_sync fired, authority=", authority_peer);
+        pending_authority = authority_peer;
+        _setup_sync(authority_peer);
+    }
+
     void Model::_setup_sync(int authority_peer) {
+        godot::UtilityFunctions::print("Model::_setup_sync fired, net_sync=", (net_sync != nullptr));
         if (net_sync) return;
 
         auto* config = memnew(godot::SceneReplicationConfig);
@@ -185,7 +212,7 @@ namespace Vital::Engine {
         net_sync->set_replication_config(config);
         net_sync->set_root_path(godot::NodePath(".."));
         net_sync->set_multiplayer_authority(authority_peer);
-        add_child(net_sync);
+        call_deferred("_add_net_sync");
     }
 
 
@@ -223,6 +250,7 @@ namespace Vital::Engine {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         cache_loaded.erase(it);
+        cache_synced.erase(name);
         return true;
     }
 
@@ -237,39 +265,50 @@ namespace Vital::Engine {
             throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
         object->add_child(instance);
-        Core::get_singleton()->add_child(object);
+        Core::get_singleton()->add_child_node(object);
         return object;
     }
 
-    Model* Model::create_synced(const std::string& name, int authority_peer) {
+    void Model::create_synced(const std::string& name, int authority_peer) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        Core::get_singleton()->call_deferred("spawn_model", godot::String(name.c_str()), authority_peer);
+    }
 
-        _setup_spawner();
-
-        Model* object = memnew(Model);
-        object->set_model_name(name);
-        godot::Node* instance = it->second->instantiate();
-        if (!instance) {
-            memdelete(object);
-            throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
+    Model* Model::spawn_synced(const std::string& name, int authority_peer) {
+        if (!net_spawner) {
+            godot::UtilityFunctions::print("ModelSpawner: spawn_synced — spawner not ready");
+            return nullptr;
         }
-        object->add_child(instance);
-
-        // Pass model name as spawn argument so the client-side
-        // spawn function knows which cache_loaded entry to use
-        object->set_meta("spawn_args", godot::String(name.c_str()));
-
-        // Adding to Core triggers MultiplayerSpawner — clients auto-spawn
-        Core::get_singleton()->add_child(object);
-
-        // Attach sync after tree insertion
-        object->_setup_sync(authority_peer);
-
+        godot::Node* spawned = net_spawner->spawn(godot::String(name.c_str()));
+        if (!spawned) {
+            godot::UtilityFunctions::print("ModelSpawner: spawn() returned null");
+            return nullptr;
+        }
+        Model* object = godot::Object::cast_to<Model>(spawned);
+        if (!object) {
+            godot::UtilityFunctions::print("ModelSpawner: spawned node is not a Model");
+            return nullptr;
+        }
+        object->pending_authority = authority_peer;
+        cache_synced[name] = object;
+        godot::UtilityFunctions::print("ModelSpawner: spawned -> ", godot::String(name.c_str()));
         return object;
+    }
+
+    Model* Model::get_synced(const std::string& name) {
+        auto it = cache_synced.find(name);
+        return it != cache_synced.end() ? it->second : nullptr;
     }
 
     void Model::destroy() {
+        // Remove from synced cache if present
+        for (auto it = cache_synced.begin(); it != cache_synced.end(); ++it) {
+            if (it->second == this) {
+                cache_synced.erase(it);
+                break;
+            }
+        }
         this->queue_free();
     }
 
@@ -309,11 +348,11 @@ namespace Vital::Engine {
     }
 
     void Model::set_position(godot::Vector3 position) {
-        set_global_position(position);
+        call_deferred("set_global_position", position);
     }
 
     void Model::set_rotation(godot::Vector3 rotation) {
-        set_rotation_degrees(rotation);
+        call_deferred("set_rotation_degrees", rotation);
     }
 
     bool Model::set_component_visible(const std::string& component, bool state) {

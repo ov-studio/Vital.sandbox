@@ -47,27 +47,31 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
-            using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
+            using Models    = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
+            using SyncedMap = std::unordered_map<std::string, Model*>;
         protected:
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("_deferred_setup_sync", "authority_peer"), &Model::_deferred_setup_sync);
+                godot::ClassDB::bind_method(godot::D_METHOD("_add_net_sync"),                          &Model::_add_net_sync);
             };
         private:
             std::string model_name;
+            int                             pending_authority      = 1;
             godot::Skeleton3D*              skeleton               = nullptr;
             godot::AnimationPlayer*         animation_player       = nullptr;
             godot::MultiplayerSynchronizer* net_sync               = nullptr;
             inline static godot::MultiplayerSpawner*   net_spawner          = nullptr;
             inline static ModelSpawnerDelegate*         net_spawner_delegate = nullptr;
-            inline static Models cache_loaded;
+            inline static Models    cache_loaded;
+            inline static SyncedMap cache_synced;
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
             godot::Skeleton3D* find_skeleton(godot::Node* node);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
-            static void _setup_spawner();
             void _setup_sync(int authority_peer);
             void _deferred_setup_sync(int authority_peer);
+            void _add_net_sync();
         public:
             // Instantiators //
             Model() = default;
@@ -80,7 +84,10 @@ namespace Vital::Engine {
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
             static Model* create(const std::string& name);
-            static Model* create_synced(const std::string& name, int authority_peer = 1);
+            static void create_synced(const std::string& name, int authority_peer = 1);
+            static Model* spawn_synced(const std::string& name, int authority_peer);
+            static Model* get_synced(const std::string& name);
+            static void setup_spawner();
             static void teardown_spawner();
             void destroy();
 

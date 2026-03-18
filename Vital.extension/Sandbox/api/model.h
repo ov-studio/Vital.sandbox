@@ -65,7 +65,16 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto name = vm -> get_string(1);
                 int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
-                auto object = base_class::create_synced(name, authority);
+                base_class::create_synced(name, authority);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_synced", [](auto vm) -> int {
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto name = vm -> get_string(1);
+                auto object = base_class::get_synced(name);
+                if (!object) { vm -> push_nil(); return 1; }
                 vm -> create_object(base_name, object);
                 return 1;
             });

@@ -26,7 +26,11 @@ namespace Vital::Engine {
         protected:
             inline static Core* singleton = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
-            static void _bind_methods() {};
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("add_child_node", "node"),                        &Core::add_child_node);
+                godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"),                           &Core::setup_model_spawner);
+                godot::ClassDB::bind_method(godot::D_METHOD("spawn_model", "name", "authority_peer"),         &Core::spawn_model);
+            };
         public:
             // Instantiators //
             Core() = default;
@@ -47,6 +51,11 @@ namespace Vital::Engine {
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
             #endif
+
+            // Helpers //
+            void add_child_node(godot::Node* node);
+            void setup_model_spawner();
+            void spawn_model(const godot::String& name, int authority_peer);
 
             // Teardown //
             static void teardown();
