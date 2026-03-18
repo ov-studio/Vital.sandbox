@@ -73,102 +73,6 @@ namespace Vital::Engine {
     #endif
 
 
-    //------------------------//
-    //  Dictionary ↔ Stack   //
-    //------------------------//
-
-    // Convert Stack → Dictionary for RPC transport.
-    // We pack array and object into a Dictionary so Godot's Variant
-    godot::Dictionary Network::stack_to_dict(const Vital::Tool::Stack& stack) {
-        godot::Dictionary dict;
-
-        // Pack array as a Godot Array of Variants
-        godot::Array arr;
-        for (auto& v : stack.array) {
-            std::visit([&](auto&& val) {
-                using T = std::decay_t<decltype(val)>;
-                if      constexpr (std::is_same_v<T, std::nullptr_t>)         arr.push_back(godot::Variant());
-                else if constexpr (std::is_same_v<T, bool>)                   arr.push_back(val);
-                else if constexpr (std::is_same_v<T, int32_t>)                arr.push_back((int64_t)val);
-                else if constexpr (std::is_same_v<T, int64_t>)                arr.push_back(val);
-                else if constexpr (std::is_same_v<T, float>)                  arr.push_back((double)val);
-                else if constexpr (std::is_same_v<T, double>)                 arr.push_back(val);
-                else if constexpr (std::is_same_v<T, std::string>)            arr.push_back(godot::String(val.c_str()));
-                else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-                    godot::Array inner;
-                    for (auto& s : val) inner.push_back(godot::String(s.c_str()));
-                    arr.push_back(inner);
-                }
-            }, v.value);
-        }
-        dict["array"] = arr;
-
-        // Pack object as a nested Dictionary
-        godot::Dictionary obj;
-        for (auto& [key, v] : stack.object) {
-            std::visit([&](auto&& val) {
-                using T = std::decay_t<decltype(val)>;
-                godot::String gkey(key.c_str());
-                if      constexpr (std::is_same_v<T, std::nullptr_t>)         obj[gkey] = godot::Variant();
-                else if constexpr (std::is_same_v<T, bool>)                   obj[gkey] = val;
-                else if constexpr (std::is_same_v<T, int32_t>)                obj[gkey] = (int64_t)val;
-                else if constexpr (std::is_same_v<T, int64_t>)                obj[gkey] = val;
-                else if constexpr (std::is_same_v<T, float>)                  obj[gkey] = (double)val;
-                else if constexpr (std::is_same_v<T, double>)                 obj[gkey] = val;
-                else if constexpr (std::is_same_v<T, std::string>)            obj[gkey] = godot::String(val.c_str());
-                else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-                    godot::Array inner;
-                    for (auto& s : val) inner.push_back(godot::String(s.c_str()));
-                    obj[gkey] = inner;
-                }
-            }, v.value);
-        }
-        dict["object"] = obj;
-        return dict;
-    }
-
-    // Convert Dictionary → Stack for the event system.
-    Vital::Tool::Stack Network::dict_to_stack(const godot::Dictionary& dict) {
-        Vital::Tool::Stack stack;
-
-        // Unpack array
-        if (dict.has("array")) {
-            godot::Array arr = dict["array"];
-            for (int i = 0; i < arr.size(); i++) {
-                godot::Variant v = arr[i];
-                switch (v.get_type()) {
-                    case godot::Variant::NIL:     stack.array.push_back(Vital::Tool::StackValue(nullptr)); break;
-                    case godot::Variant::BOOL:    stack.array.push_back(Vital::Tool::StackValue((bool)v)); break;
-                    case godot::Variant::INT:     stack.array.push_back(Vital::Tool::StackValue((int32_t)(int64_t)v)); break;
-                    case godot::Variant::FLOAT:   stack.array.push_back(Vital::Tool::StackValue((double)v)); break;
-                    case godot::Variant::STRING:  stack.array.push_back(Vital::Tool::StackValue(std::string(((godot::String)v).utf8().get_data()))); break;
-                    default: break;
-                }
-            }
-        }
-
-        // Unpack object
-        if (dict.has("object")) {
-            godot::Dictionary obj = dict["object"];
-            godot::Array keys = obj.keys();
-            for (int i = 0; i < keys.size(); i++) {
-                std::string key = ((godot::String)keys[i]).utf8().get_data();
-                godot::Variant v = obj[keys[i]];
-                switch (v.get_type()) {
-                    case godot::Variant::NIL:    stack.object[key] = Vital::Tool::StackValue(nullptr); break;
-                    case godot::Variant::BOOL:   stack.object[key] = Vital::Tool::StackValue((bool)v); break;
-                    case godot::Variant::INT:    stack.object[key] = Vital::Tool::StackValue((int32_t)(int64_t)v); break;
-                    case godot::Variant::FLOAT:  stack.object[key] = Vital::Tool::StackValue((double)v); break;
-                    case godot::Variant::STRING: stack.object[key] = Vital::Tool::StackValue(std::string(((godot::String)v).utf8().get_data())); break;
-                    default: break;
-                }
-            }
-        }
-
-        return stack;
-    }
-
-
     //--------------------//
     //   Network: Init    //
     //--------------------//
@@ -330,9 +234,8 @@ namespace Vital::Engine {
         obj["sender_id"] = (int64_t)sender;
         data["object"]   = obj;
 
-        // Convert to Stack and emit into the event system — identical API to before
-        Vital::Tool::Stack stack = dict_to_stack(data);
-        Vital::Tool::Event::emit("network:packet", stack);
+        // Convert to Stack and emit into the event system
+        Vital::Tool::Event::emit("network:packet", Vital::Tool::Stack::from_dict(data));
     }
 
 
@@ -509,19 +412,15 @@ namespace Vital::Engine {
     //   Send / Receive   //
     //--------------------//
 
-    // Send a Stack to a specific peer via RPC.
-    // Stack is converted to Dictionary at the boundary — Godot handles
-    // all peer ID mapping internally so set_target_peer() bugs are gone.
     bool Network::send(const Vital::Tool::Stack& stack, int peerID) {
         if (!node || !peer.is_valid()) return false;
         #if defined(Vital_SDK_Client)
         if (!is_active()) return false;
         #endif
-        godot::Dictionary dict = stack_to_dict(stack);
         if (peerID == 0) {
-            node->rpc("_receive", dict);
+            node->rpc("_receive", stack.to_dict());
         } else {
-            node->rpc_id(peerID, "_receive", dict);
+            node->rpc_id(peerID, "_receive", stack.to_dict());
         }
         return true;
     }
