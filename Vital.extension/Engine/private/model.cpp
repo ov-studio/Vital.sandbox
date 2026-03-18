@@ -416,6 +416,16 @@ namespace Vital::Engine {
         net_sync->set_multiplayer_authority(peer_id);
     }
 
+    void Model::clear_synced() {
+        cache_synced.clear();
+    }
+
+    void Model::reset_spawner() {
+        // Tear down and rebuild spawner so it has clean state for new session
+        teardown_spawner();
+        setup_spawner();
+    }
+    
 
     // Getters //
     Model::Format Model::get_format(const godot::PackedByteArray& buffer) {

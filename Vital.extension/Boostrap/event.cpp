@@ -122,6 +122,27 @@ void initialize_vital_events() {
         Vital::Engine::Core::get_singleton()->call_deferred("setup_model_spawner");
     });
 
+    #if !defined(Vital_SDK_Client)
+    Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) -> void {
+        int32_t id = args.array[0].as<int32_t>();
+        Vital::print("sbox", "Player left: ", id);
+        // Clear synced cache so stale pointers don't linger
+        Vital::Engine::Model::clear_synced();
+    });
+    #endif
+
+    #if defined(Vital_SDK_Client)
+    Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) -> void {
+        Vital::print("sbox", "Lost connection to server");
+        Vital::Engine::Model::reset_spawner();
+    });
+
+    Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) -> void {
+        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
+        Vital::Engine::Model::reset_spawner();
+    });
+    #endif
+
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         static bool network_initialized = false;
         if (!network_initialized) {
