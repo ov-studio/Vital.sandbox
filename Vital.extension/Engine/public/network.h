@@ -88,10 +88,6 @@ namespace Vital::Engine {
 
             static godot::SceneTree* get_scene_tree();
 
-            // Convert Dictionary ↔ Stack at the RPC boundary
-            static Vital::Tool::Stack dict_to_stack(const godot::Dictionary& dict);
-            static godot::Dictionary stack_to_dict(const Vital::Tool::Stack& stack);
-
             void create_node();
             void destroy_node();
 
