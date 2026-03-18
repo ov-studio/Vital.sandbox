@@ -89,11 +89,12 @@ namespace Vital::Engine {
             static Model* get_synced(const std::string& name);
             static void setup_spawner();
             static void teardown_spawner();
+            static void cleanup_spawned();
+            static void clear_synced();
+            static void on_connected();
             void destroy();
 
-            static void clear_synced();
-            static void reset_spawner();
-            
+
             // Checkers //
             static bool is_model_loaded(const std::string& name);
             bool is_component_visible(const std::string& component);
