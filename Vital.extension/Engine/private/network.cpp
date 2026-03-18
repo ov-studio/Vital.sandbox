@@ -401,8 +401,7 @@ namespace Vital::Engine {
         }
         reconnect_attempts++;
         reconnect_timer = reconnect_delay;
-        Vital::print("sbox", "Network: retry in ", reconnect_delay,
-            "s  attempt ", reconnect_attempts, "/", reconnect_max);
+        Vital::print("sbox", "Network: retry in ", reconnect_delay, "s  attempt ", reconnect_attempts, "/", reconnect_max);
         Vital::Tool::Event::emit("network:reconnecting", {});
     }
     #endif
