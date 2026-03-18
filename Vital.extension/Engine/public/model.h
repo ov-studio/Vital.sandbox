@@ -49,7 +49,9 @@ namespace Vital::Engine {
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
         protected:
-            static void _bind_methods() {};
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("_deferred_setup_sync", "authority_peer"), &Model::_deferred_setup_sync);
+            };
         private:
             std::string model_name;
             godot::Skeleton3D*              skeleton               = nullptr;
@@ -65,6 +67,7 @@ namespace Vital::Engine {
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
             static void _setup_spawner();
             void _setup_sync(int authority_peer);
+            void _deferred_setup_sync(int authority_peer);
         public:
             // Instantiators //
             Model() = default;
