@@ -51,8 +51,6 @@ namespace Vital::Engine {
             using SyncedMap = std::unordered_map<std::string, Model*>;
         protected:
             static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("_deferred_setup_sync", "authority_peer"), &Model::_deferred_setup_sync);
-                godot::ClassDB::bind_method(godot::D_METHOD("_add_net_sync"),                          &Model::_add_net_sync);
             };
         private:
             std::string model_name;
@@ -70,8 +68,6 @@ namespace Vital::Engine {
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
             void _setup_sync(int authority_peer);
-            void _deferred_setup_sync(int authority_peer);
-            void _add_net_sync();
         public:
             // Instantiators //
             Model() = default;

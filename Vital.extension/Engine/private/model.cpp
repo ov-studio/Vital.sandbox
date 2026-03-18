@@ -52,7 +52,9 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
         find_skeleton(this);
         find_animation_player(this);
-        call_deferred("_deferred_setup_sync", pending_authority);
+        // Setup sync immediately in _ready instead of deferring
+        // Node is already in tree at this point so add_child is safe
+        _setup_sync(pending_authority);
     }
 
 
@@ -204,22 +206,9 @@ namespace Vital::Engine {
     //  Sync Setup (private)  //
     //------------------------//
 
-    void Model::_add_net_sync() {
-        if (!net_sync) return;
-        godot::UtilityFunctions::print("Model::_add_net_sync fired");
-        add_child(net_sync);
-    }
-
-    void Model::_deferred_setup_sync(int authority_peer) {
-        godot::UtilityFunctions::print("Model::_deferred_setup_sync fired, authority=", authority_peer);
-        pending_authority = authority_peer;
-        _setup_sync(authority_peer);
-    }
-
     void Model::_setup_sync(int authority_peer) {
-        godot::UtilityFunctions::print("Model::_setup_sync fired, net_sync=", (net_sync != nullptr));
         if (net_sync) return;
-
+    
         auto* config = memnew(godot::SceneReplicationConfig);
         config->add_property(godot::NodePath(".:position"));
         config->property_set_replication_mode(
@@ -231,13 +220,13 @@ namespace Vital::Engine {
             godot::NodePath(".:rotation"),
             godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
         );
-
+    
         net_sync = memnew(godot::MultiplayerSynchronizer);
         net_sync->set_name("NetSync");
         net_sync->set_replication_config(config);
         net_sync->set_root_path(godot::NodePath(".."));
         net_sync->set_multiplayer_authority(authority_peer);
-        call_deferred("_add_net_sync");
+        add_child(net_sync); // direct, not deferred — safe inside _ready
     }
 
 
