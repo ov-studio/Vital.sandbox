@@ -129,12 +129,12 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("network:connected", [](Vital::Tool::Stack&) -> void {
         auto* net = Vital::Engine::Network::get_singleton();
         Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
-        Vital::Engine::Model::reset_spawner();
+        Vital::Engine::Model::on_connected();
     });
 
     Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) -> void {
         Vital::print("sbox", "Lost connection to server");
-        Vital::Engine::Model::reset_spawner();
+        Vital::Engine::Model::cleanup_spawned();
     });
     #endif
 

@@ -141,7 +141,8 @@ namespace Vital::Engine {
     //---------------------------//
 
     void Model::setup_spawner() {
-        if (net_spawner) return;
+        if (net_spawner && net_spawner->is_inside_tree()) return;
+        if (net_spawner) teardown_spawner();
         auto* core = Core::get_singleton();
         if (!core) return;
 
@@ -154,8 +155,6 @@ namespace Vital::Engine {
         net_spawner->set_spawn_function(godot::Callable(net_spawner_delegate, "spawn"));
         core->add_child(net_spawner);
         net_spawner->set_multiplayer_authority(1);
-
-        // Use ".." relative path — spawner is child of Core so ".." = Core
         net_spawner->set_spawn_path(godot::NodePath(".."));
 
         godot::UtilityFunctions::print("ModelSpawner: watching path -> ", net_spawner->get_spawn_path());
@@ -171,6 +170,32 @@ namespace Vital::Engine {
         if (net_spawner) {
             net_spawner->queue_free();
             net_spawner = nullptr;
+        }
+    }
+
+    void Model::cleanup_spawned() {
+        auto* core = Core::get_singleton();
+        if (!core) return;
+        for (int i = core->get_child_count() - 1; i >= 0; i--) {
+            godot::Node* child = core->get_child(i);
+            if (godot::Object::cast_to<Model>(child)) {
+                child->queue_free();
+            }
+        }
+        cache_synced.clear();
+    }
+
+    void Model::clear_synced() {
+        cache_synced.clear();
+    }
+
+    void Model::on_connected() {
+        // Clean up stale nodes from previous session
+        cleanup_spawned();
+        // Refresh spawner multiplayer authority for new session
+        if (net_spawner) {
+            net_spawner->set_multiplayer_authority(1);
+            godot::UtilityFunctions::print("ModelSpawner: refreshed for new session");
         }
     }
 
@@ -302,7 +327,6 @@ namespace Vital::Engine {
     }
 
     void Model::destroy() {
-        // Remove from synced cache if present
         for (auto it = cache_synced.begin(); it != cache_synced.end(); ++it) {
             if (it->second == this) {
                 cache_synced.erase(it);
@@ -416,16 +440,6 @@ namespace Vital::Engine {
         net_sync->set_multiplayer_authority(peer_id);
     }
 
-    void Model::clear_synced() {
-        cache_synced.clear();
-    }
-
-    void Model::reset_spawner() {
-        // Tear down and rebuild spawner so it has clean state for new session
-        teardown_spawner();
-        setup_spawner();
-    }
-    
 
     // Getters //
     Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
