@@ -67,9 +67,6 @@ void setup() {
     Vital::Tool::Event::bind("network:connecting", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Connecting...");
     });
-    Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) {
-        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
-    });
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
         std::string body = args.array[0].as<std::string>();
         std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "unknown";
@@ -83,9 +80,6 @@ void setup() {
     });
     Vital::Tool::Event::bind("network:reconnect_failed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Gave up reconnecting");
-    });
-    Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) {
-        Vital::print("sbox", "Lost connection to server");
     });
     Vital::Tool::Event::bind("network:disconnected", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Disconnected cleanly");
@@ -122,27 +116,30 @@ void initialize_vital_events() {
         Vital::Engine::Core::get_singleton()->call_deferred("setup_model_spawner");
     });
 
+
+    // Network //
     #if !defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) -> void {
         int32_t id = args.array[0].as<int32_t>();
-        Vital::print("sbox", "Player left: ", id);
-        // Clear synced cache so stale pointers don't linger
         Vital::Engine::Model::clear_synced();
     });
     #endif
 
     #if defined(Vital_SDK_Client)
+    Vital::Tool::Event::bind("network:connected", [](Vital::Tool::Stack&) -> void {
+        auto* net = Vital::Engine::Network::get_singleton();
+        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
+        Vital::Engine::Model::reset_spawner();
+    });
+
     Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) -> void {
         Vital::print("sbox", "Lost connection to server");
         Vital::Engine::Model::reset_spawner();
     });
-
-    Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) -> void {
-        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
-        Vital::Engine::Model::reset_spawner();
-    });
     #endif
 
+
+    // Process //
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         static bool network_initialized = false;
         if (!network_initialized) {
