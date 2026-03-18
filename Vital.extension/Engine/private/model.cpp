@@ -34,9 +34,9 @@ namespace Vital::Engine {
         auto separator = path.find('/');
         std::string segment = (separator == std::string::npos) ? path : path.substr(0, separator);
         std::string remainder = (separator == std::string::npos) ? "" : path.substr(separator + 1);
-        for (int i = 0; i < node -> get_child_count(); i++) {
-            godot::Node* child = node -> get_child(i);
-            std::string child_name = to_std_string(child -> get_name());
+        for (int i = 0; i < node->get_child_count(); i++) {
+            godot::Node* child = node->get_child(i);
+            std::string child_name = to_std_string(child->get_name());
             if (!child_name.empty() && child_name[0] == '@') {
                 auto result = find_mesh_node(child, path);
                 if (result) return result;
@@ -56,12 +56,10 @@ namespace Vital::Engine {
     }
 
     int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
         if (!array_mesh) return -1;
-        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
-            if (to_std_string(array_mesh -> surface_get_name(i)) == material) {
-                return i;
-            }
+        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
+            if (to_std_string(array_mesh->surface_get_name(i)) == material) return i;
         }
         return -1;
     }
@@ -71,12 +69,9 @@ namespace Vital::Engine {
         if (!skeleton) {
             auto result = godot::Object::cast_to<godot::Skeleton3D>(node);
             if (result) return result;
-            for (int i = 0; i < node -> get_child_count(); i++) {
-                auto result = find_skeleton(node -> get_child(i));
-                if (result) {
-                    skeleton = result;
-                    break;
-                }
+            for (int i = 0; i < node->get_child_count(); i++) {
+                auto result = find_skeleton(node->get_child(i));
+                if (result) { skeleton = result; break; }
             }
         }
         return skeleton;
@@ -88,12 +83,9 @@ namespace Vital::Engine {
             auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
             if (result) animation_player = result;
             else {
-                for (int i = 0; i < node -> get_child_count(); i++) {
-                    auto result = find_animation_player(node -> get_child(i));
-                    if (result) {
-                        animation_player = result;
-                        break;
-                    }
+                for (int i = 0; i < node->get_child_count(); i++) {
+                    auto result = find_animation_player(node->get_child(i));
+                    if (result) { animation_player = result; break; }
                 }
             }
         }
@@ -102,21 +94,68 @@ namespace Vital::Engine {
 
     void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
         if (!node) return;
-        for (int i = 0; i < node -> get_child_count(); i++) {
-            godot::Node* child = node -> get_child(i);
-            std::string child_name = to_std_string(child -> get_name());
+        for (int i = 0; i < node->get_child_count(); i++) {
+            godot::Node* child = node->get_child(i);
+            std::string child_name = to_std_string(child->get_name());
             bool is_generated = !child_name.empty() && child_name[0] == '@';
-            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : current_path + "/" + child_name;
-            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
+            std::string child_path = (current_path.empty() || is_generated)
+                ? (is_generated ? "" : child_name)
+                : current_path + "/" + child_name;
+            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child))
+                out.push_back(child_path);
             collect_mesh_nodes(child, out, child_path);
         }
+    }
+
+
+    //------------------------//
+    //  Sync Setup (private)  //
+    //------------------------//
+
+    // Creates and attaches a MultiplayerSynchronizer to this Model node.
+    // Syncs position and rotation automatically.
+    // Animations are NOT synced here because AnimationPlayer path inside
+    // a GLB is not guaranteed — use play_animation() from server side instead.
+    void Model::_setup_sync(int authority_peer) {
+        if (net_sync) return; // already set up
+
+        // Build replication config
+        auto* config = memnew(godot::SceneReplicationConfig);
+
+        // position — synced every frame
+        config->add_property(godot::NodePath(".:position"));
+        config->property_set_replication_mode(
+            godot::NodePath(".:position"),
+            godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
+        );
+
+        // rotation — synced every frame
+        config->add_property(godot::NodePath(".:rotation"));
+        config->property_set_replication_mode(
+            godot::NodePath(".:rotation"),
+            godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
+        );
+
+        // Create synchronizer
+        net_sync = memnew(godot::MultiplayerSynchronizer);
+        net_sync->set_name("NetSync");
+        net_sync->set_replication_config(config);
+
+        // root_path ".." means the synchronizer's parent = this Model node
+        // so position/rotation refer to this Model's transform
+        net_sync->set_root_path(godot::NodePath(".."));
+
+        // Set authority — only this peer's position/rotation changes are broadcast
+        net_sync->set_multiplayer_authority(authority_peer);
+
+        add_child(net_sync);
     }
 
 
     // Managers //
     bool Model::load(const std::string& name, const std::string& path) {
         return load_from_buffer(
-            name, 
+            name,
             Vital::Tool::File::read_binary(get_directory(), path)
         );
     }
@@ -128,12 +167,12 @@ namespace Vital::Engine {
             case Format::GLB: {
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-                godot::Error status = document -> append_from_buffer(buffer, "", state);
+                godot::Error status = document->append_from_buffer(buffer, "", state);
                 if (status != godot::OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
-                godot::Node* root = document -> generate_scene(state);
+                godot::Node* root = document->generate_scene(state);
                 if (root == nullptr) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-                scene -> pack(root);
+                scene->pack(root);
                 memdelete(root);
                 break;
             }
@@ -150,23 +189,47 @@ namespace Vital::Engine {
         return true;
     }
 
+    // Local only — no replication, no sync
     Model* Model::create(const std::string& name) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         Model* object = memnew(Model);
-        object -> set_model_name(name);
-        godot::Node* instance = it -> second -> instantiate();
+        object->set_model_name(name);
+        godot::Node* instance = it->second->instantiate();
         if (!instance) {
             memdelete(object);
             throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
-        object -> add_child(instance);
-        Core::get_singleton() -> add_child(object);
+        object->add_child(instance);
+        Core::get_singleton()->add_child(object);
+        return object;
+    }
+
+    // Synced — attaches MultiplayerSynchronizer so position/rotation
+    // are automatically replicated to all peers by Godot.
+    // authority_peer = 1 means server drives the transform (recommended).
+    // authority_peer = peer_id means that client drives the transform.
+    Model* Model::create_synced(const std::string& name, int authority_peer) {
+        auto it = cache_loaded.find(name);
+        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        Model* object = memnew(Model);
+        object->set_model_name(name);
+        godot::Node* instance = it->second->instantiate();
+        if (!instance) {
+            memdelete(object);
+            throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
+        }
+        object->add_child(instance);
+        Core::get_singleton()->add_child(object);
+
+        // Attach sync — must be after add_child so node is in the tree
+        object->_setup_sync(authority_peer);
+
         return object;
     }
 
     void Model::destroy() {
-        this -> queue_free();
+        this->queue_free();
     }
 
 
@@ -178,7 +241,7 @@ namespace Vital::Engine {
     bool Model::is_component_visible(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        return mesh -> is_visible();
+        return mesh->is_visible();
     }
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
@@ -186,12 +249,16 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         int material_index = find_material_index(mesh, material);
         if (material_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        return !mesh -> get_surface_override_material(material_index).is_valid();
+        return !mesh->get_surface_override_material(material_index).is_valid();
     }
 
     bool Model::is_animation_playing() {
         if (!animation_player) return false;
-        return animation_player -> is_playing();
+        return animation_player->is_playing();
+    }
+
+    bool Model::is_synced() const {
+        return net_sync != nullptr;
     }
 
 
@@ -211,14 +278,12 @@ namespace Vital::Engine {
     bool Model::set_component_visible(const std::string& component, bool state) {
         auto exec = [&](const std::string& name) {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-            if (mesh) mesh -> set_visible(state);
+            if (mesh) mesh->set_visible(state);
             return mesh;
         };
         if (contains_wildcard(component)) {
             for (const auto& name : get_components()) {
-                if (match_wildcard(component, name)) {
-                    exec(name);
-                }
+                if (match_wildcard(component, name)) exec(name);
             }
         }
         else if (!exec(component)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
@@ -231,11 +296,11 @@ namespace Vital::Engine {
         auto exec = [&](int index) {
             if (!state) {
                 godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
-                invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
-                invisible -> set_albedo(godot::Color(0, 0, 0, 0));
-                mesh -> set_surface_override_material(index, invisible);
+                invisible->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+                invisible->set_albedo(godot::Color(0, 0, 0, 0));
+                mesh->set_surface_override_material(index, invisible);
             }
-            else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
+            else mesh->set_surface_override_material(index, godot::Ref<godot::Material>());
         };
         if (contains_wildcard(material)) {
             for (const auto& name : get_materials(component)) {
@@ -255,15 +320,20 @@ namespace Vital::Engine {
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
+        int index = mesh->find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        mesh -> set_blend_shape_value(index, value);
+        mesh->set_blend_shape_value(index, value);
         return true;
     }
 
     void Model::set_animation_speed(float speed) {
         if (!animation_player) return;
-        animation_player -> set_speed_scale(speed);
+        animation_player->set_speed_scale(speed);
+    }
+
+    void Model::set_sync_authority(int peer_id) {
+        if (!net_sync) return;
+        net_sync->set_multiplayer_authority(peer_id);
     }
 
 
@@ -271,11 +341,9 @@ namespace Vital::Engine {
     Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
         const uint8_t* ptr = buffer.ptr();
         const int size = buffer.size();
-        if (
-            size >= 4 && 
-            ptr[0] == 0x67 && ptr[1] == 0x6C && 
-            ptr[2] == 0x54 && ptr[3] == 0x46
-        ) return Format::GLB;
+        if (size >= 4 &&
+            ptr[0] == 0x67 && ptr[1] == 0x6C &&
+            ptr[2] == 0x54 && ptr[3] == 0x46) return Format::GLB;
         return Format::UNKNOWN;
     }
 
@@ -305,10 +373,10 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> materials;
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
         if (!array_mesh) return materials;
-        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
-            materials.push_back(to_std_string(array_mesh -> surface_get_name(i)));
+        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
+            materials.push_back(to_std_string(array_mesh->surface_get_name(i)));
         }
         return materials;
     }
@@ -317,10 +385,10 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> blendshapes;
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
         if (!array_mesh) return blendshapes;
-        for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
-            blendshapes.push_back(to_std_string(array_mesh -> get_blend_shape_name(i)));
+        for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
+            blendshapes.push_back(to_std_string(array_mesh->get_blend_shape_name(i)));
         }
         return blendshapes;
     }
@@ -328,8 +396,8 @@ namespace Vital::Engine {
     std::vector<std::string> Model::get_bones() {
         std::vector<std::string> bones;
         if (skeleton) {
-            for (int i = 0; i < skeleton -> get_bone_count(); i++) {
-                bones.push_back(to_std_string(skeleton -> get_bone_name(i)));
+            for (int i = 0; i < skeleton->get_bone_count(); i++) {
+                bones.push_back(to_std_string(skeleton->get_bone_name(i)));
             }
         }
         return bones;
@@ -338,7 +406,7 @@ namespace Vital::Engine {
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (animation_player) {
-            auto animation_list = animation_player -> get_animation_list();
+            auto animation_list = animation_player->get_animation_list();
             for (int i = 0; i < animation_list.size(); i++) {
                 animations.push_back(to_std_string(animation_list[i]));
             }
@@ -349,57 +417,62 @@ namespace Vital::Engine {
     float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
+        int index = mesh->find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        return mesh -> get_blend_shape_value(index);
+        return mesh->get_blend_shape_value(index);
     }
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
         if (!skeleton) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("No skeleton found in model '{}'", model_name));
-        int index = skeleton -> find_bone(to_godot_string(bone));
+        int index = skeleton->find_bone(to_godot_string(bone));
         if (index == -1) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Bone '{}' not found in model '{}'", bone, model_name));
-        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
+        return skeleton->get_global_transform().xform(skeleton->get_bone_global_pose(index).origin);
     }
 
     std::string Model::get_current_animation() {
         if (!animation_player) return "";
-        return to_std_string(animation_player -> get_current_animation());
+        return to_std_string(animation_player->get_current_animation());
     }
 
     float Model::get_animation_speed() {
         if (!animation_player) return 1.0f;
-        return animation_player -> get_speed_scale();
+        return animation_player->get_speed_scale();
+    }
+
+    int Model::get_sync_authority() const {
+        if (!net_sync) return 0;
+        return net_sync->get_multiplayer_authority();
     }
 
 
     // APIs //
     bool Model::play_animation(const std::string& name, bool loop, float speed) {
         if (!animation_player) return false;
-        if (!animation_player -> has_animation(to_godot_string(name))) {
+        if (!animation_player->has_animation(to_godot_string(name))) {
             godot::UtilityFunctions::push_warning("Animation '", to_godot_string(name), "' not found in model '", to_godot_string(model_name), "'");
             return false;
         }
-        godot::Ref<godot::Animation> animation = animation_player -> get_animation(to_godot_string(name));
-        if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        animation_player -> set_speed_scale(speed);
-        animation_player -> play(to_godot_string(name));
+        godot::Ref<godot::Animation> animation = animation_player->get_animation(to_godot_string(name));
+        if (animation.is_valid()) animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+        animation_player->set_speed_scale(speed);
+        animation_player->play(to_godot_string(name));
         return true;
     }
 
     void Model::stop_animation() {
         if (!animation_player) return;
-        animation_player -> stop();
+        animation_player->stop();
     }
 
     void Model::pause_animation() {
         if (!animation_player) return;
-        animation_player -> pause();
+        animation_player->pause();
     }
 
     void Model::resume_animation() {
         if (!animation_player) return;
-        auto current = animation_player -> get_current_animation();
+        auto current = animation_player->get_current_animation();
         if (current.is_empty()) return;
-        animation_player -> play(current);
+        animation_player->play(current);
     }
 }
