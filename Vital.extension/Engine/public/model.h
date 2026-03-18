@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <godot_cpp/classes/multiplayer_synchronizer.hpp>
+#include <godot_cpp/classes/multiplayer_spawner.hpp>
 #include <godot_cpp/classes/scene_replication_config.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
 #include <godot_cpp/classes/multiplayer_peer.hpp>
@@ -25,6 +26,19 @@
 ///////////////////////////
 
 namespace Vital::Engine {
+
+    class Model;
+
+    class ModelSpawnerDelegate : public godot::Node {
+        GDCLASS(ModelSpawnerDelegate, godot::Node)
+        protected:
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("spawn", "data"), &ModelSpawnerDelegate::spawn);
+            }
+        public:
+            godot::Object* spawn(godot::Variant data);
+    };
+
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:
@@ -38,15 +52,19 @@ namespace Vital::Engine {
             static void _bind_methods() {};
         private:
             std::string model_name;
-            godot::Skeleton3D*              skeleton           = nullptr;
-            godot::AnimationPlayer*         animation_player   = nullptr;
-            godot::MultiplayerSynchronizer* net_sync           = nullptr;
+            godot::Skeleton3D*              skeleton               = nullptr;
+            godot::AnimationPlayer*         animation_player       = nullptr;
+            godot::MultiplayerSynchronizer* net_sync               = nullptr;
+            inline static godot::MultiplayerSpawner*   net_spawner          = nullptr;
+            inline static ModelSpawnerDelegate*         net_spawner_delegate = nullptr;
             inline static Models cache_loaded;
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
             godot::Skeleton3D* find_skeleton(godot::Node* node);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
+            static void _setup_spawner();
+            void _setup_sync(int authority_peer);
         public:
             // Instantiators //
             Model() = default;
@@ -58,16 +76,9 @@ namespace Vital::Engine {
             static bool load(const std::string& name, const std::string& path);
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
-
-            // create() — local only, not replicated
             static Model* create(const std::string& name);
-
-            // create_synced() — spawns with MultiplayerSynchronizer attached
-            // authority_peer: which peer owns/drives this model's position
-            //   1 = server authoritative (default, recommended)
-            //   peer_id = that client drives position (for player-owned models)
             static Model* create_synced(const std::string& name, int authority_peer = 1);
-
+            static void teardown_spawner();
             void destroy();
 
 
@@ -87,9 +98,6 @@ namespace Vital::Engine {
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
             void set_animation_speed(float speed);
-
-            // Set which peer is authoritative for this model's transform
-            // Call this after create_synced() if authority changes (e.g. ownership transfer)
             void set_sync_authority(int peer_id);
 
 
@@ -117,7 +125,7 @@ namespace Vital::Engine {
             void pause_animation();
             void resume_animation();
 
-        private:
-            void _setup_sync(int authority_peer);
+            // Friends //
+            friend class ModelSpawnerDelegate;
     };
 }

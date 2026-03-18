@@ -21,6 +21,27 @@
 ///////////////////////////
 
 namespace Vital::Engine {
+
+    //------------------------------//
+    //  ModelSpawnerDelegate: Impl  //
+    //------------------------------//
+
+    godot::Object* ModelSpawnerDelegate::spawn(godot::Variant data) {
+        std::string name = to_std_string(data.operator godot::String());
+        auto it = Model::cache_loaded.find(name);
+        if (it == Model::cache_loaded.end()) return nullptr;
+        Model* object = memnew(Model);
+        object->set_model_name(name);
+        godot::Node* instance = it->second->instantiate();
+        if (!instance) {
+            memdelete(object);
+            return nullptr;
+        }
+        object->add_child(instance);
+        return object;
+    }
+
+
     // Instantiators //
     void Model::_ready() {
         find_skeleton(this);
@@ -108,46 +129,62 @@ namespace Vital::Engine {
     }
 
 
+    //---------------------------//
+    //  Spawner Setup (private)  //
+    //---------------------------//
+
+    void Model::_setup_spawner() {
+        if (net_spawner) return;
+        auto* core = Core::get_singleton();
+        if (!core) return;
+
+        net_spawner_delegate = memnew(ModelSpawnerDelegate);
+        net_spawner_delegate->set_name("ModelSpawnerDelegate");
+        core->add_child(net_spawner_delegate);
+
+        net_spawner = memnew(godot::MultiplayerSpawner);
+        net_spawner->set_name("ModelSpawner");
+        net_spawner->set_spawn_path(core->get_path());
+        net_spawner->set_spawn_function(godot::Callable(net_spawner_delegate, "spawn"));
+        core->add_child(net_spawner);
+    }
+
+    void Model::teardown_spawner() {
+        if (net_spawner_delegate) {
+            net_spawner_delegate->queue_free();
+            net_spawner_delegate = nullptr;
+        }
+        if (net_spawner) {
+            net_spawner->queue_free();
+            net_spawner = nullptr;
+        }
+    }
+
+
     //------------------------//
     //  Sync Setup (private)  //
     //------------------------//
 
-    // Creates and attaches a MultiplayerSynchronizer to this Model node.
-    // Syncs position and rotation automatically.
-    // Animations are NOT synced here because AnimationPlayer path inside
-    // a GLB is not guaranteed — use play_animation() from server side instead.
     void Model::_setup_sync(int authority_peer) {
-        if (net_sync) return; // already set up
+        if (net_sync) return;
 
-        // Build replication config
         auto* config = memnew(godot::SceneReplicationConfig);
-
-        // position — synced every frame
         config->add_property(godot::NodePath(".:position"));
         config->property_set_replication_mode(
             godot::NodePath(".:position"),
             godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
         );
-
-        // rotation — synced every frame
         config->add_property(godot::NodePath(".:rotation"));
         config->property_set_replication_mode(
             godot::NodePath(".:rotation"),
             godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
         );
 
-        // Create synchronizer
         net_sync = memnew(godot::MultiplayerSynchronizer);
         net_sync->set_name("NetSync");
         net_sync->set_replication_config(config);
-
-        // root_path ".." means the synchronizer's parent = this Model node
-        // so position/rotation refer to this Model's transform
         net_sync->set_root_path(godot::NodePath(".."));
-
-        // Set authority — only this peer's position/rotation changes are broadcast
         net_sync->set_multiplayer_authority(authority_peer);
-
         add_child(net_sync);
     }
 
@@ -189,7 +226,6 @@ namespace Vital::Engine {
         return true;
     }
 
-    // Local only — no replication, no sync
     Model* Model::create(const std::string& name) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
@@ -205,13 +241,12 @@ namespace Vital::Engine {
         return object;
     }
 
-    // Synced — attaches MultiplayerSynchronizer so position/rotation
-    // are automatically replicated to all peers by Godot.
-    // authority_peer = 1 means server drives the transform (recommended).
-    // authority_peer = peer_id means that client drives the transform.
     Model* Model::create_synced(const std::string& name, int authority_peer) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+
+        _setup_spawner();
+
         Model* object = memnew(Model);
         object->set_model_name(name);
         godot::Node* instance = it->second->instantiate();
@@ -220,9 +255,15 @@ namespace Vital::Engine {
             throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
         object->add_child(instance);
+
+        // Pass model name as spawn argument so the client-side
+        // spawn function knows which cache_loaded entry to use
+        object->set_meta("spawn_args", godot::String(name.c_str()));
+
+        // Adding to Core triggers MultiplayerSpawner — clients auto-spawn
         Core::get_singleton()->add_child(object);
 
-        // Attach sync — must be after add_child so node is in the tree
+        // Attach sync after tree insertion
         object->_setup_sync(authority_peer);
 
         return object;

@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/index.h>
 
@@ -23,7 +24,7 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    // Instantiators //    
+    // Instantiators //
     void Core::_ready() {
         singleton = singleton ? singleton : this;
         set_process(true);
@@ -40,6 +41,7 @@ namespace Vital::Engine {
         free_environment();
         #endif
         if (Vital::is_editor()) return;
+        teardown();
         Vital::Tool::Event::emit("vital.core:free");
     }
 
@@ -65,12 +67,12 @@ namespace Vital::Engine {
         auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
         return tree ? tree -> get_root() : nullptr;
     }
-    
+
     #if defined(Vital_SDK_Client)
     godot::RenderingServer* Core::get_rendering_server() {
         return godot::RenderingServer::get_singleton();
     }
-    
+
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
@@ -88,4 +90,10 @@ namespace Vital::Engine {
         environment = nullptr;
     }
     #endif
+
+
+    // Teardown //
+    void Core::teardown() {
+        Model::teardown_spawner();
+    }
 }

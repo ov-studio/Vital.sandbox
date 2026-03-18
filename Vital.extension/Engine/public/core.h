@@ -47,5 +47,8 @@ namespace Vital::Engine {
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
             #endif
+
+            // Teardown //
+            static void teardown();
     };
 }
