@@ -31,16 +31,14 @@ namespace Vital::Engine {
         // Bind _receive so Godot knows it exists as a callable method.
         // RPC config is set in setup_rpc() after the node is in the tree.
         godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &NetworkNode::_receive);
-        godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"),        &NetworkNode::setup_rpc);
-
-        #if !defined(Vital_SDK_Client)
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected",    "id"), &NetworkNode::_on_peer_connected);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &NetworkNode::_on_peer_disconnected);
-        #endif
+        godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &NetworkNode::setup_rpc);
         #if defined(Vital_SDK_Client)
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"),  &NetworkNode::_on_connected_to_server);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"),    &NetworkNode::_on_connection_failed);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"),  &NetworkNode::_on_server_disconnected);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &NetworkNode::_on_connected_to_server);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &NetworkNode::_on_connection_failed);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &NetworkNode::_on_server_disconnected);
+        #else
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &NetworkNode::_on_peer_connected);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &NetworkNode::_on_peer_disconnected);
         #endif
     }
 
@@ -58,18 +56,16 @@ namespace Vital::Engine {
     // Single RPC entry point — Godot routes all incoming packets here.
     // sender_id is retrieved from MultiplayerAPI::get_remote_sender_id().
     void NetworkNode::_receive(godot::Dictionary data) {
-        Network::get_singleton()->_on_packet_received(data);
+        Network::get_singleton() -> _on_packet_received(data);
     }
 
-    #if !defined(Vital_SDK_Client)
-    void NetworkNode::_on_peer_connected(int id)    { if (on_peer_connected)    on_peer_connected(id); }
-    void NetworkNode::_on_peer_disconnected(int id) { if (on_peer_disconnected) on_peer_disconnected(id); }
-    #endif
-
     #if defined(Vital_SDK_Client)
-    void NetworkNode::_on_connected_to_server()  { if (on_connected_to_server) on_connected_to_server(); }
-    void NetworkNode::_on_connection_failed()    { if (on_connection_failed)   on_connection_failed(); }
-    void NetworkNode::_on_server_disconnected()  { if (on_server_disconnected) on_server_disconnected(); }
+    void NetworkNode::_on_connected_to_server() { if (on_connected_to_server) on_connected_to_server(); }
+    void NetworkNode::_on_connection_failed() { if (on_connection_failed) on_connection_failed(); }
+    void NetworkNode::_on_server_disconnected() { if (on_server_disconnected) on_server_disconnected(); }
+    #else
+    void NetworkNode::_on_peer_connected(int id) { if (on_peer_connected) on_peer_connected(id); }
+    void NetworkNode::_on_peer_disconnected(int id) { if (on_peer_disconnected) on_peer_disconnected(id); }
     #endif
 
 
@@ -90,11 +86,10 @@ namespace Vital::Engine {
 
     void Network::free_singleton() {
         if (!singleton) return;
-        #if !defined(Vital_SDK_Client)
-        singleton -> close();
-        #endif
         #if defined(Vital_SDK_Client)
         singleton -> disconnect_from_server();
+        #else
+        singleton -> close();
         #endif
         singleton -> unwire_signals();
         singleton -> destroy_node();
@@ -121,14 +116,13 @@ namespace Vital::Engine {
         // setup_rpc() must be called after add_child so the node has a valid path
         node -> setup_rpc();
 
-        #if !defined(Vital_SDK_Client)
-        node -> on_peer_connected    = [this](int id) { _on_peer_connected(id); };
-        node -> on_peer_disconnected = [this](int id) { _on_peer_disconnected(id); };
-        #endif
         #if defined(Vital_SDK_Client)
         node -> on_connected_to_server = [this]() { _on_connected_to_server(); };
-        node -> on_connection_failed   = [this]() { _on_connection_failed(); };
+        node -> on_connection_failed = [this]() { _on_connection_failed(); };
         node -> on_server_disconnected = [this]() { _on_server_disconnected(); };
+        #else
+        node -> on_peer_connected = [this](int id) { _on_peer_connected(id); };
+        node -> on_peer_disconnected = [this](int id) { _on_peer_disconnected(id); };
         #endif
     }
 
@@ -138,16 +132,6 @@ namespace Vital::Engine {
         node = nullptr;
     }
 
-    #if !defined(Vital_SDK_Client)
-    void Network::wire_server_signals() {
-        if (!node) return;
-        auto mp = get_scene_tree()->get_multiplayer();
-        if (!mp.is_valid()) return;
-        mp -> connect("peer_connected",    godot::Callable(node, "_on_peer_connected"));
-        mp -> connect("peer_disconnected", godot::Callable(node, "_on_peer_disconnected"));
-    }
-    #endif
-
     #if defined(Vital_SDK_Client)
     void Network::wire_client_signals() {
         if (!node) { Vital::print("sbox", "wire_client_signals: no node"); return; }
@@ -156,6 +140,14 @@ namespace Vital::Engine {
         mp -> connect("connected_to_server", godot::Callable(node, "_on_connected_to_server"));
         mp -> connect("connection_failed",   godot::Callable(node, "_on_connection_failed"));
         mp -> connect("server_disconnected", godot::Callable(node, "_on_server_disconnected"));
+    }
+    #else
+    void Network::wire_server_signals() {
+        if (!node) return;
+        auto mp = get_scene_tree()->get_multiplayer();
+        if (!mp.is_valid()) return;
+        mp -> connect("peer_connected",    godot::Callable(node, "_on_peer_connected"));
+        mp -> connect("peer_disconnected", godot::Callable(node, "_on_peer_disconnected"));
     }
     #endif
 
@@ -169,14 +161,13 @@ namespace Vital::Engine {
             if (mp -> is_connected(signal, cb))
                 mp -> disconnect(signal, cb);
         };
-        #if !defined(Vital_SDK_Client)
-        try_disconnect("peer_connected",    "_on_peer_connected");
-        try_disconnect("peer_disconnected", "_on_peer_disconnected");
-        #endif
         #if defined(Vital_SDK_Client)
         try_disconnect("connected_to_server", "_on_connected_to_server");
-        try_disconnect("connection_failed",   "_on_connection_failed");
+        try_disconnect("connection_failed", "_on_connection_failed");
         try_disconnect("server_disconnected", "_on_server_disconnected");
+        #else
+        try_disconnect("peer_connected", "_on_peer_connected");
+        try_disconnect("peer_disconnected", "_on_peer_disconnected");
         #endif
     }
 
@@ -235,81 +226,6 @@ namespace Vital::Engine {
         // Convert to Stack and emit into the event system
         Vital::Tool::Event::emit("network:packet", Vital::Tool::Stack::from_dict(data));
     }
-
-
-    //----------------//
-    //     Server     //
-    //----------------//
-
-    #if !defined(Vital_SDK_Client)
-    bool Network::host(int port, int max_clients) {
-        if (!is_server()) {
-            Vital::print("sbox", "Network: host() called on non-server");
-            return false;
-        }
-        if (is_active()) {
-            Vital::print("sbox", "Network: already hosting");
-            return false;
-        }
-        create_node();
-        peer.instantiate();
-        godot::Error err = peer -> create_server(port, max_clients);
-        if (err != godot::OK) {
-            Vital::print("sbox", "Network: failed to host on port ", port, " (err=", (int)err, ")");
-            peer.unref();
-            return false;
-        }
-        auto tree = get_scene_tree();
-        if (!tree) { peer.unref(); return false; }
-        tree -> get_multiplayer()->set_multiplayer_peer(peer);
-        wire_server_signals();
-        Vital::print("sbox", "Network: hosting on port ", port);
-        Vital::Tool::Event::emit("network:hosted", {});
-        return true;
-    }
-
-    bool Network::close() {
-        if (!peer.is_valid()) return false;
-        unwire_signals();
-        connected_peers.clear();
-        peer -> close();
-        peer.unref();
-        auto tree = get_scene_tree();
-        if (tree) tree -> get_multiplayer()->set_multiplayer_peer(nullptr);
-        Vital::print("sbox", "Network: server closed");
-        Vital::Tool::Event::emit("network:closed", {});
-        return true;
-    }
-
-    void Network::_on_peer_connected(int id) {
-        connected_peers.insert(id);
-        Vital::print("sbox", "Network: peer joined -> ", id, "  total: ", (int)connected_peers.size());
-        Vital::Tool::Stack args;
-        args.array.push_back(Vital::Tool::StackValue((int32_t)id));
-        Vital::Tool::Event::emit("network:peer_joined", args);
-    }
-
-    void Network::_on_peer_disconnected(int id) {
-        connected_peers.erase(id);
-        Vital::print("sbox", "Network: peer left -> ", id, "  remaining: ", (int)connected_peers.size());
-        Vital::Tool::Stack args;
-        args.array.push_back(Vital::Tool::StackValue((int32_t)id));
-        Vital::Tool::Event::emit("network:peer_left", args);
-    }
-
-    const std::unordered_set<int>& Network::get_connected_peers() const {
-        return connected_peers;
-    }
-
-    int Network::get_peer_count() const {
-        return static_cast<int>(connected_peers.size());
-    }
-    #endif
-
-
-    //----------------//
-    //     Client     //
-    //----------------//
 
     #if defined(Vital_SDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
@@ -377,14 +293,7 @@ namespace Vital::Engine {
         Vital::Tool::Event::emit("network:server_disconnected", {});
         if (auto_reconnect) _schedule_reconnect();
     }
-    #endif
 
-
-    //--------------------//
-    //   Auto-Reconnect   //
-    //--------------------//
-
-    #if defined(Vital_SDK_Client)
     void Network::set_reconnect_config(int max_attempts, float delay_seconds) {
         reconnect_max = max_attempts;
         reconnect_delay = delay_seconds;
@@ -402,7 +311,72 @@ namespace Vital::Engine {
         Vital::print("sbox", "Network: retry in ", reconnect_delay, "s  attempt ", reconnect_attempts, "/", reconnect_max);
         Vital::Tool::Event::emit("network:reconnecting", {});
     }
+
+    #else
+    bool Network::host(int port, int max_clients) {
+        if (!is_server()) {
+            Vital::print("sbox", "Network: host() called on non-server");
+            return false;
+        }
+        if (is_active()) {
+            Vital::print("sbox", "Network: already hosting");
+            return false;
+        }
+        create_node();
+        peer.instantiate();
+        godot::Error err = peer -> create_server(port, max_clients);
+        if (err != godot::OK) {
+            Vital::print("sbox", "Network: failed to host on port ", port, " (err=", (int)err, ")");
+            peer.unref();
+            return false;
+        }
+        auto tree = get_scene_tree();
+        if (!tree) { peer.unref(); return false; }
+        tree -> get_multiplayer()->set_multiplayer_peer(peer);
+        wire_server_signals();
+        Vital::print("sbox", "Network: hosting on port ", port);
+        Vital::Tool::Event::emit("network:hosted", {});
+        return true;
+    }
+
+    bool Network::close() {
+        if (!peer.is_valid()) return false;
+        unwire_signals();
+        connected_peers.clear();
+        peer -> close();
+        peer.unref();
+        auto tree = get_scene_tree();
+        if (tree) tree -> get_multiplayer()->set_multiplayer_peer(nullptr);
+        Vital::print("sbox", "Network: server closed");
+        Vital::Tool::Event::emit("network:closed", {});
+        return true;
+    }
+
+    void Network::_on_peer_connected(int id) {
+        connected_peers.insert(id);
+        Vital::print("sbox", "Network: peer joined -> ", id, "  total: ", (int)connected_peers.size());
+        Vital::Tool::Stack args;
+        args.array.push_back(Vital::Tool::StackValue((int32_t)id));
+        Vital::Tool::Event::emit("network:peer_joined", args);
+    }
+
+    void Network::_on_peer_disconnected(int id) {
+        connected_peers.erase(id);
+        Vital::print("sbox", "Network: peer left -> ", id, "  remaining: ", (int)connected_peers.size());
+        Vital::Tool::Stack args;
+        args.array.push_back(Vital::Tool::StackValue((int32_t)id));
+        Vital::Tool::Event::emit("network:peer_left", args);
+    }
+
+    const std::unordered_set<int>& Network::get_connected_peers() const {
+        return connected_peers;
+    }
+
+    int Network::get_peer_count() const {
+        return static_cast<int>(connected_peers.size());
+    }
     #endif
+
 
 
     //--------------------//
