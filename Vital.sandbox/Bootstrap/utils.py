@@ -26,16 +26,16 @@ def _supports_color():
     return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
 class C:
-    RESET = "\033[0m" if _supports_color() else ""
-    BOLD = "\033[1m" if _supports_color() else ""
-    CYAN = "\033[96m" if _supports_color() else ""
-    GREEN = "\033[92m" if _supports_color() else ""
-    YELLOW = "\033[93m" if _supports_color() else ""
-    RED = "\033[91m" if _supports_color() else ""
-    DIM = "\033[2m" if _supports_color() else ""
+    RESET   = "\033[0m"     if _supports_color() else ""
+    BOLD    = "\033[1m"     if _supports_color() else ""
+    HEADER  = "\033[38;5;111m" if _supports_color() else ""  # soft blue header text
+    GREEN   = "\033[38;5;114m" if _supports_color() else ""  # muted green
+    YELLOW  = "\033[38;5;221m" if _supports_color() else ""  # warm yellow
+    RED     = "\033[38;5;203m" if _supports_color() else ""  # soft red
+    DIM     = "\033[2m"     if _supports_color() else ""
 
 def log_step(msg):
-    print(f"\n{C.BOLD}{C.CYAN}==>{C.RESET}{C.BOLD} {msg}{C.RESET}")
+    print(f"\n{C.BOLD}{C.HEADER}==>{C.RESET} {C.BOLD}{C.HEADER}{msg}{C.RESET}")
 
 def log_info(msg):
     print(f"  {C.DIM}{msg}{C.RESET}")
