@@ -16,16 +16,16 @@ def log_step(msg):
     print(f"\n{C.BOLD}{C.HEADER}==>{C.RESET} {C.BOLD}{C.HEADER}{msg}{C.RESET}")
 
 def log_info(msg):
-    print(f"  {C.DIM}{msg}{C.RESET}")
+    print(f"    {C.DIM}{msg}{C.RESET}")
 
 def log_ok(msg):
-    print(f"  {C.GREEN}{msg}{C.RESET}")
+    print(f"    {C.GREEN}{msg}{C.RESET}")
 
 def log_warn(msg):
-    print(f"  {C.YELLOW}[WARN]{C.RESET} {msg}")
+    print(f"    {C.YELLOW}[WARN]{C.RESET} {msg}")
 
 def log_error(msg):
-    print(f"  {C.RED}[ERROR]{C.RESET} {msg}")
+    print(f"    {C.RED}[ERROR]{C.RESET} {msg}")
 
 def spinner(label, stop_event):
     frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
