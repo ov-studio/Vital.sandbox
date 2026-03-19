@@ -28,7 +28,7 @@ class Build:
         if force and os.path.exists(stamp):
             os.remove(stamp)
         if os.path.exists(stamp):
-            log_step(f"godot-cpp [{self.build_type}]")
+            log_step(f"Building godot-cpp [{self.build_type}]")
             log_info("Already built, skipping")
             return
         log_step(f"Building godot-cpp [{self.build_type}]")
@@ -59,10 +59,26 @@ class Build:
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
             "build_library=no",
-        ])
+        ], capture_output=True, text=True)
+
+        ignore = (
+            "scons: ", "WARNING:", "platform_type=", "build_type=",
+            "Auto-detected", "Building for architecture", "==>",
+            "Running ", "Done", "Detecting ", "Installing ", "Bootstrapping",
+            "Reloading", "Fetching", "Cloning", "Binary", "Templates",
+        )
+        for line in result.stdout.splitlines():
+            stripped = line.strip()
+            if stripped and not any(stripped.startswith(p) for p in ignore):
+                log_info(stripped)
+
         if result.returncode != 0:
-            log_error(f"Extension build failed for {self.platform_type}")
+            for line in result.stderr.splitlines():
+                if line.strip():
+                    log_error(line.strip())
             sys.exit(result.returncode)
+
+        log_ok("Done")
 
     def copy_libs(self, project_dir, dist_dir):
         log_step(f"Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
