@@ -170,6 +170,8 @@ def main():
             build.export()
 
     log_step("Build complete")
+    log_ok("Done")
+
 
 if __name__ == "__main__":
     main()
