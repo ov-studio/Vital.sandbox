@@ -121,12 +121,13 @@ class Build:
         log_step(f"Exporting Godot [{self.platform_type} | {self.build_type}]")
         log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
+
         result = subprocess.run([
             godot_bin, "--headless",
             "--path", b["project_dir"],
             b["export_mode"], b["preset"],
             b["output_path"]
-        ], capture_output=True, text=True)
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
 
         if result.returncode != 0:
             for line in result.stderr.splitlines():
