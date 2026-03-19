@@ -18,7 +18,8 @@ class Vendor:
         else:
             result = subprocess.run([script], capture_output=True)
         if result.returncode != 0:
-            Throw_Error(f"Vendor reload failed:\n{result.stderr.decode().strip()}")
+            indented = "\n".join(f"    {line}" for line in result.stderr.decode().strip().splitlines())
+            Throw_Error(f"Vendor reload failed:\n{indented}")
         log_ok("Done")
 
 BaseEnvironment.Vendor = property(lambda self: Vendor(self))
