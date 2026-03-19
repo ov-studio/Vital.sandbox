@@ -21,6 +21,23 @@ class Build:
             "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
         }
 
+    def build_godot_cpp(self):
+        godot_dir = os.path.join(b["extension_dir"], "Vendor", "godot")
+        stamp = os.path.join(godot_dir, f".built_{self.build_type.lower()}")
+        if os.path.exists(stamp):
+            print(f"\n==> godot-cpp [{self.build_type}] already built, skipping")
+            return
+        print(f"\n==> Building godot-cpp [{self.build_type}]")
+        result = subprocess.run([
+            "scons", "-C", godot_dir,
+            f"target=template_{self.build_type.lower()}",
+            "use_static_cpp=no",
+        ])
+        if result.returncode != 0:
+            print("[ERROR] godot-cpp build failed")
+            sys.exit(result.returncode)
+        open(stamp, "w").close()
+
     def build_extension(self):
         b = self.init()
         print(f"\n==> Building Vital.extension [{self.platform_type} | {self.build_type}]")
