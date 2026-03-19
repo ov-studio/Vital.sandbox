@@ -20,14 +20,25 @@ class VCPKG:
     def install(self):
         os_info = Fetch_OS()
         vcpkg = self.init()
+        print("\n==> Installing vcpkg")
         if not os.path.isdir(vcpkg["root"]):
-            subprocess.run((
+            print("  Cloning repository ...")
+            result = subprocess.run((
                 "git", "clone",
                 "https://github.com/microsoft/vcpkg.git",
                 vcpkg["root"]
-            ))
+            ), capture_output=True)
+            if result.returncode != 0:
+                Throw_Error(f"  [ERROR] vcpkg clone failed:\n{result.stderr.decode().strip()}")
         bootstrap = "bootstrap-vcpkg.bat" if os_info["type"] == "Windows" else "bootstrap-vcpkg.sh"
-        subprocess.run([os.path.join(vcpkg["root"], bootstrap), "-disableMetrics"])
+        print("  Bootstrapping ...")
+        result = subprocess.run(
+            [os.path.join(vcpkg["root"], bootstrap), "-disableMetrics"],
+            capture_output=True
+        )
+        if result.returncode != 0:
+            Throw_Error(f"  [ERROR] vcpkg bootstrap failed:\n{result.stderr.decode().strip()}")
+        print("  Done")
 
     def build(self):
         os_info = Fetch_OS()
@@ -35,6 +46,7 @@ class VCPKG:
         vcpkg_include = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")
         vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
         self.install()
+        print("\n==> Building vcpkg dependencies")
         self.env.Append(CPPPATH=[vcpkg_include])
         self.env.Append(LIBPATH=[vcpkg_lib])
         vcpkg_libs = []
@@ -45,6 +57,7 @@ class VCPKG:
                 elif f.endswith(".a"):
                     vcpkg_libs.append(f[3:-2] if f.startswith("lib") else f)
         self.env.Append(LIBS=vcpkg_libs)
+        print("  Done")
 
     def stage(self, build, build_dir):
         os_info = Fetch_OS()
