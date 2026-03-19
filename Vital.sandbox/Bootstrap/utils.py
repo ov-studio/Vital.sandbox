@@ -22,6 +22,33 @@ BUILD_INFO = {
     },
 }
 
+def _supports_color():
+    return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
+
+class C:
+    RESET = "\033[0m" if _supports_color() else ""
+    BOLD = "\033[1m" if _supports_color() else ""
+    CYAN = "\033[96m" if _supports_color() else ""
+    GREEN = "\033[92m" if _supports_color() else ""
+    YELLOW = "\033[93m" if _supports_color() else ""
+    RED = "\033[91m" if _supports_color() else ""
+    DIM = "\033[2m" if _supports_color() else ""
+
+def log_step(msg):
+    print(f"\n{C.BOLD}{C.CYAN}==>{C.RESET}{C.BOLD} {msg}{C.RESET}")
+
+def log_info(msg):
+    print(f"  {C.DIM}{msg}{C.RESET}")
+
+def log_ok(msg):
+    print(f"  {C.GREEN}{msg}{C.RESET}")
+
+def log_warn(msg):
+    print(f"  {C.YELLOW}[WARN]{C.RESET} {msg}")
+
+def log_error(msg):
+    print(f"  {C.RED}[ERROR]{C.RESET} {msg}")
+
 def Fetch_OS():
     archi = machine()
     if archi == "AMD64":
@@ -35,7 +62,7 @@ def Fetch_OS():
 def Fetch_Build_Info():
     os_type = Fetch_OS()["type"]
     if os_type not in BUILD_INFO:
-        Throw_Error(f"[ERROR] Unsupported platform: {os_type}")
+        Throw_Error(f"Unsupported platform: {os_type}")
     return BUILD_INFO[os_type]
 
 def Fetch_Compiler():
@@ -45,7 +72,7 @@ def Fetch_Compiler():
     return compiler
 
 def Throw_Error(msg):
-    print(msg)
+    log_error(msg)
     sys.exit(2)
 
 def _RGlob(self, root_path, pattern, ondisk=True, source=False, exclude=None):

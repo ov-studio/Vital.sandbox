@@ -20,25 +20,25 @@ class VCPKG:
     def install(self):
         os_info = Fetch_OS()
         vcpkg = self.init()
-        print("\n==> Installing vcpkg")
+        log_step("Installing vcpkg")
         if not os.path.isdir(vcpkg["root"]):
-            print("  Cloning repository ...")
+            log_info("Cloning repository ...")
             result = subprocess.run((
                 "git", "clone",
                 "https://github.com/microsoft/vcpkg.git",
                 vcpkg["root"]
             ), capture_output=True)
             if result.returncode != 0:
-                Throw_Error(f"  [ERROR] vcpkg clone failed:\n{result.stderr.decode().strip()}")
+                Throw_Error(f"vcpkg clone failed:\n{result.stderr.decode().strip()}")
         bootstrap = "bootstrap-vcpkg.bat" if os_info["type"] == "Windows" else "bootstrap-vcpkg.sh"
-        print("  Bootstrapping ...")
+        log_info("Bootstrapping ...")
         result = subprocess.run(
             [os.path.join(vcpkg["root"], bootstrap), "-disableMetrics"],
             capture_output=True
         )
         if result.returncode != 0:
-            Throw_Error(f"  [ERROR] vcpkg bootstrap failed:\n{result.stderr.decode().strip()}")
-        print("  Done")
+            Throw_Error(f"vcpkg bootstrap failed:\n{result.stderr.decode().strip()}")
+        log_ok("Done")
 
     def build(self):
         os_info = Fetch_OS()
@@ -46,7 +46,7 @@ class VCPKG:
         vcpkg_include = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")
         vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
         self.install()
-        print("\n==> Building vcpkg dependencies")
+        log_step("Building vcpkg dependencies")
         self.env.Append(CPPPATH=[vcpkg_include])
         self.env.Append(LIBPATH=[vcpkg_lib])
         vcpkg_libs = []
@@ -57,7 +57,7 @@ class VCPKG:
                 elif f.endswith(".a"):
                     vcpkg_libs.append(f[3:-2] if f.startswith("lib") else f)
         self.env.Append(LIBS=vcpkg_libs)
-        print("  Done")
+        log_ok("Done")
 
     def stage(self, build, build_dir):
         os_info = Fetch_OS()

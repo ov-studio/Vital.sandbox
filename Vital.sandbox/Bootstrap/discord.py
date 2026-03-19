@@ -16,12 +16,12 @@ class Discord:
         discord = self.init()
         if os.path.isdir(discord["root"]):
             return
-        print("\n==> Installing Discord SDK")
+        log_step("Installing Discord SDK")
         zip_path = discord["root"] + ".zip"
         self.env.Mega.get(DISCORD_SDK_URL, zip_path)
         Extract_Zip(zip_path, discord["root"])
         os.remove(zip_path)
-        print("  Done")
+        log_ok("Done")
 
     def build(self):
         self.install()

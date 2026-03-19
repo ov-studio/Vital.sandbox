@@ -28,28 +28,32 @@ class Build:
         if force and os.path.exists(stamp):
             os.remove(stamp)
         if os.path.exists(stamp):
-            print(f"\n==> godot-cpp [{self.build_type}] already built, skipping")
+            log_step(f"godot-cpp [{self.build_type}]")
+            log_info("Already built, skipping")
             return
-        print(f"\n==> Building godot-cpp [{self.build_type}]")
+        log_step(f"Building godot-cpp [{self.build_type}]")
         if force:
+            log_info("Cleaning previous build ...")
             subprocess.run([
                 "scons", "-C", godot_dir, "--clean",
                 f"target=template_{self.build_type.lower()}",
                 "use_static_cpp=no",
             ])
+        log_info("Compiling ...")
         result = subprocess.run([
             "scons", "-C", godot_dir,
             f"target=template_{self.build_type.lower()}",
             "use_static_cpp=no",
         ])
         if result.returncode != 0:
-            print("[ERROR] godot-cpp build failed")
+            log_error("godot-cpp build failed")
             sys.exit(result.returncode)
         open(stamp, "w").close()
+        log_ok("Done")
 
     def build_extension(self):
         b = self.init()
-        print(f"\n==> Building Vital.extension [{self.platform_type} | {self.build_type}]")
+        log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
         result = subprocess.run([
             "scons", "-C", b["extension_dir"],
             f"platform_type={self.platform_type}",
@@ -57,11 +61,11 @@ class Build:
             "build_library=no",
         ])
         if result.returncode != 0:
-            print(f"[ERROR] Extension build failed for {self.platform_type}")
+            log_error(f"Extension build failed for {self.platform_type}")
             sys.exit(result.returncode)
 
     def copy_libs(self, project_dir, dist_dir):
-        print(f"\n==> Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
+        log_step(f"Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
         build_suffix = "release" if self.build_type == "Release" else "debug"
         lib_exts = self.info["lib_exts"]
 
@@ -85,12 +89,13 @@ class Build:
                 libs.append(f)
             for lib in libs:
                 shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
-                print(f"  Copied: {lib}")
+                log_info(f"Copied: {lib}")
 
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
-        print(f"\n==> Exporting Godot [{self.platform_type} | {self.build_type}] -> {b['output_path']}")
+        log_step(f"Exporting Godot [{self.platform_type} | {self.build_type}]")
+        log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
         result = subprocess.run([
             godot_bin, "--headless",
@@ -99,7 +104,7 @@ class Build:
             b["output_path"]
         ])
         if result.returncode != 0:
-            print(f"[ERROR] Godot export failed for {self.platform_type}")
+            log_error(f"Godot export failed for {self.platform_type}")
             sys.exit(result.returncode)
         self.copy_libs(b["project_dir"], b["dist_dir"])
 
@@ -135,7 +140,7 @@ def main():
         if not args.skip_export:
             build.export()
 
-    print("\n==> Build complete")
+    log_step("Build complete")
 
 if __name__ == "__main__":
     main()

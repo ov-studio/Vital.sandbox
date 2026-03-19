@@ -6,7 +6,7 @@ class Conan:
 
     def install(self):
         if not shutil.which("conan"):
-            print("\n==> Installing conan")
+            log_step("Installing conan")
             subprocess.run(
                 [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
                 stdout=subprocess.DEVNULL,
@@ -16,7 +16,7 @@ class Conan:
 
     def build(self):
         self.install()
-        print("\n==> Building conan dependencies")
+        log_step("Building conan dependencies")
         for cmd, label in [
             (["conan", "profile", "detect", "--force"], "Detecting profile"),
         ] + [
@@ -29,12 +29,11 @@ class Conan:
             ], f"Installing [{build_type}]")
             for build_type in ("Debug", "Release")
         ]:
-            print(f"  {label} ...")
+            log_info(f"{label} ...")
             result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
             if result.returncode != 0:
-                print(f"  [ERROR] {label} failed:")
-                print(result.stderr.decode().strip())
+                log_error(f"{label} failed:\n{result.stderr.decode().strip()}")
                 sys.exit(result.returncode)
-        print("  Done")
+        log_ok("Done")
 
 BaseEnvironment.Conan = property(lambda self: Conan(self))

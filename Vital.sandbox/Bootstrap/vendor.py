@@ -6,19 +6,19 @@ class Vendor:
 
     def build(self):
         os_info = Fetch_OS()
-        print("\n==> Reloading vendors")
+        log_step("Reloading vendors")
         git = shutil.which("git")
         if not git:
-            Throw_Error("  [ERROR] git not found")
+            Throw_Error("git not found")
         script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..\\..", ".gitreload.sh"))
-        print("  Running .gitreload.sh ...")
+        log_info("Running .gitreload.sh ...")
         if os_info["type"] == "Windows":
             bash = os.path.join(os.path.abspath(os.path.join(os.path.dirname(git), "..")), "usr", "bin", "bash.exe")
             result = subprocess.run([bash, script], capture_output=True)
         else:
             result = subprocess.run([script], capture_output=True)
         if result.returncode != 0:
-            Throw_Error(f"  [ERROR] Vendor reload failed:\n{result.stderr.decode().strip()}")
-        print("  Done")
+            Throw_Error(f"Vendor reload failed:\n{result.stderr.decode().strip()}")
+        log_ok("Done")
 
 BaseEnvironment.Vendor = property(lambda self: Vendor(self))
