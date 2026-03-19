@@ -100,6 +100,14 @@ def main():
 
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
+    if not args.skip_extension:
+        b = Build(script_dir, platforms[0], build_type)
+        if args.rebuild_godot:
+            stamp = os.path.join(b.init()["extension_dir"], "Vendor", "godot", f".built_{build_type.lower()}")
+            if os.path.exists(stamp):
+                os.remove(stamp)
+        b.build_godot_cpp()
+
     for platform_type in platforms:
         b = Build(script_dir, platform_type, build_type)
         if not args.skip_extension:
