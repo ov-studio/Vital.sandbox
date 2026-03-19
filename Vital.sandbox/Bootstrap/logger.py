@@ -27,7 +27,7 @@ def log_warn(msg):
 def log_error(msg):
     print(f"  {C.RED}[ERROR]{C.RESET} {msg}")
 
-def _spinner(label, stop_event):
+def spinner(label, stop_event):
     frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     i = 0
     while not stop_event.is_set():

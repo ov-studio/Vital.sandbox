@@ -56,8 +56,8 @@ class Build:
         log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
 
         stop = threading.Event()
-        spinner = threading.Thread(target=_spinner, args=("Compiling", stop))
-        spinner.start()
+        thread = threading.Thread(target=spinner, args=("Compiling", stop))
+        thread.start()
 
         result = subprocess.run([
             "scons", "-C", b["extension_dir"],
@@ -67,7 +67,7 @@ class Build:
         ], capture_output=True, text=True)
 
         stop.set()
-        spinner.join()
+        thread.join()
 
         ignore = (
             "scons: ", "WARNING:", "platform_type=", "build_type=",
