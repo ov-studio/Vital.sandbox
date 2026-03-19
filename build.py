@@ -54,12 +54,20 @@ class Build:
     def build_extension(self):
         b = self.init()
         log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
+
+        stop = threading.Event()
+        spinner = threading.Thread(target=_spinner, args=("Compiling", stop))
+        spinner.start()
+
         result = subprocess.run([
             "scons", "-C", b["extension_dir"],
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
             "build_library=no",
         ], capture_output=True, text=True)
+
+        stop.set()
+        spinner.join()
 
         ignore = (
             "scons: ", "WARNING:", "platform_type=", "build_type=",
@@ -118,10 +126,15 @@ class Build:
             "--path", b["project_dir"],
             b["export_mode"], b["preset"],
             b["output_path"]
-        ])
+        ], capture_output=True, text=True)
+
         if result.returncode != 0:
-            log_error(f"Godot export failed for {self.platform_type}")
+            for line in result.stderr.splitlines():
+                if line.strip():
+                    log_error(line.strip())
             sys.exit(result.returncode)
+
+        log_ok("Done")
         self.copy_libs(b["project_dir"], b["dist_dir"])
 
 

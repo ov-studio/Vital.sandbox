@@ -3,6 +3,7 @@ from platform import machine, system
 from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
+from Bootstrap.logger import *
 
 BUILD_INFO = {
     "Windows": {
@@ -21,33 +22,6 @@ BUILD_INFO = {
         "output_ext": ".app",
     },
 }
-
-def _supports_color():
-    return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
-
-class C:
-    RESET   = "\033[0m"     if _supports_color() else ""
-    BOLD    = "\033[1m"     if _supports_color() else ""
-    HEADER  = "\033[38;5;111m" if _supports_color() else ""  # soft blue header text
-    GREEN   = "\033[38;5;114m" if _supports_color() else ""  # muted green
-    YELLOW  = "\033[38;5;221m" if _supports_color() else ""  # warm yellow
-    RED     = "\033[38;5;203m" if _supports_color() else ""  # soft red
-    DIM     = "\033[2m"     if _supports_color() else ""
-
-def log_step(msg):
-    print(f"\n{C.BOLD}{C.HEADER}==>{C.RESET} {C.BOLD}{C.HEADER}{msg}{C.RESET}")
-
-def log_info(msg):
-    print(f"  {C.DIM}{msg}{C.RESET}")
-
-def log_ok(msg):
-    print(f"  {C.GREEN}{msg}{C.RESET}")
-
-def log_warn(msg):
-    print(f"  {C.YELLOW}[WARN]{C.RESET} {msg}")
-
-def log_error(msg):
-    print(f"  {C.RED}[ERROR]{C.RESET} {msg}")
 
 def Fetch_OS():
     archi = machine()
