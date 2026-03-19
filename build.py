@@ -21,9 +21,12 @@ class Build:
             "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
         }
 
-    def build_godot_cpp(self):
+    def build_godot_cpp(self, force=False):
+        b = self.init()
         godot_dir = os.path.join(b["extension_dir"], "Vendor", "godot")
-        stamp = os.path.join(godot_dir, f".built_{self.build_type.lower()}")
+        stamp = os.path.join(godot_dir, f".godotcpp_{self.build_type.lower()}")
+        if force and os.path.exists(stamp):
+            os.remove(stamp)
         if os.path.exists(stamp):
             print(f"\n==> godot-cpp [{self.build_type}] already built, skipping")
             return
@@ -117,19 +120,14 @@ def main():
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
     if not args.skip_extension:
-        b = Build(script_dir, platforms[0], build_type)
-        if args.rebuild_godot:
-            stamp = os.path.join(b.init()["extension_dir"], "Vendor", "godot", f".built_{build_type.lower()}")
-            if os.path.exists(stamp):
-                os.remove(stamp)
-        b.build_godot_cpp()
+        Build(script_dir, platforms[0], build_type).build_godot_cpp(force=args.rebuild_godot)
 
     for platform_type in platforms:
-        b = Build(script_dir, platform_type, build_type)
+        build = Build(script_dir, platform_type, build_type)
         if not args.skip_extension:
-            b.build_extension()
+            build.build_extension()
         if not args.skip_export:
-            b.export()
+            build.export()
 
     print("\n==> Build complete")
 
