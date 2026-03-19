@@ -114,7 +114,6 @@ def main():
     args = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
     if not args.skip_extension:
