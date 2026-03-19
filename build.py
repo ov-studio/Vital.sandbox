@@ -27,7 +27,8 @@ class Build:
         result = subprocess.run([
             "scons", "-C", b["extension_dir"],
             f"platform_type={self.platform_type}",
-            f"build_type={self.build_type}"
+            f"build_type={self.build_type}",
+            "build_library=no",
         ])
         if result.returncode != 0:
             print(f"[ERROR] Extension build failed for {self.platform_type}")
@@ -91,6 +92,7 @@ def main():
 
     parser.add_argument("--skip-extension", action="store_true", help="Skip building Vital.extension")
     parser.add_argument("--skip-export", action="store_true", help="Skip Godot export")
+    parser.add_argument("--rebuild-godot", action="store_true", help="Force rebuild of godot-cpp")
 
     args = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
