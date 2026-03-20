@@ -22,10 +22,10 @@
 
 void shutdown() {
     #if !defined(Vital_SDK_Client)
-    Vital::Engine::Network::get_singleton()->close();
+    Vital::Engine::Network::get_singleton() -> close();
     #endif
     #if defined(Vital_SDK_Client)
-    Vital::Engine::Network::get_singleton()->disconnect_from_server();
+    Vital::Engine::Network::get_singleton() -> disconnect_from_server();
     #endif
     Vital::Engine::Network::free_singleton();
 }
@@ -55,7 +55,7 @@ void setup() {
             reply.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
             reply.object["type"]    = Vital::Tool::StackValue(std::string("system"));
             reply.object["peer_id"] = Vital::Tool::StackValue(sender);
-            net->send(reply, sender);
+            net -> send(reply, sender);
         }
     });
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {
@@ -84,7 +84,7 @@ void setup() {
     Vital::Tool::Event::bind("network:disconnected", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Disconnected cleanly");
     });
-    net->set_reconnect_config(5, 3.0f);
+    net -> set_reconnect_config(5, 3.0f);
     #endif
 }
 
@@ -96,7 +96,7 @@ void initialize_vital_events() {
         Vital::System::Discord::get_singleton();
         #endif
         Vital::Engine::Console::get_singleton();
-        Vital::Engine::Sandbox::get_singleton()->ready();
+        Vital::Engine::Sandbox::get_singleton() -> ready();
         setup();
     });
 
@@ -113,7 +113,7 @@ void initialize_vital_events() {
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-        Vital::Engine::Core::get_singleton()->call_deferred("setup_model_spawner");
+        Vital::Engine::Core::get_singleton() -> call_deferred("setup_model_spawner");
     });
 
 
@@ -128,7 +128,7 @@ void initialize_vital_events() {
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("network:connected", [](Vital::Tool::Stack&) -> void {
         auto* net = Vital::Engine::Network::get_singleton();
-        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
+        Vital::print("sbox", "Connected! My ID: ", net -> get_peer_id());
         Vital::Engine::Model::on_connected();
     });
 
@@ -146,16 +146,16 @@ void initialize_vital_events() {
             network_initialized = true;
             auto* net = Vital::Engine::Network::get_singleton();
             #if !defined(Vital_SDK_Client)
-            net->host(7777, 32);
+            net -> host(7777, 32);
             #endif
             #if defined(Vital_SDK_Client)
-            net->connect_to_server("127.0.0.1", 7777, true);
+            net -> connect_to_server("127.0.0.1", 7777, true);
             #endif
         }
 
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::get_singleton()->process();
+        Vital::System::Discord::get_singleton() -> process();
         #endif
-        Vital::Engine::Network::get_singleton()->poll(arguments.array[0].as<double>());
+        Vital::Engine::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
 }
