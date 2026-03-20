@@ -31,6 +31,7 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Client)
             Webview* webview = nullptr;
             #else
+            std::mutex stdout_mutex;
             std::thread stdin_thread;
             std::atomic<bool> stdin_running{false};
             #if defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
