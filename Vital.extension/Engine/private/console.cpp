@@ -67,6 +67,7 @@ namespace Vital::Engine {
                 SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
                 GetConsoleMode(hStdin, &in_mode);
                 SetConsoleMode(hStdin, in_mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
@@ -78,7 +79,10 @@ namespace Vital::Engine {
             stdin_thread = std::thread([this]() {
                 std::string line;
                 while (stdin_running) {
-                    std::cout << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
+                    {
+                        std::lock_guard<std::mutex> lock(stdout_mutex);
+                        std::cout << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
+                    }
                     if (!std::getline(std::cin, line)) break;
                     {
                         std::lock_guard<std::mutex> lock(stdout_mutex);
