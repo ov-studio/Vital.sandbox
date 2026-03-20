@@ -68,12 +68,13 @@ namespace Vital {
         return base;
     }
 
-    inline bool is_editor() { 
-        #if defined(Vital_SDK_Client)
-            return godot::Engine::get_singleton() -> is_editor_hint();
-        #else
-            return false;
-        #endif
+    inline bool is_runtime() { 
+        if (godot::Engine::get_singleton() -> is_editor_hint()) return false;
+        godot::PackedStringArray args = godot::OS::get_singleton()->get_cmdline_args();
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i] == "--headless" || args[i] == "--export-release" || args[i] == "--export-debug") return false;
+        }
+        return true;
     }
 
     inline bool contains_wildcard(const std::string& input) {

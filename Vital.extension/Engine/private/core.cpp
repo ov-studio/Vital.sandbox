@@ -32,7 +32,7 @@ namespace Vital::Engine {
         set_process_unhandled_key_input(true);
         get_environment();
         #endif
-        if (Vital::is_editor()) return;
+        if (!Vital::is_runtime()) return;
         Vital::Tool::Event::emit("vital.core:ready");
     }
 
@@ -40,19 +40,19 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif
-        if (Vital::is_editor()) return;
+        if (!Vital::is_runtime()) return;
         teardown();
         Vital::Tool::Event::emit("vital.core:free");
     }
 
     void Core::_process(double delta) {
-        if (Vital::is_editor()) return;
+        if (!Vital::is_runtime()) return;
         Sandbox::get_singleton() -> process(delta);
     }
 
     #if defined(Vital_SDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
-        if (Vital::is_editor()) return;
+        if (!Vital::is_runtime()) return;
         Sandbox::get_singleton() -> input(event);
     }
     #endif
