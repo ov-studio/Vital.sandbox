@@ -111,59 +111,6 @@ namespace Vital::Engine {
 
 
     // Helpers //
-    std::string Console::fetch_mode_label(const std::string& mode) {
-        const auto label = Vital::Tool::fetch_config("log", mode, "label");
-        if (label.is<std::string>()) return label.as<std::string>();
-        return mode;
-    }
-
-    std::string Console::fetch_mode_badge(const std::string& mode) {
-        const auto badge = Vital::Tool::fetch_config("log", mode, "badge");
-        if (badge.is<std::string>()) return badge.as<std::string>();
-        std::string upper = mode;
-        std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-        return upper;
-    }
-
-    Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
-        Vital::Tool::Stack color;
-        const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
-        const auto g = Vital::Tool::fetch_config("log", mode, "color", 1);
-        const auto b = Vital::Tool::fetch_config("log", mode, "color", 2);
-        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
-        else color.array = {220, 220, 220};
-        return color;
-    }
-
-    std::string Console::fetch_help() {
-        std::ostringstream oss;
-        oss << "Available Commands:\n";
-    
-        auto append_section = [&](const std::string& section, const std::string& label) {
-            const auto* node = Vital::Tool::fetch_config_base("commands");
-            if (!node || !node->HasMember(section.c_str())) return;
-            const auto& cmds = (*node)[section.c_str()];
-            if (!cmds.IsObject()) return;
-            oss << "\n  " << label << ":\n";
-            for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
-                std::string cmd    = it->name.GetString();
-                std::string syntax = it->value.HasMember("syntax") && it->value["syntax"].IsString() ? it->value["syntax"].GetString() : "";
-                std::string desc   = it->value.HasMember("desc")   && it->value["desc"].IsString()   ? it->value["desc"].GetString()   : "";
-                std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
-                oss << fmt::format("    {} — {}\n", full_cmd, desc);
-            }
-        };
-    
-        append_section("shared", "General");
-        #if !defined(Vital_SDK_Client)
-        append_section("server", "Server");
-        #endif
-        #if defined(Vital_SDK_Client)
-        append_section("client", "Client");
-        #endif
-        return oss.str();
-    }
-
     #if !defined(Vital_SDK_Client)
     std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
@@ -255,6 +202,57 @@ namespace Vital::Engine {
         return oss.str();
     }
     #endif
+
+    std::string Console::fetch_mode_label(const std::string& mode) {
+        const auto label = Vital::Tool::fetch_config("log", mode, "label");
+        if (label.is<std::string>()) return label.as<std::string>();
+        return mode;
+    }
+
+    std::string Console::fetch_mode_badge(const std::string& mode) {
+        const auto badge = Vital::Tool::fetch_config("log", mode, "badge");
+        if (badge.is<std::string>()) return badge.as<std::string>();
+        std::string upper = mode;
+        std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+        return upper;
+    }
+
+    Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
+        Vital::Tool::Stack color;
+        const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
+        const auto g = Vital::Tool::fetch_config("log", mode, "color", 1);
+        const auto b = Vital::Tool::fetch_config("log", mode, "color", 2);
+        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
+        else color.array = {220, 220, 220};
+        return color;
+    }
+
+    std::string Console::fetch_help() {
+        std::ostringstream oss;
+        oss << "Available Commands:\n";
+        auto append_section = [&](const std::string& section, const std::string& label) {
+            const auto* node = Vital::Tool::fetch_config_base("commands");
+            if (!node || !node->HasMember(section.c_str())) return;
+            const auto& cmds = (*node)[section.c_str()];
+            if (!cmds.IsObject()) return;
+            oss << "\n  " << label << ":\n";
+            for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
+                std::string cmd    = it->name.GetString();
+                std::string syntax = it->value.HasMember("syntax") && it->value["syntax"].IsString() ? it->value["syntax"].GetString() : "";
+                std::string desc   = it->value.HasMember("desc")   && it->value["desc"].IsString()   ? it->value["desc"].GetString()   : "";
+                std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
+                oss << fmt::format("    {} — {}\n", full_cmd, desc);
+            }
+        };
+        append_section("shared", "General");
+        #if !defined(Vital_SDK_Client)
+        append_section("server", "Server");
+        #endif
+        #if defined(Vital_SDK_Client)
+        append_section("client", "Client");
+        #endif
+        return oss.str();
+    }
 
 
     // Utils //
