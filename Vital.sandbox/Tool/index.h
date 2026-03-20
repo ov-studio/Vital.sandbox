@@ -29,6 +29,14 @@ namespace Vital {
     static const std::string Build_ver = "v0.0.1";
     static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
+    static std::string indent(int level) {
+        #if defined(Vital_SDK_Client)
+        return std::string(level*4, ' ');
+        #else
+        return std::string(level*2, ' ');
+        #endif
+    }
+
     inline godot::String to_godot_string(const std::string& input) {
         return godot::String::utf8(input.c_str());
     }
