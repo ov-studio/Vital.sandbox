@@ -26,10 +26,10 @@
 namespace Vital::System {
     // Instantiators //
     Discord::Discord() {
-        default_application_id = static_cast<uint64_t>(std::stoull(Vital::Tool::fetch_config("discord", "application_id").as<std::string>()));
+        default_application_id = static_cast<uint64_t>(std::stoull(Vital::Tool::fetch_config_value("discord", "application_id").as<std::string>()));
         default_activity = {
-            Vital::Tool::fetch_config("discord", "state").as<std::string>(),
-            Vital::Tool::fetch_config("discord", "details").as<std::string>()
+            Vital::Tool::fetch_config_value("discord", "state").as<std::string>(),
+            Vital::Tool::fetch_config_value("discord", "details").as<std::string>()
         };
         reset_application();
     }

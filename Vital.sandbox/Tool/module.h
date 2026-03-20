@@ -49,21 +49,17 @@ namespace Vital::Tool {
         return it -> second;
     }
 
-    inline const rapidjson::Value* fetch_config_base(const std::string& name) {
-        auto& manifest = fetch_json("manifest");
-        if (!manifest.HasParseError() && manifest.HasMember(name.c_str())) {
-            const auto& entry = manifest[name.c_str()];
-            if (entry.IsObject() && !entry.HasMember("source"))
-                return &entry;
-        }
-        auto& document = fetch_json(name);
-        if (document.HasParseError() || !document.IsObject()) return nullptr;
-        return &document;
+    inline const rapidjson::Value* fetch_config(const std::string& json, const std::string& name) {
+        auto& document = fetch_json(json);
+        if (document.HasParseError() || !document.HasMember(name.c_str())) return nullptr;
+        const auto& entry = document[name.c_str()];
+        if (!entry.IsObject()) return nullptr;
+        return &entry;
     }
 
     template<typename... Keys>
-    inline Vital::Tool::StackValue fetch_config(const std::string& name, Keys&&... keys) {
-        const rapidjson::Value* node = fetch_config_base(name);
+    inline Vital::Tool::StackValue fetch_config_value(const std::string& name, Keys&&... keys) {
+        const rapidjson::Value* node = fetch_config("manifest", name);
         if (!node) return {};
         std::vector<std::string> key_list;
         (key_list.push_back([](auto&& k) -> std::string {
@@ -94,14 +90,14 @@ namespace Vital::Tool {
     }
 
     inline std::string fetch_module(const std::string& name) {
-        const rapidjson::Value* node = fetch_config_base(name);
+        const rapidjson::Value* node = fetch_config("manifest", name);
         if (!node || !node -> HasMember("source")) return "";
         return fetch_content(fmt::format(Repo_Kit, name + "/" + (*node)["source"].GetString()));
     }
 
     inline std::vector<std::string> fetch_modules(const std::string& name) {
         std::vector<std::string> result;
-        const rapidjson::Value* node = fetch_config_base(name);
+        const rapidjson::Value* node = fetch_config("manifest", name);
         if (!node || !node -> HasMember("sources") || !(*node)["sources"].IsArray()) return result;
         for (auto& i : (*node)["sources"].GetArray()) {
             result.push_back(fetch_content(fmt::format(Repo_Kit, name + "/" + std::string(i.GetString()))));

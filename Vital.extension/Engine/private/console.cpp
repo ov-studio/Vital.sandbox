@@ -204,13 +204,13 @@ namespace Vital::Engine {
     #endif
 
     std::string Console::fetch_mode_label(const std::string& mode) {
-        const auto label = Vital::Tool::fetch_config("log", mode, "label");
+        const auto label = Vital::Tool::fetch_config_value("log", mode, "label");
         if (label.is<std::string>()) return label.as<std::string>();
         return mode;
     }
 
     std::string Console::fetch_mode_badge(const std::string& mode) {
-        const auto badge = Vital::Tool::fetch_config("log", mode, "badge");
+        const auto badge = Vital::Tool::fetch_config_value("log", mode, "badge");
         if (badge.is<std::string>()) return badge.as<std::string>();
         std::string upper = mode;
         std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
@@ -219,9 +219,9 @@ namespace Vital::Engine {
 
     Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
         Vital::Tool::Stack color;
-        const auto r = Vital::Tool::fetch_config("log", mode, "color", 0);
-        const auto g = Vital::Tool::fetch_config("log", mode, "color", 1);
-        const auto b = Vital::Tool::fetch_config("log", mode, "color", 2);
+        const auto r = Vital::Tool::fetch_config_value("log", mode, "color", 0);
+        const auto g = Vital::Tool::fetch_config_value("log", mode, "color", 1);
+        const auto b = Vital::Tool::fetch_config_value("log", mode, "color", 2);
         if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
         else color.array = {220, 220, 220};
         return color;
@@ -231,7 +231,7 @@ namespace Vital::Engine {
         std::ostringstream oss;
         oss << "Available Commands:\n";
         auto append_section = [&](const std::string& section, const std::string& label) {
-            const auto* node = Vital::Tool::fetch_config_base("commands");
+            const auto* node = Vital::Tool::fetch_config("commands");
             if (!node || !node -> HasMember(section.c_str())) return;
             const auto& cmds = (*node)[section.c_str()];
             if (!cmds.IsObject()) return;
@@ -285,14 +285,14 @@ namespace Vital::Engine {
         };
         document.AddMember("action", "init", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
-        const auto levels = Vital::Tool::fetch_config_base("log");
+        const auto levels = Vital::Tool::fetch_config("log");
         if (levels) {
             for (auto it = levels -> MemberBegin(); it != levels -> MemberEnd(); ++it) {
                 const std::string mode = it -> name.GetString();
                 const auto label = fetch_mode_label(mode);
                 const auto badge = fetch_mode_badge(mode);
                 const auto color = fetch_mode_color(mode);
-                const auto priority = Vital::Tool::fetch_config("log", mode, "priority");
+                const auto priority = Vital::Tool::fetch_config_value("log", mode, "priority");
                 rapidjson::Value entry(rapidjson::kObjectType);
                 entry.AddMember("label", rapidjson::Value(label.c_str(), alloc), alloc);
                 entry.AddMember("badge", rapidjson::Value(badge.c_str(), alloc), alloc);
