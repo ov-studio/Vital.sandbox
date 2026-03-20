@@ -80,7 +80,10 @@ namespace Vital::Engine {
                 while (stdin_running) {
                     std::cout << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
                     if (!std::getline(std::cin, line)) break;
-                    std::cout << "\033[1A\033[2K" << std::flush;
+                    {
+                        std::lock_guard<std::mutex> lock(stdout_mutex);
+                        std::cout << "\033[1A\033[2K" << std::flush;
+                    }
                     execute(line);
                 }
             });
