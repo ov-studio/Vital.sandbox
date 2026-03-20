@@ -49,10 +49,10 @@ namespace Vital::Engine {
                 HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
                 HANDLE hStdin  = GetStdHandle(STD_INPUT_HANDLE);
                 CONSOLE_FONT_INFOEX fontInfo = {};
-                fontInfo.cbSize       = sizeof(fontInfo);
+                fontInfo.cbSize = sizeof(fontInfo);
                 fontInfo.dwFontSize.Y = 20;
-                fontInfo.FontFamily   = FF_DONTCARE;
-                fontInfo.FontWeight   = FW_NORMAL;
+                fontInfo.FontFamily = FF_DONTCARE;
+                fontInfo.FontWeight = FW_NORMAL;
                 wcscpy_s(fontInfo.FaceName, L"Cascadia Code");
                 if (!SetCurrentConsoleFontEx(hStdout, FALSE, &fontInfo)) {
                     wcscpy_s(fontInfo.FaceName, L"Consolas");
@@ -67,7 +67,6 @@ namespace Vital::Engine {
                 SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
                 GetConsoleMode(hStdin, &in_mode);
                 SetConsoleMode(hStdin, in_mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
-
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
@@ -208,6 +207,7 @@ namespace Vital::Engine {
                 << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
         else {
+            if (content.empty()) return "";
             const std::string indent(17 + mode_label.size(), ' ');
             oss << indent << marker << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
@@ -228,6 +228,7 @@ namespace Vital::Engine {
         std::string line;
         bool first = true;
         while (std::getline(stream, line)) {
+            if (!line.empty() && line.back() == '\r') line.pop_back();
             if (line.empty()) continue;
             oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first);
             first = false;
