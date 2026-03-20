@@ -232,7 +232,7 @@ namespace Vital::Engine {
         oss << "Available Commands:\n";
         auto append_section = [&](const std::string& section, const std::string& label) {
             const auto* node = Vital::Tool::fetch_config_base("commands");
-            if (!node || !node->HasMember(section.c_str())) return;
+            if (!node || !node -> HasMember(section.c_str())) return;
             const auto& cmds = (*node)[section.c_str()];
             if (!cmds.IsObject()) return;
             oss << "\n" << indent(1) << label << ":\n";
