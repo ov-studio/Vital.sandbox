@@ -59,8 +59,9 @@ namespace Vital::Tool {
 
     template<typename... Keys>
     inline Vital::Tool::StackValue fetch_config_value(const std::string& name, Keys&&... keys) {
-        const rapidjson::Value* node = fetch_config("manifest", name);
-        if (!node) return {};
+        auto& document = fetch_json(name);
+        if (document.HasParseError() || !document.IsObject()) return {};
+        const rapidjson::Value* node = &document;
         std::vector<std::string> key_list;
         (key_list.push_back([](auto&& k) -> std::string {
             using T = std::decay_t<decltype(k)>;
