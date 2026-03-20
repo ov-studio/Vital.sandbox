@@ -179,7 +179,7 @@ namespace Vital::Engine {
             content = content.substr(1);
             if (!content.empty() && content[0] == ' ') content = content.substr(1);
         }
-        const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET) : (ANSI_DIM  + std::string(FG_GRAY) + "│ " + ANSI_RESET);
+        const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET) : (ANSI_DIM + std::string(FG_GRAY) + "│ " + ANSI_RESET);
         if (!is_continuation) {
             oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
                 << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
@@ -262,7 +262,7 @@ namespace Vital::Engine {
         std::string token;
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
-        Sandbox::get_singleton() -> signal("vital.sandbox:console_input", 
+        Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
         );
