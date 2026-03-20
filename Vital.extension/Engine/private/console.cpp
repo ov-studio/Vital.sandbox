@@ -297,7 +297,10 @@ namespace Vital::Engine {
             document.Accept(writer);
             webview -> emit(buffer.GetString());
         #else
-            std::cout << format_output(mode, message) << std::flush;
+            {
+                std::lock_guard<std::mutex> lock(stdout_mutex);
+                std::cout << "\033[2K\r" << format_output(mode, message) << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
+            }
         #endif
     }
 
