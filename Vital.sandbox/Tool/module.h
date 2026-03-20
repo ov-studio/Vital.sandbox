@@ -25,33 +25,41 @@
 ////////////
 
 namespace Vital::Tool {
-    inline std::mutex module_mutex;
-    inline std::unordered_map<std::string, std::string> module_cache;
+    inline std::mutex content_mutex;
+    inline std::unordered_map<std::string, std::string> content_cache;
+    inline std::unordered_map<std::string, rapidjson::Document> json_cache;
 
     inline const std::string& fetch_content(std::string_view url) {
-        std::lock_guard<std::mutex> lock(module_mutex);
+        std::lock_guard<std::mutex> lock(content_mutex);
         std::string request(url);
-        auto it = module_cache.find(request);
-        if (it == module_cache.end()) {
-            it = module_cache.emplace(std::move(request), Vital::Tool::Rest::get(std::string(url))).first;
+        auto it = content_cache.find(request);
+        if (it == content_cache.end()) {
+            it = content_cache.emplace(std::move(request), Vital::Tool::Rest::get(std::string(url))).first;
         }
         return it -> second;
     }
 
-    inline rapidjson::Document& fetch_manifest() {
-        static rapidjson::Document document;
-        static bool parsed = false;
-        if (!parsed) {
-            document.Parse(fetch_content(fmt::format(Repo_Kit, "manifest.json")).c_str());
-            parsed = true;
+    inline rapidjson::Document& fetch_json(const std::string& name) {
+        static std::unordered_map<std::string, rapidjson::Document> cache;
+        auto it = cache.find(name);
+        if (it == cache.end()) {
+            rapidjson::Document document;
+            document.Parse(fetch_content(fmt::format(Repo_Kit, name + ".json")).c_str());
+            it = cache.emplace(name, std::move(document)).first;
         }
-        return document;
+        return it -> second;
     }
 
     inline const rapidjson::Value* fetch_config_base(const std::string& name) {
-        const auto& document = fetch_manifest();
-        if (document.HasParseError() || !document.HasMember(name.c_str()) || !document[name.c_str()].IsObject()) return nullptr;
-        return &document[name.c_str()];
+        auto& manifest = fetch_json("manifest");
+        if (!manifest.HasParseError() && manifest.HasMember(name.c_str())) {
+            const auto& entry = manifest[name.c_str()];
+            if (entry.IsObject() && !entry.HasMember("source"))
+                return &entry;
+        }
+        auto& document = fetch_json(name);
+        if (document.HasParseError() || !document.IsObject()) return nullptr;
+        return &document;
     }
 
     template<typename... Keys>
