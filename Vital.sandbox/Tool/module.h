@@ -49,10 +49,10 @@ namespace Vital::Tool {
         return it -> second;
     }
 
-    inline const rapidjson::Value* fetch_config(const std::string& json, const std::string& name) {
-        auto& document = fetch_json(json);
-        if (document.HasParseError() || !document.HasMember(name.c_str())) return nullptr;
-        const auto& entry = document[name.c_str()];
+    inline const rapidjson::Value* fetch_config(const std::string& name, const std::string& key) {
+        auto& document = fetch_json(name);
+        if (document.HasParseError() || !document.HasMember(key.c_str())) return nullptr;
+        const auto& entry = document[key.c_str()];
         if (!entry.IsObject()) return nullptr;
         return &entry;
     }
