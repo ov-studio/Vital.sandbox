@@ -46,20 +46,34 @@ namespace Vital::Engine {
                 freopen("CONOUT$", "w", stdout);
                 freopen("CONOUT$", "w", stderr);
                 freopen("CONIN$",  "r", stdin);
-                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-                DWORD mode;
-                GetConsoleMode(hStdin, &mode);
-                SetConsoleMode(hStdin, mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
                 HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-                DWORD out_mode;
+                HANDLE hStdin  = GetStdHandle(STD_INPUT_HANDLE);
+                CONSOLE_FONT_INFOEX fontInfo = {};
+                fontInfo.cbSize       = sizeof(fontInfo);
+                fontInfo.dwFontSize.Y = 20;
+                fontInfo.FontFamily   = FF_DONTCARE;
+                fontInfo.FontWeight   = FW_NORMAL;
+                wcscpy_s(fontInfo.FaceName, L"Cascadia Code");
+                if (!SetCurrentConsoleFontEx(hStdout, FALSE, &fontInfo)) {
+                    wcscpy_s(fontInfo.FaceName, L"Consolas");
+                    SetCurrentConsoleFontEx(hStdout, FALSE, &fontInfo);
+                }
+                COORD size = {120, 9999};
+                SetConsoleScreenBufferSize(hStdout, size);
+                SMALL_RECT rect = {0, 0, 119, 29};
+                SetConsoleWindowInfo(hStdout, TRUE, &rect);
+                DWORD out_mode, in_mode;
                 GetConsoleMode(hStdout, &out_mode);
-                SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+                SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
+                GetConsoleMode(hStdin, &in_mode);
+                SetConsoleMode(hStdin, in_mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
                 term.c_lflag |= (ICANON | ECHO | ECHOE | ECHOK | ISIG);
                 tcsetattr(STDIN_FILENO, TCSANOW, &term);
             #endif
+
             stdin_running = true;
             stdin_thread = std::thread([this]() {
                 std::string line;
