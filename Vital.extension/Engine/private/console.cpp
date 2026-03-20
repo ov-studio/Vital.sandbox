@@ -228,6 +228,7 @@ namespace Vital::Engine {
         std::string line;
         bool first = true;
         while (std::getline(stream, line)) {
+            if (line.empty()) continue;
             oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first);
             first = false;
         }
