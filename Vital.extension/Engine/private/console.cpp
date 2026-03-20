@@ -308,7 +308,7 @@ namespace Vital::Engine {
         #else
             {
                 std::lock_guard<std::mutex> lock(stdout_mutex);
-                std::cout << "\033[2K\r" << format_output(mode, message) << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
+                std::cout << "\033[2K\r" << format_output(mode, message) << std::flush;
             }
         #endif
     }
