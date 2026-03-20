@@ -231,15 +231,15 @@ namespace Vital::Engine {
         std::ostringstream oss;
         oss << "Available Commands:\n";
         auto append_section = [&](const std::string& section, const std::string& label) {
-            auto& doc = Vital::Tool::fetch_json("config/help");
-            if (doc.HasParseError() || !doc.HasMember(section.c_str())) return;
-            const auto& cmds = doc[section.c_str()];
+            auto& help = Vital::Tool::fetch_json("config/help");
+            if (help.HasParseError() || !help.HasMember(section.c_str())) return;
+            const auto& cmds = help[section.c_str()];
             if (!cmds.IsObject()) return;
             oss << "\n" << indent(1) << label << ":\n";
             for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
-                std::string cmd    = it -> name.GetString();
+                std::string cmd = it -> name.GetString();
                 std::string syntax = it -> value.HasMember("syntax") && it -> value["syntax"].IsString() ? it -> value["syntax"].GetString() : "";
-                std::string desc   = it -> value.HasMember("desc")   && it -> value["desc"].IsString()   ? it -> value["desc"].GetString()   : "";
+                std::string desc = it -> value.HasMember("desc")   && it -> value["desc"].IsString()   ? it -> value["desc"].GetString()   : "";
                 std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
                 oss << fmt::format("{}{} — {}\n", indent(2), full_cmd, desc);
             }
