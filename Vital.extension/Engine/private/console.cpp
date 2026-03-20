@@ -231,7 +231,7 @@ namespace Vital::Engine {
         std::ostringstream oss;
         oss << "Available Commands:\n";
         auto append_section = [&](const std::string& section, const std::string& label) {
-            auto& doc = Vital::Tool::fetch_json("commands");
+            auto& doc = Vital::Tool::fetch_json("config/help");
             if (doc.HasParseError() || !doc.HasMember(section.c_str())) return;
             const auto& cmds = doc[section.c_str()];
             if (!cmds.IsObject()) return;
@@ -285,7 +285,7 @@ namespace Vital::Engine {
         };
         document.AddMember("action", "init", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
-        auto& levels = Vital::Tool::fetch_json("log");
+        auto& levels = Vital::Tool::fetch_json("config/log");
         if (!levels.HasParseError() && levels.IsObject()) {
             for (auto it = levels.MemberBegin(); it != levels.MemberEnd(); ++it) {
                 const std::string mode = it -> name.GetString();
