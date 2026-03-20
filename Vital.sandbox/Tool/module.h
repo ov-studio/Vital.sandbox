@@ -49,7 +49,7 @@ namespace Vital::Tool {
         return it -> second;
     }
 
-    inline const rapidjson::Value* fetch_config(const std::string& name, const std::string& key) {
+    inline const rapidjson::Value* fetch_json_node(const std::string& name, const std::string& key) {
         auto& document = fetch_json(name);
         if (document.HasParseError() || !document.HasMember(key.c_str())) return nullptr;
         const auto& entry = document[key.c_str()];
@@ -58,7 +58,7 @@ namespace Vital::Tool {
     }
 
     template<typename... Keys>
-    inline Vital::Tool::StackValue fetch_config_value(const std::string& name, Keys&&... keys) {
+    inline Vital::Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
         auto& document = fetch_json(name);
         if (document.HasParseError() || !document.IsObject()) return {};
         const rapidjson::Value* node = &document;
@@ -91,14 +91,14 @@ namespace Vital::Tool {
     }
 
     inline std::string fetch_module(const std::string& name) {
-        const rapidjson::Value* node = fetch_config("manifest", name);
+        const rapidjson::Value* node = fetch_json_node("manifest", name);
         if (!node || !node -> HasMember("source")) return "";
         return fetch_content(fmt::format(Repo_Kit, name + "/" + (*node)["source"].GetString()));
     }
 
     inline std::vector<std::string> fetch_modules(const std::string& name) {
         std::vector<std::string> result;
-        const rapidjson::Value* node = fetch_config("manifest", name);
+        const rapidjson::Value* node = fetch_json_node("manifest", name);
         if (!node || !node -> HasMember("sources") || !(*node)["sources"].IsArray()) return result;
         for (auto& i : (*node)["sources"].GetArray()) {
             result.push_back(fetch_content(fmt::format(Repo_Kit, name + "/" + std::string(i.GetString()))));
