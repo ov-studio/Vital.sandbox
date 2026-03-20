@@ -40,12 +40,11 @@ namespace Vital::Tool {
     }
 
     inline rapidjson::Document& fetch_json(const std::string& name) {
-        static std::unordered_map<std::string, rapidjson::Document> cache;
-        auto it = cache.find(name);
-        if (it == cache.end()) {
+        auto it = json_cache.find(name);
+        if (it == json_cache.end()) {
             rapidjson::Document document;
             document.Parse(fetch_content(fmt::format(Repo_Kit, name + ".json")).c_str());
-            it = cache.emplace(name, std::move(document)).first;
+            it = json_cache.emplace(name, std::move(document)).first;
         }
         return it -> second;
     }
