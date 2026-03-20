@@ -50,7 +50,7 @@ namespace Vital::Engine {
                 HANDLE hStdin  = GetStdHandle(STD_INPUT_HANDLE);
                 CONSOLE_FONT_INFOEX fontInfo = {};
                 fontInfo.cbSize = sizeof(fontInfo);
-                fontInfo.dwFontSize.Y = 20;
+                fontInfo.dwFontSize.Y = 19;
                 fontInfo.FontFamily = FF_DONTCARE;
                 fontInfo.FontWeight = FW_NORMAL;
                 wcscpy_s(fontInfo.FaceName, L"Cascadia Code");
@@ -110,18 +110,7 @@ namespace Vital::Engine {
     }
 
 
-    // Utils //
-    Console* Console::get_singleton() {
-        if (!singleton) singleton = memnew(Console);
-        return singleton;
-    }
-
-    void Console::free_singleton() {
-        if (!singleton) return;
-        memdelete(singleton);
-        singleton = nullptr;
-    }
-
+    // Helpers //
     std::string Console::fetch_mode_label(const std::string& mode) {
         const auto label = Vital::Tool::fetch_config("log", mode, "label");
         if (label.is<std::string>()) return label.as<std::string>();
@@ -144,6 +133,35 @@ namespace Vital::Engine {
         if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
         else color.array = {220, 220, 220};
         return color;
+    }
+
+    std::string Console::fetch_help() {
+        std::ostringstream oss;
+        oss << "Available Commands:\n";
+    
+        auto append_section = [&](const std::string& section, const std::string& label) {
+            const auto* node = Vital::Tool::fetch_config_base("commands");
+            if (!node || !node->HasMember(section.c_str())) return;
+            const auto& cmds = (*node)[section.c_str()];
+            if (!cmds.IsObject()) return;
+            oss << "\n  " << label << ":\n";
+            for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
+                std::string cmd    = it->name.GetString();
+                std::string syntax = it->value.HasMember("syntax") && it->value["syntax"].IsString() ? it->value["syntax"].GetString() : "";
+                std::string desc   = it->value.HasMember("desc")   && it->value["desc"].IsString()   ? it->value["desc"].GetString()   : "";
+                std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
+                oss << fmt::format("    {} — {}\n", full_cmd, desc);
+            }
+        };
+    
+        append_section("shared", "General");
+        #if !defined(Vital_SDK_Client)
+        append_section("server", "Server");
+        #endif
+        #if defined(Vital_SDK_Client)
+        append_section("client", "Client");
+        #endif
+        return oss.str();
     }
 
     #if !defined(Vital_SDK_Client)
@@ -202,13 +220,13 @@ namespace Vital::Engine {
         const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET) : (ANSI_DIM + std::string(FG_GRAY) + "│ " + ANSI_RESET);
         if (!is_continuation) {
             oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
-                << "  " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
+                << "   " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
                 << "  " << (is_highlighted ? marker : "")
                 << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
         else {
             if (content.empty()) return "";
-            const std::string indent(17 + mode_label.size(), ' ');
+            const std::string indent(18 + mode_label.size(), ' ');
             oss << indent << marker << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
         return oss.str();
@@ -237,6 +255,19 @@ namespace Vital::Engine {
         return oss.str();
     }
     #endif
+
+
+    // Utils //
+    Console* Console::get_singleton() {
+        if (!singleton) singleton = memnew(Console);
+        return singleton;
+    }
+
+    void Console::free_singleton() {
+        if (!singleton) return;
+        memdelete(singleton);
+        singleton = nullptr;
+    }
 
 
     // APIs //
@@ -285,6 +316,7 @@ namespace Vital::Engine {
         std::string token;
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
+        if (tokens[0] == "help") return print("sbox", fetch_help());
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
