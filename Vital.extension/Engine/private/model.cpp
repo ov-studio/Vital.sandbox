@@ -145,7 +145,7 @@ namespace Vital::Engine {
     void Model::setup_spawner() {
         if (net_spawner && net_spawner->is_inside_tree()) return;
         if (net_spawner) teardown_spawner();
-        auto* core = Core::get_singleton();
+        auto core = Core::get_singleton();
         if (!core) return;
 
         net_spawner_delegate = memnew(ModelSpawnerDelegate);
@@ -176,7 +176,7 @@ namespace Vital::Engine {
     }
 
     void Model::cleanup_spawned() {
-        auto* core = Core::get_singleton();
+        auto core = Core::get_singleton();
         if (!core) return;
         for (int i = core->get_child_count() - 1; i >= 0; i--) {
             godot::Node* child = core->get_child(i);
@@ -209,7 +209,7 @@ namespace Vital::Engine {
     void Model::_setup_sync(int authority_peer) {
         if (net_sync) return;
     
-        auto* config = memnew(godot::SceneReplicationConfig);
+        auto config = memnew(godot::SceneReplicationConfig);
         config->add_property(godot::NodePath(".:position"));
         config->property_set_replication_mode(
             godot::NodePath(".:position"),
