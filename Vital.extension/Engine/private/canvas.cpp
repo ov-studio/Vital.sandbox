@@ -197,7 +197,7 @@ namespace Vital::Engine {
 
     // Getters //
     godot::Vector2 Canvas::get_resolution() {
-        return Core::get_singleton() -> window_get_size();
+        return Core::get_display_server() -> window_get_size();
     }
 
 
