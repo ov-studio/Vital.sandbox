@@ -69,6 +69,10 @@ namespace Vital::Engine {
     }
 
     #if defined(Vital_SDK_Client)
+    godot::DisplayServer* Core::get_display_server() {
+        return godot::DisplayServer::get_singleton();
+    }
+    
     godot::RenderingServer* Core::get_rendering_server() {
         return godot::RenderingServer::get_singleton();
     }

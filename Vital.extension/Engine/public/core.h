@@ -47,6 +47,7 @@ namespace Vital::Engine {
             static Core* get_singleton();
             static godot::Node* get_root();
             #if defined(Vital_SDK_Client)
+            static godot::DisplayServer* get_display_server();
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
