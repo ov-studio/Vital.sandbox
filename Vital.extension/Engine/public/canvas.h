@@ -127,6 +127,10 @@ namespace Vital::Engine {
             void push(Command command);
 
 
+            // Getters //
+            godot::Vector2 get_resolution();
+
+        
             // APIs //
             godot::Vector3 world_to_screen(godot::Vector3 position, float padding = 0.0f);
             godot::Vector3 screen_to_world(godot::Vector2 position, float depth = 1.0f);
