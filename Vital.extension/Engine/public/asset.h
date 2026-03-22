@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
-#include <Vital.extension/Engine/public/network.h>
 
 
 /////////////////////////////////////
@@ -22,7 +21,7 @@
 /////////////////////////////////////
 
 namespace Vital::Engine {
-    //TODO: Improve
+    // TODO: Improve
     class AssetManager {
         private:
             inline static AssetManager* singleton = nullptr;
@@ -78,6 +77,7 @@ namespace Vital::Engine {
             void receive_manifest(const Vital::Tool::Stack& args);
             void receive_chunk(const Vital::Tool::Stack& args);
             void process_chunk(const std::string& path);
+            void on_asset_saved(const std::string& path);
             void queue_spawn(const std::string& name, int authority_peer);
             void flush_spawn_queue(const std::string& loaded_name);
             bool is_downloading() const;

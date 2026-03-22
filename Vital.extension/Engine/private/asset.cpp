@@ -14,10 +14,12 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/asset.h>
+#include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/console.h>
 #include <Vital.sandbox/Tool/crypto.h>
 #include <Vital.sandbox/Tool/shrinker.h>
+#include <Vital.sandbox/Tool/thread.h>
 
 
 /////////////////////////////////////
@@ -26,7 +28,7 @@
 
 namespace Vital::Engine {
 
-    //TODO: Improve
+    // TODO: Improve
     AssetManager* AssetManager::get_singleton() {
         if (!singleton) singleton = new AssetManager();
         return singleton;
@@ -97,7 +99,6 @@ namespace Vital::Engine {
     }
 
     void AssetManager::broadcast_manifest(int peer_id) {
-        Vital::print("sbox", "AssetManager: broadcast_manifest start, peer=", peer_id);
         if (registered_assets.empty()) return;
 
         Vital::Tool::Stack msg;
@@ -117,7 +118,7 @@ namespace Vital::Engine {
     }
 
     void AssetManager::send_asset(const std::string& path, int peer_id) {
-        Vital::print("sbox", "AssetManager: send_asset called -> ", path.c_str(), " peer=", peer_id);
+        Vital::print("sbox", "AssetManager: send_asset queued -> ", path.c_str(), " peer=", peer_id);
 
         auto it = registered_assets.find(path);
         if (it == registered_assets.end()) {
@@ -125,42 +126,47 @@ namespace Vital::Engine {
             return;
         }
 
-        try {
-            auto buffer = Vital::Tool::File::read_binary(get_directory(), path);
-            Vital::print("sbox", "AssetManager: read file ok, size=", (int)buffer.size());
+        std::string hash = it->second;
+        std::string dir  = get_directory();
 
-            // Compress then base64 encode
-            std::string_view raw(reinterpret_cast<const char*>(buffer.ptr()), buffer.size());
-            std::string compressed = Vital::Tool::Shrinker::compress(std::string(raw));
-            std::string encoded    = Vital::Tool::Crypto::encode(compressed);
-            Vital::print("sbox", "AssetManager: compressed+encoded ok, size=", (int)encoded.size());
+        // Heavy work on worker thread — file read + compress + encode
+        Vital::Tool::Thread([path, hash, dir, peer_id](Vital::Tool::Thread* t) {
+            try {
+                auto buffer = Vital::Tool::File::read_binary(dir, path);
+                Vital::print("sbox", "AssetManager: read ok, size=", (int)buffer.size());
 
-            // Split into 256KB chunks
-            const size_t CHUNK_SIZE = 262144;
-            int total_chunks = (int)std::ceil((double)encoded.size() / CHUNK_SIZE);
+                std::string_view raw(reinterpret_cast<const char*>(buffer.ptr()), buffer.size());
+                std::string compressed = Vital::Tool::Shrinker::compress(std::string(raw));
+                std::string encoded    = Vital::Tool::Crypto::encode(compressed);
+                Vital::print("sbox", "AssetManager: compressed+encoded ok, size=", (int)encoded.size());
 
-            for (int chunk_index = 0; chunk_index < total_chunks; chunk_index++) {
-                size_t offset     = chunk_index * CHUNK_SIZE;
-                size_t length     = std::min(CHUNK_SIZE, encoded.size() - offset);
-                std::string chunk = encoded.substr(offset, length);
+                const size_t CHUNK_SIZE = 262144;
+                int total_chunks = (int)std::ceil((double)encoded.size() / CHUNK_SIZE);
 
-                Vital::Tool::Stack msg;
-                msg.object["type"]        = Vital::Tool::StackValue(std::string("asset:chunk"));
-                msg.object["path"]        = Vital::Tool::StackValue(path);
-                msg.object["hash"]        = Vital::Tool::StackValue(it->second);
-                msg.object["data"]        = Vital::Tool::StackValue(chunk);
-                msg.object["chunk_index"] = Vital::Tool::StackValue((int32_t)chunk_index);
-                msg.object["chunk_total"] = Vital::Tool::StackValue((int32_t)total_chunks);
+                for (int chunk_index = 0; chunk_index < total_chunks; chunk_index++) {
+                    size_t offset     = chunk_index * CHUNK_SIZE;
+                    size_t length     = std::min(CHUNK_SIZE, encoded.size() - offset);
+                    std::string chunk = encoded.substr(offset, length);
 
-                Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+                    // Marshal send to main thread — RPC not thread safe
+                    Core::get_singleton()->call_deferred(
+                        "send_asset_chunk",
+                        godot::String(path.c_str()),
+                        godot::String(hash.c_str()),
+                        godot::String(chunk.c_str()),
+                        chunk_index,
+                        total_chunks,
+                        peer_id
+                    );
+                }
+
+                Vital::print("sbox", "AssetManager: queued ", total_chunks,
+                    " chunks -> ", path.c_str(), " peer=", peer_id);
             }
-
-            Vital::print("sbox", "AssetManager: sent ", total_chunks,
-                " chunks for -> ", path.c_str(), " to peer ", peer_id);
-        }
-        catch (...) {
-            Vital::print("sbox", "AssetManager: failed to send -> ", path.c_str());
-        }
+            catch (...) {
+                Vital::print("sbox", "AssetManager: failed to send -> ", path.c_str());
+            }
+        }).detach();
     }
 
 
@@ -181,17 +187,12 @@ namespace Vital::Engine {
             // Recompute hash from actual file on disk — tamper proof
             bool hash_matches = false;
             try {
-                auto buffer = Vital::Tool::File::read_binary(
-                    get_local_base(),
-                    get_local_filename(path)
-                );
-                std::string local_hash = compute_hash(buffer);
-                hash_matches = (local_hash == hash);
+                auto buffer  = Vital::Tool::File::read_binary(get_local_base(), get_local_filename(path));
+                hash_matches = (compute_hash(buffer) == hash);
                 Vital::print("sbox", "AssetManager: checked -> ", path.c_str(),
                     " match=", hash_matches ? "yes" : "no");
             }
             catch (...) {
-                // File doesn't exist or can't be read — needs download
                 hash_matches = false;
             }
 
@@ -273,7 +274,7 @@ namespace Vital::Engine {
             return;
         }
 
-        // Queue heavy work for next frame — keeps network receive non-blocking
+        // Store and defer heavy work to next frame
         pending_chunks[path] = { buffer, hash };
         Core::get_singleton()->call_deferred(
             "process_asset_chunk",
@@ -285,31 +286,39 @@ namespace Vital::Engine {
         auto it = pending_chunks.find(path);
         if (it == pending_chunks.end()) return;
 
-        auto& [buffer, hash] = it->second;
-        std::string local_base = get_local_base();
+        // Move data out before thread — avoid iterator invalidation
+        godot::PackedByteArray buffer = it->second.buffer;
+        std::string hash              = it->second.hash;
+        std::string local_base        = get_local_base();
+        std::string local_filename    = get_local_filename(path);
+        pending_chunks.erase(it);
 
-        // Save binary file
-        try {
-            Vital::Tool::File::write_binary(
-                local_base,
-                get_local_filename(path),
-                buffer
+        // Heavy file write on worker thread
+        Vital::Tool::Thread([path, buffer, local_base, local_filename](Vital::Tool::Thread* t) {
+            try {
+                Vital::Tool::File::write_binary(local_base, local_filename, buffer);
+                Vital::print("sbox", "AssetManager: saved -> ", local_filename.c_str());
+            }
+            catch (...) {
+                Vital::print("sbox", "AssetManager: failed to save -> ", path.c_str());
+            }
+
+            // Marshal back to main thread for Godot events + state
+            Core::get_singleton()->call_deferred(
+                "on_asset_saved",
+                godot::String(path.c_str())
             );
-            Vital::print("sbox", "AssetManager: saved -> ", get_local_filename(path).c_str());
-        }
-        catch (...) {
-            Vital::print("sbox", "AssetManager: failed to save -> ", path.c_str());
-        }
+        }).detach();
+    }
 
+    void AssetManager::on_asset_saved(const std::string& path) {
         Vital::print("sbox", "AssetManager: downloaded -> ", path.c_str());
 
-        // Emit per-file event — caller decides what to do with it
         Vital::Tool::Stack ready_args;
         ready_args.object["path"]   = Vital::Tool::StackValue(path);
         ready_args.object["cached"] = Vital::Tool::StackValue(false);
         Vital::Tool::Event::emit("asset:file_ready", ready_args);
 
-        pending_chunks.erase(it);
         downloading.erase(path);
 
         if (downloading.empty()) {

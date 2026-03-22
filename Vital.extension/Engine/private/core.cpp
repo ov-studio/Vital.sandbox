@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/canvas.h>
@@ -25,6 +26,7 @@
 ////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
     // Instantiators //
     void Core::_ready() {
         singleton = singleton ? singleton : this;
@@ -59,17 +61,6 @@ namespace Vital::Engine {
     #endif
 
 
-    // Helpers //
-    // TODO: Improve
-    void Core::send_asset_to_peer(const godot::String& path, int peer_id) {
-        AssetManager::get_singleton()->send_asset(to_std_string(path), peer_id);
-    }
-
-    void Core::process_asset_chunk(const godot::String& path) {
-        AssetManager::get_singleton() -> process_chunk(to_std_string(path));
-    }
-
-
     // Getters //
     Core* Core::get_singleton() {
         return singleton;
@@ -84,7 +75,7 @@ namespace Vital::Engine {
     godot::DisplayServer* Core::get_display_server() {
         return godot::DisplayServer::get_singleton();
     }
-    
+
     godot::RenderingServer* Core::get_rendering_server() {
         return godot::RenderingServer::get_singleton();
     }
@@ -119,6 +110,29 @@ namespace Vital::Engine {
 
     void Core::spawn_model(const godot::String& name, int authority_peer) {
         Model::spawn_synced(to_std_string(name), authority_peer);
+    }
+
+    void Core::process_asset_chunk(const godot::String& path) {
+        AssetManager::get_singleton()->process_chunk(to_std_string(path));
+    }
+
+    void Core::send_asset_to_peer(const godot::String& path, int peer_id) {
+        AssetManager::get_singleton()->send_asset(to_std_string(path), peer_id);
+    }
+
+    void Core::send_asset_chunk(const godot::String& path, const godot::String& hash, const godot::String& data, int chunk_index, int chunk_total, int peer_id) {
+        Vital::Tool::Stack msg;
+        msg.object["type"]        = Vital::Tool::StackValue(std::string("asset:chunk"));
+        msg.object["path"]        = Vital::Tool::StackValue(to_std_string(path));
+        msg.object["hash"]        = Vital::Tool::StackValue(to_std_string(hash));
+        msg.object["data"]        = Vital::Tool::StackValue(to_std_string(data));
+        msg.object["chunk_index"] = Vital::Tool::StackValue((int32_t)chunk_index);
+        msg.object["chunk_total"] = Vital::Tool::StackValue((int32_t)chunk_total);
+        Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+    }
+
+    void Core::on_asset_saved(const godot::String& path) {
+        AssetManager::get_singleton()->on_asset_saved(to_std_string(path));
     }
 
 
