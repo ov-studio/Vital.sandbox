@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/model.h>
+#include <Vital.extension/Engine/public/console.h>
 #include <Vital.sandbox/Tool/crypto.h>
 #include <Vital.sandbox/Tool/shrinker.h>
 
