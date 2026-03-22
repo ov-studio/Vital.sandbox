@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/index.h>
 
 
 /////////////////////////////////////
@@ -37,6 +37,9 @@ namespace Vital::Engine {
 
             // Client: assets currently being downloaded
             std::unordered_set<std::string> downloading;
+
+            // Client: cancelled downloads
+            std::unordered_set<std::string> cancelled;
 
             // Client: pending chunks awaiting process_chunk
             struct ChunkData { godot::PackedByteArray buffer; std::string hash; };
@@ -71,6 +74,8 @@ namespace Vital::Engine {
             void register_assets(const std::vector<std::string>& paths);
             void broadcast_manifest(int peer_id);
             void send_asset(const std::string& path, int peer_id);
+            void send_cancel(const std::string& path, int peer_id);
+            void send_cancel_all(const std::string& path);
 
 
             // Client //
@@ -78,9 +83,12 @@ namespace Vital::Engine {
             void receive_chunk(const Vital::Tool::Stack& args);
             void process_chunk(const std::string& path);
             void on_asset_saved(const std::string& path);
+            void cancel(const std::string& path);
+            void cancel_all();
             void queue_spawn(const std::string& name, int authority_peer);
             void flush_spawn_queue(const std::string& loaded_name);
             bool is_downloading() const;
+            bool is_cancelled(const std::string& path) const;
             int get_pending_count() const;
 
 

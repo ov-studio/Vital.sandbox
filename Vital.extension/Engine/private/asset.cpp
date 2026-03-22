@@ -27,7 +27,6 @@
 /////////////////////////////////////
 
 namespace Vital::Engine {
-
     // TODO: Improve
     AssetManager* AssetManager::get_singleton() {
         if (!singleton) singleton = new AssetManager();
@@ -129,7 +128,6 @@ namespace Vital::Engine {
         std::string hash = it->second;
         std::string dir  = get_directory();
 
-        // Heavy work on worker thread — file read + compress + encode
         Vital::Tool::Thread([path, hash, dir, peer_id](Vital::Tool::Thread* t) {
             try {
                 auto buffer = Vital::Tool::File::read_binary(dir, path);
@@ -148,7 +146,6 @@ namespace Vital::Engine {
                     size_t length     = std::min(CHUNK_SIZE, encoded.size() - offset);
                     std::string chunk = encoded.substr(offset, length);
 
-                    // Marshal send to main thread — RPC not thread safe
                     Core::get_singleton()->call_deferred(
                         "send_asset_chunk",
                         godot::String(path.c_str()),
@@ -169,6 +166,21 @@ namespace Vital::Engine {
         }).detach();
     }
 
+    void AssetManager::send_cancel(const std::string& path, int peer_id) {
+        Vital::Tool::Stack msg;
+        msg.object["type"] = Vital::Tool::StackValue(std::string("asset:cancel"));
+        msg.object["path"] = Vital::Tool::StackValue(path);
+        Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+        Vital::print("sbox", "AssetManager: sent cancel -> ", path.c_str(), " peer=", peer_id);
+    }
+
+    void AssetManager::send_cancel_all(const std::string& path) {
+        for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
+            send_cancel(path, peer_id);
+        }
+        Vital::print("sbox", "AssetManager: sent cancel to all peers -> ", path.c_str());
+    }
+
 
     //----------------//
     //    Client      //
@@ -184,7 +196,6 @@ namespace Vital::Engine {
             std::string path = args.object.at("asset_path_" + std::to_string(i)).as<std::string>();
             std::string hash = args.object.at("asset_hash_" + std::to_string(i)).as<std::string>();
 
-            // Recompute hash from actual file on disk — tamper proof
             bool hash_matches = false;
             try {
                 auto buffer  = Vital::Tool::File::read_binary(get_local_base(), get_local_filename(path));
@@ -204,6 +215,9 @@ namespace Vital::Engine {
                 Vital::Tool::Event::emit("asset:file_ready", ready_args);
                 continue;
             }
+
+            // Clear any stale cancellation before re-downloading
+            cancelled.erase(path);
 
             downloading.insert(path);
             needs_download++;
@@ -229,16 +243,23 @@ namespace Vital::Engine {
         int chunk_index        = args.object.at("chunk_index").as<int32_t>();
         int chunk_total        = args.object.at("chunk_total").as<int32_t>();
 
+        // Drop chunk if cancelled
+        if (cancelled.count(path)) {
+            Vital::print("sbox", "AssetManager: chunk dropped (cancelled) -> ", path.c_str());
+            if (chunk_index == chunk_total - 1) {
+                chunk_accumulator.erase(path);
+                cancelled.erase(path);
+            }
+            return;
+        }
+
         Vital::print("sbox", "AssetManager: received chunk ",
             chunk_index + 1, "/", chunk_total, " -> ", path.c_str());
 
-        // Accumulate base64 chunks
         chunk_accumulator[path] += chunk_data;
 
-        // Wait until all chunks arrived
         if (chunk_index < chunk_total - 1) return;
 
-        // All chunks received — decode then decompress
         std::string encoded = chunk_accumulator[path];
         chunk_accumulator.erase(path);
 
@@ -251,11 +272,13 @@ namespace Vital::Engine {
         }
         catch (...) {
             Vital::print("sbox", "AssetManager: failed to decode/decompress -> ", path.c_str());
+            downloading.erase(path);
             return;
         }
 
         if (decompressed.empty()) {
             Vital::print("sbox", "AssetManager: empty after decompress -> ", path.c_str());
+            downloading.erase(path);
             return;
         }
 
@@ -263,7 +286,6 @@ namespace Vital::Engine {
         buffer.resize(decompressed.size());
         memcpy(buffer.ptrw(), decompressed.data(), decompressed.size());
 
-        // Verify hash against original uncompressed data
         std::string received_hash = compute_hash(buffer);
         if (received_hash != hash) {
             Vital::print("sbox", "AssetManager: hash mismatch -> ", path.c_str());
@@ -274,7 +296,6 @@ namespace Vital::Engine {
             return;
         }
 
-        // Store and defer heavy work to next frame
         pending_chunks[path] = { buffer, hash };
         Core::get_singleton()->call_deferred(
             "process_asset_chunk",
@@ -286,14 +307,21 @@ namespace Vital::Engine {
         auto it = pending_chunks.find(path);
         if (it == pending_chunks.end()) return;
 
-        // Move data out before thread — avoid iterator invalidation
+        // Drop if cancelled while waiting for deferred call
+        if (cancelled.count(path)) {
+            Vital::print("sbox", "AssetManager: process dropped (cancelled) -> ", path.c_str());
+            pending_chunks.erase(it);
+            downloading.erase(path);
+            cancelled.erase(path);
+            return;
+        }
+
         godot::PackedByteArray buffer = it->second.buffer;
         std::string hash              = it->second.hash;
         std::string local_base        = get_local_base();
         std::string local_filename    = get_local_filename(path);
         pending_chunks.erase(it);
 
-        // Heavy file write on worker thread
         Vital::Tool::Thread([path, buffer, local_base, local_filename](Vital::Tool::Thread* t) {
             try {
                 Vital::Tool::File::write_binary(local_base, local_filename, buffer);
@@ -303,7 +331,6 @@ namespace Vital::Engine {
                 Vital::print("sbox", "AssetManager: failed to save -> ", path.c_str());
             }
 
-            // Marshal back to main thread for Godot events + state
             Core::get_singleton()->call_deferred(
                 "on_asset_saved",
                 godot::String(path.c_str())
@@ -312,6 +339,14 @@ namespace Vital::Engine {
     }
 
     void AssetManager::on_asset_saved(const std::string& path) {
+        // Drop if cancelled while saving
+        if (cancelled.count(path)) {
+            Vital::print("sbox", "AssetManager: save dropped (cancelled) -> ", path.c_str());
+            downloading.erase(path);
+            cancelled.erase(path);
+            return;
+        }
+
         Vital::print("sbox", "AssetManager: downloaded -> ", path.c_str());
 
         Vital::Tool::Stack ready_args;
@@ -325,6 +360,29 @@ namespace Vital::Engine {
             Vital::print("sbox", "AssetManager: all assets ready");
             Vital::Tool::Event::emit("asset:ready", {});
         }
+    }
+
+    void AssetManager::cancel(const std::string& path) {
+        if (!downloading.count(path)) return;
+        cancelled.insert(path);
+        chunk_accumulator.erase(path);
+        pending_chunks.erase(path);
+        downloading.erase(path);
+        Vital::print("sbox", "AssetManager: cancelled -> ", path.c_str());
+        if (downloading.empty()) {
+            Vital::Tool::Event::emit("asset:ready", {});
+        }
+    }
+
+    void AssetManager::cancel_all() {
+        for (auto& path : downloading) {
+            cancelled.insert(path);
+            chunk_accumulator.erase(path);
+            pending_chunks.erase(path);
+        }
+        downloading.clear();
+        Vital::print("sbox", "AssetManager: all downloads cancelled");
+        Vital::Tool::Event::emit("asset:ready", {});
     }
 
     void AssetManager::queue_spawn(const std::string& name, int authority_peer) {
@@ -348,6 +406,10 @@ namespace Vital::Engine {
         return !downloading.empty();
     }
 
+    bool AssetManager::is_cancelled(const std::string& path) const {
+        return cancelled.count(path) > 0;
+    }
+
     int AssetManager::get_pending_count() const {
         return static_cast<int>(downloading.size());
     }
@@ -361,6 +423,7 @@ namespace Vital::Engine {
         registered_assets.clear();
         spawn_queue.clear();
         downloading.clear();
+        cancelled.clear();
         pending_chunks.clear();
         chunk_accumulator.clear();
     }

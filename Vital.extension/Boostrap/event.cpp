@@ -62,7 +62,13 @@ void setup() {
             );
             return;
         }
-    
+        else if (type == "asset:cancel") {
+            std::string path = args.object.at("path").as<std::string>();
+            Vital::print("sbox", "AssetManager: server cancelled -> ", path.c_str());
+            Vital::Engine::AssetManager::get_singleton()->cancel(path);
+            return;
+        }
+
         // Guard array access — only proceed if array has entries
         if (args.array.empty()) return;
     
