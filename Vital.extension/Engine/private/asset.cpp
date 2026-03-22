@@ -175,10 +175,12 @@ namespace Vital::Engine {
     }
 
     void AssetManager::send_cancel_all(const std::string& path) {
+        #if !defined(Vital_SDK_Client)
         for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
             send_cancel(path, peer_id);
         }
         Vital::print("sbox", "AssetManager: sent cancel to all peers -> ", path.c_str());
+        #endif
     }
 
 
