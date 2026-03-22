@@ -15,9 +15,6 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/network.h>
-#include <Vital.sandbox/Tool/file.h>
-#include <Vital.sandbox/Tool/crypto.h>
-#include <Vital.sandbox/Tool/shrinker.h>
 
 
 /////////////////////////////////////
