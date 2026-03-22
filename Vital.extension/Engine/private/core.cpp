@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Sandbox/index.h>
@@ -56,6 +57,17 @@ namespace Vital::Engine {
         Sandbox::get_singleton() -> input(event);
     }
     #endif
+
+
+    // Helpers //
+    // TODO: Improve
+    void Core::send_asset_to_peer(const godot::String& path, int peer_id) {
+        AssetManager::get_singleton()->send_asset(to_std_string(path), peer_id);
+    }
+
+    void Core::process_asset_chunk(const godot::String& path) {
+        AssetManager::get_singleton() -> process_chunk(to_std_string(path));
+    }
 
 
     // Getters //
@@ -112,6 +124,7 @@ namespace Vital::Engine {
 
     // Teardown //
     void Core::teardown() {
+        AssetManager::free_singleton();
         Model::teardown_spawner();
     }
 }

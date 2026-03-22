@@ -26,11 +26,17 @@ namespace Vital::Engine {
         protected:
             inline static Core* singleton = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
+            // TODO: Improve
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("add_child_node", "node"),                        &Core::add_child_node);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"),                           &Core::setup_model_spawner);
                 godot::ClassDB::bind_method(godot::D_METHOD("spawn_model", "name", "authority_peer"),         &Core::spawn_model);
+                godot::ClassDB::bind_method(godot::D_METHOD("process_asset_chunk", "path"),                   &Core::process_asset_chunk);
+                godot::ClassDB::bind_method(godot::D_METHOD("send_asset_to_peer", "path", "peer_id"),         &Core::send_asset_to_peer);
             };
+            
+            void send_asset_to_peer(const godot::String& path, int peer_id);
+            void process_asset_chunk(const godot::String& path);
         public:
             // Instantiators //
             Core() = default;

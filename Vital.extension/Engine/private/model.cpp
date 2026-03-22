@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/model.h>
+#include <Vital.extension/Engine/public/asset.h>
 
 
 ///////////////////////////
@@ -21,6 +22,7 @@
 ///////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
 
     //------------------------------//
     //  ModelSpawnerDelegate: Impl  //
@@ -193,6 +195,7 @@ namespace Vital::Engine {
 
     void Model::on_connected() {
         // Clean up stale nodes from previous session
+        AssetManager::get_singleton()->clear();
         cleanup_spawned();
         // Refresh spawner multiplayer authority for new session
         if (net_spawner) {

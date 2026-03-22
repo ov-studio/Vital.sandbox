@@ -20,6 +20,7 @@
 // Events //
 /////////////
 
+// TODO: Improve
 void shutdown() {
     #if !defined(Vital_SDK_Client)
     Vital::Engine::Network::get_singleton() -> close();
@@ -28,6 +29,7 @@ void shutdown() {
     Vital::Engine::Network::get_singleton() -> disconnect_from_server();
     #endif
     Vital::Engine::Network::free_singleton();
+    Vital::Engine::AssetManager::free_singleton();
 }
 
 void setup() {
@@ -40,6 +42,7 @@ void setup() {
     Vital::Tool::Event::bind("network:peer_joined", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player joined: ", id);
+        Vital::Engine::AssetManager::get_singleton() -> broadcast_manifest(id);
     });
     Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
@@ -47,15 +50,31 @@ void setup() {
     });
     Vital::Tool::Event::bind("network:packet", [net](Vital::Tool::Stack& args) {
         int32_t sender   = args.object.at("sender_id").as<int32_t>();
-        std::string type = args.object.at("type").as<std::string>();
+        std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "";
+    
+        if (type == "asset:request") {
+            std::string path = args.object.at("path").as<std::string>();
+            Vital::print("sbox", "AssetManager: peer ", sender, " requested -> ", path.c_str());
+            Vital::Engine::Core::get_singleton()->call_deferred(
+                "send_asset_to_peer",
+                godot::String(path.c_str()),
+                (int)sender
+            );
+            return;
+        }
+    
+        // Guard array access — only proceed if array has entries
+        if (args.array.empty()) return;
+    
         std::string body = args.array[0].as<std::string>();
         Vital::print("sbox", "Msg from ", sender, " type=", type.c_str(), ": ", body.c_str());
+    
         if (body == "ping") {
             Vital::Tool::Stack reply;
             reply.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
             reply.object["type"]    = Vital::Tool::StackValue(std::string("system"));
             reply.object["peer_id"] = Vital::Tool::StackValue(sender);
-            net -> send(reply, sender);
+            net->send(reply, sender);
         }
     });
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {
@@ -68,8 +87,16 @@ void setup() {
         Vital::print("sbox", "Connecting...");
     });
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
-        std::string body = args.array[0].as<std::string>();
         std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "unknown";
+        if (type == "asset:manifest") {
+            Vital::Engine::AssetManager::get_singleton() -> receive_manifest(args);
+            return;
+        }
+        if (type == "asset:chunk") {
+            Vital::Engine::AssetManager::get_singleton() -> receive_chunk(args);
+            return;
+        }
+        std::string body = args.array[0].as<std::string>();
         Vital::print("sbox", "Server says [", type.c_str(), "]: ", body.c_str());
     });
     Vital::Tool::Event::bind("network:connection_failed", [](Vital::Tool::Stack&) {
@@ -83,6 +110,9 @@ void setup() {
     });
     Vital::Tool::Event::bind("network:disconnected", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Disconnected cleanly");
+    });
+    Vital::Tool::Event::bind("asset:ready", [](Vital::Tool::Stack&) {
+        Vital::print("sbox", "AssetManager: all assets ready");
     });
     net -> set_reconnect_config(5, 3.0f);
     #endif
@@ -114,6 +144,15 @@ void initialize_vital_events() {
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Engine::Core::get_singleton() -> call_deferred("setup_model_spawner");
+
+        #if !defined(Vital_SDK_Client)
+        // Register your asset manifest
+        std::vector<std::string> manifest = {
+            "cube.glb",
+            "test/testing.glb"
+        };
+        Vital::Engine::AssetManager::get_singleton() -> register_assets(manifest);
+        #endif
     });
 
 
@@ -130,11 +169,13 @@ void initialize_vital_events() {
         auto* net = Vital::Engine::Network::get_singleton();
         Vital::print("sbox", "Connected! My ID: ", net -> get_peer_id());
         Vital::Engine::Model::on_connected();
+        Vital::Engine::AssetManager::get_singleton() -> clear();
     });
 
     Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) -> void {
         Vital::print("sbox", "Lost connection to server");
         Vital::Engine::Model::cleanup_spawned();
+        Vital::Engine::AssetManager::get_singleton() -> clear();
     });
     #endif
 

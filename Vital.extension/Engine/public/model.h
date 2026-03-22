@@ -26,9 +26,8 @@
 ///////////////////////////
 
 namespace Vital::Engine {
-
+    // TODO: Improve
     class Model;
-
     class ModelSpawnerDelegate : public godot::Node {
         GDCLASS(ModelSpawnerDelegate, godot::Node)
         protected:
@@ -47,20 +46,19 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
-            using Models    = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
+            using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
             using SyncedMap = std::unordered_map<std::string, Model*>;
         protected:
-            static void _bind_methods() {
-            };
+            static void _bind_methods() {};
         private:
             std::string model_name;
-            int                             pending_authority      = 1;
-            godot::Skeleton3D*              skeleton               = nullptr;
-            godot::AnimationPlayer*         animation_player       = nullptr;
-            godot::MultiplayerSynchronizer* net_sync               = nullptr;
-            inline static godot::MultiplayerSpawner*   net_spawner          = nullptr;
-            inline static ModelSpawnerDelegate*         net_spawner_delegate = nullptr;
-            inline static Models    cache_loaded;
+            int pending_authority = 1;
+            godot::Skeleton3D* skeleton = nullptr;
+            godot::AnimationPlayer* animation_player = nullptr;
+            godot::MultiplayerSynchronizer* net_sync = nullptr;
+            inline static godot::MultiplayerSpawner* net_spawner = nullptr;
+            inline static ModelSpawnerDelegate* net_spawner_delegate = nullptr;
+            inline static Models cache_loaded;
             inline static SyncedMap cache_synced;
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);

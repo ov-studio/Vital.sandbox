@@ -31,6 +31,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
 
     // NetworkNode — lives in the SceneTree so Godot RPC can route packets.
     // _receive() is the single RPC entry point for all incoming packets.
