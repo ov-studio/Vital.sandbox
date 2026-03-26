@@ -316,6 +316,7 @@ namespace Vital::Engine {
         if (tokens.empty()) return;
         if (tokens[0] == "help") return print("sbox", fetch_help());
         else if (tokens[0] == "version") return print("sbox", "Version: " + Vital::Build.to_string());
+        else if (tokens[0] == "clear") return clear();
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
@@ -341,6 +342,19 @@ namespace Vital::Engine {
                 std::lock_guard<std::mutex> lock(stdout_mutex);
                 std::cout << "\033[2K\r" << format_output(mode, message) << std::flush;
             }
+        #endif
+    }
+
+    void Console::clear() {
+        #if defined(Vital_SDK_Client)
+            // TODO: emit clear action to webview
+        #else
+            {
+                std::lock_guard<std::mutex> lock(stdout_mutex);
+                std::cout << "\033[3J\033[2J\033[H" << std::flush;
+                std::cout << "\033[3J\033[2J\033[H" << std::flush;
+            }
+            print("sbox", "Console cleared successfully!");
         #endif
     }
 
