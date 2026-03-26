@@ -61,11 +61,17 @@ namespace Vital::Engine {
     #endif
 
 
-    // Getters //
+    // Utils //
     Core* Core::get_singleton() {
         return singleton;
     }
 
+    void Core::free_singleton() {
+        get_scene_tree() -> quit(0);
+    }
+
+
+    // Getters //
     godot::SceneTree* Core::get_scene_tree() {
         return godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
     }
@@ -101,11 +107,6 @@ namespace Vital::Engine {
     }
     #endif
 
-    
-    void Core::quit_scene_tree() {
-        get_scene_tree() -> quit(0);
-    }
-    
 
     // Helpers //
     void Core::add_child_node(godot::Node* node) {

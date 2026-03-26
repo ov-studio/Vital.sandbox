@@ -375,7 +375,7 @@ namespace Vital::Engine {
         print("sbox", "Server shutting down...");
         std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         stdin_running = false;
-        Core::get_singleton() -> call_deferred("quit_scene_tree");
+        Core::get_singleton() -> call_deferred("free_singleton");
     }    
     #endif
 
