@@ -315,6 +315,7 @@ namespace Vital::Engine {
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
         if (tokens[0] == "help") return print("sbox", fetch_help());
+        else if (tokens[0] == "version") return print("sbox", "Version: " + Vital::Build.to_string());
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
