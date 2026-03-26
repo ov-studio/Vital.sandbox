@@ -213,6 +213,7 @@ namespace Vital::Engine {
         vm -> create_environment();
         vm -> set_reference(env);
         bool ok = true;
+    
         for (const auto& script : res->scripts) {
             if (!is_eligible(script.type)) continue;
             std::string source;
@@ -233,6 +234,7 @@ namespace Vital::Engine {
             }
             vm -> pop();
         }
+
         if (!ok) {
             vm -> del_reference(env);
             return false;
