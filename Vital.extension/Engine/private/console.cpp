@@ -348,7 +348,14 @@ namespace Vital::Engine {
     void Console::clear(bool signal) {
         if (signal) return print("sbox", "Console cleared successfully!");
         #if defined(Vital_SDK_Client)
-            // TODO: emit clear action to webview
+            rapidjson::Document document;
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            document.SetObject();
+            auto& alloc = document.GetAllocator();
+            document.AddMember("action", "clear", alloc);
+            document.Accept(writer);
+            webview -> emit(buffer.GetString());
         #else
             {
                 std::lock_guard<std::mutex> lock(stdout_mutex);
