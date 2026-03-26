@@ -373,13 +373,10 @@ namespace Vital::Engine {
     #if !defined(Vital_SDK_Client)
     void Console::shutdown() {
         print("sbox", "Server shutting down...");
-        Sandbox::get_singleton() -> signal("vital.sandbox:server_shutdown");
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        print("sbox", "Server shut down successfully!");
         std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         stdin_running = false;
-        Core::get_scene_tree() -> quit(0);
-    }
+        Core::get_singleton() -> call_deferred("quit_scene_tree");
+    }    
     #endif
 
 

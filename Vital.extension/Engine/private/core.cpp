@@ -101,6 +101,11 @@ namespace Vital::Engine {
     }
     #endif
 
+    
+    void Core::quit_scene_tree() {
+        get_scene_tree() -> quit(0);
+    }
+    
 
     // Helpers //
     void Core::add_child_node(godot::Node* node) {
