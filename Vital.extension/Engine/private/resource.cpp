@@ -216,7 +216,6 @@ namespace Vital::Engine {
             if (!is_eligible(script.type)) continue;
     
             const std::string path =  "resources/" + folder + "/" + script.src;
-            Vital::print("info", path);
             std::string source;
             try {
                 source = Vital::Tool::File::read_text(base, path);
