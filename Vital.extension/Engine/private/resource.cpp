@@ -157,8 +157,11 @@ namespace Vital::Engine {
     }
 
     bool ResourceManager::is_loaded(const std::string& folder) const {
-        for (const auto& res : resources)
-            if (res.folder == folder) return true;
+        for (const auto& res : resources) {
+            if (res.folder == folder) {
+                return true;
+            }
+        }
         return false;
     }
 
