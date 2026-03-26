@@ -64,7 +64,7 @@ namespace Vital::Engine {
     }
 
 
-    // Getters //
+    // Utils //
     Sandbox* Sandbox::get_singleton() {
         singleton = singleton ? singleton : memnew(Sandbox());
         return singleton;
