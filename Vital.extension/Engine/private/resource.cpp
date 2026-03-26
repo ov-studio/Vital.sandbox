@@ -65,7 +65,6 @@ namespace Vital::Engine {
             return;
         }
 
-        // First pass — detect duplicates by folder name
         std::unordered_map<std::string, int> folder_count;
         for (const auto& folder_path : folders) {
             const std::string folder = folder_path.substr(folder_path.find_last_of("/\\") + 1);
@@ -142,12 +141,12 @@ namespace Vital::Engine {
 
             if (!valid) {
                 std::string error_list = "Resource `" + folder + "` skipped — " + std::to_string(errors.size()) + " error(s):\n";
-                for (const auto& err : errors)
+                for (const auto& err : errors) {
                     error_list += "> " + err + "\n";
+                }
                 Vital::print("error", error_list);
                 continue;
             }
-
             resources.push_back(std::move(res));
             Vital::print("sbox", "Loaded resource `" + folder + "`");
         }
