@@ -14,6 +14,7 @@
 
 #pragma once
 #include <pch.h>
+#include <Vital.sandbox/Tool/version.h>
 #include <Vital.sandbox/Tool/stack.h>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
@@ -26,7 +27,7 @@
 
 namespace Vital {
     namespace System {}
-    static const std::string Build_ver = "v0.0.1";
+    static const Version Build = { 0, 0, 1, "" };
     static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
     static std::string indent(int level) {

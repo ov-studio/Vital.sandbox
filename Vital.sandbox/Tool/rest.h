@@ -60,7 +60,7 @@ namespace Vital::Tool::Rest {
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build.to_string());
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         CURLcode res = curl_easy_perform(curl);
@@ -85,7 +85,7 @@ namespace Vital::Tool::Rest {
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build.to_string());
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         CURLcode res = curl_easy_perform(curl);
