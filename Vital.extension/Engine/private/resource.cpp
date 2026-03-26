@@ -95,7 +95,7 @@ namespace Vital::Engine {
                 continue;
             }
 
-            ResourceManifest res;
+            ResourceManager::ResourceManifest res;
             res.folder  = folder;
             res.name    = manifest["name"]    ? manifest["name"].as<std::string>()    : folder;
             res.author  = manifest["author"]  ? manifest["author"].as<std::string>()  : "";
@@ -166,22 +166,22 @@ namespace Vital::Engine {
         return running.count(folder) > 0;
     }
 
-    const ResourceManifest* ResourceManager::get_resource(const std::string& folder) const {
+    const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& folder) const {
         for (const auto& res : resources)
             if (res.folder == folder) return &res;
         return nullptr;
     }
 
-    std::vector<const ResourceManifest*> ResourceManager::get_all_resources() const {
-        std::vector<const ResourceManifest*> result;
+    std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
+        std::vector<const ResourceManager::ResourceManifest*> result;
         result.reserve(resources.size());
         for (const auto& res : resources)
             result.push_back(&res);
         return result;
     }
 
-    std::vector<ResourceScript> ResourceManager::get_scripts(const std::string& folder, const std::string& type) const {
-        std::vector<ResourceScript> result;
+    std::vector<ResourceManager::ResourceScript> ResourceManager::get_scripts(const std::string& folder, const std::string& type) const {
+        std::vector<ResourceManager::ResourceScript> result;
         const auto* res = get_resource(folder);
         if (!res) return result;
         for (const auto& script : res->scripts)

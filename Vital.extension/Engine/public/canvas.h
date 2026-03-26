@@ -27,7 +27,7 @@ namespace Vital::Engine {
     class Rendertarget;
     class Canvas : public godot::Node2D {
         GDCLASS(Canvas, godot::Node2D)
-        public:
+        protected:
             enum class Type {
                 Line,
                 Polygon,
@@ -103,7 +103,7 @@ namespace Vital::Engine {
                 Type type;
                 std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
             };
-        protected:
+
             inline static Canvas* singleton = nullptr;
             static void _bind_methods() {}
         private:

@@ -22,28 +22,29 @@
 
 namespace Vital::Engine {
     // TODO: IMPROVE
-    inline const std::unordered_set<std::string> valid_script_types = { "server", "client", "shared" };
-
-    struct ResourceScript {
-        std::string src;
-        std::string type;
-    };
-
-    struct ResourceManifest {
-        std::string folder;
-        std::string name;
-        std::string author;
-        std::string version;
-        std::vector<ResourceScript> scripts;
-        std::vector<std::string>   files;
-    };
-
     class ResourceManager {
         protected:
+            inline static const std::unordered_set<std::string> valid_script_types = { 
+                "server", "client", "shared"
+            };
+
+            struct ResourceScript {
+                std::string src;
+                std::string type;
+            };
+        
+            struct ResourceManifest {
+                std::string folder;
+                std::string name;
+                std::string author;
+                std::string version;
+                std::vector<ResourceScript> scripts;
+                std::vector<std::string> files;
+            };
+
             inline static ResourceManager* singleton = nullptr;
             std::vector<ResourceManifest> resources;
             std::unordered_set<std::string> running;
-
         public:
             // Instantiators //
             ResourceManager() = default;
