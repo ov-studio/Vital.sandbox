@@ -43,8 +43,8 @@ namespace Vital::Engine {
     }
 
     bool ResourceManager::is_loaded(const std::string& name) const {
-        for (const auto& res : resources) {
-            if (res.ref == name) {
+        for (const auto& resource : resources) {
+            if (resource.ref == name) {
                 return true;
             }
         }
@@ -68,16 +68,16 @@ namespace Vital::Engine {
     std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
         std::vector<const ResourceManager::ResourceManifest*> result;
         result.reserve(resources.size());
-        for (const auto& res : resources) {
-            result.push_back(&res);
+        for (const auto& resource : resources) {
+            result.push_back(&resource);
         }
         return result;
     }
 
     const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& name) const {
-        for (const auto& res : resources) {
-            if (res.ref == name) {
-                return &res;
+        for (const auto& resource : resources) {
+            if (resource.ref == name) {
+                return &resource;
             }
         }
         return nullptr;
@@ -85,9 +85,9 @@ namespace Vital::Engine {
 
     std::vector<ResourceManager::ResourceScript> ResourceManager::get_scripts(const std::string& name, const std::string& type) const {
         std::vector<ResourceManager::ResourceScript> result;
-        const auto* res = get_resource(name);
-        if (!res) return result;
-        for (const auto& script : res->scripts) {
+        const auto* resource = get_resource(name);
+        if (!resource) return result;
+        for (const auto& script : resource -> scripts) {
             if (type.empty() || script.type == type) {
                 result.push_back(script);
             }
@@ -138,11 +138,11 @@ namespace Vital::Engine {
                 continue;
             }
 
-            ResourceManifest res;
-            res.ref = name;
-            res.name = manifest["name"] ? manifest["name"].as<std::string>() : name;
-            res.author = manifest["author"] ? manifest["author"].as<std::string>() : "";
-            res.version = manifest["version"] ? manifest["version"].as<std::string>() : "";
+            ResourceManifest resource;
+            resource.ref = name;
+            resource.name = manifest["name"] ? manifest["name"].as<std::string>() : name;
+            resource.author = manifest["author"] ? manifest["author"].as<std::string>() : "";
+            resource.version = manifest["version"] ? manifest["version"].as<std::string>() : "";
             if (!manifest["scripts"] || !manifest["scripts"].IsSequence()) {
                 Vital::print("error", "Resource `" + name + "` has no valid `scripts` section — skipping");
                 continue;
@@ -168,7 +168,7 @@ namespace Vital::Engine {
                     valid = false;
                     continue;
                 }
-                res.scripts.push_back({ src, type });
+                resource.scripts.push_back({ src, type });
             }
 
             if (manifest["files"] && manifest["files"].IsSequence()) {
@@ -179,7 +179,7 @@ namespace Vital::Engine {
                         valid = false;
                         continue;
                     }
-                    res.files.push_back(file);
+                    resource.files.push_back(file);
                 }
             }
 
@@ -191,7 +191,7 @@ namespace Vital::Engine {
                 Vital::print("error", error_list);
                 continue;
             }
-            resources.push_back(std::move(res));
+            resources.push_back(std::move(resource));
             Vital::print("sbox", "Loaded resource `" + name + "`");
         }
 
@@ -210,12 +210,12 @@ namespace Vital::Engine {
         }
     
         const std::string env = get_resource_env(name);
-        const auto* res = get_resource(name);
+        const auto* resource = get_resource(name);
         bool status = true;
         vm -> create_environment();
         vm -> set_reference(env);
 
-        for (const auto& script : res->scripts) {
+        for (const auto& script : resource -> scripts) {
             if (!is_eligible(script.type)) continue;
             std::string source;
             try {
@@ -266,8 +266,8 @@ namespace Vital::Engine {
     }
 
     void ResourceManager::start_all() {
-        for (const auto* res : get_all_resources()) {
-            start(res->name);
+        for (const auto* resource : get_all_resources()) {
+            start(resource -> name);
         }
     }
 
