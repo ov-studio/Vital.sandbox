@@ -21,14 +21,13 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    // TODO: IMPROVE
     class ResourceManager {
         protected:
             struct ResourceScript {
                 std::string src;
                 std::string type;
             };
-        
+
             struct ResourceManifest {
                 std::string folder;
                 std::string name;
@@ -39,7 +38,7 @@ namespace Vital::Engine {
             };
 
             inline static ResourceManager* singleton = nullptr;
-            inline static const std::unordered_set<std::string> valid_script_types = { "server", "client", "shared"};
+            inline static const std::unordered_set<std::string> valid_script_types = { "server", "client", "shared" };
             std::vector<ResourceManifest> resources;
             std::unordered_set<std::string> running;
         public:
@@ -53,6 +52,7 @@ namespace Vital::Engine {
             static void free_singleton();
             static std::string env_name(const std::string& folder);
             static bool is_eligible(const std::string& type);
+            static std::string resource_path(const std::string& folder);
 
 
             // APIs //
