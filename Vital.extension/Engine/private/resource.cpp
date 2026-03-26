@@ -100,11 +100,10 @@ namespace Vital::Engine {
     void ResourceManager::scan() {
         Vital::print("sbox", "Rescanning resources...");
         resources.clear();
-        const std::string base = Vital::get_directory();
         std::vector<std::string> folders;
 
         try {
-            folders = Vital::Tool::File::contents(base, "resources", true);
+            folders = Vital::Tool::File::contents(Vital::get_directory(), "resources", true);
         }
         catch (...) {
             Vital::print("error", "Resource scan skipped — `resources/` directory not found");
@@ -212,10 +211,10 @@ namespace Vital::Engine {
     
         const std::string env = get_resource_env(name);
         const auto* res = get_resource(name);
+        bool status = true;
         vm -> create_environment();
         vm -> set_reference(env);
-        bool ok = true;
-    
+
         for (const auto& script : res->scripts) {
             if (!is_eligible(script.type)) continue;
             std::string source;
@@ -224,20 +223,19 @@ namespace Vital::Engine {
             }
             catch (...) {
                 Vital::print("error", "Resource `" + name + "` failed to read script `" + script.src + "`");
-                ok = false;
+                status = false;
                 break;
             }
             vm -> get_reference(env, true);
             if (!vm -> load_string(source, true, true, vm -> get_count())) {
                 Vital::print("error", "Resource `" + name + "` failed to execute script `" + script.src + "`");
                 vm -> pop();
-                ok = false;
+                status = false;
                 break;
             }
             vm -> pop();
         }
-
-        if (!ok) {
+        if (!status) {
             vm -> del_reference(env);
             return false;
         }
