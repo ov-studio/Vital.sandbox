@@ -67,8 +67,7 @@ namespace Vital::Tool {
     };
 
     struct Stack {
-        static constexpr uint16_t ProtocolVersion = 1; // TODO: MODIFY PROTOCOL VERSION LATER
-        uint16_t version{ProtocolVersion};
+        uint16_t version = Vital::Build.major;
         std::vector<StackValue> array;
         std::map<std::string, StackValue> object;
 
