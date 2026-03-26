@@ -26,6 +26,11 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "engine";
 
         static void bind(Machine* vm) {
+            API::bind(vm, {base_name}, "get_version", [](auto vm) -> int {
+                vm -> push_value(Build.to_string());
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "get_tick", [](auto vm) -> int {
                 vm -> push_value(get_tick());
                 return 1;
