@@ -229,7 +229,7 @@ namespace Vital::Engine {
     
             // Push the env table onto the stack, load the script into it
             vm -> get_reference(env, true);
-            if (!vm -> load_string(source, true, true, -1)) {
+            if (!vm -> load_string(source, true, true, vm -> get_count())) {
                 Vital::print("error", "Resource `" + folder + "` failed to execute script `" + script.src + "`");
                 vm -> pop();
                 ok = false;
