@@ -25,7 +25,7 @@ namespace Vital {
         int major;
         int minor;
         int patch;
-        std::string label; // optional: pre-release label e.g. "alpha", "beta", ""
+        std::string label; // Optional: pre-release label e.g. "alpha", "beta", ""
 
         std::string to_string() const {
             std::string v = "v" + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
