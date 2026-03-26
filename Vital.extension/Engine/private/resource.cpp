@@ -264,7 +264,6 @@ namespace Vital::Engine {
 
     bool ResourceManager::stop(const std::string& folder) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
-    
         if (!is_running(folder)) {
             Vital::print("error", "Cannot stop `" + folder + "` — not running");
             return false;
