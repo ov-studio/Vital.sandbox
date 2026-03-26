@@ -316,16 +316,20 @@ namespace Vital::Engine {
         std::string token;
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
-        if (tokens[0] == "help") return print("sbox", fetch_help());
-        else if (tokens[0] == "version") return print("sbox", "Version: " + Vital::Build.to_string());
-        else if (tokens[0] == "clear") return clear();
-        #if !defined(Vital_SDK_Client)
-        else if (tokens[0] == "refresh") return Vital::Engine::ResourceManager::get_singleton() -> scan();
-        else if (tokens[0] == "start") return Vital::Engine::ResourceManager::get_singleton() -> start(input);
-        else if (tokens[0] == "stop") return Vital::Engine::ResourceManager::get_singleton() -> stop(input);
-        else if (tokens[0] == "restart") return Vital::Engine::ResourceManager::get_singleton() -> restart(input);
-        else if (tokens[0] == "shutdown") return shutdown();
-        #endif
+        auto exec = [&](const std::string& cmd, const std::string& input) {
+            if (cmd == "help") { print("sbox", fetch_help()); return true; }
+            if (cmd == "version") { print("sbox", "Version: " + Vital::Build.to_string()); return true; }
+            if (cmd == "clear") { clear(); return true; }
+            #if !defined(Vital_SDK_Client)
+            if (cmd == "refresh") { Vital::Engine::ResourceManager::get_singleton() -> scan(); return true; }
+            if (cmd == "start") { Vital::Engine::ResourceManager::get_singleton() -> start(input); return true; }
+            if (cmd == "stop") { Vital::Engine::ResourceManager::get_singleton() -> stop(input); return true; }
+            if (cmd == "restart") { Vital::Engine::ResourceManager::get_singleton() -> restart(input); return true; }
+            if (cmd == "shutdown") { shutdown(); return true; }
+            #endif
+            return false;
+        };
+        if (exec(tokens[0], input)) return;
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))

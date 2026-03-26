@@ -88,7 +88,7 @@ namespace Vital::Engine {
     }
 
     int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return -1;
         for (int i = 0; i < array_mesh->get_surface_count(); i++) {
             if (to_std_string(array_mesh->surface_get_name(i)) == material) return i;
@@ -337,7 +337,7 @@ namespace Vital::Engine {
     bool Model::is_component_visible(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        return mesh->is_visible();
+        return mesh -> is_visible();
     }
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
@@ -345,7 +345,7 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         int material_index = find_material_index(mesh, material);
         if (material_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        return !mesh->get_surface_override_material(material_index).is_valid();
+        return !mesh -> get_surface_override_material(material_index).is_valid();
     }
 
     bool Model::is_animation_playing() {
@@ -374,7 +374,7 @@ namespace Vital::Engine {
     bool Model::set_component_visible(const std::string& component, bool state) {
         auto exec = [&](const std::string& name) {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-            if (mesh) mesh->set_visible(state);
+            if (mesh) mesh -> set_visible(state);
             return mesh;
         };
         if (contains_wildcard(component)) {
@@ -394,9 +394,9 @@ namespace Vital::Engine {
                 godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
                 invisible->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
                 invisible->set_albedo(godot::Color(0, 0, 0, 0));
-                mesh->set_surface_override_material(index, invisible);
+                mesh -> set_surface_override_material(index, invisible);
             }
-            else mesh->set_surface_override_material(index, godot::Ref<godot::Material>());
+            else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
         };
         if (contains_wildcard(material)) {
             for (const auto& name : get_materials(component)) {
@@ -416,9 +416,9 @@ namespace Vital::Engine {
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = mesh->find_blend_shape_by_name(to_godot_string(blend_shape));
+        int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        mesh->set_blend_shape_value(index, value);
+        mesh -> set_blend_shape_value(index, value);
         return true;
     }
 
@@ -469,7 +469,7 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> materials;
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return materials;
         for (int i = 0; i < array_mesh->get_surface_count(); i++) {
             materials.push_back(to_std_string(array_mesh->surface_get_name(i)));
@@ -481,9 +481,9 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> blendshapes;
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh->get_mesh().ptr());
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return blendshapes;
-        for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
+        for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
             blendshapes.push_back(to_std_string(array_mesh->get_blend_shape_name(i)));
         }
         return blendshapes;
@@ -513,9 +513,9 @@ namespace Vital::Engine {
     float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = mesh->find_blend_shape_by_name(to_godot_string(blend_shape));
+        int index = mesh -> find_blend_shape_by_name(to_godot_string(blend_shape));
         if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
-        return mesh->get_blend_shape_value(index);
+        return mesh -> get_blend_shape_value(index);
     }
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
