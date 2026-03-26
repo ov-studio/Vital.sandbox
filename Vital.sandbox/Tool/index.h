@@ -27,7 +27,6 @@
 
 namespace Vital {
     namespace System {}
-    static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
     static std::string indent(int level) {
         #if defined(Vital_SDK_Client)

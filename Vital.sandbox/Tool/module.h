@@ -28,6 +28,7 @@ namespace Vital::Tool {
     inline std::mutex content_mutex;
     inline std::unordered_map<std::string, std::string> content_cache;
     inline std::unordered_map<std::string, rapidjson::Document> json_cache;
+    static const std::string toolkit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
 
     inline const std::string& fetch_content(std::string_view url) {
         std::lock_guard<std::mutex> lock(content_mutex);
@@ -43,7 +44,7 @@ namespace Vital::Tool {
         auto it = json_cache.find(name);
         if (it == json_cache.end()) {
             rapidjson::Document document;
-            document.Parse(fetch_content(fmt::format(Repo_Kit, name + ".json")).c_str());
+            document.Parse(fetch_content(fmt::format(toolkit, name + ".json")).c_str());
             it = json_cache.emplace(name, std::move(document)).first;
         }
         return it -> second;
@@ -93,7 +94,7 @@ namespace Vital::Tool {
     inline std::string fetch_module(const std::string& name) {
         auto& document = fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("source")) return "";
-        return fetch_content(fmt::format(Repo_Kit, name + "/" + document["source"].GetString()));
+        return fetch_content(fmt::format(toolkit, name + "/" + document["source"].GetString()));
     }
 
     inline std::vector<std::string> fetch_modules(const std::string& name) {
@@ -101,7 +102,7 @@ namespace Vital::Tool {
         auto& document = fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
-            result.push_back(fetch_content(fmt::format(Repo_Kit, name + "/" + std::string(i.GetString()))));
+            result.push_back(fetch_content(fmt::format(toolkit, name + "/" + std::string(i.GetString()))));
         }
         return result;
     }
