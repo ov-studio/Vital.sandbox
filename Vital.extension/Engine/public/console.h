@@ -69,6 +69,9 @@ namespace Vital::Engine {
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);
             void clear(bool signal = false);
+            #if !defined(Vital_SDK_Client)
+            void shutdown();
+            #endif
 
 
             // Events //

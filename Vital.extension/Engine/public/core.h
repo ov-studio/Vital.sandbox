@@ -50,7 +50,8 @@ namespace Vital::Engine {
 
             // Getters //
             static Core* get_singleton();
-            static godot::Node* get_root();
+            static godot::SceneTree* get_scene_tree();
+            static godot::Window* get_scene_root();
             #if defined(Vital_SDK_Client)
             static godot::DisplayServer* get_display_server();
             static godot::RenderingServer* get_rendering_server();

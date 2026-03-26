@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/console.h>
 
@@ -111,9 +112,7 @@ namespace Vital::Engine {
         if (node) return;
         node = memnew(NetworkNode);
         node -> set_name("VitalNetwork");
-        auto tree = get_scene_tree();
-        if (!tree) return;
-        tree -> get_root()->add_child(node);
+        Core::get_scene_root() -> add_child(node);
         // setup_rpc() must be called after add_child so the node has a valid path
         node -> setup_rpc();
 

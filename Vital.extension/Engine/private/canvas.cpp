@@ -14,8 +14,8 @@
 
 #pragma once
 #if defined(Vital_SDK_Client)
-#include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/font.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>

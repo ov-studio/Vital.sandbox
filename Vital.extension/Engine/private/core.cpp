@@ -66,9 +66,12 @@ namespace Vital::Engine {
         return singleton;
     }
 
-    godot::Node* Core::get_root() {
-        auto tree = godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
-        return tree ? tree -> get_root() : nullptr;
+    godot::SceneTree* Core::get_scene_tree() {
+        return godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+    }
+
+    godot::Window* Core::get_scene_root() {
+        return get_scene_tree() -> get_root();
     }
 
     #if defined(Vital_SDK_Client)

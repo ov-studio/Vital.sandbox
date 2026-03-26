@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Sandbox/index.h>
 
@@ -317,6 +318,9 @@ namespace Vital::Engine {
         if (tokens[0] == "help") return print("sbox", fetch_help());
         else if (tokens[0] == "version") return print("sbox", "Version: " + Vital::Build.to_string());
         else if (tokens[0] == "clear") return clear();
+        #if !defined(Vital_SDK_Client)
+        else if (tokens[0] == "shutdown") return shutdown();
+        #endif
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
@@ -365,6 +369,18 @@ namespace Vital::Engine {
             clear(true);
         #endif
     }
+
+    #if !defined(Vital_SDK_Client)
+    void Console::shutdown() {
+        print("sbox", "Server shutting down...");
+        Sandbox::get_singleton() -> signal("vital.sandbox:server_shutdown");
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        print("sbox", "Server shut down successfully!");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+        stdin_running = false;
+        Core::get_scene_tree() -> quit(0);
+    }
+    #endif
 
 
     // Events //
