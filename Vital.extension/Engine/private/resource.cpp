@@ -110,15 +110,15 @@ namespace Vital::Engine {
             return;
         }
 
-        std::unordered_map<std::string, int> folder_count;
+        std::unordered_map<std::string, int> resource_count;
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
-            folder_count[name]++;
+            resource_count[name]++;
         }
 
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
-            if (folder_count[name] > 1) {
+            if (resource_count[name] > 1) {
                 Vital::print("error", "Duplicate resource found — skipping `" + name + "`");
                 continue;
             }
