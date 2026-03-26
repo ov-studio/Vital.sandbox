@@ -46,6 +46,10 @@ namespace Vital::Engine {
         return type == Vital::get_platform();
     }
 
+    std::string ResourceManager::resource_path(const std::string& folder) {
+        return Vital::get_directory("resources", folder);
+    }
+
 
     // APIs //
     void ResourceManager::scan() {
