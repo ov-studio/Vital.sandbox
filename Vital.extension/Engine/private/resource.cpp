@@ -23,6 +23,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: IMPROVE + MERGE FOLDER NAME AND BASE PATH TO FORCE CHROOT LATER
 
     // Utils //
     ResourceManager* ResourceManager::get_singleton() {

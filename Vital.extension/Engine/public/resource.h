@@ -21,6 +21,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: IMPROVE
     inline const std::unordered_set<std::string> valid_script_types = { "server", "client", "shared" };
 
     struct ResourceScript {
