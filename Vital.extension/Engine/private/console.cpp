@@ -345,7 +345,8 @@ namespace Vital::Engine {
         #endif
     }
 
-    void Console::clear() {
+    void Console::clear(bool signal) {
+        if (signal || (get_platform() == "server")) return print("sbox", "Console cleared successfully!");
         #if defined(Vital_SDK_Client)
             // TODO: emit clear action to webview
         #else
@@ -354,7 +355,7 @@ namespace Vital::Engine {
                 std::cout << "\033[3J\033[2J\033[H" << std::flush;
                 std::cout << "\033[3J\033[2J\033[H" << std::flush;
             }
-            print("sbox", "Console cleared successfully!");
+            clear(true);
         #endif
     }
 
@@ -367,6 +368,7 @@ namespace Vital::Engine {
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
         if (action == "ready") init();
+        else if (action == "clear") clear(true);
         else if (action == "input") {
             if (!document.HasMember("message") || !document["message"].IsString()) return;
             execute(document["message"].GetString());
