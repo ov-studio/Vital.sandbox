@@ -244,8 +244,7 @@ namespace Vital::Engine {
     
         running.insert(folder);
         Vital::print("sbox", "Resource `" + folder + "` started");
-        Vital::Engine::Sandbox::get_singleton()->signal("vital.resource:started", Vital::Tool::StackValue(folder));
-    
+        Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(folder));
         return true;
     }
     
