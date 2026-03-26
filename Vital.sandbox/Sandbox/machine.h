@@ -420,7 +420,7 @@ namespace Vital::Sandbox {
                 pop();
                 return std::string(value, length);
             }
-    
+
             bool compile_string(const std::string& raw) {
                 if (raw.empty()) return false;
                 if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
