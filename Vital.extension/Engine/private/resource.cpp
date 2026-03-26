@@ -175,8 +175,9 @@ namespace Vital::Engine {
     std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
         std::vector<const ResourceManager::ResourceManifest*> result;
         result.reserve(resources.size());
-        for (const auto& res : resources)
+        for (const auto& res : resources) {
             result.push_back(&res);
+        }
         return result;
     }
 
