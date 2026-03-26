@@ -255,7 +255,7 @@ namespace Vital::Engine {
             vm -> del_reference(env);
             return false;
         }
-    
+
         running.insert(folder);
         Vital::print("sbox", "Resource `" + folder + "` started");
         Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(folder));
@@ -269,6 +269,7 @@ namespace Vital::Engine {
             Vital::print("error", "Cannot stop `" + folder + "` — not running");
             return false;
         }
+    
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(folder));
         vm -> del_reference(env_name(folder));
         running.erase(folder);
@@ -282,8 +283,9 @@ namespace Vital::Engine {
     }
 
     void ResourceManager::start_all() {
-        for (const auto* res : get_all_resources())
+        for (const auto* res : get_all_resources()) {
             start(res->folder);
+        }
     }
 
     void ResourceManager::stop_all() {
