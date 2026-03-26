@@ -57,14 +57,6 @@ namespace Vital::Engine {
 
 
     // Getters //
-    std::string ResourceManager::get_resource_base(const std::string& name) {
-        return Vital::get_directory("resources", name);
-    }
-
-    std::string ResourceManager::get_resource_env(const std::string& name) {
-        return name + ":env";
-    }
-
     std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
         std::vector<const ResourceManager::ResourceManifest*> result;
         result.reserve(resources.size());
@@ -83,7 +75,15 @@ namespace Vital::Engine {
         return nullptr;
     }
 
-    std::vector<ResourceManager::ResourceScript> ResourceManager::get_scripts(const std::string& name, const std::string& type) const {
+    std::string ResourceManager::get_resource_base(const std::string& name) {
+        return Vital::get_directory("resources", name);
+    }
+
+    std::string ResourceManager::get_resource_env(const std::string& name) {
+        return name + ":env";
+    }
+
+    std::vector<ResourceManager::ResourceScript> ResourceManager::get_resource_scripts(const std::string& name, const std::string& type) const {
         std::vector<ResourceManager::ResourceScript> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;

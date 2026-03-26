@@ -59,11 +59,11 @@ namespace Vital::Engine {
 
 
             // Getters //
-            static std::string get_resource_base(const std::string& name);
-            static std::string get_resource_env(const std::string& name);
             std::vector<const ResourceManifest*> get_all_resources() const;
             const ResourceManifest* get_resource(const std::string& name) const;
-            std::vector<ResourceScript> get_scripts(const std::string& name, const std::string& type) const;
+            static std::string get_resource_base(const std::string& name);
+            static std::string get_resource_env(const std::string& name);
+            std::vector<ResourceScript> get_resource_scripts(const std::string& name, const std::string& type) const;
 
 
             // APIs //
