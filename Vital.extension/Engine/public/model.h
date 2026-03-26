@@ -48,6 +48,7 @@ namespace Vital::Engine {
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
             using SyncedMap = std::unordered_map<std::string, Model*>;
+
             static void _bind_methods() {};
         private:
             std::string model_name;
