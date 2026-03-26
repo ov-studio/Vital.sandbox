@@ -247,7 +247,7 @@ namespace Vital::Engine {
         Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(folder));
         return true;
     }
-    
+
     bool ResourceManager::stop(const std::string& folder) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
     
