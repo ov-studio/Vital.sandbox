@@ -53,10 +53,9 @@ namespace Vital::Engine {
     void ResourceManager::scan() {
         Vital::print("sbox", "Rescanning resources...");
         resources.clear();
-
         const std::string base = Vital::get_directory();
-
         std::vector<std::string> folders;
+
         try {
             folders = Vital::Tool::File::contents(base, "resources", true);
         }
@@ -71,7 +70,6 @@ namespace Vital::Engine {
             folder_count[folder]++;
         }
 
-        // Second pass — load valid resources
         for (const auto& folder_path : folders) {
             const std::string folder = folder_path.substr(folder_path.find_last_of("/\\") + 1);
             if (folder_count[folder] > 1) {
