@@ -346,7 +346,7 @@ namespace Vital::Engine {
     }
 
     void Console::clear(bool signal) {
-        if (signal || (get_platform() == "server")) return print("sbox", "Console cleared successfully!");
+        if (signal) return print("sbox", "Console cleared successfully!");
         #if defined(Vital_SDK_Client)
             // TODO: emit clear action to webview
         #else
