@@ -208,8 +208,8 @@ namespace Vital::Engine {
         const auto* res        = get_resource(folder);
     
         // Create an isolated environment table and store it as a reference
-        vm -> create_table();
-        vm -> set_reference(env);
+        vm -> create_resource_global();
+        vm -> set_reference(env, -1);
     
         bool ok = true;
         for (const auto& script : res->scripts) {
