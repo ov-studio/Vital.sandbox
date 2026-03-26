@@ -321,6 +321,9 @@ namespace Vital::Engine {
         else if (tokens[0] == "clear") return clear();
         #if !defined(Vital_SDK_Client)
         else if (tokens[0] == "refresh") return Vital::Engine::ResourceManager::get_singleton() -> scan();
+        else if (tokens[0] == "start") return Vital::Engine::ResourceManager::get_singleton() -> start(input);
+        else if (tokens[0] == "stop") return Vital::Engine::ResourceManager::get_singleton() -> stop(input);
+        else if (tokens[0] == "restart") return Vital::Engine::ResourceManager::get_singleton() -> restart(input);
         else if (tokens[0] == "shutdown") return shutdown();
         #endif
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
