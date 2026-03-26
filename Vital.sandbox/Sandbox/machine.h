@@ -312,6 +312,13 @@ namespace Vital::Sandbox {
                     get_global(nspace);
                 }
             }
+            void create_environment() {
+                create_table();
+                create_table();
+                lua_pushglobaltable(state);
+                set_table_field("__index", -2);
+                set_metatable(-2);
+            }
             void create_object(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
