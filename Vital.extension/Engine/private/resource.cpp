@@ -35,17 +35,64 @@ namespace Vital::Engine {
         singleton = nullptr;
     }
 
-    std::string ResourceManager::env_name(const std::string& folder) {
-        return folder + ":env";
-    }
 
+    // Checkers //
     bool ResourceManager::is_eligible(const std::string& type) {
         if (type == "shared") return true;
         return type == Vital::get_platform();
     }
 
-    std::string ResourceManager::resource_path(const std::string& folder) {
+    bool ResourceManager::is_loaded(const std::string& folder) const {
+        for (const auto& res : resources) {
+            if (res.folder == folder) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool ResourceManager::is_running(const std::string& folder) const {
+        return running.count(folder) > 0;
+    }
+
+
+    // Getters //
+    std::string ResourceManager::get_resource_base(const std::string& folder) {
         return Vital::get_directory("resources", folder);
+    }
+
+    std::string ResourceManager::get_resource_env(const std::string& folder) {
+        return folder + ":env";
+    }
+
+    std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
+        std::vector<const ResourceManager::ResourceManifest*> result;
+        result.reserve(resources.size());
+        for (const auto& res : resources) {
+            result.push_back(&res);
+        }
+        return result;
+    }
+
+    const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& folder) const {
+        for (const auto& res : resources) {
+            if (res.folder == folder) {
+                return &res;
+            }
+        }
+        return nullptr;
+    }
+
+    std::vector<ResourceManager::ResourceScript> ResourceManager::get_scripts(const std::string& folder, const std::string& type) const {
+        std::vector<ResourceManager::ResourceScript> result;
+        const auto* res = get_resource(folder);
+        if (!res) return result;
+        for (const auto& script : res->scripts) {
+            if (type.empty() || script.type == type) {
+                result.push_back(script);
+            }
+        }
+        return result;
     }
 
 
@@ -76,11 +123,11 @@ namespace Vital::Engine {
                 Vital::print("error", "Duplicate resource found — skipping `" + folder + "`");
                 continue;
             }
-            if (!Vital::Tool::File::exists(resource_path(folder), "manifest.yaml")) continue;
+            if (!Vital::Tool::File::exists(get_resource_base(folder), "manifest.yaml")) continue;
 
             YAML::Node manifest;
             try {
-                const std::string content = Vital::Tool::File::read_text(resource_path(folder), "manifest.yaml");
+                const std::string content = Vital::Tool::File::read_text(get_resource_base(folder), "manifest.yaml");
                 manifest = YAML::Load(content);
             }
             catch (const YAML::Exception& e) {
@@ -117,7 +164,7 @@ namespace Vital::Engine {
                     continue;
                 }
                 const std::string src = node["src"].as<std::string>();
-                if (!Vital::Tool::File::exists(resource_path(folder), src)) {
+                if (!Vital::Tool::File::exists(get_resource_base(folder), src)) {
                     errors.push_back("script `" + src + "` not found on disk");
                     valid = false;
                     continue;
@@ -128,7 +175,7 @@ namespace Vital::Engine {
             if (manifest["files"] && manifest["files"].IsSequence()) {
                 for (const auto& node : manifest["files"]) {
                     const std::string file = node.as<std::string>();
-                    if (!Vital::Tool::File::exists(resource_path(folder), file)) {
+                    if (!Vital::Tool::File::exists(get_resource_base(folder), file)) {
                         errors.push_back("file `" + file + "` not found on disk");
                         valid = false;
                         continue;
@@ -152,51 +199,6 @@ namespace Vital::Engine {
         Vital::print("sbox", "Resource scan complete — " + std::to_string(resources.size()) + " resource(s) loaded");
     }
 
-    bool ResourceManager::is_loaded(const std::string& folder) const {
-        for (const auto& res : resources) {
-            if (res.folder == folder) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool ResourceManager::is_running(const std::string& folder) const {
-        return running.count(folder) > 0;
-    }
-
-    const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& folder) const {
-        for (const auto& res : resources) {
-            if (res.folder == folder) {
-                return &res;
-            }
-        }
-        return nullptr;
-    }
-
-    std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
-        std::vector<const ResourceManager::ResourceManifest*> result;
-        result.reserve(resources.size());
-        for (const auto& res : resources) {
-            result.push_back(&res);
-        }
-        return result;
-    }
-
-    std::vector<ResourceManager::ResourceScript> ResourceManager::get_scripts(const std::string& folder, const std::string& type) const {
-        std::vector<ResourceManager::ResourceScript> result;
-        const auto* res = get_resource(folder);
-        if (!res) return result;
-        for (const auto& script : res->scripts) {
-            if (type.empty() || script.type == type) {
-                result.push_back(script);
-            }
-        }
-        return result;
-    }
-
-
-    // Lifecycle //
     bool ResourceManager::start(const std::string& folder) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
         if (!is_loaded(folder)) {
@@ -208,7 +210,7 @@ namespace Vital::Engine {
             return false;
         }
     
-        const std::string env = env_name(folder);
+        const std::string env = get_resource_env(folder);
         const auto* res = get_resource(folder);
         vm -> create_environment();
         vm -> set_reference(env);
@@ -218,7 +220,7 @@ namespace Vital::Engine {
             if (!is_eligible(script.type)) continue;
             std::string source;
             try {
-                source = Vital::Tool::File::read_text(resource_path(folder), script.src);
+                source = Vital::Tool::File::read_text(get_resource_base(folder), script.src);
             }
             catch (...) {
                 Vital::print("error", "Resource `" + folder + "` failed to read script `" + script.src + "`");
@@ -254,7 +256,7 @@ namespace Vital::Engine {
         }
     
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(folder));
-        vm -> del_reference(env_name(folder));
+        vm -> del_reference(get_resource_env(folder));
         running.erase(folder);
         Vital::print("sbox", "Resource `" + folder + "` stopped");
         return true;

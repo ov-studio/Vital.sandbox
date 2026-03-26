@@ -51,26 +51,23 @@ namespace Vital::Engine {
             static ResourceManager* get_singleton();
             static void free_singleton();
 
-
-            // Helpers //
-            static std::string env_name(const std::string& folder);
-            static std::string resource_path(const std::string& folder);
-
-        
+    
             // Checkers //
             static bool is_eligible(const std::string& type);
             bool is_loaded(const std::string& folder) const;
             bool is_running(const std::string& folder) const;
 
 
-            // APIs //
-            void scan();
-            const ResourceManifest* get_resource(const std::string& folder) const;
+            // Getters //
+            static std::string get_resource_base(const std::string& folder);
+            static std::string get_resource_env(const std::string& folder);
             std::vector<const ResourceManifest*> get_all_resources() const;
+            const ResourceManifest* get_resource(const std::string& folder) const;
             std::vector<ResourceScript> get_scripts(const std::string& folder, const std::string& type) const;
 
 
-            // Lifecycle //
+            // APIs //
+            void scan();
             bool start(const std::string& folder);
             bool stop(const std::string& folder);
             bool restart(const std::string& folder);
