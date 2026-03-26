@@ -105,27 +105,48 @@ namespace Vital::Engine {
 
             // Validate script entries and existence
             bool valid = true;
+            std::vector<std::string> errors;
             for (const auto& node : manifest["scripts"]) {
                 if (!node["src"] || !node["type"]) {
-                    Vital::print("error", "Resource `" + folder + "` has a script entry missing `src` or `type` — skipping resource");
+                    errors.push_back("script entry missing `src` or `type`");
                     valid = false;
-                    break;
+                    continue;
                 }
                 const std::string type = node["type"].as<std::string>();
                 if (valid_script_types.find(type) == valid_script_types.end()) {
-                    Vital::print("error", "Resource `" + folder + "` has invalid script type `" + type + "` — skipping resource");
+                    errors.push_back("script `" + node["src"].as<std::string>() + "` has invalid type `" + type + "`");
                     valid = false;
-                    break;
+                    continue;
                 }
                 const std::string src = node["src"].as<std::string>();
                 if (!Vital::Tool::File::exists(base, folder_path + "/" + src)) {
-                    Vital::print("error", "Resource `" + folder + "` script `" + src + "` not found on disk — skipping resource");
+                    errors.push_back("script `" + src + "` not found on disk");
                     valid = false;
-                    break;
+                    continue;
                 }
                 res.scripts.push_back({ src, type });
             }
-            if (!valid) continue;
+    
+            // Validate and collect files — optional
+            if (manifest["files"] && manifest["files"].IsSequence()) {
+                for (const auto& node : manifest["files"]) {
+                    const std::string file = node.as<std::string>();
+                    if (!Vital::Tool::File::exists(base, folder_path + "/" + file)) {
+                        errors.push_back("file `" + file + "` not found on disk");
+                        valid = false;
+                        continue;
+                    }
+                    if (valid) res.files.push_back(file);
+                }
+            }
+    
+            if (!valid) {
+                std::string error_list = "Resource `" + folder + "` skipped — " + std::to_string(errors.size()) + " error(s):\n";
+                for (const auto& err : errors)
+                    error_list += "> " + err + "\n";
+                Vital::print("error", error_list);
+                continue;
+            }
 
             // Validate and collect files — optional
             if (manifest["files"] && manifest["files"].IsSequence()) {
