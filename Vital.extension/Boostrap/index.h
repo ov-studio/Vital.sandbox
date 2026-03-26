@@ -23,6 +23,7 @@
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/console.h>
+#include <Vital.extension/Engine/public/resource.h>
 #include <Vital.extension/Sandbox/index.h>
 
 
