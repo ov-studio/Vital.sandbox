@@ -194,6 +194,7 @@ namespace Vital::Engine {
             resources.push_back(std::move(resource));
             Vital::print("sbox", "Loaded resource `" + name + "`");
         }
+    
         Vital::print("sbox", "Resource scan complete — " + std::to_string(resources.size()) + " resource(s) loaded");
     }
 
