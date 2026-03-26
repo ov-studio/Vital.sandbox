@@ -157,7 +157,7 @@ namespace Vital::Engine {
                     continue;
                 }
                 const std::string type = node["type"].as<std::string>();
-                if (valid_script_types.find(type) == valid_script_types.end()) {
+                if (valid_types.find(type) == valid_types.end()) {
                     errors.push_back("script `" + node["src"].as<std::string>() + "` has invalid type `" + type + "`");
                     valid = false;
                     continue;
