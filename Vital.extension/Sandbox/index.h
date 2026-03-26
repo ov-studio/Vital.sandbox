@@ -40,7 +40,11 @@ namespace Vital::Engine {
             static void free_singleton();
 
 
-			// Managers //
+			// Getters //
+			Vital::Sandbox::Machine* get_vm();
+
+
+			// APIs //
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)

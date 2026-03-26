@@ -77,7 +77,13 @@ namespace Vital::Engine {
     }
 
 
-    // Managers //
+    // Getters //
+    Vital::Sandbox::Machine* Sandbox::get_vm() {
+        return vm;
+    }
+
+
+    // APIs //
     void Sandbox::ready() {
         signal("vital.sandbox:ready");
     }
