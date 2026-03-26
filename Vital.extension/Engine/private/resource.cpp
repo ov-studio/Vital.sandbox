@@ -207,14 +207,15 @@ namespace Vital::Engine {
         const auto* res        = get_resource(folder);
     
         // Create an isolated environment table and store it as a reference
-        vm->create_table();
-        vm->set_reference(env);
+        vm -> create_table();
+        vm -> set_reference(env);
     
         bool ok = true;
         for (const auto& script : res->scripts) {
             if (!is_eligible(script.type)) continue;
     
-            const std::string path = base + "/resources/" + folder + "/" + script.src;
+            const std::string path =  "resources/" + folder + "/" + script.src;
+            Vital::print("info", path);
             std::string source;
             try {
                 source = Vital::Tool::File::read_text(base, path);
@@ -226,18 +227,18 @@ namespace Vital::Engine {
             }
     
             // Push the env table onto the stack, load the script into it
-            vm->get_reference(env, true);
-            if (!vm->load_string(source, true, true, -1)) {
+            vm -> get_reference(env, true);
+            if (!vm -> load_string(source, true, true, -1)) {
                 Vital::print("error", "Resource `" + folder + "` failed to execute script `" + script.src + "`");
-                vm->pop();
+                vm -> pop();
                 ok = false;
                 break;
             }
-            vm->pop();
+            vm -> pop();
         }
     
         if (!ok) {
-            vm->del_reference(env);
+            vm -> del_reference(env);
             return false;
         }
     
@@ -259,7 +260,7 @@ namespace Vital::Engine {
         Vital::Engine::Sandbox::get_singleton()->signal("vital.resource:stopped", Vital::Tool::StackValue(folder));
     
         // Release the environment table — all resource globals are GC'd
-        vm->del_reference(env_name(folder));
+        vm -> del_reference(env_name(folder));
         running.erase(folder);
     
         Vital::print("sbox", "Resource `" + folder + "` stopped");
