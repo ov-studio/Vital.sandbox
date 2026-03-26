@@ -167,8 +167,11 @@ namespace Vital::Engine {
     }
 
     const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& folder) const {
-        for (const auto& res : resources)
-            if (res.folder == folder) return &res;
+        for (const auto& res : resources) {
+            if (res.folder == folder) {
+                return &res;
+            }
+        }
         return nullptr;
     }
 
