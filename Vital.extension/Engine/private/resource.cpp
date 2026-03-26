@@ -256,13 +256,9 @@ namespace Vital::Engine {
             Vital::print("error", "Cannot stop `" + folder + "` — not running");
             return false;
         }
-    
-        Vital::Engine::Sandbox::get_singleton()->signal("vital.resource:stopped", Vital::Tool::StackValue(folder));
-    
-        // Release the environment table — all resource globals are GC'd
+        Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(folder));
         vm -> del_reference(env_name(folder));
         running.erase(folder);
-    
         Vital::print("sbox", "Resource `" + folder + "` stopped");
         return true;
     }
@@ -279,7 +275,8 @@ namespace Vital::Engine {
 
     void ResourceManager::stop_all() {
         std::unordered_set<std::string> snapshot = running;
-        for (const auto& folder : snapshot)
+        for (const auto& folder : snapshot) {
             stop(folder);
+        }
     }
 }
