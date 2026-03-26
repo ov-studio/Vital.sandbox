@@ -316,26 +316,25 @@ namespace Vital::Engine {
         std::string token;
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
-        auto exec = [&](const std::string& cmd, const std::string& input) {
-            if (cmd == "help") { print("sbox", fetch_help()); return true; }
-            if (cmd == "version") { print("sbox", "Version: " + Vital::Build.to_string()); return true; }
-            if (cmd == "clear") { clear(); return true; }
+        auto exec = [&](const std::vector<std::string>& tokens) -> bool {
+            if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
+            if (tokens[0] == "version") { print("sbox", "Version: " + Vital::Build.to_string()); return true; }
+            if (tokens[0] == "clear") { clear(); return true; }
             #if !defined(Vital_SDK_Client)
-            if (cmd == "refresh") { Vital::Engine::ResourceManager::get_singleton() -> scan(); return true; }
-            if (cmd == "start") { Vital::Engine::ResourceManager::get_singleton() -> start(input); return true; }
-            if (cmd == "stop") { Vital::Engine::ResourceManager::get_singleton() -> stop(input); return true; }
-            if (cmd == "restart") { Vital::Engine::ResourceManager::get_singleton() -> restart(input); return true; }
-            if (cmd == "shutdown") { shutdown(); return true; }
+            if (tokens[0] == "refresh") { Vital::Engine::ResourceManager::get_singleton() -> scan(); return true; }
+            if (tokens[0] == "start") { Vital::Engine::ResourceManager::get_singleton() -> start(tokens[1]); return true; }
+            if (tokens[0] == "stop") { Vital::Engine::ResourceManager::get_singleton() -> stop(tokens[1]); return true; }
+            if (tokens[0] == "restart") { Vital::Engine::ResourceManager::get_singleton() -> restart(tokens[1]); return true; }
+            if (tokens[0] == "shutdown") { shutdown(); return true; }
             #endif
             return false;
         };
-        if (exec(tokens[0], input)) return;
+        if (exec(tokens)) return;
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
         );
     }
-
     void Console::print(const std::string& mode, const std::string& message) {
         if (!Vital::Log::is_type(mode)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         if (message.empty()) return;
