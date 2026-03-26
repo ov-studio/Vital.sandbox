@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/console.h>
+#include <Vital.extension/Engine/public/resource.h>
 #include <Vital.extension/Sandbox/index.h>
 
 
@@ -319,6 +320,7 @@ namespace Vital::Engine {
         else if (tokens[0] == "version") return print("sbox", "Version: " + Vital::Build.to_string());
         else if (tokens[0] == "clear") return clear();
         #if !defined(Vital_SDK_Client)
+        else if (tokens[0] == "refresh") return Vital::Engine::ResourceManager::get_singleton() -> scan();
         else if (tokens[0] == "shutdown") return shutdown();
         #endif
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",

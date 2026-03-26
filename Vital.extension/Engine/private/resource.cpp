@@ -43,6 +43,7 @@ namespace Vital::Engine {
 
     // APIs //
     void ResourceManager::scan() {
+        Vital::print("sbox", "Rescanning resources...");
         resources.clear();
     
         const std::string root = Vital::get_directory("resources");
