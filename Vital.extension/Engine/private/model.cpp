@@ -37,13 +37,13 @@ namespace Vital::Engine {
             return nullptr;
         }
         Model* object = memnew(Model);
-        object->set_model_name(name);
+        object -> set_model_name(name);
         godot::Node* instance = it->second->instantiate();
         if (!instance) {
             memdelete(object);
             return nullptr;
         }
-        object->add_child(instance);
+        object -> add_child(instance);
         godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
         return object;
     }
@@ -275,14 +275,14 @@ namespace Vital::Engine {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         Model* object = memnew(Model);
-        object->set_model_name(name);
+        object -> set_model_name(name);
         godot::Node* instance = it->second->instantiate();
         if (!instance) {
             memdelete(object);
             throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
         }
-        object->add_child(instance);
-        Core::get_singleton()->add_child_node(object);
+        object -> add_child(instance);
+        Core::get_singleton() -> add_child(object);
         return object;
     }
 
@@ -307,7 +307,7 @@ namespace Vital::Engine {
             godot::UtilityFunctions::print("ModelSpawner: spawned node is not a Model");
             return nullptr;
         }
-        object->pending_authority = authority_peer;
+        object -> pending_authority = authority_peer;
         cache_synced[name] = object;
         godot::UtilityFunctions::print("ModelSpawner: spawned -> ", godot::String(name.c_str()));
         return object;

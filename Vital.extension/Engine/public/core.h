@@ -29,7 +29,6 @@ namespace Vital::Engine {
             inline static godot::WorldEnvironment* environment = nullptr;
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
-                godot::ClassDB::bind_method(godot::D_METHOD("add_child_node", "node"), &Core::add_child_node);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"), &Core::setup_model_spawner);
                 godot::ClassDB::bind_method(godot::D_METHOD("spawn_model", "name", "authority_peer"), &Core::spawn_model);
                 godot::ClassDB::bind_method(godot::D_METHOD("process_asset_chunk", "path"), &Core::process_asset_chunk);
@@ -72,7 +71,6 @@ namespace Vital::Engine {
 
         
             // APIs //
-            void add_child_node(godot::Node* node);
             void setup_model_spawner();
             void spawn_model(const godot::String& name, int authority_peer);
             void process_asset_chunk(const godot::String& path);

@@ -118,10 +118,6 @@ namespace Vital::Engine {
 
 
     // APIs //
-    void Core::add_child_node(godot::Node* node) {
-        add_child(node);
-    }
-
     void Core::setup_model_spawner() {
         Model::setup_spawner();
     }
