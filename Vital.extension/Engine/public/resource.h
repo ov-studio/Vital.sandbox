@@ -29,7 +29,7 @@ namespace Vital::Engine {
             };
 
             struct ResourceManifest {
-                std::string name;
+                std::string ref;
                 std::string name;
                 std::string author;
                 std::string version;

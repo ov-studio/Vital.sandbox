@@ -44,7 +44,7 @@ namespace Vital::Engine {
 
     bool ResourceManager::is_loaded(const std::string& name) const {
         for (const auto& res : resources) {
-            if (res.name == name) {
+            if (res.ref == name) {
                 return true;
             }
         }
@@ -76,7 +76,7 @@ namespace Vital::Engine {
 
     const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& name) const {
         for (const auto& res : resources) {
-            if (res.name == name) {
+            if (res.ref == name) {
                 return &res;
             }
         }
@@ -140,9 +140,9 @@ namespace Vital::Engine {
             }
 
             ResourceManifest res;
-            res.name = name;
-            res.name = manifest["name"]    ? manifest["name"].as<std::string>()    : name;
-            res.author = manifest["author"]  ? manifest["author"].as<std::string>()  : "";
+            res.ref = name;
+            res.name = manifest["name"] ? manifest["name"].as<std::string>() : name;
+            res.author = manifest["author"] ? manifest["author"].as<std::string>() : "";
             res.version = manifest["version"] ? manifest["version"].as<std::string>() : "";
             if (!manifest["scripts"] || !manifest["scripts"].IsSequence()) {
                 Vital::print("error", "Resource `" + name + "` has no valid `scripts` section — skipping");
