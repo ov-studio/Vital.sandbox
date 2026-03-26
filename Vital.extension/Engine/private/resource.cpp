@@ -184,8 +184,11 @@ namespace Vital::Engine {
         std::vector<ResourceManager::ResourceScript> result;
         const auto* res = get_resource(folder);
         if (!res) return result;
-        for (const auto& script : res->scripts)
-            if (type.empty() || script.type == type) result.push_back(script);
+        for (const auto& script : res->scripts) {
+            if (type.empty() || script.type == type) {
+                result.push_back(script);
+            }
+        }
         return result;
     }
 
