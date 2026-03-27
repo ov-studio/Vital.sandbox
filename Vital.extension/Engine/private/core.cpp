@@ -18,6 +18,7 @@
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/resource.h>
 #include <Vital.extension/Sandbox/index.h>
 
 
@@ -151,5 +152,17 @@ namespace Vital::Engine {
 
     void Core::broadcast_asset_manifest(int peer_id) {
         AssetManager::get_singleton()->broadcast_manifest(peer_id);
+    }
+
+    void Core::notify_resource_started(const godot::String& name) {
+        #if !defined(Vital_SDK_Client)
+        ResourceManager::get_singleton()->notify_resource_started(Vital::to_std_string(name));
+        #endif
+    }
+    
+    void Core::notify_resource_stopped(const godot::String& name) {
+        #if !defined(Vital_SDK_Client)
+        ResourceManager::get_singleton()->notify_resource_stopped(Vital::to_std_string(name));
+        #endif
     }
 }

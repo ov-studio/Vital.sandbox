@@ -92,6 +92,8 @@ namespace Vital::Engine {
             bool restart(const std::string& name);
             void start_all();
             void stop_all();
+            void notify_resource_started(const std::string& name);
+            void notify_resource_stopped(const std::string& name);
             #endif
 
             #if defined(Vital_SDK_Client)
