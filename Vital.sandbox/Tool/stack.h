@@ -153,7 +153,7 @@ namespace Vital::Tool {
                     else if constexpr (std::is_same_v<T, float>) return (double)val;
                     else if constexpr (std::is_same_v<T, double>) return val;
                     else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
-                    else if constexpr (std::is_same_v<T, std::vector<std::string>>)  {
+                    else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                         godot::Array inner;
                         inner.resize(static_cast<int>(val.size()));
                         for (int i = 0; i < static_cast<int>(val.size()); ++i)
@@ -164,7 +164,6 @@ namespace Vital::Tool {
             }
 
             // godot::Variant → StackValue
-            // Unknown Godot types produce a null StackValue.
             static StackValue variant_to_value(const godot::Variant& v) {
                 switch (v.get_type()) {
                     case godot::Variant::NIL: return StackValue(nullptr);
@@ -172,6 +171,17 @@ namespace Vital::Tool {
                     case godot::Variant::INT: return StackValue((int32_t)(int64_t)v);
                     case godot::Variant::FLOAT: return StackValue((double)v);
                     case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
+                    case godot::Variant::ARRAY: {
+                        const godot::Array arr = v;
+                        std::vector<std::string> result;
+                        result.reserve(arr.size());
+                        for (int i = 0; i < arr.size(); ++i) {
+                            const godot::Variant& elem = arr[i];
+                            if (elem.get_type() == godot::Variant::STRING) result.push_back(std::string(((godot::String)elem).utf8().get_data()));
+                            else result.push_back("");
+                        }
+                        return StackValue(std::move(result));
+                    }
                     default: return StackValue(nullptr);
                 }
             }
