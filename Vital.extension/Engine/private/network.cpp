@@ -77,7 +77,7 @@ namespace Vital::Engine {
 
     godot::SceneTree* Network::get_scene_tree() {
         return godot::Object::cast_to<godot::SceneTree>(
-            godot::Engine::get_singleton()->get_main_loop()
+            godot::Engine::get_singleton() -> get_main_loop()
         );
     }
 
@@ -135,7 +135,7 @@ namespace Vital::Engine {
     #if defined(Vital_SDK_Client)
     void Network::wire_client_signals() {
         if (!node) { Vital::print("sbox", "wire_client_signals: no node"); return; }
-        auto mp = get_scene_tree()->get_multiplayer();
+        auto mp = get_scene_tree() -> get_multiplayer();
         if (!mp.is_valid()) { Vital::print("sbox", "wire_client_signals: mp invalid"); return; }
         mp -> connect("connected_to_server", godot::Callable(node, "_on_connected_to_server"));
         mp -> connect("connection_failed",   godot::Callable(node, "_on_connection_failed"));
@@ -144,7 +144,7 @@ namespace Vital::Engine {
     #else
     void Network::wire_server_signals() {
         if (!node) return;
-        auto mp = get_scene_tree()->get_multiplayer();
+        auto mp = get_scene_tree() -> get_multiplayer();
         if (!mp.is_valid()) return;
         mp -> connect("peer_connected",    godot::Callable(node, "_on_peer_connected"));
         mp -> connect("peer_disconnected", godot::Callable(node, "_on_peer_disconnected"));
@@ -242,7 +242,7 @@ namespace Vital::Engine {
         }
         auto tree = get_scene_tree();
         if (!tree) { peer.unref(); return false; }
-        tree -> get_multiplayer()->set_multiplayer_peer(peer);
+        tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_client_signals();
         auto_reconnect     = enable_reconnect;
         reconnect_ip       = ip;
@@ -263,7 +263,7 @@ namespace Vital::Engine {
         peer -> close();
         peer.unref();
         auto tree = get_scene_tree();
-        if (tree) tree -> get_multiplayer()->set_multiplayer_peer(nullptr);
+        if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
         Vital::print("sbox", "Network: disconnected");
         Vital::Tool::Event::emit("network:disconnected", {});
         return true;
@@ -332,7 +332,7 @@ namespace Vital::Engine {
         }
         auto tree = get_scene_tree();
         if (!tree) { peer.unref(); return false; }
-        tree -> get_multiplayer()->set_multiplayer_peer(peer);
+        tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_server_signals();
         Vital::print("sbox", "Network: hosting on port ", port);
         Vital::Tool::Event::emit("network:hosted", {});
@@ -346,7 +346,7 @@ namespace Vital::Engine {
         peer -> close();
         peer.unref();
         auto tree = get_scene_tree();
-        if (tree) tree -> get_multiplayer()->set_multiplayer_peer(nullptr);
+        if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
         Vital::print("sbox", "Network: server closed");
         Vital::Tool::Event::emit("network:closed", {});
         return true;
@@ -402,7 +402,7 @@ namespace Vital::Engine {
     }
 
     void Network::emit(Vital::Tool::Stack& arguments, int peerID) {
-        get_singleton()->send(arguments, peerID);
+        get_singleton() -> send(arguments, peerID);
     }
 
 

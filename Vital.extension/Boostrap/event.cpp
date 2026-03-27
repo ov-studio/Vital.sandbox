@@ -55,7 +55,7 @@ void setup() {
         if (type == "asset:request") {
             std::string path = args.object.at("path").as<std::string>();
             Vital::print("sbox", "AssetManager: peer ", sender, " requested -> ", path.c_str());
-            Vital::Engine::Core::get_singleton()->call_deferred(
+            Vital::Engine::Core::get_singleton() -> call_deferred(
                 "send_asset_to_peer",
                 godot::String(path.c_str()),
                 (int)sender
@@ -65,7 +65,7 @@ void setup() {
         else if (type == "asset:cancel") {
             std::string path = args.object.at("path").as<std::string>();
             Vital::print("sbox", "AssetManager: server cancelled -> ", path.c_str());
-            Vital::Engine::AssetManager::get_singleton()->cancel(path);
+            Vital::Engine::AssetManager::get_singleton() -> cancel(path);
             return;
         }
 

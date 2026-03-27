@@ -103,15 +103,15 @@ namespace Vital::Engine {
             i++;
         }
 
-        Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+        Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
         Vital::print("sbox", "AssetManager: sent manifest (",
             (int)registered_assets.size(), " assets) to peer ", peer_id);
     }
 
     void AssetManager::broadcast_manifest_deferred() {
         #if !defined(Vital_SDK_Client)
-        for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
-            Core::get_singleton()->call_deferred(
+        for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
+            Core::get_singleton() -> call_deferred(
                 "broadcast_asset_manifest",
                 peer_id
             );
@@ -149,7 +149,7 @@ namespace Vital::Engine {
                     size_t length     = std::min(CHUNK_SIZE, encoded.size() - offset);
                     std::string chunk = encoded.substr(offset, length);
 
-                    Core::get_singleton()->call_deferred(
+                    Core::get_singleton() -> call_deferred(
                         "send_asset_chunk",
                         godot::String(path.c_str()),
                         godot::String(hash.c_str()),
@@ -173,13 +173,13 @@ namespace Vital::Engine {
         Vital::Tool::Stack msg;
         msg.object["type"] = Vital::Tool::StackValue(std::string("asset:cancel"));
         msg.object["path"] = Vital::Tool::StackValue(path);
-        Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+        Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
         Vital::print("sbox", "AssetManager: sent cancel -> ", path.c_str(), " peer=", peer_id);
     }
 
     void AssetManager::send_cancel_all(const std::string& path) {
         #if !defined(Vital_SDK_Client)
-        for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
+        for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
             send_cancel(path, peer_id);
         }
         Vital::print("sbox", "AssetManager: sent cancel to all peers -> ", path.c_str());
@@ -228,7 +228,7 @@ namespace Vital::Engine {
             Vital::Tool::Stack req;
             req.object["type"] = Vital::Tool::StackValue(std::string("asset:request"));
             req.object["path"] = Vital::Tool::StackValue(path);
-            Vital::Engine::Network::get_singleton()->send_to_server(req);
+            Vital::Engine::Network::get_singleton() -> send_to_server(req);
             Vital::print("sbox", "AssetManager: requesting -> ", path.c_str());
         }
 
@@ -292,12 +292,12 @@ namespace Vital::Engine {
             Vital::Tool::Stack req;
             req.object["type"] = Vital::Tool::StackValue(std::string("asset:request"));
             req.object["path"] = Vital::Tool::StackValue(path);
-            Vital::Engine::Network::get_singleton()->send_to_server(req);
+            Vital::Engine::Network::get_singleton() -> send_to_server(req);
             return;
         }
 
         pending_chunks[path] = { buffer, hash };
-        Core::get_singleton()->call_deferred(
+        Core::get_singleton() -> call_deferred(
             "process_asset_chunk",
             godot::String(path.c_str())
         );
@@ -330,7 +330,7 @@ namespace Vital::Engine {
                 Vital::print("sbox", "AssetManager: failed to save -> ", path.c_str());
             }
 
-            Core::get_singleton()->call_deferred(
+            Core::get_singleton() -> call_deferred(
                 "on_asset_saved",
                 godot::String(path.c_str())
             );
@@ -392,7 +392,7 @@ namespace Vital::Engine {
         auto it = spawn_queue.find(loaded_name);
         if (it == spawn_queue.end()) return;
         Vital::print("sbox", "AssetManager: flushing queued spawn -> ", loaded_name.c_str());
-        Core::get_singleton()->call_deferred(
+        Core::get_singleton() -> call_deferred(
             "spawn_model",
             godot::String(loaded_name.c_str()),
             it->second

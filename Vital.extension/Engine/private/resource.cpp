@@ -211,7 +211,7 @@ namespace Vital::Engine {
             Vital::Tool::Event::bind("vital.network:peer_connected", [](Vital::Tool::Stack args) -> void {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
-                Core::get_singleton()->call_deferred("broadcast_asset_manifest", peer_id);
+                Core::get_singleton() -> call_deferred("broadcast_asset_manifest", peer_id);
             });
         }
         #endif
@@ -268,8 +268,8 @@ namespace Vital::Engine {
         Vital::Tool::Stack msg;
         msg.object["type"] = Vital::Tool::StackValue(std::string("vital.resource:started"));
         msg.object["name"] = Vital::Tool::StackValue(name);
-        for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
-            Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+        for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
+            Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
         }
     }
 
@@ -277,13 +277,13 @@ namespace Vital::Engine {
         Vital::Tool::Stack msg;
         msg.object["type"] = Vital::Tool::StackValue(std::string("vital.resource:stopped"));
         msg.object["name"] = Vital::Tool::StackValue(name);
-        for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
-            Vital::Engine::Network::get_singleton()->send(msg, peer_id);
+        for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
+            Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
         }
     }
 
     bool ResourceManager::start(const std::string& name) {
-        auto* vm = Sandbox::get_singleton()->get_vm();
+        auto* vm = Sandbox::get_singleton() -> get_vm();
         auto* am = AssetManager::get_singleton();
 
         if (!is_loaded(name)) {
@@ -341,19 +341,19 @@ namespace Vital::Engine {
 
         // Deferred — both send() calls must run on the main thread
         am->broadcast_manifest_deferred();
-        Core::get_singleton()->call_deferred(
+        Core::get_singleton() -> call_deferred(
             "notify_resource_started",
             godot::String(name.c_str())
         );
 
         running.insert(name);
         Vital::print("sbox", "Resource `" + name + "` started");
-        Sandbox::get_singleton()->signal("vital.resource:started", Vital::Tool::StackValue(name));
+        Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
         return true;
     }
 
     bool ResourceManager::stop(const std::string& name) {
-        auto* vm = Sandbox::get_singleton()->get_vm();
+        auto* vm = Sandbox::get_singleton() -> get_vm();
 
         if (!is_running(name)) {
             Vital::print("error", "Cannot stop `" + name + "` — not running");
@@ -361,12 +361,12 @@ namespace Vital::Engine {
         }
 
         // Notify clients deferred — must run on main thread
-        Core::get_singleton()->call_deferred(
+        Core::get_singleton() -> call_deferred(
             "notify_resource_stopped",
             godot::String(name.c_str())
         );
 
-        Sandbox::get_singleton()->signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+        Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
         vm->del_reference(get_resource_env(name));
         running.erase(name);
         Vital::print("sbox", "Resource `" + name + "` stopped");
@@ -447,7 +447,7 @@ namespace Vital::Engine {
     void ResourceManager::execute_scripts(const std::string& name) {
         if (!is_pending(name)) return;
 
-        auto* vm              = Sandbox::get_singleton()->get_vm();
+        auto* vm              = Sandbox::get_singleton() -> get_vm();
         auto* am              = AssetManager::get_singleton();
         const auto* resource  = get_resource(name);
         const std::string env = get_resource_env(name);
@@ -492,11 +492,11 @@ namespace Vital::Engine {
 
         running.insert(name);
         Vital::print("sbox", "Resource `" + name + "` loaded on client");
-        Sandbox::get_singleton()->signal("vital.resource:started", Vital::Tool::StackValue(name));
+        Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
     }
 
     bool ResourceManager::unload(const std::string& name) {
-        auto* vm = Sandbox::get_singleton()->get_vm();
+        auto* vm = Sandbox::get_singleton() -> get_vm();
         auto* am = AssetManager::get_singleton();
 
         if (!is_running(name) && !is_pending(name)) {
@@ -522,7 +522,7 @@ namespace Vital::Engine {
         }
 
         Vital::print("sbox", "Resource `" + name + "` unloaded on client");
-        Sandbox::get_singleton()->signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+        Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
         return true;
     }
 

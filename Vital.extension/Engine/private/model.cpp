@@ -195,7 +195,7 @@ namespace Vital::Engine {
 
     void Model::on_connected() {
         // Clean up stale nodes from previous session
-        AssetManager::get_singleton()->clear();
+        AssetManager::get_singleton() -> clear();
         cleanup_spawned();
         // Refresh spawner multiplayer authority for new session
         if (net_spawner) {
@@ -289,7 +289,7 @@ namespace Vital::Engine {
     void Model::create_synced(const std::string& name, int authority_peer) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
-        Core::get_singleton()->call_deferred("spawn_model", godot::String(name.c_str()), authority_peer);
+        Core::get_singleton() -> call_deferred("spawn_model", godot::String(name.c_str()), authority_peer);
     }
 
     Model* Model::spawn_synced(const std::string& name, int authority_peer) {
