@@ -98,17 +98,50 @@ namespace Vital::Engine {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 line = stdin_buffer;
                                 stdin_buffer.clear();
-                                std::cout << "\r\033[2K\033[1B\033[2K\033[1A" << std::flush;
+                                if (!line.empty()) {
+                                    stdin_history.push_back(line);
+                                    stdin_history_index = -1;
+                                }
+                                std::cout << "\r\033[J" << std::flush;
                             }
                             if (!line.empty()) execute(line);
                             format_input_prompt();
-                        } else if (vk == VK_BACK) {
+                        }
+                        else if (vk == VK_UP) {
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                if (!stdin_history.empty()) {
+                                    if (stdin_history_index == -1)
+                                        stdin_history_index = static_cast<int>(stdin_history.size()) - 1;
+                                    else if (stdin_history_index > 0)
+                                        stdin_history_index--;
+                                    stdin_buffer = stdin_history[stdin_history_index];
+                                }
+                            }
+                            format_input_prompt();
+                        }
+                        else if (vk == VK_DOWN) {
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                if (stdin_history_index != -1) {
+                                    stdin_history_index++;
+                                    if (stdin_history_index >= static_cast<int>(stdin_history.size())) {
+                                        stdin_history_index = -1;
+                                        stdin_buffer.clear();
+                                    }
+                                    else stdin_buffer = stdin_history[stdin_history_index];
+                                }
+                            }
+                            format_input_prompt();
+                        }
+                        else if (vk == VK_BACK) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 if (!stdin_buffer.empty()) stdin_buffer.pop_back();
                             }
                             format_input_prompt();
-                        } else if (ch >= 0x20 && ch < 0x7F) {
+                        }
+                        else if (ch >= 0x20 && ch < 0x7F) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 stdin_buffer += ch;
@@ -125,10 +158,46 @@ namespace Vital::Engine {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 line = stdin_buffer;
                                 stdin_buffer.clear();
-                                std::cout << "\r\033[2K\033[1B\033[2K\033[1A" << std::flush;
+                                if (!line.empty()) {
+                                    stdin_history.push_back(line);
+                                    stdin_history_index = -1;
+                                }
+                                std::cout << "\r\033[J" << std::flush;
                             }
                             if (!line.empty()) execute(line);
                             format_input_prompt();
+                        }
+                        else if (ch == '\033') {
+                            char seq[2];
+                            if (::read(STDIN_FILENO, &seq[0], 1) == 1 && seq[0] == '[' &&
+                                ::read(STDIN_FILENO, &seq[1], 1) == 1) {
+                                if (seq[1] == 'A') {
+                                    {
+                                        std::lock_guard<std::mutex> lock(stdout_mutex);
+                                        if (!stdin_history.empty()) {
+                                            if (stdin_history_index == -1)
+                                                stdin_history_index = static_cast<int>(stdin_history.size()) - 1;
+                                            else if (stdin_history_index > 0)
+                                                stdin_history_index--;
+                                            stdin_buffer = stdin_history[stdin_history_index];
+                                        }
+                                    }
+                                    format_input_prompt();
+                                }
+                                else if (seq[1] == 'B') {
+                                    {
+                                        std::lock_guard<std::mutex> lock(stdout_mutex);
+                                        if (stdin_history_index != -1) {
+                                            stdin_history_index++;
+                                            if (stdin_history_index >= static_cast<int>(stdin_history.size())) {
+                                                stdin_history_index = -1;
+                                                stdin_buffer.clear();
+                                            else stdin_buffer = stdin_history[stdin_history_index];
+                                        }
+                                    }
+                                    format_input_prompt();
+                                }
+                            }
                         }
                         else if (ch == 0x7F || ch == '\b') {
                             {

@@ -35,6 +35,8 @@ namespace Vital::Engine {
             std::thread stdin_thread;
             std::atomic<bool> stdin_running{false};
             std::string stdin_buffer;
+            std::vector<std::string> stdin_history;
+            int stdin_history_index = -1;
             #if defined(Vital_SDK_WINDOWS)
             DWORD stdin_original_mode = 0;
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
