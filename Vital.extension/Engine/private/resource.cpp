@@ -14,6 +14,8 @@
 
 #include <Vital.extension/Engine/public/resource.h>
 #include <Vital.extension/Engine/public/console.h>
+#include <Vital.extension/Engine/public/asset.h>
+#include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Sandbox/index.h>
 #include <yaml-cpp/yaml.h>
 
@@ -23,6 +25,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
     // Utils //
     ResourceManager* ResourceManager::get_singleton() {
         if (!singleton) singleton = new ResourceManager();
@@ -44,9 +47,7 @@ namespace Vital::Engine {
 
     bool ResourceManager::is_loaded(const std::string& name) const {
         for (const auto& resource : resources) {
-            if (resource.ref == name) {
-                return true;
-            }
+            if (resource.ref == name) return true;
         }
         return false;
     }
@@ -54,6 +55,12 @@ namespace Vital::Engine {
     bool ResourceManager::is_running(const std::string& name) const {
         return running.count(name) > 0;
     }
+
+    #if defined(Vital_SDK_Client)
+    bool ResourceManager::is_pending(const std::string& name) const {
+        return pending.count(name) > 0;
+    }
+    #endif
 
 
     // Getters //
@@ -68,9 +75,7 @@ namespace Vital::Engine {
 
     const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& name) const {
         for (const auto& resource : resources) {
-            if (resource.ref == name) {
-                return &resource;
-            }
+            if (resource.ref == name) return &resource;
         }
         return nullptr;
     }
@@ -87,10 +92,8 @@ namespace Vital::Engine {
         std::vector<ResourceManager::ResourceScript> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;
-        for (const auto& script : resource -> scripts) {
-            if (type.empty() || script.type == type) {
-                result.push_back(script);
-            }
+        for (const auto& script : resource->scripts) {
+            if (type.empty() || script.type == type) result.push_back(script);
         }
         return result;
     }
@@ -100,8 +103,8 @@ namespace Vital::Engine {
     void ResourceManager::scan() {
         Vital::print("sbox", "Rescanning resources...");
         resources.clear();
-        std::vector<std::string> contents;
 
+        std::vector<std::string> contents;
         try {
             contents = Vital::Tool::File::contents(Vital::get_directory(), "resources", true);
         }
@@ -110,14 +113,17 @@ namespace Vital::Engine {
             return;
         }
 
+        // First pass — detect duplicates
         std::unordered_map<std::string, int> resource_count;
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
             resource_count[name]++;
         }
 
+        // Second pass — load valid resources
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
+
             if (resource_count[name] > 1) {
                 Vital::print("error", "Duplicate resource found — skipping `" + name + "`");
                 continue;
@@ -139,10 +145,11 @@ namespace Vital::Engine {
             }
 
             ResourceManifest resource;
-            resource.ref = name;
-            resource.name = manifest["name"] ? manifest["name"].as<std::string>() : name;
-            resource.author = manifest["author"] ? manifest["author"].as<std::string>() : "";
+            resource.ref     = name;
+            resource.name    = manifest["name"]    ? manifest["name"].as<std::string>()    : name;
+            resource.author  = manifest["author"]  ? manifest["author"].as<std::string>()  : "";
             resource.version = manifest["version"] ? manifest["version"].as<std::string>() : "";
+
             if (!manifest["scripts"] || !manifest["scripts"].IsSequence()) {
                 Vital::print("error", "Resource `" + name + "` has no valid `scripts` section — skipping");
                 continue;
@@ -150,6 +157,7 @@ namespace Vital::Engine {
 
             bool valid = true;
             std::vector<std::string> errors;
+
             for (const auto& node : manifest["scripts"]) {
                 if (!node["src"] || !node["type"]) {
                     errors.push_back("script entry missing `src` or `type`");
@@ -185,21 +193,59 @@ namespace Vital::Engine {
 
             if (!valid) {
                 std::string error_list = "Resource `" + name + "` skipped — " + std::to_string(errors.size()) + " error(s):\n";
-                for (const auto& err : errors) {
-                    error_list += "> " + err + "\n";
-                }
+                for (const auto& err : errors) error_list += "> " + err + "\n";
                 Vital::print("error", error_list);
                 continue;
             }
+
             resources.push_back(std::move(resource));
             Vital::print("sbox", "Loaded resource `" + name + "`");
         }
-    
+
         Vital::print("sbox", "Resource scan complete — " + std::to_string(resources.size()) + " resource(s) loaded");
+
+        // Wire up network-driven lifecycle events once per scan
+        #if !defined(Vital_SDK_Client)
+        static bool server_bound = false;
+        if (!server_bound) {
+            server_bound = true;
+            Vital::Tool::Event::bind("vital.network:peer_connected", [](Vital::Tool::Stack args) -> void {
+                if (args.array.empty()) return;
+                const int peer_id = args.array[0].as<int32_t>();
+                // Deferred so Godot multiplayer is accessed on the main thread
+                Core::get_singleton()->call_deferred(
+                    "broadcast_asset_manifest",
+                    peer_id
+                );
+            });
+        }
+        #endif
+
+        #if defined(Vital_SDK_Client)
+        static bool client_bound = false;
+        if (!client_bound) {
+            client_bound = true;
+            Vital::Tool::Event::bind("vital.resource:started", [](Vital::Tool::Stack args) -> void {
+                if (args.array.empty()) return;
+                const std::string name = args.array[0].as<std::string>();
+                ResourceManager::get_singleton()->load(name);
+            });
+            Vital::Tool::Event::bind("vital.resource:stopped", [](Vital::Tool::Stack args) -> void {
+                if (args.array.empty()) return;
+                const std::string name = args.array[0].as<std::string>();
+                ResourceManager::get_singleton()->unload(name);
+            });
+        }
+        #endif
     }
 
+
+    #if !defined(Vital_SDK_Client)
+
     bool ResourceManager::start(const std::string& name) {
-        auto* vm = Sandbox::get_singleton() -> get_vm();
+        auto* vm = Sandbox::get_singleton()->get_vm();
+        auto* am = AssetManager::get_singleton();
+
         if (!is_loaded(name)) {
             Vital::print("error", "Cannot start `" + name + "` — resource not loaded");
             return false;
@@ -208,15 +254,18 @@ namespace Vital::Engine {
             Vital::print("error", "Cannot start `" + name + "` — already running");
             return false;
         }
-    
-        const std::string env = get_resource_env(name);
-        const auto* resource = get_resource(name);
-        bool status = true;
-        vm -> create_environment();
-        vm -> set_reference(env);
 
-        for (const auto& script : resource -> scripts) {
+        const std::string env = get_resource_env(name);
+        const auto* resource  = get_resource(name);
+        bool status           = true;
+
+        vm->create_environment();
+        vm->set_reference(env);
+
+        // Execute server + shared scripts locally
+        for (const auto& script : resource->scripts) {
             if (!is_eligible(script.type)) continue;
+
             std::string source;
             try {
                 source = Vital::Tool::File::read_text(get_resource_base(name), script.src);
@@ -226,35 +275,54 @@ namespace Vital::Engine {
                 status = false;
                 break;
             }
-            vm -> get_reference(env, true);
-            if (!vm -> load_string(source, true, true, vm -> get_count())) {
+
+            vm->get_reference(env, true);
+            if (!vm->load_string(source, true, true, vm->get_count())) {
                 Vital::print("error", "Resource `" + name + "` failed to execute script `" + script.src + "`");
-                vm -> pop();
+                vm->pop();
                 status = false;
                 break;
             }
-            vm -> pop();
+            vm->pop();
         }
+
         if (!status) {
-            vm -> del_reference(env);
+            vm->del_reference(env);
             return false;
         }
 
+        // Register files + client/shared scripts as relative paths
+        for (const auto& file : resource->files) {
+            am->register_asset("resources/" + name + "/" + file);
+        }
+        for (const auto& script : resource->scripts) {
+            if (script.type == "client" || script.type == "shared") {
+                am->register_asset("resources/" + name + "/" + script.src);
+            }
+        }
+
+        // Broadcast updated manifest to all currently connected clients
+        // deferred to ensure Godot multiplayer runs on the main thread
+        am->broadcast_manifest_deferred();
+
         running.insert(name);
         Vital::print("sbox", "Resource `" + name + "` started");
-        Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
+        Sandbox::get_singleton()->signal("vital.resource:started", Vital::Tool::StackValue(name));
         return true;
     }
 
     bool ResourceManager::stop(const std::string& name) {
-        auto* vm = Sandbox::get_singleton() -> get_vm();
+        auto* vm = Sandbox::get_singleton()->get_vm();
+
         if (!is_running(name)) {
             Vital::print("error", "Cannot stop `" + name + "` — not running");
             return false;
         }
-    
-        Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
-        vm -> del_reference(get_resource_env(name));
+
+        // Signal reaches clients — they immediately cancel downloads and unload
+        Sandbox::get_singleton()->signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+
+        vm->del_reference(get_resource_env(name));
         running.erase(name);
         Vital::print("sbox", "Resource `" + name + "` stopped");
         return true;
@@ -267,7 +335,7 @@ namespace Vital::Engine {
 
     void ResourceManager::start_all() {
         for (const auto* resource : get_all_resources()) {
-            start(resource -> name);
+            start(resource->ref);
         }
     }
 
@@ -277,4 +345,130 @@ namespace Vital::Engine {
             stop(name);
         }
     }
+
+    #endif
+
+
+    #if defined(Vital_SDK_Client)
+
+    bool ResourceManager::load(const std::string& name) {
+        auto* am = AssetManager::get_singleton();
+
+        if (!is_loaded(name)) {
+            Vital::print("error", "Cannot load `" + name + "` — resource not scanned");
+            return false;
+        }
+        if (is_running(name) || is_pending(name)) {
+            Vital::print("error", "Cannot load `" + name + "` — already running or pending");
+            return false;
+        }
+
+        const auto* resource = get_resource(name);
+
+        // Collect relative asset paths matching what server registered
+        std::unordered_set<std::string> asset_paths;
+        for (const auto& file : resource->files) {
+            asset_paths.insert("resources/" + name + "/" + file);
+        }
+        for (const auto& script : resource->scripts) {
+            if (script.type == "client" || script.type == "shared") {
+                asset_paths.insert("resources/" + name + "/" + script.src);
+            }
+        }
+
+        resource_assets[name] = asset_paths;
+        pending.insert(name);
+
+        Vital::print("sbox", "Resource `" + name + "` queued for download — " + std::to_string(asset_paths.size()) + " asset(s)");
+
+        // Once all assets are downloaded, execute scripts into isolated env
+        Vital::Tool::Event::bind("asset:ready", [name](Vital::Tool::Stack) -> void {
+            auto* rm = ResourceManager::get_singleton();
+            if (!rm->is_pending(name)) return;
+
+            auto* vm              = Sandbox::get_singleton()->get_vm();
+            auto* am              = AssetManager::get_singleton();
+            const auto* resource  = rm->get_resource(name);
+            const std::string env = get_resource_env(name);
+            bool status           = true;
+
+            vm->create_environment();
+            vm->set_reference(env);
+
+            for (const auto& script : resource->scripts) {
+                if (script.type != "shared" && script.type != "client") continue;
+
+                // Read from vital_assets/ using the flattened filename
+                const std::string asset_path = "resources/" + name + "/" + script.src;
+                std::string source;
+                try {
+                    source = Vital::Tool::File::read_text(am->get_local_base(), asset_path);
+                }
+                catch (...) {
+                    Vital::print("error", "Resource `" + name + "` failed to read script `" + script.src + "`");
+                    status = false;
+                    break;
+                }
+
+                vm->get_reference(env, true);
+                if (!vm->load_string(source, true, true, vm->get_count())) {
+                    Vital::print("error", "Resource `" + name + "` failed to execute script `" + script.src + "`");
+                    vm->pop();
+                    status = false;
+                    break;
+                }
+                vm->pop();
+            }
+
+            rm->pending.erase(name);
+            rm->resource_assets.erase(name);
+
+            if (!status) {
+                vm->del_reference(env);
+                Vital::print("error", "Resource `" + name + "` failed to load on client — env released");
+                return;
+            }
+
+            rm->running.insert(name);
+            Vital::print("sbox", "Resource `" + name + "` loaded on client");
+            Sandbox::get_singleton()->signal("vital.resource:started", Vital::Tool::StackValue(name));
+        });
+
+        return true;
+    }
+
+    bool ResourceManager::unload(const std::string& name) {
+        auto* vm = Sandbox::get_singleton()->get_vm();
+        auto* am = AssetManager::get_singleton();
+
+        if (!is_running(name) && !is_pending(name)) {
+            Vital::print("error", "Cannot unload `" + name + "` — not running or pending");
+            return false;
+        }
+
+        // Cancel all in-progress downloads for this resource immediately
+        if (is_pending(name)) {
+            auto it = resource_assets.find(name);
+            if (it != resource_assets.end()) {
+                for (const auto& path : it->second) {
+                    am->cancel(path);
+                }
+                resource_assets.erase(it);
+            }
+            pending.erase(name);
+            Vital::print("sbox", "Resource `" + name + "` download cancelled");
+        }
+
+        // Release env if scripts were already executed
+        if (is_running(name)) {
+            vm->del_reference(get_resource_env(name));
+            running.erase(name);
+        }
+
+        Vital::print("sbox", "Resource `" + name + "` unloaded on client");
+        Sandbox::get_singleton()->signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+        return true;
+    }
+
+    #endif
 }
