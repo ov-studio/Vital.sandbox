@@ -155,11 +155,12 @@ namespace Vital::Tool {
                     else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
                     else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                         godot::Array arr;
-                        arr.resize(static_cast<int>(val.size()));
-                        for (int i = 0; i < static_cast<int>(val.size()); ++i)
-                            arr[i] = godot::String(val[i].c_str());
+                        for (const auto& s : val) {
+                            arr.push_back(godot::String(s.c_str()));
+                        }
                         return arr;
                     }
+                    return godot::Variant();
                 }, sv.value);
             }
 
