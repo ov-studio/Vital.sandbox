@@ -85,6 +85,7 @@ namespace Vital::Engine {
 
             // APIs //
             void scan();
+            void init();
 
             #if !defined(Vital_SDK_Client)
             bool start(const std::string& name);

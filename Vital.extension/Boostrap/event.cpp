@@ -69,6 +69,7 @@ void setup() {
             return;
         }
 
+        /*
         // Guard array access — only proceed if array has entries
         if (args.array.empty()) return;
     
@@ -82,6 +83,7 @@ void setup() {
             reply.object["peer_id"] = Vital::Tool::StackValue(sender);
             net->send(reply, sender);
         }
+        */
     });
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Server closed");
@@ -102,8 +104,8 @@ void setup() {
             Vital::Engine::AssetManager::get_singleton() -> receive_chunk(args);
             return;
         }
-        std::string body = args.array[0].as<std::string>();
-        Vital::print("sbox", "Server says [", type.c_str(), "]: ", body.c_str());
+        //std::string body = args.array[0].as<std::string>();
+        //Vital::print("sbox", "Server says [", type.c_str(), "]: ", body.c_str());
     });
     Vital::Tool::Event::bind("network:connection_failed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Failed to connect");
@@ -133,6 +135,9 @@ void initialize_vital_events() {
         #endif
         Vital::Engine::Console::get_singleton();
         Vital::Engine::Sandbox::get_singleton() -> ready();
+        #if defined(Vital_SDK_Client)
+        Vital::Engine::ResourceManager::get_singleton()->init();
+        #endif
         setup();
     });
 
