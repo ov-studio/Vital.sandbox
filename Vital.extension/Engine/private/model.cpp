@@ -419,15 +419,18 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](const std::string& name) {
             int index = mesh -> find_blend_shape_by_name(to_godot_string(name));
-            if (index >= 0) mesh -> set_blend_shape_value(index, value);
-            return index;
+            if (index >= 0) {
+                mesh -> set_blend_shape_value(index, value);
+                return true;
+            }
+            return false;
         };
         if (contains_wildcard(blend_shape)) {
             for (const auto& name : get_blendshapes(component)) {
                 if (match_wildcard(blend_shape, name)) exec(name);
             }
         }
-        else if (exec(blend_shape) < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
+        else if (!exec(blend_shape)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
         return true;
     }
 
