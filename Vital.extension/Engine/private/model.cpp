@@ -392,8 +392,9 @@ namespace Vital::Engine {
         auto exec = [&](int index) {
             if (!state) {
                 godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
-                invisible->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
-                invisible->set_albedo(godot::Color(0, 0, 0, 0));
+                invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+                invisible -> set_depth_draw_mode(godot::BaseMaterial3D::DEPTH_DRAW_DISABLED);
+                invisible -> set_albedo(godot::Color(0, 0, 0, 0));
                 mesh -> set_surface_override_material(index, invisible);
             }
             else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
