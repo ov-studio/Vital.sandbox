@@ -130,7 +130,7 @@ namespace Vital::Engine {
             int get_peer_count() const;
             #endif
 
-            // Shared — Stack-based API (same as before, RPC transport is internal)
+            // Shared — Stack-based send/receive API (RPC transport is internal)
             bool send(const Vital::Tool::Stack& stack, int peerID = 0);
             bool broadcast(const Vital::Tool::Stack& stack);
             bool send_to_server(const Vital::Tool::Stack& stack);

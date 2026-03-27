@@ -56,7 +56,6 @@ namespace Vital::Engine {
     }
 
     // Single RPC entry point — Godot routes all incoming packets here.
-    // sender_id is retrieved from MultiplayerAPI::get_remote_sender_id().
     void NetworkNode::_receive(godot::Dictionary data) {
         Network::get_singleton() -> _on_packet_received(data);
     }
@@ -215,10 +214,8 @@ namespace Vital::Engine {
         if (!tree) return;
         auto mp = tree -> get_multiplayer();
 
-        // Godot provides sender ID via get_remote_sender_id() — no peer mapping needed
-        int32_t sender = mp.is_valid() ? mp -> get_remote_sender_id() : 0;
-
         // Inject sender_id into the object map before converting to Stack
+        int32_t sender = mp.is_valid() ? mp -> get_remote_sender_id() : 0;
         godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
         obj["sender_id"] = (int64_t)sender;
         data["object"]   = obj;
@@ -378,7 +375,6 @@ namespace Vital::Engine {
     #endif
 
 
-
     //--------------------//
     //   Send / Receive   //
     //--------------------//
@@ -423,7 +419,7 @@ namespace Vital::Engine {
         }
 
         // Deferred handshake — wait until first poll() after connection
-        // so MultiplayerAPI has fully assigned our peer ID
+        // so MultiplayerAPI has fully assigned our peer ID before we send
         if (pending_handshake && is_active()) {
             pending_handshake = false;
             Vital::print("sbox", "Network: sending handshake, peer_id=", get_peer_id());
