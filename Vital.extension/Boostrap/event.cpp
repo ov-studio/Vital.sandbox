@@ -148,6 +148,7 @@ void initialize_vital_events() {
         #endif
         Vital::Engine::Console::free_singleton();
         Vital::Engine::Sandbox::free_singleton();
+        Vital::Engine::ResourceManager::free_singleton();
         shutdown();
     });
 
