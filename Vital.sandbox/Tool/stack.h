@@ -154,11 +154,11 @@ namespace Vital::Tool {
                     else if constexpr (std::is_same_v<T, double>) return val;
                     else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
                     else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-                        godot::Array inner;
-                        inner.resize(static_cast<int>(val.size()));
+                        godot::Array arr;
+                        arr.resize(static_cast<int>(val.size()));
                         for (int i = 0; i < static_cast<int>(val.size()); ++i)
-                            inner[i] = godot::String(val[i].c_str());
-                        return inner;
+                            arr[i] = godot::String(val[i].c_str());
+                        return arr;
                     }
                 }, sv.value);
             }
@@ -176,8 +176,8 @@ namespace Vital::Tool {
                         std::vector<std::string> result;
                         result.reserve(arr.size());
                         for (int i = 0; i < arr.size(); ++i) {
-                            const godot::Variant& value = arr[i];
-                            if (value.get_type() == godot::Variant::STRING) result.push_back(std::string(((godot::String)value).utf8().get_data()));
+                            const godot::Variant& elem = arr[i];
+                            if (elem.get_type() == godot::Variant::STRING) result.push_back(std::string(((godot::String)elem).utf8().get_data()));
                             else result.push_back("");
                         }
                         return StackValue(std::move(result));
