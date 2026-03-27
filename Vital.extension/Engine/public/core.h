@@ -35,6 +35,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("send_asset_to_peer", "path", "peer_id"), &Core::send_asset_to_peer);
                 godot::ClassDB::bind_method(godot::D_METHOD("send_asset_chunk", "path", "hash", "data", "chunk_index", "chunk_total", "peer_id"), &Core::send_asset_chunk);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_saved", "path"), &Core::on_asset_saved);
+                godot::ClassDB::bind_method(godot::D_METHOD("broadcast_asset_manifest", "peer_id"), &Core::broadcast_asset_manifest);
             };
         public:
             // Instantiators //
@@ -77,5 +78,6 @@ namespace Vital::Engine {
             void send_asset_to_peer(const godot::String& path, int peer_id);
             void send_asset_chunk(const godot::String& path, const godot::String& hash, const godot::String& data, int chunk_index, int chunk_total, int peer_id);
             void on_asset_saved(const godot::String& path);
+            void broadcast_asset_manifest(int peer_id);
     };
 }

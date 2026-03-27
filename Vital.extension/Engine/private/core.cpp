@@ -148,4 +148,8 @@ namespace Vital::Engine {
     void Core::on_asset_saved(const godot::String& path) {
         AssetManager::get_singleton() -> on_asset_saved(to_std_string(path));
     }
+
+    void Core::broadcast_asset_manifest(int peer_id) {
+        AssetManager::get_singleton()->broadcast_manifest(peer_id);
+    }
 }
