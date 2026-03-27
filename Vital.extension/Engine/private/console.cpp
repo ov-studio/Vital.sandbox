@@ -82,7 +82,7 @@ namespace Vital::Engine {
 
             stdin_running = true;
             stdin_thread = std::thread([this]() {
-                redraw_input_prompt();
+                format_input_prompt();
                 while (stdin_running) {
                     #if defined(Vital_SDK_WINDOWS)
                         HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -101,19 +101,19 @@ namespace Vital::Engine {
                                 std::cout << "\r\033[2K\033[1B\033[2K\033[1A" << std::flush;
                             }
                             if (!line.empty()) execute(line);
-                            redraw_input_prompt();
+                            format_input_prompt();
                         } else if (vk == VK_BACK) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 if (!stdin_buffer.empty()) stdin_buffer.pop_back();
                             }
-                            redraw_input_prompt();
+                            format_input_prompt();
                         } else if (ch >= 0x20 && ch < 0x7F) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 stdin_buffer += ch;
                             }
-                            redraw_input_prompt();
+                            format_input_prompt();
                         }
                     #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                         char ch;
@@ -128,21 +128,21 @@ namespace Vital::Engine {
                                 std::cout << "\r\033[2K\033[1B\033[2K\033[1A" << std::flush;
                             }
                             if (!line.empty()) execute(line);
-                            redraw_input_prompt();
+                            format_input_prompt();
                         }
                         else if (ch == 0x7F || ch == '\b') {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 if (!stdin_buffer.empty()) stdin_buffer.pop_back();
                             }
-                            redraw_input_prompt();
+                            format_input_prompt();
                         }
                         else if (ch >= 0x20 && ch < 0x7F) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 stdin_buffer += ch;
                             }
-                            redraw_input_prompt();
+                            format_input_prompt();
                         }
                     #endif
                 }
@@ -171,19 +171,6 @@ namespace Vital::Engine {
 
     // Helpers //
     #if !defined(Vital_SDK_Client)
-    void Console::redraw_input_prompt() {
-        std::lock_guard<std::mutex> lock(stdout_mutex);
-        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
-        std::ostringstream prompt_oss;
-        prompt_oss << "\r\033[J"
-                   << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " "
-                   << stdin_buffer
-                   << "\n"
-                   << "\033[1A"
-                   << "\033[" << cursor_col << "G";
-        std::cout << prompt_oss.str() << std::flush;
-    }
-
     std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
         oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
@@ -272,6 +259,19 @@ namespace Vital::Engine {
         }
         oss << "\n";
         return oss.str();
+    }
+
+    void Console::format_input_prompt() {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
+        std::ostringstream prompt_oss;
+        prompt_oss << "\r\033[J"
+                   << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " "
+                   << stdin_buffer
+                   << "\n"
+                   << "\033[1A"
+                   << "\033[" << cursor_col << "G";
+        std::cout << prompt_oss.str() << std::flush;
     }
     #endif
 
