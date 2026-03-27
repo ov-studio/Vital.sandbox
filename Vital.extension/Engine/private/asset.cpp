@@ -12,7 +12,6 @@
 // Imports //
 //////////////
 
-#pragma once
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/model.h>
@@ -47,13 +46,6 @@ namespace Vital::Engine {
     std::string AssetManager::compute_hash(const godot::PackedByteArray& buffer) {
         std::string_view data(reinterpret_cast<const char*>(buffer.ptr()), buffer.size());
         return Vital::Tool::Crypto::hash("SHA256", data);
-    }
-
-    std::string AssetManager::get_local_filename(const std::string& path) const {
-        std::string flat = path;
-        std::replace(flat.begin(), flat.end(), '/', '_');
-        std::replace(flat.begin(), flat.end(), '\\', '_');
-        return flat;
     }
 
     std::string AssetManager::get_local_base() const {
@@ -114,6 +106,17 @@ namespace Vital::Engine {
         Vital::Engine::Network::get_singleton()->send(msg, peer_id);
         Vital::print("sbox", "AssetManager: sent manifest (",
             (int)registered_assets.size(), " assets) to peer ", peer_id);
+    }
+
+    void AssetManager::broadcast_manifest_deferred() {
+        #if !defined(Vital_SDK_Client)
+        for (int peer_id : Vital::Engine::Network::get_singleton()->get_connected_peers()) {
+            Core::get_singleton()->call_deferred(
+                "broadcast_asset_manifest",
+                peer_id
+            );
+        }
+        #endif
     }
 
     void AssetManager::send_asset(const std::string& path, int peer_id) {
@@ -200,7 +203,7 @@ namespace Vital::Engine {
 
             bool hash_matches = false;
             try {
-                auto buffer  = Vital::Tool::File::read_binary(get_local_base(), get_local_filename(path));
+                auto buffer = Vital::Tool::File::read_binary(get_local_base(), path);
                 hash_matches = (compute_hash(buffer) == hash);
                 Vital::print("sbox", "AssetManager: checked -> ", path.c_str(),
                     " match=", hash_matches ? "yes" : "no");
@@ -218,9 +221,7 @@ namespace Vital::Engine {
                 continue;
             }
 
-            // Clear any stale cancellation before re-downloading
             cancelled.erase(path);
-
             downloading.insert(path);
             needs_download++;
 
@@ -245,7 +246,6 @@ namespace Vital::Engine {
         int chunk_index        = args.object.at("chunk_index").as<int32_t>();
         int chunk_total        = args.object.at("chunk_total").as<int32_t>();
 
-        // Drop chunk if cancelled
         if (cancelled.count(path)) {
             Vital::print("sbox", "AssetManager: chunk dropped (cancelled) -> ", path.c_str());
             if (chunk_index == chunk_total - 1) {
@@ -259,7 +259,6 @@ namespace Vital::Engine {
             chunk_index + 1, "/", chunk_total, " -> ", path.c_str());
 
         chunk_accumulator[path] += chunk_data;
-
         if (chunk_index < chunk_total - 1) return;
 
         std::string encoded = chunk_accumulator[path];
@@ -267,7 +266,6 @@ namespace Vital::Engine {
 
         std::string decoded;
         std::string decompressed;
-
         try {
             decoded      = Vital::Tool::Crypto::decode(encoded);
             decompressed = Vital::Tool::Shrinker::decompress(decoded);
@@ -309,7 +307,6 @@ namespace Vital::Engine {
         auto it = pending_chunks.find(path);
         if (it == pending_chunks.end()) return;
 
-        // Drop if cancelled while waiting for deferred call
         if (cancelled.count(path)) {
             Vital::print("sbox", "AssetManager: process dropped (cancelled) -> ", path.c_str());
             pending_chunks.erase(it);
@@ -321,7 +318,7 @@ namespace Vital::Engine {
         godot::PackedByteArray buffer = it->second.buffer;
         std::string hash              = it->second.hash;
         std::string local_base        = get_local_base();
-        std::string local_filename    = get_local_filename(path);
+        std::string local_filename    = path;
         pending_chunks.erase(it);
 
         Vital::Tool::Thread([path, buffer, local_base, local_filename](Vital::Tool::Thread* t) {
@@ -341,7 +338,6 @@ namespace Vital::Engine {
     }
 
     void AssetManager::on_asset_saved(const std::string& path) {
-        // Drop if cancelled while saving
         if (cancelled.count(path)) {
             Vital::print("sbox", "AssetManager: save dropped (cancelled) -> ", path.c_str());
             downloading.erase(path);

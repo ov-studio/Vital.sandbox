@@ -26,7 +26,6 @@ namespace Vital::Engine {
         private:
             inline static AssetManager* singleton = nullptr;
 
-            // Output directory where downloaded files are saved on client
             std::string output_directory = "vital_assets";
 
             // Server: registered assets path → hash
@@ -50,7 +49,6 @@ namespace Vital::Engine {
 
             // Helpers //
             static std::string compute_hash(const godot::PackedByteArray& buffer);
-            std::string get_local_base() const;
 
         public:
             AssetManager()  = default;
@@ -66,13 +64,14 @@ namespace Vital::Engine {
 
 
             // Helpers (public) //
-            std::string get_local_filename(const std::string& path) const;
+            std::string get_local_base() const;
 
 
             // Server //
             void register_asset(const std::string& path);
             void register_assets(const std::vector<std::string>& paths);
             void broadcast_manifest(int peer_id);
+            void broadcast_manifest_deferred();
             void send_asset(const std::string& path, int peer_id);
             void send_cancel(const std::string& path, int peer_id);
             void send_cancel_all(const std::string& path);
