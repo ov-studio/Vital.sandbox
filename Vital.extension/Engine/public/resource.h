@@ -50,10 +50,7 @@ namespace Vital::Engine {
             std::unordered_set<std::string> running;
 
             #if defined(Vital_SDK_Client)
-            // Tracks which asset paths belong to each resource so we can
-            // cancel only that resource's downloads when it stops mid-transfer
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
-            // Resources that are pending asset download before scripts can load
             std::unordered_set<std::string> pending;
             #endif
 
@@ -100,6 +97,7 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Client)
             bool load(const std::string& name);
             bool unload(const std::string& name);
+            void execute_scripts(const std::string& name);
             #endif
     };
 }
