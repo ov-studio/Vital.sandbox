@@ -97,6 +97,10 @@ namespace Vital::Engine {
             #endif
 
             #if defined(Vital_SDK_Client)
+            bool register_remote(const std::string& name,
+                                 const std::vector<ResourceScript>& scripts,
+                                 const std::vector<std::string>& files);
+            void unregister_remote(const std::string& name);
             bool load(const std::string& name);
             bool unload(const std::string& name);
             void execute_scripts(const std::string& name);
