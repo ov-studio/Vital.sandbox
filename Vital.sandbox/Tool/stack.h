@@ -27,6 +27,8 @@
 /////////////////////////
 
 namespace Vital::Tool {
+    struct Stack;
+    struct StackValue;
     struct StackValue {
         using stack_value = std::variant<
             std::nullptr_t,
@@ -36,7 +38,7 @@ namespace Vital::Tool {
             float,
             double,
             std::string,
-            std::vector<std::string>
+            std::shared_ptr<Stack>
         >;
         stack_value value{nullptr};
 
@@ -51,7 +53,8 @@ namespace Vital::Tool {
         StackValue(double v) : value(v) {}
         StackValue(const char* v) : value(std::string(v)) {}
         StackValue(std::string v) : value(std::move(v)) {}
-        StackValue(std::vector<std::string> v) : value(std::move(v)) {}
+        StackValue(std::shared_ptr<Stack> v) : value(std::move(v)) {}
+        explicit StackValue(Stack v);
 
 
         // Accessors //
@@ -62,8 +65,8 @@ namespace Vital::Tool {
 
 
         // Equality //
-        bool operator==(const StackValue& other) const { return value == other.value; }
-        bool operator!=(const StackValue& other) const { return value != other.value; }
+        bool operator==(const StackValue& other) const;
+        bool operator!=(const StackValue& other) const { return !(*this == other); }
     };
 
     struct Stack {
@@ -78,22 +81,22 @@ namespace Vital::Tool {
 
 
         // Accessors //
-        bool empty() const { 
+        bool empty() const {
             return array.empty() && object.empty();
         }
 
-        bool has(const std::string& key) const { 
+        bool has(const std::string& key) const {
             return object.find(key) != object.end();
         }
 
         const StackValue* get(const std::string& key) const {
             auto it = object.find(key);
-            return it != object.end() ? &it->second : nullptr;
+            return it != object.end() ? &it -> second : nullptr;
         }
 
         StackValue* get(const std::string& key) {
             auto it = object.find(key);
-            return it != object.end() ? &it->second : nullptr;
+            return it != object.end() ? &it -> second : nullptr;
         }
 
         void clear() {
@@ -140,7 +143,7 @@ namespace Vital::Tool {
         // Equality //
         bool operator==(const Stack& other) const { return (version == other.version) && (array == other.array) && (object == other.object); }
         bool operator!=(const Stack& other) const { return !(*this == other); }
-    
+
         private:
             // StackValue → godot::Variant
             static godot::Variant value_to_variant(const StackValue& sv) {
@@ -153,13 +156,7 @@ namespace Vital::Tool {
                     else if constexpr (std::is_same_v<T, float>) return (double)val;
                     else if constexpr (std::is_same_v<T, double>) return val;
                     else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
-                    else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-                        godot::Array arr;
-                        for (const auto& s : val) {
-                            arr.push_back(godot::String(s.c_str()));
-                        }
-                        return arr;
-                    }
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
                     return godot::Variant();
                 }, sv.value);
             }
@@ -174,17 +171,30 @@ namespace Vital::Tool {
                     case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
                     case godot::Variant::ARRAY: {
                         const godot::Array arr = v;
-                        std::vector<std::string> result;
-                        result.reserve(arr.size());
-                        for (int i = 0; i < arr.size(); ++i) {
-                            const godot::Variant& elem = arr[i];
-                            if (elem.get_type() == godot::Variant::STRING) result.push_back(std::string(((godot::String)elem).utf8().get_data()));
-                            else result.push_back("");
-                        }
-                        return StackValue(std::move(result));
+                        auto nested = std::make_shared<Stack>();
+                        nested -> array.reserve(arr.size());
+                        for (int i = 0; i < arr.size(); ++i)
+                            nested -> array.push_back(variant_to_value(arr[i]));
+                        return StackValue(std::move(nested));
+                    }
+                    case godot::Variant::DICTIONARY: {
+                        return StackValue(std::make_shared<Stack>(Stack::from_dict((godot::Dictionary)v)));
                     }
                     default: return StackValue(nullptr);
                 }
             }
     };
+
+    inline StackValue::StackValue(Stack v) : value(std::make_shared<Stack>(std::move(v))) {}
+    inline bool StackValue::operator==(const StackValue& other) const {
+        if (std::holds_alternative<std::shared_ptr<Stack>>(value) &&
+            std::holds_alternative<std::shared_ptr<Stack>>(other.value)) {
+            const auto& a = std::get<std::shared_ptr<Stack>>(value);
+            const auto& b = std::get<std::shared_ptr<Stack>>(other.value);
+            if (!a && !b) return true;
+            if (!a || !b) return false;
+            return *a == *b;
+        }
+        return value == other.value;
+    }
 }

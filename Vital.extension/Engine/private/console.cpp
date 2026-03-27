@@ -220,13 +220,14 @@ namespace Vital::Engine {
     }
 
     Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
-        Vital::Tool::Stack color;
         const auto r = Vital::Tool::fetch_json_value("config/log", mode, "color", 0);
         const auto g = Vital::Tool::fetch_json_value("config/log", mode, "color", 1);
         const auto b = Vital::Tool::fetch_json_value("config/log", mode, "color", 2);
-        if (r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()) color.array = {r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>()};
-        else color.array = {220, 220, 220};
-        return color;
+        return Vital::Tool::Stack(
+            r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()
+            ? std::initializer_list<Vital::Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
+            : std::initializer_list<Vital::Tool::StackValue>{ int32_t(220), int32_t(220), int32_t(220) }
+        );
     }
 
     std::string Console::fetch_help() {
@@ -330,11 +331,17 @@ namespace Vital::Engine {
             return false;
         };
         if (exec(tokens)) return;
+        Vital::Tool::Stack arguments;
+        arguments.array.reserve(tokens.size() - 1);
+        for (std::size_t i = 1; i < tokens.size(); ++i) {
+            arguments.array.emplace_back(tokens[i]);
+        }
         Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
-            Vital::Tool::StackValue(std::vector<std::string>(tokens.begin() + 1, tokens.end()))
+            Vital::Tool::StackValue(std::move(arguments))
         );
     }
+
     void Console::print(const std::string& mode, const std::string& message) {
         if (!Vital::Log::is_type(mode)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         if (message.empty()) return;
