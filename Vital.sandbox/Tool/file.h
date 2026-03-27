@@ -105,7 +105,9 @@ namespace Vital::Tool::File {
         godot::DirAccess::make_dir_recursive_absolute(base);
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
-        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
+        auto path = dir -> get_current_dir() + "/" + target;
+        godot::DirAccess::make_dir_recursive_absolute(path.get_base_dir());
+        auto file = godot::FileAccess::open(path, godot::FileAccess::WRITE);
         if (!file.is_valid()) throw Vital::Log::fetch("file-busy", Vital::Log::Type::Error, to_std_string(target));
         file -> store_string(to_godot_string(text));
         return true;
@@ -120,7 +122,9 @@ namespace Vital::Tool::File {
         godot::DirAccess::make_dir_recursive_absolute(base);
         auto dir = godot::DirAccess::open(base);
         if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
-        auto file = godot::FileAccess::open(dir -> get_current_dir() + "/" + target, godot::FileAccess::WRITE);
+        auto path = dir -> get_current_dir() + "/" + target;
+        godot::DirAccess::make_dir_recursive_absolute(path.get_base_dir());
+        auto file = godot::FileAccess::open(path, godot::FileAccess::WRITE);
         if (!file.is_valid()) throw Vital::Log::fetch("file-busy", Vital::Log::Type::Error, to_std_string(target));
         file -> store_buffer(data);
         return true;
