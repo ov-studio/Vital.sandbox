@@ -34,7 +34,11 @@ namespace Vital::Engine {
             std::mutex stdout_mutex;
             std::thread stdin_thread;
             std::atomic<bool> stdin_running{false};
-            #if defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+            std::string stdin_buffer;
+            void redraw_input_prompt();
+            #if defined(Vital_SDK_WINDOWS)
+            DWORD stdin_original_mode = 0;
+            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
             struct termios stdin_termios{};
             #endif
 

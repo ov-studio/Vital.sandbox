@@ -68,28 +68,83 @@ namespace Vital::Engine {
                 GetConsoleMode(hStdout, &out_mode);
                 SetConsoleMode(hStdout, out_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
                 GetConsoleMode(hStdin, &in_mode);
-                SetConsoleMode(hStdin, in_mode | ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+                stdin_original_mode = in_mode;
+                SetConsoleMode(hStdin, ENABLE_PROCESSED_INPUT);
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
-                term.c_lflag |= (ICANON | ECHO | ECHOE | ECHOK | ISIG);
+                term.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK);
+                term.c_lflag |= ISIG;
+                term.c_cc[VMIN]  = 1;
+                term.c_cc[VTIME] = 0;
                 tcsetattr(STDIN_FILENO, TCSANOW, &term);
             #endif
 
             stdin_running = true;
             stdin_thread = std::thread([this]() {
-                std::string line;
+                redraw_input_prompt();
                 while (stdin_running) {
-                    {
-                        std::lock_guard<std::mutex> lock(stdout_mutex);
-                        std::cout << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " " << std::flush;
-                    }
-                    if (!std::getline(std::cin, line)) break;
-                    {
-                        std::lock_guard<std::mutex> lock(stdout_mutex);
-                        std::cout << "\033[1A\033[2K" << std::flush;
-                    }
-                    execute(line);
+                    #if defined(Vital_SDK_WINDOWS)
+                        HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+                        INPUT_RECORD rec;
+                        DWORD count;
+                        if (!ReadConsoleInputA(hStdin, &rec, 1, &count)) break;
+                        if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) continue;
+                        char ch = rec.Event.KeyEvent.uChar.AsciiChar;
+                        WORD vk  = rec.Event.KeyEvent.wVirtualKeyCode;
+                        if (vk == VK_RETURN) {
+                            std::string line;
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                line = stdin_buffer;
+                                stdin_buffer.clear();
+                                std::cout << "\r\033[2K\033[1B\033[2K\033[1A" << std::flush;
+                            }
+                            if (!line.empty()) execute(line);
+                            redraw_input_prompt();
+                        } else if (vk == VK_BACK) {
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                if (!stdin_buffer.empty()) stdin_buffer.pop_back();
+                            }
+                            redraw_input_prompt();
+                        } else if (ch >= 0x20 && ch < 0x7F) {
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                stdin_buffer += ch;
+                            }
+                            redraw_input_prompt();
+                        }
+                    #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+                        char ch;
+                        ssize_t n = ::read(STDIN_FILENO, &ch, 1);
+                        if (n <= 0) break;
+                        if (ch == '\n' || ch == '\r') {
+                            std::string line;
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                line = stdin_buffer;
+                                stdin_buffer.clear();
+                                std::cout << "\r\033[2K\033[1B\033[2K\033[1A" << std::flush;
+                            }
+                            if (!line.empty()) execute(line);
+                            redraw_input_prompt();
+                        }
+                        else if (ch == 0x7F || ch == '\b') {
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                if (!stdin_buffer.empty()) stdin_buffer.pop_back();
+                            }
+                            redraw_input_prompt();
+                        }
+                        else if (ch >= 0x20 && ch < 0x7F) {
+                            {
+                                std::lock_guard<std::mutex> lock(stdout_mutex);
+                                stdin_buffer += ch;
+                            }
+                            redraw_input_prompt();
+                        }
+                    #endif
                 }
             });
             stdin_thread.detach();
@@ -104,6 +159,8 @@ namespace Vital::Engine {
         #else
             stdin_running = false;
             #if defined(Vital_SDK_WINDOWS)
+                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+                SetConsoleMode(hStdin, stdin_original_mode);
                 FreeConsole();
             #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
                 tcsetattr(STDIN_FILENO, TCSANOW, &stdin_termios);
@@ -114,6 +171,19 @@ namespace Vital::Engine {
 
     // Helpers //
     #if !defined(Vital_SDK_Client)
+    void Console::redraw_input_prompt() {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
+        std::ostringstream prompt_oss;
+        prompt_oss << "\r\033[J"
+                   << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " "
+                   << stdin_buffer
+                   << "\n"
+                   << "\033[1A"
+                   << "\033[" << cursor_col << "G";
+        std::cout << prompt_oss.str() << std::flush;
+    }
+
     std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
         oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
@@ -359,7 +429,16 @@ namespace Vital::Engine {
         #else
             {
                 std::lock_guard<std::mutex> lock(stdout_mutex);
-                std::cout << "\033[2K\r" << format_output(mode, message) << std::flush;
+                const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
+                std::ostringstream out;
+                out << "\r\033[J";
+                out << format_output(mode, message);
+                out << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " "
+                    << stdin_buffer
+                    << "\n"
+                    << "\033[1A"
+                    << "\033[" << cursor_col << "G";
+                std::cout << out.str() << std::flush;
             }
         #endif
     }
@@ -391,7 +470,7 @@ namespace Vital::Engine {
         std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         stdin_running = false;
         Core::get_singleton() -> call_deferred("free_singleton");
-    }    
+    }
     #endif
 
 
