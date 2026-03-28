@@ -153,11 +153,6 @@ void setup() {
 }
 
 void initialize_vital_events() {
-    // Load server config on startup (server only)
-    #if !defined(Vital_SDK_Client)
-    load_server_config();
-    #endif
-
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
@@ -235,6 +230,7 @@ void initialize_vital_events() {
             auto* net = Vital::Engine::Network::get_singleton();
             #if !defined(Vital_SDK_Client)
             // Use config values for server settings
+            load_server_config();
             int server_port = g_server_config.is_loaded() ? g_server_config.get_network_port() : 7777;
             int max_clients = g_server_config.is_loaded() ? g_server_config.get_max_clients() : 32;
             
