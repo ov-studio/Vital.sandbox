@@ -66,7 +66,11 @@ namespace Vital::Engine {
     // Hash directly from disk without loading into memory — used at register time
     // so we never hold large files in RAM just to hash them
     std::string AssetManager::compute_hash_file(const std::string& full_path) {
-        return Vital::Tool::Crypto::hash_file("SHA256", full_path);
+        // Extract base directory and filename using Vital::Tool::File::hash path format
+        size_t last_sep = full_path.find_last_of("/\\");
+        std::string base = (last_sep != std::string::npos) ? full_path.substr(0, last_sep) : ".";
+        std::string file = (last_sep != std::string::npos) ? full_path.substr(last_sep + 1) : full_path;
+        return Vital::Tool::File::hash(base, file, "SHA256");
     }
 
     std::string AssetManager::get_local_filename(const std::string& path) const {
