@@ -6,7 +6,6 @@
 
 * [**openssl**](https://www.openssl.org) - Offers secure cryptographic functionalities.
 * [**zlib**](https://zlib.net) - Offers efficient data compression and decompression.
-* [**libcurl**](https://curl.se/libcurl) - Offers data transfer across various protocols.
 * [**cpp-httplib**](https://github.com/yhirose/cpp-httplib) - Offers HTTP client/server capabilities.
 * [**fmt**](https://fmt.dev) - Offers flexible formatting capabilities.
 * [**rapidjson**](https://rapidjson.org) - Offers efficient parsing and generation of JSON.
