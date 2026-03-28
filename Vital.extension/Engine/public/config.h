@@ -14,9 +14,6 @@
 
 #pragma once
 #include <yaml-cpp/yaml.h>
-#include <godot_cpp/classes/os.hpp>
-#include <filesystem>
-#include <vector>
 
 
 //###############################
@@ -33,48 +30,20 @@ namespace Vital::Engine {
             ~Config() = default;
 
             // Load configuration from file
-            // Returns true if successful, false if file not found or parse error
+            // Returns true if successful, false if file not found
             bool load() {
                 std::string config_path = "config.yaml";
                 
-                // Try multiple path strategies
-                std::vector<std::string> try_paths;
-                
-                // Get base directory (where executable is)
-                godot::String base_dir = godot::OS::get_singleton()->get_executable_path().get_base_dir();
-                std::string base_dir_str = std::string(base_dir.utf8().get_data());
-                
-                // Try relative to current working directory first (most common)
-                try_paths.push_back(path);
-                
-                // Try relative to executable directory
-                try_paths.push_back(base_dir_str + "/" + path);
-                
-                // Try going up from executable directory
-                try_paths.push_back(base_dir_str + "/../" + path);
-                
-                // Also try some common relative locations
-                try_paths.push_back(base_dir_str + "/../../.dist/debug/server/config.yaml");
-                try_paths.push_back(base_dir_str + "/../../../.dist/debug/server/config.yaml");
-                
-                for (const auto& try_path : try_paths) {
-                    std::filesystem::path fs_path(try_path);
-                    if (std::filesystem::exists(fs_path)) {
-                        try {
-                            root = YAML::LoadFile(try_path);
-                            loaded = true;
-                            Vital::print("sbox", "Config: Loaded from '", try_path.c_str(), "'");
-                            return true;
-                        } catch (const YAML::Exception& e) {
-                            Vital::print("error", "Config: Failed to parse '", try_path.c_str(), "' - ", e.what());
-                            // Continue trying other paths even if one fails to parse
-                        }
-                    }
+                if (!Vital::Tool::File::exists(get_directory(), config_path)) {
+                    Vital::print("warn", "Config: File not found - '", config_path.c_str(), "'");
+                    return false;
                 }
                 
-                // None of the paths worked
-                Vital::print("warn", "Config: File not found - tried ", try_paths.size(), " locations");
-                return false;
+                const std::string content = Vital::Tool::File::read_text(get_directory(), config_path);
+                root = YAML::Load(content);
+                loaded = true;
+                Vital::print("sbox", "Config: Loaded from '", config_path.c_str(), "'");
+                return true;
             }
 
             // Check if config is loaded
