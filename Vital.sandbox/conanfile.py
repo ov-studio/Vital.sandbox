@@ -8,6 +8,7 @@ class BuildConan(ConanFile):
     
     def requirements(self):
         self.requires("openssl/3.5.1")
+        self.requires("cpp-httplib/0.39.0")
         self.requires("libcurl/8.12.1")
         self.requires("zlib/1.3.1")
         self.requires("soci/4.1.2")
