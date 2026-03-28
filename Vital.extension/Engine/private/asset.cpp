@@ -228,16 +228,20 @@ namespace Vital::Engine {
         // GET /info — returns server info from config
         // This allows clients to query server name, version, social links, etc.
         http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
-            std::string body = "{";
-            body += "\"name\":\"" + server_info.name + "\",";
-            body += "\"version\":\"" + server_info.version + "\",";
-            body += "\"description\":\"" + server_info.description + "\",";
-            body += "\"http_port\":" + std::to_string(http_port) + ",";
-            body += "\"max_clients\":" + std::to_string(server_info.max_clients) + ",";
-            body += "\"discord_invite\":\"" + server_info.discord + "\",";
-            body += "\"website\":\"" + server_info.website + "\"";
-            body += "}";
-            res.set_content(body, "application/json");
+            rapidjson::Document document;
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            document.SetObject();
+            auto& alloc = document.GetAllocator();
+            document.AddMember("name", rapidjson::Value(server_info.name.c_str(), alloc), alloc);
+            document.AddMember("version", rapidjson::Value(server_info.version.c_str(), alloc), alloc);
+            document.AddMember("description", rapidjson::Value(server_info.description.c_str(), alloc), alloc);
+            document.AddMember("http_port", http_port, alloc);
+            document.AddMember("max_clients", server_info.max_clients, alloc);
+            document.AddMember("discord_invite", rapidjson::Value(server_info.discord.c_str(), alloc), alloc);
+            document.AddMember("website", rapidjson::Value(server_info.website.c_str(), alloc), alloc);
+            document.Accept(writer);
+            res.set_content(buffer.GetString(), "application/json");
         });
 
         http_running = true;
