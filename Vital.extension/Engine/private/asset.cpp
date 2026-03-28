@@ -66,16 +66,7 @@ namespace Vital::Engine {
     // Hash directly from disk without loading into memory — used at register time
     // so we never hold large files in RAM just to hash them
     std::string AssetManager::compute_hash_file(const std::string& full_path) {
-        std::ifstream f(full_path, std::ios::binary);
-        if (!f) throw std::runtime_error("Cannot open file for hashing: " + full_path);
-        // Hash incrementally in 64KB chunks to avoid large allocations
-        const size_t CHUNK = 65536;
-        std::string chunk(CHUNK, '\0');
-        // Use OpenSSL SHA256 directly via incremental API
-        // Fallback: read whole file as string_view if Crypto::hash only takes full buffer
-        std::string contents((std::istreambuf_iterator<char>(f)),
-                              std::istreambuf_iterator<char>());
-        return Vital::Tool::Crypto::hash("SHA256", std::string_view(contents));
+        return Vital::Tool::Crypto::hash_file("SHA256", full_path);
     }
 
     std::string AssetManager::get_local_filename(const std::string& path) const {

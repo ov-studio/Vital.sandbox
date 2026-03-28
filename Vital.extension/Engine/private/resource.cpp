@@ -166,24 +166,38 @@ namespace Vital::Engine {
                     valid = false;
                     continue;
                 }
-                const std::string src = node["src"].as<std::string>();
-                if (!Vital::Tool::File::exists(get_resource_base(name), src)) {
-                    errors.push_back("script `" + src + "` not found on disk");
+                const std::string src_pattern = node["src"].as<std::string>();
+                
+                // Expand glob patterns (e.g., "something/**/*.lua")
+                std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), src_pattern);
+                
+                if (expanded_files.empty()) {
+                    errors.push_back("script pattern `" + src_pattern + "` matched no files");
                     valid = false;
                     continue;
                 }
-                resource.scripts.push_back({ src, type });
+                
+                for (const auto& src : expanded_files) {
+                    resource.scripts.push_back({ src, type });
+                }
             }
 
             if (manifest["files"] && manifest["files"].IsSequence()) {
                 for (const auto& node : manifest["files"]) {
-                    const std::string file = node.as<std::string>();
-                    if (!Vital::Tool::File::exists(get_resource_base(name), file)) {
-                        errors.push_back("file `" + file + "` not found on disk");
+                    const std::string file_pattern = node.as<std::string>();
+                    
+                    // Expand glob patterns (e.g., "assets/**")
+                    std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), file_pattern);
+                    
+                    if (expanded_files.empty()) {
+                        errors.push_back("file pattern `" + file_pattern + "` matched no files");
                         valid = false;
                         continue;
                     }
-                    resource.files.push_back(file);
+                    
+                    for (const auto& file : expanded_files) {
+                        resource.files.push_back(file);
+                    }
                 }
             }
 
