@@ -94,7 +94,53 @@ namespace Vital::Tool::Rest {
         if (res != CURLE_OK) {
             std::string err = curl_easy_strerror(res);
             throw std::runtime_error("Request failed: " + err);
+            if (path_start != std::string::npos) {
+                host_part = rest.substr(0, path_start);
+                path = rest.substr(path_start);
+            } else {
+                host_part = rest;
+                path = "/";
+            }
+            
+            // Extract port if present
+            if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
+                host = host_part.substr(0, port_pos);
+                port = std::stoi(host_part.substr(port_pos + 1));
+            } else {
+                host = host_part;
+                if (scheme == "https") port = 443;
+            }
+        } else {
+            throw std::runtime_error("Invalid URL format");
         }
-        return buffer;
+        
+        // Build scheme://host:port for httplib Client constructor
+        std::string scheme_host_port = scheme + "://" + host + ":" + std::to_string(port);
+        
+        // Client auto-detects SSL based on scheme (https://)
+        httplib::Client cli(scheme_host_port);
+        cli.set_connection_timeout(30, 0);
+        cli.set_read_timeout(60, 0);
+        
+        // Convert headers
+        httplib::Headers httplib_headers;
+        for (const auto& h : headers) {
+            size_t colon_pos = h.find(":");
+            if (colon_pos != std::string::npos) {
+                httplib_headers.insert({h.substr(0, colon_pos), h.substr(colon_pos + 1)});
+            }
+        }
+        
+        auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), "application/json");
+        
+        if (!res) {
+            throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        }
+        
+        if (res->status != 200) {
+            throw std::runtime_error("HTTP error: " + std::to_string(res->status));
+        }
+        
+        return res->body;
     }
 }
