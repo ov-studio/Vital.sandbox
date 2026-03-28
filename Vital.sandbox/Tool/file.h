@@ -23,6 +23,7 @@
 // Vital: Tool: File //
 ///////////////////////
 
+// TODO: Improve
 namespace Vital::Tool::File {
     inline bool is_path(const godot::String& path) {
         if (path.is_empty()) return false;
@@ -155,5 +156,113 @@ namespace Vital::Tool::File {
 
     inline std::vector<std::string> contents(const std::string& base, const std::string& target, bool directory_search = false) {
         return contents(to_godot_string(base), to_godot_string(target), directory_search);
+    }
+
+    inline std::vector<std::string> glob_expand(const godot::String& base, const godot::String& pattern) {
+        std::vector<std::string> result;
+        
+        // Find the last '/' or '\' to split directory from file pattern
+        int last_slash_fwd = pattern.rfind("/");
+        int last_slash_back = pattern.rfind("\\");
+        int last_slash = (last_slash_fwd > last_slash_back) ? last_slash_fwd : last_slash_back;
+        
+        godot::String dir_part;
+        godot::String file_part;
+        if (last_slash >= 0) {
+            dir_part = pattern.substr(0, last_slash);
+            file_part = pattern.substr(last_slash + 1);
+        } else {
+            file_part = pattern;
+            dir_part = godot::String();
+        }
+        
+        // Check if pattern contains wildcards
+        bool has_recursive_wildcard = dir_part.find("**") != -1;
+        bool has_single_wildcard = file_part.find("*") != -1;
+        
+        if (!has_recursive_wildcard && !has_single_wildcard) {
+            // No wildcards, just check if file exists
+            godot::String full_path = dir_part.is_empty() ? file_part : (dir_part + godot::String("/") + file_part);
+            if (exists(base, full_path)) {
+                result.emplace_back(to_std_string(full_path));
+            }
+            return result;
+        }
+        
+        if (has_recursive_wildcard) {
+            // Remove '**' from dir_part for the actual search base
+            godot::String search_base = dir_part.replace("**", godot::String());
+            if (search_base.ends_with("/")) search_base = search_base.substr(0, search_base.length() - 1);
+            
+            // Recursive search lambda
+            std::function<void(const godot::String&)> search = [&](const godot::String& current_dir) {
+                godot::String full_dir = search_base.is_empty() ? current_dir : (search_base + godot::String("/") + current_dir);
+                godot::Ref<godot::DirAccess> dir = godot::DirAccess::open(base + godot::String("/") + full_dir);
+                if (!dir.is_valid()) return;
+                
+                dir->list_dir_begin();
+                while (true) {
+                    godot::String name = dir->get_next();
+                    if (name.is_empty()) break;
+                    if (name == "." || name == "..") continue;
+                    
+                    godot::String current_rel = current_dir.is_empty() ? name : (current_dir + godot::String("/") + name);
+                    godot::String full_path = search_base.is_empty() ? current_rel : (search_base + godot::String("/") + current_rel);
+                    
+                    if (dir->current_is_dir()) {
+                        // Recurse into subdirectory
+                        search(current_rel);
+                    } else {
+                        // Check if file matches the file pattern
+                        if (Vital::contains_wildcard(to_std_string(file_part))) {
+                            if (Vital::match_wildcard(to_std_string(file_part), to_std_string(name))) {
+                                result.emplace_back(to_std_string(full_path));
+                            }
+                        } else if (name == file_part) {
+                            result.emplace_back(to_std_string(full_path));
+                        }
+                    }
+                }
+                dir->list_dir_end();
+            };
+            
+            search(godot::String());
+        } else {
+            // Single-level wildcard only (e.g., "assets/*.png")
+            std::function<void()> search = [&]() {
+                godot::String full_dir = dir_part.is_empty() ? godot::String() : dir_part;
+                godot::Ref<godot::DirAccess> dir = godot::DirAccess::open(base + godot::String("/") + full_dir);
+                if (!dir.is_valid()) return;
+                
+                dir->list_dir_begin();
+                while (true) {
+                    godot::String name = dir->get_next();
+                    if (name.is_empty()) break;
+                    if (name == "." || name == "..") continue;
+                    
+                    if (!dir->current_is_dir()) {
+                        godot::String full_path = dir_part.is_empty() ? name : (dir_part + godot::String("/") + name);
+                        
+                        // Check if file matches the file pattern
+                        if (Vital::contains_wildcard(to_std_string(file_part))) {
+                            if (Vital::match_wildcard(to_std_string(file_part), to_std_string(name))) {
+                                result.emplace_back(to_std_string(full_path));
+                            }
+                        } else if (name == file_part) {
+                            result.emplace_back(to_std_string(full_path));
+                        }
+                    }
+                }
+                dir->list_dir_end();
+            };
+            
+            search();
+        }
+        
+        return result;
+    }
+
+    inline std::vector<std::string> glob_expand(const std::string& base, const std::string& pattern) {
+        return glob_expand(to_godot_string(base), to_godot_string(pattern));
     }
 }
