@@ -26,3 +26,4 @@ class BuildConan(ConanFile):
         self.options["soci"].with_odbc = False
         self.options["soci"].with_boost = False
         self.options["zlib"].shared = False
+        self.options["yaml-cpp"].shared = False
