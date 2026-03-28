@@ -121,6 +121,7 @@ namespace Vital::Engine {
             void _on_server_disconnected();
             void set_reconnect_config(int max_attempts, float delay_seconds);
             void _schedule_reconnect();
+            std::string get_server_ip() const;
             #else
             bool host(int port, int max_clients = 32);
             bool close();

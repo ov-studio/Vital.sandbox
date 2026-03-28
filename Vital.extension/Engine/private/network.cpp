@@ -309,6 +309,10 @@ namespace Vital::Engine {
         Vital::Tool::Event::emit("network:reconnecting", {});
     }
 
+    std::string Network::get_server_ip() const {
+        return reconnect_ip;
+    }
+
     #else
     bool Network::host(int port, int max_clients) {
         if (!is_server()) {
