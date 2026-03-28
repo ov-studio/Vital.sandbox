@@ -105,6 +105,15 @@ namespace Vital::Engine {
     #if !defined(Vital_SDK_Client)
     void AssetManager::set_http_port(int port) { http_port = port; }
     int  AssetManager::get_http_port() const   { return http_port; }
+    
+    void AssetManager::set_server_info(const ServerInfo& info) {
+        server_info = info;
+        Vital::print("sbox", "Server info set: '", info.name, "' v", info.version);
+    }
+
+    const ServerInfo& AssetManager::get_server_info() const {
+        return server_info;
+    }
     #endif
 
 
@@ -213,6 +222,21 @@ namespace Vital::Engine {
                 first = false;
             }
             body += "]}";
+            res.set_content(body, "application/json");
+        });
+
+        // GET /info — returns server info from config
+        // This allows clients to query server name, version, social links, etc.
+        http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
+            std::string body = "{";
+            body += "\"name\":\"" + server_info.name + "\",";
+            body += "\"version\":\"" + server_info.version + "\",";
+            body += "\"description\":\"" + server_info.description + "\",";
+            body += "\"http_port\":" + std::to_string(http_port) + ",";
+            body += "\"max_clients\":" + std::to_string(server_info.max_clients) + ",";
+            body += "\"discord_invite\":\"" + server_info.discord + "\",";
+            body += "\"website\":\"" + server_info.website + "\"";
+            body += "}";
             res.set_content(body, "application/json");
         });
 

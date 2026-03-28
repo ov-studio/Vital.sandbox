@@ -27,6 +27,16 @@ namespace httplib { class Server; }
 /////////////////////////////////////
 
 namespace Vital::Engine {
+    // Server info structure for /info endpoint
+    struct ServerInfo {
+        std::string name = "Vital Sandbox Server";
+        std::string version = "1.0.0";
+        std::string description = "";
+        int max_clients = 32;
+        std::string discord = "";
+        std::string website = "";
+    };
+
     // TODO: Improve
     class AssetManager {
         private:
@@ -46,6 +56,9 @@ namespace Vital::Engine {
             std::thread http_thread;
             int http_port = 7778;
             bool http_running = false;
+            
+            // Server info for /info endpoint
+            ServerInfo server_info;
             #endif
 
             #if defined(Vital_SDK_Client)
@@ -81,6 +94,10 @@ namespace Vital::Engine {
             #if !defined(Vital_SDK_Client)
             void set_http_port(int port);
             int  get_http_port() const;
+            
+            // Server info setters (for config integration)
+            void set_server_info(const ServerInfo& info);
+            const ServerInfo& get_server_info() const;
             #endif
 
 
