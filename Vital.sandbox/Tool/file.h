@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
+#include <Vital.sandbox/Tool/crypto.h>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 
@@ -59,6 +60,19 @@ namespace Vital::Tool::File {
 
     inline uint64_t size(const std::string& base, const std::string& target) {
         return size(to_godot_string(base), to_godot_string(target));
+    }
+
+    inline std::string hash(const godot::String& base, const godot::String& target, std::string_view mode = "SHA256") {
+        if (!is_path(target)) throw Vital::Log::fetch("file-path-invalid", Vital::Log::Type::Error, to_std_string(target));
+        auto dir = godot::DirAccess::open(base);
+        if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
+        if (!dir -> file_exists(target)) throw Vital::Log::fetch("file-nonexistent", Vital::Log::Type::Error, to_std_string(target));
+        auto full_path = to_std_string(dir -> get_current_dir() + "/" + target);
+        return Vital::Tool::Crypto::hash_file(mode, full_path);
+    }
+
+    inline std::string hash(const std::string& base, const std::string& target, std::string_view mode = "SHA256") {
+        return hash(to_godot_string(base), to_godot_string(target), mode);
     }
 
     inline bool remove(const godot::String& base, const godot::String& target) {
