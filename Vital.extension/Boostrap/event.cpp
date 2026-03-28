@@ -14,11 +14,59 @@
 
 #pragma once
 #include <Boostrap/index.h>
+#include <Engine/public/config.h>
 
 
 /////////////
 // Events //
 /////////////
+
+// Global config instance - loaded once at startup
+#if !defined(Vital_SDK_Client)
+static Vital::Engine::Config g_server_config;
+#endif
+
+// Load server configuration from config.yaml
+#if !defined(Vital_SDK_Client)
+void load_server_config() {
+    // Try different config file locations
+    std::string config_paths[] = {
+        ".dist/debug/server/config.yaml",
+        "../.dist/debug/server/config.yaml",
+        "config.yaml",
+        "server/config.yaml"
+    };
+
+    bool loaded = false;
+    for (const auto& path : config_paths) {
+        if (g_server_config.load(path)) {
+            loaded = true;
+            break;
+        }
+    }
+
+    if (!loaded) {
+        Vital::print("sbox", "Config: No config.yaml found, using default values");
+    } else {
+        Vital::print("sbox", "Config: Server name: '", g_server_config.get_server_name(), "'");
+        Vital::print("sbox", "Config: Network port: ", g_server_config.get_network_port());
+        Vital::print("sbox", "Config: HTTP port: ", g_server_config.get_http_port());
+        Vital::print("sbox", "Config: Max clients: ", g_server_config.get_max_clients());
+    }
+    
+    // Set server info on AssetManager for /info endpoint
+    Vital::Engine::ServerInfo info;
+    if (g_server_config.is_loaded()) {
+        info.name = g_server_config.get_server_name();
+        info.version = g_server_config.get_server_version();
+        info.description = g_server_config.get_server_description();
+        info.max_clients = g_server_config.get_max_clients();
+        info.discord = g_server_config.get_discord_invite();
+        info.website = g_server_config.get_website();
+    }
+    Vital::Engine::AssetManager::get_singleton()->set_server_info(info);
+}
+#endif
 
 // TODO: Improve
 void shutdown() {
@@ -105,6 +153,11 @@ void setup() {
 }
 
 void initialize_vital_events() {
+    // Load server config on startup (server only)
+    #if !defined(Vital_SDK_Client)
+    load_server_config();
+    #endif
+
     // Core //
     Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
         #if defined(Vital_SDK_Client)
@@ -181,8 +234,19 @@ void initialize_vital_events() {
             network_initialized = true;
             auto* net = Vital::Engine::Network::get_singleton();
             #if !defined(Vital_SDK_Client)
-            net->host(7777, 32);
-            // Start HTTP asset server on port 7778 immediately after hosting
+            // Use config values for server settings
+            int server_port = g_server_config.is_loaded() ? g_server_config.get_network_port() : 7777;
+            int max_clients = g_server_config.is_loaded() ? g_server_config.get_max_clients() : 32;
+            
+            Vital::print("sbox", "Starting server on port ", server_port, " (max ", max_clients, " clients)");
+            net->host(server_port, max_clients);
+            
+            // Configure HTTP server port before starting
+            int http_port = g_server_config.is_loaded() ? g_server_config.get_http_port() : 7778;
+            Vital::Engine::AssetManager::get_singleton() -> set_http_port(http_port);
+            
+            // Start HTTP asset server
+            Vital::print("sbox", "Starting HTTP server on port ", http_port);
             Vital::Engine::AssetManager::get_singleton() -> start_http_server();
             #endif
             #if defined(Vital_SDK_Client)
