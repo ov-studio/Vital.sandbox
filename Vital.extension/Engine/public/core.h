@@ -31,13 +31,11 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"), &Core::setup_model_spawner);
                 godot::ClassDB::bind_method(godot::D_METHOD("spawn_model", "name", "authority_peer"), &Core::spawn_model);
-                godot::ClassDB::bind_method(godot::D_METHOD("process_asset_chunk", "path"), &Core::process_asset_chunk);
-                godot::ClassDB::bind_method(godot::D_METHOD("send_asset_to_peer", "path", "peer_id"), &Core::send_asset_to_peer);
-                godot::ClassDB::bind_method(godot::D_METHOD("send_asset_chunk", "path", "hash", "data", "chunk_index", "chunk_total", "peer_id"), &Core::send_asset_chunk);
-                godot::ClassDB::bind_method(godot::D_METHOD("on_asset_saved", "path"), &Core::on_asset_saved);
                 godot::ClassDB::bind_method(godot::D_METHOD("broadcast_asset_manifest", "peer_id"), &Core::broadcast_asset_manifest);
                 godot::ClassDB::bind_method(godot::D_METHOD("notify_resource_started", "name"), &Core::notify_resource_started);
                 godot::ClassDB::bind_method(godot::D_METHOD("notify_resource_stopped", "name"), &Core::notify_resource_stopped);
+                godot::ClassDB::bind_method(godot::D_METHOD("on_asset_downloaded", "path"), &Core::on_asset_downloaded);
+                godot::ClassDB::bind_method(godot::D_METHOD("on_asset_download_failed", "path"), &Core::on_asset_download_failed);
             };
         public:
             // Instantiators //
@@ -72,16 +70,14 @@ namespace Vital::Engine {
             static void free_environment();
             #endif
 
-        
+
             // APIs //
             void setup_model_spawner();
             void spawn_model(const godot::String& name, int authority_peer);
-            void process_asset_chunk(const godot::String& path);
-            void send_asset_to_peer(const godot::String& path, int peer_id);
-            void send_asset_chunk(const godot::String& path, const godot::String& hash, const godot::String& data, int chunk_index, int chunk_total, int peer_id);
-            void on_asset_saved(const godot::String& path);
             void broadcast_asset_manifest(int peer_id);
             void notify_resource_started(const godot::String& name);
             void notify_resource_stopped(const godot::String& name);
+            void on_asset_downloaded(const godot::String& path);
+            void on_asset_download_failed(const godot::String& path);
     };
 }

@@ -15,6 +15,12 @@
 #pragma once
 #include <Vital.extension/Engine/public/index.h>
 
+// Forward declare httplib::Server so the header does not need to include
+// httplib.h — the full include lives in asset_manager.cpp only
+#if !defined(Vital_SDK_Client)
+namespace httplib { class Server; }
+#endif
+
 
 /////////////////////////////////////
 // Vital: Engine: Asset Manager   //
@@ -28,27 +34,35 @@ namespace Vital::Engine {
 
             std::string output_directory = "vital_assets";
 
-            // Server: registered assets path → hash
+            // Server + Client: registered assets path → hash
             std::unordered_map<std::string, std::string> registered_assets;
 
-            // Client: spawn queue — models waiting for asset name → authority
+            // Spawn queue — shared between platforms (used by model system)
             std::unordered_map<std::string, int> spawn_queue;
 
-            // Client: assets currently being downloaded
-            std::unordered_set<std::string> downloading;
+            #if !defined(Vital_SDK_Client)
+            // HTTP server runs on a background thread — never blocks Godot
+            std::unique_ptr<httplib::Server> http_server;
+            std::thread http_thread;
+            int http_port = 7778;
+            bool http_running = false;
+            #endif
 
-            // Client: cancelled downloads
-            std::unordered_set<std::string> cancelled;
+            #if defined(Vital_SDK_Client)
+            struct Download {
+                std::string path;
+                std::thread thread;
+                std::atomic<bool> cancelled{false};
+            };
+            std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
+            std::string server_http_ip;
+            void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url);
+            void _on_download_failed(const std::string& path);
+            #endif
 
-            // Client: pending chunks awaiting process_chunk
-            struct ChunkData { godot::PackedByteArray buffer; std::string hash; };
-            std::unordered_map<std::string, ChunkData> pending_chunks;
-
-            // Client: chunk accumulator path → accumulated base64 data
-            std::unordered_map<std::string, std::string> chunk_accumulator;
-
-            // Helpers //
+            // Helpers
             static std::string compute_hash(const godot::PackedByteArray& buffer);
+            static std::string compute_hash_file(const std::string& full_path);
 
         public:
             AssetManager()  = default;
@@ -61,37 +75,47 @@ namespace Vital::Engine {
             // Config //
             void set_output_directory(const std::string& dir);
             const std::string& get_output_directory() const;
-
-
-            // Helpers (public) //
+            std::string get_local_filename(const std::string& path) const;
             std::string get_local_base() const;
+
+            #if !defined(Vital_SDK_Client)
+            void set_http_port(int port);
+            int  get_http_port() const;
+            #endif
+
+
+            // Registration //
+            void register_asset(const std::string& path);
+            void register_assets(const std::vector<std::string>& paths);
+
+
+            // Manifest //
+            void broadcast_manifest(int peer_id);
+            void broadcast_manifest_deferred();
 
 
             // Server //
-            void register_asset(const std::string& path);
-            void register_assets(const std::vector<std::string>& paths);
-            void broadcast_manifest(int peer_id);
-            void broadcast_manifest_deferred();
-            void send_asset(const std::string& path, int peer_id);
-            void send_cancel(const std::string& path, int peer_id);
-            void send_cancel_all(const std::string& path);
+            #if !defined(Vital_SDK_Client)
+            bool start_http_server();
+            void stop_http_server();
+            bool is_http_running() const;
+            #endif
 
 
             // Client //
+            #if defined(Vital_SDK_Client)
             void receive_manifest(const Vital::Tool::Stack& args);
-            void receive_chunk(const Vital::Tool::Stack& args);
-            void process_chunk(const std::string& path);
-            void on_asset_saved(const std::string& path);
+            void set_server_http_ip(const std::string& ip);
             void cancel(const std::string& path);
             void cancel_all();
-            void queue_spawn(const std::string& name, int authority_peer);
-            void flush_spawn_queue(const std::string& loaded_name);
+            bool is_downloading(const std::string& path) const;
             bool is_downloading() const;
-            bool is_cancelled(const std::string& path) const;
-            int get_pending_count() const;
+            #endif
 
 
             // Shared //
             void clear();
+            void queue_spawn(const std::string& name, int authority_peer);
+            void flush_spawn_queue(const std::string& loaded_name);
     };
 }

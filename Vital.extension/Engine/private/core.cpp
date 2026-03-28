@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/model.h>
@@ -79,7 +80,9 @@ namespace Vital::Engine {
 
     // Getters //
     godot::SceneTree* Core::get_scene_tree() {
-        return godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
+        return godot::Object::cast_to<godot::SceneTree>(
+            godot::Engine::get_singleton() -> get_main_loop()
+        );
     }
 
     godot::Window* Core::get_scene_root() {
@@ -101,9 +104,9 @@ namespace Vital::Engine {
             get_singleton() -> call_deferred("add_child", environment);
             godot::Ref<godot::Environment> env;
             env.instantiate();
-            environment -> set_environment(env);
+            environment->set_environment(env);
         }
-        return environment -> get_environment();
+        return environment->get_environment();
     }
     #endif
 
@@ -112,7 +115,7 @@ namespace Vital::Engine {
     #if defined(Vital_SDK_Client)
     void Core::free_environment() {
         if (!environment) return;
-        environment -> queue_free();
+        environment->queue_free();
         environment = nullptr;
     }
     #endif
@@ -127,31 +130,10 @@ namespace Vital::Engine {
         Model::spawn_synced(to_std_string(name), authority_peer);
     }
 
-    void Core::process_asset_chunk(const godot::String& path) {
-        AssetManager::get_singleton() -> process_chunk(to_std_string(path));
-    }
-
-    void Core::send_asset_to_peer(const godot::String& path, int peer_id) {
-        AssetManager::get_singleton() -> send_asset(to_std_string(path), peer_id);
-    }
-
-    void Core::send_asset_chunk(const godot::String& path, const godot::String& hash, const godot::String& data, int chunk_index, int chunk_total, int peer_id) {
-        Vital::Tool::Stack msg;
-        msg.object["type"] = Vital::Tool::StackValue(std::string("asset:chunk"));
-        msg.object["path"] = Vital::Tool::StackValue(to_std_string(path));
-        msg.object["hash"] = Vital::Tool::StackValue(to_std_string(hash));
-        msg.object["data"] = Vital::Tool::StackValue(to_std_string(data));
-        msg.object["chunk_index"] = Vital::Tool::StackValue((int32_t)chunk_index);
-        msg.object["chunk_total"] = Vital::Tool::StackValue((int32_t)chunk_total);
-        Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
-    }
-
-    void Core::on_asset_saved(const godot::String& path) {
-        AssetManager::get_singleton() -> on_asset_saved(to_std_string(path));
-    }
-
     void Core::broadcast_asset_manifest(int peer_id) {
+        #if !defined(Vital_SDK_Client)
         AssetManager::get_singleton() -> broadcast_manifest(peer_id);
+        #endif
     }
 
     void Core::notify_resource_started(const godot::String& name) {
@@ -159,10 +141,31 @@ namespace Vital::Engine {
         ResourceManager::get_singleton() -> notify_resource_started(Vital::to_std_string(name));
         #endif
     }
-    
+
     void Core::notify_resource_stopped(const godot::String& name) {
         #if !defined(Vital_SDK_Client)
         ResourceManager::get_singleton() -> notify_resource_stopped(Vital::to_std_string(name));
+        #endif
+    }
+
+    void Core::on_asset_downloaded(const godot::String& path) {
+        #if defined(Vital_SDK_Client)
+        const std::string p = Vital::to_std_string(path);
+        Vital::Tool::Stack ready_args;
+        ready_args.object["path"]   = Vital::Tool::StackValue(p);
+        ready_args.object["cached"] = Vital::Tool::StackValue(false);
+        Vital::Tool::Event::emit("asset:file_ready", ready_args);
+
+        if (!AssetManager::get_singleton() -> is_downloading()) {
+            Vital::print("sbox", "AssetManager: all assets ready");
+            Vital::Tool::Event::emit("asset:ready", {});
+        }
+        #endif
+    }
+
+    void Core::on_asset_download_failed(const godot::String& path) {
+        #if defined(Vital_SDK_Client)
+        Vital::print("sbox", "AssetManager: download failed -> ", path.utf8().get_data());
         #endif
     }
 }

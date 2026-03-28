@@ -26,6 +26,7 @@
 
 namespace Vital::Engine {
     // TODO: Improve
+
     // Utils //
     ResourceManager* ResourceManager::get_singleton() {
         if (!singleton) singleton = new ResourceManager();
@@ -67,16 +68,14 @@ namespace Vital::Engine {
     std::vector<const ResourceManager::ResourceManifest*> ResourceManager::get_all_resources() const {
         std::vector<const ResourceManager::ResourceManifest*> result;
         result.reserve(resources.size());
-        for (const auto& resource : resources) {
+        for (const auto& resource : resources)
             result.push_back(&resource);
-        }
         return result;
     }
 
     const ResourceManager::ResourceManifest* ResourceManager::get_resource(const std::string& name) const {
-        for (const auto& resource : resources) {
+        for (const auto& resource : resources)
             if (resource.ref == name) return &resource;
-        }
         return nullptr;
     }
 
@@ -92,9 +91,8 @@ namespace Vital::Engine {
         std::vector<ResourceManager::ResourceScript> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;
-        for (const auto& script : resource->scripts) {
+        for (const auto& script : resource->scripts)
             if (type.empty() || script.type == type) result.push_back(script);
-        }
         return result;
     }
 
@@ -113,14 +111,12 @@ namespace Vital::Engine {
             return;
         }
 
-        // First pass — detect duplicates
         std::unordered_map<std::string, int> resource_count;
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
             resource_count[name]++;
         }
 
-        // Second pass — load valid resources
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
 
@@ -217,18 +213,14 @@ namespace Vital::Engine {
         #endif
     }
 
-    // Separate initialization for client-side event bindings
-    // Separate initialization for client-side event bindings
     void ResourceManager::init() {
         #if defined(Vital_SDK_Client)
         static bool client_initialized = false;
         if (client_initialized) return;
         client_initialized = true;
-    
+
         Vital::print("sbox", "Initializing client resource manager...");
-    
-        // Global asset:file_ready — routes each completed download to
-        // the resource waiting for it, executes scripts when all land
+
         Vital::Tool::Event::bind("asset:file_ready", [](Vital::Tool::Stack args) -> void {
             if (!args.object.count("path")) return;
             const std::string path = args.object.at("path").as<std::string>();
@@ -241,72 +233,47 @@ namespace Vital::Engine {
                 break;
             }
         });
-    
-        // All incoming network packets arrive as "network:packet" —
-        // filter by type to handle resource lifecycle messages from server.
-        //
-        // Scripts arrive as a nested Stack array where each entry is a Stack
-        // object with "src" and "type" string keys — no "src|type" encoding needed.
-        // Files arrive as a nested Stack array of plain strings.
+
+        // Incoming network packets — filter resource lifecycle messages.
+        // Scripts and files use flat indexed keys matching notify_resource_started().
         Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) -> void {
             if (!args.object.count("type")) return;
             const std::string type = args.object.at("type").as<std::string>();
             auto* rm = ResourceManager::get_singleton();
-    
+
             if (type == "vital.resource:started") {
                 if (!args.object.count("name")) return;
                 const std::string name = args.object.at("name").as<std::string>();
-    
-                // Decode scripts from nested Stack: array of { src, type } objects
+
+                // Decode scripts from flat indexed keys
                 std::vector<ResourceManager::ResourceScript> scripts;
-                if (args.object.count("scripts")) {
-                    const auto& scripts_sv = args.object.at("scripts");
-                    // Check if it's a shared_ptr<Stack>
-                    if (scripts_sv.is<std::shared_ptr<Vital::Tool::Stack>>()) {
-                        const auto& scripts_stack_ptr = scripts_sv.as<std::shared_ptr<Vital::Tool::Stack>>();
-                        if (scripts_stack_ptr) {
-                            const auto& scripts_stack = *scripts_stack_ptr;
-                            for (const auto& entry_sv : scripts_stack.array) {
-                                // Check if entry is a shared_ptr<Stack>
-                                if (entry_sv.is<std::shared_ptr<Vital::Tool::Stack>>()) {
-                                    const auto& entry_ptr = entry_sv.as<std::shared_ptr<Vital::Tool::Stack>>();
-                                    if (entry_ptr) {
-                                        const auto& entry = *entry_ptr;
-                                        if (entry.object.count("src") && entry.object.count("type")) {
-                                            scripts.push_back({
-                                                entry.object.at("src").as<std::string>(),
-                                                entry.object.at("type").as<std::string>()
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                if (args.object.count("script_count")) {
+                    const int count = args.object.at("script_count").as<int32_t>();
+                    scripts.reserve(count);
+                    for (int i = 0; i < count; i++) {
+                        const std::string src_key  = "script_src_"  + std::to_string(i);
+                        const std::string type_key = "script_type_" + std::to_string(i);
+                        if (!args.object.count(src_key) || !args.object.count(type_key)) continue;
+                        scripts.push_back({
+                            args.object.at(src_key).as<std::string>(),
+                            args.object.at(type_key).as<std::string>()
+                        });
                     }
                 }
-    
-                // Decode files from nested Stack: array of plain strings
+
+                // Decode files from flat indexed keys
                 std::vector<std::string> files;
-                if (args.object.count("files")) {
-                    const auto& files_sv = args.object.at("files");
-                    if (files_sv.is<std::shared_ptr<Vital::Tool::Stack>>()) {
-                        const auto& files_stack_ptr = files_sv.as<std::shared_ptr<Vital::Tool::Stack>>();
-                        if (files_stack_ptr) {
-                            const auto& files_stack = *files_stack_ptr;
-                            files.reserve(files_stack.array.size());
-                            for (const auto& f : files_stack.array) {
-                                if (f.is<std::string>()) {
-                                    files.push_back(f.as<std::string>());
-                                }
-                            }
-                        }
+                if (args.object.count("file_count")) {
+                    const int count = args.object.at("file_count").as<int32_t>();
+                    files.reserve(count);
+                    for (int i = 0; i < count; i++) {
+                        const std::string key = "file_" + std::to_string(i);
+                        if (!args.object.count(key)) continue;
+                        files.push_back(args.object.at(key).as<std::string>());
                     }
                 }
-    
-                // Register the remote manifest so is_loaded() and get_resource()
-                // are valid before load() is called — prevents nullptr deref crash
+
                 rm->register_remote(name, scripts, files);
-    
                 Vital::print("sbox", "Client received resource start: `" + name + "`");
                 if (!rm->is_running(name) && !rm->is_pending(name)) rm->load(name);
             }
@@ -317,7 +284,7 @@ namespace Vital::Engine {
                 rm->unload(name);
             }
         });
-    
+
         Vital::print("sbox", "Client resource manager initialized");
         #endif
     }
@@ -325,11 +292,7 @@ namespace Vital::Engine {
 
     #if !defined(Vital_SDK_Client)
 
-    // Called deferred from Core — safe to call Network::send on main thread.
-    //
-    // Scripts are serialized as a nested Stack: an array of Stack objects,
-    // each holding "src" and "type" string keys. Files are a nested Stack
-    // array of plain strings. No "src|type" string-packing needed.
+    // Flat indexed keys — avoids nested Stack serialization issues
     void ResourceManager::notify_resource_started(const std::string& name) {
         const auto* resource = get_resource(name);
         if (!resource) return;
@@ -338,23 +301,16 @@ namespace Vital::Engine {
         msg.object["type"] = Vital::Tool::StackValue(std::string("vital.resource:started"));
         msg.object["name"] = Vital::Tool::StackValue(name);
 
-        // Encode scripts as a nested Stack: array of { src, type } Stack objects
-        Vital::Tool::Stack scripts_stack;
-        scripts_stack.array.reserve(resource->scripts.size());
-        for (const auto& script : resource->scripts) {
-            Vital::Tool::Stack entry;
-            entry.object["src"]  = Vital::Tool::StackValue(script.src);
-            entry.object["type"] = Vital::Tool::StackValue(script.type);
-            scripts_stack.array.emplace_back(std::move(entry));
+        msg.object["script_count"] = Vital::Tool::StackValue((int32_t)resource->scripts.size());
+        for (int i = 0; i < (int)resource->scripts.size(); i++) {
+            msg.object["script_src_"  + std::to_string(i)] = Vital::Tool::StackValue(resource->scripts[i].src);
+            msg.object["script_type_" + std::to_string(i)] = Vital::Tool::StackValue(resource->scripts[i].type);
         }
-        msg.object["scripts"] = Vital::Tool::StackValue(std::move(scripts_stack));
 
-        // Encode files as a nested Stack: array of plain strings
-        Vital::Tool::Stack files_stack;
-        files_stack.array.reserve(resource->files.size());
-        for (const auto& file : resource->files)
-            files_stack.array.emplace_back(file);
-        msg.object["files"] = Vital::Tool::StackValue(std::move(files_stack));
+        msg.object["file_count"] = Vital::Tool::StackValue((int32_t)resource->files.size());
+        for (int i = 0; i < (int)resource->files.size(); i++) {
+            msg.object["file_" + std::to_string(i)] = Vital::Tool::StackValue(resource->files[i]);
+        }
 
         for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
             Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
@@ -418,23 +374,19 @@ namespace Vital::Engine {
             return false;
         }
 
-        for (const auto& file : resource->files) {
+        for (const auto& file : resource->files)
             am->register_asset("resources/" + name + "/" + file);
-        }
         for (const auto& script : resource->scripts) {
-            if (script.type == "client" || script.type == "shared") {
+            if (script.type == "client" || script.type == "shared")
                 am->register_asset("resources/" + name + "/" + script.src);
-            }
         }
 
-        // Deferred — both send() calls must run on the main thread
         am->broadcast_manifest_deferred();
-
         Core::get_singleton() -> call_deferred(
             "notify_resource_started",
             godot::String(name.c_str())
         );
-    
+
         running.insert(name);
         Vital::print("sbox", "Resource `" + name + "` started");
         Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
@@ -449,7 +401,6 @@ namespace Vital::Engine {
             return false;
         }
 
-        // Notify clients deferred — must run on main thread
         Core::get_singleton() -> call_deferred(
             "notify_resource_stopped",
             godot::String(name.c_str())
@@ -468,16 +419,14 @@ namespace Vital::Engine {
     }
 
     void ResourceManager::start_all() {
-        for (const auto* resource : get_all_resources()) {
+        for (const auto* resource : get_all_resources())
             start(resource->ref);
-        }
     }
 
     void ResourceManager::stop_all() {
         std::unordered_set<std::string> snapshot = running;
-        for (const auto& name : snapshot) {
+        for (const auto& name : snapshot)
             stop(name);
-        }
     }
 
     #endif
@@ -485,25 +434,22 @@ namespace Vital::Engine {
 
     #if defined(Vital_SDK_Client)
 
-    // Registers a manifest received from the server into the local resources list.
-    // Must be called before load() so that is_loaded() and get_resource() are valid.
     bool ResourceManager::register_remote(const std::string& name,
                                           const std::vector<ResourceScript>& scripts,
                                           const std::vector<std::string>& files) {
-        if (is_loaded(name)) return false;
+        unregister_remote(name);
         ResourceManifest manifest;
         manifest.ref     = name;
         manifest.name    = name;
         manifest.scripts = scripts;
         manifest.files   = files;
         resources.push_back(std::move(manifest));
-        Vital::print("sbox", "Resource `" + name + "` manifest registered from server");
+        Vital::print("sbox", "Resource `" + name + "` manifest registered from server — " +
+            std::to_string(scripts.size()) + " script(s), " +
+            std::to_string(files.size()) + " file(s)");
         return true;
     }
 
-    // Removes a server-registered manifest from the local resources list.
-    // Called by unload() so a future restart receives a fresh manifest from
-    // the server rather than hitting the is_loaded() guard in register_remote().
     void ResourceManager::unregister_remote(const std::string& name) {
         resources.erase(
             std::remove_if(resources.begin(), resources.end(),
@@ -525,22 +471,21 @@ namespace Vital::Engine {
         }
 
         const auto* resource = get_resource(name);
-
-        // Collect relative asset paths matching what server registered
-        std::unordered_set<std::string> asset_paths;
-        for (const auto& file : resource->files) {
-            asset_paths.insert("resources/" + name + "/" + file);
+        if (!resource) {
+            Vital::print("error", "Cannot load `" + name + "` — manifest is null");
+            return false;
         }
+
+        std::unordered_set<std::string> asset_paths;
+        for (const auto& file : resource->files)
+            asset_paths.insert("resources/" + name + "/" + file);
         for (const auto& script : resource->scripts) {
-            if (script.type == "client" || script.type == "shared") {
+            if (script.type == "client" || script.type == "shared")
                 asset_paths.insert("resources/" + name + "/" + script.src);
-            }
         }
 
         pending.insert(name);
 
-        // Pre-check which assets are already cached — only wait for
-        // ones that genuinely need downloading
         for (const auto& path : asset_paths) {
             if (Vital::Tool::File::exists(am->get_local_base(), path)) {
                 Vital::print("sbox", "Resource `" + name + "` asset cached: " + path);
@@ -549,9 +494,9 @@ namespace Vital::Engine {
             }
         }
 
-        Vital::print("sbox", "Resource `" + name + "` queued — " + std::to_string(resource_assets[name].size()) + " asset(s) pending download");
+        Vital::print("sbox", "Resource `" + name + "` queued — " +
+            std::to_string(resource_assets[name].size()) + " asset(s) pending download");
 
-        // All cached — execute immediately without waiting for any events
         if (resource_assets[name].empty()) {
             Vital::print("sbox", "Resource `" + name + "` all assets cached — executing immediately");
             execute_scripts(name);
@@ -566,6 +511,14 @@ namespace Vital::Engine {
         auto* vm              = Sandbox::get_singleton() -> get_vm();
         auto* am              = AssetManager::get_singleton();
         const auto* resource  = get_resource(name);
+
+        if (!resource) {
+            Vital::print("error", "execute_scripts: manifest null for `" + name + "` — aborting");
+            pending.erase(name);
+            resource_assets.erase(name);
+            return;
+        }
+
         const std::string env = get_resource_env(name);
         bool status           = true;
 
@@ -623,9 +576,8 @@ namespace Vital::Engine {
         if (is_pending(name)) {
             auto it = resource_assets.find(name);
             if (it != resource_assets.end()) {
-                for (const auto& path : it->second) {
+                for (const auto& path : it->second)
                     am->cancel(path);
-                }
                 resource_assets.erase(it);
             }
             pending.erase(name);
@@ -637,10 +589,7 @@ namespace Vital::Engine {
             running.erase(name);
         }
 
-        // Remove the server-registered manifest so a future restart
-        // gets a fresh one from the server rather than stale data
         unregister_remote(name);
-
         Vital::print("sbox", "Resource `" + name + "` unloaded on client");
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
         return true;
