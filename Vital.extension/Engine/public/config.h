@@ -28,16 +28,14 @@ namespace Vital::Engine {
         private:
             YAML::Node root;
             bool loaded = false;
-            std::string config_path;
-
         public:
             Config() = default;
             ~Config() = default;
 
             // Load configuration from file
             // Returns true if successful, false if file not found or parse error
-            bool load(const std::string& path) {
-                config_path = path;
+            bool load() {
+                std::string config_path = "config.yaml";
                 
                 // Try multiple path strategies
                 std::vector<std::string> try_paths;
