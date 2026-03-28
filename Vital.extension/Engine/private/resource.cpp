@@ -501,7 +501,7 @@ namespace Vital::Engine {
         pending.insert(name);
 
         for (const auto& path : asset_paths) {
-            if (Vital::Tool::File::exists(am->get_local_base(), path)) {
+            if (Vital::Tool::File::exists(get_directory(), path)) {
                 Vital::print("sbox", "Resource `" + name + "` asset cached: " + path);
             } else {
                 resource_assets[name].insert(path);
@@ -546,7 +546,7 @@ namespace Vital::Engine {
 
             std::string source;
             try {
-                source = Vital::Tool::File::read_text(am->get_local_base(), asset_path);
+                source = Vital::Tool::File::read_text(get_directory(), asset_path);
             }
             catch (...) {
                 Vital::print("error", "Resource `" + name + "` failed to read script `" + script.src + "`");

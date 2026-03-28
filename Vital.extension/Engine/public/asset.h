@@ -42,8 +42,6 @@ namespace Vital::Engine {
         private:
             inline static AssetManager* singleton = nullptr;
 
-            std::string output_directory = "vital_assets";
-
             // Server + Client: registered assets path → hash
             std::unordered_map<std::string, std::string> registered_assets;
 
@@ -86,11 +84,6 @@ namespace Vital::Engine {
 
 
             // Config //
-            void set_output_directory(const std::string& dir);
-            const std::string& get_output_directory() const;
-            std::string get_local_filename(const std::string& path) const;
-            std::string get_local_base() const;
-
             #if !defined(Vital_SDK_Client)
             void set_http_port(int port);
             int  get_http_port() const;

@@ -64,29 +64,10 @@ namespace Vital::Engine {
         return Vital::Tool::File::hash(base, file, "SHA256");
     }
 
-    std::string AssetManager::get_local_filename(const std::string& path) const {
-        // Preserve directory structure — vital_assets/resources/my_resource/file.lua
-        return path;
-    }
-
-    std::string AssetManager::get_local_base() const {
-        return Vital::get_directory() + "/" + output_directory;
-    }
-
 
     //----------------//
     //    Config      //
     //----------------//
-
-    void AssetManager::set_output_directory(const std::string& dir) {
-        output_directory = dir;
-        while (!output_directory.empty() && output_directory.back() == '/')
-            output_directory.pop_back();
-    }
-
-    const std::string& AssetManager::get_output_directory() const {
-        return output_directory;
-    }
 
     #if !defined(Vital_SDK_Client)
     void AssetManager::set_http_port(int port) { http_port = port; }
@@ -318,7 +299,7 @@ namespace Vital::Engine {
 
             // Check local cache by hashing existing file
             bool hash_matches = false;
-            const std::string local_path = get_local_base() + "/" + get_local_filename(path);
+            const std::string local_path = get_directory() + "/" + path;
             try {
                 if (std::filesystem::exists(local_path)) {
                     hash_matches = (compute_hash_file(local_path) == hash);
@@ -357,9 +338,8 @@ namespace Vital::Engine {
         dl->path = path;
         active_downloads[path] = dl;
 
-        const std::string local_base     = get_local_base();
-        const std::string local_filename = get_local_filename(path);
-        const std::string local_path     = local_base + "/" + local_filename;
+        const std::string local_base     = get_directory();
+        const std::string local_path     = local_base + "/" + path;
 
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             Vital::print("sbox", "AssetManager: downloading -> ", path.c_str());
