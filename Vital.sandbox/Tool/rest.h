@@ -96,7 +96,7 @@ namespace Vital::Tool::Rest {
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {"Content-Type: application/json"}) {
+    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {}) {
         std::string buffer;
         
         // Parse URL to extract host, port, path, and scheme
@@ -141,7 +141,7 @@ namespace Vital::Tool::Rest {
         cli.set_connection_timeout(30, 0);
         cli.set_read_timeout(60, 0);
         
-        // Convert headers
+        // Convert headers (Content-Type should be set by caller if needed)
         httplib::Headers httplib_headers;
         for (const auto& h : headers) {
             size_t colon_pos = h.find(":");
