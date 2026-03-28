@@ -1,0 +1,142 @@
+# =============================================================================
+# Vital Sandbox - Server Configuration
+# =============================================================================
+# This file controls the server's network, HTTP, and social settings.
+# Simply modify the values below and restart the server - no code changes needed!
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Server Identity
+# -----------------------------------------------------------------------------
+server:
+  # The display name of your server (shown in client UI and Discord)
+  name: "Vital Sandbox Server"
+  
+  # Server version identifier (for compatibility checks)
+  version: "1.0.0"
+  
+  # Server description (optional, for client display)
+  description: "A Vital Sandbox server"
+
+# -----------------------------------------------------------------------------
+# Network Configuration
+# -----------------------------------------------------------------------------
+network:
+  # TCP port for ENet multiplayer server
+  # Clients connect to this port
+  # Default: 7777
+  port: 7777
+  
+  # Maximum number of concurrent clients allowed
+  # Default: 32
+  max_clients: 32
+  
+  # Enable auto-reconnect for clients (true/false)
+  auto_reconnect: true
+  
+  # Maximum reconnection attempts (if auto_reconnect is true)
+  reconnect_max_attempts: 5
+  
+  # Delay between reconnection attempts in seconds
+  reconnect_delay: 3.0
+
+# -----------------------------------------------------------------------------
+# HTTP Asset Server Configuration
+# -----------------------------------------------------------------------------
+http:
+  # Port for HTTP asset delivery server
+  # Clients download assets (models, textures, etc.) from this port
+  # Default: 7778
+  port: 7778
+  
+  # Base directory for serving files (relative to executable)
+  # Default: "" (executable directory)
+  # Example: "assets" to serve from ./assets folder
+  base_directory: ""
+  
+  # Enable CORS headers for cross-origin requests
+  enable_cors: true
+  
+  # Maximum file size for single request in MB (0 = unlimited)
+  max_file_size_mb: 0
+
+# -----------------------------------------------------------------------------
+# Discord Integration
+# -----------------------------------------------------------------------------
+discord:
+  # Enable Discord Rich Presence
+  # Default: false (only applies to client builds)
+  enabled: false
+  
+  # Discord Application ID (from Discord Developer Portal)
+  # Get it at: https://discord.com/developers/applications
+  application_id: "0"
+  
+  # Rich Presence state (shown below the game name)
+  # Supports placeholders: {server_name}, {player_count}, {max_players}
+  state: "Playing on {server_name}"
+  
+  # Rich Presence details (shown above the state)
+  details: "{player_count}/{max_players} players"
+  
+  # Large image key (from Discord Developer Portal Rich Presence assets)
+  large_image_key: ""
+  
+  # Large image tooltip text
+  large_image_text: ""
+  
+  # Small image key (optional)
+  small_image_key: ""
+  
+  # Small image tooltip text
+  small_image_text: ""
+
+# -----------------------------------------------------------------------------
+# Community / Social Links
+# -----------------------------------------------------------------------------
+social:
+  # Discord server invite link
+  # Shown in client UI and used for join requests
+  discord_invite: ""
+  
+  # Website URL
+  website: ""
+  
+  # Steam group URL or ID
+  steam_group: ""
+  
+  # Maximum recent players to track
+  recent_players_max: 10
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+logging:
+  # Enable console output
+  console_enabled: true
+  
+  # Log file path (empty = disabled)
+  # Example: "logs/server.log"
+  file_path: ""
+  
+  # Log level: debug, info, warning, error
+  level: "info"
+  
+  # Include timestamps in log output
+  timestamps: true
+
+# -----------------------------------------------------------------------------
+# Advanced Settings
+# -----------------------------------------------------------------------------
+advanced:
+  # Compress network packets (saves bandwidth, slight CPU overhead)
+  compress_packets: true
+  
+  # Broadcast interval in seconds (how often to sync state)
+  sync_interval: 0.05
+  
+  # Enable performance profiling
+  profiling: false
+  
+  # Server tick rate (physics/logic updates per second)
+  tick_rate: 60
