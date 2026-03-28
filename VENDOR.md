@@ -14,5 +14,5 @@
 * [**rapidjson**](https://rapidjson.org) - Provides high-performance JSON parsing and generation.
 * [**lua**](https://www.lua.org) - Provides an embeddable scripting runtime with sandboxing support.
 * [**lua-rapidjson**](https://github.com/xpol/lua-rapidjson) - Provides RapidJSON bindings for Lua.
-* [**discord-game-sdk**](https://discord.com/developers/docs/developer-tools/game-sdk) - Provides Discord social features including voice, lobbies, and rich presence.
+* [**discord-social-sdk**](https://discord.com/developers/docs/discord-social-sdk/overview) - Provides Discord social layer integration.
 * [**godot-wry**](https://godot-wry.doceazedo.com) - Provides native WebView integration for Godot.
