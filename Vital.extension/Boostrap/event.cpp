@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Boostrap/index.h>
-#include <Engine/public/config.h>
 
 
 /////////////
@@ -23,6 +22,7 @@
 
 // Global config instance - loaded once at startup
 #if !defined(Vital_SDK_Client)
+#include <Engine/public/config.h>
 static Vital::Engine::Config g_server_config;
 #endif
 
