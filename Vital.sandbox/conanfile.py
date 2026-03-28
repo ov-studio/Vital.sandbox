@@ -10,8 +10,8 @@ class BuildConan(ConanFile):
         self.requires("openssl/3.5.1")
         self.requires("cpp-httplib/0.39.0")
         self.requires("libmysqlclient/8.1.0")
-        self.requires("zlib/1.3.1")
         self.requires("soci/4.1.2")
+        self.requires("zlib/1.3.1")
         self.requires("yaml-cpp/0.8.0")
 
     def configure(self):
@@ -19,10 +19,10 @@ class BuildConan(ConanFile):
         self.options["openssl"].shared = False
         self.options["cpp-httplib"].shared = False
         self.options["libmysqlclient"].shared = False
-        self.options["zlib"].shared = False
         self.options["soci"].shared = False
         self.options["soci"].with_mysql = True
         self.options["soci"].with_sqlite3 = False
         self.options["soci"].with_postgresql = False
         self.options["soci"].with_odbc = False
         self.options["soci"].with_boost = False
+        self.options["zlib"].shared = False
