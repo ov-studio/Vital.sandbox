@@ -125,6 +125,56 @@ namespace Vital::Engine {
             }
 
             //========================================//
+            // Discord Integration
+            //========================================//
+
+            bool get_discord_enabled() {
+                if (!loaded || !root["discord"] || !root["discord"]["enabled"]) return false;
+                return root["discord"]["enabled"].as<bool>();
+            }
+
+            uint64_t get_discord_application_id() {
+                if (!loaded || !root["discord"] || !root["discord"]["application_id"]) return 0;
+                std::string id_str = root["discord"]["application_id"].as<std::string>();
+                try {
+                    return std::stoull(id_str);
+                } catch (...) {
+                    return 0;
+                }
+            }
+
+            std::string get_discord_state() {
+                if (!loaded || !root["discord"] || !root["discord"]["state"]) return "Playing on {server_name}";
+                std::string state = root["discord"]["state"].as<std::string>();
+                return state;
+            }
+
+            std::string get_discord_details() {
+                if (!loaded || !root["discord"] || !root["discord"]["details"]) return "{player_count}/{max_players} players";
+                return root["discord"]["details"].as<std::string>();
+            }
+
+            std::string get_discord_large_image_key() {
+                if (!loaded || !root["discord"] || !root["discord"]["large_image_key"]) return "";
+                return root["discord"]["large_image_key"].as<std::string>();
+            }
+
+            std::string get_discord_large_image_text() {
+                if (!loaded || !root["discord"] || !root["discord"]["large_image_text"]) return "";
+                return root["discord"]["large_image_text"].as<std::string>();
+            }
+
+            std::string get_discord_small_image_key() {
+                if (!loaded || !root["discord"] || !root["discord"]["small_image_key"]) return "";
+                return root["discord"]["small_image_key"].as<std::string>();
+            }
+
+            std::string get_discord_small_image_text() {
+                if (!loaded || !root["discord"] || !root["discord"]["small_image_text"]) return "";
+                return root["discord"]["small_image_text"].as<std::string>();
+            }
+
+            //========================================//
             // Social Links
             //========================================//
 

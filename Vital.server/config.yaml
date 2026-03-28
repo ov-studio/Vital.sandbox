@@ -30,15 +30,6 @@ network:
   # Maximum number of concurrent clients allowed
   # Default: 32
   max_clients: 32
-  
-  # Enable auto-reconnect for clients (true/false)
-  auto_reconnect: true
-  
-  # Maximum reconnection attempts (if auto_reconnect is true)
-  reconnect_max_attempts: 5
-  
-  # Delay between reconnection attempts in seconds
-  reconnect_delay: 3.0
 
 # -----------------------------------------------------------------------------
 # HTTP Asset Server Configuration
@@ -48,17 +39,6 @@ http:
   # Clients download assets (models, textures, etc.) from this port
   # Default: 7778
   port: 7778
-  
-  # Base directory for serving files (relative to executable)
-  # Default: "" (executable directory)
-  # Example: "assets" to serve from ./assets folder
-  base_directory: ""
-  
-  # Enable CORS headers for cross-origin requests
-  enable_cors: true
-  
-  # Maximum file size for single request in MB (0 = unlimited)
-  max_file_size_mb: 0
 
 # -----------------------------------------------------------------------------
 # Discord Integration
@@ -101,42 +81,3 @@ social:
   
   # Website URL
   website: ""
-  
-  # Steam group URL or ID
-  steam_group: ""
-  
-  # Maximum recent players to track
-  recent_players_max: 10
-
-# -----------------------------------------------------------------------------
-# Logging Configuration
-# -----------------------------------------------------------------------------
-logging:
-  # Enable console output
-  console_enabled: true
-  
-  # Log file path (empty = disabled)
-  # Example: "logs/server.log"
-  file_path: ""
-  
-  # Log level: debug, info, warning, error
-  level: "info"
-  
-  # Include timestamps in log output
-  timestamps: true
-
-# -----------------------------------------------------------------------------
-# Advanced Settings
-# -----------------------------------------------------------------------------
-advanced:
-  # Compress network packets (saves bandwidth, slight CPU overhead)
-  compress_packets: true
-  
-  # Broadcast interval in seconds (how often to sync state)
-  sync_interval: 0.05
-  
-  # Enable performance profiling
-  profiling: false
-  
-  # Server tick rate (physics/logic updates per second)
-  tick_rate: 60
