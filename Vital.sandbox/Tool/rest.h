@@ -23,6 +23,7 @@
 ////////////////////////
 
 namespace Vital::Tool::Rest {
+    // TODO: Improve
     using rest_headers = std::vector<std::string>;
 
     inline std::string get(const std::string& url, const rest_headers& headers = {}) {
