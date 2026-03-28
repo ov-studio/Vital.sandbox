@@ -17,13 +17,7 @@
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/console.h>
 
-#if !defined(Vital_SDK_Client)
 #include <httplib.h>
-#endif
-
-#if defined(Vital_SDK_Client)
-#include <curl/curl.h>
-#endif
 
 #include <fstream>
 #include <filesystem>
@@ -369,17 +363,11 @@ namespace Vital::Engine {
         const std::string local_base     = get_local_base();
         const std::string local_filename = get_local_filename(path);
         const std::string local_path     = local_base + "/" + local_filename;
-        const std::string url            = base_url + "/asset?path=" + path;
+        // Path for httplib (relative to base_url)
+        const std::string request_path   = "/asset?path=" + path;
 
-        dl->thread = std::thread([this, dl, path, expected_hash, local_path, url]() {
+        dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path, request_path]() {
             Vital::print("sbox", "AssetManager: downloading -> ", path.c_str());
-
-            CURL* curl = curl_easy_init();
-            if (!curl) {
-                Vital::print("sbox", "AssetManager: curl init failed -> ", path.c_str());
-                _on_download_failed(path);
-                return;
-            }
 
             // Create parent directories
             try {
@@ -391,59 +379,51 @@ namespace Vital::Engine {
             // Open output file
             std::ofstream out(local_path, std::ios::binary | std::ios::trunc);
             if (!out) {
-                curl_easy_cleanup(curl);
                 Vital::print("sbox", "AssetManager: cannot open output file -> ", path.c_str());
                 _on_download_failed(path);
                 return;
             }
 
-            // Write callback — streams directly to disk, never into RAM
-            auto write_cb = [](char* ptr, size_t size, size_t nmemb, void* userdata) -> size_t {
-                auto* f = static_cast<std::ofstream*>(userdata);
-                f->write(ptr, static_cast<std::streamsize>(size * nmemb));
-                return size * nmemb;
-            };
+            // Use httplib client for downloading
+            httplib::Client cli(base_url);
+            cli.set_connection_timeout(30, 0);  // 30 second connection timeout
+            cli.set_read_timeout(60, 0);         // 60 second read timeout
 
-            // Progress callback — checks cancellation flag each tick
-            auto progress_cb = [](void* clientp, curl_off_t, curl_off_t,
-                                   curl_off_t, curl_off_t) -> int {
-                auto* dl = static_cast<Download*>(clientp);
-                // Return non-zero to abort the transfer
-                return dl->cancelled.load() ? 1 : 0;
-            };
+            // Use Get stream with response and content callbacks for cancellation support
+            // The Get with callbacks returns Result which has status() method
+            httplib::Response res;
+            bool download_ok = cli.Get(
+                request_path.c_str(),
+                [&res](const httplib::Response& response) -> bool {
+                    res = response;
+                    return true;  // Continue regardless of status (check later)
+                },
+                [&dl, &out](const char* data, size_t data_length) -> bool {
+                    // Check cancellation flag in each chunk
+                    if (dl->cancelled.load()) {
+                        return false;  // Return false to abort
+                    }
+                    
+                    out.write(data, static_cast<std::streamsize>(data_length));
+                    return out.good();  // Continue if write OK
+                }
+            );
 
-            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
-                static_cast<size_t(*)(char*, size_t, size_t, void*)>(write_cb));
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
-            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION,
-                static_cast<int(*)(void*, curl_off_t, curl_off_t, curl_off_t, curl_off_t)>(progress_cb));
-            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, dl.get());
-            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-            // Follow redirects, disable SSL verify for LAN
-            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-            // Low-speed timeout — abort if < 1 byte/sec for 30 seconds
-            curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
-            curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
-
-            CURLcode res = curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
             out.close();
 
             if (dl->cancelled.load()) {
-                // Clean up partial file
                 try { std::filesystem::remove(local_path); } catch (...) {}
                 Vital::print("sbox", "AssetManager: download cancelled -> ", path.c_str());
                 active_downloads.erase(path);
                 return;
             }
 
-            if (res != CURLE_OK) {
+            // Check status - httplib Result has status() method, Response has status member
+            if (!download_ok || res.status != 200) {
                 try { std::filesystem::remove(local_path); } catch (...) {}
+                std::string status_str = download_ok ? std::to_string(res.status) : "connection failed";
                 Vital::print("sbox", "AssetManager: download failed -> ", path.c_str(),
-                    " error=", curl_easy_strerror(res));
+                    " status=", status_str.c_str());
                 _on_download_failed(path);
                 return;
             }
@@ -488,7 +468,7 @@ namespace Vital::Engine {
         auto it = active_downloads.find(path);
         if (it == active_downloads.end()) return;
         it->second->cancelled.store(true);
-        // Thread will clean up itself when curl aborts
+        // Thread will clean up itself when it polls and sees cancelled flag
         Vital::print("sbox", "AssetManager: cancelling -> ", path.c_str());
     }
 
@@ -496,7 +476,7 @@ namespace Vital::Engine {
         for (auto& [path, dl] : active_downloads) {
             dl->cancelled.store(true);
         }
-        Vital::print("sbox", "AssetManager: cancelling all downloads");
+        Vital::print("sbox", "AssetManager: cancelling all downloads (threads will clean up on next poll)");
     }
 
     bool AssetManager::is_downloading(const std::string& path) const {
