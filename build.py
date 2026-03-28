@@ -115,6 +115,22 @@ class Build:
                 shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
                 log_info(f"Copied: {lib}")
 
+    def copy_configs(self, project_dir, dist_dir):
+        log_step(f"Copying config files [{self.platform_type} | {self.build_type}]")
+        config_exts = [".yaml"]
+        configs_copied = False
+
+        for root, dirs, files in os.walk(project_dir):
+            for f in files:
+                name_lower = f.lower()
+                if any(name_lower.endswith(ext) for ext in config_exts):
+                    shutil.copy2(os.path.join(root, f), os.path.join(dist_dir, f))
+                    log_info(f"Copied: {f}")
+                    configs_copied = True
+
+        if not configs_copied:
+            log_info("No config files found")
+
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
@@ -137,6 +153,7 @@ class Build:
 
         log_ok("Done")
         self.copy_libs(b["project_dir"], b["dist_dir"])
+        self.copy_configs(b["project_dir"], b["dist_dir"])
 
 
 def main():
