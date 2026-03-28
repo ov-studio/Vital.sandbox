@@ -26,6 +26,7 @@ namespace Vital::Sandbox {
         protected:
             static vm_apis internal_apis;
             inline static vm_machines machines;
+
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
                 {"table", luaopen_table},
@@ -36,17 +37,20 @@ namespace Vital::Sandbox {
                 {"utf8", luaopen_utf8},
                 {"json", luaopen_rapidjson}
             };
+
             inline static std::vector<std::string> blacklist = {
                 "dofile",
                 "load",
                 "loadfile"
             };
+
             inline static const std::unordered_map<std::string, godot::HorizontalAlignment> horizontal_alignment = {
                 {"left", godot::HORIZONTAL_ALIGNMENT_LEFT},
                 {"center", godot::HORIZONTAL_ALIGNMENT_CENTER},
                 {"right", godot::HORIZONTAL_ALIGNMENT_RIGHT},
                 {"fill", godot::HORIZONTAL_ALIGNMENT_FILL}
             };
+            
             inline static const std::unordered_map<std::string, godot::VerticalAlignment> vertical_alignment = {
                 {"top", godot::VERTICAL_ALIGNMENT_TOP},
                 {"center", godot::VERTICAL_ALIGNMENT_CENTER},
@@ -312,6 +316,13 @@ namespace Vital::Sandbox {
                     get_global(nspace);
                 }
             }
+            void create_environment() {
+                create_table();
+                create_table();
+                lua_pushglobaltable(state);
+                set_table_field("__index", -2);
+                set_metatable(-2);
+            }
             void create_object(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
@@ -420,7 +431,7 @@ namespace Vital::Sandbox {
                 pop();
                 return std::string(value, length);
             }
-    
+
             bool compile_string(const std::string& raw) {
                 if (raw.empty()) return false;
                 if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {

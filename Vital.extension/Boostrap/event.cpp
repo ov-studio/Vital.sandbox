@@ -20,14 +20,49 @@
 // Events //
 /////////////
 
+// Global config instance - loaded once at startup
+#if !defined(Vital_SDK_Client)
+#include <Engine/public/config.h>
+static Vital::Engine::Config g_server_config;
+#endif
+
+// Load server configuration from config.yaml
+#if !defined(Vital_SDK_Client)
+void load_server_config() {
+    bool loaded = g_server_config.load();
+    if (!loaded) {
+        Vital::print("sbox", "Config: No config.yaml found, using default values");
+    } else {
+        Vital::print("sbox", "Config: Server name: '", g_server_config.get_server_name(), "'");
+        Vital::print("sbox", "Config: Network port: ", g_server_config.get_network_port());
+        Vital::print("sbox", "Config: HTTP port: ", g_server_config.get_http_port());
+        Vital::print("sbox", "Config: Max clients: ", g_server_config.get_max_clients());
+    }
+    
+    // Set server info on AssetManager for /info endpoint
+    Vital::Engine::ServerInfo info;
+    if (g_server_config.is_loaded()) {
+        info.name = g_server_config.get_server_name();
+        info.version = g_server_config.get_server_version();
+        info.description = g_server_config.get_server_description();
+        info.max_clients = g_server_config.get_max_clients();
+        info.discord = g_server_config.get_discord_invite();
+        info.website = g_server_config.get_website();
+    }
+    Vital::Engine::AssetManager::get_singleton()->set_server_info(info);
+}
+#endif
+
+// TODO: Improve
 void shutdown() {
     #if !defined(Vital_SDK_Client)
-    Vital::Engine::Network::get_singleton()->close();
+    Vital::Engine::Network::get_singleton() -> close();
     #endif
     #if defined(Vital_SDK_Client)
-    Vital::Engine::Network::get_singleton()->disconnect_from_server();
+    Vital::Engine::Network::get_singleton() -> disconnect_from_server();
     #endif
     Vital::Engine::Network::free_singleton();
+    Vital::Engine::AssetManager::free_singleton();
 }
 
 void setup() {
@@ -37,27 +72,28 @@ void setup() {
     Vital::Tool::Event::bind("network:hosted", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Server is live");
     });
+
     Vital::Tool::Event::bind("network:peer_joined", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player joined: ", id);
+        // Manifest is broadcast via broadcast_manifest_deferred() when resources start
+        // and via the peer_connected event in resource.cpp scan()
+        // Direct broadcast here handles clients joining after resources are already running
+        Vital::Engine::AssetManager::get_singleton() -> broadcast_manifest(id);
     });
+
     Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::print("sbox", "Player left: ", id);
     });
+
     Vital::Tool::Event::bind("network:packet", [net](Vital::Tool::Stack& args) {
         int32_t sender   = args.object.at("sender_id").as<int32_t>();
-        std::string type = args.object.at("type").as<std::string>();
-        std::string body = args.array[0].as<std::string>();
-        Vital::print("sbox", "Msg from ", sender, " type=", type.c_str(), ": ", body.c_str());
-        if (body == "ping") {
-            Vital::Tool::Stack reply;
-            reply.array.push_back(Vital::Tool::StackValue(std::string("welcome")));
-            reply.object["type"]    = Vital::Tool::StackValue(std::string("system"));
-            reply.object["peer_id"] = Vital::Tool::StackValue(sender);
-            net->send(reply, sender);
-        }
+        std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "";
+        // All asset delivery is now handled by the HTTP server on port 7778
+        // No asset:request or asset:chunk handling needed here
     });
+
     Vital::Tool::Event::bind("network:closed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Server closed");
     });
@@ -67,29 +103,36 @@ void setup() {
     Vital::Tool::Event::bind("network:connecting", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Connecting...");
     });
-    Vital::Tool::Event::bind("network:connected", [net](Vital::Tool::Stack&) {
-        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
-    });
+
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
-        std::string body = args.array[0].as<std::string>();
         std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "unknown";
-        Vital::print("sbox", "Server says [", type.c_str(), "]: ", body.c_str());
+        if (type == "asset:manifest") {
+            Vital::Engine::AssetManager::get_singleton() -> receive_manifest(args);
+            return;
+        }
+        // asset:chunk no longer exists — HTTP handles delivery
     });
+
     Vital::Tool::Event::bind("network:connection_failed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Failed to connect");
     });
+
     Vital::Tool::Event::bind("network:reconnecting", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Retrying...");
     });
+
     Vital::Tool::Event::bind("network:reconnect_failed", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Gave up reconnecting");
     });
-    Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) {
-        Vital::print("sbox", "Lost connection to server");
-    });
+
     Vital::Tool::Event::bind("network:disconnected", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Disconnected cleanly");
     });
+
+    Vital::Tool::Event::bind("asset:ready", [](Vital::Tool::Stack&) {
+        Vital::print("sbox", "AssetManager: all assets ready");
+    });
+
     net->set_reconnect_config(5, 3.0f);
     #endif
 }
@@ -102,7 +145,10 @@ void initialize_vital_events() {
         Vital::System::Discord::get_singleton();
         #endif
         Vital::Engine::Console::get_singleton();
-        Vital::Engine::Sandbox::get_singleton()->ready();
+        Vital::Engine::Sandbox::get_singleton() -> ready();
+        #if defined(Vital_SDK_Client)
+        Vital::Engine::ResourceManager::get_singleton() -> init();
+        #endif
         setup();
     });
 
@@ -113,22 +159,76 @@ void initialize_vital_events() {
         #endif
         Vital::Engine::Console::free_singleton();
         Vital::Engine::Sandbox::free_singleton();
+        Vital::Engine::ResourceManager::free_singleton();
         shutdown();
     });
 
 
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
-        // intentionally empty — network init is deferred to first process tick
+        Vital::Engine::Core::get_singleton() -> call_deferred("setup_model_spawner");
+
+        #if !defined(Vital_SDK_Client)
+        // Register global assets (non-resource assets shared across all clients)
+        std::vector<std::string> manifest = {
+            "cube.glb",
+            "test/testing.glb"
+        };
+        Vital::Engine::AssetManager::get_singleton() -> register_assets(manifest);
+        #endif
     });
 
+
+    // Network //
+    #if !defined(Vital_SDK_Client)
+    Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) -> void {
+        int32_t id = args.array[0].as<int32_t>();
+        Vital::Engine::Model::clear_synced();
+    });
+    #endif
+
+    #if defined(Vital_SDK_Client)
+    Vital::Tool::Event::bind("network:connected", [](Vital::Tool::Stack&) -> void {
+        auto* net = Vital::Engine::Network::get_singleton();
+        Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
+        Vital::Engine::Model::on_connected();
+        Vital::Engine::AssetManager::get_singleton() -> clear();
+        // Store server IP so HTTP downloads know where to connect
+        Vital::Engine::AssetManager::get_singleton() -> set_server_http_ip(
+            net->get_server_ip()
+        );
+    });
+
+    Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) -> void {
+        Vital::print("sbox", "Lost connection to server");
+        Vital::Engine::Model::cleanup_spawned();
+        Vital::Engine::AssetManager::get_singleton() -> clear();
+    });
+    #endif
+
+
+    // Process //
     Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
         static bool network_initialized = false;
         if (!network_initialized) {
             network_initialized = true;
             auto* net = Vital::Engine::Network::get_singleton();
             #if !defined(Vital_SDK_Client)
-            net->host(7777, 32);
+            // Use config values for server settings
+            load_server_config();
+            int server_port = g_server_config.is_loaded() ? g_server_config.get_network_port() : 7777;
+            int max_clients = g_server_config.is_loaded() ? g_server_config.get_max_clients() : 32;
+            
+            Vital::print("sbox", "Starting server on port ", server_port, " (max ", max_clients, " clients)");
+            net->host(server_port, max_clients);
+            
+            // Configure HTTP server port before starting
+            int http_port = g_server_config.is_loaded() ? g_server_config.get_http_port() : 7778;
+            Vital::Engine::AssetManager::get_singleton() -> set_http_port(http_port);
+            
+            // Start HTTP asset server
+            Vital::print("sbox", "Starting HTTP server on port ", http_port);
+            Vital::Engine::AssetManager::get_singleton() -> start_http_server();
             #endif
             #if defined(Vital_SDK_Client)
             net->connect_to_server("127.0.0.1", 7777, true);
@@ -136,8 +236,8 @@ void initialize_vital_events() {
         }
 
         #if defined(Vital_SDK_Client)
-        Vital::System::Discord::get_singleton()->process();
+        Vital::System::Discord::get_singleton() -> process();
         #endif
-        Vital::Engine::Network::get_singleton()->poll(arguments.array[0].as<double>());
+        Vital::Engine::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
 }

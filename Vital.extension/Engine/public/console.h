@@ -31,9 +31,15 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Client)
             Webview* webview = nullptr;
             #else
+            std::mutex stdout_mutex;
             std::thread stdin_thread;
             std::atomic<bool> stdin_running{false};
-            #if defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+            std::string stdin_buffer;
+            std::vector<std::string> stdin_history;
+            int stdin_history_index = -1;
+            #if defined(Vital_SDK_WINDOWS)
+            DWORD stdin_original_mode = 0;
+            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
             struct termios stdin_termios{};
             #endif
 
@@ -47,7 +53,12 @@ namespace Vital::Engine {
             static std::string format_inline(const Vital::Tool::Stack& mode_rgb, const std::string& content);
             static std::string format_line(const Vital::Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
             static std::string format_output(const std::string& mode, const std::string& message);
+            void format_input_prompt();
             #endif
+            static std::string fetch_mode_label(const std::string& mode);
+            static std::string fetch_mode_badge(const std::string& mode);
+            static Vital::Tool::Stack fetch_mode_color(const std::string& mode);
+            static std::string fetch_help();
         public:
             // Instantiators //
             Console();
@@ -57,15 +68,16 @@ namespace Vital::Engine {
             // Utils //
             static Console* get_singleton();
             static void free_singleton();
-            static std::string fetch_mode_label(const std::string& mode);
-            static std::string fetch_mode_badge(const std::string& mode);
-            static Vital::Tool::Stack fetch_mode_color(const std::string& mode);
 
 
             // APIs //
             void init();
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);
+            void clear(bool signal = false);
+            #if !defined(Vital_SDK_Client)
+            void shutdown();
+            #endif
 
 
             // Events //

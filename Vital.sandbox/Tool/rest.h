@@ -5,7 +5,7 @@
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
      Desc: Rest Tools
-----------------------------------------------------------------*/
+ ----------------------------------------------------------------*/
 
 
 //////////////
@@ -13,8 +13,9 @@
 //////////////
 
 #pragma once
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <Vital.sandbox/Tool/index.h>
-#include <curl/curl.h>
+#include <httplib.h>
 
 
 ////////////////////////
@@ -22,79 +23,150 @@
 ////////////////////////
 
 namespace Vital::Tool::Rest {
+    // TODO: Improve
     using rest_headers = std::vector<std::string>;
-
-    struct Curl {
-        Curl() { 
-            if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
-                throw std::runtime_error("curl_global_init failed");
-            }
-        }
-
-        ~Curl() { 
-            curl_global_cleanup(); 
-        }
-    
-        static inline curl_slist* apply_headers(const rest_headers &headers) {
-            curl_slist* list = nullptr;
-            for (const auto& header : headers) {
-                list = curl_slist_append(list, header.c_str());
-            }
-            return list;
-        }
-
-        static size_t callback(void* contents, size_t size, size_t nmemb, void* userp) {
-            size_t totalSize = size*nmemb;
-            static_cast<std::string*>(userp) -> append(static_cast<char*>(contents), totalSize);
-            return totalSize;
-        }
-    };
-    inline Curl ctx;
 
     inline std::string get(const std::string& url, const rest_headers& headers = {}) {
         std::string buffer;
-        CURL* curl = curl_easy_init();
-        if (!curl) throw std::runtime_error("curl_easy_init failed");
-        curl_slist* rq_headers = Curl::apply_headers(headers);
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        CURLcode res = curl_easy_perform(curl);
-        curl_slist_free_all(rq_headers);
-        curl_easy_cleanup(curl);
-        if (res != CURLE_OK) {
-            std::string err = curl_easy_strerror(res);
-            throw std::runtime_error("Request failed: " + err);
+        
+        // Parse URL to extract host, port, path, and scheme
+        std::string scheme, host, path;
+        int port = 80;
+        
+        size_t protocol_end = url.find("://");
+        if (protocol_end != std::string::npos) {
+            scheme = url.substr(0, protocol_end);
+            std::string rest = url.substr(protocol_end + 3);
+            
+            // Check for port in host:port format
+            size_t path_start = rest.find("/");
+            size_t port_pos = rest.find(":");
+            
+            std::string host_part;
+            if (path_start != std::string::npos) {
+                host_part = rest.substr(0, path_start);
+                path = rest.substr(path_start);
+            } else {
+                host_part = rest;
+                path = "/";
+            }
+            
+            // Extract port if present
+            if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
+                host = host_part.substr(0, port_pos);
+                port = std::stoi(host_part.substr(port_pos + 1));
+            } else {
+                host = host_part;
+                if (scheme == "https") port = 443;
+            }
+        } else {
+            throw std::runtime_error("Invalid URL format");
         }
+        
+        // Build scheme://host:port for httplib Client constructor
+        std::string scheme_host_port = scheme + "://" + host + ":" + std::to_string(port);
+        
+        // Client auto-detects SSL based on scheme (https://)
+        httplib::Client cli(scheme_host_port);
+        cli.set_connection_timeout(30, 0);
+        cli.set_read_timeout(60, 0);
+        
+        // Convert headers
+        httplib::Headers httplib_headers;
+        for (const auto& h : headers) {
+            size_t colon_pos = h.find(":");
+            if (colon_pos != std::string::npos) {
+                httplib_headers.insert({h.substr(0, colon_pos), h.substr(colon_pos + 1)});
+            }
+        }
+        
+        auto res = cli.Get(path.c_str(), httplib_headers, [&buffer](const char* data, size_t len) {
+            buffer.append(data, len);
+            return true;
+        });
+        
+        if (!res) {
+            throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        }
+        
+        if (res->status != 200) {
+            throw std::runtime_error("HTTP error: " + std::to_string(res->status));
+        }
+        
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {"Content-Type: application/json"}) {
+    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {}) {
         std::string buffer;
-        CURL* curl = curl_easy_init();
-        if (!curl) throw std::runtime_error("curl_easy_init failed");
-        curl_slist* rq_headers = Curl::apply_headers(headers);
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_POST, 1L);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.size());
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, rq_headers);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Curl::callback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, Vital::Build_ver);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        CURLcode res = curl_easy_perform(curl);
-        curl_slist_free_all(rq_headers);
-        curl_easy_cleanup(curl);
-        if (res != CURLE_OK) {
-            std::string err = curl_easy_strerror(res);
-            throw std::runtime_error("Request failed: " + err);
+        
+        // Parse URL to extract host, port, path, and scheme
+        std::string scheme, host, path;
+        int port = 80;
+        
+        size_t protocol_end = url.find("://");
+        if (protocol_end != std::string::npos) {
+            scheme = url.substr(0, protocol_end);
+            std::string rest = url.substr(protocol_end + 3);
+            
+            // Check for port in host:port format
+            size_t path_start = rest.find("/");
+            size_t port_pos = rest.find(":");
+            
+            std::string host_part;
+            if (path_start != std::string::npos) {
+                host_part = rest.substr(0, path_start);
+                path = rest.substr(path_start);
+            } else {
+                host_part = rest;
+                path = "/";
+            }
+            
+            // Extract port if present
+            if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
+                host = host_part.substr(0, port_pos);
+                port = std::stoi(host_part.substr(port_pos + 1));
+            } else {
+                host = host_part;
+                if (scheme == "https") port = 443;
+            }
+        } else {
+            throw std::runtime_error("Invalid URL format");
         }
-        return buffer;
+        
+        // Build scheme://host:port for httplib Client constructor
+        std::string scheme_host_port = scheme + "://" + host + ":" + std::to_string(port);
+        
+        // Client auto-detects SSL based on scheme (https://)
+        httplib::Client cli(scheme_host_port);
+        cli.set_connection_timeout(30, 0);
+        cli.set_read_timeout(60, 0);
+        
+        // Convert headers (add Content-Type if empty for JSON POST)
+        httplib::Headers httplib_headers;
+        std::string content_type = "application/json"; // default
+        for (const auto& h : headers) {
+            size_t colon_pos = h.find(":");
+            if (colon_pos != std::string::npos) {
+                std::string key = h.substr(0, colon_pos);
+                std::string value = h.substr(colon_pos + 1);
+                if (key == "Content-Type" || key == "content-type") {
+                    content_type = value; // use user's Content-Type
+                } else {
+                    httplib_headers.insert({key, value});
+                }
+            }
+        }
+        
+        auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
+        
+        if (!res) {
+            throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        }
+        
+        if (res->status != 200) {
+            throw std::runtime_error("HTTP error: " + std::to_string(res->status));
+        }
+        
+        return res->body;
     }
 }

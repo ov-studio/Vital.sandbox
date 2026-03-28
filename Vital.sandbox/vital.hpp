@@ -16,7 +16,6 @@
 
 // Internals //
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/System/network.h>
 #include <Vital.sandbox/System/discord.h>
 
 // Externals //
@@ -62,4 +61,8 @@
 #include <godot_cpp/classes/font_file.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>

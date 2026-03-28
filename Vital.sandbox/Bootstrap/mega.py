@@ -24,30 +24,38 @@ class Mega:
         megacmd = self.init()
         if os.path.exists(megacmd["exe"]) or shutil.which("mega-get"):
             return
-        print("Installing MEGAcmd...")
+        log_step("Installing MEGAcmd")
         if os_info["type"] == "Windows":
             installer = os.path.join(os.environ["TEMP"], "MEGAcmdSetup64.exe")
             Download("https://mega.nz/MEGAcmdSetup64.exe", installer)
-            subprocess.run([installer, "/S"], check=True)
+            log_info("Running installer ...")
+            result = subprocess.run([installer, "/S"], capture_output=True)
+            if result.returncode != 0:
+                Throw_Error(f"MEGAcmd installation failed:\n{result.stderr.decode().strip()}")
             time.sleep(5)
         elif os_info["type"] == "Darwin":
             dmg = "/tmp/MEGAcmdSetup.dmg"
             Download("https://mega.nz/MEGAcmdSetup.dmg", dmg)
-            subprocess.run(["hdiutil", "attach", dmg], check=True)
-            subprocess.run(["sudo", "installer", "-pkg", "/Volumes/MEGAcmd/MEGAcmd.pkg", "-target", "/"], check=True)
-            subprocess.run(["hdiutil", "detach", "/Volumes/MEGAcmd"], check=True)
+            log_info("Mounting installer ...")
+            subprocess.run(["hdiutil", "attach", dmg], check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(["sudo", "installer", "-pkg", "/Volumes/MEGAcmd/MEGAcmd.pkg", "-target", "/"], check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(["hdiutil", "detach", "/Volumes/MEGAcmd"], check=True, stdout=subprocess.DEVNULL)
             os.remove(dmg)
         elif os_info["type"] == "Linux":
             distro = subprocess.run(["lsb_release", "-si"], capture_output=True, text=True).stdout.strip().lower()
             if "ubuntu" in distro or "debian" in distro:
-                subprocess.run(["sudo", "apt", "install", "-y", "megacmd"], check=True)
+                log_info("Running apt install ...")
+                subprocess.run(["sudo", "apt", "install", "-y", "megacmd"], check=True, stdout=subprocess.DEVNULL)
             else:
                 Throw_Error("Install MEGAcmd manually from https://mega.io/cmd")
-        print("MEGAcmd installed.")
+        log_ok("Done")
 
     def get(self, url, destination):
         self.install()
         megacmd = self.init()
-        subprocess.run([megacmd["exe"], url, destination], check=True)
+        log_info(f"Fetching {os.path.basename(destination)} ...")
+        result = subprocess.run([megacmd["exe"], url, destination], capture_output=True)
+        if result.returncode != 0:
+            Throw_Error(f"Mega download failed:\n{result.stderr.decode().strip()}")
 
 BaseEnvironment.Mega = property(lambda self: Mega(self))

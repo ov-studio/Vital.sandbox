@@ -3,6 +3,7 @@ from platform import machine, system
 from multiprocessing import cpu_count
 from SCons.Environment import Base as BaseEnvironment
 from SCons.Script import Copy, Action
+from Bootstrap.logger import *
 
 BUILD_INFO = {
     "Windows": {
@@ -35,7 +36,7 @@ def Fetch_OS():
 def Fetch_Build_Info():
     os_type = Fetch_OS()["type"]
     if os_type not in BUILD_INFO:
-        Throw_Error(f"[ERROR] Unsupported platform: {os_type}")
+        Throw_Error(f"Unsupported platform: {os_type}")
     return BUILD_INFO[os_type]
 
 def Fetch_Compiler():
@@ -45,7 +46,7 @@ def Fetch_Compiler():
     return compiler
 
 def Throw_Error(msg):
-    print(msg)
+    log_error(msg)
     sys.exit(2)
 
 def _RGlob(self, root_path, pattern, ondisk=True, source=False, exclude=None):

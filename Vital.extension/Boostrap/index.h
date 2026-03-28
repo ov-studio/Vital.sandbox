@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/network.h>
+#include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/webview.h>
@@ -22,6 +23,7 @@
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
 #include <Vital.extension/Engine/public/console.h>
+#include <Vital.extension/Engine/public/resource.h>
 #include <Vital.extension/Sandbox/index.h>
 
 

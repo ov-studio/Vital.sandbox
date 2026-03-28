@@ -84,11 +84,10 @@ class Godot:
         folder = f"{vs}.{status}"
         if os_type == "Windows": return os.path.join(os.environ["APPDATA"], "Godot", "export_templates", folder)
         elif os_type == "Darwin": return os.path.expanduser(f"~/Library/Application Support/Godot/export_templates/{folder}")
-        else:
-            return os.path.expanduser(f"~/.local/share/godot/export_templates/{folder}")
+        else: return os.path.expanduser(f"~/.local/share/godot/export_templates/{folder}")
 
     def _extract_zip(self, zip_path, destination):
-        print(f"  Extracting: {zip_path}")
+        log_info(f"Extracting {os.path.basename(zip_path)} ...")
         temp = destination + "_temp"
         if os.path.exists(temp):
             shutil.rmtree(temp)
@@ -105,7 +104,7 @@ class Godot:
         shutil.rmtree(temp)
 
     def _extract_tpz(self, tpz_path, templates_dir):
-        print(f"  Installing templates to: {templates_dir}")
+        log_info(f"Extracting templates ...")
         temp = tpz_path + "_temp"
         if os.path.exists(temp):
             shutil.rmtree(temp)
@@ -120,33 +119,31 @@ class Godot:
         for item in os.listdir(src):
             shutil.move(os.path.join(src, item), os.path.join(templates_dir, item))
         shutil.rmtree(temp)
-        print("  Templates installed.")
+        log_ok("Templates installed")
 
     def install(self):
         os_info = Fetch_OS()
         godot = self.init()
 
         if not godot["version"]:
-            Throw_Error("[ERROR] Could not detect Godot version from Vital.extension/Vendor/godot")
+            Throw_Error("Could not detect Godot version from Vital.extension/Vendor/godot")
 
-        print(f"\n==> Godot [{godot['version']}]")
+        log_step(f"Godot [{godot['version']}]")
         os.makedirs(godot["cache_dir"], exist_ok=True)
 
-        # ── Binary ──
         if not os.path.exists(godot["exe_path"]):
             url, filename = self._get_binary_url(godot["version"], os_info["type"])
             dl_path = os.path.join(godot["cache_dir"], filename)
-            print("  Downloading Godot binary...")
             Download(url, dl_path)
             self._extract_zip(dl_path, godot["cache_dir"])
             if os.path.exists(dl_path):
                 os.remove(dl_path)
-            if os_info["type"] != "Windows": os.chmod(godot["exe_path"], 0o755)
-            print(f"  Binary ready: {godot['exe_path']}")
+            if os_info["type"] != "Windows":
+                os.chmod(godot["exe_path"], 0o755)
+            log_ok(f"Binary ready")
         else:
-            print("  Binary cached.")
+            log_info("Binary cached")
 
-        # ── Export templates ──
         templates_dir = godot["templates_dir"]
         templates_ok = os.path.isdir(templates_dir) and any(
             f.endswith((".exe", ".so", ".dylib", "version"))
@@ -157,11 +154,10 @@ class Godot:
             url, filename = self._get_templates_url(godot["version"])
             tpz_path = os.path.join(godot["cache_dir"], filename)
             if not os.path.exists(tpz_path):
-                print("  Downloading export templates...")
                 Download(url, tpz_path)
             self._extract_tpz(tpz_path, templates_dir)
         else:
-            print("  Templates cached.")
+            log_info("Templates cached")
 
     def get_bin(self):
         self.install()

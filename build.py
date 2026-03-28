@@ -21,20 +21,75 @@ class Build:
             "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
         }
 
+    def build_godot_cpp(self, force=False):
+        b = self.init()
+        godot_dir = os.path.join(b["extension_dir"], "Vendor", "godot")
+        stamp = os.path.join(b["extension_dir"], f".build_godotcpp.{self.build_type.lower()}")
+        if force and os.path.exists(stamp):
+            os.remove(stamp)
+        if os.path.exists(stamp):
+            log_step(f"Building godot-cpp [{self.build_type}]")
+            log_info("Already built, skipping")
+            return
+        log_step(f"Building godot-cpp [{self.build_type}]")
+        if force:
+            log_info("Cleaning previous build ...")
+            subprocess.run([
+                "scons", "-C", godot_dir, "--clean",
+                f"target=template_{self.build_type.lower()}",
+                "use_static_cpp=no",
+            ])
+        log_info("Compiling ...")
+        result = subprocess.run([
+            "scons", "-C", godot_dir,
+            f"target=template_{self.build_type.lower()}",
+            "use_static_cpp=no",
+        ])
+        if result.returncode != 0:
+            log_error("godot-cpp build failed")
+            sys.exit(result.returncode)
+        open(stamp, "w").close()
+        log_ok("Done")
+
     def build_extension(self):
         b = self.init()
-        print(f"\n==> Building Vital.extension [{self.platform_type} | {self.build_type}]")
+        log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
+
+        stop = threading.Event()
+        thread = threading.Thread(target=spinner, args=("Compiling", stop))
+        thread.start()
+
         result = subprocess.run([
             "scons", "-C", b["extension_dir"],
             f"platform_type={self.platform_type}",
-            f"build_type={self.build_type}"
-        ])
+            f"build_type={self.build_type}",
+            "build_library=no",
+        ], capture_output=True, text=True)
+
+        stop.set()
+        thread.join()
+
+        ignore = (
+            "scons: ", "WARNING:", "platform_type=", "build_type=",
+            "Auto-detected", "Building for architecture", "==>",
+            "Running ", "Done", "Detecting ", "Installing ", "Bootstrapping",
+            "Reloading", "Fetching", "Cloning", "Binary", "Templates",
+        )
+        for line in result.stdout.splitlines():
+            stripped = line.strip()
+            if stripped and not any(stripped.startswith(p) for p in ignore):
+                log_info(stripped)
+
         if result.returncode != 0:
-            print(f"[ERROR] Extension build failed for {self.platform_type}")
+            for line in result.stderr.splitlines():
+                if line.strip():
+                    log_error(line.strip())
             sys.exit(result.returncode)
 
+        log_ok("Done")
+
     def copy_libs(self, project_dir, dist_dir):
-        print(f"\n==> Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
+        log_step(f"Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
         build_suffix = "release" if self.build_type == "Release" else "debug"
         lib_exts = self.info["lib_exts"]
 
@@ -58,23 +113,47 @@ class Build:
                 libs.append(f)
             for lib in libs:
                 shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
-                print(f"  Copied: {lib}")
+                log_info(f"Copied: {lib}")
+
+    def copy_configs(self, project_dir, dist_dir):
+        log_step(f"Copying config files [{self.platform_type} | {self.build_type}]")
+        config_exts = [".yaml"]
+        configs_copied = False
+
+        for root, dirs, files in os.walk(project_dir):
+            for f in files:
+                name_lower = f.lower()
+                if any(name_lower.endswith(ext) for ext in config_exts):
+                    shutil.copy2(os.path.join(root, f), os.path.join(dist_dir, f))
+                    log_info(f"Copied: {f}")
+                    configs_copied = True
+
+        if not configs_copied:
+            log_info("No config files found")
 
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
-        print(f"\n==> Exporting Godot [{self.platform_type} | {self.build_type}] -> {b['output_path']}")
+        log_step(f"Exporting Godot [{self.platform_type} | {self.build_type}]")
+        log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
+
         result = subprocess.run([
             godot_bin, "--headless",
             "--path", b["project_dir"],
             b["export_mode"], b["preset"],
             b["output_path"]
-        ])
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+
         if result.returncode != 0:
-            print(f"[ERROR] Godot export failed for {self.platform_type}")
+            for line in result.stderr.splitlines():
+                if line.strip():
+                    log_error(line.strip())
             sys.exit(result.returncode)
+
+        log_ok("Done")
         self.copy_libs(b["project_dir"], b["dist_dir"])
+        self.copy_configs(b["project_dir"], b["dist_dir"])
 
 
 def main():
@@ -91,21 +170,26 @@ def main():
 
     parser.add_argument("--skip-extension", action="store_true", help="Skip building Vital.extension")
     parser.add_argument("--skip-export", action="store_true", help="Skip Godot export")
+    parser.add_argument("--rebuild-godot", action="store_true", help="Force rebuild of godot-cpp")
 
     args = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
-    for platform_type in platforms:
-        b = Build(script_dir, platform_type, build_type)
-        if not args.skip_extension:
-            b.build_extension()
-        if not args.skip_export:
-            b.export()
+    if not args.skip_extension:
+        Build(script_dir, platforms[0], build_type).build_godot_cpp(force=args.rebuild_godot)
 
-    print("\n==> Build complete")
+    for platform_type in platforms:
+        build = Build(script_dir, platform_type, build_type)
+        if not args.skip_extension:
+            build.build_extension()
+        if not args.skip_export:
+            build.export()
+
+    log_step("Build complete")
+    log_ok("Done")
+
 
 if __name__ == "__main__":
     main()

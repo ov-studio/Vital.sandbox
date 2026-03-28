@@ -14,6 +14,11 @@
 
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
+#include <godot_cpp/classes/multiplayer_synchronizer.hpp>
+#include <godot_cpp/classes/multiplayer_spawner.hpp>
+#include <godot_cpp/classes/scene_replication_config.hpp>
+#include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/multiplayer_peer.hpp>
 
 
 ///////////////////////////
@@ -21,6 +26,18 @@
 ///////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
+    class Model;
+    class ModelSpawnerDelegate : public godot::Node {
+        GDCLASS(ModelSpawnerDelegate, godot::Node)
+        protected:
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("spawn", "data"), &ModelSpawnerDelegate::spawn);
+            }
+        public:
+            godot::Object* spawn(godot::Variant data);
+    };
+
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:
@@ -30,18 +47,25 @@ namespace Vital::Engine {
             };
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
+            using SyncedMap = std::unordered_map<std::string, Model*>;
         protected:
             static void _bind_methods() {};
         private:
             std::string model_name;
+            int pending_authority = 1;
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* animation_player = nullptr;
+            godot::MultiplayerSynchronizer* net_sync = nullptr;
+            inline static godot::MultiplayerSpawner* net_spawner = nullptr;
+            inline static ModelSpawnerDelegate* net_spawner_delegate = nullptr;
             inline static Models cache_loaded;
+            inline static SyncedMap cache_synced;
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
             godot::Skeleton3D* find_skeleton(godot::Node* node);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
+            void _setup_sync(int authority_peer);
         public:
             // Instantiators //
             Model() = default;
@@ -54,6 +78,14 @@ namespace Vital::Engine {
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
             static Model* create(const std::string& name);
+            static void create_synced(const std::string& name, int authority_peer = 1);
+            static Model* spawn_synced(const std::string& name, int authority_peer);
+            static Model* get_synced(const std::string& name);
+            static void setup_spawner();
+            static void teardown_spawner();
+            static void cleanup_spawned();
+            static void clear_synced();
+            static void on_connected();
             void destroy();
 
 
@@ -62,6 +94,7 @@ namespace Vital::Engine {
             bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
             bool is_animation_playing();
+            bool is_synced() const;
 
 
             // Setters //
@@ -72,6 +105,7 @@ namespace Vital::Engine {
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
             void set_animation_speed(float speed);
+            void set_sync_authority(int peer_id);
 
 
             // Getters //
@@ -89,6 +123,7 @@ namespace Vital::Engine {
             godot::Vector3 get_bone_position(const std::string& bone);
             std::string get_current_animation();
             float get_animation_speed();
+            int get_sync_authority() const;
 
 
             // APIs //
@@ -96,5 +131,8 @@ namespace Vital::Engine {
             void stop_animation();
             void pause_animation();
             void resume_animation();
+
+            // Friends //
+            friend class ModelSpawnerDelegate;
     };
 }

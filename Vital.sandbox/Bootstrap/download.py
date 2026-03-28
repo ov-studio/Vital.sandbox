@@ -1,7 +1,7 @@
 from Bootstrap.utils import *
 
 def Download(url, destination):
-    print("Downloading:", url)
+    log_info(f"Downloading {os.path.basename(destination)} ...")
     try:
         with urllib.request.urlopen(url, timeout=60) as r, open(destination, "wb") as f:
             while True:
@@ -15,7 +15,7 @@ def Download(url, destination):
         Throw_Error(f"Download failed: {e}")
 
 def _Extract(path, destination, open_fn):
-    print("Unpacking:", path)
+    log_info(f"Extracting {os.path.basename(path)} ...")
     temp_dir = destination + "_temp"
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
@@ -30,7 +30,6 @@ def _Extract(path, destination, open_fn):
     for item in os.listdir(root_dir):
         shutil.move(os.path.join(root_dir, item), os.path.join(destination, item))
     shutil.rmtree(temp_dir)
-    print("Extraction complete.")
 
 def Extract_Tar(path, destination):
     _Extract(path, destination, tarfile.open)

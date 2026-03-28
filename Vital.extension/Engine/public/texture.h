@@ -48,11 +48,12 @@ namespace Vital::Engine {
                 Type type;
                 std::variant<Texture2D, SVG> payload;
             };
+
+            inline static const unsigned int flush_interval = 10000;
         protected:
             Command command;
             uint64_t reference_tick = 0;
             std::string reference_key = "";
-            inline static const unsigned int flush_interval = 10000;
             inline static std::unordered_map<std::string, Texture*> reference_cache = {};
         public:
             // Instantiators //

@@ -45,7 +45,8 @@ namespace Vital::Tool::Event {
     inline bool emit(const std::string& identifier, Vital::Tool::Stack arguments = {}) {
         auto it = pool.find(identifier);
         if (it == pool.end()) return false;
-        for (const auto& [id, handler] : it -> second) {
+        const event_map snapshot = it -> second;
+        for (const auto& [eid, handler] : snapshot) {
             handler(arguments);
         }
         return true;

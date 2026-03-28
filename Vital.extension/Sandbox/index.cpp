@@ -64,20 +64,26 @@ namespace Vital::Engine {
     }
 
 
-    // Getters //
+    // Utils //
     Sandbox* Sandbox::get_singleton() {
         singleton = singleton ? singleton : memnew(Sandbox());
         return singleton;
     }
 
     void Sandbox::free_singleton() {
-        if (!singleton) return
+        if (!singleton) return;
         singleton -> queue_free();
         singleton = nullptr;
     }
 
 
-    // Managers //
+    // Getters //
+    Vital::Sandbox::Machine* Sandbox::get_vm() {
+        return vm;
+    }
+
+
+    // APIs //
     void Sandbox::ready() {
         signal("vital.sandbox:ready");
     }
@@ -94,20 +100,20 @@ namespace Vital::Engine {
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
-            signal("vital.sandbox:key_input", 
+            signal("vital.sandbox:key_input",
                 Vital::Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
                 Vital::Tool::StackValue(event_key -> is_pressed())
             );
         }
         else if (auto event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
-            signal("vital.sandbox:key_input", 
+            signal("vital.sandbox:key_input",
                 Vital::Tool::StackValue(fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())))),
                 Vital::Tool::StackValue(event_mouse_button -> is_pressed())
             );
         }
         else if (auto event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event.ptr())) {
             auto position = event_mouse_motion -> get_position();
-            signal("vital.sandbox:mouse_move", 
+            signal("vital.sandbox:mouse_move",
                 Vital::Tool::StackValue(position.x),
                 Vital::Tool::StackValue(position.y)
             );

@@ -15,7 +15,11 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
-#include <Vital.sandbox/Vendor/msgpack/msgpack.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 
 /////////////////////////
@@ -23,6 +27,8 @@
 /////////////////////////
 
 namespace Vital::Tool {
+    struct Stack;
+    struct StackValue;
     struct StackValue {
         using stack_value = std::variant<
             std::nullptr_t,
@@ -32,9 +38,10 @@ namespace Vital::Tool {
             float,
             double,
             std::string,
-            std::vector<std::string>
+            std::shared_ptr<Stack>
         >;
         stack_value value{nullptr};
+
 
         // Constructors //
         StackValue() = default;
@@ -46,121 +53,148 @@ namespace Vital::Tool {
         StackValue(double v) : value(v) {}
         StackValue(const char* v) : value(std::string(v)) {}
         StackValue(std::string v) : value(std::move(v)) {}
-        StackValue(std::vector<std::string> v) : value(std::move(v)) {}
+        StackValue(std::shared_ptr<Stack> v) : value(std::move(v)) {}
+        explicit StackValue(Stack v);
+
 
         // Accessors //
         template<typename T>
-        const T& as() const {
-            return std::get<T>(value);
-        }
-
+        const T& as() const { return std::get<T>(value); }
         template<typename T>
-        bool is() const {
-            return std::holds_alternative<T>(value);
-        }
+        bool is() const { return std::holds_alternative<T>(value); }
+
+
+        // Equality //
+        bool operator==(const StackValue& other) const;
+        bool operator!=(const StackValue& other) const { return !(*this == other); }
     };
 
     struct Stack {
-        // TODO: USE SANDBOX VERSIONING
-        static constexpr uint16_t ProtocolVersion = 1;
-        uint16_t version{ProtocolVersion};
+        uint16_t version = Vital::Build.major;
         std::vector<StackValue> array;
         std::map<std::string, StackValue> object;
 
-        std::string serialize() const {
-            msgpack::sbuffer buffer;
-            msgpack::pack(buffer, *this);
-            return { buffer.data(), buffer.size() };
+
+        // Constructors //
+        Stack() = default;
+        Stack(std::initializer_list<StackValue> arr) : array(arr) {}
+
+
+        // Accessors //
+        bool empty() const {
+            return array.empty() && object.empty();
         }
 
-        static Stack deserialize(const void* data, size_t size) {
-            msgpack::object_handle oh = msgpack::unpack(static_cast<const char*>(data), size);
-            Stack s;
-            oh.get().convert(s);
-            if (s.version != ProtocolVersion) throw std::runtime_error("Stack protocol version mismatch");
-            return s;
+        bool has(const std::string& key) const {
+            return object.find(key) != object.end();
         }
 
-        static Stack deserialize(const std::string& bytes) {
-            return deserialize(bytes.data(), bytes.size());
+        const StackValue* get(const std::string& key) const {
+            auto it = object.find(key);
+            return it != object.end() ? &it -> second : nullptr;
         }
+
+        StackValue* get(const std::string& key) {
+            auto it = object.find(key);
+            return it != object.end() ? &it -> second : nullptr;
+        }
+
+        void clear() {
+            array.clear();
+            object.clear();
+        }
+
+
+        // Converters //
+        godot::Dictionary to_dict() const {
+            godot::Dictionary dict;
+            godot::Array arr;
+            arr.resize(static_cast<int>(array.size()));
+            for (int i = 0; i < static_cast<int>(array.size()); ++i)
+                arr[i] = value_to_variant(array[i]);
+            dict["array"] = arr;
+            godot::Dictionary obj;
+            for (const auto& [key, sv] : object)
+                obj[godot::String(key.c_str())] = value_to_variant(sv);
+            dict["object"] = obj;
+            return dict;
+        }
+
+        static Stack from_dict(const godot::Dictionary& dict) {
+            Stack stack;
+            if (dict.has("array")) {
+                const godot::Array arr = dict["array"];
+                stack.array.reserve(arr.size());
+                for (int i = 0; i < arr.size(); ++i)
+                    stack.array.push_back(variant_to_value(arr[i]));
+            }
+            if (dict.has("object")) {
+                const godot::Dictionary obj = dict["object"];
+                const godot::Array keys = obj.keys();
+                for (int i = 0; i < keys.size(); ++i) {
+                    std::string key = ((godot::String)keys[i]).utf8().get_data();
+                    stack.object[key] = variant_to_value(obj[keys[i]]);
+                }
+            }
+            return stack;
+        }
+
+
+        // Equality //
+        bool operator==(const Stack& other) const { return (version == other.version) && (array == other.array) && (object == other.object); }
+        bool operator!=(const Stack& other) const { return !(*this == other); }
+
+        private:
+            // StackValue → godot::Variant
+            static godot::Variant value_to_variant(const StackValue& sv) {
+                return std::visit([](auto&& val) -> godot::Variant {
+                    using T = std::decay_t<decltype(val)>;
+                    if constexpr (std::is_same_v<T, std::nullptr_t>) return godot::Variant();
+                    else if constexpr (std::is_same_v<T, bool>) return val;
+                    else if constexpr (std::is_same_v<T, int32_t>) return (int64_t)val;
+                    else if constexpr (std::is_same_v<T, int64_t>) return val;
+                    else if constexpr (std::is_same_v<T, float>) return (double)val;
+                    else if constexpr (std::is_same_v<T, double>) return val;
+                    else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
+                    return godot::Variant();
+                }, sv.value);
+            }
+
+            // godot::Variant → StackValue
+            static StackValue variant_to_value(const godot::Variant& v) {
+                switch (v.get_type()) {
+                    case godot::Variant::NIL: return StackValue(nullptr);
+                    case godot::Variant::BOOL: return StackValue((bool)v);
+                    case godot::Variant::INT: return StackValue((int32_t)(int64_t)v);
+                    case godot::Variant::FLOAT: return StackValue((double)v);
+                    case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
+                    case godot::Variant::ARRAY: {
+                        const godot::Array arr = v;
+                        auto nested = std::make_shared<Stack>();
+                        nested -> array.reserve(arr.size());
+                        for (int i = 0; i < arr.size(); ++i)
+                            nested -> array.push_back(variant_to_value(arr[i]));
+                        return StackValue(std::move(nested));
+                    }
+                    case godot::Variant::DICTIONARY: {
+                        return StackValue(std::make_shared<Stack>(Stack::from_dict((godot::Dictionary)v)));
+                    }
+                    default: return StackValue(nullptr);
+                }
+            }
     };
-}
 
-namespace msgpack {
-    MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
-        namespace adaptor {
-            // StackValue Adapter //
-            template<>
-            struct pack<Vital::Tool::StackValue> {
-                template<typename Stream>
-                msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& pk, Vital::Tool::StackValue const& v) const {
-                    pk.pack_array(2);
-                    std::visit([&](auto&& arg) {
-                        using T = std::decay_t<decltype(arg)>;
-                        if constexpr (std::is_same_v<T, std::nullptr_t>) pk.pack(0), pk.pack_nil();
-                        else if constexpr (std::is_same_v<T, bool>) pk.pack(1), pk.pack(arg);
-                        else if constexpr (std::is_same_v<T, int32_t>) pk.pack(2), pk.pack(arg);
-                        else if constexpr (std::is_same_v<T, int64_t>) pk.pack(3), pk.pack(arg);
-                        else if constexpr (std::is_same_v<T, float>) pk.pack(4), pk.pack(arg);
-                        else if constexpr (std::is_same_v<T, double>) pk.pack(5), pk.pack(arg);
-                        else if constexpr (std::is_same_v<T, std::string>) pk.pack(6), pk.pack(arg);
-                        else if constexpr (std::is_same_v<T, std::vector<std::string>>) pk.pack(7), pk.pack(arg);
-                    }, v.value);
-                    return pk;
-                }
-            };
-
-            template<>
-            struct convert<Vital::Tool::StackValue> {
-                msgpack::object const& operator()(msgpack::object const& o, Vital::Tool::StackValue& v) const {
-                    if (o.type != msgpack::type::ARRAY || o.via.array.size != 2) throw msgpack::type_error();
-                    int type = o.via.array.ptr[0].as<int>();
-                    const msgpack::object& val = o.via.array.ptr[1];
-                    switch (type) {
-                        case 0: v.value = nullptr; break;
-                        case 1: v.value = val.as<bool>(); break;
-                        case 2: v.value = val.as<int32_t>(); break;
-                        case 3: v.value = val.as<int64_t>(); break;
-                        case 4: v.value = val.as<float>(); break;
-                        case 5: v.value = val.as<double>(); break;
-                        case 6: v.value = val.as<std::string>(); break;
-                        case 7: v.value = val.as<std::vector<std::string>>(); break;
-                        default: throw msgpack::type_error();
-                    }
-                    return o;
-                }
-            };
-
-
-            // Stack Adapter //
-            template<>
-            struct pack<Vital::Tool::Stack> {
-                template<typename Stream>
-                msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& pk, Vital::Tool::Stack const& s) const {
-                    pk.pack_map(3);
-                    pk.pack("version"); pk.pack(s.version);
-                    pk.pack("array"); pk.pack(s.array);
-                    pk.pack("object"); pk.pack(s.object);
-                    return pk;
-                }
-            };
-
-            template<>
-            struct convert<Vital::Tool::Stack> {
-                msgpack::object const& operator()(msgpack::object const& obj, Vital::Tool::Stack& s) const {
-                    if (obj.type != msgpack::type::MAP) throw msgpack::type_error();
-                    for (uint32_t i = 0; i < obj.via.map.size; ++i) {
-                        auto& k = obj.via.map.ptr[i].key;
-                        auto& v = obj.via.map.ptr[i].val;
-                        const std::string key = k.as<std::string>();
-                        if (key == "version") v.convert(s.version);
-                        else if (key == "array") v.convert(s.array);
-                        else if (key == "object") v.convert(s.object);
-                    }
-                    return obj;
-                }
-            };
+    inline StackValue::StackValue(Stack v) : value(std::make_shared<Stack>(std::move(v))) {}
+    inline bool StackValue::operator==(const StackValue& other) const {
+        if (std::holds_alternative<std::shared_ptr<Stack>>(value) &&
+            std::holds_alternative<std::shared_ptr<Stack>>(other.value)) {
+            const auto& a = std::get<std::shared_ptr<Stack>>(value);
+            const auto& b = std::get<std::shared_ptr<Stack>>(other.value);
+            if (!a && !b) return true;
+            if (!a || !b) return false;
+            return *a == *b;
         }
+        return value == other.value;
     }
 }

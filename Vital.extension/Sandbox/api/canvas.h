@@ -28,6 +28,12 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Canvas;
 
         static void bind(Machine* vm) {
+            API::bind(vm, {base_name}, "get_resolution", [](auto vm) -> int {
+                auto result = base_class::get_singleton() -> get_resolution();
+                vm -> push_value(result);
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "world_to_screen", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_vector3(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto position = vm -> get_vector3(1);

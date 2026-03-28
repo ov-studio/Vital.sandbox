@@ -1,5 +1,24 @@
-[gd_scene format=3 uid="uid://3hid3cjm00pb"]
+[gd_scene load_steps=5 format=3 uid="uid://3hid3cjm00pb"]
+
+[ext_resource type="Script" uid="uid://bf8atfcj6xv4i" path="res://addons/camera.gd" id="1_ig7tw"]
+[ext_resource type="Texture2D" uid="uid://b27jojk08s4r6" path="res://icon.svg" id="2_0xm2m"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2yge"]
+albedo_texture = ExtResource("2_0xm2m")
+
+[sub_resource type="BoxMesh" id="BoxMesh_1bvp3"]
 
 [node name="Node" type="Node"]
 
+[node name="FreeLookCamera" type="Camera3D" parent="."]
+fov = 108.7
+script = ExtResource("1_ig7tw")
+metadata/_custom_type_script = "uid://bf8atfcj6xv4i"
+
 [node name="Core" type="Core" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.8725)
+visible = false
+material_override = SubResource("StandardMaterial3D_h2yge")
+mesh = SubResource("BoxMesh_1bvp3")

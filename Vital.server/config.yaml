@@ -1,0 +1,83 @@
+# =============================================================================
+# Vital Sandbox - Server Configuration
+# =============================================================================
+# This file controls the server's network, HTTP, and social settings.
+# Simply modify the values below and restart the server - no code changes needed!
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Server Identity
+# -----------------------------------------------------------------------------
+server:
+  # The display name of your server (shown in client UI and Discord)
+  name: "Vital Sandbox Server"
+  
+  # Server version identifier (for compatibility checks)
+  version: "1.0.0"
+  
+  # Server description (optional, for client display)
+  description: "A Vital Sandbox server"
+
+# -----------------------------------------------------------------------------
+# Network Configuration
+# -----------------------------------------------------------------------------
+network:
+  # TCP port for ENet multiplayer server
+  # Clients connect to this port
+  # Default: 7777
+  port: 7777
+  
+  # Maximum number of concurrent clients allowed
+  # Default: 32
+  max_clients: 32
+
+# -----------------------------------------------------------------------------
+# HTTP Asset Server Configuration
+# -----------------------------------------------------------------------------
+http:
+  # Port for HTTP asset delivery server
+  # Clients download assets (models, textures, etc.) from this port
+  # Default: 7778
+  port: 7778
+
+# -----------------------------------------------------------------------------
+# Discord Integration
+# -----------------------------------------------------------------------------
+discord:
+  # Enable Discord Rich Presence
+  # Default: false (only applies to client builds)
+  enabled: false
+  
+  # Discord Application ID (from Discord Developer Portal)
+  # Get it at: https://discord.com/developers/applications
+  application_id: "0"
+  
+  # Rich Presence state (shown below the game name)
+  # Supports placeholders: {server_name}, {player_count}, {max_players}
+  state: "Playing on {server_name}"
+  
+  # Rich Presence details (shown above the state)
+  details: "{player_count}/{max_players} players"
+  
+  # Large image key (from Discord Developer Portal Rich Presence assets)
+  large_image_key: ""
+  
+  # Large image tooltip text
+  large_image_text: ""
+  
+  # Small image key (optional)
+  small_image_key: ""
+  
+  # Small image tooltip text
+  small_image_text: ""
+
+# -----------------------------------------------------------------------------
+# Community / Social Links
+# -----------------------------------------------------------------------------
+social:
+  # Discord server invite link
+  # Shown in client UI and used for join requests
+  discord_invite: ""
+  
+  # Website URL
+  website: ""

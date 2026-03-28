@@ -14,6 +14,7 @@
 
 #pragma once
 #include <pch.h>
+#include <Vital.sandbox/Tool/version.h>
 #include <Vital.sandbox/Tool/stack.h>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
@@ -26,8 +27,14 @@
 
 namespace Vital {
     namespace System {}
-    static const std::string Build_ver = "v0.0.1";
-    static const std::string Repo_Kit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
+
+    static std::string indent(int level) {
+        #if defined(Vital_SDK_Client)
+        return std::string(level*4, ' ');
+        #else
+        return std::string(level*2, ' ');
+        #endif
+    }
 
     inline godot::String to_godot_string(const std::string& input) {
         return godot::String::utf8(input.c_str());
@@ -68,12 +75,13 @@ namespace Vital {
         return base;
     }
 
-    inline bool is_editor() { 
-        #if defined(Vital_SDK_Client)
-            return godot::Engine::get_singleton() -> is_editor_hint();
-        #else
-            return false;
-        #endif
+    inline bool is_runtime() { 
+        if (godot::Engine::get_singleton() -> is_editor_hint()) return false;
+        godot::PackedStringArray args = godot::OS::get_singleton()->get_cmdline_args();
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i] == "--headless" || args[i] == "--export-release" || args[i] == "--export-debug") return false;
+        }
+        return true;
     }
 
     inline bool contains_wildcard(const std::string& input) {

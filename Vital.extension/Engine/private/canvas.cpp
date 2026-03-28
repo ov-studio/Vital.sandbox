@@ -14,8 +14,8 @@
 
 #pragma once
 #if defined(Vital_SDK_Client)
-#include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/core.h>
+#include <Vital.extension/Engine/public/canvas.h>
 #include <Vital.extension/Engine/public/font.h>
 #include <Vital.extension/Engine/public/texture.h>
 #include <Vital.extension/Engine/public/rendertarget.h>
@@ -192,6 +192,12 @@ namespace Vital::Engine {
         auto rt = Rendertarget::get_active();
         if (rt) return rt -> push(command);
         queue.push_back(command);
+    }
+
+
+    // Getters //
+    godot::Vector2 Canvas::get_resolution() {
+        return Core::get_display_server() -> window_get_size();
     }
 
 

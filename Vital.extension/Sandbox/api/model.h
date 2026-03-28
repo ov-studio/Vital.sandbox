@@ -58,6 +58,27 @@ namespace Vital::Sandbox::API {
                 vm -> create_object(base_name, object);
                 return 1;
             });
+
+            #if defined(Vital_SDK_Client)
+            #else
+            API::bind(vm, {base_name}, "create_synced", [](auto vm) -> int {
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto name = vm -> get_string(1);
+                int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
+                base_class::create_synced(name, authority);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_synced", [](auto vm) -> int {
+                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto name = vm -> get_string(1);
+                auto object = base_class::get_synced(name);
+                if (!object) { vm -> push_nil(); return 1; }
+                vm -> create_object(base_name, object);
+                return 1;
+            });
+            #endif
         }
 
         static void methods(Machine* vm) {
@@ -85,6 +106,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "is_animation_playing", [](auto vm, auto self) -> int {
                 vm -> push_value(self -> is_animation_playing());
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "is_synced", [](auto vm, auto self) -> int {
+                vm -> push_value(self -> is_synced());
                 return 1;
             });
 
@@ -139,6 +165,17 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            #if defined(Vital_SDK_Client)
+            #else
+            vm_module::bind_method<base_class>(vm, base_name, "set_sync_authority", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto peer_id = vm -> get_int(2);
+                self -> set_sync_authority(peer_id);
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
 
             vm_module::bind_method<base_class>(vm, base_name, "get_model_name", [](auto vm, auto self) -> int {
                 vm -> push_value(self -> get_model_name());
@@ -231,6 +268,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<base_class>(vm, base_name, "get_animation_speed", [](auto vm, auto self) -> int {
                 vm -> push_value(self -> get_animation_speed());
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "get_sync_authority", [](auto vm, auto self) -> int {
+                vm -> push_value(self -> get_sync_authority());
                 return 1;
             });
 
