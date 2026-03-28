@@ -29,22 +29,7 @@ static Vital::Engine::Config g_server_config;
 // Load server configuration from config.yaml
 #if !defined(Vital_SDK_Client)
 void load_server_config() {
-    // Try different config file locations
-    std::string config_paths[] = {
-        ".dist/debug/server/config.yaml",
-        "../.dist/debug/server/config.yaml",
-        "config.yaml",
-        "server/config.yaml"
-    };
-
-    bool loaded = false;
-    for (const auto& path : config_paths) {
-        if (g_server_config.load(path)) {
-            loaded = true;
-            break;
-        }
-    }
-
+    bool loaded = g_server_config.load();
     if (!loaded) {
         Vital::print("sbox", "Config: No config.yaml found, using default values");
     } else {
