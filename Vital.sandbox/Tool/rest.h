@@ -141,16 +141,27 @@ namespace Vital::Tool::Rest {
         cli.set_connection_timeout(30, 0);
         cli.set_read_timeout(60, 0);
         
-        // Convert headers (Content-Type should be set by caller if needed)
+        // Convert headers (add Content-Type if empty for JSON POST)
         httplib::Headers httplib_headers;
+        bool has_content_type = false;
         for (const auto& h : headers) {
             size_t colon_pos = h.find(":");
             if (colon_pos != std::string::npos) {
-                httplib_headers.insert({h.substr(0, colon_pos), h.substr(colon_pos + 1)});
+                std::string key = h.substr(0, colon_pos);
+                std::string value = h.substr(colon_pos + 1);
+                httplib_headers.insert({key, value});
+                if (key == "Content-Type" || key == "content-type") {
+                    has_content_type = true;
+                }
             }
         }
         
-        auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), "application/json");
+        // Add default Content-Type if not provided
+        if (!has_content_type) {
+            httplib_headers.insert({"Content-Type", "application/json"});
+        }
+        
+        auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size());
         
         if (!res) {
             throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
