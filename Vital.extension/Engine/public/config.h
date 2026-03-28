@@ -20,6 +20,7 @@
 // Vital: Engine: Config //
 //###############################
 
+// TODO: Improve
 namespace Vital::Engine {
     class Config {
         private:
