@@ -42,8 +42,12 @@ namespace Vital::Engine {
         private:
             inline static AssetManager* singleton = nullptr;
 
-            // Server + Client: registered assets path → hash
-            std::unordered_map<std::string, std::string> registered_assets;
+            // Server + Client: registered assets path → { hash, group }
+            struct AssetEntry {
+                std::string hash;
+                std::string group; // empty string = no group
+            };
+            std::unordered_map<std::string, AssetEntry> registered_assets;
 
             // Spawn queue — shared between platforms (used by model system)
             std::unordered_map<std::string, int> spawn_queue;
@@ -54,7 +58,7 @@ namespace Vital::Engine {
             std::thread http_thread;
             int http_port = 7778;
             bool http_running = false;
-            
+
             // Server info for /info endpoint
             ServerInfo server_info;
             #endif
@@ -62,12 +66,14 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Client)
             struct Download {
                 std::string path;
+                std::string group; // empty string = no group
                 std::thread thread;
                 std::atomic<bool> cancelled{false};
             };
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::string server_http_ip;
-            void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url);
+            void download_file(const std::string& path, const std::string& expected_hash,
+                               const std::string& base_url, const std::string& group);
             void _on_download_failed(const std::string& path);
             #endif
 
@@ -87,7 +93,7 @@ namespace Vital::Engine {
             #if !defined(Vital_SDK_Client)
             void set_http_port(int port);
             int  get_http_port() const;
-            
+
             // Server info setters (for config integration)
             void set_server_info(const ServerInfo& info);
             const ServerInfo& get_server_info() const;
@@ -95,8 +101,11 @@ namespace Vital::Engine {
 
 
             // Registration //
-            void register_asset(const std::string& path);
-            void register_assets(const std::vector<std::string>& paths);
+            // group is optional — pass empty string or omit for ungrouped assets
+            void register_asset(const std::string& path, const std::string& group = "");
+            void register_assets(const std::vector<std::string>& paths, const std::string& group = "");
+            void unregister_asset(const std::string& path);
+            void unregister_group(const std::string& group);
 
 
             // Manifest //
@@ -116,7 +125,11 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Client)
             void receive_manifest(const Vital::Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
+
+            // Cancel a single path
             void cancel(const std::string& path);
+            // Cancel all downloads belonging to a group
+            void cancel_group(const std::string& group);
             void cancel_all();
             bool is_downloading(const std::string& path) const;
             bool is_downloading() const;

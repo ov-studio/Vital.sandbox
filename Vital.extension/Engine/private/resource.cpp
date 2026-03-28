@@ -167,16 +167,16 @@ namespace Vital::Engine {
                     continue;
                 }
                 const std::string src_pattern = node["src"].as<std::string>();
-                
+
                 // Expand glob patterns (e.g., "something/**/*.lua")
                 std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), src_pattern);
-                
+
                 if (expanded_files.empty()) {
                     errors.push_back("script pattern `" + src_pattern + "` matched no files");
                     valid = false;
                     continue;
                 }
-                
+
                 for (const auto& src : expanded_files) {
                     resource.scripts.push_back({ src, type });
                 }
@@ -185,16 +185,16 @@ namespace Vital::Engine {
             if (manifest["files"] && manifest["files"].IsSequence()) {
                 for (const auto& node : manifest["files"]) {
                     const std::string file_pattern = node.as<std::string>();
-                    
+
                     // Expand glob patterns (e.g., "assets/**")
                     std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), file_pattern);
-                    
+
                     if (expanded_files.empty()) {
                         errors.push_back("file pattern `" + file_pattern + "` matched no files");
                         valid = false;
                         continue;
                     }
-                    
+
                     for (const auto& file : expanded_files) {
                         resource.files.push_back(file);
                     }
@@ -388,11 +388,13 @@ namespace Vital::Engine {
             return false;
         }
 
+        // Register all assets under the resource's group name so they can be
+        // bulk-cancelled on the client side when the resource is stopped
         for (const auto& file : resource->files)
-            am->register_asset("resources/" + name + "/" + file);
+            am->register_asset("resources/" + name + "/" + file, name);
         for (const auto& script : resource->scripts) {
             if (script.type == "client" || script.type == "shared")
-                am->register_asset("resources/" + name + "/" + script.src);
+                am->register_asset("resources/" + name + "/" + script.src, name);
         }
 
         am->broadcast_manifest_deferred();
@@ -409,11 +411,16 @@ namespace Vital::Engine {
 
     bool ResourceManager::stop(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
+        auto* am = AssetManager::get_singleton();
 
         if (!is_running(name)) {
             Vital::print("error", "Cannot stop `" + name + "` — not running");
             return false;
         }
+
+        // Unregister all assets that belong to this resource so the HTTP server
+        // stops serving them and clients receive an updated manifest on reconnect
+        am->unregister_group(name);
 
         Core::get_singleton() -> call_deferred(
             "notify_resource_stopped",
@@ -588,13 +595,13 @@ namespace Vital::Engine {
         }
 
         if (is_pending(name)) {
-            auto it = resource_assets.find(name);
-            if (it != resource_assets.end()) {
-                for (const auto& path : it->second)
-                    am->cancel(path);
-                resource_assets.erase(it);
-            }
+            // Drop our tracked set first, then cancel the whole group in one shot.
+            // cancel_group() iterates active_downloads by group tag, so it catches
+            // any download that was dispatched for this resource regardless of
+            // whether resource_assets is still populated.
+            resource_assets.erase(name);
             pending.erase(name);
+            am->cancel_group(name);
             Vital::print("sbox", "Resource `" + name + "` download cancelled");
         }
 

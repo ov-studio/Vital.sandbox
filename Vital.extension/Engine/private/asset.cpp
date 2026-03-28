@@ -72,7 +72,7 @@ namespace Vital::Engine {
     #if !defined(Vital_SDK_Client)
     void AssetManager::set_http_port(int port) { http_port = port; }
     int  AssetManager::get_http_port() const   { return http_port; }
-    
+
     void AssetManager::set_server_info(const ServerInfo& info) {
         server_info = info;
         Vital::print("sbox", "Server info set: '", info.name, "' v", info.version);
@@ -88,23 +88,50 @@ namespace Vital::Engine {
     //  Asset Registration//
     //--------------------//
 
-    void AssetManager::register_asset(const std::string& path) {
-        // Skip if already registered — hash is stable, no need to recompute
-        if (registered_assets.count(path)) return;
+    void AssetManager::register_asset(const std::string& path, const std::string& group) {
+        // If already registered, update the group but skip re-hashing —
+        // hash is stable, no need to recompute
+        if (registered_assets.count(path)) {
+            if (!group.empty()) registered_assets[path].group = group;
+            return;
+        }
         try {
             const std::string full_path = Vital::get_directory() + "/" + path;
             // Hash from disk without loading into memory
-            registered_assets[path] = compute_hash_file(full_path);
+            registered_assets[path] = { compute_hash_file(full_path), group };
             Vital::print("sbox", "AssetManager: registered -> ", path.c_str(),
-                " hash=", registered_assets[path].c_str());
+                " hash=", registered_assets[path].hash.c_str(),
+                " group=", group.empty() ? "(none)" : group.c_str());
         }
         catch (...) {
             Vital::print("sbox", "AssetManager: failed to register -> ", path.c_str());
         }
     }
 
-    void AssetManager::register_assets(const std::vector<std::string>& paths) {
-        for (auto& path : paths) register_asset(path);
+    void AssetManager::register_assets(const std::vector<std::string>& paths, const std::string& group) {
+        for (auto& path : paths) register_asset(path, group);
+    }
+
+    void AssetManager::unregister_asset(const std::string& path) {
+        auto it = registered_assets.find(path);
+        if (it == registered_assets.end()) return;
+        Vital::print("sbox", "AssetManager: unregistered -> ", path.c_str());
+        registered_assets.erase(it);
+    }
+
+    void AssetManager::unregister_group(const std::string& group) {
+        int count = 0;
+        for (auto it = registered_assets.begin(); it != registered_assets.end(); ) {
+            if (it->second.group == group) {
+                Vital::print("sbox", "AssetManager: unregistered -> ", it->first.c_str());
+                it = registered_assets.erase(it);
+                count++;
+            } else {
+                ++it;
+            }
+        }
+        Vital::print("sbox", "AssetManager: unregistered group '", group.c_str(),
+            "' (", count, " asset(s) removed)");
     }
 
 
@@ -179,13 +206,15 @@ namespace Vital::Engine {
             );
         });
 
-        // GET /manifest — returns JSON-style asset list with hashes
+        // GET /manifest — returns JSON-style asset list with hashes and groups
         http_server->Get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
             std::string body = "{\"assets\":[";
             bool first = true;
-            for (auto& [path, hash] : registered_assets) {
+            for (auto& [path, entry] : registered_assets) {
                 if (!first) body += ",";
-                body += "{\"path\":\"" + path + "\",\"hash\":\"" + hash + "\"}";
+                body += "{\"path\":\"" + path + "\",\"hash\":\"" + entry.hash + "\"";
+                if (!entry.group.empty()) body += ",\"group\":\"" + entry.group + "\"";
+                body += "}";
                 first = false;
             }
             body += "]}";
@@ -247,9 +276,10 @@ namespace Vital::Engine {
         msg.object["http_port"]   = Vital::Tool::StackValue((int32_t)http_port);
 
         int i = 0;
-        for (auto& [path, hash] : registered_assets) {
-            msg.object["asset_path_" + std::to_string(i)] = Vital::Tool::StackValue(path);
-            msg.object["asset_hash_" + std::to_string(i)] = Vital::Tool::StackValue(hash);
+        for (auto& [path, entry] : registered_assets) {
+            msg.object["asset_path_"  + std::to_string(i)] = Vital::Tool::StackValue(path);
+            msg.object["asset_hash_"  + std::to_string(i)] = Vital::Tool::StackValue(entry.hash);
+            msg.object["asset_group_" + std::to_string(i)] = Vital::Tool::StackValue(entry.group);
             i++;
         }
 
@@ -294,8 +324,11 @@ namespace Vital::Engine {
         int needs_download = 0;
 
         for (int i = 0; i < count; i++) {
-            std::string path = args.object.at("asset_path_" + std::to_string(i)).as<std::string>();
-            std::string hash = args.object.at("asset_hash_" + std::to_string(i)).as<std::string>();
+            std::string path  = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
+            std::string hash  = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
+            // Group is optional — older servers won't send it
+            std::string group = args.object.count("asset_group_" + std::to_string(i))
+                ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
             // Check local cache by hashing existing file
             bool hash_matches = false;
@@ -321,7 +354,7 @@ namespace Vital::Engine {
             }
 
             needs_download++;
-            download_file(path, hash, base_url);
+            download_file(path, hash, base_url, group);
         }
 
         Vital::print("sbox", "AssetManager: ", needs_download, " assets to download");
@@ -333,9 +366,11 @@ namespace Vital::Engine {
 
     void AssetManager::download_file(const std::string& path,
                                       const std::string& expected_hash,
-                                      const std::string& base_url) {
+                                      const std::string& base_url,
+                                      const std::string& group) {
         auto dl = std::make_shared<Download>();
-        dl->path = path;
+        dl->path  = path;
+        dl->group = group;
         active_downloads[path] = dl;
 
         const std::string local_base     = get_directory();
@@ -423,6 +458,18 @@ namespace Vital::Engine {
         it->second->cancelled.store(true);
         // Thread will clean up itself when it polls and sees cancelled flag
         Vital::print("sbox", "AssetManager: cancelling -> ", path.c_str());
+    }
+
+    void AssetManager::cancel_group(const std::string& group) {
+        int cancelled_count = 0;
+        for (auto& [path, dl] : active_downloads) {
+            if (dl->group == group) {
+                dl->cancelled.store(true);
+                cancelled_count++;
+            }
+        }
+        Vital::print("sbox", "AssetManager: cancelling group '", group.c_str(),
+            "' (", cancelled_count, " download(s) flagged)");
     }
 
     void AssetManager::cancel_all() {
