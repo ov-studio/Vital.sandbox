@@ -41,8 +41,8 @@ namespace Vital::Sandbox::API {
         
             API::bind(vm, {base_name}, "hash", [](auto vm) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto mode = vm -> get_string(1);
-                auto path = vm -> get_string(2);
+                auto path = vm -> get_string(1);
+                auto mode = vm -> get_string(2);
                 auto hash = Vital::Tool::File::hash(get_directory(), path, mode);
                 vm -> push_value(hash);
                 return 1;
