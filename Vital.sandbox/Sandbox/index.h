@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
+#include <Vital.sandbox/Tool/config.h>
 #include <Vital.sandbox/Tool/stack.h>
 #include <Vital.sandbox/Tool/module.h>
 #include <Vital.sandbox/Tool/thread.h>
