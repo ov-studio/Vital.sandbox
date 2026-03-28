@@ -16,9 +16,6 @@
 #include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/model.h>
 #include <Vital.extension/Engine/public/console.h>
-
-#include <httplib.h>
-
 #include <fstream>
 #include <filesystem>
 
@@ -363,10 +360,8 @@ namespace Vital::Engine {
         const std::string local_base     = get_local_base();
         const std::string local_filename = get_local_filename(path);
         const std::string local_path     = local_base + "/" + local_filename;
-        // Path for httplib (relative to base_url)
-        const std::string request_path   = "/asset?path=" + path;
 
-        dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path, request_path]() {
+        dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             Vital::print("sbox", "AssetManager: downloading -> ", path.c_str());
 
             // Create parent directories
@@ -384,47 +379,25 @@ namespace Vital::Engine {
                 return;
             }
 
-            // Use httplib client for downloading
-            httplib::Client cli(base_url);
-            cli.set_connection_timeout(30, 0);  // 30 second connection timeout
-            cli.set_read_timeout(60, 0);         // 60 second read timeout
+            // Use Vital::Tool::Rest::get for downloading
+            std::string response_body;
+            try {
+                response_body = Vital::Tool::Rest::get(base_url + "/asset?path=" + path);
+            } catch (const std::exception& e) {
+                Vital::print("sbox", "AssetManager: download failed -> ", path.c_str(),
+                    " error=", e.what());
+                _on_download_failed(path);
+                return;
+            }
 
-            // Use Get stream with response and content callbacks for cancellation support
-            // The Get with callbacks returns Result which has status() method
-            httplib::Response res;
-            bool download_ok = cli.Get(
-                request_path.c_str(),
-                [&res](const httplib::Response& response) -> bool {
-                    res = response;
-                    return true;  // Continue regardless of status (check later)
-                },
-                [&dl, &out](const char* data, size_t data_length) -> bool {
-                    // Check cancellation flag in each chunk
-                    if (dl->cancelled.load()) {
-                        return false;  // Return false to abort
-                    }
-                    
-                    out.write(data, static_cast<std::streamsize>(data_length));
-                    return out.good();  // Continue if write OK
-                }
-            );
-
+            // Write response to file
+            out.write(response_body.data(), static_cast<std::streamsize>(response_body.size()));
             out.close();
 
             if (dl->cancelled.load()) {
                 try { std::filesystem::remove(local_path); } catch (...) {}
                 Vital::print("sbox", "AssetManager: download cancelled -> ", path.c_str());
                 active_downloads.erase(path);
-                return;
-            }
-
-            // Check status - httplib Result has status() method, Response has status member
-            if (!download_ok || res.status != 200) {
-                try { std::filesystem::remove(local_path); } catch (...) {}
-                std::string status_str = download_ok ? std::to_string(res.status) : "connection failed";
-                Vital::print("sbox", "AssetManager: download failed -> ", path.c_str(),
-                    " status=", status_str.c_str());
-                _on_download_failed(path);
                 return;
             }
 
