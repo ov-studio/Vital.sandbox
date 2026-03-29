@@ -350,11 +350,12 @@ namespace Vital::Engine {
             return false;
         }
 
-        const std::string env = get_resource_env(name);
-        const auto* resource  = get_resource(name);
-        bool status           = true;
+        const auto* resource = get_resource(name);
+        bool status          = true;
 
-        vm->create_environment(env);
+        // create_environment stores registry entry + integer ref under `name`,
+        // and leaves env table on stack — pop() cleans it up
+        vm->create_environment(name);
         vm->pop();
 
         for (const auto& script : resource->scripts) {
@@ -370,7 +371,7 @@ namespace Vital::Engine {
                 break;
             }
 
-            vm->get_reference(env, true);
+            vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
                 Vital::print("error", "Resource `" + name + "` failed to execute script `" + script.src + "`");
                 vm->pop();
@@ -381,7 +382,7 @@ namespace Vital::Engine {
         }
 
         if (!status) {
-            vm->clear_environment_id(env);  // lua_rawset pops both key+value — no pop needed after
+            vm->clear_environment_id(name);
             return false;
         }
 
@@ -421,8 +422,7 @@ namespace Vital::Engine {
         );
 
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
-
-        vm->clear_environment_id(get_resource_env(name));  // lua_rawset pops both key+value — no pop needed after
+        vm->clear_environment_id(name);
 
         running.erase(name);
         Vital::print("sbox", "Resource `" + name + "` stopped");
@@ -524,9 +524,9 @@ namespace Vital::Engine {
     void ResourceManager::execute_scripts(const std::string& name) {
         if (!is_pending(name)) return;
 
-        auto* vm              = Sandbox::get_singleton() -> get_vm();
-        auto* am              = AssetManager::get_singleton();
-        const auto* resource  = get_resource(name);
+        auto* vm             = Sandbox::get_singleton() -> get_vm();
+        auto* am             = AssetManager::get_singleton();
+        const auto* resource = get_resource(name);
 
         if (!resource) {
             Vital::print("error", "execute_scripts: manifest null for `" + name + "` — aborting");
@@ -535,12 +535,13 @@ namespace Vital::Engine {
             return;
         }
 
-        const std::string env = get_resource_env(name);
-        bool status           = true;
+        bool status = true;
 
-        vm->create_environment(env);
+        // create_environment stores registry entry + integer ref under `name`,
+        // and leaves env table on stack — pop() cleans it up
+        vm->create_environment(name);
         vm->pop();
-    
+
         for (const auto& script : resource->scripts) {
             if (script.type != "shared" && script.type != "client") continue;
 
@@ -556,7 +557,7 @@ namespace Vital::Engine {
                 break;
             }
 
-            vm->get_reference(env, true);
+            vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
                 Vital::print("error", "Resource `" + name + "` failed to execute script `" + script.src + "`");
                 vm->pop();
@@ -570,7 +571,7 @@ namespace Vital::Engine {
         resource_assets.erase(name);
 
         if (!status) {
-            vm->clear_environment_id(env);  // lua_rawset pops both key+value — no pop needed after
+            vm->clear_environment_id(name);
             Vital::print("error", "Resource `" + name + "` failed to load — env released");
             return;
         }
@@ -597,7 +598,7 @@ namespace Vital::Engine {
         }
 
         if (is_running(name)) {
-            vm->clear_environment_id(env);  // lua_rawset pops both key+value — no pop needed after
+            vm->clear_environment_id(name);
             running.erase(name);
         }
 
