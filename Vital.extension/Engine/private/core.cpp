@@ -34,19 +34,29 @@ namespace Vital::Engine {
         singleton = singleton ? singleton : this;
         set_process(false);
         if (!Vital::is_runtime()) return;
-    
+
         kit_abort.store(false);
         Vital::print("sbox", "Core: bootstrapping Vital.kit...");
         kit_thread = std::thread([this]() {
             Vital::Tool::Kit::ensure_kit();
-            // Only bounce to main thread if the node is still alive
-            if (!kit_abort.load()) {
-                call_deferred("on_kit_ready");
-            }
+            if (!kit_abort.load()) push_deferred_call(&Core::on_kit_ready, this);
         });
-        // Do NOT detach — we need to join in _exit_tree
     }
-    
+
+    void Core::push_deferred(std::function<void()> fn) {
+        std::lock_guard<std::mutex> lock(deferred_mutex);
+        deferred_queue.push_back(std::move(fn));
+    }
+
+    void Core::flush_deferred_queue() {
+        std::vector<std::function<void()>> local;
+        {
+            std::lock_guard<std::mutex> lock(deferred_mutex);
+            local.swap(deferred_queue);
+        }
+        for (auto& fn : local) fn();
+    }
+
     void Core::on_kit_ready() {
         Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
         Vital::Tool::Event::emit("vital.kit:ready");
@@ -55,13 +65,8 @@ namespace Vital::Engine {
     }
 
     void Core::_exit_tree() {
-        // Signal the thread to skip the deferred call, then join before
-        // any teardown — prevents call_deferred firing on a freed node
         kit_abort.store(true);
-        if (kit_thread.joinable()) {
-            kit_thread.join();
-        }
-    
+        if (kit_thread.joinable()) kit_thread.join();
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif
@@ -72,6 +77,10 @@ namespace Vital::Engine {
 
     void Core::_process(double delta) {
         if (!Vital::is_runtime()) return;
+        {
+            std::lock_guard<std::mutex> lock(deferred_mutex);
+            if (!deferred_queue.empty()) call_deferred("flush_deferred_queue");
+        }
         Sandbox::get_singleton() -> process(delta);
     }
 
@@ -121,7 +130,7 @@ namespace Vital::Engine {
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
-            get_singleton() -> call_deferred("add_child", environment);
+            push_deferred_call(&godot::Node::add_child, this, environment);
             godot::Ref<godot::Environment> env;
             env.instantiate();
             environment->set_environment(env);

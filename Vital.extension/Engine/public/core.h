@@ -27,12 +27,11 @@ namespace Vital::Engine {
         protected:
             inline static Core* singleton  = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
-
-            // Kit bootstrap runs on a background thread from _ready()
-            // vital.core:ready is deferred until it completes
             std::thread kit_thread;
             std::atomic<bool> kit_ready { false };
-            std::atomic<bool> kit_abort { false };  // signals thread to skip deferred call
+            std::atomic<bool> kit_abort { false };
+            std::mutex deferred_mutex;
+            std::vector<std::function<void()>> deferred_queue;
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
@@ -44,6 +43,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_downloaded", "path"), &Core::on_asset_downloaded);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_download_failed", "path"), &Core::on_asset_download_failed);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_kit_ready"), &Core::on_kit_ready);
+                godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred_queue"), &Core::flush_deferred_queue);
             };
         public:
             // Instantiators //
@@ -61,6 +61,15 @@ namespace Vital::Engine {
             static Core* get_singleton();
             void free_singleton();
             static void teardown_singleton();
+
+
+            // Queue //
+            void push_deferred(std::function<void()> fn);
+            template<typename Fn, typename... Args>
+            void push_deferred_call(Fn&& fn, Args&&... args) {
+                push_deferred(std::bind(std::forward<Fn>(fn), std::forward<Args>(args)...));
+            }
+            void flush_deferred_queue();
 
 
             // Getters //
@@ -87,8 +96,6 @@ namespace Vital::Engine {
             void notify_resource_stopped(const godot::String& name);
             void on_asset_downloaded(const godot::String& path);
             void on_asset_download_failed(const godot::String& path);
-
-            // Called via call_deferred once kit bootstrap thread finishes
             void on_kit_ready();
     };
 }
