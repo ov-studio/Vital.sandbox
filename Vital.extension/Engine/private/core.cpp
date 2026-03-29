@@ -49,6 +49,7 @@ namespace Vital::Engine {
     
     void Core::on_kit_ready() {
         Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
+        Vital::Tool::Event::emit("vital.kit:ready");
         Vital::Tool::Event::emit("vital.core:ready");
         set_process(true);
     }
