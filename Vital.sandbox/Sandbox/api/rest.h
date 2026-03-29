@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);
                 Vital::Tool::Rest::rest_headers headers = {};
-                int read_timeout = 60;
+                int timeout = 60;
                 if (vm -> is_table(2)) {
                     for (int i = 1; i <= vm -> get_length(2); i++) {
                         vm -> get_table_field(i, 2);
@@ -38,10 +38,10 @@ namespace Vital::Sandbox::API {
                         vm -> pop(1);
                     }
                 }
-                if (vm -> is_number(3)) read_timeout = vm -> get_int(3);
+                if (vm -> is_number(3)) timeout = vm -> get_int(3);
                 Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                     try {
-                        vm -> push_value(Vital::Tool::Rest::get(url, headers, read_timeout));
+                        vm -> push_value(Vital::Tool::Rest::get(url, headers, timeout));
                         vm -> push_value(false);
                     }
                     catch(const std::runtime_error& error) {
@@ -60,7 +60,7 @@ namespace Vital::Sandbox::API {
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
                 Vital::Tool::Rest::rest_headers headers = {};
-                int read_timeout = 60;
+                int timeout = 60;
                 if (vm -> is_table(3)) {
                     for (int i = 1; i <= vm -> get_length(3); i++) {
                         vm -> get_table_field(i, 3);
@@ -68,10 +68,10 @@ namespace Vital::Sandbox::API {
                         vm -> pop(1);
                     }
                 }
-                if (vm -> is_number(4)) read_timeout = vm -> get_int(4);
+                if (vm -> is_number(4)) timeout = vm -> get_int(4);
                 Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
                     try {
-                        vm -> push_value(Vital::Tool::Rest::post(url, body, headers, read_timeout));
+                        vm -> push_value(Vital::Tool::Rest::post(url, body, headers, timeout));
                         vm -> push_value(false);
                     }
                     catch(const std::runtime_error& error) {

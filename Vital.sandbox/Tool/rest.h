@@ -25,7 +25,7 @@
 namespace Vital::Tool::Rest {
     using rest_headers = std::vector<std::string>;
 
-    inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int read_timeout = 30, bool follow_redirects = true) {
+    inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int timeout = 30, bool follow_redirects = true) {
         size_t protocol_end = url.find("://");
         if (protocol_end == std::string::npos) throw std::runtime_error("Invalid URL format");
         std::string scheme = url.substr(0, protocol_end);
@@ -45,7 +45,7 @@ namespace Vital::Tool::Rest {
         }
         httplib::Client cli(scheme + "://" + host + ":" + std::to_string(port));
         cli.set_connection_timeout(connect_timeout, 0);
-        cli.set_read_timeout(read_timeout, 0);
+        cli.set_read_timeout(timeout, 0);
         cli.set_follow_location(follow_redirects);
         return cli;
     }
@@ -65,9 +65,9 @@ namespace Vital::Tool::Rest {
         return result;
     }
 
-    inline std::string get(const std::string& url, const rest_headers& headers = {}, int read_timeout = 60, bool follow_redirects = true) {
+    inline std::string get(const std::string& url, const rest_headers& headers = {}, int timeout = 60, bool follow_redirects = true) {
         std::string path;
-        auto cli = make_client(url, path, 10, read_timeout, follow_redirects);
+        auto cli = make_client(url, path, 10, timeout, follow_redirects);
         auto httplib_headers = make_headers(headers);
         std::string buffer;
         auto res = cli.Get(path.c_str(), httplib_headers, [&buffer](const char* data, size_t len) {
@@ -79,9 +79,9 @@ namespace Vital::Tool::Rest {
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {}, int read_timeout = 60) {
+    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {}, int timeout = 60) {
         std::string path;
-        auto cli = make_client(url, path, 10, read_timeout, false);
+        auto cli = make_client(url, path, 10, timeout, false);
         std::string content_type = "application/json";
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
