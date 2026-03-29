@@ -354,8 +354,7 @@ namespace Vital::Engine {
         const auto* resource  = get_resource(name);
         bool status           = true;
 
-        vm->create_environment(name);
-        vm->set_reference(env, -1);
+        vm->create_environment(env);
 
         for (const auto& script : resource->scripts) {
             if (!is_eligible(script.type)) continue;
@@ -381,9 +380,7 @@ namespace Vital::Engine {
         }
 
         if (!status) {
-            vm->get_reference(env, true);
-            vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
-            vm->del_reference(env);
+            vm->clear_environment_id(env);  // lua_rawset pops both key+value — no pop needed after
             return false;
         }
 
@@ -424,9 +421,7 @@ namespace Vital::Engine {
 
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
 
-        vm->get_reference(get_resource_env(name), true);
-        vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
-        vm->del_reference(get_resource_env(name));
+        vm->clear_environment_id(get_resource_env(name));  // lua_rawset pops both key+value — no pop needed after
 
         running.erase(name);
         Vital::print("sbox", "Resource `" + name + "` stopped");
@@ -542,8 +537,7 @@ namespace Vital::Engine {
         const std::string env = get_resource_env(name);
         bool status           = true;
 
-        vm->create_environment(name);
-        vm->set_reference(env, -1);
+        vm->create_environment(env);
 
         for (const auto& script : resource->scripts) {
             if (script.type != "shared" && script.type != "client") continue;
@@ -574,9 +568,7 @@ namespace Vital::Engine {
         resource_assets.erase(name);
 
         if (!status) {
-            vm->get_reference(env, true);
-            vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
-            vm->del_reference(env);
+            vm->clear_environment_id(env);  // lua_rawset pops both key+value — no pop needed after
             Vital::print("error", "Resource `" + name + "` failed to load — env released");
             return;
         }
@@ -603,9 +595,7 @@ namespace Vital::Engine {
         }
 
         if (is_running(name)) {
-            vm->get_reference(get_resource_env(name), true);
-            vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
-            vm->del_reference(get_resource_env(name));
+            vm->clear_environment_id(env);  // lua_rawset pops both key+value — no pop needed after
             running.erase(name);
         }
 
