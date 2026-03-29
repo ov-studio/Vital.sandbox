@@ -486,8 +486,8 @@ namespace Vital::Engine {
             it->second
         );
         spawn_queue.erase(it);
-        core -> push_deferred([loaded_name, authority_peer]() {
-            spawn_synced(loaded_name, authority_peer);
+        Core::get_singleton() -> push_deferred([loaded_name, authority_peer]() {
+            Model::spawn_synced(loaded_name, authority_peer);
         });
     }
 
