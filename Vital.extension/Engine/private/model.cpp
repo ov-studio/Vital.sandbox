@@ -289,7 +289,9 @@ namespace Vital::Engine {
     void Model::create_synced(const std::string& name, int authority_peer) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
-        Core::get_singleton() -> call_deferred("spawn_model", godot::String(name.c_str()), authority_peer);
+        Core::get_singleton() -> push_deferred([name, authority_peer]() {
+            Core::get_singleton() -> spawn_model(to_godot_string(name), authority_peer);
+        });
     }
 
     Model* Model::spawn_synced(const std::string& name, int authority_peer) {
@@ -297,7 +299,7 @@ namespace Vital::Engine {
             godot::UtilityFunctions::print("ModelSpawner: spawn_synced — spawner not ready");
             return nullptr;
         }
-        godot::Node* spawned = net_spawner->spawn(godot::String(name.c_str()));
+        godot::Node* spawned = net_spawner->spawn(to_godot_string(name));
         if (!spawned) {
             godot::UtilityFunctions::print("ModelSpawner: spawn() returned null");
             return nullptr;
@@ -309,7 +311,7 @@ namespace Vital::Engine {
         }
         object -> pending_authority = authority_peer;
         cache_synced[name] = object;
-        godot::UtilityFunctions::print("ModelSpawner: spawned -> ", godot::String(name.c_str()));
+        godot::UtilityFunctions::print("ModelSpawner: spawned -> ", to_godot_string(name));
         return object;
     }
 
