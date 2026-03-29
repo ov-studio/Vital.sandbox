@@ -316,13 +316,6 @@ namespace Vital::Sandbox {
                     get_global(nspace);
                 }
             }
-            void create_environment() {
-                create_table();
-                create_table();
-                lua_pushglobaltable(state);
-                set_table_field("__index", -2);
-                set_metatable(-2);
-            }
             void create_object(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
@@ -335,8 +328,43 @@ namespace Vital::Sandbox {
                 return new Machine(lua_newthread(state)); 
             }
 
+    
+            // Environment //
+            void create_environment(const std::string& id = "") {
+                create_table();
+                create_table();
+                lua_pushglobaltable(state);
+                set_table_field("__index", -2);
+                set_metatable(-2);
+                if (!id.empty()) {
+                    push(-1);
+                    lua_pushstring(state, id.c_str());
+                    lua_rawset(state, LUA_REGISTRYINDEX);
+                }
+            }
 
-            // Error Handling & Execution //
+            std::string get_environment_id(int level = 1) {
+                lua_Debug debug;
+                if (!lua_getstack(state, level, &debug)) return "";
+                if (!lua_getinfo(state, "f", &debug)) return "";
+                const char* upname = lua_getupvalue(state, -1, 1);
+                lua_remove(state, -2);
+                if (!upname) return "";
+                lua_rawget(state, LUA_REGISTRYINDEX); 
+                std::string result;
+                if (lua_isstring(state, -1)) result = lua_tostring(state, -1);
+                lua_pop(state, 1);
+                return result;
+            }
+            
+            void clear_environment_id(int index = -1) {
+                push(index);
+                lua_pushnil(state);
+                lua_rawset(state, LUA_REGISTRYINDEX);
+            }
+
+
+            // Context //
             void log(const std::string& type, const std::string& message = "") {
                 lua_Debug debug;
                 lua_getstack(state, 1, &debug);
