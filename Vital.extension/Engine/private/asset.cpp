@@ -274,10 +274,9 @@ namespace Vital::Engine {
 
     void AssetManager::broadcast_manifest_deferred() {
         for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
-            Core::get_singleton() -> call_deferred(
-                "broadcast_asset_manifest",
-                peer_id
-            );
+            Core::get_singleton() -> push_deferred([peer_id]() {
+                AssetManager::get_singleton() -> broadcast_manifest(peer_id);
+            });
         }
     }
 
