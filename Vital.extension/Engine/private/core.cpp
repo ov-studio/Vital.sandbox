@@ -131,7 +131,9 @@ namespace Vital::Engine {
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
-            push_deferred_call(&godot::Node::add_child, this, environment);
+            get_singleton() -> push_deferred([]() {
+                get_singleton() -> add_child(environment);
+            });
             godot::Ref<godot::Environment> env;
             env.instantiate();
             environment->set_environment(env);
@@ -158,24 +160,6 @@ namespace Vital::Engine {
 
     void Core::spawn_model(const godot::String& name, int authority_peer) {
         Model::spawn_synced(to_std_string(name), authority_peer);
-    }
-
-    void Core::broadcast_asset_manifest(int peer_id) {
-        #if !defined(Vital_SDK_Client)
-        AssetManager::get_singleton() -> broadcast_manifest(peer_id);
-        #endif
-    }
-
-    void Core::notify_resource_started(const godot::String& name) {
-        #if !defined(Vital_SDK_Client)
-        ResourceManager::get_singleton() -> notify_resource_started(Vital::to_std_string(name));
-        #endif
-    }
-
-    void Core::notify_resource_stopped(const godot::String& name) {
-        #if !defined(Vital_SDK_Client)
-        ResourceManager::get_singleton() -> notify_resource_stopped(Vital::to_std_string(name));
-        #endif
     }
 
     void Core::on_asset_downloaded(const godot::String& path) {

@@ -230,10 +230,12 @@ namespace Vital::Engine {
         static bool server_bound = false;
         if (!server_bound) {
             server_bound = true;
-            Vital::Tool::Event::bind("vital.network:peer_connected", [](Vital::Tool::Stack args) -> void {
+            Vital::Tool::Event::bind("vital.network:peer_connected", [this](Vital::Tool::Stack args) -> void {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
-                Core::get_singleton() -> call_deferred("broadcast_asset_manifest", peer_id);
+                Core::get_singleton() -> push_deferred([this, peer_id]() {
+                    AssetManager::get_singleton() -> broadcast_manifest(peer_id);
+                });
             });
         }
         #endif
@@ -404,10 +406,9 @@ namespace Vital::Engine {
         }
 
         am->broadcast_manifest_deferred();
-        Core::get_singleton() -> call_deferred(
-            "notify_resource_started",
-            godot::String(name.c_str())
-        );
+        Core::get_singleton() -> push_deferred([this, name]() {
+            notify_resource_started(name);
+        });
 
         running.insert(name);
         Vital::print("sbox", "Resource `" + name + "` started");
@@ -426,10 +427,9 @@ namespace Vital::Engine {
 
         am->unregister_group(name);
 
-        Core::get_singleton() -> call_deferred(
-            "notify_resource_stopped",
-            godot::String(name.c_str())
-        );
+        Core::get_singleton() -> push_deferred([this, name]() {
+            notify_resource_stopped(name);
+        });
 
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
         vm->clear_environment_id(name);

@@ -37,9 +37,6 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"), &Core::setup_model_spawner);
                 godot::ClassDB::bind_method(godot::D_METHOD("spawn_model", "name", "authority_peer"), &Core::spawn_model);
-                godot::ClassDB::bind_method(godot::D_METHOD("broadcast_asset_manifest", "peer_id"), &Core::broadcast_asset_manifest);
-                godot::ClassDB::bind_method(godot::D_METHOD("notify_resource_started", "name"), &Core::notify_resource_started);
-                godot::ClassDB::bind_method(godot::D_METHOD("notify_resource_stopped", "name"), &Core::notify_resource_stopped);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_downloaded", "path"), &Core::on_asset_downloaded);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_download_failed", "path"), &Core::on_asset_download_failed);
                 godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred_queue"), &Core::flush_deferred_queue);
@@ -90,9 +87,6 @@ namespace Vital::Engine {
             // APIs //
             void setup_model_spawner();
             void spawn_model(const godot::String& name, int authority_peer);
-            void broadcast_asset_manifest(int peer_id);
-            void notify_resource_started(const godot::String& name);
-            void notify_resource_stopped(const godot::String& name);
             void on_asset_downloaded(const godot::String& path);
             void on_asset_download_failed(const godot::String& path);
     };
