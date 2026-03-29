@@ -357,7 +357,6 @@ namespace Vital::Engine {
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             Vital::print("sbox", "AssetManager: downloading -> ", path.c_str());
 
-            // Create parent directories
             try {
                 std::filesystem::create_directories(
                     std::filesystem::path(local_path).parent_path()
