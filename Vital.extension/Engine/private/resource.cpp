@@ -543,7 +543,7 @@ namespace Vital::Engine {
         bool status           = true;
 
         vm->create_environment(name);
-        vm->set_reference(env);
+        vm->set_reference(env, -1);
 
         for (const auto& script : resource->scripts) {
             if (script.type != "shared" && script.type != "client") continue;
