@@ -295,10 +295,6 @@ namespace Vital::Engine {
         int http_port = args.object.count("http_port")
             ? args.object.at("http_port").as<int32_t>() : 7778;
 
-        // Derive server IP from the network connection
-        // sender_id is in the packet but we need the IP — use a stored value
-        // For now derive from reconnect_ip if available, else fallback to 127.0.0.1
-        // The resource system will set the server IP via set_server_ip() on connect
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url  = "http://" + server_ip + ":" + std::to_string(http_port);
 
