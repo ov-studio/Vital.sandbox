@@ -27,6 +27,13 @@ namespace Vital::Engine {
         protected:
             inline static Core* singleton  = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
+
+            // Kit bootstrap runs on a background thread from _ready()
+            // vital.core:ready is deferred until it completes
+            std::thread kit_thread;
+            std::atomic<bool> kit_ready { false };
+            std::atomic<bool> kit_abort { false };  // signals thread to skip deferred call
+
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"), &Core::setup_model_spawner);
@@ -36,6 +43,7 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("notify_resource_stopped", "name"), &Core::notify_resource_stopped);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_downloaded", "path"), &Core::on_asset_downloaded);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_download_failed", "path"), &Core::on_asset_download_failed);
+                godot::ClassDB::bind_method(godot::D_METHOD("on_kit_ready"), &Core::on_kit_ready);
             };
         public:
             // Instantiators //
@@ -79,5 +87,8 @@ namespace Vital::Engine {
             void notify_resource_stopped(const godot::String& name);
             void on_asset_downloaded(const godot::String& path);
             void on_asset_download_failed(const godot::String& path);
+
+            // Called via call_deferred once kit bootstrap thread finishes
+            void on_kit_ready();
     };
 }

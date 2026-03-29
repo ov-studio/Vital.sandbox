@@ -27,6 +27,7 @@
 #include <future>
 #include <exception>
 #include <queue>
+#include <tuple>
 #include <vector>
 #include <array>
 #include <map>

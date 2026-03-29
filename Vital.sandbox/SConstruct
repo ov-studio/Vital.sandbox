@@ -13,7 +13,7 @@ env.Args["build_type"] = env.Args.get("build_type", "Debug")
 env.Module.build()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
-    env.RGlob("Type", "*.cpp") + 
+    env.RGlob("Tool", "*.cpp") + 
     env.RGlob("System", "*.cpp") + 
     env.RGlob("Sandbox", "*.cpp") + 
     env.RGlob("Vendor", "*.cpp") + 
@@ -22,7 +22,7 @@ env.sources = (
 )
 env.Append(CPPPATH=[
     cwd,
-    os.path.join(cwd, "Type"),
+    os.path.join(cwd, "Tool"),
     os.path.join(cwd, "System"),
     os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor"),

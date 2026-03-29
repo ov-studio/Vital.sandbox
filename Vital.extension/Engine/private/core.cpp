@@ -32,16 +32,35 @@ namespace Vital::Engine {
     // Instantiators //
     void Core::_ready() {
         singleton = singleton ? singleton : this;
-        set_process(true);
-        #if defined(Vital_SDK_Client)
-        set_process_unhandled_key_input(true);
-        get_environment();
-        #endif
+        set_process(false);
         if (!Vital::is_runtime()) return;
+    
+        kit_abort.store(false);
+        Vital::print("sbox", "Core: bootstrapping Vital.kit...");
+        kit_thread = std::thread([this]() {
+            Vital::Tool::Kit::ensure_kit();
+            // Only bounce to main thread if the node is still alive
+            if (!kit_abort.load()) {
+                call_deferred("on_kit_ready");
+            }
+        });
+        // Do NOT detach — we need to join in _exit_tree
+    }
+    
+    void Core::on_kit_ready() {
+        Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
         Vital::Tool::Event::emit("vital.core:ready");
+        set_process(true);
     }
 
     void Core::_exit_tree() {
+        // Signal the thread to skip the deferred call, then join before
+        // any teardown — prevents call_deferred firing on a freed node
+        kit_abort.store(true);
+        if (kit_thread.joinable()) {
+            kit_thread.join();
+        }
+    
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif

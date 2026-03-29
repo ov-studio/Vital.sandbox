@@ -7,56 +7,31 @@
      Desc: Module Tools
 ----------------------------------------------------------------*/
 
-
-//////////////
-// Imports //
-//////////////
-
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/rest.h>
+#include <Vital.sandbox/Tool/file.h>
 #include <Vital.sandbox/Vendor/rapidjson/document.h>
 #include <Vital.sandbox/Vendor/rapidjson/writer.h>
 #include <Vital.sandbox/Vendor/rapidjson/stringbuffer.h>
-
-
-////////////
-// Vital //
-////////////
+#include <zip.h>
+#include <openssl/evp.h>
 
 namespace Vital::Tool {
-    inline std::mutex content_mutex;
-    inline std::unordered_map<std::string, std::string> content_cache;
-    inline std::unordered_map<std::string, rapidjson::Document> json_cache;
-    static const std::string toolkit = "https://raw.githubusercontent.com/ov-studio/Vital.kit/refs/heads/main/{}";
+    // TODO: Improve
+    extern std::mutex content_mutex;
+    extern std::unordered_map<std::string, std::string> content_cache;
+    extern std::unordered_map<std::string, rapidjson::Document> json_cache;
+    extern const std::string toolkit_api;
+    extern const std::string cache_base;
+    extern const std::string kit_name;
 
-    inline const std::string& fetch_content(std::string_view url) {
-        std::lock_guard<std::mutex> lock(content_mutex);
-        std::string request(url);
-        auto it = content_cache.find(request);
-        if (it == content_cache.end()) {
-            it = content_cache.emplace(std::move(request), Vital::Tool::Rest::get(std::string(url))).first;
-        }
-        return it -> second;
-    }
-
-    inline rapidjson::Document& fetch_json(const std::string& name) {
-        auto it = json_cache.find(name);
-        if (it == json_cache.end()) {
-            rapidjson::Document document;
-            document.Parse(fetch_content(fmt::format(toolkit, name + ".json")).c_str());
-            it = json_cache.emplace(name, std::move(document)).first;
-        }
-        return it -> second;
-    }
-
-    inline const rapidjson::Value* fetch_json_node(const std::string& name, const std::string& key) {
-        auto& document = fetch_json(name);
-        if (document.HasParseError() || !document.HasMember(key.c_str())) return nullptr;
-        const auto& entry = document[key.c_str()];
-        if (!entry.IsObject()) return nullptr;
-        return &entry;
-    }
+    std::string read_kit_file(const std::string& rel_path);
+    const std::string& fetch_content(std::string_view path);
+    rapidjson::Document& fetch_json(const std::string& name);
+    const rapidjson::Value* fetch_json_node(const std::string& name, const std::string& key);
+    std::string fetch_module(const std::string& name);
+    std::vector<std::string> fetch_modules(const std::string& name);
 
     template<typename... Keys>
     inline Vital::Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
@@ -72,38 +47,30 @@ namespace Vital::Tool {
         for (const std::string& key : key_list) {
             bool is_index = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
             if (is_index) {
-                if (!node -> IsArray()) return {};
+                if (!node->IsArray()) return {};
                 const auto index = static_cast<rapidjson::SizeType>(std::stoul(key));
-                if (index >= node -> Size()) return {};
+                if (index >= node->Size()) return {};
                 node = &(*node)[index];
-            }
-            else {
-                if (!node -> IsObject() || !node -> HasMember(key.c_str())) return {};
+            } else {
+                if (!node->IsObject() || !node->HasMember(key.c_str())) return {};
                 node = &(*node)[key.c_str()];
             }
         }
-        if (node -> IsString()) return std::string(node -> GetString());
-        else if (node -> IsInt()) return node -> GetInt();
-        else if (node -> IsInt64()) return node -> GetInt64();
-        else if (node -> IsFloat()) return node -> GetFloat();
-        else if (node -> IsDouble()) return node -> GetDouble();
-        else if (node -> IsBool()) return node -> GetBool();
+        if (node->IsString())      return std::string(node->GetString());
+        else if (node->IsInt())    return node->GetInt();
+        else if (node->IsInt64())  return node->GetInt64();
+        else if (node->IsFloat())  return node->GetFloat();
+        else if (node->IsDouble()) return node->GetDouble();
+        else if (node->IsBool())   return node->GetBool();
         return {};
     }
 
-    inline std::string fetch_module(const std::string& name) {
-        auto& document = fetch_json(name + "/manifest");
-        if (document.HasParseError() || !document.HasMember("source")) return "";
-        return fetch_content(fmt::format(toolkit, name + "/" + document["source"].GetString()));
-    }
-
-    inline std::vector<std::string> fetch_modules(const std::string& name) {
-        std::vector<std::string> result;
-        auto& document = fetch_json(name + "/manifest");
-        if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
-        for (auto& i : document["sources"].GetArray()) {
-            result.push_back(fetch_content(fmt::format(toolkit, name + "/" + std::string(i.GetString()))));
-        }
-        return result;
+    namespace Kit {
+        std::string sha256_file(const std::filesystem::path& path);
+        std::tuple<std::string, std::string, std::string> fetch_release_info();
+        rapidjson::Document fetch_checksum(const std::string& checksum_url);
+        bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
+        bool download_file(const std::string& url, const std::string& dest_path);
+        bool ensure_kit();
     }
 }
