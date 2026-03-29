@@ -430,7 +430,6 @@ namespace Vital::Engine {
         auto it = active_downloads.find(path);
         if (it == active_downloads.end()) return;
         it->second->cancelled.store(true);
-        // Thread will clean up itself when it polls and sees cancelled flag
         Vital::print("sbox", "AssetManager: cancelling -> ", path.c_str());
     }
 
