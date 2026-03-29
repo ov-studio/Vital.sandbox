@@ -419,10 +419,9 @@ namespace Vital::Engine {
 
     void AssetManager::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
-        Core::get_singleton() -> call_deferred(
-            "on_asset_download_failed",
-            godot::String(path.c_str())
-        );
+        Core::get_singleton()->push_deferred([path]() {
+            Core::get_singleton()->on_asset_download_failed(path);
+        });
     }
 
     void AssetManager::cancel(const std::string& path) {
