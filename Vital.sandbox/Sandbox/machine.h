@@ -50,7 +50,7 @@ namespace Vital::Sandbox {
                 {"right", godot::HORIZONTAL_ALIGNMENT_RIGHT},
                 {"fill", godot::HORIZONTAL_ALIGNMENT_FILL}
             };
-            
+
             inline static const std::unordered_map<std::string, godot::VerticalAlignment> vertical_alignment = {
                 {"top", godot::VERTICAL_ALIGNMENT_TOP},
                 {"center", godot::VERTICAL_ALIGNMENT_CENTER},
@@ -166,7 +166,7 @@ namespace Vital::Sandbox {
             std::string get_string(int index = 1) { return lua_tostring(state, index); }
             bool get_table(int index = 1) { return lua_gettable(state, index); }
             bool get_table_field(int value, int index = 1) { return lua_geti(state, index, value); }
-            bool get_table_field(const std::string& value, int index = 1) {return lua_getfield(state, index, value.c_str());}
+            bool get_table_field(const std::string& value, int index = 1) { return lua_getfield(state, index, value.c_str()); }
             bool get_metatable(int index = 1) { return lua_getmetatable(state, index); }
             bool get_metatable(const std::string& index) { return luaL_getmetatable(state, index.c_str()); }
             vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
@@ -263,7 +263,7 @@ namespace Vital::Sandbox {
             }
             void push_vertical_alignment(godot::VerticalAlignment value) {
                 for (auto& it : vertical_alignment) {
-                    if (it.second == value) { 
+                    if (it.second == value) {
                         push_value(it.first);
                         return;
                     }
@@ -324,8 +324,8 @@ namespace Vital::Sandbox {
                 void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
                 *userdata = value;
             }
-            Machine* create_thread() { 
-                return new Machine(lua_newthread(state)); 
+            Machine* create_thread() {
+                return new Machine(lua_newthread(state));
             }
 
 
@@ -364,7 +364,7 @@ namespace Vital::Sandbox {
                 return "";
             }
 
-            void clear_environment_id(const std::string& id = "") {
+            void clear_environment_id(const std::string& id) {
                 if (!is_reference(id)) return;
                 get_reference(id, true);
                 lua_pushnil(state);
@@ -373,7 +373,7 @@ namespace Vital::Sandbox {
             }
 
 
-            // Context //
+            // Context Handles //
             void log(const std::string& type, const std::string& message = "") {
                 lua_Debug debug;
                 lua_getstack(state, 1, &debug);
@@ -381,7 +381,7 @@ namespace Vital::Sandbox {
                 API::log(type, fmt::format("{}\n> Line: {}", message.empty() ? "N/A" : message, std::to_string(debug.currentline)));
                 push_value(false);
             }
-    
+
             template<typename F>
             int execute(F&& exec) {
                 try { return exec(); }
@@ -435,9 +435,9 @@ namespace Vital::Sandbox {
             void set_table(int index = 1) { lua_settable(state, index); }
             void set_table_field(int field, int index = 1) { lua_seti(state, index, field); }
             void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
-            void set_metatable(int index = 1) { lua_setmetatable(state, index);}
+            void set_metatable(int index = 1) { lua_setmetatable(state, index); }
             void set_metatable(const std::string& index) { luaL_setmetatable(state, index.c_str()); }
-    
+
             void set_reference(const std::string& name, int index = 1) {
                 del_reference(name);
                 push(index);
