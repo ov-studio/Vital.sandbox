@@ -290,7 +290,7 @@ namespace Vital::Engine {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         Core::get_singleton() -> push_deferred([name, authority_peer]() {
-            Core::get_singleton() -> spawn_model(to_godot_string(name), authority_peer);
+            spawn_synced(name, authority_peer);
         });
     }
 
