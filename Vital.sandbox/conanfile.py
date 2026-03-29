@@ -15,6 +15,7 @@ class BuildConan(ConanFile):
         self.requires("libzip/1.11.4")
         self.requires("rapidjson/1.1.0")
         self.requires("yaml-cpp/0.8.0")
+        self.requires("fmt/12.1.0")
 
     def configure(self):
         os_info = Fetch_OS()
@@ -31,3 +32,5 @@ class BuildConan(ConanFile):
         self.options["libzip"].shared = False
         self.options["rapidjson"].shared = False
         self.options["yaml-cpp"].shared = False
+        self.options["fmt"].shared = False
+
