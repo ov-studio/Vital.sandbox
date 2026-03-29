@@ -366,11 +366,15 @@ namespace Vital::Engine {
     }
 
     void Model::set_position(godot::Vector3 position) {
-        call_deferred("set_global_position", position);
+        Core::get_singleton() -> push_deferred([this, position]() {
+            set_global_position(position);
+        });
     }
-
+    
     void Model::set_rotation(godot::Vector3 rotation) {
-        call_deferred("set_rotation_degrees", rotation);
+        Core::get_singleton() -> push_deferred([this, rotation]() {
+            set_rotation_degrees(rotation);
+        });
     }
 
     bool Model::set_component_visible(const std::string& component, bool state) {
