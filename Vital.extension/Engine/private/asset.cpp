@@ -306,11 +306,9 @@ namespace Vital::Engine {
         for (int i = 0; i < count; i++) {
             std::string path  = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
             std::string hash  = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
-            // Group is optional — older servers won't send it
             std::string group = args.object.count("asset_group_" + std::to_string(i))
                 ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
-            // Check local cache by hashing existing file
             bool hash_matches = false;
             const std::string local_path = get_directory() + "/" + path;
             try {
@@ -385,7 +383,6 @@ namespace Vital::Engine {
                 return;
             }
 
-            // Write response to file
             out.write(response_body.data(), static_cast<std::streamsize>(response_body.size()));
             out.close();
 
@@ -396,7 +393,6 @@ namespace Vital::Engine {
                 return;
             }
 
-            // Verify hash
             try {
                 const std::string actual_hash = compute_hash_file(local_path);
                 if (actual_hash != expected_hash) {
