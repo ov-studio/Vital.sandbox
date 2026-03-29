@@ -404,7 +404,7 @@ namespace Vital::Engine {
             Vital::print("sbox", "AssetManager: downloaded -> ", path.c_str());
             active_downloads.erase(path);
 
-            Core::get_singleton()->push_deferred([path]() {
+            Core::get_singleton() -> push_deferred([path]() {
                 Vital::Tool::Stack ready_args;
                 ready_args.object["path"]   = Vital::Tool::StackValue(path);
                 ready_args.object["cached"] = Vital::Tool::StackValue(false);
@@ -421,7 +421,7 @@ namespace Vital::Engine {
 
     void AssetManager::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
-        Core::get_singleton()->push_deferred([path]() {
+        Core::get_singleton() -> push_deferred([path]() {
             Vital::print("sbox", "AssetManager: download failed -> ", path);
         });
     }

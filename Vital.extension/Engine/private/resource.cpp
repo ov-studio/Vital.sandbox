@@ -426,7 +426,6 @@ namespace Vital::Engine {
         }
 
         am->unregister_group(name);
-
         Core::get_singleton() -> push_deferred([this, name]() {
             notify_resource_stopped(name);
         });

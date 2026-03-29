@@ -49,7 +49,7 @@ void load_server_config() {
         info.discord = g_server_config.get_discord_invite();
         info.website = g_server_config.get_website();
     }
-    Vital::Engine::AssetManager::get_singleton()->set_server_info(info);
+    Vital::Engine::AssetManager::get_singleton() -> set_server_info(info);
 }
 #endif
 
