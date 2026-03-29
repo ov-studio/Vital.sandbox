@@ -10,9 +10,9 @@
 * [**soci**](https://soci.sourceforge.net) - Provides a unified C++ abstraction layer over relational database backends.
 * [**zlib**](https://zlib.net) - Provides lossless data compression and decompression.
 * [**libzip**](https://libzip.org) - Provides reading, creating, and modifying ZIP archives.
+* [**rapidjson**](https://rapidjson.org) - Provides high-performance JSON parsing and generation.
 * [**yaml-cpp**](https://github.com/jbeder/yaml-cpp) - Provides YAML parsing and emitting for C++.
 * [**fmt**](https://fmt.dev) - Provides fast and expressive text formatting for C++.
-* [**rapidjson**](https://rapidjson.org) - Provides high-performance JSON parsing and generation.
 * [**lua**](https://www.lua.org) - Provides an embeddable scripting runtime with sandboxing support.
 * [**lua-rapidjson**](https://github.com/xpol/lua-rapidjson) - Provides RapidJSON bindings for Lua.
 * [**discord-social-sdk**](https://discord.com/developers/docs/discord-social-sdk/overview) - Provides Discord social layer integration.
