@@ -33,7 +33,7 @@ namespace Vital::Tool {
         std::string key(path);
         auto it = content_cache.find(key);
         if (it != content_cache.end()) return it->second;
-    
+
         std::string value = read_kit_file(key);
         // Do not cache if empty — kit may not be extracted yet
         if (value.empty()) {
@@ -42,11 +42,11 @@ namespace Vital::Tool {
         }
         return content_cache.emplace(key, std::move(value)).first->second;
     }
-    
+
     rapidjson::Document& fetch_json(const std::string& name) {
         auto it = json_cache.find(name);
         if (it != json_cache.end()) return it->second;
-    
+
         rapidjson::Document document;
         document.Parse(fetch_content(name + ".json").c_str());
         // Do not cache if parse failed — kit may not be extracted yet
@@ -86,7 +86,6 @@ namespace Vital::Tool {
     ///////////////////////////
 
     namespace Kit {
-        // Shared httplib GET — follows redirects, always sends User-Agent
         static std::string kit_get(const std::string& url, int read_timeout = 30) {
             size_t protocol_end = url.find("://");
             if (protocol_end == std::string::npos) return {};
@@ -116,28 +115,6 @@ namespace Vital::Tool {
             auto res = cli.Get(path.c_str(), hdrs);
             if (!res || res->status != 200) return {};
             return res->body;
-        }
-
-        std::string sha256_file(const std::filesystem::path& path) {
-            std::ifstream f(path, std::ios::binary);
-            if (!f) return {};
-            const EVP_MD* md = EVP_sha256();
-            EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-            EVP_DigestInit_ex(ctx, md, nullptr);
-            char buf[65536];
-            while (f.good()) {
-                f.read(buf, sizeof(buf));
-                auto n = f.gcount();
-                if (n > 0) EVP_DigestUpdate(ctx, buf, static_cast<size_t>(n));
-            }
-            unsigned char digest[EVP_MAX_MD_SIZE];
-            unsigned int len = 0;
-            EVP_DigestFinal_ex(ctx, digest, &len);
-            EVP_MD_CTX_free(ctx);
-            std::ostringstream ss;
-            for (unsigned i = 0; i < len; ++i)
-                ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(digest[i]);
-            return ss.str();
         }
 
         std::tuple<std::string, std::string, std::string> fetch_release_info() {
@@ -183,16 +160,16 @@ namespace Vital::Tool {
             int err = 0;
             zip_t* archive = zip_open(zip_path.c_str(), ZIP_RDONLY, &err);
             if (!archive) return false;
-        
+
             zip_int64_t count = zip_get_num_entries(archive, 0);
             for (zip_int64_t i = 0; i < count; ++i) {
                 const char* entry_name = zip_get_name(archive, i, 0);
                 if (!entry_name) continue;
                 std::string entry(entry_name);
-        
+
                 // Skip directory entries
                 if (entry.empty() || entry.back() == '/') continue;
-        
+
                 zip_file_t* zf = zip_fopen_index(archive, i, 0);
                 if (!zf) continue;
                 std::string contents;
@@ -201,21 +178,19 @@ namespace Vital::Tool {
                 while ((n = zip_fread(zf, buf, sizeof(buf))) > 0)
                     contents.append(buf, static_cast<size_t>(n));
                 zip_fclose(zf);
-        
-                // No stripping — extract full relative path directly into dest_dir (kit_dir)
+
                 std::filesystem::path out = std::filesystem::path(dest_dir) / entry;
                 std::filesystem::create_directories(out.parent_path());
                 std::ofstream out_f(out, std::ios::binary | std::ios::trunc);
                 if (out_f) out_f.write(contents.data(), static_cast<std::streamsize>(contents.size()));
             }
-        
+
             zip_close(archive);
             return true;
         }
 
         bool download_file(const std::string& url, const std::string& dest_path) {
             std::string data;
-            // Use longer read timeout for large zip downloads
             try { data = kit_get(url, 120); }
             catch (...) { return false; }
 
@@ -244,24 +219,44 @@ namespace Vital::Tool {
                 needs_download = true;
             } else {
                 auto checksum_doc = fetch_checksum(checksum_url);
-                if (checksum_doc.HasParseError() ||
-                    !checksum_doc.IsObject() ||
-                    !checksum_doc.HasMember("files") ||
-                    !checksum_doc["files"].IsObject()) {
-                    Vital::print("sbox", "Kit: checksum unavailable — will redownload");
+                if (checksum_doc.HasParseError()) {
+                    Vital::print("sbox", "Kit: checksum parse error — will redownload");
+                    needs_download = true;
+                } else if (!checksum_doc.IsObject()) {
+                    Vital::print("sbox", "Kit: checksum not an object — will redownload");
+                    needs_download = true;
+                } else if (!checksum_doc.HasMember("files")) {
+                    Vital::print("sbox", "Kit: checksum missing 'files' key — will redownload");
+                    needs_download = true;
+                } else if (!checksum_doc["files"].IsObject()) {
+                    Vital::print("sbox", "Kit: checksum 'files' is not object — will redownload");
                     needs_download = true;
                 } else {
                     const auto& files = checksum_doc["files"];
+                    bool all_valid = true;
                     for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
                         const std::string rel_path = it->name.GetString();
+                        if (!it->value.IsObject() || !it->value.HasMember("sha256") || !it->value["sha256"].IsString()) {
+                            Vital::print("sbox", "Kit: checksum entry malformed -> ", rel_path.c_str());
+                            all_valid = false;
+                            break;
+                        }
                         const std::string expected = it->value["sha256"].GetString();
-                        std::filesystem::path local = std::filesystem::path(kit_dir) / rel_path;
-                        if (sha256_file(local) != expected) {
-                            Vital::print("sbox", "Kit: checksum mismatch -> ", rel_path.c_str());
-                            needs_download = true;
+                        // Reuse Vital::Tool::File::exists instead of raw filesystem check
+                        if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
+                            Vital::print("sbox", "Kit: file missing -> ", rel_path.c_str());
+                            all_valid = false;
+                            break;
+                        }
+                        // Reuse Vital::Tool::Crypto::hash_file instead of duplicated sha256_file
+                        const std::string actual = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
+                        if (actual != expected) {
+                            Vital::print("sbox", "Kit: checksum mismatch -> ", rel_path.c_str(), " expected: ", expected.c_str(), " got: ", actual.c_str());
+                            all_valid = false;
                             break;
                         }
                     }
+                    if (!all_valid) needs_download = true;
                 }
             }
 

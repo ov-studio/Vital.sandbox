@@ -15,7 +15,6 @@
 #include <Vital.sandbox/Vendor/rapidjson/writer.h>
 #include <Vital.sandbox/Vendor/rapidjson/stringbuffer.h>
 #include <zip.h>
-#include <openssl/evp.h>
 
 namespace Vital::Tool {
     // TODO: Improve
@@ -66,7 +65,6 @@ namespace Vital::Tool {
     }
 
     namespace Kit {
-        std::string sha256_file(const std::filesystem::path& path);
         std::tuple<std::string, std::string, std::string> fetch_release_info();
         rapidjson::Document fetch_checksum(const std::string& checksum_url);
         bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
