@@ -355,6 +355,7 @@ namespace Vital::Engine {
         bool status           = true;
 
         vm->create_environment(env);
+        vm->pop();
 
         for (const auto& script : resource->scripts) {
             if (!is_eligible(script.type)) continue;
@@ -538,7 +539,8 @@ namespace Vital::Engine {
         bool status           = true;
 
         vm->create_environment(env);
-
+        vm->pop();
+    
         for (const auto& script : resource->scripts) {
             if (script.type != "shared" && script.type != "client") continue;
 
