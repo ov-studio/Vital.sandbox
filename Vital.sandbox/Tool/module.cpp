@@ -9,11 +9,9 @@
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <Vital.sandbox/Tool/module.h>
-#include <httplib.h>
 #include <Vital.extension/Engine/public/console.h>
 
 namespace Vital::Tool {
-    // TODO: Improve
     std::mutex content_mutex;
     std::unordered_map<std::string, std::string> content_cache;
     std::unordered_map<std::string, rapidjson::Document> json_cache;
@@ -86,46 +84,31 @@ namespace Vital::Tool {
     ///////////////////////////
 
     namespace Kit {
-        static std::string kit_get(const std::string& url, int read_timeout = 30) {
-            size_t protocol_end = url.find("://");
-            if (protocol_end == std::string::npos) return {};
-            std::string scheme = url.substr(0, protocol_end);
-            std::string rest   = url.substr(protocol_end + 3);
-            size_t path_start  = rest.find("/");
-            size_t port_pos    = rest.find(":");
-            std::string host_part = (path_start != std::string::npos) ? rest.substr(0, path_start) : rest;
-            std::string path      = (path_start != std::string::npos) ? rest.substr(path_start) : "/";
-            int port;
-            std::string host;
-            if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
-                host = host_part.substr(0, port_pos);
-                port = std::stoi(host_part.substr(port_pos + 1));
-            } else {
-                host = host_part;
-                port = (scheme == "https") ? 443 : 80;
-            }
-
-            httplib::Client cli(scheme + "://" + host + ":" + std::to_string(port));
-            cli.set_connection_timeout(10, 0);
-            cli.set_read_timeout(read_timeout, 0);
-            cli.set_follow_location(true);
-            httplib::Headers hdrs;
-            hdrs.insert({"User-Agent", "Vital.extension"});
-
-            auto res = cli.Get(path.c_str(), hdrs);
-            if (!res || res->status != 200) return {};
-            return res->body;
-        }
+        const Rest::rest_headers kit_headers = { "User-Agent: Vital.extension" };
 
         std::tuple<std::string, std::string, std::string> fetch_release_info() {
             std::string response;
-            try { response = kit_get(toolkit_api); }
-            catch (...) { return {}; }
-            if (response.empty()) return {};
-
+            try { response = Rest::get(toolkit_api, kit_headers); }
+            catch (const std::exception& e) {
+                Vital::print("sbox", "Kit: release fetch error -> ", e.what());
+                return {};
+            }
+            if (response.empty()) {
+                Vital::print("sbox", "Kit: release response empty");
+                return {};
+            }
+        
             rapidjson::Document doc;
             doc.Parse(response.c_str());
-            if (doc.HasParseError() || !doc.IsObject()) return {};
+            if (doc.HasParseError()) {
+                Vital::print("sbox", "Kit: release JSON parse error -> code: ", std::to_string(doc.GetParseError()).c_str(), " offset: ", std::to_string(doc.GetErrorOffset()).c_str());
+                Vital::print("sbox", "Kit: raw response -> ", response.substr(0, 200).c_str());
+                return {};
+            }
+            if (!doc.IsObject()) {
+                Vital::print("sbox", "Kit: release JSON not object");
+                return {};
+            }
 
             std::string tag, zip_url, checksum_url;
             if (doc.HasMember("tag_name") && doc["tag_name"].IsString())
@@ -149,8 +132,11 @@ namespace Vital::Tool {
             rapidjson::Document doc;
             if (checksum_url.empty()) return doc;
             std::string data;
-            try { data = kit_get(checksum_url); }
-            catch (...) { return doc; }
+            try { data = Rest::get(checksum_url, kit_headers); }
+            catch (const std::exception& e) {
+                Vital::print("sbox", "Kit: checksum fetch error -> ", e.what());
+                return doc;
+            }
             if (data.empty()) return doc;
             doc.Parse(data.c_str());
             return doc;
@@ -167,7 +153,6 @@ namespace Vital::Tool {
                 if (!entry_name) continue;
                 std::string entry(entry_name);
 
-                // Skip directory entries
                 if (entry.empty() || entry.back() == '/') continue;
 
                 zip_file_t* zf = zip_fopen_index(archive, i, 0);
@@ -191,8 +176,11 @@ namespace Vital::Tool {
 
         bool download_file(const std::string& url, const std::string& dest_path) {
             std::string data;
-            try { data = kit_get(url, 120); }
-            catch (...) { return false; }
+            try { data = Rest::get(url, kit_headers, 120); }
+            catch (const std::exception& e) {
+                Vital::print("sbox", "Kit: download error -> ", e.what());
+                return false;
+            }
 
             if (data.empty()) return false;
             std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
@@ -242,13 +230,11 @@ namespace Vital::Tool {
                             break;
                         }
                         const std::string expected = it->value["sha256"].GetString();
-                        // Reuse Vital::Tool::File::exists instead of raw filesystem check
                         if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
                             Vital::print("sbox", "Kit: file missing -> ", rel_path.c_str());
                             all_valid = false;
                             break;
                         }
-                        // Reuse Vital::Tool::Crypto::hash_file instead of duplicated sha256_file
                         const std::string actual = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
                         if (actual != expected) {
                             Vital::print("sbox", "Kit: checksum mismatch -> ", rel_path.c_str(), " expected: ", expected.c_str(), " got: ", actual.c_str());
