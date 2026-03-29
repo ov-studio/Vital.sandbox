@@ -68,6 +68,10 @@ namespace Vital::Engine {
     void Core::_exit_tree() {
         kit_abort.store(true);
         if (kit_thread.joinable()) kit_thread.join();
+        {
+            std::lock_guard<std::mutex> lock(deferred_mutex);
+            deferred_queue.clear();
+        }
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif
