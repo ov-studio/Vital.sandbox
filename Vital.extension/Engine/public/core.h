@@ -57,10 +57,6 @@ namespace Vital::Engine {
 
             // Queue //
             void push_deferred(std::function<void()> fn);
-            template<typename Fn, typename... Args>
-            void push_deferred_call(Fn&& fn, Args&&... args) {
-                push_deferred(std::bind(std::forward<Fn>(fn), std::forward<Args>(args)...));
-            }
             void flush_deferred_queue();
 
 
