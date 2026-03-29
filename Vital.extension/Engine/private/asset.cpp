@@ -371,7 +371,6 @@ namespace Vital::Engine {
                 return;
             }
 
-            // Use Vital::Tool::Rest::get for downloading
             std::string response_body;
             try {
                 response_body = Vital::Tool::Rest::get(base_url + "/asset?path=" + path);
