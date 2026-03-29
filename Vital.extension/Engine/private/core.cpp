@@ -39,7 +39,15 @@ namespace Vital::Engine {
         Vital::print("sbox", "Core: bootstrapping Vital.kit...");
         kit_thread = std::thread([this]() {
             Vital::Tool::Kit::ensure_kit();
-            if (!kit_abort.load()) push_deferred_call(&Core::on_kit_ready, this);
+            if (!kit_abort.load()) {
+                push_deferred([this]() {
+                    Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
+                    Vital::Tool::Event::emit("vital.kit:ready");
+                    Vital::Tool::Event::emit("vital.core:ready");
+                    set_process(true);
+                });
+                call_deferred("flush_deferred_queue");
+            }
         });
     }
 
@@ -55,13 +63,6 @@ namespace Vital::Engine {
             local.swap(deferred_queue);
         }
         for (auto& fn : local) fn();
-    }
-
-    void Core::on_kit_ready() {
-        Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
-        Vital::Tool::Event::emit("vital.kit:ready");
-        Vital::Tool::Event::emit("vital.core:ready");
-        set_process(true);
     }
 
     void Core::_exit_tree() {

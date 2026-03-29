@@ -42,7 +42,6 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("notify_resource_stopped", "name"), &Core::notify_resource_stopped);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_downloaded", "path"), &Core::on_asset_downloaded);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_asset_download_failed", "path"), &Core::on_asset_download_failed);
-                godot::ClassDB::bind_method(godot::D_METHOD("on_kit_ready"), &Core::on_kit_ready);
                 godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred_queue"), &Core::flush_deferred_queue);
             };
         public:
@@ -96,6 +95,5 @@ namespace Vital::Engine {
             void notify_resource_stopped(const godot::String& name);
             void on_asset_downloaded(const godot::String& path);
             void on_asset_download_failed(const godot::String& path);
-            void on_kit_ready();
     };
 }
