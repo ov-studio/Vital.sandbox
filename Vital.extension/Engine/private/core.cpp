@@ -108,7 +108,7 @@ namespace Vital::Engine {
     }
 
 
-    // Getters //
+    // APIs //
     godot::SceneTree* Core::get_scene_tree() {
         return godot::Object::cast_to<godot::SceneTree>(
             godot::Engine::get_singleton() -> get_main_loop()
@@ -140,21 +140,11 @@ namespace Vital::Engine {
         }
         return environment->get_environment();
     }
-    #endif
 
-
-    // Freers //
-    #if defined(Vital_SDK_Client)
     void Core::free_environment() {
         if (!environment) return;
         environment->queue_free();
         environment = nullptr;
     }
     #endif
-
-
-    // APIs //
-    void Core::setup_model_spawner() {
-        Model::setup_spawner();
-    }
 }

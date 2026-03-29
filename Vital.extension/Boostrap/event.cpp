@@ -167,6 +167,7 @@ void initialize_vital_events() {
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Engine::Core::get_singleton() -> call_deferred("setup_model_spawner");
+        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
     });
 
 

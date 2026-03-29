@@ -35,7 +35,6 @@ namespace Vital::Engine {
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
-                godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"), &Core::setup_model_spawner);
                 godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred_queue"), &Core::flush_deferred_queue);
             };
         public:
@@ -65,23 +64,14 @@ namespace Vital::Engine {
             void flush_deferred_queue();
 
 
-            // Getters //
+            // APIs //
             static godot::SceneTree* get_scene_tree();
             static godot::Window* get_scene_root();
             #if defined(Vital_SDK_Client)
             static godot::DisplayServer* get_display_server();
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();
-            #endif
-
-
-            // Freers //
-            #if defined(Vital_SDK_Client)
             static void free_environment();
             #endif
-
-
-            // APIs //
-            void setup_model_spawner();
     };
 }
