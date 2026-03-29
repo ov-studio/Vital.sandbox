@@ -328,39 +328,48 @@ namespace Vital::Sandbox {
                 return new Machine(lua_newthread(state)); 
             }
 
-    
+
             // Environment //
-            void create_environment(const std::string& id = "") {
+            void create_environment(const std::string& id) {
                 create_table();
                 create_table();
                 lua_pushglobaltable(state);
                 set_table_field("__index", -2);
                 set_metatable(-2);
-                if (!id.empty()) {
-                    push(-1);
-                    lua_pushstring(state, id.c_str());
-                    lua_rawset(state, LUA_REGISTRYINDEX);
-                }
+                push(-1);
+                lua_pushstring(state, id.c_str());
+                lua_rawset(state, LUA_REGISTRYINDEX);
+                set_reference(id, -1);
             }
 
-            std::string get_environment_id(int level = 1) {
+            std::string get_environment_id(int level = 0) {
                 lua_Debug debug;
-                if (!lua_getstack(state, level, &debug)) return "";
-                if (!lua_getinfo(state, "f", &debug)) return "";
-                const char* upname = lua_getupvalue(state, -1, 1);
-                lua_remove(state, -2);
-                if (!upname) return "";
-                lua_rawget(state, LUA_REGISTRYINDEX); 
-                std::string result;
-                if (lua_isstring(state, -1)) result = lua_tostring(state, -1);
-                lua_pop(state, 1);
-                return result;
+                for (int index = level; lua_getstack(state, index, &debug); ++index) {
+                    lua_getinfo(state, "f", &debug);
+                    const char* upname = lua_getupvalue(state, -1, 1);
+                    lua_remove(state, -2);
+                    if (!upname) continue;
+                    if (!lua_istable(state, -1)) {
+                        lua_pop(state, 1);
+                        continue;
+                    }
+                    lua_rawget(state, LUA_REGISTRYINDEX);
+                    if (lua_isstring(state, -1)) {
+                        std::string result = lua_tostring(state, -1);
+                        lua_pop(state, 1);
+                        return result;
+                    }
+                    lua_pop(state, 1);
+                }
+                return "";
             }
-            
-            void clear_environment_id(int index = -1) {
-                push(index);
+
+            void clear_environment_id(const std::string& id = "") {
+                if (!is_reference(id)) return;
+                get_reference(id, true);
                 lua_pushnil(state);
                 lua_rawset(state, LUA_REGISTRYINDEX);
+                del_reference(id);
             }
 
 
