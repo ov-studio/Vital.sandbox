@@ -40,6 +40,7 @@ if env.Args["platform_type"] == "Client":
 if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
     env.Append(CPPFLAGS=["/EHsc"])
+    env.Append(CXXFLAGS=["/wd4244"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
 elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
