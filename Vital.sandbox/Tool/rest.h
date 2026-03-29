@@ -75,7 +75,7 @@ namespace Vital::Tool::Rest {
             return true;
         });
         if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
-        if (res->status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res->status));
+        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status));
         return buffer;
     }
 
@@ -86,7 +86,7 @@ namespace Vital::Tool::Rest {
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
         if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
-        if (res->status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res->status));
-        return res->body;
+        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status));
+        return res -> body;
     }
 }
