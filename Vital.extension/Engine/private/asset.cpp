@@ -420,7 +420,7 @@ namespace Vital::Engine {
     void AssetManager::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
         Core::get_singleton()->push_deferred([path]() {
-            Core::get_singleton()->on_asset_download_failed(path);
+            Vital::print("sbox", "AssetManager: download failed -> ", path);
         });
     }
 

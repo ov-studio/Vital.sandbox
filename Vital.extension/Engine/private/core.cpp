@@ -172,10 +172,4 @@ namespace Vital::Engine {
         }
         #endif
     }
-
-    void Core::on_asset_download_failed(const godot::String& path) {
-        #if defined(Vital_SDK_Client)
-        Vital::print("sbox", "AssetManager: download failed -> ", path.utf8().get_data());
-        #endif
-    }
 }
