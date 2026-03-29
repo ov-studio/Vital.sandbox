@@ -12,6 +12,7 @@
 #include <Vital.extension/Engine/public/console.h>
 
 namespace Vital::Tool {
+    // TODO: Improve
     std::mutex content_mutex;
     std::unordered_map<std::string, std::string> content_cache;
     std::unordered_map<std::string, rapidjson::Document> json_cache;
