@@ -80,7 +80,6 @@ namespace Vital::Engine {
             const ResourceManifest* get_resource(const std::string& name) const;
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
             static std::string get_resource_base(const std::string& name);
-            static std::string get_resource_env(const std::string& name);
             std::vector<ResourceScript> get_resource_scripts(const std::string& name, const std::string& type) const;
 
 

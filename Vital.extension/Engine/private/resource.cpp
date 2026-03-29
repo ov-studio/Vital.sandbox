@@ -87,10 +87,6 @@ namespace Vital::Engine {
         return Vital::get_directory("resources", name);
     }
 
-    std::string ResourceManager::get_resource_env(const std::string& name) {
-        return name + ":env";
-    }
-
     std::vector<ResourceManager::ResourceScript> ResourceManager::get_resource_scripts(const std::string& name, const std::string& type) const {
         std::vector<ResourceManager::ResourceScript> result;
         const auto* resource = get_resource(name);
