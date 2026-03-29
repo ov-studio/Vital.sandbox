@@ -80,7 +80,7 @@ namespace Vital::Engine {
     }
 
     std::string ResourceManager::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
-        return vm -> get_environment_id();
+        return vm->get_environment_id();
     }
 
     std::string ResourceManager::get_resource_base(const std::string& name) {
@@ -354,9 +354,8 @@ namespace Vital::Engine {
         const auto* resource  = get_resource(name);
         bool status           = true;
 
-        // Pass name as the environment id — stored in C registry, invisible from Lua
         vm->create_environment(name);
-        vm->set_reference(env);
+        vm->set_reference(env, -1);
 
         for (const auto& script : resource->scripts) {
             if (!is_eligible(script.type)) continue;
@@ -382,10 +381,8 @@ namespace Vital::Engine {
         }
 
         if (!status) {
-            // Clear registry entry before releasing the env reference
             vm->get_reference(env, true);
-            vm->clear_environment_id();
-            vm->pop();
+            vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
             vm->del_reference(env);
             return false;
         }
@@ -427,10 +424,8 @@ namespace Vital::Engine {
 
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
 
-        // Clear registry entry before releasing the env reference
         vm->get_reference(get_resource_env(name), true);
-        vm->clear_environment_id();
-        vm->pop();
+        vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
         vm->del_reference(get_resource_env(name));
 
         running.erase(name);
@@ -547,7 +542,6 @@ namespace Vital::Engine {
         const std::string env = get_resource_env(name);
         bool status           = true;
 
-        // Pass name as the environment id — stored in C registry, invisible from Lua
         vm->create_environment(name);
         vm->set_reference(env);
 
@@ -580,10 +574,8 @@ namespace Vital::Engine {
         resource_assets.erase(name);
 
         if (!status) {
-            // Clear registry entry before releasing the env reference
             vm->get_reference(env, true);
-            vm->clear_environment_id();
-            vm->pop();
+            vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
             vm->del_reference(env);
             Vital::print("error", "Resource `" + name + "` failed to load — env released");
             return;
@@ -611,10 +603,8 @@ namespace Vital::Engine {
         }
 
         if (is_running(name)) {
-            // Clear registry entry before releasing the env reference
             vm->get_reference(get_resource_env(name), true);
-            vm->clear_environment_id();
-            vm->pop();
+            vm->clear_environment_id();  // lua_rawset pops both key+value — no pop needed after
             vm->del_reference(get_resource_env(name));
             running.erase(name);
         }
