@@ -57,7 +57,6 @@ namespace Vital::Engine {
     // Hash directly from disk without loading into memory — used at register time
     // so we never hold large files in RAM just to hash them
     std::string AssetManager::compute_hash_file(const std::string& full_path) {
-        // Extract base directory and filename using Vital::Tool::File::hash path format
         size_t last_sep = full_path.find_last_of("/\\");
         std::string base = (last_sep != std::string::npos) ? full_path.substr(0, last_sep) : ".";
         std::string file = (last_sep != std::string::npos) ? full_path.substr(last_sep + 1) : full_path;
@@ -89,15 +88,12 @@ namespace Vital::Engine {
     //--------------------//
 
     void AssetManager::register_asset(const std::string& path, const std::string& group) {
-        // If already registered, update the group but skip re-hashing —
-        // hash is stable, no need to recompute
         if (registered_assets.count(path)) {
             if (!group.empty()) registered_assets[path].group = group;
             return;
         }
         try {
             const std::string full_path = Vital::get_directory() + "/" + path;
-            // Hash from disk without loading into memory
             registered_assets[path] = { compute_hash_file(full_path), group };
             Vital::print("sbox", "AssetManager: registered -> ", path.c_str(),
                 " hash=", registered_assets[path].hash.c_str(),
@@ -146,8 +142,6 @@ namespace Vital::Engine {
 
         http_server = std::make_unique<httplib::Server>();
 
-        // GET /asset?path=resources/my_resource/file.lua
-        // Supports HTTP range requests for resumable downloads
         http_server->Get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
             if (!req.has_param("path")) {
                 res.status = 400;
@@ -156,7 +150,6 @@ namespace Vital::Engine {
             }
             const std::string path = req.get_param_value("path");
 
-            // Only serve registered assets — prevents directory traversal
             if (!registered_assets.count(path)) {
                 res.status = 404;
                 res.set_content("Not found", "text/plain");
@@ -165,8 +158,6 @@ namespace Vital::Engine {
 
             const std::string full_path = Vital::get_directory() + "/" + path;
 
-            // Stream the file directly — httplib handles range requests,
-            // chunked transfer, and connection keep-alive automatically
             if (!http_server->set_mount_point("/", Vital::get_directory())) {
                 // Fallback: manual file streaming with range support
             }
@@ -181,8 +172,6 @@ namespace Vital::Engine {
             const size_t file_size = file.tellg();
             file.seekg(0);
 
-            // Use httplib's content provider for efficient streaming
-            // without loading the whole file into RAM
             res.set_content_provider(
                 file_size,
                 "application/octet-stream",
@@ -206,7 +195,6 @@ namespace Vital::Engine {
             );
         });
 
-        // GET /manifest — returns JSON-style asset list with hashes and groups
         http_server->Get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
             std::string body = "{\"assets\":[";
             bool first = true;
@@ -221,8 +209,6 @@ namespace Vital::Engine {
             res.set_content(body, "application/json");
         });
 
-        // GET /info — returns server info from config
-        // This allows clients to query server name, version, social links, etc.
         http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
@@ -247,7 +233,6 @@ namespace Vital::Engine {
             Vital::print("sbox", "AssetManager: HTTP server stopped");
         });
 
-        // Give the server a moment to bind
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         Vital::print("sbox", "AssetManager: HTTP server running on port ", http_port);
         return true;
@@ -272,7 +257,6 @@ namespace Vital::Engine {
         Vital::Tool::Stack msg;
         msg.object["type"]        = Vital::Tool::StackValue(std::string("asset:manifest"));
         msg.object["asset_count"] = Vital::Tool::StackValue((int32_t)registered_assets.size());
-        // Tell client which port to hit for HTTP downloads
         msg.object["http_port"]   = Vital::Tool::StackValue((int32_t)http_port);
 
         int i = 0;
@@ -373,8 +357,8 @@ namespace Vital::Engine {
         dl->group = group;
         active_downloads[path] = dl;
 
-        const std::string local_base     = get_directory();
-        const std::string local_path     = local_base + "/" + path;
+        const std::string local_base = get_directory();
+        const std::string local_path = local_base + "/" + path;
 
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             Vital::print("sbox", "AssetManager: downloading -> ", path.c_str());
