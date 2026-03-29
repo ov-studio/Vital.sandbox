@@ -157,19 +157,4 @@ namespace Vital::Engine {
     void Core::setup_model_spawner() {
         Model::setup_spawner();
     }
-
-    void Core::on_asset_downloaded(const godot::String& path) {
-        #if defined(Vital_SDK_Client)
-        const std::string p = Vital::to_std_string(path);
-        Vital::Tool::Stack ready_args;
-        ready_args.object["path"]   = Vital::Tool::StackValue(p);
-        ready_args.object["cached"] = Vital::Tool::StackValue(false);
-        Vital::Tool::Event::emit("asset:file_ready", ready_args);
-
-        if (!AssetManager::get_singleton() -> is_downloading()) {
-            Vital::print("sbox", "AssetManager: all assets ready");
-            Vital::Tool::Event::emit("asset:ready", {});
-        }
-        #endif
-    }
 }

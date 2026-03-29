@@ -36,7 +36,6 @@ namespace Vital::Engine {
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
                 godot::ClassDB::bind_method(godot::D_METHOD("setup_model_spawner"), &Core::setup_model_spawner);
-                godot::ClassDB::bind_method(godot::D_METHOD("on_asset_downloaded", "path"), &Core::on_asset_downloaded);
                 godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred_queue"), &Core::flush_deferred_queue);
             };
         public:
@@ -84,6 +83,5 @@ namespace Vital::Engine {
 
             // APIs //
             void setup_model_spawner();
-            void on_asset_downloaded(const godot::String& path);
     };
 }

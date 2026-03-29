@@ -407,11 +407,16 @@ namespace Vital::Engine {
             Vital::print("sbox", "AssetManager: downloaded -> ", path.c_str());
             active_downloads.erase(path);
 
-            // Emit file_ready on main thread via deferred call
-            Core::get_singleton() -> call_deferred(
-                "on_asset_downloaded",
-                godot::String(path.c_str())
-            );
+            Core::get_singleton()->push_deferred([path]() {
+                Vital::Tool::Stack ready_args;
+                ready_args.object["path"]   = Vital::Tool::StackValue(path);
+                ready_args.object["cached"] = Vital::Tool::StackValue(false);
+                Vital::Tool::Event::emit("asset:file_ready", ready_args);
+                if (!AssetManager::get_singleton() -> is_downloading()) {
+                    Vital::print("sbox", "AssetManager: all assets ready");
+                    Vital::Tool::Event::emit("asset:ready", {});
+                }
+            });
         });
 
         dl->thread.detach();
