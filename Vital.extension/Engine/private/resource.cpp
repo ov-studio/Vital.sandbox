@@ -79,6 +79,10 @@ namespace Vital::Engine {
         return nullptr;
     }
 
+    std::string ResourceManager::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
+        return vm -> get_environment_id();
+    }
+
     std::string ResourceManager::get_resource_base(const std::string& name) {
         return Vital::get_directory("resources", name);
     }
@@ -168,7 +172,6 @@ namespace Vital::Engine {
                 }
                 const std::string src_pattern = node["src"].as<std::string>();
 
-                // Expand glob patterns (e.g., "something/**/*.lua")
                 std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), src_pattern);
 
                 if (expanded_files.empty()) {
@@ -186,7 +189,6 @@ namespace Vital::Engine {
                 for (const auto& node : manifest["files"]) {
                     const std::string file_pattern = node.as<std::string>();
 
-                    // Expand glob patterns (e.g., "assets/**")
                     std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), file_pattern);
 
                     if (expanded_files.empty()) {
@@ -248,8 +250,6 @@ namespace Vital::Engine {
             }
         });
 
-        // Incoming network packets — filter resource lifecycle messages.
-        // Scripts and files use flat indexed keys matching notify_resource_started().
         Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) -> void {
             if (!args.object.count("type")) return;
             const std::string type = args.object.at("type").as<std::string>();
@@ -259,7 +259,6 @@ namespace Vital::Engine {
                 if (!args.object.count("name")) return;
                 const std::string name = args.object.at("name").as<std::string>();
 
-                // Decode scripts from flat indexed keys
                 std::vector<ResourceManager::ResourceScript> scripts;
                 if (args.object.count("script_count")) {
                     const int count = args.object.at("script_count").as<int32_t>();
@@ -275,7 +274,6 @@ namespace Vital::Engine {
                     }
                 }
 
-                // Decode files from flat indexed keys
                 std::vector<std::string> files;
                 if (args.object.count("file_count")) {
                     const int count = args.object.at("file_count").as<int32_t>();
@@ -306,7 +304,6 @@ namespace Vital::Engine {
 
     #if !defined(Vital_SDK_Client)
 
-    // Flat indexed keys — avoids nested Stack serialization issues
     void ResourceManager::notify_resource_started(const std::string& name) {
         const auto* resource = get_resource(name);
         if (!resource) return;
@@ -357,7 +354,8 @@ namespace Vital::Engine {
         const auto* resource  = get_resource(name);
         bool status           = true;
 
-        vm->create_environment();
+        // Pass name as the environment id — stored in C registry, invisible from Lua
+        vm->create_environment(name);
         vm->set_reference(env);
 
         for (const auto& script : resource->scripts) {
@@ -384,12 +382,14 @@ namespace Vital::Engine {
         }
 
         if (!status) {
+            // Clear registry entry before releasing the env reference
+            vm->get_reference(env, true);
+            vm->clear_environment_id();
+            vm->pop();
             vm->del_reference(env);
             return false;
         }
 
-        // Register all assets under the resource's group name so they can be
-        // bulk-cancelled on the client side when the resource is stopped
         for (const auto& file : resource->files)
             am->register_asset("resources/" + name + "/" + file, name);
         for (const auto& script : resource->scripts) {
@@ -418,8 +418,6 @@ namespace Vital::Engine {
             return false;
         }
 
-        // Unregister all assets that belong to this resource so the HTTP server
-        // stops serving them and clients receive an updated manifest on reconnect
         am->unregister_group(name);
 
         Core::get_singleton() -> call_deferred(
@@ -428,7 +426,13 @@ namespace Vital::Engine {
         );
 
         Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+
+        // Clear registry entry before releasing the env reference
+        vm->get_reference(get_resource_env(name), true);
+        vm->clear_environment_id();
+        vm->pop();
         vm->del_reference(get_resource_env(name));
+
         running.erase(name);
         Vital::print("sbox", "Resource `" + name + "` stopped");
         return true;
@@ -543,7 +547,8 @@ namespace Vital::Engine {
         const std::string env = get_resource_env(name);
         bool status           = true;
 
-        vm->create_environment();
+        // Pass name as the environment id — stored in C registry, invisible from Lua
+        vm->create_environment(name);
         vm->set_reference(env);
 
         for (const auto& script : resource->scripts) {
@@ -575,6 +580,10 @@ namespace Vital::Engine {
         resource_assets.erase(name);
 
         if (!status) {
+            // Clear registry entry before releasing the env reference
+            vm->get_reference(env, true);
+            vm->clear_environment_id();
+            vm->pop();
             vm->del_reference(env);
             Vital::print("error", "Resource `" + name + "` failed to load — env released");
             return;
@@ -595,10 +604,6 @@ namespace Vital::Engine {
         }
 
         if (is_pending(name)) {
-            // Drop our tracked set first, then cancel the whole group in one shot.
-            // cancel_group() iterates active_downloads by group tag, so it catches
-            // any download that was dispatched for this resource regardless of
-            // whether resource_assets is still populated.
             resource_assets.erase(name);
             pending.erase(name);
             am->cancel_group(name);
@@ -606,6 +611,10 @@ namespace Vital::Engine {
         }
 
         if (is_running(name)) {
+            // Clear registry entry before releasing the env reference
+            vm->get_reference(get_resource_env(name), true);
+            vm->clear_environment_id();
+            vm->pop();
             vm->del_reference(get_resource_env(name));
             running.erase(name);
         }
