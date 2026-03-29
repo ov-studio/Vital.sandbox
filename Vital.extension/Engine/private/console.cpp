@@ -38,6 +38,7 @@ namespace Vital::Engine {
             webview -> set_message_handler([this](godot::String message) {
                 this -> on_message(message);
             });
+
             Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) -> void {
                 this -> webview -> load_html(Vital::Tool::fetch_module("console"));
             });
