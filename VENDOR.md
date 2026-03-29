@@ -9,6 +9,7 @@
 * [**libmysqlclient**](https://dev.mysql.com/doc/c-api/en/) - Provides low-level communication with MySQL database servers.
 * [**soci**](https://soci.sourceforge.net) - Provides a unified C++ abstraction layer over relational database backends.
 * [**zlib**](https://zlib.net) - Provides lossless data compression and decompression.
+* [**libzip**](https://libzip.org) - Provides reading, creating, and modifying ZIP archives.
 * [**yaml-cpp**](https://github.com/jbeder/yaml-cpp) - Provides YAML parsing and emitting for C++.
 * [**fmt**](https://fmt.dev) - Provides fast and expressive text formatting for C++.
 * [**rapidjson**](https://rapidjson.org) - Provides high-performance JSON parsing and generation.
