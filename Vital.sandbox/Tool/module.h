@@ -11,9 +11,9 @@
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/rest.h>
 #include <Vital.sandbox/Tool/file.h>
-#include <Vital.sandbox/Vendor/rapidjson/document.h>
-#include <Vital.sandbox/Vendor/rapidjson/writer.h>
-#include <Vital.sandbox/Vendor/rapidjson/stringbuffer.h>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 #include <zip.h>
 
 namespace Vital::Tool {
