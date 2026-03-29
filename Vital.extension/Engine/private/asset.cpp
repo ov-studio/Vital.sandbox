@@ -362,7 +362,6 @@ namespace Vital::Engine {
                 );
             } catch (...) {}
 
-            // Open output file
             std::ofstream out(local_path, std::ios::binary | std::ios::trunc);
             if (!out) {
                 Vital::print("sbox", "AssetManager: cannot open output file -> ", path.c_str());
