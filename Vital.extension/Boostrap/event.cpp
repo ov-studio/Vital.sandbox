@@ -167,15 +167,6 @@ void initialize_vital_events() {
     // Sandbox //
     Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
         Vital::Engine::Core::get_singleton() -> call_deferred("setup_model_spawner");
-
-        #if !defined(Vital_SDK_Client)
-        // Register global assets (non-resource assets shared across all clients)
-        std::vector<std::string> manifest = {
-            "cube.glb",
-            "test/testing.glb"
-        };
-        Vital::Engine::AssetManager::get_singleton() -> register_assets(manifest);
-        #endif
     });
 
 
