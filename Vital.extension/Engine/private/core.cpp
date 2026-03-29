@@ -158,10 +158,6 @@ namespace Vital::Engine {
         Model::setup_spawner();
     }
 
-    void Core::spawn_model(const godot::String& name, int authority_peer) {
-        Model::spawn_synced(to_std_string(name), authority_peer);
-    }
-
     void Core::on_asset_downloaded(const godot::String& path) {
         #if defined(Vital_SDK_Client)
         const std::string p = Vital::to_std_string(path);
