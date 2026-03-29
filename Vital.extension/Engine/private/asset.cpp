@@ -480,11 +480,7 @@ namespace Vital::Engine {
     void AssetManager::flush_spawn_queue(const std::string& loaded_name) {
         auto it = spawn_queue.find(loaded_name);
         if (it == spawn_queue.end()) return;
-        Core::get_singleton() -> call_deferred(
-            "spawn_model",
-            godot::String(loaded_name.c_str()),
-            it->second
-        );
+        const int authority_peer = it->second;
         spawn_queue.erase(it);
         Core::get_singleton() -> push_deferred([loaded_name, authority_peer]() {
             Model::spawn_synced(loaded_name, authority_peer);
