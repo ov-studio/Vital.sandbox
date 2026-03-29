@@ -212,6 +212,20 @@ namespace Vital::Engine {
 
         Vital::print("sbox", "Resource scan complete — " + std::to_string(resources.size()) + " resource(s) loaded");
 
+        // Stop any running resources that no longer exist after rescan
+        #if !defined(Vital_SDK_Client)
+        {
+            std::vector<std::string> stale;
+            for (const auto& name : running) {
+                if (!is_loaded(name)) stale.push_back(name);
+            }
+            for (const auto& name : stale) {
+                Vital::print("sbox", "Resource `" + name + "` no longer exists — stopping");
+                stop(name);
+            }
+        }
+        #endif
+
         #if !defined(Vital_SDK_Client)
         static bool server_bound = false;
         if (!server_bound) {
