@@ -145,14 +145,14 @@ namespace Vital::Engine {
             });
             godot::Ref<godot::Environment> env;
             env.instantiate();
-            environment->set_environment(env);
+            environment -> set_environment(env);
         }
-        return environment->get_environment();
+        return environment -> get_environment();
     }
 
     void Core::free_environment() {
         if (!environment) return;
-        environment->queue_free();
+        environment -> queue_free();
         environment = nullptr;
     }
     #endif
