@@ -77,12 +77,12 @@ namespace Vital::Engine {
             void clear(bool signal = false);
             #if !defined(Vital_SDK_Client)
             void shutdown();
+            void toggle();
             #endif
 
 
             // Events //
             #if defined(Vital_SDK_Client)
-            void toggle();
             void on_message(godot::String message);
             #endif
     };

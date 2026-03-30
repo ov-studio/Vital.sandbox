@@ -545,23 +545,23 @@ namespace Vital::Engine {
         stdin_running = false;
         Core::get_singleton() -> call_deferred("free_singleton");
     }
+
+    void Console::toggle() {
+        webview -> set_visible(!webview -> is_visible());
+    }
     #endif
 
 
     // Events //
     #if defined(Vital_SDK_Client)
-    void Console::toggle() {
-        webview -> set_visible(!webview -> is_visible());
-    }
-
     void Console::on_message(godot::String message) {
         rapidjson::Document document;
         document.Parse(to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
         if (action == "ready") init();
-        else if (action == "toggle") toggle();
         else if (action == "clear") clear(true);
+        else if (action == "toggle") toggle();
         else if (action == "input") {
             if (!document.HasMember("message") || !document["message"].IsString()) return;
             execute(document["message"].GetString());
