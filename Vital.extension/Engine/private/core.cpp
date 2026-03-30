@@ -15,11 +15,8 @@
 #pragma once
 #include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/console.h>
-#include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/model.h>
-#include <Vital.extension/Engine/public/canvas.h>
-#include <Vital.extension/Engine/public/resource.h>
 #include <Vital.extension/Sandbox/index.h>
 
 
@@ -28,7 +25,6 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    // TODO: Improve
     // Instantiators //
     void Core::_ready() {
         singleton = singleton ? singleton : this;
@@ -44,6 +40,7 @@ namespace Vital::Engine {
                     Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
                     Vital::Tool::Event::emit("vital.kit:ready");
                     Vital::Tool::Event::emit("vital.core:ready");
+                    kit_ready.store(true);
                     set_process(true);
                 });
                 call_deferred("flush_deferred_queue");
@@ -51,32 +48,16 @@ namespace Vital::Engine {
         });
     }
 
-    void Core::push_deferred(std::function<void()> fn) {
-        std::lock_guard<std::mutex> lock(deferred_mutex);
-        deferred_queue.push_back(std::move(fn));
-    }
-
-    void Core::flush_deferred_queue() {
-        std::vector<std::function<void()>> local;
-        {
-            std::lock_guard<std::mutex> lock(deferred_mutex);
-            local.swap(deferred_queue);
-        }
-        for (auto& fn : local) fn();
-    }
-
     void Core::_exit_tree() {
         kit_abort.store(true);
+        kit_ready.store(false);
         if (kit_thread.joinable()) kit_thread.join();
         {
             std::lock_guard<std::mutex> lock(deferred_mutex);
             deferred_queue.clear();
         }
-        #if defined(Vital_SDK_Client)
-        free_environment();
-        #endif
         if (!Vital::is_runtime()) return;
-        teardown_singleton();
+        teardown();
         Vital::Tool::Event::emit("vital.core:free");
     }
 
@@ -106,9 +87,32 @@ namespace Vital::Engine {
         get_scene_tree() -> quit(0);
     }
 
-    void Core::teardown_singleton() {
+
+    // Managers //
+    bool Core::is_ready() {
+        return singleton && singleton -> kit_ready.load();
+    }
+
+    void Core::teardown() {
         AssetManager::free_singleton();
         Model::teardown_spawner();
+        #if defined(Vital_SDK_Client)
+        free_environment();
+        #endif
+    }
+
+    void Core::push_deferred(std::function<void()> fn) {
+        std::lock_guard<std::mutex> lock(deferred_mutex);
+        deferred_queue.push_back(std::move(fn));
+    }
+
+    void Core::flush_deferred_queue() {
+        std::vector<std::function<void()>> local;
+        {
+            std::lock_guard<std::mutex> lock(deferred_mutex);
+            local.swap(deferred_queue);
+        }
+        for (auto& fn : local) fn();
     }
 
 

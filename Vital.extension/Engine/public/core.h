@@ -21,7 +21,6 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    // TODO: Improve
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)
         protected:
@@ -52,12 +51,13 @@ namespace Vital::Engine {
             // Utils //
             static Core* get_singleton();
             void free_singleton();
-            static void teardown_singleton();
 
 
-            // Queue //
+            // Managers //
+            bool is_ready();
             void push_deferred(std::function<void()> fn);
             void flush_deferred_queue();
+            void teardown();
 
 
             // APIs //
