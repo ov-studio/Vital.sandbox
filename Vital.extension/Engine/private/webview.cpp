@@ -14,6 +14,7 @@
 
 #pragma once
 #if defined(Vital_SDK_Client)
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/webview.h>
 
 
@@ -33,9 +34,12 @@ namespace Vital::Engine {
                 throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible device found");
             }
         }
-        Canvas::get_singleton() -> call_deferred("add_child", webview);
-        webview -> connect("ipc_message", godot::Callable(this, "on_message"));
-        webview -> call_deferred("load_url", "https://github.com/ov-studio/Vital.sandbox");
+        Core::get_singleton() -> push_deferred([this]() {
+            set_visible(false);
+            Canvas::get_singleton() -> add_child(webview);
+            webview -> connect("ipc_message", godot::Callable(this, "on_message"));
+            load_url("https://github.com/ov-studio/Vital.sandbox");
+        });
     }
 
     Webview::~Webview() {

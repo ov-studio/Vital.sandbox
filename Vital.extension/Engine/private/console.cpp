@@ -29,7 +29,6 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
             webview = Webview::create();
             webview -> set_position({0, 0});
-            webview -> set_visible(false);
             webview -> set_fullscreen(true);
             webview -> set_transparent(true);
             webview -> set_autoplay(false);
