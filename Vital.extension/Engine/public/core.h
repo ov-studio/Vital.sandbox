@@ -44,6 +44,7 @@ namespace Vital::Engine {
             void _exit_tree() override;
             void _process(double delta) override;
             #if defined(Vital_SDK_Client)
+            // TODO: Improve
             void _input(godot::Ref<godot::InputEvent> event);
             void _unhandled_input(godot::Ref<godot::InputEvent> event);
             #endif

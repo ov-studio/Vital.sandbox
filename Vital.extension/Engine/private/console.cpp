@@ -420,6 +420,7 @@ namespace Vital::Engine {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.SetObject();
         auto& alloc = document.GetAllocator();
+        const auto bind = Vital::Tool::fetch_json_value("config/console", "bind");
         auto make_color = [&](const Vital::Tool::Stack& color) {
             rapidjson::Value result(rapidjson::kArrayType);
             result.PushBack(color.array[0].as<int32_t>(), alloc);
@@ -428,7 +429,7 @@ namespace Vital::Engine {
             return result;
         };
         document.AddMember("action", "init", alloc);
-        document.AddMember("toggle_key", Vital::Tool::fetch_json_value("config/console", "log", "bind"), alloc);
+        document.AddMember("toggle_key", rapidjson::Value(bind.as<std::string>().c_str(), alloc), alloc);
         rapidjson::Value types(rapidjson::kObjectType);
         auto logs = Vital::Tool::fetch_json_node("config/console", "log");
         if (logs && logs -> IsObject()) {
