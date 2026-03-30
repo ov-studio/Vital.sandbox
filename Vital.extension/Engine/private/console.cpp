@@ -428,7 +428,7 @@ namespace Vital::Engine {
             return result;
         };
         document.AddMember("action", "init", alloc);
-        document.AddMember("toggle_key", "F1", alloc);
+        document.AddMember("toggle_key", Vital::Tool::fetch_json_value("config/console", "log", "bind"), alloc);
         rapidjson::Value types(rapidjson::kObjectType);
         auto logs = Vital::Tool::fetch_json_node("config/console", "log");
         if (logs && logs -> IsObject()) {
