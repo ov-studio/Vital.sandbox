@@ -35,10 +35,11 @@ namespace Vital::Engine {
             }
         }
         Core::get_singleton() -> push_deferred([this]() {
-            set_visible(false);
             Canvas::get_singleton() -> add_child(webview);
             webview -> connect("ipc_message", godot::Callable(this, "on_message"));
             load_url("https://github.com/ov-studio/Vital.sandbox");
+            set_visible(false);
+            set_devtools_visible(false);
         });
     }
 

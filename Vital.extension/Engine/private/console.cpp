@@ -33,7 +33,6 @@ namespace Vital::Engine {
             webview -> set_transparent(true);
             webview -> set_autoplay(false);
             webview -> set_zoomable(false);
-            webview -> set_devtools_visible(false);
             webview -> set_message_handler([this](godot::String message) {
                 this -> on_message(message);
             });
