@@ -546,6 +546,7 @@ namespace Vital::Engine {
         Core::get_singleton() -> call_deferred("free_singleton");
     }
 
+    #else
     void Console::toggle() {
         webview -> set_visible(!webview -> is_visible());
     }
