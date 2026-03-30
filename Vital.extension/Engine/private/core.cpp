@@ -99,6 +99,7 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif
+        Vital::Tool::Event::emit("vital.core:teardown");
     }
 
     void Core::push_deferred(std::function<void()> fn) {
