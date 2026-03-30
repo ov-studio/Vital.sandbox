@@ -429,7 +429,7 @@ namespace Vital::Engine {
             return result;
         };
         document.AddMember("action", "init", alloc);
-        document.AddMember("toggle_key", rapidjson::Value(bind.as<std::string>().c_str(), alloc), alloc);
+        document.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), alloc), alloc);
         rapidjson::Value types(rapidjson::kObjectType);
         auto logs = Vital::Tool::fetch_json_node("config/console", "log");
         if (logs && logs -> IsObject()) {
