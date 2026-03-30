@@ -554,6 +554,14 @@ namespace Vital::Engine {
 
     // Events //
     #if defined(Vital_SDK_Client)
+    bool Console::on_key(int keycode) {
+        const auto bind = Vital::Tool::fetch_json_value("config/console", "bind");
+        if (keycode != godot::OS::get_singleton() -> find_keycode_from_string(to_godot_string(bind.as<std::string>()))) return false;
+        Vital::Engine::Console::get_singleton() -> toggle();
+        Core::get_singleton() -> get_viewport() -> set_input_as_handled();
+        return true;
+    }
+
     void Console::on_message(godot::String message) {
         rapidjson::Document document;
         document.Parse(to_std_string(message).c_str());

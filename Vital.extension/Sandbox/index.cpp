@@ -14,7 +14,9 @@
 
 #pragma once
 #include <Vital.extension/Sandbox/index.h>
+#include <Vital.extension/Engine/public/core.h>
 #include <Vital.extension/Engine/public/canvas.h>
+#include <Vital.extension/Engine/public/console.h>
 #include <Vital.extension/Sandbox/api/canvas.h>
 #include <Vital.extension/Sandbox/api/model.h>
 #include <Vital.extension/Sandbox/api/webview.h>
@@ -100,6 +102,7 @@ namespace Vital::Engine {
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
+            if (event_key -> is_pressed() && Console::get_singleton() -> on_key(event_key -> get_keycode())) return;
             signal("vital.sandbox:key_input",
                 Vital::Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
                 Vital::Tool::StackValue(event_key -> is_pressed())
