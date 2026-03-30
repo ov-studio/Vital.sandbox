@@ -29,7 +29,7 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
             webview = Webview::create();
             webview -> set_position({0, 0});
-            webview -> set_visible(Core::get_singleton() -> is_ready());
+            webview -> set_visible(false);
             webview -> set_fullscreen(true);
             webview -> set_transparent(true);
             webview -> set_autoplay(false);
@@ -196,6 +196,7 @@ namespace Vital::Engine {
                                             if (stdin_history_index >= static_cast<int>(stdin_history.size())) {
                                                 stdin_history_index = -1;
                                                 stdin_buffer.clear();
+                                            }
                                             else stdin_buffer = stdin_history[stdin_history_index];
                                         }
                                     }
@@ -430,6 +431,7 @@ namespace Vital::Engine {
             return result;
         };
         document.AddMember("action", "init", alloc);
+        document.AddMember("toggle_key", "F1", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
         auto& levels = Vital::Tool::fetch_json("config/log");
         if (!levels.HasParseError() && levels.IsObject()) {
@@ -549,12 +551,17 @@ namespace Vital::Engine {
 
     // Events //
     #if defined(Vital_SDK_Client)
+    void Console::toggle() {
+        webview -> set_visible(!webview -> is_visible());
+    }
+
     void Console::on_message(godot::String message) {
         rapidjson::Document document;
         document.Parse(to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
         if (action == "ready") init();
+        else if (action == "toggle") toggle();
         else if (action == "clear") clear(true);
         else if (action == "input") {
             if (!document.HasMember("message") || !document["message"].IsString()) return;
