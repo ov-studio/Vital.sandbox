@@ -59,7 +59,7 @@ namespace Vital::Engine {
     }
 
     void Rendertarget::destroy() {
-        this -> queue_free();
+        queue_free();
     }
 
     void Rendertarget::clear(bool clear, bool instant) {

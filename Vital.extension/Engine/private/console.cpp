@@ -34,11 +34,11 @@ namespace Vital::Engine {
             webview -> set_autoplay(false);
             webview -> set_zoomable(false);
             webview -> set_message_handler([this](godot::String message) {
-                this -> on_message(message);
+                on_message(message);
             });
 
             Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) -> void {
-                this -> webview -> load_html(Vital::Tool::fetch_module("console"));
+                webview -> load_html(Vital::Tool::fetch_module("console"));
             });
         #else
             #if defined(Vital_SDK_WINDOWS)
