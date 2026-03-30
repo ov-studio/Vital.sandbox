@@ -61,7 +61,7 @@ namespace Vital::Engine {
 
     // Checkers //
     bool Webview::is_visible() {
-        return webview -> is_visible_in_tree();
+        return webview -> is_visible();
     }
 
     bool Webview::is_fullscreen() {
@@ -87,7 +87,7 @@ namespace Vital::Engine {
 
     // Setters //
     void Webview::set_visible(bool state) {
-        webview -> call_deferred("set_visible", state);
+        webview -> set_visible(state);
     }
 
     void Webview::set_fullscreen(bool state) {
