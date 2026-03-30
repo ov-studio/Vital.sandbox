@@ -71,6 +71,25 @@ namespace Vital::Engine {
     }
 
     #if defined(Vital_SDK_Client)
+    void Core::_input(godot::Ref<godot::InputEvent> event) {
+        if (!Vital::is_runtime()) return;
+        godot::UtilityFunctions::print("a 2? ");
+        // Safe way 1: Use is_class() + static_cast (recommended in GDExtension for performance)
+        if (event->is_class("InputEventKey")) {
+            godot::InputEventKey* key = static_cast<godot::InputEventKey*>(event.ptr());
+    
+            if (key->is_echo()) return;
+    
+            godot::UtilityFunctions::print("a 3? ", key, key->is_pressed(), key->get_keycode());
+    
+            if (key->is_pressed() && key->get_keycode() == godot::KEY_F1) {
+                Console::get_singleton()->toggle();
+                godot::UtilityFunctions::print("yea!");
+                get_viewport()->set_input_as_handled();
+            }
+        }
+    }
+
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (!is_ready()) return;
         Sandbox::get_singleton() -> input(event);
