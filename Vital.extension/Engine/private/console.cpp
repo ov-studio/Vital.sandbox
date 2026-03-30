@@ -29,7 +29,7 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
             webview = Webview::create();
             webview -> set_position({0, 0});
-            webview -> set_visible(true);
+            webview -> set_visible(Core::get_singleton() -> is_ready());
             webview -> set_fullscreen(true);
             webview -> set_transparent(true);
             webview -> set_autoplay(false);
@@ -41,6 +41,7 @@ namespace Vital::Engine {
 
             Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) -> void {
                 this -> webview -> load_html(Vital::Tool::fetch_module("console"));
+                this -> webview -> set_visible(Core::get_singleton() -> is_ready());
             });
         #else
             #if defined(Vital_SDK_WINDOWS)

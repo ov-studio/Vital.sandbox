@@ -38,9 +38,9 @@ namespace Vital::Engine {
             if (!kit_abort.load()) {
                 push_deferred([this]() {
                     Vital::print("sbox", "Core: Vital.kit ready");
+                    kit_ready.store(true);
                     Vital::Tool::Event::emit("vital.kit:ready");
                     Vital::Tool::Event::emit("vital.core:ready");
-                    kit_ready.store(true);
                     set_process(true);
                 });
                 call_deferred("flush_deferred_queue");
