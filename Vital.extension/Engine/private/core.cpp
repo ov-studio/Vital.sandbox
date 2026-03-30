@@ -37,7 +37,7 @@ namespace Vital::Engine {
             Vital::Tool::Kit::ensure_kit();
             if (!kit_abort.load()) {
                 push_deferred([this]() {
-                    Vital::print("sbox", "Core: Vital.kit ready — firing vital.core:ready");
+                    Vital::print("sbox", "Core: Vital.kit ready");
                     Vital::Tool::Event::emit("vital.kit:ready");
                     Vital::Tool::Event::emit("vital.core:ready");
                     kit_ready.store(true);
@@ -56,13 +56,13 @@ namespace Vital::Engine {
             std::lock_guard<std::mutex> lock(deferred_mutex);
             deferred_queue.clear();
         }
-        if (!Vital::is_runtime()) return;
+        if (!is_ready()) return;
         teardown();
         Vital::Tool::Event::emit("vital.core:free");
     }
 
     void Core::_process(double delta) {
-        if (!Vital::is_runtime()) return;
+        if (!is_ready()) return;
         {
             std::lock_guard<std::mutex> lock(deferred_mutex);
             if (!deferred_queue.empty()) call_deferred("flush_deferred_queue");
@@ -72,7 +72,7 @@ namespace Vital::Engine {
 
     #if defined(Vital_SDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
-        if (!Vital::is_runtime()) return;
+        if (!is_ready()) return;
         Sandbox::get_singleton() -> input(event);
     }
     #endif
@@ -90,7 +90,7 @@ namespace Vital::Engine {
 
     // Managers //
     bool Core::is_ready() {
-        return singleton && singleton -> kit_ready.load();
+        return Vital::is_runtime() && kit_ready.load();
     }
 
     void Core::teardown() {
