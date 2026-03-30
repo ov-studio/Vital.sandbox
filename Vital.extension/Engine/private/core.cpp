@@ -135,7 +135,6 @@ namespace Vital::Engine {
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
-            // TODO: MAKE ALL THESE NON STATICS
             get_singleton() -> push_deferred([]() {
                 get_singleton() -> add_child(environment);
             });
