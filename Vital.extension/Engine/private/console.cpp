@@ -431,9 +431,9 @@ namespace Vital::Engine {
         document.AddMember("action", "init", alloc);
         document.AddMember("toggle_key", "F1", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
-        auto& logs = Vital::Tool::fetch_json_node("config/console", "log");
-        if (logs && logs.IsObject()) {
-            for (auto it = logs.MemberBegin(); it != logs.MemberEnd(); ++it) {
+        auto logs = Vital::Tool::fetch_json_node("config/console", "log");
+        if (logs && logs -> IsObject()) {
+            for (auto it = logs -> MemberBegin(); it != logs -> MemberEnd(); ++it) {
                 const std::string mode = it -> name.GetString();
                 const auto label = fetch_mode_label(mode);
                 const auto badge = fetch_mode_badge(mode);
