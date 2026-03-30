@@ -41,7 +41,6 @@ namespace Vital::Engine {
 
             Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) -> void {
                 this -> webview -> load_html(Vital::Tool::fetch_module("console"));
-                this -> webview -> set_visible(Core::get_singleton() -> is_ready());
             });
         #else
             #if defined(Vital_SDK_WINDOWS)
