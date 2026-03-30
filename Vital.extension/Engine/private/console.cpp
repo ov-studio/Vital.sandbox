@@ -37,7 +37,7 @@ namespace Vital::Engine {
                 on_message(message);
             });
 
-            Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) -> void {
+            Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) {
                 webview -> load_html(Vital::Tool::fetch_module("console"));
             });
         #else
@@ -459,7 +459,7 @@ namespace Vital::Engine {
         std::string token;
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
-        auto exec = [&](const std::vector<std::string>& tokens) -> bool {
+        auto exec = [&](const std::vector<std::string>& tokens) {
             if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
             if (tokens[0] == "version") { print("sbox", "Version: " + Vital::Build.to_string()); return true; }
             if (tokens[0] == "clear") { clear(); return true; }

@@ -139,7 +139,7 @@ void setup() {
 
 void initialize_vital_events() {
     // Core //
-    Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) -> void {
+    Vital::Tool::Event::bind("vital.core:ready", [](Vital::Tool::Stack arguments) {
         #if defined(Vital_SDK_Client)
         Vital::Engine::Canvas::get_singleton();
         Vital::System::Discord::get_singleton();
@@ -152,7 +152,7 @@ void initialize_vital_events() {
         setup();
     });
 
-    Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) -> void {
+    Vital::Tool::Event::bind("vital.core:free", [](Vital::Tool::Stack arguments) {
         #if defined(Vital_SDK_Client)
         Vital::Engine::Canvas::free_singleton();
         Vital::System::Discord::free_singleton();
@@ -165,21 +165,21 @@ void initialize_vital_events() {
 
 
     // Sandbox //
-    Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) -> void {
+    Vital::Tool::Event::bind("vital.sandbox:ready", [](Vital::Tool::Stack arguments) {
         Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
     });
 
 
     // Network //
     #if !defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) -> void {
+    Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::Engine::Model::clear_synced();
     });
     #endif
 
     #if defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("network:connected", [](Vital::Tool::Stack&) -> void {
+    Vital::Tool::Event::bind("network:connected", [](Vital::Tool::Stack&) {
         auto* net = Vital::Engine::Network::get_singleton();
         Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
         Vital::Engine::Model::on_connected();
@@ -190,7 +190,7 @@ void initialize_vital_events() {
         );
     });
 
-    Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) -> void {
+    Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Lost connection to server");
         Vital::Engine::Model::cleanup_spawned();
         Vital::Engine::AssetManager::get_singleton() -> clear();
@@ -199,7 +199,7 @@ void initialize_vital_events() {
 
 
     // Process //
-    Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) -> void {
+    Vital::Tool::Event::bind("vital.sandbox:process", [](Vital::Tool::Stack arguments) {
         static bool network_initialized = false;
         if (!network_initialized) {
             network_initialized = true;

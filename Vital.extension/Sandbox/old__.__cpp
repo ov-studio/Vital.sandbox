@@ -78,14 +78,14 @@ namespace Vital::Engine {
         */
 
         /*
-        Vital::Tool::Timer([](auto self) -> void {
+        Vital::Tool::Timer([](auto self) {
             godot::UtilityFunctions::print("executed c++ timer");
         }, 5000, 0);
         */
 
         // Run in another thread
         /*
-        Vital::Tool::Thread([=](Vital::Tool::Thread* thread) -> void {
+        Vital::Tool::Thread([=](Vital::Tool::Thread* thread) {
             try {
                 std::string url = "https://jsonplaceholder.typicode.com/posts/1";
                 std::string response = Vital::Tool::Rest::get(url);

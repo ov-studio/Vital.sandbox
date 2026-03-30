@@ -230,7 +230,7 @@ namespace Vital::Engine {
         static bool server_bound = false;
         if (!server_bound) {
             server_bound = true;
-            Vital::Tool::Event::bind("vital.network:peer_connected", [](Vital::Tool::Stack args) -> void {
+            Vital::Tool::Event::bind("vital.network:peer_connected", [](Vital::Tool::Stack args) {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
                 Core::get_singleton() -> push_deferred([peer_id]() {
@@ -249,7 +249,7 @@ namespace Vital::Engine {
 
         Vital::print("sbox", "Initializing client resource manager...");
 
-        Vital::Tool::Event::bind("asset:file_ready", [](Vital::Tool::Stack args) -> void {
+        Vital::Tool::Event::bind("asset:file_ready", [](Vital::Tool::Stack args) {
             if (!args.object.count("path")) return;
             const std::string path = args.object.at("path").as<std::string>();
             auto* rm = ResourceManager::get_singleton();
@@ -262,7 +262,7 @@ namespace Vital::Engine {
             }
         });
 
-        Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) -> void {
+        Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) {
             if (!args.object.count("type")) return;
             const std::string type = args.object.at("type").as<std::string>();
             auto* rm = ResourceManager::get_singleton();
