@@ -88,6 +88,7 @@ namespace Vital::Engine {
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
+        webview -> call("focus_parent");
     }
 
     void Webview::set_fullscreen(bool state) {
