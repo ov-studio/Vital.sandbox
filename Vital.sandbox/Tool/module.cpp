@@ -251,7 +251,7 @@ namespace Vital::Tool {
                 Vital::print("sbox", "Kit: cache valid — skipping download");
                 return true;
             }
-
+            std::filesystem::remove_all(kit_dir);
             Vital::print("sbox", "Kit: downloading...");
             if (!download_file(zip_url, zip_path)) {
                 Vital::print("sbox", "Kit: download failed");
