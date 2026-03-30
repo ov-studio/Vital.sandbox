@@ -348,13 +348,13 @@ namespace Vital::Engine {
     #endif
 
     std::string Console::fetch_mode_label(const std::string& mode) {
-        const auto label = Vital::Tool::fetch_json_value("config/log", mode, "label");
+        const auto label = Vital::Tool::fetch_json_value("config/console", "log", mode, "label");
         if (label.is<std::string>()) return label.as<std::string>();
         return mode;
     }
 
     std::string Console::fetch_mode_badge(const std::string& mode) {
-        const auto badge = Vital::Tool::fetch_json_value("config/log", mode, "badge");
+        const auto badge = Vital::Tool::fetch_json_value("config/console", "log", mode, "badge");
         if (badge.is<std::string>()) return badge.as<std::string>();
         std::string upper = mode;
         std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
@@ -362,9 +362,9 @@ namespace Vital::Engine {
     }
 
     Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
-        const auto r = Vital::Tool::fetch_json_value("config/log", mode, "color", 0);
-        const auto g = Vital::Tool::fetch_json_value("config/log", mode, "color", 1);
-        const auto b = Vital::Tool::fetch_json_value("config/log", mode, "color", 2);
+        const auto r = Vital::Tool::fetch_json_value("config/console", "log", mode, "color", 0);
+        const auto g = Vital::Tool::fetch_json_value("config/console", "log", mode, "color", 1);
+        const auto b = Vital::Tool::fetch_json_value("config/console", "log", mode, "color", 2);
         return Vital::Tool::Stack(
             r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()
             ? std::initializer_list<Vital::Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
@@ -431,14 +431,14 @@ namespace Vital::Engine {
         document.AddMember("action", "init", alloc);
         document.AddMember("toggle_key", "F1", alloc);
         rapidjson::Value types(rapidjson::kObjectType);
-        auto& levels = Vital::Tool::fetch_json("config/log");
-        if (!levels.HasParseError() && levels.IsObject()) {
-            for (auto it = levels.MemberBegin(); it != levels.MemberEnd(); ++it) {
+        auto& logs = Vital::Tool::fetch_json_node("config/console", "log");
+        if (logs && logs.IsObject()) {
+            for (auto it = logs.MemberBegin(); it != logs.MemberEnd(); ++it) {
                 const std::string mode = it -> name.GetString();
                 const auto label = fetch_mode_label(mode);
                 const auto badge = fetch_mode_badge(mode);
                 const auto color = fetch_mode_color(mode);
-                const auto priority = Vital::Tool::fetch_json_value("config/log", mode, "priority");
+                const auto priority = Vital::Tool::fetch_json_value("config/console", "log", mode, "priority");
                 rapidjson::Value entry(rapidjson::kObjectType);
                 entry.AddMember("label", rapidjson::Value(label.c_str(), alloc), alloc);
                 entry.AddMember("badge", rapidjson::Value(badge.c_str(), alloc), alloc);
