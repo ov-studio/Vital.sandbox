@@ -7,9 +7,20 @@
      Desc: Module Tools
 ----------------------------------------------------------------*/
 
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <Vital.sandbox/Tool/module.h>
 #include <Vital.extension/Engine/public/console.h>
+
+
+//////////////////////////
+// Vital: Tool: Module //
+//////////////////////////
 
 namespace Vital::Tool {
     // TODO: Improve
@@ -18,7 +29,7 @@ namespace Vital::Tool {
     std::unordered_map<std::string, rapidjson::Document> json_cache;
     const std::string toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
     const std::string cache_base  = "cache";
-    const std::string kit_name    = "Vital.kit";
+    const std::string kit_name = "Vital.kit";
 
     std::string read_kit_file(const std::string& rel_path) {
         std::filesystem::path full = std::filesystem::path(cache_base) / kit_name / rel_path;
@@ -31,37 +42,26 @@ namespace Vital::Tool {
         std::lock_guard<std::mutex> lock(content_mutex);
         std::string key(path);
         auto it = content_cache.find(key);
-        if (it != content_cache.end()) return it->second;
-
+        if (it != content_cache.end()) return it -> second;
         std::string value = read_kit_file(key);
-        // Do not cache if empty — kit may not be extracted yet
         if (value.empty()) {
             static const std::string empty{};
             return empty;
         }
-        return content_cache.emplace(key, std::move(value)).first->second;
+        return content_cache.emplace(key, std::move(value)).first -> second;
     }
 
     rapidjson::Document& fetch_json(const std::string& name) {
         auto it = json_cache.find(name);
-        if (it != json_cache.end()) return it->second;
+        if (it != json_cache.end()) return it -> second;
 
         rapidjson::Document document;
         document.Parse(fetch_content(name + ".json").c_str());
-        // Do not cache if parse failed — kit may not be extracted yet
         if (document.HasParseError()) {
             static rapidjson::Document empty_doc;
             return empty_doc;
         }
-        return json_cache.emplace(name, std::move(document)).first->second;
-    }
-
-    const rapidjson::Value* fetch_json_node(const std::string& name, const std::string& key) {
-        auto& document = fetch_json(name);
-        if (document.HasParseError() || !document.HasMember(key.c_str())) return nullptr;
-        const auto& entry = document[key.c_str()];
-        if (!entry.IsObject()) return nullptr;
-        return &entry;
+        return json_cache.emplace(name, std::move(document)).first -> second;
     }
 
     std::string fetch_module(const std::string& name) {
@@ -74,8 +74,9 @@ namespace Vital::Tool {
         std::vector<std::string> result;
         auto& document = fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
-        for (auto& i : document["sources"].GetArray())
+        for (auto& i : document["sources"].GetArray()) {
             result.push_back(fetch_content(name + "/" + std::string(i.GetString())));
+        }
         return result;
     }
 
@@ -224,13 +225,13 @@ namespace Vital::Tool {
                     const auto& files = checksum_doc["files"];
                     bool all_valid = true;
                     for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
-                        const std::string rel_path = it->name.GetString();
-                        if (!it->value.IsObject() || !it->value.HasMember("sha256") || !it->value["sha256"].IsString()) {
+                        const std::string rel_path = it -> name.GetString();
+                        if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) {
                             Vital::print("sbox", "Kit: checksum entry malformed -> ", rel_path.c_str());
                             all_valid = false;
                             break;
                         }
-                        const std::string expected = it->value["sha256"].GetString();
+                        const std::string expected = it -> value["sha256"].GetString();
                         if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
                             Vital::print("sbox", "Kit: file missing -> ", rel_path.c_str());
                             all_valid = false;
