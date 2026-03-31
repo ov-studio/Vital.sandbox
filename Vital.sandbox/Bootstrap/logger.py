@@ -1,5 +1,11 @@
 import sys, time, threading
 
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, OSError):
+        pass
+
 def _supports_color():
     return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
@@ -8,11 +14,7 @@ def _supports_unicode():
         "\u280b".encode(sys.stdout.encoding or "ascii")
         return True
     except (UnicodeEncodeError, LookupError):
-        try:
-            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-            return True
-        except (AttributeError, OSError):
-            return False
+        return False
 
 class C:
     RESET  = "\033[0m"        if _supports_color() else ""
