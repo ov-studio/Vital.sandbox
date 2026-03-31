@@ -36,10 +36,14 @@ jobs:
           key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
 
       - name: Build Debug
+        env:
+          PYTHONUNBUFFERED: "1"
         run: python build.py --all --debug --verbose
 
       - name: Build Release
-        run: python build.py --all --release --verbose
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: python build.py --all --release --verbose --skip-extension
 
       - name: Upload dist
         uses: actions/upload-artifact@v4
@@ -60,8 +64,10 @@ jobs:
   #     - run: sudo apt-get update && sudo apt-get install -y scons gcc g++ libssl-dev
   #     - uses: actions/cache@v4
   #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
-  #     - run: python3 build.py --all --debug
-  #     - run: python3 build.py --all --release --skip-extension
+  #     - run: python3 build.py --all --debug --verbose
+  #       env: { PYTHONUNBUFFERED: "1" }
+  #     - run: python3 build.py --all --release --verbose --skip-extension
+  #       env: { PYTHONUNBUFFERED: "1" }
   #     - uses: actions/upload-artifact@v4
   #       with: { name: dist-linux, path: .dist/ }
 
@@ -78,8 +84,10 @@ jobs:
   #     - run: pip install scons
   #     - uses: actions/cache@v4
   #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
-  #     - run: python3 build.py --all --debug
-  #     - run: python3 build.py --all --release --skip-extension
+  #     - run: python3 build.py --all --debug --verbose
+  #       env: { PYTHONUNBUFFERED: "1" }
+  #     - run: python3 build.py --all --release --verbose --skip-extension
+  #       env: { PYTHONUNBUFFERED: "1" }
   #     - uses: actions/upload-artifact@v4
   #       with: { name: dist-macos, path: .dist/ }
 

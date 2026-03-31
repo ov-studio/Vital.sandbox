@@ -26,19 +26,19 @@ class C:
     DIM    = "\033[2m"        if _supports_color() else ""
 
 def log_step(msg):
-    print(f"\n{C.BOLD}{C.HEADER}==> {msg}{C.RESET}")
+    print(f"\n{C.BOLD}{C.HEADER}==> {msg}{C.RESET}", flush=True)
 
 def log_info(msg):
-    print(f"    {C.DIM}{msg}{C.RESET}")
+    print(f"    {C.DIM}{msg}{C.RESET}", flush=True)
 
 def log_ok(msg):
-    print(f"    {C.GREEN}{msg}{C.RESET}")
+    print(f"    {C.GREEN}{msg}{C.RESET}", flush=True)
 
 def log_warn(msg):
-    print(f"    {C.YELLOW}[WARN]{C.RESET} {msg}")
+    print(f"    {C.YELLOW}[WARN]{C.RESET} {msg}", flush=True)
 
 def log_error(msg):
-    print(f"    {C.RED}[ERROR]{C.RESET} {msg}")
+    print(f"    {C.RED}[ERROR]{C.RESET} {msg}", flush=True)
 
 def spinner(label, stop_event):
     frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"] if _supports_unicode() else ["-", "\\", "|", "/"]
