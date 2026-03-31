@@ -24,7 +24,7 @@ class C:
     DIM    = "\033[2m"        if _supports_color() else ""
 
 def log_step(msg):
-    print(f"\n{C.BOLD}{C.HEADER}==>{C.RESET} {C.BOLD}{C.HEADER}{msg}{C.RESET}")
+    print(f"\n{C.BOLD}{C.HEADER}==> {msg}{C.RESET}")
 
 def log_info(msg):
     print(f"    {C.DIM}{msg}{C.RESET}")
