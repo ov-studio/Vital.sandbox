@@ -35,6 +35,20 @@ jobs:
           path: .godot
           key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
 
+      - name: Cache Conan
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-windows-${{ hashFiles('Vital.extension/conanfile.*') }}
+          restore-keys: conan-windows-
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: .vcpkg
+          key: vcpkg-windows-${{ hashFiles('Vital.extension/vcpkg.json') }}
+          restore-keys: vcpkg-windows-
+
       - name: Build Debug
         env:
           PYTHONUNBUFFERED: "1"
@@ -64,6 +78,10 @@ jobs:
   #     - run: sudo apt-get update && sudo apt-get install -y scons gcc g++ libssl-dev
   #     - uses: actions/cache@v4
   #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #     - uses: actions/cache@v4
+  #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-linux-" }
+  #     - uses: actions/cache@v4
+  #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-linux-" }
   #     - run: python3 build.py --all --debug --verbose
   #       env: { PYTHONUNBUFFERED: "1" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
@@ -84,6 +102,10 @@ jobs:
   #     - run: pip install scons
   #     - uses: actions/cache@v4
   #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #     - uses: actions/cache@v4
+  #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-macos-" }
+  #     - uses: actions/cache@v4
+  #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-macos-" }
   #     - run: python3 build.py --all --debug --verbose
   #       env: { PYTHONUNBUFFERED: "1" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
