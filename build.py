@@ -45,6 +45,7 @@ class Build:
             "scons", "-C", godot_dir,
             f"target=template_{self.build_type.lower()}",
             "use_static_cpp=no",
+            self.os_info["nproc"],
         ])
         if result.returncode != 0:
             log_error("godot-cpp build failed")
@@ -68,6 +69,7 @@ class Build:
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
             "build_library=no",
+            self.os_info["nproc"],
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         stderr_lines = []
