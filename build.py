@@ -58,68 +58,54 @@ class Build:
 
         ignore = (
             "scons: ", "WARNING:", "platform_type=", "build_type=",
-            "Auto-detected", "Building for architecture", "==>",
+            "Auto-detected", "Building for architecture",
             "Running ", "Done", "Detecting ", "Installing ", "Bootstrapping",
             "Reloading", "Fetching", "Cloning", "Binary", "Templates",
         )
 
+        process = subprocess.Popen([
+            "scons", "-C", b["extension_dir"],
+            f"platform_type={self.platform_type}",
+            f"build_type={self.build_type}",
+            "build_library=no",
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        stderr_lines = []
+
+        def stream_stderr():
+            for line in process.stderr:
+                stderr_lines.append(line)
+
+        stderr_thread = threading.Thread(target=stream_stderr)
+        stderr_thread.start()
+
         if self.verbose:
-            # Stream output line-by-line in real time
-            process = subprocess.Popen([
-                "scons", "-C", b["extension_dir"],
-                f"platform_type={self.platform_type}",
-                f"build_type={self.build_type}",
-                "build_library=no",
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-            stderr_lines = []
-
-            def stream_stderr():
-                for line in process.stderr:
-                    stderr_lines.append(line)
-
-            stderr_thread = threading.Thread(target=stream_stderr)
-            stderr_thread.start()
-
             for line in process.stdout:
                 stripped = line.strip()
-                if stripped and not any(stripped.startswith(p) for p in ignore):
+                if not stripped:
+                    continue
+                if stripped.startswith("==>"):
+                    log_step(stripped[4:].strip())
+                elif any(stripped.startswith(p) for p in ignore):
                     log_info(stripped)
-
-            process.wait()
-            stderr_thread.join()
-
-            if process.returncode != 0:
-                for line in stderr_lines:
-                    if line.strip():
-                        log_error(line.strip())
-                sys.exit(process.returncode)
+                else:
+                    log_ok(stripped)
         else:
-            # Default: spinner while compiling, print filtered output after
             stop = threading.Event()
             thread = threading.Thread(target=spinner, args=("Compiling", stop))
             thread.start()
-
-            result = subprocess.run([
-                "scons", "-C", b["extension_dir"],
-                f"platform_type={self.platform_type}",
-                f"build_type={self.build_type}",
-                "build_library=no",
-            ], capture_output=True, text=True)
-
+            process.stdout.read()
             stop.set()
             thread.join()
 
-            for line in result.stdout.splitlines():
-                stripped = line.strip()
-                if stripped and not any(stripped.startswith(p) for p in ignore):
-                    log_info(stripped)
+        process.wait()
+        stderr_thread.join()
 
-            if result.returncode != 0:
-                for line in result.stderr.splitlines():
-                    if line.strip():
-                        log_error(line.strip())
-                sys.exit(result.returncode)
+        if process.returncode != 0:
+            for line in stderr_lines:
+                if line.strip():
+                    log_error(line.strip())
+            sys.exit(process.returncode)
 
         log_ok("Done")
 
