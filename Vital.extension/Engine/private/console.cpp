@@ -371,6 +371,14 @@ namespace Vital::Engine {
         );
     }
 
+    std::string Console::fetch_version() {
+        std::ostringstream oss;
+        oss << "Version:\n"
+            << "\n" << indent(1) << "Vital.sandbox: `" << Vital::Build.to_string() << "`\n"
+            << indent(1) << "Vital.kit: `"              << Vital::Tool::Kit::get_version() << "`\n";
+        return oss.str();
+    }
+
     std::string Console::fetch_help() {
         std::ostringstream oss;
         oss << "Available Commands:\n";
@@ -461,8 +469,8 @@ namespace Vital::Engine {
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
         auto exec = [&](const std::vector<std::string>& tokens) {
+            if (tokens[0] == "version") { print("sbox", fetch_version()); return true; }
             if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
-            if (tokens[0] == "version") { print("sbox", "Version: " + Vital::Build.to_string()); return true; }
             if (tokens[0] == "clear") { clear(); return true; }
             #if !defined(Vital_SDK_Client)
             if (tokens[0] == "refresh") { Vital::Engine::ResourceManager::get_singleton() -> scan(); return true; }

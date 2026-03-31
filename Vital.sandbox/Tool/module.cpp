@@ -291,7 +291,6 @@ namespace Vital::Tool {
             }
             std::filesystem::remove(zip_path);
             s_version.clear();
-            s_version_resolved = false;
             Vital::print("sbox", "Kit: ready (", get_version(), ")");
             return true;
         }
