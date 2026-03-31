@@ -326,7 +326,8 @@ namespace Vital::Engine {
             if (!line.empty() && line.back() == '\r') line.pop_back();
             if (line.empty()) continue;
             bool is_highlight = (line.size() >= 2 && line[0] == '>' && line[1] == ' ');
-            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first && !is_highlight);
+            bool is_indented = (!line.empty() && (line[0] == ' ' || line[0] == '\t'));
+            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first && !is_highlight && is_indented);
             first = false;
         }
         oss << "\n";
@@ -388,7 +389,7 @@ namespace Vital::Engine {
             if (help.HasParseError() || !help.HasMember(section.c_str())) return;
             const auto& cmds = help[section.c_str()];
             if (!cmds.IsObject()) return;
-            oss << "\n" << label << ":\n";
+            oss << "• " << label << ":\n";
             for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
                 std::string cmd = it -> name.GetString();
                 std::string syntax = it -> value.HasMember("syntax") && it -> value["syntax"].IsString() ? it -> value["syntax"].GetString() : "";
