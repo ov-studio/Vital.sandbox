@@ -12,6 +12,7 @@ jobs:
   # ── Build: Windows ──────────────────────────────────────────────────────────
   build-windows:
     runs-on: windows-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
