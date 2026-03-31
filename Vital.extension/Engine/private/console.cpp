@@ -374,11 +374,13 @@ namespace Vital::Engine {
     }
 
     std::string Console::fetch_version() {
-        std::ostringstream oss;
-        oss << "Version:\n"
-            << "\n> " << "Vital.sandbox: `" << Vital::Build.to_string() << "`\n"
-            << "> " << "Vital.kit: `"        << Vital::Tool::Kit::get_version() << "`\n";
-        return oss.str();
+        return fmt::format(
+            "Version:\n"
+            "> Vital.sandbox: `{}`\n"
+            "> Vital.kit: `{}`\n",
+            Vital::Build.to_string(),
+            Vital::Tool::Kit::get_version()
+        );
     }
     
     std::string Console::fetch_help() {
