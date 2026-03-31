@@ -3,10 +3,11 @@ sys.path.append("./Vital.sandbox")
 from vital import *
 
 class Build:
-    def __init__(self, script_dir, platform_type, build_type):
+    def __init__(self, script_dir, platform_type, build_type, verbose=False):
         self.script_dir = script_dir
         self.platform_type = platform_type
         self.build_type = build_type
+        self.verbose = verbose
         self.os_info = Fetch_OS()
         self.info = Fetch_Build_Info()
 
@@ -55,36 +56,70 @@ class Build:
         b = self.init()
         log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
 
-        stop = threading.Event()
-        thread = threading.Thread(target=spinner, args=("Compiling", stop))
-        thread.start()
-
-        result = subprocess.run([
-            "scons", "-C", b["extension_dir"],
-            f"platform_type={self.platform_type}",
-            f"build_type={self.build_type}",
-            "build_library=no",
-        ], capture_output=True, text=True)
-
-        stop.set()
-        thread.join()
-
         ignore = (
             "scons: ", "WARNING:", "platform_type=", "build_type=",
             "Auto-detected", "Building for architecture", "==>",
             "Running ", "Done", "Detecting ", "Installing ", "Bootstrapping",
             "Reloading", "Fetching", "Cloning", "Binary", "Templates",
         )
-        for line in result.stdout.splitlines():
-            stripped = line.strip()
-            if stripped and not any(stripped.startswith(p) for p in ignore):
-                log_info(stripped)
 
-        if result.returncode != 0:
-            for line in result.stderr.splitlines():
-                if line.strip():
-                    log_error(line.strip())
-            sys.exit(result.returncode)
+        if self.verbose:
+            # Stream output line-by-line in real time
+            process = subprocess.Popen([
+                "scons", "-C", b["extension_dir"],
+                f"platform_type={self.platform_type}",
+                f"build_type={self.build_type}",
+                "build_library=no",
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            stderr_lines = []
+
+            def stream_stderr():
+                for line in process.stderr:
+                    stderr_lines.append(line)
+
+            stderr_thread = threading.Thread(target=stream_stderr)
+            stderr_thread.start()
+
+            for line in process.stdout:
+                stripped = line.strip()
+                if stripped and not any(stripped.startswith(p) for p in ignore):
+                    log_info(stripped)
+
+            process.wait()
+            stderr_thread.join()
+
+            if process.returncode != 0:
+                for line in stderr_lines:
+                    if line.strip():
+                        log_error(line.strip())
+                sys.exit(process.returncode)
+        else:
+            # Default: spinner while compiling, print filtered output after
+            stop = threading.Event()
+            thread = threading.Thread(target=spinner, args=("Compiling", stop))
+            thread.start()
+
+            result = subprocess.run([
+                "scons", "-C", b["extension_dir"],
+                f"platform_type={self.platform_type}",
+                f"build_type={self.build_type}",
+                "build_library=no",
+            ], capture_output=True, text=True)
+
+            stop.set()
+            thread.join()
+
+            for line in result.stdout.splitlines():
+                stripped = line.strip()
+                if stripped and not any(stripped.startswith(p) for p in ignore):
+                    log_info(stripped)
+
+            if result.returncode != 0:
+                for line in result.stderr.splitlines():
+                    if line.strip():
+                        log_error(line.strip())
+                sys.exit(result.returncode)
 
         log_ok("Done")
 
@@ -171,6 +206,7 @@ def main():
     parser.add_argument("--skip-extension", action="store_true", help="Skip building Vital.extension")
     parser.add_argument("--skip-export", action="store_true", help="Skip Godot export")
     parser.add_argument("--rebuild-godot", action="store_true", help="Force rebuild of godot-cpp")
+    parser.add_argument("--verbose", action="store_true", help="Stream compiler output live instead of spinner")
 
     args = parser.parse_args()
     build_type = "Release" if args.release else "Debug"
@@ -178,10 +214,10 @@ def main():
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
     if not args.skip_extension:
-        Build(script_dir, platforms[0], build_type).build_godot_cpp(force=args.rebuild_godot)
+        Build(script_dir, platforms[0], build_type, verbose=args.verbose).build_godot_cpp(force=args.rebuild_godot)
 
     for platform_type in platforms:
-        build = Build(script_dir, platform_type, build_type)
+        build = Build(script_dir, platform_type, build_type, verbose=args.verbose)
         if not args.skip_extension:
             build.build_extension()
         if not args.skip_export:
