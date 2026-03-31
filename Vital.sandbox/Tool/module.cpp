@@ -150,7 +150,7 @@ namespace Vital::Tool {
             return { tag, zip_url, checksum_url };
         }
 
-        rapidjson::Document fetch_checksum(const std::string& checksum_url) {
+        rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& out_remote_hash) {
             rapidjson::Document doc;
             if (checksum_url.empty()) return doc;
             std::string data;
@@ -160,6 +160,7 @@ namespace Vital::Tool {
                 return doc;
             }
             if (data.empty()) return doc;
+            out_remote_hash = Vital::Tool::Crypto::hash("SHA256", data);
             doc.Parse(data.c_str());
             return doc;
         }
@@ -215,8 +216,8 @@ namespace Vital::Tool {
         bool ensure_kit() {
             const std::string kit_dir = cache_base + "/" + kit_name;
             const std::string zip_path = cache_base + "/" + kit_name + ".zip";
-
             auto [tag, zip_url, checksum_url] = fetch_release_info();
+
             if (tag.empty() || zip_url.empty()) {
                 Vital::print("sbox", "Kit: failed to fetch release info");
                 return std::filesystem::exists(kit_dir);
@@ -229,7 +230,8 @@ namespace Vital::Tool {
                 needs_download = true;
             }
             else {
-                auto checksum_doc = fetch_checksum(checksum_url);
+                std::string remote_hash;
+                auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
                 if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) {
                     Vital::print("sbox", "Kit: checksum fetch failed — will redownload");
                     needs_download = true;
@@ -238,38 +240,49 @@ namespace Vital::Tool {
                     Vital::print("sbox", fmt::format("Kit: version mismatch — local ( {} ) remote ( {} ) — will redownload", get_version(), tag).c_str());
                     needs_download = true;
                 }
-                else if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) {
-                    Vital::print("sbox", "Kit: checksum missing/invalid 'files' — will redownload");
-                    needs_download = true;
-                }
                 else {
-                    const auto& files = checksum_doc["files"];
-                    const int total = static_cast<int>(files.MemberCount());
-                    int checked = 0;
-                    bool all_valid = true;
-                    for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
-                        const std::string rel_path = it -> name.GetString();
-                        if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) {
-                            Vital::print("sbox", "Kit: checksum entry malformed -> ", rel_path.c_str());
-                            all_valid = false;
-                            break;
+                    if (!remote_hash.empty()) {
+                        const std::string local_hash = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json");
+                        if (local_hash != remote_hash) {
+                            Vital::print("sbox", "Kit: checksum tampered — will redownload");
+                            needs_download = true;
                         }
-                        const std::string expected = it -> value["sha256"].GetString();
-                        if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
-                            Vital::print("sbox", fmt::format("Kit: file missing ({}/{}) -> {}", checked, total, rel_path).c_str());
-                            all_valid = false;
-                            break;
-                        }
-                        const std::string actual = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
-                        if (actual != expected) {
-                            Vital::print("sbox", fmt::format("Kit: checksum mismatch ({}/{}) -> {}", checked, total, rel_path).c_str());
-                            all_valid = false;
-                            break;
-                        }
-                        ++checked;
                     }
-                    if (!all_valid) needs_download = true;
-                    else Vital::print("sbox", fmt::format("Kit: cache valid ({}/{} files) — skipping download ( {} )", checked, total, get_version()).c_str());
+                    if (!needs_download) {
+                        if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) {
+                            Vital::print("sbox", "Kit: checksum missing/invalid 'files' — will redownload");
+                            needs_download = true;
+                        }
+                        else {
+                            const auto& files = checksum_doc["files"];
+                            const int total = static_cast<int>(files.MemberCount());
+                            int checked = 0;
+                            bool all_valid = true;
+                            for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
+                                const std::string rel_path = it -> name.GetString();
+                                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) {
+                                    Vital::print("sbox", "Kit: checksum entry malformed -> ", rel_path.c_str());
+                                    all_valid = false;
+                                    break;
+                                }
+                                const std::string expected = it -> value["sha256"].GetString();
+                                if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
+                                    Vital::print("sbox", fmt::format("Kit: file missing ({}/{}) -> {}", checked, total, rel_path).c_str());
+                                    all_valid = false;
+                                    break;
+                                }
+                                const std::string actual = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
+                                if (actual != expected) {
+                                    Vital::print("sbox", fmt::format("Kit: checksum mismatch ({}/{}) -> {}", checked, total, rel_path).c_str());
+                                    all_valid = false;
+                                    break;
+                                }
+                                ++checked;
+                            }
+                            if (!all_valid) needs_download = true;
+                            else Vital::print("sbox", fmt::format("Kit: cache valid ({}/{} files) — skipping download ( {} )", checked, total, get_version()).c_str());
+                        }
+                    }
                 }
             }
 
