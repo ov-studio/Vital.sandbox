@@ -6,7 +6,7 @@ class Conan:
 
     def install(self):
         if not shutil.which("conan"):
-            log_step("Installing conan")
+            log_step("Installing Conan")
             subprocess.run(
                 [sys.executable, "-m", "pip", "install", "--upgrade", "conan"],
                 stdout=subprocess.DEVNULL,
@@ -16,7 +16,7 @@ class Conan:
 
     def build(self):
         self.install()
-        log_step("Building conan dependencies")
+        log_step("Building Conan")
         for cmd, label in [
             (["conan", "profile", "detect", "--force"], "Detecting profile"),
         ] + [

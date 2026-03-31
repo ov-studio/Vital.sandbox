@@ -6,7 +6,7 @@ class Vendor:
 
     def build(self):
         os_info = Fetch_OS()
-        log_step("Reloading vendors")
+        log_step("Reloading Vendors")
         git = shutil.which("git")
         if not git:
             Throw_Error("git not found")

@@ -20,7 +20,7 @@ class VCPKG:
     def install(self):
         os_info = Fetch_OS()
         vcpkg = self.init()
-        log_step("Installing vcpkg")
+        log_step("Installing VCPKG")
         if not os.path.isdir(vcpkg["root"]):
             log_info("Cloning repository ...")
             result = subprocess.run((
@@ -46,7 +46,7 @@ class VCPKG:
         vcpkg_include = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "include")
         vcpkg_lib = os.path.join(vcpkg["root"], "installed", vcpkg["triplet"], "lib")
         self.install()
-        log_step("Building vcpkg dependencies")
+        log_step("Building VCPKG")
         self.env.Append(CPPPATH=[vcpkg_include])
         self.env.Append(LIBPATH=[vcpkg_lib])
         vcpkg_libs = []
