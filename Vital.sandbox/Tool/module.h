@@ -90,6 +90,7 @@ namespace Vital::Tool {
     }
 
     namespace Kit {
+        const std::string& get_version();
         std::tuple<std::string, std::string, std::string> fetch_release_info();
         rapidjson::Document fetch_checksum(const std::string& checksum_url);
         bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
