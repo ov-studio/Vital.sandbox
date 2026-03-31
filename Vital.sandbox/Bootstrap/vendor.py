@@ -10,7 +10,7 @@ class Vendor:
         git = shutil.which("git")
         if not git:
             Throw_Error("git not found")
-        script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..\\..", ".gitreload.sh"))
+        script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".gitreload.sh"))
         log_info("Running .gitreload.sh ...")
         if os_info["type"] == "Windows":
             bash = os.path.join(os.path.abspath(os.path.join(os.path.dirname(git), "..")), "usr", "bin", "bash.exe")

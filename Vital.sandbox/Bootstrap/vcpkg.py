@@ -6,7 +6,7 @@ class VCPKG:
 
     def init(self):
         os_info = Fetch_OS()
-        root = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".vcpkg")
+        root = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")), ".vcpkg")
         triplets = {
             "Windows": "x64-windows",
             "Darwin": "arm64-osx",
@@ -66,10 +66,10 @@ class VCPKG:
         copy_nodes = []
         if os.path.isdir(vcpkg_bin):
             if os_info["type"] == "Windows":
-                copy_nodes += self.env.RCopy(build_dir, os.path.join(vcpkg_bin, "*.dll"))
+                copy_nodes += self.env.RGlobCopy(build_dir, os.path.join(vcpkg_bin, "*.dll"))
             else:
-                copy_nodes += self.env.RCopy(build_dir, os.path.join(vcpkg_bin, "*.so"))
-                copy_nodes += self.env.RCopy(build_dir, os.path.join(vcpkg_bin, "*.so.*"))
+                copy_nodes += self.env.RGlobCopy(build_dir, os.path.join(vcpkg_bin, "*.so"))
+                copy_nodes += self.env.RGlobCopy(build_dir, os.path.join(vcpkg_bin, "*.so.*"))
         self.env.Depends(build, copy_nodes)
 
 BaseEnvironment.VCPKG = property(lambda self: VCPKG(self))
