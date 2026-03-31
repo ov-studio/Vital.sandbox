@@ -88,11 +88,9 @@ namespace Vital::Tool {
     namespace Kit {
         const Rest::rest_headers kit_headers = { "User-Agent: Vital.extension" };
         static std::string s_version;
-        static bool s_version_resolved = false;
 
         const std::string& get_version() {
-            if (s_version_resolved) return s_version;
-            s_version_resolved = true;
+            if (!s_version.empty()) return s_version;
             const std::string checksum_path = cache_base + "/" + kit_name + "/checksum.json";
             std::ifstream f(checksum_path, std::ios::binary);
             if (!f) {
