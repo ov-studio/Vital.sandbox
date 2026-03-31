@@ -14,6 +14,20 @@ class Conan:
                 check=True
             )
 
+    def _run_live(self, cmd, label):
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        for line in process.stdout:
+            stripped = line.strip()
+            if stripped:
+                log_info(stripped)
+        process.wait()
+        return process.returncode
+
     def build(self):
         self.install()
         log_step("Building Conan")
@@ -30,10 +44,10 @@ class Conan:
             for build_type in ("Debug", "Release")
         ]:
             log_info(f"{label} ...")
-            result = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-            if result.returncode != 0:
-                log_error(f"{label} failed:\n{result.stderr.decode().strip()}")
-                sys.exit(result.returncode)
+            returncode = self._run_live(cmd, label)
+            if returncode != 0:
+                log_error(f"{label} failed (exit code {returncode})")
+                sys.exit(returncode)
         log_ok("Done")
 
 BaseEnvironment.Conan = property(lambda self: Conan(self))
