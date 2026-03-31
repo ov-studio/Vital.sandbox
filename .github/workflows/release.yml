@@ -36,10 +36,10 @@ jobs:
           key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
 
       - name: Build Debug
-        run: python build.py --all --debug --verbose
+        run: python build.py --all --debug --verbose --skip-extension
 
       - name: Build Release
-        run: python build.py --all --release --verbose
+        run: python build.py --all --release --verbose --skip-extension
 
       - name: Upload dist
         uses: actions/upload-artifact@v4
