@@ -119,7 +119,7 @@ namespace Vital::Tool {
                 Vital::print("sbox", "Kit: release response empty");
                 return {};
             }
-        
+
             rapidjson::Document doc;
             doc.Parse(response.c_str());
             if (doc.HasParseError()) {
@@ -230,8 +230,16 @@ namespace Vital::Tool {
             }
             else {
                 auto checksum_doc = fetch_checksum(checksum_url);
-                if (get_version() != tag) {
+                if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) {
+                    Vital::print("sbox", "Kit: checksum fetch failed — will redownload");
+                    needs_download = true;
+                }
+                else if (get_version() != tag) {
                     Vital::print("sbox", fmt::format("Kit: version mismatch — local ( {} ) remote ( {} ) — will redownload", get_version(), tag).c_str());
+                    needs_download = true;
+                }
+                else if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) {
+                    Vital::print("sbox", "Kit: checksum missing/invalid 'files' — will redownload");
                     needs_download = true;
                 }
                 else {
@@ -261,7 +269,7 @@ namespace Vital::Tool {
                         ++checked;
                     }
                     if (!all_valid) needs_download = true;
-                    else Vital::print("sbox", fmt::format("Kit: cache valid ({}/{} files) — skipping download ( {} )", total, total, get_version()).c_str());
+                    else Vital::print("sbox", fmt::format("Kit: cache valid ({}/{} files) — skipping download ( {} )", checked, total, get_version()).c_str());
                 }
             }
 
