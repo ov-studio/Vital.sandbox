@@ -325,7 +325,8 @@ namespace Vital::Engine {
         while (std::getline(stream, line)) {
             if (!line.empty() && line.back() == '\r') line.pop_back();
             if (line.empty()) continue;
-            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first);
+            bool is_highlight = (line.size() >= 2 && line[0] == '>' && line[1] == ' ');
+            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first && !is_highlight);
             first = false;
         }
         oss << "\n";
@@ -374,11 +375,11 @@ namespace Vital::Engine {
     std::string Console::fetch_version() {
         std::ostringstream oss;
         oss << "Version:\n"
-            << "\n" << indent(1) << "Vital.sandbox: `" << Vital::Build.to_string() << "`\n"
-            << indent(1) << "Vital.kit: `"              << Vital::Tool::Kit::get_version() << "`\n";
+            << "\n> " << "Vital.sandbox: `" << Vital::Build.to_string() << "`\n"
+            << "> " << "Vital.kit: `"        << Vital::Tool::Kit::get_version() << "`\n";
         return oss.str();
     }
-
+    
     std::string Console::fetch_help() {
         std::ostringstream oss;
         oss << "Available Commands:\n";
@@ -387,13 +388,13 @@ namespace Vital::Engine {
             if (help.HasParseError() || !help.HasMember(section.c_str())) return;
             const auto& cmds = help[section.c_str()];
             if (!cmds.IsObject()) return;
-            oss << "\n" << indent(1) << label << ":\n";
+            oss << "\n" << label << ":\n";
             for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
                 std::string cmd = it -> name.GetString();
                 std::string syntax = it -> value.HasMember("syntax") && it -> value["syntax"].IsString() ? it -> value["syntax"].GetString() : "";
                 std::string desc = it -> value.HasMember("desc")   && it -> value["desc"].IsString()   ? it -> value["desc"].GetString()   : "";
                 std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
-                oss << fmt::format("{}{} — {}\n", indent(2), full_cmd, desc);
+                oss << fmt::format("> {}{} — {}\n", indent(1), full_cmd, desc);
             }
         };
         append_section("shared", "General");
