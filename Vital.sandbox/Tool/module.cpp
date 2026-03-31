@@ -215,7 +215,6 @@ namespace Vital::Tool {
         bool ensure_kit() {
             const std::string kit_dir = cache_base + "/" + kit_name;
             const std::string zip_path = cache_base + "/" + kit_name + ".zip";
-            const std::string local_checksum = kit_dir + "/checksum.json";
 
             auto [tag, zip_url, checksum_url] = fetch_release_info();
             if (tag.empty() || zip_url.empty()) {
@@ -229,26 +228,16 @@ namespace Vital::Tool {
                 Vital::print("sbox", "Kit: cache missing — will download");
                 needs_download = true;
             }
-            else if (!std::filesystem::exists(local_checksum)) {
-                Vital::print("sbox", "Kit: checksum.json missing from kit — will redownload");
-                needs_download = true;
-            }
             else {
                 auto checksum_doc = fetch_checksum(checksum_url);
-                if (checksum_doc.HasParseError()) {
-                    Vital::print("sbox", "Kit: checksum parse error — will redownload");
-                    needs_download = true;
-                }
-                else if (!checksum_doc.IsObject()) {
-                    Vital::print("sbox", "Kit: checksum not an object — will redownload");
-                    needs_download = true;
-                }
-                else if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) {
-                    Vital::print("sbox", "Kit: checksum missing/invalid 'files' — will redownload");
+                if (get_version() != tag) {
+                    Vital::print("sbox", fmt::format("Kit: version mismatch — local ( {} ) remote ( {} ) — will redownload", get_version(), tag).c_str());
                     needs_download = true;
                 }
                 else {
                     const auto& files = checksum_doc["files"];
+                    const int total = static_cast<int>(files.MemberCount());
+                    int checked = 0;
                     bool all_valid = true;
                     for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
                         const std::string rel_path = it -> name.GetString();
@@ -259,39 +248,39 @@ namespace Vital::Tool {
                         }
                         const std::string expected = it -> value["sha256"].GetString();
                         if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
-                            Vital::print("sbox", "Kit: file missing -> ", rel_path.c_str());
+                            Vital::print("sbox", fmt::format("Kit: file missing ({}/{}) -> {}", checked, total, rel_path).c_str());
                             all_valid = false;
                             break;
                         }
                         const std::string actual = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
                         if (actual != expected) {
-                            Vital::print("sbox", "Kit: checksum mismatch -> ", rel_path.c_str(), " expected: ", expected.c_str(), " got: ", actual.c_str());
+                            Vital::print("sbox", fmt::format("Kit: checksum mismatch ({}/{}) -> {}", checked, total, rel_path).c_str());
                             all_valid = false;
                             break;
                         }
+                        ++checked;
                     }
                     if (!all_valid) needs_download = true;
+                    else Vital::print("sbox", fmt::format("Kit: cache valid ({}/{} files) — skipping download ( {} )", total, total, get_version()).c_str());
                 }
             }
 
-            if (!needs_download) {
-                Vital::print("sbox", "Kit: cache valid — skipping download (", get_version(), ")");
-                return true;
+            if (needs_download) {
+                std::filesystem::remove_all(kit_dir);
+                Vital::print("sbox", "Kit: downloading...");
+                if (!download_file(zip_url, zip_path)) {
+                    Vital::print("sbox", "Kit: download failed");
+                    return false;
+                }
+                Vital::print("sbox", "Kit: extracting...");
+                if (!extract_zip(zip_path, kit_dir)) {
+                    Vital::print("sbox", "Kit: extraction failed");
+                    return false;
+                }
+                std::filesystem::remove(zip_path);
+                s_version.clear();
+                Vital::print("sbox", "Kit: ready ( ", get_version(), " )");
             }
-            std::filesystem::remove_all(kit_dir);
-            Vital::print("sbox", "Kit: downloading...");
-            if (!download_file(zip_url, zip_path)) {
-                Vital::print("sbox", "Kit: download failed");
-                return false;
-            }
-            Vital::print("sbox", "Kit: extracting...");
-            if (!extract_zip(zip_path, kit_dir)) {
-                Vital::print("sbox", "Kit: extraction failed");
-                return false;
-            }
-            std::filesystem::remove(zip_path);
-            s_version.clear();
-            Vital::print("sbox", "Kit: ready (", get_version(), ")");
             return true;
         }
     }
