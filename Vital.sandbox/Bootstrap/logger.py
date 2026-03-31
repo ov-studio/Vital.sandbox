@@ -3,6 +3,17 @@ import sys, time, threading
 def _supports_color():
     return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
+def _supports_unicode():
+    try:
+        "\u280b".encode(sys.stdout.encoding or "ascii")
+        return True
+    except (UnicodeEncodeError, LookupError):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            return True
+        except (AttributeError, OSError):
+            return False
+
 class C:
     RESET  = "\033[0m"        if _supports_color() else ""
     BOLD   = "\033[1m"        if _supports_color() else ""
@@ -28,10 +39,13 @@ def log_error(msg):
     print(f"    {C.RED}[ERROR]{C.RESET} {msg}")
 
 def spinner(label, stop_event):
-    frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"] if _supports_unicode() else ["-", "\\", "|", "/"]
     i = 0
     while not stop_event.is_set():
-        print(f"\033[2K\r  {C.DIM}{frames[i % len(frames)]} {label}...{C.RESET}", end="", flush=True)
+        try:
+            print(f"\033[2K\r  {C.DIM}{frames[i % len(frames)]} {label}...{C.RESET}", end="", flush=True)
+        except UnicodeEncodeError:
+            print(f"\r  {frames[i % len(frames)]} {label}...", end="", flush=True)
         i += 1
         time.sleep(0.08)
     print("\033[2K\r", end="", flush=True)
