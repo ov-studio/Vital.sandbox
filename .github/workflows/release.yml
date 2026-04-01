@@ -12,7 +12,7 @@ jobs:
   # ── Build: Windows ──────────────────────────────────────────────────────────
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - name: Checkout
@@ -34,6 +34,7 @@ jobs:
         with:
           path: .godot
           key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+          save-always: true
 
       - name: Cache Conan
         uses: actions/cache@v4
@@ -41,6 +42,7 @@ jobs:
           path: ~/.conan2
           key: conan-windows-${{ hashFiles('Vital.extension/conanfile.*') }}
           restore-keys: conan-windows-
+          save-always: true
 
       - name: Cache vcpkg
         uses: actions/cache@v4
@@ -48,15 +50,22 @@ jobs:
           path: .vcpkg
           key: vcpkg-windows-${{ hashFiles('Vital.extension/vcpkg.json') }}
           restore-keys: vcpkg-windows-
+          save-always: true
 
       - name: Build Debug
         env:
           PYTHONUNBUFFERED: "1"
+          CL: /MP
+          CONAN_CPU_COUNT: "4"
+          CMAKE_BUILD_PARALLEL_LEVEL: "4"
         run: python build.py --all --debug --verbose
 
       - name: Build Release
         env:
           PYTHONUNBUFFERED: "1"
+          CL: /MP
+          CONAN_CPU_COUNT: "4"
+          CMAKE_BUILD_PARALLEL_LEVEL: "4"
         run: python build.py --all --release --verbose --skip-extension
 
       - name: Upload dist
@@ -77,15 +86,15 @@ jobs:
   #       with: { python-version: "3.x" }
   #     - run: sudo apt-get update && sudo apt-get install -y scons gcc g++ libssl-dev
   #     - uses: actions/cache@v4
-  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}", save-always: true }
   #     - uses: actions/cache@v4
-  #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-linux-" }
+  #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-linux-", save-always: true }
   #     - uses: actions/cache@v4
-  #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-linux-" }
+  #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-linux-", save-always: true }
   #     - run: python3 build.py --all --debug --verbose
-  #       env: { PYTHONUNBUFFERED: "1" }
+  #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
-  #       env: { PYTHONUNBUFFERED: "1" }
+  #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - uses: actions/upload-artifact@v4
   #       with: { name: dist-linux, path: .dist/ }
 
@@ -101,15 +110,15 @@ jobs:
   #       with: { python-version: "3.x" }
   #     - run: pip install scons
   #     - uses: actions/cache@v4
-  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}", save-always: true }
   #     - uses: actions/cache@v4
-  #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-macos-" }
+  #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-macos-", save-always: true }
   #     - uses: actions/cache@v4
-  #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-macos-" }
+  #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-macos-", save-always: true }
   #     - run: python3 build.py --all --debug --verbose
-  #       env: { PYTHONUNBUFFERED: "1" }
+  #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
-  #       env: { PYTHONUNBUFFERED: "1" }
+  #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - uses: actions/upload-artifact@v4
   #       with: { name: dist-macos, path: .dist/ }
 
