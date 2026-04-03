@@ -76,11 +76,7 @@ class Build:
         if self.verbose:
             log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
             with open(log_path, "w", buffering=1) as log_file:
-                process = subprocess.Popen(
-                    cmd,
-                    stdout=log_file,
-                    stderr=log_file,
-                )
+                process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file)
                 stop = threading.Event()
 
                 def tail_log():
@@ -106,7 +102,6 @@ class Build:
                 process.wait()
                 stop.set()
                 tail_thread.join()
-
         else:
             stop = threading.Event()
             thread = threading.Thread(target=spinner, args=("Compiling", stop))
@@ -175,6 +170,40 @@ class Build:
         if not configs_copied:
             log_info("No config files found")
 
+    def _ensure_dll_staged(self, b):
+        # Ensure the extension DLL exists in the project folder before Godot export.
+        # The SCons stage target copies it there, but we verify and copy manually if missing.
+        build_suffix = self.build_type.lower()
+        os_type = self.os_info["type"]
+
+        if os_type == "Windows":
+            dll_name = f"vital.sdk.{build_suffix}.x86_64.dll"
+            dll_src = os.path.join(b["extension_dir"], "bin", build_suffix, dll_name)
+            dll_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "windows")
+            dll_dst = os.path.join(dll_dst_dir, dll_name)
+            if os.path.exists(dll_src) and not os.path.exists(dll_dst):
+                log_info(f"Staging {dll_name} to project folder ...")
+                os.makedirs(dll_dst_dir, exist_ok=True)
+                shutil.copy2(dll_src, dll_dst)
+        elif os_type == "Linux":
+            so_name = f"vital.sdk.{build_suffix}.x86_64.so"
+            so_src = os.path.join(b["extension_dir"], "bin", build_suffix, so_name)
+            so_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "linux")
+            so_dst = os.path.join(so_dst_dir, so_name)
+            if os.path.exists(so_src) and not os.path.exists(so_dst):
+                log_info(f"Staging {so_name} to project folder ...")
+                os.makedirs(so_dst_dir, exist_ok=True)
+                shutil.copy2(so_src, so_dst)
+        elif os_type == "Darwin":
+            dylib_name = f"vital.sdk.{build_suffix}.dylib"
+            dylib_src = os.path.join(b["extension_dir"], "bin", build_suffix, dylib_name)
+            dylib_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "macos")
+            dylib_dst = os.path.join(dylib_dst_dir, dylib_name)
+            if os.path.exists(dylib_src) and not os.path.exists(dylib_dst):
+                log_info(f"Staging {dylib_name} to project folder ...")
+                os.makedirs(dylib_dst_dir, exist_ok=True)
+                shutil.copy2(dylib_src, dylib_dst)
+
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
@@ -182,18 +211,20 @@ class Build:
         log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
 
+        # Ensure DLL is staged into project folder before Godot tries to load it
+        self._ensure_dll_staged(b)
+
         env = os.environ.copy()
         build_suffix = self.build_type.lower()
         extra_paths = [
             os.path.join(b["extension_dir"], "bin"),
             os.path.join(b["extension_dir"], f"bin/{build_suffix}"),
-            os.path.join(b["project_dir"], "bin")
+            os.path.join(b["project_dir"], "bin"),
         ]
         env["PATH"] = os.pathsep.join(extra_paths) + os.pathsep + env.get("PATH", "")
 
         result = subprocess.run([
             godot_bin, "--headless",
-            "--rendering-driver", "dummy",
             "--path", b["project_dir"],
             b["export_mode"], b["preset"],
             b["output_path"]
