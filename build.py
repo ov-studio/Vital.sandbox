@@ -54,6 +54,7 @@ class Build:
         log_ok("Done")
 
     def build_extension(self):
+        import tempfile
         b = self.init()
         log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
 
@@ -64,49 +65,69 @@ class Build:
             "Reloading", "Fetching", "Cloning", "Binary", "Templates",
         )
 
-        process = subprocess.Popen([
+        cmd = [
             "scons", "-C", b["extension_dir"],
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
             "build_library=no",
             f"-j{int(self.os_info['nproc'])}",
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        stderr_lines = []
-
-        def stream_stderr():
-            for line in process.stderr:
-                stderr_lines.append(line)
-
-        stderr_thread = threading.Thread(target=stream_stderr)
-        stderr_thread.start()
+        ]
 
         if self.verbose:
-            for line in process.stdout:
-                stripped = line.strip()
-                if not stripped:
-                    continue
-                if stripped.startswith("==>"):
-                    log_step(stripped[4:].strip())
-                elif any(stripped.startswith(p) for p in ignore):
-                    log_info(stripped)
-                else:
-                    log_ok(stripped)
+            log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
+            with open(log_path, "w", buffering=1) as log_file:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=log_file,
+                    stderr=log_file,
+                )
+                stop = threading.Event()
+
+                def tail_log():
+                    with open(log_path, "r", errors="replace") as f:
+                        f.seek(0, 2)  # start at end
+                        while not stop.is_set() or process.poll() is None:
+                            line = f.readline()
+                            if not line:
+                                time.sleep(0.05)
+                                continue
+                            stripped = line.strip()
+                            if not stripped:
+                                continue
+                            if stripped.startswith("==>"):
+                                log_step(stripped[4:].strip())
+                            elif any(stripped.startswith(p) for p in ignore):
+                                log_info(stripped)
+                            else:
+                                log_ok(stripped)
+
+                tail_thread = threading.Thread(target=tail_log)
+                tail_thread.start()
+                process.wait()
+                stop.set()
+                tail_thread.join()
+
         else:
             stop = threading.Event()
             thread = threading.Thread(target=spinner, args=("Compiling", stop))
             thread.start()
-            process.stdout.read()
+            log_path = os.path.join(tempfile.gettempdir(), "scons_extension.log")
+            with open(log_path, "w") as log_file:
+                process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file)
+                process.wait()
             stop.set()
             thread.join()
 
-        process.wait()
-        stderr_thread.join()
-
         if process.returncode != 0:
-            for line in stderr_lines:
-                if line.strip():
-                    log_error(line.strip())
+            log_error("Extension build failed — last 30 lines:")
+            try:
+                with open(log_path, "r", errors="replace") as f:
+                    lines = f.readlines()
+                for line in lines[-30:]:
+                    if line.strip():
+                        log_error(line.strip())
+            except Exception:
+                pass
             sys.exit(process.returncode)
 
         log_ok("Done")
