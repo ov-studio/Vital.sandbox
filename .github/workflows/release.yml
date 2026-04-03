@@ -48,14 +48,6 @@ jobs:
           key: conan-windows-${{ hashFiles('Vital.extension/conanfile.*') }}
           restore-keys: conan-windows-
 
-      - name: Restore vcpkg cache
-        id: cache-vcpkg
-        uses: actions/cache/restore@v4
-        with:
-          path: .vcpkg
-          key: vcpkg-windows-${{ hashFiles('Vital.extension/vcpkg.json') }}
-          restore-keys: vcpkg-windows-
-
       - name: Restore Discord SDK cache
         id: cache-discord
         uses: actions/cache/restore@v4
@@ -94,13 +86,6 @@ jobs:
         with:
           path: ~/.conan2
           key: conan-windows-${{ hashFiles('Vital.extension/conanfile.*') }}
-
-      - name: Save vcpkg cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: .vcpkg
-          key: vcpkg-windows-${{ hashFiles('Vital.extension/vcpkg.json') }}
 
       - name: Save Discord SDK cache
         if: always()
