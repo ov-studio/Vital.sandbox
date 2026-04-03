@@ -32,36 +32,38 @@ jobs:
       - name: Install SCons
         run: pip install scons
 
-      - name: Cache Godot
-        uses: actions/cache@v4
+      # ── Restore caches ──────────────────────────────────────────────────────
+      - name: Restore Godot cache
+        id: cache-godot
+        uses: actions/cache/restore@v4
         with:
           path: .godot
           key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
-          save-always: true
 
-      - name: Cache Conan
-        uses: actions/cache@v4
+      - name: Restore Conan cache
+        id: cache-conan
+        uses: actions/cache/restore@v4
         with:
           path: ~/.conan2
           key: conan-windows-${{ hashFiles('Vital.extension/conanfile.*') }}
           restore-keys: conan-windows-
-          save-always: true
 
-      - name: Cache vcpkg
-        uses: actions/cache@v4
+      - name: Restore vcpkg cache
+        id: cache-vcpkg
+        uses: actions/cache/restore@v4
         with:
           path: .vcpkg
           key: vcpkg-windows-${{ hashFiles('Vital.extension/vcpkg.json') }}
           restore-keys: vcpkg-windows-
-          save-always: true
 
-      - name: Cache Discord SDK
-        uses: actions/cache@v4
+      - name: Restore Discord SDK cache
+        id: cache-discord
+        uses: actions/cache/restore@v4
         with:
           path: Vital.sandbox/Vendor/discord-sdk
           key: discord-sdk-windows
-          save-always: true
 
+      # ── Build ───────────────────────────────────────────────────────────────
       - name: Build Debug
         env:
           PYTHONUNBUFFERED: "1"
@@ -78,6 +80,36 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL: "4"
         run: python build.py --all --release --verbose --skip-extension
 
+      # ── Save caches (always, even on failure) ───────────────────────────────
+      - name: Save Godot cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .godot
+          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+
+      - name: Save Conan cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.conan2
+          key: conan-windows-${{ hashFiles('Vital.extension/conanfile.*') }}
+
+      - name: Save vcpkg cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .vcpkg
+          key: vcpkg-windows-${{ hashFiles('Vital.extension/vcpkg.json') }}
+
+      - name: Save Discord SDK cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: Vital.sandbox/Vendor/discord-sdk
+          key: discord-sdk-windows
+
+      # ── Upload ──────────────────────────────────────────────────────────────
       - name: Upload dist
         uses: actions/upload-artifact@v4
         with:
@@ -89,26 +121,36 @@ jobs:
   # TODO: re-enable once Windows is confirmed working
   # build-linux:
   #   runs-on: ubuntu-latest
-  #   env:
-  #     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   #   steps:
   #     - uses: actions/checkout@v4
   #       with: { fetch-depth: 0, submodules: recursive }
   #     - uses: actions/setup-python@v5
   #       with: { python-version: "3.x" }
   #     - run: sudo apt-get update && sudo apt-get install -y scons gcc g++ libssl-dev
-  #     - uses: actions/cache@v4
-  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}", save-always: true }
-  #     - uses: actions/cache@v4
-  #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-linux-", save-always: true }
-  #     - uses: actions/cache@v4
-  #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-linux-", save-always: true }
-  #     - uses: actions/cache@v4
-  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-linux, save-always: true }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-linux-" }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-linux-" }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-linux }
   #     - run: python3 build.py --all --debug --verbose
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-linux }
   #     - uses: actions/upload-artifact@v4
   #       with: { name: dist-linux, path: .dist/ }
 
@@ -117,26 +159,36 @@ jobs:
   # TODO: re-enable once Windows is confirmed working
   # build-macos:
   #   runs-on: macos-latest
-  #   env:
-  #     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   #   steps:
   #     - uses: actions/checkout@v4
   #       with: { fetch-depth: 0, submodules: recursive }
   #     - uses: actions/setup-python@v5
   #       with: { python-version: "3.x" }
   #     - run: pip install scons
-  #     - uses: actions/cache@v4
-  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}", save-always: true }
-  #     - uses: actions/cache@v4
-  #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-macos-", save-always: true }
-  #     - uses: actions/cache@v4
-  #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-macos-", save-always: true }
-  #     - uses: actions/cache@v4
-  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-macos, save-always: true }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-macos-" }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-macos-" }
+  #     - uses: actions/cache/restore@v4
+  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-macos }
   #     - run: python3 build.py --all --debug --verbose
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}" }
+  #     - if: always()
+  #       uses: actions/cache/save@v4
+  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-macos }
   #     - uses: actions/upload-artifact@v4
   #       with: { name: dist-macos, path: .dist/ }
 
