@@ -187,8 +187,7 @@ class Build:
         extra_paths = [
             os.path.join(b["extension_dir"], "bin"),
             os.path.join(b["extension_dir"], f"bin/{build_suffix}"),
-            os.path.join(b["project_dir"], "bin"),
-            os.path.join(self.script_dir, "Vital.sandbox", "Vendor", "discord-sdk", "bin", build_suffix)
+            os.path.join(b["project_dir"], "bin")
         ]
         env["PATH"] = os.pathsep.join(extra_paths) + os.pathsep + env.get("PATH", "")
 
