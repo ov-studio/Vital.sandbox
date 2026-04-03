@@ -35,11 +35,12 @@ class Conan:
             (["conan", "profile", "detect", "--force"], "Detecting profile"),
         ] + [
             (["conan", "install", ".",
-                "--build=missing",
-                "--output-folder=.conan",
-                f"--settings=build_type={build_type}",
-                "--settings=compiler.cppstd=17",
-                "--settings=compiler.runtime=dynamic",
+            "--build=missing",
+            "-v", "quiet",      # ← suppress all internal output, prevents pipe deadlock
+            "--output-folder=.conan",
+            f"--settings=build_type={build_type}",
+            "--settings=compiler.cppstd=17",
+            "--settings=compiler.runtime=dynamic",
             ], f"Installing [{build_type}]")
             for build_type in ("Debug", "Release")
         ]:
