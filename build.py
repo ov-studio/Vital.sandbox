@@ -85,7 +85,7 @@ class Build:
 
                 def tail_log():
                     with open(log_path, "r", errors="replace") as f:
-                        f.seek(0, 2)  # start at end
+                        f.seek(0, 2)
                         while not stop.is_set() or process.poll() is None:
                             line = f.readline()
                             if not line:
@@ -194,15 +194,18 @@ class Build:
 
         result = subprocess.run([
             godot_bin, "--headless",
+            "--rendering-driver", "dummy",
             "--path", b["project_dir"],
             b["export_mode"], b["preset"],
             b["output_path"]
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, env=env)
+        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+
+        for line in result.stdout.splitlines():
+            if line.strip():
+                log_info(line.strip())
 
         if result.returncode != 0:
-            for line in result.stderr.splitlines():
-                if line.strip():
-                    log_error(line.strip())
+            log_error(f"Godot export failed with exit code {result.returncode}")
             sys.exit(result.returncode)
 
         log_ok("Done")
