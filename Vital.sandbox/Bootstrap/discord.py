@@ -1,8 +1,7 @@
 from Bootstrap.utils import *
 from Bootstrap.download import *
-from Bootstrap.mega import *
 
-DISCORD_SDK_URL = "https://mega.nz/file/964FxYbB#JH3sNtOncuXcUKjn7loOJQZgAFmZLsJOpWpMDTGWZxo"
+DISCORD_SDK_URL = "https://github.com/ov-studio/Vital.sandbox/releases/download/deps/discord-sdk.zip"
 
 class Discord:
     def __init__(self, env):
@@ -18,7 +17,7 @@ class Discord:
             return
         log_step("Installing Discord SDK")
         zip_path = discord["root"] + ".zip"
-        self.env.Mega.get(DISCORD_SDK_URL, zip_path)
+        Download(DISCORD_SDK_URL, zip_path)
         Extract_Zip(zip_path, discord["root"])
         os.remove(zip_path)
         log_ok("Done")
