@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── Build: Windows ──────────────────────────────────────────────────────────
   build-windows:
@@ -52,6 +55,13 @@ jobs:
           restore-keys: vcpkg-windows-
           save-always: true
 
+      - name: Cache Discord SDK
+        uses: actions/cache@v4
+        with:
+          path: Vital.sandbox/Vendor/discord-sdk
+          key: discord-sdk-windows
+          save-always: true
+
       - name: Build Debug
         env:
           PYTHONUNBUFFERED: "1"
@@ -79,6 +89,8 @@ jobs:
   # TODO: re-enable once Windows is confirmed working
   # build-linux:
   #   runs-on: ubuntu-latest
+  #   env:
+  #     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   #   steps:
   #     - uses: actions/checkout@v4
   #       with: { fetch-depth: 0, submodules: recursive }
@@ -91,6 +103,8 @@ jobs:
   #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-linux-", save-always: true }
   #     - uses: actions/cache@v4
   #       with: { path: .vcpkg, key: "vcpkg-linux-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-linux-", save-always: true }
+  #     - uses: actions/cache@v4
+  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-linux, save-always: true }
   #     - run: python3 build.py --all --debug --verbose
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
@@ -103,6 +117,8 @@ jobs:
   # TODO: re-enable once Windows is confirmed working
   # build-macos:
   #   runs-on: macos-latest
+  #   env:
+  #     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   #   steps:
   #     - uses: actions/checkout@v4
   #       with: { fetch-depth: 0, submodules: recursive }
@@ -115,6 +131,8 @@ jobs:
   #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.extension/conanfile.*') }}", restore-keys: "conan-macos-", save-always: true }
   #     - uses: actions/cache@v4
   #       with: { path: .vcpkg, key: "vcpkg-macos-${{ hashFiles('Vital.extension/vcpkg.json') }}", restore-keys: "vcpkg-macos-", save-always: true }
+  #     - uses: actions/cache@v4
+  #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-macos, save-always: true }
   #     - run: python3 build.py --all --debug --verbose
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4" }
   #     - run: python3 build.py --all --release --verbose --skip-extension
