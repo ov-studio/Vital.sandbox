@@ -40,6 +40,9 @@ jobs:
           path: .godot
           key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
 
+      - name: Clear stale export templates (fixes crash)
+        run: Remove-Item -Recurse -Force "${{ env.APPDATA }}\Godot\export_templates" -ErrorAction SilentlyContinue
+
       - name: Restore Conan cache
         id: cache-conan
         uses: actions/cache/restore@v4
