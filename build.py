@@ -182,12 +182,22 @@ class Build:
         log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
 
+        env = os.environ.copy()
+        build_suffix = self.build_type.lower()
+        extra_paths = [
+            os.path.join(b["extension_dir"], "bin"),
+            os.path.join(b["extension_dir"], f"bin/{build_suffix}"),
+            os.path.join(b["project_dir"], "bin"),
+            os.path.join(self.script_dir, "Vital.sandbox", "Vendor", "discord-sdk", "bin", build_suffix)
+        ]
+        env["PATH"] = os.pathsep.join(extra_paths) + os.pathsep + env.get("PATH", "")
+
         result = subprocess.run([
             godot_bin, "--headless",
             "--path", b["project_dir"],
             b["export_mode"], b["preset"],
             b["output_path"]
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, env=env)
 
         if result.returncode != 0:
             for line in result.stderr.splitlines():
