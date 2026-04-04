@@ -37,10 +37,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .godot
-          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
-          restore-keys: |
-            godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-
-            godot-windows-
+          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
+          restore-keys: godot-windows-
 
       - name: Restore godot-cpp cache
         uses: actions/cache/restore@v4
@@ -49,19 +47,15 @@ jobs:
             Vital.extension/Vendor/godot/bin
             Vital.extension/.build_godotcpp.debug
             Vital.extension/.build_godotcpp.release
-          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
-          restore-keys: |
-            godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-
-            godot-cpp-windows-
+          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
+          restore-keys: godot-cpp-windows-
 
       - name: Restore Conan cache
         uses: actions/cache/restore@v4
         with:
           path: C:\Users\runneradmin\.conan2
-          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}-${{ github.run_id }}
-          restore-keys: |
-            conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}-
-            conan-windows-
+          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}
+          restore-keys: conan-windows-
 
       - name: Restore Discord SDK cache
         uses: actions/cache/restore@v4
@@ -97,7 +91,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: .godot
-          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
+          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
 
       - name: Save godot-cpp cache
         if: always()
@@ -107,14 +101,14 @@ jobs:
             Vital.extension/Vendor/godot/bin
             Vital.extension/.build_godotcpp.debug
             Vital.extension/.build_godotcpp.release
-          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
+          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
 
       - name: Save Conan cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: C:\Users\runneradmin\.conan2
-          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}-${{ github.run_id }}
+          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}
 
       - name: Save Discord SDK cache
         if: always()
