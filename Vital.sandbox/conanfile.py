@@ -11,7 +11,7 @@ class BuildConan(ConanFile):
         self.requires("cpp-httplib/0.39.0")
         self.requires("libmysqlclient/8.1.0")
         self.requires("soci/4.1.2")
-        self.requires("zlib/1.3.1")
+        self.requires("zstd/1.5.7")
         self.requires("libzip/1.11.4")
         self.requires("rapidjson/1.1.0")
         self.requires("yaml-cpp/0.8.0")
@@ -28,7 +28,7 @@ class BuildConan(ConanFile):
         self.options["soci"].with_postgresql = False
         self.options["soci"].with_odbc = False
         self.options["soci"].with_boost = False
-        self.options["zlib"].shared = False
+        self.options["zstd"].shared = False
         self.options["libzip"].shared = False
         self.options["rapidjson"].shared = False
         self.options["yaml-cpp"].shared = False

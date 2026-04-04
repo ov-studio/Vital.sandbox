@@ -8,7 +8,7 @@
 * [**cpp-httplib**](https://github.com/yhirose/cpp-httplib) - Provides HTTP/HTTPS client and server functionality.
 * [**libmysqlclient**](https://dev.mysql.com/doc/c-api/en/) - Provides low-level communication with MySQL database servers.
 * [**soci**](https://soci.sourceforge.net) - Provides a unified C++ abstraction layer over relational database backends.
-* [**zlib**](https://zlib.net) - Provides lossless data compression and decompression.
+* [**zstd**](https://facebook.github.io/zstd) - Provides fast lossless data compression and decompression.
 * [**libzip**](https://libzip.org) - Provides reading, creating, and modifying ZIP archives.
 * [**rapidjson**](https://rapidjson.org) - Provides high-performance JSON parsing and generation.
 * [**yaml-cpp**](https://github.com/jbeder/yaml-cpp) - Provides YAML parsing and emitting for C++.
