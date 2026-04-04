@@ -11,7 +11,7 @@
 * [**zstd**](https://facebook.github.io/zstd) - Provides fast lossless data compression and decompression.
 * [**libzip**](https://libzip.org) - Provides reading, creating, and modifying ZIP archives.
 * [**rapidjson**](https://rapidjson.org) - Provides high-performance JSON parsing and generation.
-* [**yaml-cpp**](https://github.com/jbeder/yaml-cpp) - Provides YAML parsing and emitting for C++.
+* [**rapidyaml**](https://github.com/biojppm/rapidyaml) - Provides high-performance YAML parsing and generation.
 * [**fmt**](https://fmt.dev) - Provides fast and expressive text formatting for C++.
 * [**lua**](https://www.lua.org) - Provides an embeddable scripting runtime with sandboxing support.
 * [**lua-rapidjson**](https://github.com/xpol/lua-rapidjson) - Provides RapidJSON bindings for Lua.

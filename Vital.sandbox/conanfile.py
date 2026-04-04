@@ -14,7 +14,7 @@ class BuildConan(ConanFile):
         self.requires("zstd/1.5.7")
         self.requires("libzip/1.11.4")
         self.requires("rapidjson/1.1.0")
-        self.requires("yaml-cpp/0.9.0")
+        self.requires("rapidyaml/0.10.0")
         self.requires("fmt/12.1.0")
 
     def configure(self):
@@ -31,6 +31,6 @@ class BuildConan(ConanFile):
         self.options["zstd"].shared = False
         self.options["libzip"].shared = False
         self.options["rapidjson"].shared = False
-        self.options["yaml-cpp"].shared = False
+        self.options["rapidyaml"].shared = False
         self.options["fmt"].shared = False
 
