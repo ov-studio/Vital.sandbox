@@ -47,6 +47,7 @@ jobs:
             Vital.extension/.build_godotcpp.debug
             Vital.extension/.build_godotcpp.release
           key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+          restore-keys: godot-cpp-windows-
 
       - name: Restore Conan cache
         uses: actions/cache/restore@v4
@@ -250,7 +251,8 @@ jobs:
             for target_dir in "$platform_dir"/*/; do
               target=$(basename "$target_dir")
               zip_name="../Vital.sandbox-${TAG}-${platform}-${target}.zip"
-              zip -r "$zip_name" "$target_dir"
+              # zip contents directly, not the folder itself
+              (cd "$target_dir" && zip -r "$(realpath "$zip_name")" .)
               echo "Packaged: $(basename $zip_name)"
             done
           done
