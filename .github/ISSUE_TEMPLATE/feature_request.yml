@@ -22,7 +22,7 @@ body:
     attributes:
       label: Why is this useful?
       description: Share a real use case or the problem this solves.
-      placeholder: e.g. During development of a vEngine game, reloading the full sandbox on every script change adds significant iteration time...
+      placeholder: e.g. During development of a game, reloading the full sandbox on every script change adds significant iteration time...
     validations:
       required: true
 
