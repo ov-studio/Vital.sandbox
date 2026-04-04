@@ -6,14 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the report. Keep it short and include only what helps reproduce the issue.
+        Thanks for taking the time to report a bug. Please keep it concise and include only what's needed to reproduce the issue.
 
   - type: textarea
     id: description
     attributes:
       label: What happened?
-      description: Tell us the bug in one or two sentences.
-      placeholder: The browser view is blank after loading a URL.
+      description: Describe the bug in one or two sentences.
+      placeholder: e.g. The sandbox crashes when loading a Lua module with cyclic dependencies.
     validations:
       required: true
 
@@ -21,11 +21,20 @@ body:
     id: reproduction
     attributes:
       label: How to reproduce
-      description: Provide the smallest set of steps.
+      description: Provide the minimal steps to reproduce the issue.
       placeholder: |
-        1. ...
-        2. ...
-        3. ...
+        1. Initialize a Vital.sandbox instance with...
+        2. Load the following script script...
+        3. Run and observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: The module should load without crashing and return...
     validations:
       required: true
 
@@ -33,11 +42,10 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Share versions/platform info.
+      description: Share relevant version and platform details.
       placeholder: |
-        - Godot:
-        - godot-cef:
-        - OS:
+        - Vital.sandbox version/commit:
+        - OS (Windows/Linux/macOS):
     validations:
       required: true
 
@@ -46,13 +54,13 @@ body:
     attributes:
       label: Logs or screenshots (optional)
       render: shell
-      placeholder: Paste logs/screenshots links here.
+      placeholder: Paste crash output, stack traces, or link to screenshots here.
 
   - type: textarea
     id: additional
     attributes:
       label: Additional context (optional)
-      placeholder: Anything else that might help.
+      placeholder: Any other context, related issues, or minimal reproducible code snippets.
 
   - type: checkboxes
     id: checklist
@@ -60,4 +68,6 @@ body:
       label: Before submitting
       options:
         - label: I have searched existing issues to make sure this isn't a duplicate
+          required: true
+        - label: I am using a supported version
           required: true
