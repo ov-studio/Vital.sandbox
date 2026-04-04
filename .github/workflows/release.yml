@@ -62,26 +62,6 @@ jobs:
           key: discord-sdk-windows
 
       # ── Build ───────────────────────────────────────────────────────────────
-      - name: Build Debug
-        env:
-          PYTHONUNBUFFERED: "1"
-          CL: /MP
-          CONAN_CPU_COUNT: "4"
-          CMAKE_BUILD_PARALLEL_LEVEL: "4"
-          GODOT_RENDERING_DRIVER: "null"
-          GODOT_AUDIO_DRIVER: "Dummy"
-        run: python build.py --all --debug --verbose || true
-
-      - name: Verify Debug output
-        shell: bash
-        run: |
-          found=$(find .dist/debug -name "*.exe" -o -name "*.x86_64" -o -name "*.app" 2>/dev/null | head -1)
-          if [ -z "$found" ]; then
-            echo "ERROR: Debug export produced no output files"
-            exit 1
-          fi
-          echo "Debug output verified: $found"
-
       - name: Build Release
         env:
           PYTHONUNBUFFERED: "1"
@@ -90,7 +70,7 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL: "4"
           GODOT_RENDERING_DRIVER: "null"
           GODOT_AUDIO_DRIVER: "Dummy"
-        run: python build.py --all --release --verbose || true
+        run: python build.py --all --release --verbose
 
       - name: Verify Release output
         shell: bash
@@ -135,11 +115,18 @@ jobs:
           key: discord-sdk-windows
 
       # ── Upload ──────────────────────────────────────────────────────────────
+      - name: Debug dist contents
+        shell: bash
+        run: |
+          echo "=== .dist/release contents ==="
+          find .dist/release/ -type f | sort || echo "ERROR: .dist/release is empty or missing"
+
       - name: Upload dist
         uses: actions/upload-artifact@v4
         with:
           name: dist-windows
-          path: .dist/
+          path: .dist/release/
+          if-no-files-found: error
 
 
   # ── Build: Linux ────────────────────────────────────────────────────────────
@@ -252,18 +239,19 @@ jobs:
       - name: Package artifacts
         run: |
           TAG="${{ github.ref_name }}"
+          if [ ! -d "collected" ] || [ -z "$(ls -A collected 2>/dev/null)" ]; then
+            echo "ERROR: No artifacts were downloaded"
+            exit 1
+          fi
           cd collected
           for platform_dir in dist-windows dist-linux dist-macos; do
             platform="${platform_dir#dist-}"
             [ ! -d "$platform_dir" ] && continue
-            for build_type in debug release; do
-              [ ! -d "$platform_dir/$build_type" ] && continue
-              for target_dir in "$platform_dir/$build_type"/*/; do
-                target=$(basename "$target_dir")
-                zip_name="../Vital.sandbox-${TAG}-${platform}-${target}-${build_type}.zip"
-                zip -r "$zip_name" "$target_dir"
-                echo "Packaged: $(basename $zip_name)"
-              done
+            for target_dir in "$platform_dir"/*/; do
+              target=$(basename "$target_dir")
+              zip_name="../Vital.sandbox-${TAG}-${platform}-${target}.zip"
+              zip -r "$zip_name" "$target_dir"
+              echo "Packaged: $(basename $zip_name)"
             done
           done
 
