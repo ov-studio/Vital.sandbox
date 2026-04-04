@@ -90,7 +90,7 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL: "4"
           GODOT_RENDERING_DRIVER: "null"
           GODOT_AUDIO_DRIVER: "Dummy"
-        run: python build.py --all --release --verbose --skip-extension || true
+        run: python build.py --all --release --verbose || true
 
       - name: Verify Release output
         shell: bash
