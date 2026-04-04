@@ -234,11 +234,12 @@ class Build:
             if line.strip():
                 log_info(line.strip())
 
-        # Godot 4.5 debug exports crash on shutdown on headless CI (signal 11 = 0xC0000005)
-        # The export itself succeeds before the crash — this is a known Godot bug
+        # Godot 4.5 crashes on shutdown on headless CI (signal 11 = 0xC0000005)
+        # Affects both debug and release exports — export succeeds before the crash
+        # This is a known Godot bug: https://github.com/godotengine/godot/issues/112955
         GODOT_HEADLESS_SHUTDOWN_CRASH = 3221225477
         if result.returncode != 0:
-            if self.build_type == "Debug" and result.returncode == GODOT_HEADLESS_SHUTDOWN_CRASH:
+            if result.returncode == GODOT_HEADLESS_SHUTDOWN_CRASH:
                 log_warn(f"Godot exited with known headless shutdown crash (exit {result.returncode}) — ignoring")
             else:
                 log_error(f"Godot export failed with exit code {result.returncode}")
