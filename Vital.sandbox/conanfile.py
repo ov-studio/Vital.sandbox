@@ -14,7 +14,7 @@ class BuildConan(ConanFile):
         self.requires("zstd/1.5.7")
         self.requires("libzip/1.11.4")
         self.requires("rapidjson/1.1.0")
-        self.requires("yaml-cpp/0.8.0")
+        self.requires("yaml-cpp/0.9.0")
         self.requires("fmt/12.1.0")
 
     def configure(self):
