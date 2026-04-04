@@ -1,0 +1,63 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Keep it short and include only what helps reproduce the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Tell us the bug in one or two sentences.
+      placeholder: The browser view is blank after loading a URL.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How to reproduce
+      description: Provide the smallest set of steps.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Share versions/platform info.
+      placeholder: |
+        - Godot:
+        - godot-cef:
+        - OS:
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots (optional)
+      render: shell
+      placeholder: Paste logs/screenshots links here.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context (optional)
+      placeholder: Anything else that might help.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched existing issues to make sure this isn't a duplicate
+          required: true
