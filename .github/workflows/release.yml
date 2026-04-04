@@ -37,7 +37,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .godot
-          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
+          restore-keys: |
+            godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-
+            godot-windows-
 
       - name: Restore godot-cpp cache
         uses: actions/cache/restore@v4
@@ -46,21 +49,26 @@ jobs:
             Vital.extension/Vendor/godot/bin
             Vital.extension/.build_godotcpp.debug
             Vital.extension/.build_godotcpp.release
-          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
-          restore-keys: godot-cpp-windows-
+          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
+          restore-keys: |
+            godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-
+            godot-cpp-windows-
 
       - name: Restore Conan cache
         uses: actions/cache/restore@v4
         with:
           path: C:\Users\runneradmin\.conan2
-          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}
-          restore-keys: conan-windows-
+          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}-${{ github.run_id }}
+          restore-keys: |
+            conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}-
+            conan-windows-
 
       - name: Restore Discord SDK cache
         uses: actions/cache/restore@v4
         with:
           path: Vital.sandbox/Vendor/discord-sdk
-          key: discord-sdk-windows
+          key: discord-sdk-windows-${{ hashFiles('Vital.sandbox/Bootstrap/discord.py') }}
+          restore-keys: discord-sdk-windows-
 
       # ── Build ───────────────────────────────────────────────────────────────
       - name: Build Release
@@ -89,7 +97,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: .godot
-          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
 
       - name: Save godot-cpp cache
         if: always()
@@ -99,21 +107,21 @@ jobs:
             Vital.extension/Vendor/godot/bin
             Vital.extension/.build_godotcpp.debug
             Vital.extension/.build_godotcpp.release
-          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}-${{ github.run_id }}
 
       - name: Save Conan cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: C:\Users\runneradmin\.conan2
-          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}
+          key: conan-windows-${{ hashFiles('Vital.sandbox/conanfile.*') }}-${{ github.run_id }}
 
       - name: Save Discord SDK cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: Vital.sandbox/Vendor/discord-sdk
-          key: discord-sdk-windows
+          key: discord-sdk-windows-${{ hashFiles('Vital.sandbox/Bootstrap/discord.py') }}
 
       # ── Upload ──────────────────────────────────────────────────────────────
       - name: Debug dist contents
@@ -141,14 +149,14 @@ jobs:
   #       with: { python-version: "3.x" }
   #     - run: sudo apt-get update && sudo apt-get install -y scons gcc g++ libssl-dev
   #     - uses: actions/cache/restore@v4
-  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}" }
   #     - uses: actions/cache/restore@v4
   #       with:
   #         path: |
   #           Vital.extension/Vendor/godot/bin
   #           Vital.extension/.build_godotcpp.debug
   #           Vital.extension/.build_godotcpp.release
-  #         key: godot-cpp-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+  #         key: godot-cpp-linux-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
   #     - uses: actions/cache/restore@v4
   #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.sandbox/conanfile.*') }}", restore-keys: "conan-linux-" }
   #     - uses: actions/cache/restore@v4
@@ -159,7 +167,7 @@ jobs:
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4", GODOT_RENDERING_DRIVER: "null", GODOT_AUDIO_DRIVER: "Dummy" }
   #     - if: always()
   #       uses: actions/cache/save@v4
-  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #       with: { path: .godot, key: "godot-linux-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}" }
   #     - if: always()
   #       uses: actions/cache/save@v4
   #       with:
@@ -167,7 +175,7 @@ jobs:
   #           Vital.extension/Vendor/godot/bin
   #           Vital.extension/.build_godotcpp.debug
   #           Vital.extension/.build_godotcpp.release
-  #         key: godot-cpp-linux-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+  #         key: godot-cpp-linux-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
   #     - if: always()
   #       uses: actions/cache/save@v4
   #       with: { path: ~/.conan2, key: "conan-linux-${{ hashFiles('Vital.sandbox/conanfile.*') }}" }
@@ -189,14 +197,14 @@ jobs:
   #       with: { python-version: "3.x" }
   #     - run: pip install scons
   #     - uses: actions/cache/restore@v4
-  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}" }
   #     - uses: actions/cache/restore@v4
   #       with:
   #         path: |
   #           Vital.extension/Vendor/godot/bin
   #           Vital.extension/.build_godotcpp.debug
   #           Vital.extension/.build_godotcpp.release
-  #         key: godot-cpp-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+  #         key: godot-cpp-macos-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
   #     - uses: actions/cache/restore@v4
   #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.sandbox/conanfile.*') }}", restore-keys: "conan-macos-" }
   #     - uses: actions/cache/restore@v4
@@ -207,7 +215,7 @@ jobs:
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4", GODOT_RENDERING_DRIVER: "null", GODOT_AUDIO_DRIVER: "Dummy" }
   #     - if: always()
   #       uses: actions/cache/save@v4
-  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}" }
+  #       with: { path: .godot, key: "godot-macos-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}" }
   #     - if: always()
   #       uses: actions/cache/save@v4
   #       with:
@@ -215,7 +223,7 @@ jobs:
   #           Vital.extension/Vendor/godot/bin
   #           Vital.extension/.build_godotcpp.debug
   #           Vital.extension/.build_godotcpp.release
-  #         key: godot-cpp-macos-${{ hashFiles('Vital.extension/Vendor/godot/version.py') }}
+  #         key: godot-cpp-macos-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
   #     - if: always()
   #       uses: actions/cache/save@v4
   #       with: { path: ~/.conan2, key: "conan-macos-${{ hashFiles('Vital.sandbox/conanfile.*') }}" }
