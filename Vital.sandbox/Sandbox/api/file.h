@@ -33,7 +33,8 @@ namespace Vital::Sandbox::API {
                 path = path.substr(slash + 1);
                 return Vital::Engine::ResourceManager::get_resource_base(target, true);
             }
-            return name.empty() ? get_directory("resources") : Vital::Engine::ResourceManager::get_resource_base(Vital::Engine::ResourceManager::get_resource_from_vm(vm));
+            const std::string name = Vital::Engine::ResourceManager::get_resource_from_vm(vm);
+            return name.empty() ? get_directory("resources") : Vital::Engine::ResourceManager::get_resource_base(name);
         }
 
         static void bind(Machine* vm) {
