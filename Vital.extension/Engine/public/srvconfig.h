@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 28/03/2026
-     Desc: Server Configuration Manager
+     Desc: Server Configuration
 ----------------------------------------------------------------*/
 
 
