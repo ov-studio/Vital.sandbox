@@ -85,7 +85,7 @@ namespace Vital::Engine {
     //  Asset Registration//
     //--------------------//
 
-    void AssetManager::register_asset(const std::string& path, const std::string& group) {
+    void AssetManager::register_asset(const std::string& path, const std::string& group, bool silenced) {
         if (registered_assets.count(path)) {
             if (!group.empty()) registered_assets[path].group = group;
             return;
@@ -93,29 +93,26 @@ namespace Vital::Engine {
         try {
             const std::string full_path = Vital::get_directory() + "/" + path;
             registered_assets[path] = { compute_hash_file(full_path), group };
+            if (!silenced) {
+                std::string report = fmt::format("AssetManager: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
+                report += fmt::format("> {} — {}", path, registered_assets[path].hash);
+                Vital::print("sbox", report);
+            }
         }
         catch (...) {
             Vital::print("error", "AssetManager: failed to register -> ", path.c_str());
         }
     }
-
+    
     void AssetManager::register_assets(const std::vector<std::string>& paths, const std::string& group) {
         std::vector<std::string> registered;
         for (const auto& path : paths) {
-            if (registered_assets.count(path)) {
-                if (!group.empty()) registered_assets[path].group = group;
-                continue;
-            }
-            try {
-                const std::string full_path = Vital::get_directory() + "/" + path;
-                registered_assets[path] = { compute_hash_file(full_path), group };
+            const size_t before = registered_assets.size();
+            register_asset(path, group, true);
+            if (registered_assets.size() > before)
                 registered.push_back(path);
-            }
-            catch (...) {
-                Vital::print("error", "AssetManager: failed to register -> ", path.c_str());
-            }
         }
-
+    
         if (registered.empty()) return;
         std::string report = fmt::format("AssetManager: registered {} asset(s) for group `{}`:\n", registered.size(), group);
         for (const auto& path : registered)

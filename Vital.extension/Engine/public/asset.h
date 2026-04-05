@@ -101,7 +101,7 @@ namespace Vital::Engine {
 
 
             // Registration //
-            void register_asset(const std::string& path, const std::string& group = "");
+            void register_asset(const std::string& path, const std::string& group = "", bool silenced = false);
             void register_assets(const std::vector<std::string>& paths, const std::string& group = "");
             void unregister_asset(const std::string& path);
             void unregister_group(const std::string& group);
