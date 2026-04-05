@@ -123,7 +123,7 @@ namespace Vital::Engine {
         if (registered.empty()) return;
         std::string report = fmt::format("AssetManager: registered {} asset(s) for group `{}`:\n", registered.size(), group);
         for (const auto& path : registered)
-            report += fmt::format("  | {} — {}\n", path, registered_assets[path].hash);
+            report += fmt::format("> {} — {}\n", path, registered_assets[path].hash);
         Vital::print("sbox", report);
     }
 
