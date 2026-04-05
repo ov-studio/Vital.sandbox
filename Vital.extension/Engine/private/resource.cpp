@@ -390,7 +390,7 @@ namespace Vital::Engine {
             if (script.type == "client" || script.type == "shared")
                 asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
         }
-        am->register_group_assets(asset_paths, name);
+        am->register_assets(asset_paths, name);
         am->broadcast_manifest_deferred();
 
         // Phase 2: Mark as started and notify

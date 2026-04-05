@@ -100,10 +100,6 @@ namespace Vital::Engine {
     }
 
     void AssetManager::register_assets(const std::vector<std::string>& paths, const std::string& group) {
-        for (auto& path : paths) register_asset(path, group);
-    }
-
-    void AssetManager::register_group_assets(const std::vector<std::string>& paths, const std::string& group) {
         std::vector<std::string> registered;
         for (const auto& path : paths) {
             if (registered_assets.count(path)) {
