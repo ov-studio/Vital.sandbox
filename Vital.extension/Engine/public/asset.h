@@ -124,10 +124,7 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Client)
             void receive_manifest(const Vital::Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
-
-            // Cancel a single path
             void cancel(const std::string& path);
-            // Cancel all downloads belonging to a group
             void cancel_group(const std::string& group);
             void cancel_all();
             bool is_downloading(const std::string& path) const;
