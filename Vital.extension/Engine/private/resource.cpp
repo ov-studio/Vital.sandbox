@@ -94,8 +94,8 @@ namespace Vital::Engine {
     }
 
     std::string ResourceManager::get_resource_base(const std::string& name, bool require_running) {
-        if (!is_eligible_name(name)) throw Vital::Log::fetch("invalid-resource-name", Vital::Log::Type::Error);
-        if (require_running && !get_singleton() -> is_running(name)) throw Vital::Log::fetch("resource-not-running", Vital::Log::Type::Error);
+        if (!is_eligible_name(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, "invalid resource name");
+        if (require_running && !get_singleton() -> is_running(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "resource not running");
         return Vital::get_directory("resources", name);
     }
 
@@ -103,8 +103,10 @@ namespace Vital::Engine {
         std::vector<ResourceManager::ResourceScript> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;
-        for (const auto& script : resource->scripts)
-            if (type.empty() || script.type == type) result.push_back(script);
+        for (const auto& script : resource->scripts) {
+            if (type.empty() || script.type == type)
+                result.push_back(script);
+        }
         return result;
     }
 
