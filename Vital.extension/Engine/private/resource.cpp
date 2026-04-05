@@ -41,14 +41,24 @@ namespace Vital::Engine {
 
 
     // Checkers //
-    bool ResourceManager::is_eligible(const std::string& type) {
+    bool ResourceManager::is_eligible_name(const std::string& name) {
+        if (name.empty() || !Vital::Tool::File::sanitize(to_godot_string(name))) return false;
+        for (const char c : name) {
+            if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_'))
+                return false;
+        }
+        return true;
+    }
+
+    bool ResourceManager::is_eligible_type(const std::string& type) {
         if (type == "shared") return true;
         return type == Vital::get_platform();
     }
 
     bool ResourceManager::is_loaded(const std::string& name) const {
         for (const auto& resource : resources) {
-            if (resource.ref == name) return true;
+            if (resource.ref == name) 
+                return true;
         }
         return false;
     }
@@ -83,7 +93,9 @@ namespace Vital::Engine {
         return vm->get_environment_id();
     }
 
-    std::string ResourceManager::get_resource_base(const std::string& name) {
+    std::string ResourceManager::get_resource_base(const std::string& name, bool require_running) {
+        if (!is_eligible_name(name)) throw Vital::Log::fetch("invalid-resource-name", Vital::Log::Type::Error);
+        if (require_running && !get_singleton() -> is_running(name)) throw Vital::Log::fetch("resource-not-running", Vital::Log::Type::Error);
         return Vital::get_directory("resources", name);
     }
 
@@ -406,7 +418,7 @@ namespace Vital::Engine {
         vm->pop();
 
         for (const auto& script : resource->scripts) {
-            if (!is_eligible(script.type)) continue;
+            if (!is_eligible_type(script.type)) continue;
 
             std::string source;
             try {
