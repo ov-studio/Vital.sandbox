@@ -54,5 +54,5 @@ namespace Vital {
         bool operator>=(const Version& o) const { return !(*this < o); }
     };
 
-    static const Version Build = { 0, 0, 1, "internal" };
+    static const Version Build = { 0, 0, 2, "internal" };
 }

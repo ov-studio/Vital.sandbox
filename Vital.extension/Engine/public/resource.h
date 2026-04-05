@@ -65,8 +65,8 @@ namespace Vital::Engine {
 
 
             // Checkers //
-            static bool is_eligible_name(const std::string& name);
-            static bool is_eligible_type(const std::string& type);
+            static bool is_name(const std::string& name);
+            static bool is_type(const std::string& type);
             bool is_loaded(const std::string& name) const;
             bool is_running(const std::string& name) const;
             #if defined(Vital_SDK_Client)

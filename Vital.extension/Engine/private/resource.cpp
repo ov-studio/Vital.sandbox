@@ -41,7 +41,7 @@ namespace Vital::Engine {
 
 
     // Checkers //
-    bool ResourceManager::is_eligible_name(const std::string& name) {
+    bool ResourceManager::is_name(const std::string& name) {
         if (name.empty() || !Vital::Tool::File::sanitize(to_godot_string(name))) return false;
         for (const char c : name) {
             if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_'))
@@ -50,7 +50,7 @@ namespace Vital::Engine {
         return true;
     }
 
-    bool ResourceManager::is_eligible_type(const std::string& type) {
+    bool ResourceManager::is_type(const std::string& type) {
         if (type == "shared") return true;
         return type == Vital::get_platform();
     }
@@ -94,7 +94,7 @@ namespace Vital::Engine {
     }
 
     std::string ResourceManager::get_resource_base(const std::string& name, bool require_running) {
-        if (!is_eligible_name(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, "invalid resource name");
+        if (!is_name(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, "invalid resource name");
         if (require_running && !get_singleton() -> is_running(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "resource not running");
         return Vital::get_directory("resources", name);
     }
@@ -189,7 +189,7 @@ namespace Vital::Engine {
 
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
-            if (!is_eligible_name(name)) {
+            if (!is_name(name)) {
                 Vital::print("error", fmt::format("Invalid resource name `{}` — skipping", name));
                 continue;
             }
@@ -423,7 +423,7 @@ namespace Vital::Engine {
         vm->pop();
 
         for (const auto& script : resource->scripts) {
-            if (!is_eligible_type(script.type)) continue;
+            if (!is_type(script.type)) continue;
 
             std::string source;
             try {
