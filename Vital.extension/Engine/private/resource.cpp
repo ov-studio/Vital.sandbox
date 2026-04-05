@@ -139,7 +139,7 @@ namespace Vital::Engine {
                 manifest.parse(content);
             }
             catch (const std::exception& e) {
-                Vital::print("error", fmt::format("Malformed YAML in manifest for `{}` — {} — skipping", name, e.what()));
+                Vital::print("error", fmt::format("Malformed YAML in manifest for `{}` ({}) — skipping", name, e.what()));
                 continue;
             }
 
