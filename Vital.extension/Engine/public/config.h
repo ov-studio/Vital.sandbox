@@ -28,6 +28,21 @@ namespace Vital::Engine {
             Vital::Tool::YAML yaml;
             bool loaded = false;
 
+            std::string get_str(const char* section, const char* key, const std::string& fallback = "") const {
+                if (!loaded || !yaml.has(section)) return fallback;
+                return Vital::Tool::YAML::get_str(yaml.get_root()[section], key, fallback);
+            }
+
+            int get_int(const char* section, const char* key, int fallback = 0) const {
+                if (!loaded || !yaml.has(section)) return fallback;
+                return Vital::Tool::YAML::get_int(yaml.get_root()[section], key, fallback);
+            }
+
+            bool get_bool(const char* section, const char* key, bool fallback = false) const {
+                if (!loaded || !yaml.has(section)) return fallback;
+                return Vital::Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
+            }
+
         public:
             Config() = default;
             ~Config() = default;
@@ -51,7 +66,7 @@ namespace Vital::Engine {
                 return true;
             }
 
-            bool is_loaded() const { 
+            bool is_loaded() const {
                 return loaded;
             }
 
@@ -60,93 +75,41 @@ namespace Vital::Engine {
             // Server Identity
             //========================================//
 
-            std::string get_server_name() {
-                if (!loaded || !yaml.has("server")) return "Vital Sandbox Server";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["server"], "name", "Vital Sandbox Server");
-            }
-
-            std::string get_server_version() {
-                if (!loaded || !yaml.has("server")) return "1.0.0";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["server"], "version", "1.0.0");
-            }
-
-            std::string get_server_description() {
-                if (!loaded || !yaml.has("server")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["server"], "description", "");
-            }
+            std::string get_server_name()        const { return get_str("server", "name",        "Vital Sandbox Server"); }
+            std::string get_server_version()     const { return get_str("server", "version",     "1.0.0");               }
+            std::string get_server_description() const { return get_str("server", "description", "");                    }
 
 
             //========================================//
             // Network Configuration
             //========================================//
 
-            int get_network_port() {
-                if (!loaded || !yaml.has("network")) return 7777;
-                return Vital::Tool::YAML::get_int(yaml.get_root()["network"], "port", 7777);
-            }
-
-            int get_max_clients() {
-                if (!loaded || !yaml.has("network")) return 32;
-                return Vital::Tool::YAML::get_int(yaml.get_root()["network"], "max_clients", 32);
-            }
+            int get_network_port() const { return get_int("network", "port",        7777); }
+            int get_max_clients()  const { return get_int("network", "max_clients", 32);   }
 
 
             //========================================//
             // HTTP Server Configuration
             //========================================//
 
-            int get_http_port() {
-                if (!loaded || !yaml.has("http")) return 7778;
-                return Vital::Tool::YAML::get_int(yaml.get_root()["http"], "port", 7778);
-            }
+            int get_http_port() const { return get_int("http", "port", 7778); }
 
 
             //========================================//
             // Discord Integration
             //========================================//
 
-            bool get_discord_enabled() {
-                if (!loaded || !yaml.has("discord")) return false;
-                return Vital::Tool::YAML::get_bool(yaml.get_root()["discord"], "enabled", false);
-            }
+            bool get_discord_enabled()          const { return get_bool("discord", "enabled", false);                             }
+            std::string get_discord_state()            const { return get_str("discord",  "state",   "Playing on {server_name}");        }
+            std::string get_discord_details()          const { return get_str("discord",  "details", "{player_count}/{max_players} players"); }
+            std::string get_discord_large_image_key()  const { return get_str("discord",  "large_image_key",  "");                      }
+            std::string get_discord_large_image_text() const { return get_str("discord",  "large_image_text", "");                      }
+            std::string get_discord_small_image_key()  const { return get_str("discord",  "small_image_key",  "");                      }
+            std::string get_discord_small_image_text() const { return get_str("discord",  "small_image_text", "");                      }
 
-            uint64_t get_discord_application_id() {
-                if (!loaded || !yaml.has("discord")) return 0;
-                const std::string id_str = Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "application_id", "");
-                try {
-                    return std::stoull(id_str);
-                }
-                catch (...) { return 0; }
-            }
-
-            std::string get_discord_state() {
-                if (!loaded || !yaml.has("discord")) return "Playing on {server_name}";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "state", "Playing on {server_name}");
-            }
-
-            std::string get_discord_details() {
-                if (!loaded || !yaml.has("discord")) return "{player_count}/{max_players} players";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "details", "{player_count}/{max_players} players");
-            }
-
-            std::string get_discord_large_image_key() {
-                if (!loaded || !yaml.has("discord")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "large_image_key", "");
-            }
-
-            std::string get_discord_large_image_text() {
-                if (!loaded || !yaml.has("discord")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "large_image_text", "");
-            }
-
-            std::string get_discord_small_image_key() {
-                if (!loaded || !yaml.has("discord")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "small_image_key", "");
-            }
-
-            std::string get_discord_small_image_text() {
-                if (!loaded || !yaml.has("discord")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["discord"], "small_image_text", "");
+            uint64_t get_discord_application_id() const {
+                const std::string id_str = get_str("discord", "application_id", "");
+                try { return std::stoull(id_str); } catch (...) { return 0; }
             }
 
 
@@ -154,14 +117,7 @@ namespace Vital::Engine {
             // Social Links
             //========================================//
 
-            std::string get_discord_invite() {
-                if (!loaded || !yaml.has("social")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["social"], "discord_invite", "");
-            }
-
-            std::string get_website() {
-                if (!loaded || !yaml.has("social")) return "";
-                return Vital::Tool::YAML::get_str(yaml.get_root()["social"], "website", "");
-            }
+            std::string get_discord_invite() const { return get_str("social", "discord_invite", ""); }
+            std::string get_website()        const { return get_str("social", "website",        ""); }
     };
 }
