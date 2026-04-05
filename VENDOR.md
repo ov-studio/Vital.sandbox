@@ -1,6 +1,4 @@
-# » Vendors
-
-![](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
+## Vendors
 
 ###### We would like to express our sincere appreciation to the following vendors for their invaluable contributions that have enabled the success of this project:
 
