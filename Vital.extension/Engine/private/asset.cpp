@@ -93,12 +93,9 @@ namespace Vital::Engine {
         try {
             const std::string full_path = Vital::get_directory() + "/" + path;
             registered_assets[path] = { compute_hash_file(full_path), group };
-            Vital::print("sbox", "AssetManager: registered -> ", path.c_str(),
-                " hash=", registered_assets[path].hash.c_str(),
-                " group=", group.empty() ? "(none)" : group.c_str());
         }
         catch (...) {
-            Vital::print("sbox", "AssetManager: failed to register -> ", path.c_str());
+            Vital::print("error", "AssetManager: failed to register -> ", path.c_str());
         }
     }
 
@@ -106,10 +103,33 @@ namespace Vital::Engine {
         for (auto& path : paths) register_asset(path, group);
     }
 
+    void AssetManager::register_group_assets(const std::vector<std::string>& paths, const std::string& group) {
+        std::vector<std::string> registered;
+        for (const auto& path : paths) {
+            if (registered_assets.count(path)) {
+                if (!group.empty()) registered_assets[path].group = group;
+                continue;
+            }
+            try {
+                const std::string full_path = Vital::get_directory() + "/" + path;
+                registered_assets[path] = { compute_hash_file(full_path), group };
+                registered.push_back(path);
+            }
+            catch (...) {
+                Vital::print("error", "AssetManager: failed to register -> ", path.c_str());
+            }
+        }
+
+        if (registered.empty()) return;
+        std::string report = fmt::format("AssetManager: registered {} asset(s) for group `{}`:\n", registered.size(), group);
+        for (const auto& path : registered)
+            report += fmt::format("  | {} — {}\n", path, registered_assets[path].hash);
+        Vital::print("sbox", report);
+    }
+
     void AssetManager::unregister_asset(const std::string& path) {
         auto it = registered_assets.find(path);
         if (it == registered_assets.end()) return;
-        Vital::print("sbox", "AssetManager: unregistered -> ", path.c_str());
         registered_assets.erase(it);
     }
 
@@ -117,15 +137,13 @@ namespace Vital::Engine {
         int count = 0;
         for (auto it = registered_assets.begin(); it != registered_assets.end(); ) {
             if (it->second.group == group) {
-                Vital::print("sbox", "AssetManager: unregistered -> ", it->first.c_str());
                 it = registered_assets.erase(it);
                 count++;
             } else {
                 ++it;
             }
         }
-        Vital::print("sbox", "AssetManager: unregistered group '", group.c_str(),
-            "' (", count, " asset(s) removed)");
+        Vital::print("sbox", fmt::format("AssetManager: unregistered group `{}` — {} asset(s) removed", group, count));
     }
 
 

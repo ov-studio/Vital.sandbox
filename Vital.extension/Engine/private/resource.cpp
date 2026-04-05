@@ -370,7 +370,7 @@ namespace Vital::Engine {
     bool ResourceManager::start(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
         auto* am = AssetManager::get_singleton();
-    
+
         if (!is_loaded(name)) {
             Vital::print("error", fmt::format("Cannot start `{}` — resource not loaded", name));
             return false;
@@ -379,18 +379,20 @@ namespace Vital::Engine {
             Vital::print("error", fmt::format("Cannot start `{}` — already running", name));
             return false;
         }
-    
+
         const auto* resource = get_resource(name);
-    
-        // Phase 1: Register assets
+
+        // Phase 1: Register assets grouped under resource name
+        std::vector<std::string> asset_paths;
         for (const auto& file : resource->files)
-            am->register_asset(fmt::format("resources/{}/{}", name, file), name);
+            asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource->scripts) {
             if (script.type == "client" || script.type == "shared")
-                am->register_asset(fmt::format("resources/{}/{}", name, script.src), name);
+                asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
         }
+        am->register_group_assets(asset_paths, name);
         am->broadcast_manifest_deferred();
-    
+
         // Phase 2: Mark as started and notify
         running.insert(name);
         Vital::print("sbox", fmt::format("Resource `{}` started", name));
@@ -398,14 +400,14 @@ namespace Vital::Engine {
             notify_resource_started(name);
         });
         Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
-    
+
         // Phase 3: Execute scripts
         vm->create_environment(name);
         vm->pop();
-    
+
         for (const auto& script : resource->scripts) {
             if (!is_eligible(script.type)) continue;
-    
+
             std::string source;
             try {
                 source = Vital::Tool::File::read_text(get_resource_base(name), script.src);
@@ -417,7 +419,7 @@ namespace Vital::Engine {
                 am->unregister_group(name);
                 return false;
             }
-    
+
             vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
                 Vital::print("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
@@ -429,7 +431,7 @@ namespace Vital::Engine {
             }
             vm->pop();
         }
-    
+
         return true;
     }
 
@@ -511,34 +513,34 @@ namespace Vital::Engine {
             std::vector<std::string> changes;
             for (const auto& [src, hash] : old_script_hashes) {
                 if (!resource.script_hashes.count(src))
-                    changes.push_back(fmt::format("> `{}` (script deleted)", src));
+                    changes.push_back(fmt::format("  | `{}` (script deleted)", src));
                 else if (resource.script_hashes.at(src) != hash)
-                    changes.push_back(fmt::format("> `{}` (script modified)", src));
+                    changes.push_back(fmt::format("  | `{}` (script modified)", src));
             }
             for (const auto& [src, hash] : resource.script_hashes) {
                 if (!old_script_hashes.count(src))
-                    changes.push_back(fmt::format("> `{}` (script added)", src));
+                    changes.push_back(fmt::format("  | `{}` (script added)", src));
             }
 
             // Diff files
             for (const auto& [file, hash] : old_file_hashes) {
                 if (!resource.file_hashes.count(file))
-                    changes.push_back(fmt::format("> `{}` (file deleted)", file));
+                    changes.push_back(fmt::format("  | `{}` (file deleted)", file));
                 else if (resource.file_hashes.at(file) != hash)
-                    changes.push_back(fmt::format("> `{}` (file modified)", file));
+                    changes.push_back(fmt::format("  | `{}` (file modified)", file));
             }
             for (const auto& [file, hash] : resource.file_hashes) {
                 if (!old_file_hashes.count(file))
-                    changes.push_back(fmt::format("> `{}` (file added)", file));
+                    changes.push_back(fmt::format("  | `{}` (file added)", file));
             }
 
             // Report
             std::string report = fmt::format("Resource `{}` restarted\n", name);
             if (changes.empty()) {
-                report += "> No changes detected";
+                report += "  | No changes detected";
             }
             else {
-                report += fmt::format("> Changes ({}):\n", changes.size());
+                report += fmt::format("  | Changes ({}):\n", changes.size());
                 for (const auto& change : changes)
                     report += change + "\n";
             }

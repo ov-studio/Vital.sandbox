@@ -104,6 +104,7 @@ namespace Vital::Engine {
             // group is optional — pass empty string or omit for ungrouped assets
             void register_asset(const std::string& path, const std::string& group = "");
             void register_assets(const std::vector<std::string>& paths, const std::string& group = "");
+            void register_group_assets(const std::vector<std::string>& paths, const std::string& group);
             void unregister_asset(const std::string& path);
             void unregister_group(const std::string& group);
 
