@@ -97,6 +97,71 @@ namespace Vital::Engine {
 
 
     // APIs //
+    #if !defined(Vital_SDK_Client)
+
+    std::string ResourceManager::hash_file(const std::string& base, const std::string& relative_path) {
+        try {
+            const std::string content = Vital::Tool::File::read_text(base, relative_path);
+            return fmt::format("{:x}", std::hash<std::string>{}(content));
+        }
+        catch (...) { return ""; }
+    }
+
+    bool ResourceManager::parse_manifest(ResourceManifest& resource, Vital::Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
+        resource.name    = manifest.get_str("name",    resource.ref);
+        resource.author  = manifest.get_str("author",  "");
+        resource.version = manifest.get_str("version", "");
+        resource.scripts.clear();
+        resource.files.clear();
+        resource.script_hashes.clear();
+        resource.file_hashes.clear();
+
+        if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq())
+            return false;
+
+        for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
+            if (!node.is_map() || !Vital::Tool::YAML::has(node, "src") || !Vital::Tool::YAML::has(node, "type")) {
+                errors.push_back("script entry missing `src` or `type`");
+                continue;
+            }
+            const std::string src  = Vital::Tool::YAML::get_str(node, "src");
+            const std::string type = Vital::Tool::YAML::get_str(node, "type");
+            if (valid_types.find(type) == valid_types.end()) {
+                errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type));
+                continue;
+            }
+            std::vector<std::string> expanded = Vital::Tool::File::glob_expand(base, src);
+            if (expanded.empty()) {
+                errors.push_back(fmt::format("script pattern `{}` matched no files", src));
+                continue;
+            }
+            for (const auto& s : expanded) {
+                resource.scripts.push_back({ s, type });
+                resource.script_hashes[s] = hash_file(base, s);
+            }
+        }
+
+        if (manifest.has("files") && manifest.get_root()["files"].is_seq()) {
+            for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
+                std::string file_pattern;
+                node >> file_pattern;
+                std::vector<std::string> expanded = Vital::Tool::File::glob_expand(base, file_pattern);
+                if (expanded.empty()) {
+                    errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern));
+                    continue;
+                }
+                for (const auto& f : expanded) {
+                    resource.files.push_back(f);
+                    resource.file_hashes[f] = hash_file(base, f);
+                }
+            }
+        }
+
+        return errors.empty();
+    }
+
+    #endif
+
     void ResourceManager::scan() {
         Vital::print("sbox", "Rescanning resources...");
         resources.clear();
@@ -140,75 +205,33 @@ namespace Vital::Engine {
             }
             catch (const std::exception& e) {
                 Vital::print("error", fmt::format(
-                    "Malformed YAML in manifest for `{}` — skipping\n" 
-                    "> {}", 
-                    name, 
-                    e.what()
+                    "Malformed YAML in manifest for `{}` — skipping\n"
+                    "> {}",
+                    name, e.what()
                 ));
                 continue;
             }
 
             ResourceManifest resource;
-            resource.ref     = name;
+            resource.ref = name;
+
+            std::vector<std::string> errors;
+            #if !defined(Vital_SDK_Client)
+            if (!parse_manifest(resource, manifest, get_resource_base(name), errors)) {
+            #else
             resource.name    = manifest.get_str("name",    name);
             resource.author  = manifest.get_str("author",  "");
             resource.version = manifest.get_str("version", "");
-
-            if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) {
-                Vital::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping", name));
-                continue;
-            }
-
-            bool valid = true;
-            std::vector<std::string> errors;
-
-            for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
-                if (!node.is_map() || !Vital::Tool::YAML::has(node, "src") || !Vital::Tool::YAML::has(node, "type")) {
-                    errors.push_back("script entry missing `src` or `type`");
-                    valid = false;
-                    continue;
+            if (false) {
+            #endif
+                if (!errors.empty()) {
+                    std::string error_list = fmt::format("Resource `{}` skipped — {} error(s):\n", name, errors.size());
+                    for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
+                    Vital::print("error", error_list);
                 }
-                const std::string src  = Vital::Tool::YAML::get_str(node, "src");
-                const std::string type = Vital::Tool::YAML::get_str(node, "type");
-
-                if (valid_types.find(type) == valid_types.end()) {
-                    errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type));
-                    valid = false;
-                    continue;
+                else {
+                    Vital::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping", name));
                 }
-
-                std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), src);
-                if (expanded_files.empty()) {
-                    errors.push_back(fmt::format("script pattern `{}` matched no files", src));
-                    valid = false;
-                    continue;
-                }
-
-                for (const auto& s : expanded_files)
-                    resource.scripts.push_back({ s, type });
-            }
-
-            if (manifest.has("files") && manifest.get_root()["files"].is_seq()) {
-                for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
-                    std::string file_pattern;
-                    node >> file_pattern;
-
-                    std::vector<std::string> expanded_files = Vital::Tool::File::glob_expand(get_resource_base(name), file_pattern);
-                    if (expanded_files.empty()) {
-                        errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern));
-                        valid = false;
-                        continue;
-                    }
-
-                    for (const auto& file : expanded_files)
-                        resource.files.push_back(file);
-                }
-            }
-
-            if (!valid) {
-                std::string error_list = fmt::format("Resource `{}` skipped — {} error(s):\n", name, errors.size());
-                for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
-                Vital::print("error", error_list);
                 continue;
             }
 
@@ -218,7 +241,6 @@ namespace Vital::Engine {
 
         Vital::print("sbox", fmt::format("Resource scan complete — {} resource(s) loaded", resources.size()));
 
-        // Stop any running resources that no longer exist after rescan
         #if !defined(Vital_SDK_Client)
         {
             std::vector<std::string> stale;
@@ -230,9 +252,7 @@ namespace Vital::Engine {
                 stop(name);
             }
         }
-        #endif
 
-        #if !defined(Vital_SDK_Client)
         static bool server_bound = false;
         if (!server_bound) {
             server_bound = true;
@@ -371,8 +391,6 @@ namespace Vital::Engine {
         const auto* resource = get_resource(name);
         bool status          = true;
 
-        // create_environment stores registry entry + integer ref under `name`,
-        // and leaves env table on stack — pop() cleans it up
         vm->create_environment(name);
         vm->pop();
 
@@ -446,6 +464,96 @@ namespace Vital::Engine {
 
     bool ResourceManager::restart(const std::string& name) {
         if (is_running(name)) stop(name);
+
+        const std::string base = get_resource_base(name);
+        if (!Vital::Tool::File::exists(base, "manifest.yaml")) {
+            resources.erase(
+                std::remove_if(resources.begin(), resources.end(),
+                    [&name](const ResourceManifest& m) { return m.ref == name; }),
+                resources.end()
+            );
+            Vital::print("error", fmt::format("Resource `{}` manifest not found — unregistered", name));
+            return false;
+        }
+
+        std::string content;
+        try {
+            content = Vital::Tool::File::read_text(base, "manifest.yaml");
+        }
+        catch (...) {
+            Vital::print("error", fmt::format("Resource `{}` failed to read manifest — skipping restart", name));
+            return false;
+        }
+
+        Vital::Tool::YAML manifest;
+        try {
+            manifest.parse(content);
+        }
+        catch (const std::exception& e) {
+            Vital::print("error", fmt::format("Resource `{}` malformed YAML — {} — skipping restart", name, e.what()));
+            return false;
+        }
+
+        for (auto& resource : resources) {
+            if (resource.ref != name) continue;
+
+            // Snapshot old hashes
+            const auto old_script_hashes = resource.script_hashes;
+            const auto old_file_hashes   = resource.file_hashes;
+
+            std::vector<std::string> errors;
+            if (!parse_manifest(resource, manifest, base, errors)) {
+                if (!errors.empty()) {
+                    std::string error_list = fmt::format("Resource `{}` restart aborted — {} error(s):\n", name, errors.size());
+                    for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
+                    Vital::print("error", error_list);
+                }
+                else {
+                    Vital::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping restart", name));
+                }
+                return false;
+            }
+
+            // Diff scripts
+            std::vector<std::string> changes;
+            for (const auto& [src, hash] : old_script_hashes) {
+                if (!resource.script_hashes.count(src))
+                    changes.push_back(fmt::format("> `{}` (script deleted)", src));
+                else if (resource.script_hashes.at(src) != hash)
+                    changes.push_back(fmt::format("> `{}` (script modified)", src));
+            }
+            for (const auto& [src, hash] : resource.script_hashes) {
+                if (!old_script_hashes.count(src))
+                    changes.push_back(fmt::format("> `{}` (script added)", src));
+            }
+
+            // Diff files
+            for (const auto& [file, hash] : old_file_hashes) {
+                if (!resource.file_hashes.count(file))
+                    changes.push_back(fmt::format("> `{}` (file deleted)", file));
+                else if (resource.file_hashes.at(file) != hash)
+                    changes.push_back(fmt::format("> `{}` (file modified)", file));
+            }
+            for (const auto& [file, hash] : resource.file_hashes) {
+                if (!old_file_hashes.count(file))
+                    changes.push_back(fmt::format("> `{}` (file added)", file));
+            }
+
+            // Report
+            std::string report = fmt::format("Resource `{}` restarted\n", name);
+            if (changes.empty()) {
+                report += "> No changes detected";
+            }
+            else {
+                report += fmt::format("> Changes ({}):\n", changes.size());
+                for (const auto& change : changes)
+                    report += change + "\n";
+            }
+            Vital::print("sbox", report);
+
+            break;
+        }
+
         return start(name);
     }
 
@@ -549,8 +657,6 @@ namespace Vital::Engine {
 
         bool status = true;
 
-        // create_environment stores registry entry + integer ref under `name`,
-        // and leaves env table on stack — pop() cleans it up
         vm->create_environment(name);
         vm->pop();
 

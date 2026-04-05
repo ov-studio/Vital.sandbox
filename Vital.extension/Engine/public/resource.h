@@ -34,8 +34,10 @@ namespace Vital::Engine {
                 std::string name;
                 std::string author;
                 std::string version;
-                std::vector<ResourceScript> scripts;
-                std::vector<std::string> files;
+                std::vector<ResourceScript>  scripts;
+                std::vector<std::string>     files;
+                std::unordered_map<std::string, std::string> script_hashes;
+                std::unordered_map<std::string, std::string> file_hashes;
             };
 
             inline static const std::unordered_set<std::string> valid_types = {
@@ -88,6 +90,8 @@ namespace Vital::Engine {
             void init();
 
             #if !defined(Vital_SDK_Client)
+            static std::string hash_file(const std::string& base, const std::string& relative_path);
+            bool parse_manifest(ResourceManifest& resource, Vital::Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
             bool start(const std::string& name);
             bool stop(const std::string& name);
             bool restart(const std::string& name);
