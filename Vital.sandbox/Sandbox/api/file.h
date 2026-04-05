@@ -26,17 +26,14 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "file";
 
         static std::string get_base(Machine* vm, std::string& path) {
-            // Check for cross-resource prefix: ":resourcename/path"
             if (!path.empty() && path[0] == ':') {
                 const size_t slash = path.find('/');
-                if (slash != std::string::npos) {
-                    const std::string target = path.substr(1, slash - 1);
-                    path = path.substr(slash + 1);
-                    return Vital::Engine::ResourceManager::get_resource_base(target);
-                }
+                if (slash == std::string::npos) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                const std::string target = path.substr(1, slash - 1);
+                path = path.substr(slash + 1);
+                return Vital::Engine::ResourceManager::get_resource_base(target, true);
             }
-            const std::string name = Vital::Engine::ResourceManager::get_resource_from_vm(vm);
-            return name.empty() ? get_directory("resources") : Vital::Engine::ResourceManager::get_resource_base(name);
+            return name.empty() ? get_directory("resources") : Vital::Engine::ResourceManager::get_resource_base(Vital::Engine::ResourceManager::get_resource_from_vm(vm));
         }
 
         static void bind(Machine* vm) {
@@ -47,7 +44,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // TODO: MAYBE NO NEED OF STATIC CONVERSIONS
             API::bind(vm, {base_name}, "size", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
