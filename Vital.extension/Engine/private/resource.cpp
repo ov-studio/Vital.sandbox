@@ -17,8 +17,7 @@
 #include <Vital.extension/Engine/public/asset.h>
 #include <Vital.extension/Engine/public/network.h>
 #include <Vital.extension/Sandbox/index.h>
-#include <ryml.hpp>
-#include <ryml_std.hpp>
+#include <Vital.sandbox/Tool/yaml.h>
 
 
 //////////////////////////////
@@ -26,54 +25,8 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    // TODO: Improve
-
-    // ryml calls std::abort() by default on parse errors.
-    // This installs a scoped error callback that throws std::runtime_error
-    // instead, allowing us to catch and handle malformed manifests safely.
-    struct RymlErrorScope {
-        ryml::Callbacks prev;
-
-        RymlErrorScope() {
-            prev = ryml::get_callbacks();
-            ryml::Callbacks cb = prev;
-            cb.m_error = [](const char* msg, size_t len, ryml::Location, void*) {
-                throw std::runtime_error(std::string(msg, len));
-            };
-            ryml::set_callbacks(cb);
-        }
-
-        ~RymlErrorScope() {
-            ryml::set_callbacks(prev);
-        }
-    };
-
-    // Safely parse a YAML string into a ryml::Tree.
-    // Returns false and leaves tree in a valid-but-empty state on any error.
-    static bool try_parse_yaml(const std::string& content, ryml::Tree& tree) {
-        RymlErrorScope scope;
-        try {
-            tree = ryml::parse_in_arena(ryml::to_csubstr(content));
-            return true;
-        }
-        catch (...) {
-            return false;
-        }
-    }
-
-    // Helper: safely read a string key from a ryml map node.
-    // Returns fallback if the key doesn't exist or isn't a scalar.
-    static std::string ryml_get_str(ryml::ConstNodeRef node, const char* key, const std::string& fallback = "") {
-        if (!node.is_map()) return fallback;
-        if (!node.has_child(ryml::to_csubstr(key))) return fallback;
-        auto child = node[ryml::to_csubstr(key)];
-        if (!child.is_keyval() && !child.is_val()) return fallback;
-        std::string out;
-        child >> out;
-        return out;
-    }
-
-
+    // TODO: IMPROVE
+    
     // Utils //
     ResourceManager* ResourceManager::get_singleton() {
         if (!singleton) singleton = new ResourceManager();
@@ -182,26 +135,22 @@ namespace Vital::Engine {
                 continue;
             }
 
-            // Parse with ryml — any malformed input throws std::runtime_error
-            // via our scoped error callback, never aborts or corrupts the heap
             ryml::Tree tree;
-            if (!try_parse_yaml(content, tree)) {
-                Vital::print("error", "Malformed YAML in manifest for `" + name + "` — skipping");
+            try {
+                tree = Vital::Tool::YAML::parse(content);
+            }
+            catch (const std::exception& e) {
+                Vital::print("error", "Malformed YAML in manifest for `" + name + "` — " + e.what() + " — skipping");
                 continue;
             }
 
-            // Root must be a map
             ryml::ConstNodeRef root = tree.rootref();
-            if (!root.is_map()) {
-                Vital::print("error", "Manifest for `" + name + "` is not a valid YAML map — skipping");
-                continue;
-            }
 
             ResourceManifest resource;
             resource.ref     = name;
-            resource.name    = ryml_get_str(root, "name",    name);
-            resource.author  = ryml_get_str(root, "author",  "");
-            resource.version = ryml_get_str(root, "version", "");
+            resource.name    = Vital::Tool::YAML::get_str(root, "name",    name);
+            resource.author  = Vital::Tool::YAML::get_str(root, "author",  "");
+            resource.version = Vital::Tool::YAML::get_str(root, "version", "");
 
             if (!root.has_child("scripts") || !root["scripts"].is_seq()) {
                 Vital::print("error", "Resource `" + name + "` has no valid `scripts` section — skipping");
