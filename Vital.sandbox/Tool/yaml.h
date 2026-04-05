@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/log.h>
 #include <ryml.hpp>
 #include <ryml_std.hpp>
 
@@ -51,10 +50,10 @@ namespace Vital::Tool {
         public:
             YAML() = default;
 
-            YAML(const YAML&)            = delete;
+            YAML(const YAML&) = delete;
             YAML& operator=(const YAML&) = delete;
-            YAML(YAML&&)                 = default;
-            YAML& operator=(YAML&&)      = default;
+            YAML(YAML&&) = default;
+            YAML& operator=(YAML&&) = default;
 
             void parse(const std::string& input) {
                 ErrorScope scope;
@@ -62,13 +61,13 @@ namespace Vital::Tool {
                     tree = ryml::parse_in_arena(ryml::to_csubstr(input));
                 }
                 catch (const std::runtime_error& e) {
-                    throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, std::string("Invalid YAML: ") + e.what());
+                    throw std::runtime_error(e.what());
                 }
                 catch (...) {
-                    throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "Invalid YAML");
+                    throw std::runtime_error("unknown");
                 }
                 root = tree.rootref();
-                if (!root.is_map()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "YAML root is not a map");
+                if (!root.is_map()) throw std::runtime_error("root is not a map");
             }
 
             ryml::ConstNodeRef get_root() const {
