@@ -48,7 +48,14 @@ namespace Vital::Tool {
                 }
             };
         public:
-            YAML(const std::string& input) {
+            YAML() = default;
+
+            YAML(const YAML&) = delete;
+            YAML& operator=(const YAML&) = delete;
+            YAML(YAML&&) = default;
+            YAML& operator=(YAML&&) = default;
+
+            void parse(const std::string& input) {
                 ErrorScope scope;
                 try {
                     tree = ryml::parse_in_arena(ryml::to_csubstr(input));
@@ -63,12 +70,7 @@ namespace Vital::Tool {
                 if (!root.is_map()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "YAML root is not a map");
             }
 
-            YAML(const YAML&) = delete;
-            YAML& operator=(const YAML&) = delete;
-            YAML(YAML&&) = default;
-            YAML& operator=(YAML&&) = default;
-
-            ryml::ConstNodeRef get_root() const { 
+            ryml::ConstNodeRef get_root() const {
                 return root;
             }
 
@@ -126,7 +128,7 @@ namespace Vital::Tool {
             int get_int(const char* key, int fallback = 0) const {
                 return get_int(root, key, fallback);
             }
-        
+
             static float get_float(ryml::ConstNodeRef node, const char* key, float fallback = 0.0f) {
                 if (!node.is_map()) return fallback;
                 if (!node.has_child(ryml::to_csubstr(key))) return fallback;
