@@ -38,6 +38,10 @@ namespace Vital::Tool::File {
         return true;
     }
 
+    inline bool sanitize(const std::string& base) {
+        return sanitize(to_godot_string(base));
+    }
+
     inline bool exists(const godot::String& base, const godot::String& target) {
         if (!sanitize(target)) throw Vital::Log::fetch("file-path-invalid", Vital::Log::Type::Error, to_std_string(target));
         auto dir = godot::DirAccess::open(base);

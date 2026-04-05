@@ -42,7 +42,7 @@ namespace Vital::Engine {
 
     // Checkers //
     bool ResourceManager::is_name(const std::string& name) {
-        if (name.empty() || !Vital::Tool::File::sanitize(to_godot_string(name))) return false;
+        if (name.empty() || !Vital::Tool::File::sanitize(name)) return false;
         for (const char c : name) {
             if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_'))
                 return false;
