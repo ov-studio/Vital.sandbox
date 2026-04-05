@@ -90,7 +90,6 @@ namespace Vital::Engine {
             void init();
 
             #if !defined(Vital_SDK_Client)
-            static std::string hash_file(const std::string& base, const std::string& relative_path);
             bool parse_manifest(ResourceManifest& resource, Vital::Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
             bool start(const std::string& name);
             bool stop(const std::string& name);

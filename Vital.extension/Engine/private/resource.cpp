@@ -98,16 +98,6 @@ namespace Vital::Engine {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-
-    std::string ResourceManager::hash_file(const std::string& base, const std::string& relative_path) {
-        try {
-            const godot::PackedByteArray bytes = Vital::Tool::File::read_binary(base, relative_path);
-            const std::string content(reinterpret_cast<const char*>(bytes.ptr()), bytes.size());
-            return fmt::format("{:x}", std::hash<std::string>{}(content));
-        }
-        catch (...) { return ""; }
-    }
-
     bool ResourceManager::parse_manifest(ResourceManifest& resource, Vital::Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name    = manifest.get_str("name",    resource.ref);
         resource.author  = manifest.get_str("author",  "");
@@ -138,7 +128,7 @@ namespace Vital::Engine {
             }
             for (const auto& s : expanded) {
                 resource.scripts.push_back({ s, type });
-                resource.script_hashes[s] = hash_file(base, s);
+                resource.script_hashes[s] = Vital::Tool::File::hash(base, s);
             }
         }
 
@@ -153,7 +143,7 @@ namespace Vital::Engine {
                 }
                 for (const auto& f : expanded) {
                     resource.files.push_back(f);
-                    resource.file_hashes[f] = hash_file(base, f);
+                    resource.file_hashes[f] = Vital::Tool::File::hash(base, f);
                 }
             }
         }
