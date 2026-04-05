@@ -395,7 +395,7 @@ namespace Vital::Engine {
                 std::string syntax = it -> value.HasMember("syntax") && it -> value["syntax"].IsString() ? it -> value["syntax"].GetString() : "";
                 std::string desc = it -> value.HasMember("desc")   && it -> value["desc"].IsString()   ? it -> value["desc"].GetString()   : "";
                 std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
-                oss << fmt::format("> {}{} — {}\n", indent(1), full_cmd, desc);
+                oss << fmt::format("> {} — {}\n", full_cmd, desc);
             }
         };
         append_section("shared", "General");
