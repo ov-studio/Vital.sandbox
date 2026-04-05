@@ -74,8 +74,8 @@ namespace Vital::Engine {
             // Server Identity
             //========================================//
 
-            std::string get_server_name()        const { return get_str("server", "name",        "Vital Sandbox Server"); }
-            std::string get_server_version()     const { return get_str("server", "version",     "1.0.0");               }
+            std::string get_server_name() const { return get_str("server", "name",        "Vital Sandbox Server"); }
+            std::string get_server_version() const { return get_str("server", "version",     "1.0.0");               }
             std::string get_server_description() const { return get_str("server", "description", "");                    }
 
 
@@ -84,7 +84,7 @@ namespace Vital::Engine {
             //========================================//
 
             int get_network_port() const { return get_int("network", "port",        7777); }
-            int get_max_clients()  const { return get_int("network", "max_clients", 32);   }
+            int get_max_clients() const { return get_int("network", "max_clients", 32);   }
 
 
             //========================================//
@@ -98,12 +98,12 @@ namespace Vital::Engine {
             // Discord Integration
             //========================================//
 
-            bool get_discord_enabled()          const { return get_bool("discord", "enabled", false);                             }
-            std::string get_discord_state()            const { return get_str("discord",  "state",   "Playing on {server_name}");        }
-            std::string get_discord_details()          const { return get_str("discord",  "details", "{player_count}/{max_players} players"); }
-            std::string get_discord_large_image_key()  const { return get_str("discord",  "large_image_key",  "");                      }
+            bool get_discord_enabled() const { return get_bool("discord", "enabled", false);                             }
+            std::string get_discord_state() const { return get_str("discord",  "state",   "Playing on {server_name}");        }
+            std::string get_discord_details() const { return get_str("discord",  "details", "{player_count}/{max_players} players"); }
+            std::string get_discord_large_image_key() const { return get_str("discord",  "large_image_key",  "");                      }
             std::string get_discord_large_image_text() const { return get_str("discord",  "large_image_text", "");                      }
-            std::string get_discord_small_image_key()  const { return get_str("discord",  "small_image_key",  "");                      }
+            std::string get_discord_small_image_key() const { return get_str("discord",  "small_image_key",  "");                      }
             std::string get_discord_small_image_text() const { return get_str("discord",  "small_image_text", "");                      }
 
             uint64_t get_discord_application_id() const {
@@ -117,6 +117,6 @@ namespace Vital::Engine {
             //========================================//
 
             std::string get_discord_invite() const { return get_str("social", "discord_invite", ""); }
-            std::string get_website()        const { return get_str("social", "website",        ""); }
+            std::string get_website() const { return get_str("social", "website",        ""); }
     };
 }
