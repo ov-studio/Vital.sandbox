@@ -25,8 +25,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    // TODO: IMPROVE
-    
+
     // Utils //
     ResourceManager* ResourceManager::get_singleton() {
         if (!singleton) singleton = new ResourceManager();
@@ -135,24 +134,22 @@ namespace Vital::Engine {
                 continue;
             }
 
-            ryml::Tree tree;
+            Vital::Tool::YAML manifest;
             try {
-                tree = Vital::Tool::YAML::parse(content);
+                manifest.parse(content);
             }
             catch (const std::exception& e) {
                 Vital::print("error", "Malformed YAML in manifest for `" + name + "` — " + e.what() + " — skipping");
                 continue;
             }
 
-            ryml::ConstNodeRef root = tree.rootref();
-
             ResourceManifest resource;
             resource.ref     = name;
-            resource.name    = Vital::Tool::YAML::get_str(root, "name",    name);
-            resource.author  = Vital::Tool::YAML::get_str(root, "author",  "");
-            resource.version = Vital::Tool::YAML::get_str(root, "version", "");
+            resource.name    = manifest.get_str("name",    name);
+            resource.author  = manifest.get_str("author",  "");
+            resource.version = manifest.get_str("version", "");
 
-            if (!root.has_child("scripts") || !root["scripts"].is_seq()) {
+            if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) {
                 Vital::print("error", "Resource `" + name + "` has no valid `scripts` section — skipping");
                 continue;
             }
@@ -160,15 +157,14 @@ namespace Vital::Engine {
             bool valid = true;
             std::vector<std::string> errors;
 
-            for (ryml::ConstNodeRef node : root["scripts"]) {
-                if (!node.is_map() || !node.has_child("src") || !node.has_child("type")) {
+            for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
+                if (!node.is_map() || !Vital::Tool::YAML::has(node, "src") || !Vital::Tool::YAML::has(node, "type")) {
                     errors.push_back("script entry missing `src` or `type`");
                     valid = false;
                     continue;
                 }
-                std::string src, type;
-                node["src"]  >> src;
-                node["type"] >> type;
+                const std::string src  = Vital::Tool::YAML::get_str(node, "src");
+                const std::string type = Vital::Tool::YAML::get_str(node, "type");
 
                 if (valid_types.find(type) == valid_types.end()) {
                     errors.push_back("script `" + src + "` has invalid type `" + type + "`");
@@ -187,8 +183,8 @@ namespace Vital::Engine {
                     resource.scripts.push_back({ s, type });
             }
 
-            if (root.has_child("files") && root["files"].is_seq()) {
-                for (ryml::ConstNodeRef node : root["files"]) {
+            if (manifest.has("files") && manifest.get_root()["files"].is_seq()) {
+                for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
                     std::string file_pattern;
                     node >> file_pattern;
 
