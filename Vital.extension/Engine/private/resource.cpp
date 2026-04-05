@@ -453,7 +453,7 @@ namespace Vital::Engine {
     bool ResourceManager::stop(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
         auto* am = AssetManager::get_singleton();
-
+        
         if (!is_running(name)) {
             Vital::print("error", fmt::format("Cannot stop `{}` — not running", name));
             return false;
@@ -473,8 +473,12 @@ namespace Vital::Engine {
     }
 
     bool ResourceManager::restart(const std::string& name) {
-        if (is_running(name)) stop(name);
+        if (!is_running(name)) {
+            Vital::print("error", fmt::format("Cannot restart `{}` — not running", name));
+            return false;
+        }
 
+        stop(name);
         const std::string base = get_resource_base(name);
         if (!Vital::Tool::File::exists(base, "manifest.yaml")) {
             resources.erase(
@@ -583,9 +587,7 @@ namespace Vital::Engine {
 
     #if defined(Vital_SDK_Client)
 
-    bool ResourceManager::register_remote(const std::string& name,
-                                          const std::vector<ResourceScript>& scripts,
-                                          const std::vector<std::string>& files) {
+    bool ResourceManager::register_remote(const std::string& name, const std::vector<ResourceScript>& scripts, const std::vector<std::string>& files) {
         unregister_remote(name);
         ResourceManifest manifest;
         manifest.ref     = name;
