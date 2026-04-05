@@ -513,34 +513,34 @@ namespace Vital::Engine {
             std::vector<std::string> changes;
             for (const auto& [src, hash] : old_script_hashes) {
                 if (!resource.script_hashes.count(src))
-                    changes.push_back(fmt::format("  | `{}` (script deleted)", src));
+                    changes.push_back(fmt::format("> `{}` (script deleted)", src));
                 else if (resource.script_hashes.at(src) != hash)
-                    changes.push_back(fmt::format("  | `{}` (script modified)", src));
+                    changes.push_back(fmt::format("> `{}` (script modified)", src));
             }
             for (const auto& [src, hash] : resource.script_hashes) {
                 if (!old_script_hashes.count(src))
-                    changes.push_back(fmt::format("  | `{}` (script added)", src));
+                    changes.push_back(fmt::format("> `{}` (script added)", src));
             }
 
             // Diff files
             for (const auto& [file, hash] : old_file_hashes) {
                 if (!resource.file_hashes.count(file))
-                    changes.push_back(fmt::format("  | `{}` (file deleted)", file));
+                    changes.push_back(fmt::format("> `{}` (file deleted)", file));
                 else if (resource.file_hashes.at(file) != hash)
-                    changes.push_back(fmt::format("  | `{}` (file modified)", file));
+                    changes.push_back(fmt::format("> `{}` (file modified)", file));
             }
             for (const auto& [file, hash] : resource.file_hashes) {
                 if (!old_file_hashes.count(file))
-                    changes.push_back(fmt::format("  | `{}` (file added)", file));
+                    changes.push_back(fmt::format("> `{}` (file added)", file));
             }
 
             // Report
             std::string report = fmt::format("Resource `{}` restarted\n", name);
             if (changes.empty()) {
-                report += "  | No changes detected";
+                report += "> No changes detected";
             }
             else {
-                report += fmt::format("  | Changes ({}):\n", changes.size());
+                report += fmt::format("> Changes ({}):\n", changes.size());
                 for (const auto& change : changes)
                     report += change + "\n";
             }
