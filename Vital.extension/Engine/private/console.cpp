@@ -285,16 +285,18 @@ namespace Vital::Engine {
         return result;
     }
 
-    std::string Console::format_line(const Vital::Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
-        const std::string mode_color = ansi_rgb(mode_rgb);
+    std::string Console::format_line(const Vital::Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation, bool is_header) {
+        const std::string mode_color  = ansi_rgb(mode_rgb);
+        const std::string marker      = ANSI_BOLD + mode_color + "│ " + ANSI_RESET;
+        const std::string indent_str(18 + mode_label.size(), ' ');
         std::ostringstream oss;
         std::string content = line;
-        const bool is_highlighted = (!content.empty() && content[0] == '>');
+        const bool is_highlighted = (!is_header && !content.empty() && content[0] == '>');
         if (is_highlighted) {
             content = content.substr(1);
             if (!content.empty() && content[0] == ' ') content = content.substr(1);
         }
-        const std::string marker = is_highlighted ? (ANSI_BOLD + mode_color + "│ " + ANSI_RESET) : (ANSI_DIM + std::string(FG_GRAY) + "│ " + ANSI_RESET);
+    
         if (!is_continuation) {
             oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
                 << "   " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
@@ -303,8 +305,8 @@ namespace Vital::Engine {
         }
         else {
             if (content.empty()) return "";
-            const std::string indent(18 + mode_label.size(), ' ');
-            oss << indent << marker << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
+            oss << indent_str << (is_header ? "" : marker)
+                << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
         }
         return oss.str();
     }
@@ -325,10 +327,9 @@ namespace Vital::Engine {
         while (std::getline(stream, line)) {
             if (!line.empty() && line.back() == '\r') line.pop_back();
             if (line.empty()) continue;
-            bool is_highlight = (line.size() >= 2 && line[0] == '>' && line[1] == ' ');
-            bool is_indented = (!line.empty() && (line[0] == ' ' || line[0] == '\t'));
-            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first && !is_highlight && is_indented);
-            first = false;
+            bool is_header = line.rfind("•", 0) == 0;
+            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first, is_header);
+            if (!is_header) first = false;
         }
         oss << "\n";
         return oss.str();
