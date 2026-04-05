@@ -25,6 +25,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
 
     // Utils //
     ResourceManager* ResourceManager::get_singleton() {
@@ -380,7 +381,18 @@ namespace Vital::Engine {
         }
 
         const auto* resource = get_resource(name);
-        bool status          = true;
+
+        // Phase 1: Register assets before executing any scripts
+        for (const auto& file : resource->files)
+            am->register_asset(fmt::format("resources/{}/{}", name, file), name);
+        for (const auto& script : resource->scripts) {
+            if (script.type == "client" || script.type == "shared")
+                am->register_asset(fmt::format("resources/{}/{}", name, script.src), name);
+        }
+        am->broadcast_manifest_deferred();
+
+        // Phase 2: Execute scripts
+        bool status = true;
 
         vm->create_environment(name);
         vm->pop();
@@ -410,17 +422,10 @@ namespace Vital::Engine {
 
         if (!status) {
             vm->clear_environment_id(name);
+            am->unregister_group(name);
             return false;
         }
 
-        for (const auto& file : resource->files)
-            am->register_asset(fmt::format("resources/{}/{}", name, file), name);
-        for (const auto& script : resource->scripts) {
-            if (script.type == "client" || script.type == "shared")
-                am->register_asset(fmt::format("resources/{}/{}", name, script.src), name);
-        }
-
-        am->broadcast_manifest_deferred();
         Core::get_singleton() -> push_deferred([this, name]() {
             notify_resource_started(name);
         });
