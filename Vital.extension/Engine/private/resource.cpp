@@ -101,7 +101,8 @@ namespace Vital::Engine {
 
     std::string ResourceManager::hash_file(const std::string& base, const std::string& relative_path) {
         try {
-            const std::string content = Vital::Tool::File::read_text(base, relative_path);
+            const godot::PackedByteArray bytes = Vital::Tool::File::read_binary(base, relative_path);
+            const std::string content(reinterpret_cast<const char*>(bytes.ptr()), bytes.size());
             return fmt::format("{:x}", std::hash<std::string>{}(content));
         }
         catch (...) { return ""; }
