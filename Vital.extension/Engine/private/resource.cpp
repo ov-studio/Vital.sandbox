@@ -57,7 +57,7 @@ namespace Vital::Engine {
 
     bool ResourceManager::is_loaded(const std::string& name) const {
         for (const auto& resource : resources) {
-            if (resource.ref == name) 
+            if (resource.ref == name)
                 return true;
         }
         return false;
@@ -187,7 +187,10 @@ namespace Vital::Engine {
 
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
-
+            if (!is_eligible_name(name)) {
+                Vital::print("error", fmt::format("Invalid resource name `{}` — skipping", name));
+                continue;
+            }
             if (resource_count[name] > 1) {
                 Vital::print("error", fmt::format("Duplicate resource found — skipping `{}`", name));
                 continue;
