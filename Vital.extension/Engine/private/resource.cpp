@@ -370,7 +370,7 @@ namespace Vital::Engine {
     bool ResourceManager::start(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
         auto* am = AssetManager::get_singleton();
-
+    
         if (!is_loaded(name)) {
             Vital::print("error", fmt::format("Cannot start `{}` — resource not loaded", name));
             return false;
@@ -379,10 +379,10 @@ namespace Vital::Engine {
             Vital::print("error", fmt::format("Cannot start `{}` — already running", name));
             return false;
         }
-
+    
         const auto* resource = get_resource(name);
-
-        // Phase 1: Register assets before executing any scripts
+    
+        // Phase 1: Register assets
         for (const auto& file : resource->files)
             am->register_asset(fmt::format("resources/{}/{}", name, file), name);
         for (const auto& script : resource->scripts) {
@@ -390,49 +390,46 @@ namespace Vital::Engine {
                 am->register_asset(fmt::format("resources/{}/{}", name, script.src), name);
         }
         am->broadcast_manifest_deferred();
-
-        // Phase 2: Execute scripts
-        bool status = true;
-
+    
+        // Phase 2: Mark as started and notify
+        running.insert(name);
+        Vital::print("sbox", fmt::format("Resource `{}` started", name));
+        Core::get_singleton() -> push_deferred([this, name]() {
+            notify_resource_started(name);
+        });
+        Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
+    
+        // Phase 3: Execute scripts
         vm->create_environment(name);
         vm->pop();
-
+    
         for (const auto& script : resource->scripts) {
             if (!is_eligible(script.type)) continue;
-
+    
             std::string source;
             try {
                 source = Vital::Tool::File::read_text(get_resource_base(name), script.src);
             }
             catch (...) {
                 Vital::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
-                status = false;
-                break;
+                running.erase(name);
+                vm->clear_environment_id(name);
+                am->unregister_group(name);
+                return false;
             }
-
+    
             vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
                 Vital::print("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
                 vm->pop();
-                status = false;
-                break;
+                running.erase(name);
+                vm->clear_environment_id(name);
+                am->unregister_group(name);
+                return false;
             }
             vm->pop();
         }
-
-        if (!status) {
-            vm->clear_environment_id(name);
-            am->unregister_group(name);
-            return false;
-        }
-
-        Core::get_singleton() -> push_deferred([this, name]() {
-            notify_resource_started(name);
-        });
-
-        running.insert(name);
-        Vital::print("sbox", fmt::format("Resource `{}` started", name));
-        Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
+    
         return true;
     }
 
