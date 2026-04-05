@@ -89,7 +89,6 @@ namespace Vital::Engine {
             std::string get_discord_large_image_text() const { return get_str("discord", "large_image_text", ""); }
             std::string get_discord_small_image_key() const { return get_str("discord", "small_image_key",  ""); }
             std::string get_discord_small_image_text() const { return get_str("discord", "small_image_text", ""); }
-
             uint64_t get_discord_application_id() const {
                 const std::string id_str = get_str("discord", "application_id", "");
                 try { return std::stoull(id_str); } catch (...) { return 0; }
