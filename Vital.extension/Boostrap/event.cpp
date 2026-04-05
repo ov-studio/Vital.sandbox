@@ -22,8 +22,8 @@
 
 // Global config instance - loaded once at startup
 #if !defined(Vital_SDK_Client)
-#include <Engine/public/config.h>
-static Vital::Engine::Config g_server_config;
+#include <Engine/public/srvconfig.h>
+static Vital::Engine::SrvConfig g_server_config;
 #endif
 
 // Load server configuration from config.yaml
@@ -31,12 +31,12 @@ static Vital::Engine::Config g_server_config;
 void load_server_config() {
     bool loaded = g_server_config.load();
     if (!loaded) {
-        Vital::print("sbox", "Config: No config.yaml found, using default values");
+        Vital::print("sbox", "SrvConfig: No config.yaml found, using default values");
     } else {
-        Vital::print("sbox", "Config: Server name: '", g_server_config.get_server_name(), "'");
-        Vital::print("sbox", "Config: Network port: ", g_server_config.get_network_port());
-        Vital::print("sbox", "Config: HTTP port: ", g_server_config.get_http_port());
-        Vital::print("sbox", "Config: Max clients: ", g_server_config.get_max_clients());
+        Vital::print("sbox", "SrvConfig: Server name: '", g_server_config.get_server_name(), "'");
+        Vital::print("sbox", "SrvConfig: Network port: ", g_server_config.get_network_port());
+        Vital::print("sbox", "SrvConfig: HTTP port: ", g_server_config.get_http_port());
+        Vital::print("sbox", "SrvConfig: Max clients: ", g_server_config.get_max_clients());
     }
     
     // Set server info on AssetManager for /info endpoint

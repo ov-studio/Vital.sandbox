@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.extension
-     Script: Engine: config.h
+     Script: Engine: srvconfig.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 28/03/2026
@@ -16,14 +16,13 @@
 #include <Vital.sandbox/Tool/yaml.h>
 
 
-////////////////////////////
-// Vital: Engine: Config //
+//////////////////////////////////
+// Vital: Engine: ServerConfig //
 ////////////////////////////
 
 namespace Vital::Engine {
     // TODO: Improve
-
-    class Config {
+    class SrvConfig {
         private:
             Vital::Tool::YAML yaml;
             bool loaded = false;
