@@ -34,10 +34,10 @@ namespace Vital::Tool {
                 ErrorScope() {
                     prev = ryml::get_callbacks();
                     ryml::Callbacks cb = prev;
-                    cb.m_error = [](const char* msg, size_t len, ryml::Location loc, void*) {
-                        std::string detail = std::string(msg, len);
+                    cb.m_error = [](const char*, size_t, ryml::Location loc, void*) {
+                        std::string detail = "parse error";
                         if (loc.line > 0)
-                            detail += " (line " + std::to_string(loc.line) + ", col " + std::to_string(loc.col) + ")";
+                            detail += " at line " + std::to_string(loc.line) + ", col " + std::to_string(loc.col);
                         throw std::runtime_error(detail);
                     };
                     ryml::set_callbacks(cb);
@@ -47,13 +47,14 @@ namespace Vital::Tool {
                     ryml::set_callbacks(prev);
                 }
             };
+
         public:
             YAML() = default;
 
-            YAML(const YAML&) = delete;
+            YAML(const YAML&)            = delete;
             YAML& operator=(const YAML&) = delete;
-            YAML(YAML&&) = default;
-            YAML& operator=(YAML&&) = default;
+            YAML(YAML&&)                 = default;
+            YAML& operator=(YAML&&)      = default;
 
             void parse(const std::string& input) {
                 ErrorScope scope;
