@@ -178,13 +178,13 @@ namespace Vital::Tool::File {
     inline std::vector<std::string> glob(const godot::String& base, const godot::String& pattern) {
         std::vector<std::string> result;
         int last_slash = std::max(pattern.rfind("/"), pattern.rfind("\\"));
-        godot::String dir_part = last_slash >= 0 ? pattern.substr(0, last_slash) : godot::String();
-        godot::String file_part = last_slash >= 0 ? pattern.substr(last_slash + 1) : pattern;
+        auto dir_part = last_slash >= 0 ? pattern.substr(0, last_slash) : godot::String();
+        auto file_part = last_slash >= 0 ? pattern.substr(last_slash + 1) : pattern;
         bool has_recursive_wildcard = dir_part.find("**") != -1;
         bool has_single_wildcard = file_part.find("*") != -1;
 
         if (!has_recursive_wildcard && !has_single_wildcard) {
-            godot::String full_path = dir_part.is_empty() ? file_part : (dir_part + godot::String("/") + file_part);
+            auto full_path = dir_part.is_empty() ? file_part : (dir_part + godot::String("/") + file_part);
             if (exists(base, full_path)) result.emplace_back(to_std_string(full_path));
             return result;
         }
@@ -195,20 +195,20 @@ namespace Vital::Tool::File {
         };
     
         if (has_recursive_wildcard) {
-            godot::String search_base = dir_part.replace("**", godot::String());
+            auto search_base = dir_part.replace("**", godot::String());
             if (search_base.ends_with("/")) search_base = search_base.substr(0, search_base.length() - 1);
             std::function<void(const godot::String&)> walk = [&](const godot::String& current_dir) {
-                godot::String full_dir  = search_base.is_empty() ? current_dir : (search_base + godot::String("/") + current_dir);
-                godot::String open_path = full_dir.is_empty() ? base : (base + godot::String("/") + full_dir);
-                godot::Ref<godot::DirAccess> dir = godot::DirAccess::open(open_path);
+                auto full_dir  = search_base.is_empty() ? current_dir : (search_base + godot::String("/") + current_dir);
+                auto open_path = full_dir.is_empty() ? base : (base + godot::String("/") + full_dir);
+                auto dir = godot::DirAccess::open(open_path);
                 if (!dir.is_valid()) return;
                 dir -> list_dir_begin();
                 while (true) {
-                    godot::String name = dir -> get_next();
+                    auto name = dir -> get_next();
                     if (name.is_empty()) break;
                     if (name == "." || name == "..") continue;
-                    godot::String current_rel = current_dir.is_empty() ? name : (current_dir + godot::String("/") + name);
-                    godot::String full_path   = search_base.is_empty() ? current_rel : (search_base + godot::String("/") + current_rel);
+                    auto current_rel = current_dir.is_empty() ? name : (current_dir + godot::String("/") + name);
+                    auto full_path = search_base.is_empty() ? current_rel : (search_base + godot::String("/") + current_rel);
                     if (dir -> current_is_dir()) walk(current_rel);
                     else if (matches_file(name)) result.emplace_back(to_std_string(full_path));
                 }
@@ -217,16 +217,16 @@ namespace Vital::Tool::File {
             walk(godot::String());
         }
         else {
-            godot::String open_path = dir_part.is_empty() ? base : (base + godot::String("/") + dir_part);
-            godot::Ref<godot::DirAccess> dir = godot::DirAccess::open(open_path);
+            auto open_path = dir_part.is_empty() ? base : (base + godot::String("/") + dir_part);
+            auto dir = godot::DirAccess::open(open_path);
             if (dir.is_valid()) {
                 dir -> list_dir_begin();
                 while (true) {
-                    godot::String name = dir -> get_next();
+                    auto name = dir -> get_next();
                     if (name.is_empty()) break;
                     if (name == "." || name == "..") continue;
                     if (!dir -> current_is_dir() && matches_file(name)) {
-                        godot::String full_path = dir_part.is_empty() ? name : (dir_part + godot::String("/") + name);
+                        auto full_path = dir_part.is_empty() ? name : (dir_part + godot::String("/") + name);
                         result.emplace_back(to_std_string(full_path));
                     }
                 }
