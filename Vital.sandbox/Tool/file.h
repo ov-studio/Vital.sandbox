@@ -198,7 +198,7 @@ namespace Vital::Tool::File {
             auto search_base = dir_part.replace("**", godot::String());
             if (search_base.ends_with("/")) search_base = search_base.substr(0, search_base.length() - 1);
             std::function<void(const godot::String&)> walk = [&](const godot::String& current_dir) {
-                auto full_dir  = search_base.is_empty() ? current_dir : (search_base + godot::String("/") + current_dir);
+                auto full_dir = search_base.is_empty() ? current_dir : (search_base + godot::String("/") + current_dir);
                 auto open_path = full_dir.is_empty() ? base : (base + godot::String("/") + full_dir);
                 auto dir = godot::DirAccess::open(open_path);
                 if (!dir.is_valid()) return;
