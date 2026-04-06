@@ -24,7 +24,6 @@
 // Vital: Tool: File //
 ///////////////////////
 
-// TODO: Improve
 namespace Vital::Tool::File {
     inline bool sanitize(const godot::String& path) {
         if (path.is_empty()) return false;
