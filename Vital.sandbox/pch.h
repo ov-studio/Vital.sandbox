@@ -13,6 +13,9 @@
 //////////////
 
 #pragma once
+
+
+// Natives //
 #include <iomanip>
 #include <iostream>
 #include <algorithm>
@@ -47,3 +50,53 @@
 #include <termios.h>
 #include <unistd.h>
 #endif
+
+
+// Externals //
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/classes/editor_interface.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/window.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/node2d.hpp>
+#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/input.hpp>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/input_event_key.hpp>
+#include <godot_cpp/classes/input_event_mouse_button.hpp>
+#include <godot_cpp/classes/input_event_mouse_motion.hpp>
+#include <godot_cpp/classes/gltf_state.hpp>
+#include <godot_cpp/classes/gltf_document.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/skeleton3d.hpp>
+#include <godot_cpp/classes/animation.hpp>
+#include <godot_cpp/classes/animation_player.hpp>
+#include <godot_cpp/classes/animation_library.hpp>
+#include <godot_cpp/classes/texture.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/image_texture3d.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/sub_viewport.hpp>
+#include <godot_cpp/classes/viewport_texture.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/font_file.hpp>
+#include <godot_cpp/classes/environment.hpp>
+#include <godot_cpp/classes/world_environment.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
