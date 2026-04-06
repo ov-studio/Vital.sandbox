@@ -15,7 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
-#include <godot_cpp/variant/string.hpp>
 
 
 /////////////////////////
