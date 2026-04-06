@@ -171,8 +171,6 @@ class Build:
             log_info("No config files found")
 
     def _ensure_dll_staged(self, b):
-        # Ensure the extension DLL exists in the project folder before Godot export.
-        # The SCons stage target copies it there, but we verify and copy manually if missing.
         build_suffix = self.build_type.lower()
         os_type = self.os_info["type"]
 
@@ -210,8 +208,6 @@ class Build:
         log_step(f"Exporting Godot [{self.platform_type} | {self.build_type}]")
         log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
-
-        # Ensure DLL is staged into project folder before Godot tries to load it
         self._ensure_dll_staged(b)
 
         env = os.environ.copy()
@@ -266,7 +262,6 @@ def main():
     build_group.add_argument("--debug", action="store_true")
     build_group.add_argument("--release", action="store_true")
 
-    parser.add_argument("--skip-extension", action="store_true", help="Skip building Vital.extension")
     parser.add_argument("--skip-export", action="store_true", help="Skip Godot export")
     parser.add_argument("--rebuild-godot", action="store_true", help="Force rebuild of godot-cpp")
     parser.add_argument("--verbose", action="store_true", help="Stream compiler output live instead of spinner")
@@ -276,13 +271,11 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
-    if not args.skip_extension:
-        Build(script_dir, platforms[0], build_type, verbose=args.verbose).build_godot_cpp(force=args.rebuild_godot)
+    Build(script_dir, platforms[0], build_type, verbose=args.verbose).build_godot_cpp(force=args.rebuild_godot)
 
     for platform_type in platforms:
         build = Build(script_dir, platform_type, build_type, verbose=args.verbose)
-        if not args.skip_extension:
-            build.build_extension()
+        build.build_extension()
         if not args.skip_export:
             build.export()
 
