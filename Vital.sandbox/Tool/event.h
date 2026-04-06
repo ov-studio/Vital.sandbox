@@ -22,7 +22,7 @@
 
 namespace Vital::Tool::Event {
     using event_id = unsigned long;
-    using event_handle = std::function<void(Vital::Tool::Stack)>;
+    using event_handle = std::function<void(Tool::Stack)>;
     using event_map = std::unordered_map<event_id, event_handle>;
     using event_pool = std::unordered_map<std::string, event_map>;
     inline event_id id = 0;
@@ -42,7 +42,7 @@ namespace Vital::Tool::Event {
         return true;
     }
 
-    inline bool emit(const std::string& identifier, Vital::Tool::Stack arguments = {}) {
+    inline bool emit(const std::string& identifier, Tool::Stack arguments = {}) {
         auto it = pool.find(identifier);
         if (it == pool.end()) return false;
         const event_map snapshot = it -> second;

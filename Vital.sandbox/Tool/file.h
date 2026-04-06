@@ -71,7 +71,7 @@ namespace Vital::Tool::File {
         if (!dir.is_valid()) throw Vital::Log::fetch("base-path-invalid", Vital::Log::Type::Error, to_std_string(base));
         if (!dir -> file_exists(target)) throw Vital::Log::fetch("file-nonexistent", Vital::Log::Type::Error, to_std_string(target));
         auto full_path = to_std_string(dir -> get_current_dir() + "/" + target);
-        return Vital::Tool::Crypto::hash_file(mode, full_path);
+        return Tool::Crypto::hash_file(mode, full_path);
     }
 
     inline std::string hash(const std::string& base, const std::string& target, std::string_view mode = "SHA256") {

@@ -88,7 +88,7 @@ namespace Vital::Tool {
             using TableSchema = std::unordered_map<std::string, Column>;
             using GlobalSchema = std::unordered_map<std::string, TableSchema>;
             using SchemaActions = std::vector<SchemaAction>;
-            using Row = std::vector<std::pair<std::string, Vital::Tool::StackValue>>;
+            using Row = std::vector<std::pair<std::string, Tool::StackValue>>;
             using Rows = std::vector<Row>;
         private:
             std::unique_ptr<soci::session> session;
@@ -274,7 +274,7 @@ namespace Vital::Tool {
                     Row row;
                     for (std::size_t i = 0; i < row_out.size(); i++) {
                         const soci::column_properties& props = row_out.get_properties(i);
-                        Vital::Tool::StackValue cell;
+                        Tool::StackValue cell;
                         if (row_out.get_indicator(i) == soci::i_null) cell = nullptr;
                         else {
                             switch (props.get_data_type()) {

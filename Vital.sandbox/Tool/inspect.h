@@ -36,12 +36,12 @@ namespace Vital::Tool::Inspect {
     }
 
     inline std::string hash(const std::string& s) {
-        return Vital::Tool::Crypto::hash("SHA256", s);
+        return Tool::Crypto::hash("SHA256", s);
     }
 
     #if defined(Vital_SDK_WINDOWS)
     class WMI {
-        IWbemLocator* locator  = nullptr;
+        IWbemLocator* locator = nullptr;
         IWbemServices* services = nullptr;
         public:
             explicit WMI(const wchar_t* root = L"ROOT\\CIMV2") {

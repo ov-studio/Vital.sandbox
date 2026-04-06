@@ -75,7 +75,7 @@ namespace Vital::Tool {
     }
     
     template<typename... Keys>
-    inline Vital::Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
+    inline Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
         auto& document = fetch_json(name);
         if (document.HasParseError() || !document.IsObject()) return {};
         const rapidjson::Value* node = fetch_json_detail(&document, std::forward<Keys>(keys)...);

@@ -56,8 +56,8 @@ namespace Vital {
         #endif
     }
 
-    inline Vital::Tool::Stack get_timestamp() {
-        Vital::Tool::Stack timestamp;
+    inline Tool::Stack get_timestamp() {
+        Tool::Stack timestamp;
         godot::Dictionary datetime = godot::Time::get_singleton() -> get_datetime_dict_from_system();
         timestamp.object["hour"] = int(datetime["hour"]);
         timestamp.object["minute"] = int(datetime["minute"]);

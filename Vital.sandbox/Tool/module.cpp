@@ -160,7 +160,7 @@ namespace Vital::Tool {
                 return doc;
             }
             if (data.empty()) return doc;
-            out_remote_hash = Vital::Tool::Crypto::hash("SHA256", data);
+            out_remote_hash = Tool::Crypto::hash("SHA256", data);
             doc.Parse(data.c_str());
             return doc;
         }
@@ -242,7 +242,7 @@ namespace Vital::Tool {
                 }
                 else {
                     if (!remote_hash.empty()) {
-                        const std::string local_hash = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json");
+                        const std::string local_hash = Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json");
                         if (local_hash != remote_hash) {
                             Vital::print("sbox", "Kit: checksum tampered — will redownload");
                             needs_download = true;
@@ -266,12 +266,12 @@ namespace Vital::Tool {
                                     break;
                                 }
                                 const std::string expected = it -> value["sha256"].GetString();
-                                if (!Vital::Tool::File::exists(kit_dir, rel_path)) {
+                                if (!Tool::File::exists(kit_dir, rel_path)) {
                                     Vital::print("sbox", fmt::format("Kit: file missing ({}/{}) -> {}", checked, total, rel_path).c_str());
                                     all_valid = false;
                                     break;
                                 }
-                                const std::string actual = Vital::Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
+                                const std::string actual = Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path);
                                 if (actual != expected) {
                                     Vital::print("sbox", fmt::format("Kit: checksum mismatch ({}/{}) -> {}", checked, total, rel_path).c_str());
                                     all_valid = false;
