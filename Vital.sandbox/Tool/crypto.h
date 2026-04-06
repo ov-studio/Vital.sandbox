@@ -18,8 +18,6 @@
 #include <openssl/rand.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
-#include <fstream>
-#include <iomanip>
 
 
 //////////////////////////
