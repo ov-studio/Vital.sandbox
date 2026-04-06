@@ -318,8 +318,17 @@ namespace Vital::Engine {
                << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":"
                << std::setw(2) << ts.object.at("minute").as<int32_t>() << ":"
                << std::setw(2) << ts.object.at("second").as<int32_t>();
+        std::string normalized;
+        normalized.reserve(message.size());
+        std::size_t start = 0, pos;
+        while ((pos = message.find('\t', start)) != std::string::npos) {
+            normalized.append(message, start, pos - start);
+            normalized += "    ";
+            start = pos + 1;
+        }
+        normalized.append(message, start, std::string::npos);
         std::ostringstream oss;
-        std::istringstream stream(message);
+        std::istringstream stream(normalized);
         std::string line;
         bool first = true;
         while (std::getline(stream, line)) {
@@ -331,7 +340,7 @@ namespace Vital::Engine {
         oss << "\n";
         return oss.str();
     }
-
+    
     void Console::format_input_prompt() {
         std::lock_guard<std::mutex> lock(stdout_mutex);
         const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
