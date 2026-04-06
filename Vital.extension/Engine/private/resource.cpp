@@ -136,7 +136,7 @@ namespace Vital::Engine {
                 errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type));
                 continue;
             }
-            std::vector<std::string> expanded = Vital::Tool::File::glob_expand(base, src);
+            std::vector<std::string> expanded = Vital::Tool::File::glob(base, src);
             if (expanded.empty()) {
                 errors.push_back(fmt::format("script pattern `{}` matched no files", src));
                 continue;
@@ -151,7 +151,7 @@ namespace Vital::Engine {
             for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
                 std::string file_pattern;
                 node >> file_pattern;
-                std::vector<std::string> expanded = Vital::Tool::File::glob_expand(base, file_pattern);
+                std::vector<std::string> expanded = Vital::Tool::File::glob(base, file_pattern);
                 if (expanded.empty()) {
                     errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern));
                     continue;
