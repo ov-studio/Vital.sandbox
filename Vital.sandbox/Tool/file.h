@@ -232,8 +232,8 @@ namespace Vital::Tool::File {
                         search(current_rel);
                     } else {
                         // Check if file matches the file pattern
-                        if (Vital::contains_wildcard(to_std_string(file_part))) {
-                            if (Vital::match_wildcard(to_std_string(file_part), to_std_string(name))) {
+                        if (contains_wildcard(to_std_string(file_part))) {
+                            if (match_wildcard(to_std_string(file_part), to_std_string(name))) {
                                 result.emplace_back(to_std_string(full_path));
                             }
                         } else if (name == file_part) {
@@ -262,8 +262,8 @@ namespace Vital::Tool::File {
                         godot::String full_path = dir_part.is_empty() ? name : (dir_part + godot::String("/") + name);
                         
                         // Check if file matches the file pattern
-                        if (Vital::contains_wildcard(to_std_string(file_part))) {
-                            if (Vital::match_wildcard(to_std_string(file_part), to_std_string(name))) {
+                        if (contains_wildcard(to_std_string(file_part))) {
+                            if (match_wildcard(to_std_string(file_part), to_std_string(name))) {
                                 result.emplace_back(to_std_string(full_path));
                             }
                         } else if (name == file_part) {
