@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Tool: index.h
+     Script: Tool: version.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Vital Tools
+     Desc: Vital Version
 ----------------------------------------------------------------*/
 
 
@@ -16,9 +16,9 @@
 #include <pch.h>
 
 
-////////////
-// Vital //
-////////////
+/////////////////////
+// Vital: Version //
+/////////////////////
 
 namespace Vital {
     struct Version {
