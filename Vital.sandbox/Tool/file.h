@@ -28,9 +28,21 @@ namespace Vital::Tool::File {
         if (path.begins_with("/") || path.begins_with("\\")) return false;
         if (path.find(":") != -1) return false;
         auto parts = path.replace("\\", "/").split("/");
+        bool first = true;
         for (const auto& part : parts) {
-            if (part == "..")
+            if (part.is_empty()) { first = false; continue; }
+            bool all_dots = true;
+            for (int i = 0; i < part.length(); i++) {
+                if (part[i] != '.') { all_dots = false; break; }
+            }
+            if (all_dots) {
+                if (first && part.length() == 1) {
+                    first = false;
+                    continue;
+                }
                 return false;
+            }
+            first = false;
         }
         return true;
     }
