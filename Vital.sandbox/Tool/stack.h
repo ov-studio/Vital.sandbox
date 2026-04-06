@@ -15,11 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 
 
 /////////////////////////

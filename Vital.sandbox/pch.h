@@ -55,6 +55,7 @@
 // Externals //
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
