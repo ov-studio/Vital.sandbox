@@ -157,7 +157,7 @@ jobs:
   #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-linux }
   #     - run: python3 build.py --all --debug --verbose || true
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4", GODOT_RENDERING_DRIVER: "null", GODOT_AUDIO_DRIVER: "Dummy" }
-  #     - run: python3 build.py --all --release --verbose --skip-extension || true
+  #     - run: python3 build.py --all --release --verbose || true
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4", GODOT_RENDERING_DRIVER: "null", GODOT_AUDIO_DRIVER: "Dummy" }
   #     - if: always()
   #       uses: actions/cache/save@v4
@@ -205,7 +205,7 @@ jobs:
   #       with: { path: Vital.sandbox/Vendor/discord-sdk, key: discord-sdk-macos }
   #     - run: python3 build.py --all --debug --verbose || true
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4", GODOT_RENDERING_DRIVER: "null", GODOT_AUDIO_DRIVER: "Dummy" }
-  #     - run: python3 build.py --all --release --verbose --skip-extension || true
+  #     - run: python3 build.py --all --release --verbose || true
   #       env: { PYTHONUNBUFFERED: "1", CMAKE_BUILD_PARALLEL_LEVEL: "4", GODOT_RENDERING_DRIVER: "null", GODOT_AUDIO_DRIVER: "Dummy" }
   #     - if: always()
   #       uses: actions/cache/save@v4
