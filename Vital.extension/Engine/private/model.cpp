@@ -442,7 +442,7 @@ namespace Vital::Engine {
             godot::Ref<godot::Material> mat = mesh->get_active_material(index);
             godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
             if (!std_mat.is_valid()) {
-                std_mat = memnew(godot::StandardMaterial3D);
+                godot::Ref<godot::StandardMaterial3D> std_mat = memnew(godot::StandardMaterial3D);
                 mesh->set_surface_override_material(index, std_mat);
             }
             std_mat->set_flag(static_cast<godot::BaseMaterial3D::Flags>(flag), state);
