@@ -104,6 +104,24 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<base_class>(vm, base_name, "is_material_feature", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto material = vm -> get_string(3);
+                auto feature = vm -> get_int(4);
+                vm -> push_value(self -> is_material_feature(component, material, feature));
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "is_material_flag", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 4) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto material = vm -> get_string(3);
+                auto flag = vm -> get_int(4);
+                vm -> push_value(self -> is_material_flag(component, material, flag));
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "is_animation_playing", [](auto vm, auto self) -> int {
                 vm -> push_value(self -> is_animation_playing());
                 return 1;
@@ -145,6 +163,26 @@ namespace Vital::Sandbox::API {
                 auto material = vm -> get_string(3);
                 auto state = vm -> get_bool(4);
                 vm -> push_value(self -> set_material_visible(component, material, state));
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "set_material_feature", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 5) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4)) || (!vm -> is_bool(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto material = vm -> get_string(3);
+                auto feature = vm -> get_int(4);
+                auto state = vm -> get_bool(5);
+                vm -> push_value(self -> set_material_feature(component, material, feature, state));
+                return 1;
+            });
+
+            vm_module::bind_method<base_class>(vm, base_name, "set_material_flag", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 5) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_number(4)) || (!vm -> is_bool(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto component = vm -> get_string(2);
+                auto material = vm -> get_string(3);
+                auto flag = vm -> get_int(4);
+                auto state = vm -> get_bool(5);
+                vm -> push_value(self -> set_material_flag(component, material, flag, state));
                 return 1;
             });
 
