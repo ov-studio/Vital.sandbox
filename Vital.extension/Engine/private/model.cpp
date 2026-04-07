@@ -56,7 +56,7 @@ namespace Vital::Engine {
         find_animation_player(this);
         // Setup sync immediately in _ready instead of deferring
         // Node is already in tree at this point so add_child is safe
-        _setup_sync(pending_authority);
+        setup_sync(pending_authority);
     }
 
 
@@ -209,7 +209,7 @@ namespace Vital::Engine {
     //  Sync Setup (private)  //
     //------------------------//
 
-    void Model::_setup_sync(int authority_peer) {
+    void Model::setup_sync(int authority_peer) {
         if (net_sync) return;
     
         auto config = memnew(godot::SceneReplicationConfig);

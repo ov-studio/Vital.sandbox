@@ -65,7 +65,7 @@ namespace Vital::Engine {
             godot::Skeleton3D* find_skeleton(godot::Node* node);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
-            void _setup_sync(int authority_peer);
+            void setup_sync(int authority_peer);
         public:
             // Instantiators //
             Model() = default;
