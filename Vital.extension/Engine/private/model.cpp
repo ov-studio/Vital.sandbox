@@ -350,6 +350,18 @@ namespace Vital::Engine {
         return !mesh -> get_surface_override_material(material_index).is_valid();
     }
 
+    bool Model::is_material_feature(const std::string& component, const std::string& material, int feature) {
+        if ((feature < 0) || (feature >= godot::BaseMaterial3D::FEATURE_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        int index = find_material_index(mesh, material);
+        if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        godot::Ref<godot::Material> mat = mesh->get_active_material(index);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
+        if (!std_mat.is_valid()) return false;
+        return std_mat->get_feature(static_cast<godot::BaseMaterial3D::Feature>(feature));
+    }
+
     bool Model::is_material_flag(const std::string& component, const std::string& material, int flag) {
         if ((flag < 0) || (flag >= godot::BaseMaterial3D::FLAG_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
@@ -413,13 +425,40 @@ namespace Vital::Engine {
         auto exec = [&](int index) {
             if (index < 0) return false;
             if (!state) {
-                godot::Ref<godot::StandardMaterial3D> invisible = memnew(godot::StandardMaterial3D);
+                godot::Ref<godot::StandardMaterial3D> invisible = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
                 invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
                 invisible -> set_depth_draw_mode(godot::BaseMaterial3D::DEPTH_DRAW_DISABLED);
                 invisible -> set_albedo(godot::Color(0, 0, 0, 0));
                 mesh -> set_surface_override_material(index, invisible);
             }
             else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
+            return true;
+        };
+        if (contains_wildcard(material)) {
+            for (const auto& name : get_materials(component)) {
+                if (!match_wildcard(material, name)) continue;
+                int index = find_material_index(mesh, name);
+                if (index >= 0) exec(index);
+            }
+        }
+        else if (!exec(find_material_index(mesh, material))) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        return true;
+    }
+
+    bool Model::set_material_feature(const std::string& component, const std::string& material, int feature, bool state) {
+        if ((feature < 0) || (feature >= godot::BaseMaterial3D::FEATURE_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        auto exec = [&](int index) {
+            if (index < 0) return false;
+            godot::Ref<godot::Material> mat = mesh->get_active_material(index);
+            godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
+            if (!std_mat.is_valid()) {
+                if (mat.is_valid()) return false;
+                std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
+                mesh->set_surface_override_material(index, std_mat);
+            }
+            std_mat->set_feature(static_cast<godot::BaseMaterial3D::Feature>(feature), state);
             return true;
         };
         if (contains_wildcard(material)) {
@@ -442,7 +481,8 @@ namespace Vital::Engine {
             godot::Ref<godot::Material> mat = mesh->get_active_material(index);
             godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
             if (!std_mat.is_valid()) {
-                godot::Ref<godot::StandardMaterial3D> std_mat = memnew(godot::StandardMaterial3D);
+                if (mat.is_valid()) return false;
+                std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
                 mesh->set_surface_override_material(index, std_mat);
             }
             std_mat->set_flag(static_cast<godot::BaseMaterial3D::Flags>(flag), state);
