@@ -574,20 +574,29 @@ namespace Vital::Engine {
     }
 
     void ResourceManager::start_all() {
+        Vital::print("sbox", "Starting all resources...");
+        int count = 0;
         for (const auto* resource : get_all_resources())
-            start(resource->ref);
+            if (start(resource->ref)) count++;
+        Vital::print("sbox", fmt::format("All resources started — {} resource(s) running", count));
     }
-
+    
     void ResourceManager::stop_all() {
+        Vital::print("sbox", "Stopping all resources...");
         std::unordered_set<std::string> snapshot = running;
+        int count = 0;
         for (const auto& name : snapshot)
-            stop(name);
+            if (stop(name)) count++;
+        Vital::print("sbox", fmt::format("All resources stopped — {} resource(s) stopped", count));
     }
-
+    
     void ResourceManager::restart_all() {
+        Vital::print("sbox", "Restarting all resources...");
         std::unordered_set<std::string> snapshot = running;
+        int count = 0;
         for (const auto& name : snapshot)
-            restart(name);
+            if (restart(name)) count++;
+        Vital::print("sbox", fmt::format("All resources restarted — {} resource(s) restarted", count));
     }
     #endif
 
