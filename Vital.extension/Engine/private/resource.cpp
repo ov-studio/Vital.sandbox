@@ -246,9 +246,10 @@ namespace Vital::Engine {
             resources.push_back(std::move(resource));
         }
 
-        std::string report = fmt::format("Resource scan complete — {} resource(s) loaded", resources.size());
+        // Report
+        std::string report = fmt::format("Resource scan complete — {} resource(s) loaded\n", resources.size());
         for (const auto& resource : resources)
-            report += fmt::format(" > {}", resource.ref);
+            report += fmt::format("> `{}`\n", resource.ref);
         Vital::print("sbox", report);
 
         #if !defined(Vital_SDK_Client)
