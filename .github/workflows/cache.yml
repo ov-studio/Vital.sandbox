@@ -75,7 +75,7 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL: "4"
           GODOT_RENDERING_DRIVER: "null"
           GODOT_AUDIO_DRIVER: "Dummy"
-        run: python build.py --all --release --verbose --skip-export
+        run: python build.py --all --release --verbose
 
       - name: Save Godot cache
         if: success()
