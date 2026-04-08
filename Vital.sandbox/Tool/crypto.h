@@ -25,7 +25,6 @@
 //////////////////////////
 
 namespace Vital::Tool::Crypto {
-    // TODO: Improve
     namespace Internal {
         inline const EVP_MD* hash_mode(std::string_view mode) {
             if (mode == "SHA1") return EVP_sha1();
@@ -110,21 +109,15 @@ namespace Vital::Tool::Crypto {
         return ss.str();
     }
 
-    // Hash a file incrementally without loading into memory — for large files
     inline std::string hash_file(std::string_view mode, std::string_view path) {
         std::ifstream f(std::string(path), std::ios::binary);
         if (!f) throw Vital::Log::fetch("file-read-failed", Vital::Log::Type::Error, path);
-
         const EVP_MD* md = Internal::hash_mode(mode);
         EVP_MD_CTX* ctx = EVP_MD_CTX_new();
         if (!ctx) throw Vital::Log::fetch("hash-context-failed", Vital::Log::Type::Error);
-
         EVP_DigestInit_ex(ctx, md, nullptr);
-
-        // Stream in 64KB chunks to avoid large allocations
-        const size_t CHUNK = 65536;
+        const size_t CHUNK = 65536; // Stream in 64KB chunks to avoid large allocations
         std::string chunk(CHUNK, '\0');
-
         while (f.good()) {
             f.read(chunk.data(), static_cast<std::streamsize>(CHUNK));
             std::streamsize bytes_read = f.gcount();
@@ -133,12 +126,10 @@ namespace Vital::Tool::Crypto {
             }
             if (bytes_read < static_cast<std::streamsize>(CHUNK)) break;
         }
-
         unsigned char digest[EVP_MAX_MD_SIZE];
         unsigned int len = 0;
         EVP_DigestFinal_ex(ctx, digest, &len);
         EVP_MD_CTX_free(ctx);
-
         std::ostringstream ss;
         for (unsigned i = 0; i < len; ++i)
             ss << std::hex << std::setw(2) << std::setfill('0')
