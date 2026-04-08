@@ -20,6 +20,20 @@
 // Vital: Version //
 /////////////////////
 
+// Injected by CI from git tag — do not edit manually
+#ifndef VITAL_VERSION_MAJOR
+#define VITAL_VERSION_MAJOR 0
+#endif
+#ifndef VITAL_VERSION_MINOR
+#define VITAL_VERSION_MINOR 0
+#endif
+#ifndef VITAL_VERSION_PATCH
+#define VITAL_VERSION_PATCH 0
+#endif
+#ifndef VITAL_VERSION_LABEL
+#define VITAL_VERSION_LABEL "dev"
+#endif
+
 namespace Vital {
     struct Version {
         int major;
@@ -54,5 +68,10 @@ namespace Vital {
         bool operator>=(const Version& o) const { return !(*this < o); }
     };
 
-    static const Version Build = { 0, 0, 2, "internal" };
+    static const Version Build = {
+        VITAL_VERSION_MAJOR,
+        VITAL_VERSION_MINOR,
+        VITAL_VERSION_PATCH,
+        VITAL_VERSION_LABEL
+    };
 }
