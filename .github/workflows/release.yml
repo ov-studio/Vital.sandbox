@@ -42,7 +42,7 @@ jobs:
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           PATCH=$(echo "$VERSION" | cut -d. -f3 | cut -d- -f1)
-          LABEL=$(echo "$VERSION" | grep -oP '(?<=-).*' || echo "")
+          LABEL=$(echo "$VERSION" | cut -s -d- -f2-)
 
           sed -i \
             -e "s/^#define VSDK_VERSION_MAJOR.*/#define VSDK_VERSION_MAJOR $MAJOR/" \
