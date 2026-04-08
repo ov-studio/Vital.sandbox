@@ -488,6 +488,8 @@ namespace Vital::Engine {
             if (tokens[0] == "start") { Vital::Engine::ResourceManager::get_singleton() -> start(tokens[1]); return true; }
             if (tokens[0] == "stop") { Vital::Engine::ResourceManager::get_singleton() -> stop(tokens[1]); return true; }
             if (tokens[0] == "restart") { Vital::Engine::ResourceManager::get_singleton() -> restart(tokens[1]); return true; }
+            if (tokens[0] == "start_all") { Vital::Engine::ResourceManager::get_singleton() -> start_all(); return true; }
+            if (tokens[0] == "stop_all") { Vital::Engine::ResourceManager::get_singleton() -> stop_all(); return true; }
             if (tokens[0] == "shutdown") { shutdown(); return true; }
             #endif
             return false;
