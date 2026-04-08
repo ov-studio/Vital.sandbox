@@ -243,6 +243,8 @@ namespace Vital::Engine {
                 }
                 continue;
             }
+
+            resources.push_back(std::move(resource));
         }
 
         std::string report = fmt::format("Resource scan complete — {} resource(s) loaded", resources.size());
