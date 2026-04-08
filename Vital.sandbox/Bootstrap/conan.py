@@ -33,16 +33,14 @@ class Conan:
         log_step("Building Conan")
         for cmd, label in [
             (["conan", "profile", "detect", "--force"], "Detecting profile"),
-        ] + [
             (["conan", "install", ".",
-            "--build=missing",
-            "-v", "quiet",      # ← suppress all internal output, prevents pipe deadlock
-            "--output-folder=.conan",
-            f"--settings=build_type={build_type}",
-            "--settings=compiler.cppstd=17",
-            "--settings=compiler.runtime=dynamic",
-            ], f"Installing [{build_type}]")
-            for build_type in ("Debug", "Release")
+                "--build=missing",
+                "-v", "quiet",
+                "--output-folder=.conan",
+                "--settings=build_type=Release",
+                "--settings=compiler.cppstd=17",
+                "--settings=compiler.runtime=dynamic",
+            ], "Installing packages")
         ]:
             log_info(f"{label} ...")
             returncode = self._run_live(cmd, label)
