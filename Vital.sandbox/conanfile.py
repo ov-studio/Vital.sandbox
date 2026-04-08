@@ -33,4 +33,3 @@ class BuildConan(ConanFile):
         self.options["rapidjson"].shared = False
         self.options["rapidyaml"].shared = False
         self.options["fmt"].shared = False
-
