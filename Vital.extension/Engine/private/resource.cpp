@@ -584,6 +584,11 @@ namespace Vital::Engine {
             stop(name);
     }
 
+    void ResourceManager::restart_all() {
+        std::unordered_set<std::string> snapshot = running;
+        for (const auto& name : snapshot)
+            restart(name);
+    }
     #endif
 
 
