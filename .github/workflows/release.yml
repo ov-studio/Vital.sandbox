@@ -259,6 +259,16 @@ jobs:
             done
           done
 
+      # ── Purge stale caches from previous tags ───────────────────────────────
+      - name: Delete stale caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache list --repo ${{ github.repository }} --limit 100 --json id,ref \
+            | jq -r --arg current "refs/tags/${{ github.ref_name }}" \
+              '.[] | select(.ref != $current) | .id' \
+            | xargs -I{} gh cache delete {} --repo ${{ github.repository }} || true
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
