@@ -21,17 +21,17 @@
 /////////////////////
 
 // Injected by CI from git tag — do not edit manually
-#ifndef VITAL_VERSION_MAJOR
-#define VITAL_VERSION_MAJOR 0
+#ifndef VSDK_VERSION_MAJOR
+#define VSDK_VERSION_MAJOR 0
 #endif
-#ifndef VITAL_VERSION_MINOR
-#define VITAL_VERSION_MINOR 0
+#ifndef VSDK_VERSION_MINOR
+#define VSDK_VERSION_MINOR 0
 #endif
-#ifndef VITAL_VERSION_PATCH
-#define VITAL_VERSION_PATCH 0
+#ifndef VSDK_VERSION_PATCH
+#define VSDK_VERSION_PATCH 0
 #endif
-#ifndef VITAL_VERSION_LABEL
-#define VITAL_VERSION_LABEL "dev"
+#ifndef VSDK_VERSION_LABEL
+#define VSDK_VERSION_LABEL "dev"
 #endif
 
 namespace Vital {
@@ -69,9 +69,9 @@ namespace Vital {
     };
 
     static const Version Build = {
-        VITAL_VERSION_MAJOR,
-        VITAL_VERSION_MINOR,
-        VITAL_VERSION_PATCH,
-        VITAL_VERSION_LABEL
+        VSDK_VERSION_MAJOR,
+        VSDK_VERSION_MINOR,
+        VSDK_VERSION_PATCH,
+        VSDK_VERSION_LABEL
     };
 }
