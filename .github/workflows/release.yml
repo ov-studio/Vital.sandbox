@@ -143,6 +143,11 @@ jobs:
         with:
           path: collected/
 
+      - name: Debug collected structure
+        run: |
+          echo "=== collected/ structure ==="
+          find collected/ -maxdepth 3 | sort
+
       - name: Package artifacts
         run: |
           TAG="${{ github.ref_name }}"
@@ -150,15 +155,15 @@ jobs:
             echo "ERROR: No artifacts were downloaded"
             exit 1
           fi
-          cd collected
-          for platform_dir in dist-windows dist-linux dist-macos; do
-            platform="${platform_dir#dist-}"
+          for platform_dir in collected/dist-windows collected/dist-linux collected/dist-macos; do
+            platform="${platform_dir#collected/dist-}"
             [ ! -d "$platform_dir" ] && continue
             for target_dir in "$platform_dir"/*/; do
+              [ ! -d "$target_dir" ] && continue
               target=$(basename "$target_dir")
-              zip_name="../Vital.sandbox-${TAG}-${platform}-${target}.zip"
-              (cd "$target_dir" && zip -r "$(realpath "$zip_name")" .)
-              echo "Packaged: $(basename $zip_name)"
+              zip_name="Vital.sandbox-${TAG}-${platform}-${target}.zip"
+              (cd "$target_dir" && zip -r "${GITHUB_WORKSPACE}/${zip_name}" .)
+              echo "Packaged: $zip_name"
             done
           done
 
