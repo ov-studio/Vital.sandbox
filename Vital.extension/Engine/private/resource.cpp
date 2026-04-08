@@ -243,7 +243,6 @@ namespace Vital::Engine {
                 }
                 continue;
             }
-
             resources.push_back(std::move(resource));
         }
 
