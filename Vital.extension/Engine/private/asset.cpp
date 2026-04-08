@@ -31,11 +31,9 @@ namespace Vital::Engine {
 
     void AssetManager::free_singleton() {
         if (!singleton) return;
+        singleton -> clear();
         #if !defined(Vital_SDK_Client)
         singleton->stop_http_server();
-        #endif
-        #if defined(Vital_SDK_Client)
-        singleton->cancel_all();
         #endif
         delete singleton;
         singleton = nullptr;
@@ -503,6 +501,8 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
         cancel_all();
         active_downloads.clear();
+        #else
+        stop_http_server();
         #endif
     }
 }
