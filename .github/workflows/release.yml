@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -31,6 +32,26 @@ jobs:
 
       - name: Install SCons
         run: pip install scons
+
+      # ── Inject version from tag ─────────────────────────────────────────────
+      - name: Inject version from tag
+        shell: bash
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3 | cut -d- -f1)
+          LABEL=$(echo "$VERSION" | grep -oP '(?<=-).*' || echo "")
+
+          sed -i \
+            -e "s/^#define VSDK_VERSION_MAJOR.*/#define VSDK_VERSION_MAJOR $MAJOR/" \
+            -e "s/^#define VSDK_VERSION_MINOR.*/#define VSDK_VERSION_MINOR $MINOR/" \
+            -e "s/^#define VSDK_VERSION_PATCH.*/#define VSDK_VERSION_PATCH $PATCH/" \
+            -e "s/^#define VSDK_VERSION_LABEL.*/#define VSDK_VERSION_LABEL \"$LABEL\"/" \
+            Vital.sandbox/Tool/version.h
+
+          echo "Injected version: $MAJOR.$MINOR.$PATCH label=\"$LABEL\""
 
       # ── Restore caches ──────────────────────────────────────────────────────
       - name: Restore Godot cache
