@@ -146,9 +146,7 @@ void initialize_vital_events() {
         #endif
         Vital::Engine::Console::get_singleton();
         Vital::Engine::Sandbox::get_singleton() -> ready();
-        #if defined(Vital_SDK_Client)
         Vital::Engine::ResourceManager::get_singleton() -> init();
-        #endif
         setup();
     });
 

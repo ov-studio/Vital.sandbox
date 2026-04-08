@@ -280,73 +280,74 @@ namespace Vital::Engine {
 
     void ResourceManager::init() {
         #if defined(Vital_SDK_Client)
-        static bool client_initialized = false;
-        if (client_initialized) return;
-        client_initialized = true;
+            static bool client_initialized = false;
+            if (client_initialized) return;
+            client_initialized = true;
 
-        Vital::print("sbox", "Initializing client resource manager...");
+            Vital::print("sbox", "Initializing client resource manager...");
 
-        Vital::Tool::Event::bind("asset:file_ready", [](Vital::Tool::Stack args) {
-            if (!args.object.count("path")) return;
-            const std::string path = args.object.at("path").as<std::string>();
-            auto* rm = ResourceManager::get_singleton();
-            for (auto& [name, remaining] : rm->resource_assets) {
-                if (!remaining.count(path)) continue;
-                remaining.erase(path);
-                Vital::print("sbox", fmt::format("Resource `{}` asset ready: {}", name, path));
-                if (remaining.empty()) rm->execute_scripts(name);
-                break;
-            }
-        });
-
-        Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) {
-            if (!args.object.count("type")) return;
-            const std::string type = args.object.at("type").as<std::string>();
-            auto* rm = ResourceManager::get_singleton();
-
-            if (type == "vital.resource:started") {
-                if (!args.object.count("name")) return;
-                const std::string name = args.object.at("name").as<std::string>();
-
-                std::vector<ResourceManager::ResourceScript> scripts;
-                if (args.object.count("script_count")) {
-                    const int count = args.object.at("script_count").as<int32_t>();
-                    scripts.reserve(count);
-                    for (int i = 0; i < count; i++) {
-                        const std::string src_key  = fmt::format("script_src_{}", i);
-                        const std::string type_key = fmt::format("script_type_{}", i);
-                        if (!args.object.count(src_key) || !args.object.count(type_key)) continue;
-                        scripts.push_back({
-                            args.object.at(src_key).as<std::string>(),
-                            args.object.at(type_key).as<std::string>()
-                        });
-                    }
+            Vital::Tool::Event::bind("asset:file_ready", [](Vital::Tool::Stack args) {
+                if (!args.object.count("path")) return;
+                const std::string path = args.object.at("path").as<std::string>();
+                auto* rm = ResourceManager::get_singleton();
+                for (auto& [name, remaining] : rm->resource_assets) {
+                    if (!remaining.count(path)) continue;
+                    remaining.erase(path);
+                    Vital::print("sbox", fmt::format("Resource `{}` asset ready: {}", name, path));
+                    if (remaining.empty()) rm->execute_scripts(name);
+                    break;
                 }
+            });
 
-                std::vector<std::string> files;
-                if (args.object.count("file_count")) {
-                    const int count = args.object.at("file_count").as<int32_t>();
-                    files.reserve(count);
-                    for (int i = 0; i < count; i++) {
-                        const std::string key = fmt::format("file_{}", i);
-                        if (!args.object.count(key)) continue;
-                        files.push_back(args.object.at(key).as<std::string>());
+            Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) {
+                if (!args.object.count("type")) return;
+                const std::string type = args.object.at("type").as<std::string>();
+                auto* rm = ResourceManager::get_singleton();
+
+                if (type == "vital.resource:started") {
+                    if (!args.object.count("name")) return;
+                    const std::string name = args.object.at("name").as<std::string>();
+
+                    std::vector<ResourceManager::ResourceScript> scripts;
+                    if (args.object.count("script_count")) {
+                        const int count = args.object.at("script_count").as<int32_t>();
+                        scripts.reserve(count);
+                        for (int i = 0; i < count; i++) {
+                            const std::string src_key  = fmt::format("script_src_{}", i);
+                            const std::string type_key = fmt::format("script_type_{}", i);
+                            if (!args.object.count(src_key) || !args.object.count(type_key)) continue;
+                            scripts.push_back({
+                                args.object.at(src_key).as<std::string>(),
+                                args.object.at(type_key).as<std::string>()
+                            });
+                        }
                     }
+
+                    std::vector<std::string> files;
+                    if (args.object.count("file_count")) {
+                        const int count = args.object.at("file_count").as<int32_t>();
+                        files.reserve(count);
+                        for (int i = 0; i < count; i++) {
+                            const std::string key = fmt::format("file_{}", i);
+                            if (!args.object.count(key)) continue;
+                            files.push_back(args.object.at(key).as<std::string>());
+                        }
+                    }
+
+                    rm->register_remote(name, scripts, files);
+                    Vital::print("sbox", fmt::format("Client received resource start: `{}`", name));
+                    if (!rm->is_running(name) && !rm->is_pending(name)) rm->load(name);
                 }
-
-                rm->register_remote(name, scripts, files);
-                Vital::print("sbox", fmt::format("Client received resource start: `{}`", name));
-                if (!rm->is_running(name) && !rm->is_pending(name)) rm->load(name);
-            }
-            else if (type == "vital.resource:stopped") {
-                if (!args.object.count("name")) return;
-                const std::string name = args.object.at("name").as<std::string>();
-                Vital::print("sbox", fmt::format("Client received resource stop: `{}`", name));
-                rm->unload(name);
-            }
-        });
-
-        Vital::print("sbox", "Client resource manager initialized");
+                else if (type == "vital.resource:stopped") {
+                    if (!args.object.count("name")) return;
+                    const std::string name = args.object.at("name").as<std::string>();
+                    Vital::print("sbox", fmt::format("Client received resource stop: `{}`", name));
+                    rm->unload(name);
+                }
+            });
+            Vital::print("sbox", "Client resource manager initialized");
+        #else
+            scan();
         #endif
     }
 
