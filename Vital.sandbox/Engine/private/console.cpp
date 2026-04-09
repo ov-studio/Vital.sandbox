@@ -484,13 +484,13 @@ namespace Vital::Engine {
             if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
             if (tokens[0] == "clear") { clear(); return true; }
             #if !defined(Vital_SDK_Client)
-            if (tokens[0] == "refresh") { Vital::Manager::Resource::get_singleton() -> scan(); return true; }
-            if (tokens[0] == "start") { Vital::Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
-            if (tokens[0] == "stop") { Vital::Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
-            if (tokens[0] == "restart") { Vital::Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
-            if (tokens[0] == "start_all") { Vital::Manager::Resource::get_singleton() -> start_all(); return true; }
-            if (tokens[0] == "restart_all") { Vital::Manager::Resource::get_singleton() -> restart_all(); return true; }
-            if (tokens[0] == "stop_all") { Vital::Manager::Resource::get_singleton() -> stop_all(); return true; }
+            if (tokens[0] == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
+            if (tokens[0] == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
+            if (tokens[0] == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
+            if (tokens[0] == "restart") { Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
+            if (tokens[0] == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
+            if (tokens[0] == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
+            if (tokens[0] == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
             if (tokens[0] == "shutdown") { shutdown(); return true; }
             #endif
             return false;
