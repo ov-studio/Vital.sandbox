@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: model.h
+     Script: API: model.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Engine/public/model.h>
 
 
-/////////////////////////////////
-// Vital: Sandbox: API: Model //
-/////////////////////////////////
+////////////////////////
+// Vital: API: Model //
+////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Model : vm_module {

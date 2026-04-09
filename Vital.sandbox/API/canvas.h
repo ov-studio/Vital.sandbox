@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: canvas.h
+     Script: API: canvas.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Engine/public/canvas.h>
 
 
-//////////////////////////////////
-// Vital: Sandbox: API: Canvas //
-//////////////////////////////////
+/////////////////////////
+// Vital: API: Canvas //
+/////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Canvas : vm_module {

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: font.h
+     Script: API: font.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Engine/public/font.h>
 
 
-////////////////////////////////
-// Vital: Sandbox: API: Font //
-////////////////////////////////
+///////////////////////
+// Vital: API: Font //
+///////////////////////
 
 namespace Vital::Sandbox::API {
     struct Font : vm_module {

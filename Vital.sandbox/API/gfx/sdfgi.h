@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: gfx: sdfgi.h
+     Script: API: gfx: sdfgi.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-/////////////////////////////////
-// Vital: Sandbox: API: SDFGI //
-/////////////////////////////////
+////////////////////////
+// Vital: API: SDFGI //
+////////////////////////
 
 namespace Vital::Sandbox::API {
     struct SDFGI : vm_module {

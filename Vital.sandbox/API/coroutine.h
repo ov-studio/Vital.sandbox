@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: coroutine.h
+     Script: API: coroutine.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-/////////////////////////////////////
-// Vital: Sandbox: API: Coroutine //
-/////////////////////////////////////
+////////////////////////////
+// Vital: API: Coroutine //
+////////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Coroutine : vm_module {

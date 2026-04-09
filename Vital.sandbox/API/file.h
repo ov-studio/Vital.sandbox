@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: file.h
+     Script: API: file.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,13 +13,13 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/resource.h>
 
 
-////////////////////////////////
-// Vital: Sandbox: API: File //
-////////////////////////////////
+///////////////////////
+// Vital: API: File //
+///////////////////////
 
 namespace Vital::Sandbox::API {
     struct File : vm_module {

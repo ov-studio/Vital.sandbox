@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: discord.h
+     Script: API: discord.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -14,13 +14,13 @@
 
 #pragma once
 #if defined(Vital_SDK_Client)
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/discord.h>
 
 
-///////////////////////////////////
-// Vital: Sandbox: API: Discord //
-///////////////////////////////////
+//////////////////////////
+// Vital: API: Discord //
+//////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Discord : vm_module {

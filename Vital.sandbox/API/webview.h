@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: webview.h
+     Script: API: webview.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Engine/public/webview.h>
 
 
-///////////////////////////////////
-// Vital: Sandbox: API: Webview //
-///////////////////////////////////
+//////////////////////////
+// Vital: API: Webview //
+//////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Webview : vm_module {

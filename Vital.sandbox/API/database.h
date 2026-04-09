@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: database.h
+     Script: API: database.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -14,12 +14,12 @@
 
 #pragma once
 #if !defined(Vital_SDK_Client)
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-////////////////////////////////////
-// Vital: Sandbox: API: Database //
-////////////////////////////////////
+///////////////////////////
+// Vital: API: Database //
+///////////////////////////
 
 namespace Vital::Sandbox::API {
     struct DatabaseQuery : vm_module {

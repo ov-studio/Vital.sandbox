@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: rendertarget.h
+     Script: API: rendertarget.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 
 
-////////////////////////////////////////
-// Vital: Sandbox: API: Rendertarget //
-////////////////////////////////////////
+///////////////////////////////
+// Vital: API: Rendertarget //
+///////////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Rendertarget : vm_module {

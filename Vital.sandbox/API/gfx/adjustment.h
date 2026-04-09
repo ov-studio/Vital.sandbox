@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: gfx: adjustment.h
+     Script: API: gfx: adjustment.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Engine/public/texture.h>
 
 
-//////////////////////////////////////
-// Vital: Sandbox: API: Adjustment //
-//////////////////////////////////////
+/////////////////////////////
+// Vital: API: Adjustment //
+/////////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {

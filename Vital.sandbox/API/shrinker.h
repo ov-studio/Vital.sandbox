@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: shrinker.h
+     Script: API: shrinker.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-////////////////////////////////////
-// Vital: Sandbox: API: Shrinker //
-////////////////////////////////////
+///////////////////////////
+// Vital: API: Shrinker //
+///////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Shrinker : vm_module {

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: ssao.cpp
+     Script: API: ssao.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/api/ssao.h>
+#include <Vital.sandbox/API/ssao.h>
 
 
-///////////////////////////////////////
-// Vital: Sandbox: API: Environment //
-///////////////////////////////////////
+//////////////////////////////
+// Vital: API: Environment //
+//////////////////////////////
 
 void Vital::Sandbox::API::Environment::bind(void* instance) {
     auto vm = Machine::to_machine(instance);

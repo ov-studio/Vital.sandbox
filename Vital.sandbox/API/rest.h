@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: rest.h
+     Script: API: rest.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-////////////////////////////////
-// Vital: Sandbox: API: Rest //
-////////////////////////////////
+///////////////////////
+// Vital: API: Rest //
+///////////////////////
 
 namespace Vital::Sandbox::API {
     struct Rest : public vm_module {

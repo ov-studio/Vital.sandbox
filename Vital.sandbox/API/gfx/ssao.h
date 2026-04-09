@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: gfx: ssao.h
+     Script: API: gfx: ssao.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-////////////////////////////////
-// Vital: Sandbox: API: SSAO //
-////////////////////////////////
+///////////////////////
+// Vital: API: SSAO //
+///////////////////////
 
 namespace Vital::Sandbox::API {
     struct SSAO : vm_module {

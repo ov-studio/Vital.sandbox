@@ -14,14 +14,14 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Sandbox/api/ssr.h>
-#include <Vital.sandbox/Sandbox/api/ssao.h>
-#include <Vital.sandbox/Sandbox/api/ssil.h>
-#include <Vital.sandbox/Sandbox/api/sdfgi.h>
-#include <Vital.sandbox/Sandbox/api/emissive.h>
-#include <Vital.sandbox/Sandbox/api/fog.h>
-#include <Vital.sandbox/Sandbox/api/volumetric_fog.h>
-#include <Vital.sandbox/Sandbox/api/adjustment.h>
+#include <Vital.sandbox/API/ssr.h>
+#include <Vital.sandbox/API/ssao.h>
+#include <Vital.sandbox/API/ssil.h>
+#include <Vital.sandbox/API/sdfgi.h>
+#include <Vital.sandbox/API/emissive.h>
+#include <Vital.sandbox/API/fog.h>
+#include <Vital.sandbox/API/volumetric_fog.h>
+#include <Vital.sandbox/API/adjustment.h>
 
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>

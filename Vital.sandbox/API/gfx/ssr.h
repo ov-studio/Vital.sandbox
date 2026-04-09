@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: gfx: ssil.h
+     Script: API: gfx: ssr.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: SSIL APIs
+     Desc: SSR APIs
 ----------------------------------------------------------------*/
 
 
@@ -17,78 +17,78 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-////////////////////////////////
-// Vital: Sandbox: API: SSIL //
-////////////////////////////////
+//////////////////////
+// Vital: API: SSR //
+//////////////////////
 
 namespace Vital::Sandbox::API {
-    struct SSIL : vm_module {
+    struct SSR : vm_module {
         inline static const std::string base_name = "gfx";
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name, "ssil"}, "is_enabled", [](auto vm) -> int {
-                vm -> push_value(base_class::get_environment() -> is_ssil_enabled());
+            API::bind(vm, {base_name, "ssr"}, "is_enabled", [](auto vm) -> int {
+                vm -> push_value(base_class::get_environment() -> is_ssr_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssil"}, "set_enabled", [](auto vm) -> int {
+            API::bind(vm, {base_name, "ssr"}, "set_enabled", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(1);
-                base_class::get_environment() -> set_ssil_enabled(state);
+                base_class::get_environment() -> set_ssr_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
         
-            API::bind(vm, {base_name, "ssil"}, "set_radius", [](auto vm) -> int {
+            API::bind(vm, {base_name, "ssr"}, "set_max_steps", [](auto vm) -> int {
+                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto value = vm -> get_int(1);
+                base_class::get_environment() -> set_ssr_max_steps(value);
+                vm -> push_value(true);
+                return 1;
+            });
+        
+            API::bind(vm, {base_name, "ssr"}, "get_max_steps", [](auto vm) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssr_max_steps());
+                return 1;
+            });
+        
+            API::bind(vm, {base_name, "ssr"}, "set_fade_in", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_ssil_radius(value);
+                base_class::get_environment() -> set_ssr_fade_in(value);
                 vm -> push_value(true);
                 return 1;
             });
         
-            API::bind(vm, {base_name, "ssil"}, "get_radius", [](auto vm) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_radius());
+            API::bind(vm, {base_name, "ssr"}, "get_fade_in", [](auto vm) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssr_fade_in());
                 return 1;
             });
         
-            API::bind(vm, {base_name, "ssil"}, "set_intensity", [](auto vm) -> int {
+            API::bind(vm, {base_name, "ssr"}, "set_fade_out", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_ssil_intensity(value);
+                base_class::get_environment() -> set_ssr_fade_out(value);
                 vm -> push_value(true);
                 return 1;
             });
         
-            API::bind(vm, {base_name, "ssil"}, "get_intensity", [](auto vm) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_intensity());
+            API::bind(vm, {base_name, "ssr"}, "get_fade_out", [](auto vm) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssr_fade_out());
                 return 1;
             });
         
-            API::bind(vm, {base_name, "ssil"}, "set_sharpness", [](auto vm) -> int {
+            API::bind(vm, {base_name, "ssr"}, "set_depth_tolerance", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_ssil_sharpness(value);
+                base_class::get_environment() -> set_ssr_depth_tolerance(value);
                 vm -> push_value(true);
                 return 1;
             });
         
-            API::bind(vm, {base_name, "ssil"}, "get_sharpness", [](auto vm) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_sharpness());
-                return 1;
-            });
-        
-            API::bind(vm, {base_name, "ssil"}, "set_normal_rejection", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_ssil_normal_rejection(value);
-                vm -> push_value(true);
-                return 1;
-            });
-        
-            API::bind(vm, {base_name, "ssil"}, "get_normal_rejection", [](auto vm) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_normal_rejection());
+            API::bind(vm, {base_name, "ssr"}, "get_depth_tolerance", [](auto vm) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssr_depth_tolerance());
                 return 1;
             });
         }
@@ -96,6 +96,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct SSIL : vm_module {};
+    struct SSR : vm_module {};
 }
 #endif

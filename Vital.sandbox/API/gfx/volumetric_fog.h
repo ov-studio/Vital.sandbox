@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: gfx: volumetric_fog.h
+     Script: API: gfx: volumetric_fog.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-//////////////////////////////////////////
-// Vital: Sandbox: API: Volumetric_Fog //
-//////////////////////////////////////////
+/////////////////////////////////
+// Vital: API: Volumetric_Fog //
+/////////////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Volumetric_Fog : vm_module {

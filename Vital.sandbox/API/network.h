@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: network.h
+     Script: API: network.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -13,12 +13,12 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-///////////////////////////////////
-// Vital: Sandbox: API: Network //
-///////////////////////////////////
+//////////////////////////
+// Vital: API: Network //
+//////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Network : vm_module {

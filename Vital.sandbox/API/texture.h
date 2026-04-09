@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Sandbox: api: texture.h
+     Script: API: texture.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Engine/public/texture.h>
 
 
-///////////////////////////////////
-// Vital: Sandbox: API: Texture //
-///////////////////////////////////
+//////////////////////////
+// Vital: API: Texture //
+//////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Texture : vm_module {
