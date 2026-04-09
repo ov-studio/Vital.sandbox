@@ -26,10 +26,7 @@ namespace Vital::Manager::Kit {
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::Rest::get(url, {}, 120); }
-        catch (const std::exception& e) {
-            Vital::print("sbox", "Kit: download error -> ", e.what());
-            return false;
-        }
+        catch (const std::exception& e) { Vital::print("sbox", "Kit: download error -> ", e.what()); return false; }
         if (data.empty()) return false;
         std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
         std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
@@ -96,19 +93,10 @@ namespace Vital::Manager::Kit {
             int checked = 0;
             for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
                 const std::string rel_path = it -> name.GetString();
-                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) {
-                    Vital::print("sbox", "Kit: checksum entry malformed -> ", rel_path.c_str());
-                    return false;
-                }
+                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { Vital::print("sbox", "Kit: checksum entry malformed -> ", rel_path.c_str()); return false; }
                 const std::string expected = it -> value["sha256"].GetString();
-                if (!Tool::File::exists(kit_dir, rel_path)) {
-                    Vital::print("sbox", fmt::format("Kit: file missing ({}/{}) -> {}", checked, total, rel_path).c_str());
-                    return false;
-                }
-                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) {
-                    Vital::print("sbox", fmt::format("Kit: checksum mismatch ({}/{}) -> {}", checked, total, rel_path).c_str());
-                    return false;
-                }
+                if (!Tool::File::exists(kit_dir, rel_path)) { Vital::print("sbox", fmt::format("Kit: file missing ({}/{}) -> {}", checked, total, rel_path).c_str()); return false; }
+                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { Vital::print("sbox", fmt::format("Kit: checksum mismatch ({}/{}) -> {}", checked, total, rel_path).c_str()); return false; }
                 ++checked;
             }
             Vital::print("sbox", fmt::format("Kit: cache valid ({}/{} files) — skipping download ( {} )", checked, total, get_version()).c_str());
