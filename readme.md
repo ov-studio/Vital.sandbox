@@ -36,7 +36,7 @@ These four principles guide every architectural decision in Vital.sandbox:
 
 - **Releases**: Grab the latest stable build from [Releases](https://github.com/ov-studio/Vital.sandbox/releases).
 - **Documentation**: Learn the APIs, scripting patterns, and engine integration in the [Guides](https://vital-site.vercel.app/docs).
-- **Vendors**: View all third-party dependencies and licenses in [Vendor](https://github.com/ov-studio/Vital.sandbox/blob/main/VENDOR.md).
+- **Vendors**: View all third-party dependencies and licenses in [Vendor](https://github.com/ov-studio/Vital.sandbox/blob/main/vendor.md).
 - **Community**: Got questions or want to connect? Join us on [Discord](http://discord.gg/sVCnxPW).
 
 
