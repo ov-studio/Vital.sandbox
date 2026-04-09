@@ -40,7 +40,7 @@ void load_server_config() {
         Vital::print("sbox", "SrvConfig: Max clients: ", g_server_config.get_max_clients());
     }
     
-    // Set server info on AssetManager for /info endpoint
+    // Set server info on Asset for /info endpoint
     Vital::Engine::ServerInfo info;
     if (g_server_config.is_loaded()) {
         info.name = g_server_config.get_server_name();
@@ -50,7 +50,7 @@ void load_server_config() {
         info.discord = g_server_config.get_discord_invite();
         info.website = g_server_config.get_website();
     }
-    Vital::Engine::AssetManager::get_singleton() -> set_server_info(info);
+    Vital::Manager::Asset::get_singleton() -> set_server_info(info);
 }
 #endif
 
@@ -63,7 +63,7 @@ void shutdown() {
     Vital::Engine::Network::get_singleton() -> disconnect_from_server();
     #endif
     Vital::Engine::Network::free_singleton();
-    Vital::Engine::AssetManager::free_singleton();
+    Vital::Manager::Asset::free_singleton();
 }
 
 void setup() {
@@ -80,7 +80,7 @@ void setup() {
         // Manifest is broadcast via broadcast_manifest_deferred() when resources start
         // and via the peer_connected event in resource.cpp scan()
         // Direct broadcast here handles clients joining after resources are already running
-        Vital::Engine::AssetManager::get_singleton() -> broadcast_manifest(id);
+        Vital::Manager::Asset::get_singleton() -> broadcast_manifest(id);
     });
 
     Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) {
@@ -108,7 +108,7 @@ void setup() {
     Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack& args) {
         std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "unknown";
         if (type == "asset:manifest") {
-            Vital::Engine::AssetManager::get_singleton() -> receive_manifest(args);
+            Vital::Manager::Asset::get_singleton() -> receive_manifest(args);
             return;
         }
         // asset:chunk no longer exists — HTTP handles delivery
@@ -131,7 +131,7 @@ void setup() {
     });
 
     Vital::Tool::Event::bind("asset:ready", [](Vital::Tool::Stack&) {
-        Vital::print("sbox", "AssetManager: all assets ready");
+        Vital::print("sbox", "Asset: all assets ready");
     });
 
     net->set_reconnect_config(5, 3.0f);
@@ -182,9 +182,9 @@ void initialize_vital_events() {
         auto* net = Vital::Engine::Network::get_singleton();
         Vital::print("sbox", "Connected! My ID: ", net->get_peer_id());
         Vital::Engine::Model::on_connected();
-        Vital::Engine::AssetManager::get_singleton() -> clear();
+        Vital::Manager::Asset::get_singleton() -> clear();
         // Store server IP so HTTP downloads know where to connect
-        Vital::Engine::AssetManager::get_singleton() -> set_server_http_ip(
+        Vital::Manager::Asset::get_singleton() -> set_server_http_ip(
             net->get_server_ip()
         );
     });
@@ -192,7 +192,7 @@ void initialize_vital_events() {
     Vital::Tool::Event::bind("network:server_disconnected", [](Vital::Tool::Stack&) {
         Vital::print("sbox", "Lost connection to server");
         Vital::Engine::Model::cleanup_spawned();
-        Vital::Engine::AssetManager::get_singleton() -> clear();
+        Vital::Manager::Asset::get_singleton() -> clear();
     });
     #endif
 
@@ -214,11 +214,11 @@ void initialize_vital_events() {
             
             // Configure HTTP server port before starting
             int http_port = g_server_config.is_loaded() ? g_server_config.get_http_port() : 7778;
-            Vital::Engine::AssetManager::get_singleton() -> set_http_port(http_port);
+            Vital::Manager::Asset::get_singleton() -> set_http_port(http_port);
             
             // Start HTTP asset server
             Vital::print("sbox", "Starting HTTP server on port ", http_port);
-            Vital::Engine::AssetManager::get_singleton() -> start_http_server();
+            Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
             #if defined(Vital_SDK_Client)
             net->connect_to_server("127.0.0.1", 7777, true);

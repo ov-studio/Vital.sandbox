@@ -14,8 +14,8 @@
 
 #include <Vital.sandbox/Engine/public/resource.h>
 #include <Vital.sandbox/Engine/public/console.h>
-#include <Vital.sandbox/Engine/public/asset.h>
 #include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Tool/yaml.h>
 
@@ -271,7 +271,7 @@ namespace Vital::Engine {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
                 Core::get_singleton() -> push_deferred([peer_id]() {
-                    AssetManager::get_singleton() -> broadcast_manifest(peer_id);
+                    Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
                 });
             });
         }
@@ -389,7 +389,7 @@ namespace Vital::Engine {
 
     bool ResourceManager::start(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
-        auto* am = AssetManager::get_singleton();
+        auto* am = Manager::Asset::get_singleton();
 
         if (!is_loaded(name)) {
             Vital::print("error", fmt::format("Cannot start `{}` — resource not loaded", name));
@@ -457,7 +457,7 @@ namespace Vital::Engine {
 
     bool ResourceManager::stop(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
-        auto* am = AssetManager::get_singleton();
+        auto* am = Manager::Asset::get_singleton();
         
         if (!is_running(name)) {
             Vital::print("error", fmt::format("Cannot stop `{}` — not running", name));
@@ -627,7 +627,7 @@ namespace Vital::Engine {
     }
 
     bool ResourceManager::load(const std::string& name) {
-        auto* am = AssetManager::get_singleton();
+        auto* am = Manager::Asset::get_singleton();
 
         if (!is_loaded(name)) {
             Vital::print("error", fmt::format("Cannot load `{}` — resource not registered", name));
@@ -676,7 +676,7 @@ namespace Vital::Engine {
         if (!is_pending(name)) return;
 
         auto* vm             = Sandbox::get_singleton() -> get_vm();
-        auto* am             = AssetManager::get_singleton();
+        auto* am             = Manager::Asset::get_singleton();
         const auto* resource = get_resource(name);
 
         if (!resource) {
@@ -732,7 +732,7 @@ namespace Vital::Engine {
 
     bool ResourceManager::unload(const std::string& name) {
         auto* vm = Sandbox::get_singleton() -> get_vm();
-        auto* am = AssetManager::get_singleton();
+        auto* am = Manager::Asset::get_singleton();
 
         if (!is_running(name) && !is_pending(name)) {
             Vital::print("error", fmt::format("Cannot unload `{}` — not running or pending", name));

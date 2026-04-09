@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/model.h>
-#include <Vital.sandbox/Engine/public/asset.h>
+#include <Vital.sandbox/Manager/public/asset.h>
 
 
 ///////////////////////////
@@ -195,7 +195,7 @@ namespace Vital::Engine {
 
     void Model::on_connected() {
         // Clean up stale nodes from previous session
-        AssetManager::get_singleton() -> clear();
+        Manager::Asset::get_singleton() -> clear();
         cleanup_spawned();
         // Refresh spawner multiplayer authority for new session
         if (net_spawner) {

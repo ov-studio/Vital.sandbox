@@ -15,9 +15,9 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
-#include <Vital.sandbox/Engine/public/asset.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/asset.h>
 
 
 //////////////////////////
@@ -94,7 +94,7 @@ namespace Vital::Engine {
     }
 
     void Core::teardown() {
-        AssetManager::free_singleton();
+        Manager::Asset::free_singleton();
         Model::teardown_spawner();
         #if defined(Vital_SDK_Client)
         free_environment();

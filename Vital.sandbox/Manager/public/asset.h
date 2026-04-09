@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: asset.h
+     Script: Manager: asset.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Asset Manager Utilities
+     Desc: Asset Manager
 ----------------------------------------------------------------*/
 
 
@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/index.h>
 
+// TODO: REMOVE??
 // Forward declare httplib::Server so the header does not need to include
 // httplib.h — the full include lives in asset_manager.cpp only
 #if !defined(Vital_SDK_Client)
@@ -22,11 +23,11 @@ namespace httplib { class Server; }
 #endif
 
 
-///////////////////////////////////
-// Vital: Engine: Asset Manager //
-///////////////////////////////////
+////////////////////////////
+// Vital: Manager: Asset //
+////////////////////////////
 
-namespace Vital::Engine {
+namespace Vital::Manager {
     // Server info structure for /info endpoint
     struct ServerInfo {
         std::string name = "Vital Sandbox Server";
@@ -38,9 +39,9 @@ namespace Vital::Engine {
     };
 
     // TODO: Improve
-    class AssetManager {
+    class Asset {
         private:
-            inline static AssetManager* singleton = nullptr;
+            inline static Asset* singleton = nullptr;
 
             // Server + Client: registered assets path → { hash, group }
             struct AssetEntry {
@@ -82,10 +83,10 @@ namespace Vital::Engine {
             static std::string compute_hash_file(const std::string& full_path);
 
         public:
-            AssetManager()  = default;
-            ~AssetManager() = default;
+            Asset()  = default;
+            ~Asset() = default;
 
-            static AssetManager* get_singleton();
+            static Asset* get_singleton();
             static void free_singleton();
 
 
