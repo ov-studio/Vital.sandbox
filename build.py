@@ -71,6 +71,7 @@ class Build:
             "scons", "-C", b["sandbox_dir"],
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
+            "build_library=no",
             f"target=template_{self.build_type.lower()}",
             f"-j{int(self.os_info['nproc'])}",
         ]
