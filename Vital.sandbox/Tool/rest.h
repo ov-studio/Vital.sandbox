@@ -28,9 +28,9 @@ namespace Vital::Tool::Rest {
         size_t protocol_end = url.find("://");
         if (protocol_end == std::string::npos) throw std::runtime_error("Invalid URL format");
         std::string scheme = url.substr(0, protocol_end);
-        std::string rest   = url.substr(protocol_end + 3);
-        size_t path_start  = rest.find("/");
-        size_t port_pos    = rest.find(":");
+        std::string rest = url.substr(protocol_end + 3);
+        size_t path_start = rest.find("/");
+        size_t port_pos = rest.find(":");
         std::string host_part = (path_start != std::string::npos) ? rest.substr(0, path_start) : rest;
         out_path = (path_start != std::string::npos) ? rest.substr(path_start) : "/";
         int port;
@@ -54,7 +54,7 @@ namespace Vital::Tool::Rest {
         for (const auto& h : headers) {
             size_t colon_pos = h.find(":");
             if (colon_pos == std::string::npos) continue;
-            std::string key   = h.substr(0, colon_pos);
+            std::string key = h.substr(0, colon_pos);
             std::string value = h.substr(colon_pos + 1);
             size_t value_start = value.find_first_not_of(" \t");
             if (value_start != std::string::npos) value = value.substr(value_start);

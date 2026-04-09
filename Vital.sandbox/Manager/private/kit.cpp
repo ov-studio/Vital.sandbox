@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Engine/public/console.h>
+#include <zip.h>
 
 
 //////////////////////////

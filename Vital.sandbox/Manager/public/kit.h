@@ -14,11 +14,11 @@
 
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Tool/crypto.h>
 #include <Vital.sandbox/Tool/rest.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
-#include <zip.h>
 
 
 //////////////////////////
