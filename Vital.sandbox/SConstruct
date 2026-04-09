@@ -53,22 +53,17 @@ elif os_info["type"] == "Linux":
     env.Append(CXXFLAGS=["-fexceptions"])
 
 
-# Extension sources & paths
-ext_cwd = os.path.abspath("../Vital.extension")
-env = SConscript("../Vital.sandbox/Vendor/godot-cpp/SConstruct", {"env": env.Clone()})
-env.Append(CPPPATH=[
-    ext_cwd,
-    os.path.join(ext_cwd, "../"),
-    os.path.join(ext_cwd, "Vendor")
-])
+# Godot-cpp
+env = SConscript("Vendor/godot-cpp/SConstruct", {"env": env.Clone()})
 
 
 # Builds
-build_dir = f".build/{env.Args['platform_type'].lower()}/{env['platform']}"
+platform = env["platform"]
+build_dir = f".build/{env.Args['platform_type'].lower()}/{platform}"
 bin_dir = (
-    f".bin/{env.Args['platform_type'].lower()}/{env['platform']}/"
+    f".bin/{env.Args['platform_type'].lower()}/{platform}/"
     f"{env.name}"
-    f"{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}"
+    f"{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{platform}','').replace('template_','')}"
     f"{env.subst('$SHLIBSUFFIX')}"
 )
 bin = env.SharedLibrary(bin_dir, source=env.sources)
