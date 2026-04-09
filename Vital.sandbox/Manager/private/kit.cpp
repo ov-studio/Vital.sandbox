@@ -27,6 +27,10 @@ namespace Vital::Manager::Kit {
         Vital::print("sbox", fmt::format("[Vital.kit] {}", message));
     };
 
+    void log(const std::string& message) {
+        Vital::print("sbox", fmt::format("[Vital.kit] {}", message));
+    }
+
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::Rest::get(url, {}, 120); }

@@ -181,6 +181,7 @@ namespace Vital::Manager::Kit {
         return doc;
     }
 
+    void log(const std::string& message);
     bool download(const std::string& url, const std::string& dest_path);
     bool extract(const std::string& zip_path, const std::string& dest_dir);
     bool ensure();
