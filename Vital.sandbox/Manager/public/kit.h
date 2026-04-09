@@ -44,9 +44,9 @@ namespace Vital::Manager::Kit {
     inline const std::string& get_version() {
         if (!version.empty()) return version;
         const std::string checksum_path = std::string(cache_base) + "/" + std::string(kit_name) + "/checksum.json";
-        std::ifstream f(checksum_path, std::ios::binary);
-        if (!f) return version;
-        std::string raw{ std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
+        std::ifstream file(checksum_path, std::ios::binary);
+        if (!file) return version;
+        std::string raw{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
         rapidjson::Document doc;
         doc.Parse(raw.c_str());
         if (doc.HasParseError() || !doc.IsObject()) return version;
@@ -56,9 +56,9 @@ namespace Vital::Manager::Kit {
 
     inline std::string fetch_file(const std::string& rel_path) {
         std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/rel_path;
-        std::ifstream f(full, std::ios::binary);
-        if (!f) return {};
-        return { std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
+        std::ifstream file(full, std::ios::binary);
+        if (!file) return {};
+        return { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
     }
 
     inline const std::string& fetch_content(std::string_view path) {
