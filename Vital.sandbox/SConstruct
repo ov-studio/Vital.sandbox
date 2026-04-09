@@ -13,13 +13,13 @@ env.Args["build_type"] = env.Args.get("build_type", "Debug")
 env.Module.build()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
-    env.RGlob("Tool", "*.cpp") + 
-    env.RGlob("Sandbox", "*.cpp") + 
-    env.RGlob("Engine", "*.cpp") + 
-    env.RGlob("Manager", "*.cpp") + 
-    env.RGlob("System", "*.cpp") + 
-    env.RGlob("Vendor", "*.cpp") + 
-    env.RGlob("Vendor", "*.c") + 
+    env.RGlob("Tool", "*.cpp") +
+    env.RGlob("Sandbox", "*.cpp") +
+    env.RGlob("Engine", "*.cpp") +
+    env.RGlob("Manager", "*.cpp") +
+    env.RGlob("System", "*.cpp") +
+    env.RGlob("Vendor", "*.cpp") +
+    env.RGlob("Vendor", "*.c") +
     env.RGlob("Vendor", "*.cc")
 )
 env.Append(CPPPATH=[
@@ -39,19 +39,44 @@ env.Append(CPPPATH=[
 if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["Vital_SDK_Client"])
 
-
-# Dependencies
 if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
-    env.Append(CPPFLAGS=["/EHsc", "/wd4244"])
+    env.Append(CPPFLAGS=["/EHsc", "/wd4244", "/MD"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
+    env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMT", "/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])
 elif os_info["type"] == "Darwin":
     env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE", "HAS_SOCKLEN_T"])
 elif os_info["type"] == "Linux":
     env.Append(CPPDEFINES=["Vital_SDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX", "HAS_SOCKLEN_T"])
+    env.Append(CXXFLAGS=["-fexceptions"])
 
 
-# Returns
-Return("env")
+# Extension sources & paths
+ext_cwd = os.path.abspath("../Vital.extension")  # adjust if your layout differs
+env = SConscript("../Vital.extension/Vendor/godot/SConstruct", {"env": env.Clone()})
+env.Append(CPPPATH=[
+    ext_cwd,
+    os.path.join(ext_cwd, "../"),
+    os.path.join(ext_cwd, "Vendor")
+])
+
+
+# Build metadata (was set at top of extension script)
+ARGUMENTS["target"] = f"template_{ARGUMENTS['build_type'].lower()}"
+ARGUMENTS["use_static_cpp"] = "no"
+
+
+# Builds
+build_dir = f".build/{env.Args['platform_type'].lower()}/{env['platform']}"
+bin_dir = (
+    f".bin/{env.Args['platform_type'].lower()}/{env['platform']}/"
+    f"{env.name}"
+    f"{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env[chr(112)+chr(108)+chr(97)+chr(116)+chr(102)+chr(111)+chr(114)+chr(109)]}','').replace('template_','')}"
+    f"{env.subst('$SHLIBSUFFIX')}"
+)
+bin = env.SharedLibrary(bin_dir, source=env.sources)
+build = env.Install(build_dir, bin)
+env.Module.stage(build)
+Default([bin, build])

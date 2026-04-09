@@ -17,6 +17,7 @@ class Build:
             "dist_dir": dist_dir,
             "output_path": os.path.join(dist_dir, f"Vital.{self.platform_type.lower()}" + self.info["output_ext"]),
             "project_dir": os.path.join(self.script_dir, f"Vital.{self.platform_type.lower()}"),
+            "sandbox_dir": os.path.join(self.script_dir, "Vital.sandbox"),
             "extension_dir": os.path.join(self.script_dir, "Vital.extension"),
             "preset": self.info["preset"].format(platform_type=self.platform_type),
             "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
@@ -39,12 +40,14 @@ class Build:
                 "scons", "-C", godot_dir, "--clean",
                 f"target=template_{self.build_type.lower()}",
                 "use_static_cpp=no",
+                "use_static_crt=no"
             ])
         log_info("Compiling ...")
         result = subprocess.run([
             "scons", "-C", godot_dir,
             f"target=template_{self.build_type.lower()}",
             "use_static_cpp=no",
+            "use_static_crt=no",
             f"-j{int(self.os_info['nproc'])}",
         ])
         if result.returncode != 0:
@@ -66,10 +69,9 @@ class Build:
         )
 
         cmd = [
-            "scons", "-C", b["extension_dir"],
+            "scons", "-C", b["sandbox_dir"],
             f"platform_type={self.platform_type}",
             f"build_type={self.build_type}",
-            "build_library=no",
             f"-j{int(self.os_info['nproc'])}",
         ]
 
