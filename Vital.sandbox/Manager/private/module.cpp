@@ -13,10 +13,6 @@
 //////////////
 
 #pragma once
-#if defined(_WIN32) && !defined(_WIN32_WINNT)
-    #define _WIN32_WINNT 0x0A00
-#endif
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <Vital.sandbox/Manager/public/module.h>
 #include <Vital.sandbox/Engine/public/console.h>
 

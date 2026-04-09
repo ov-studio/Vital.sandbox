@@ -15,6 +15,7 @@ env.Args["build_type"] = env.Args.get("build_type", "Debug")
 # Flags
 env.Module.build()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
+env.Append(CPPDEFINES=["CPPHTTPLIB_OPENSSL_SUPPORT"])
 
 if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["Vital_SDK_Client"])
