@@ -28,7 +28,7 @@ namespace Vital::Tool {
     std::unordered_map<std::string, std::string> content_cache;
     std::unordered_map<std::string, rapidjson::Document> json_cache;
     const std::string toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
-    const std::string cache_base  = "cache";
+    const std::string cache_base = "cache";
     const std::string kit_name = "Vital.kit";
 
     std::string read_kit_file(const std::string& rel_path) {
