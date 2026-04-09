@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Manager/public/entrypoint.h>
 
 
-///////////
-// APIs //
-///////////
+////////////////
+// Entrypoint //
+////////////////
 
 void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;

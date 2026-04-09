@@ -27,9 +27,9 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-///////////
-// APIs //
-///////////
+////////////////
+// Entrypoint //
+////////////////
 
 void initialize_gdextension_types();
 void uninitialize_gdextension_types();
