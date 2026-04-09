@@ -51,11 +51,14 @@ def Throw_Error(msg):
 
 def _RGlob(self, root_path, pattern, ondisk=True, source=False, exclude=None):
     result_nodes = []
+    exclude_abs = os.path.abspath(exclude) if exclude else None
     paths = [root_path]
     while paths:
         path = paths.pop()
-        for entry in self.Glob(f"{os.path.abspath(path)}/*", ondisk=ondisk, source=source, exclude=exclude):
+        for entry in self.Glob(f"{os.path.abspath(path)}/*", ondisk=ondisk, source=source):
             entry_path = os.path.abspath(getattr(entry, "path", None) or str(entry))
+            if exclude_abs and (entry_path == exclude_abs or entry_path.startswith(exclude_abs + os.sep)):
+                continue
             is_dir = (entry.isdir() if hasattr(entry, "isdir") else
                       entry.srcnode().isdir() if hasattr(entry, "srcnode") and entry.srcnode() else False)
             if is_dir:
