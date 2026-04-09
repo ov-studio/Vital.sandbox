@@ -48,8 +48,8 @@ jobs:
         with:
           path: |
             Vital.sandbox/Vendor/godot-cpp/bin
-            Vital.extension/.build_godotcpp.debug
-            Vital.extension/.build_godotcpp.release
+            Vital.sandbox/.build_godotcpp.debug
+            Vital.sandbox/.build_godotcpp.release
           key: godot-cpp-windows-${{ hashFiles('Vital.sandbox/Vendor/godot-cpp/gen/include/godot_cpp/core/version.hpp') }}
           restore-keys: godot-cpp-windows-
 
@@ -90,8 +90,8 @@ jobs:
         with:
           path: |
             Vital.sandbox/Vendor/godot-cpp/bin
-            Vital.extension/.build_godotcpp.debug
-            Vital.extension/.build_godotcpp.release
+            Vital.sandbox/.build_godotcpp.debug
+            Vital.sandbox/.build_godotcpp.release
           key: godot-cpp-windows-${{ hashFiles('Vital.sandbox/Vendor/godot-cpp/gen/include/godot_cpp/core/version.hpp') }}
 
       - name: Save Conan cache
