@@ -14,8 +14,10 @@ env.Module.build()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.sources = (
     env.RGlob("Tool", "*.cpp") + 
-    env.RGlob("System", "*.cpp") + 
     env.RGlob("Sandbox", "*.cpp") + 
+    env.RGlob("Engine", "*.cpp") + 
+    env.RGlob("Manager", "*.cpp") + 
+    env.RGlob("System", "*.cpp") + 
     env.RGlob("Vendor", "*.cpp") + 
     env.RGlob("Vendor", "*.c") + 
     env.RGlob("Vendor", "*.cc")
@@ -23,8 +25,10 @@ env.sources = (
 env.Append(CPPPATH=[
     cwd,
     os.path.join(cwd, "Tool"),
-    os.path.join(cwd, "System"),
     os.path.join(cwd, "Sandbox"),
+    os.path.join(cwd, "Engine"),
+    os.path.join(cwd, "Manager"),
+    os.path.join(cwd, "System"),
     os.path.join(cwd, "Vendor"),
     os.path.join(cwd, "Vendor/lua"),
     os.path.join(cwd, "Vendor/discord-sdk")

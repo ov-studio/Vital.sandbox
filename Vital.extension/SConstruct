@@ -15,19 +15,12 @@ cwd = os.path.abspath(os.getcwd())
 env = SConscript("../Vital.sandbox/SConstruct")
 env = SConscript("Vendor/godot/SConstruct", {"env": env.Clone()})
 env.sources += (
-    env.RGlob("Boostrap", "*.cpp") + 
-    env.RGlob("Boostrap", "*.c") + 
-    env.RGlob("Engine", "*.cpp") + 
-    env.RGlob("Engine", "*.c") + 
-    env.RGlob("Sandbox", "*.cpp") + 
-    env.RGlob("Sandbox", "*.c")
+    env.RGlob("Boostrap", "*.cpp")
 )
 env.Append(CPPPATH=[
     cwd,
     os.path.join(cwd, "../"),
     os.path.join(cwd, "Boostrap"),
-    os.path.join(cwd, "Engine"),
-    os.path.join(cwd, "Sandbox"),
     os.path.join(cwd, "Vendor")
 ])
 

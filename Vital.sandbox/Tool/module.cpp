@@ -15,7 +15,7 @@
 #pragma once
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <Vital.sandbox/Tool/module.h>
-#include <Vital.extension/Engine/public/console.h>
+#include <Vital.sandbox/Engine/public/console.h>
 
 
 //////////////////////////
@@ -86,7 +86,7 @@ namespace Vital::Tool {
     ///////////////////////////
 
     namespace Kit {
-        const Rest::rest_headers kit_headers = { "User-Agent: Vital.extension" };
+        const Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
         static std::string s_version;
 
         const std::string& get_version() {

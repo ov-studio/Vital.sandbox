@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: vital.hpp
+     Script: Engine: index.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Vital Header
+     Desc: Engine Utilities
 ----------------------------------------------------------------*/
 
 
@@ -13,5 +13,11 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/Manager/public/discord.h>
+#include <Vital.sandbox/vital.hpp>
+
+
+////////////////////
+// Vital: Engine //
+////////////////////
+
+namespace Vital::Engine {}

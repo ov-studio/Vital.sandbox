@@ -15,7 +15,7 @@
 #pragma once
 #if defined(Vital_SDK_Client)
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/System/discord.h>
+#include <Vital.sandbox/Manager/public/discord.h>
 
 
 ///////////////////////////////////
@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "is_connected", [](auto vm) -> int {
-                vm -> push_value(Vital::System::Discord::get_singleton() -> is_connected());
+                vm -> push_value(Vital::Manager::Discord::get_singleton() -> is_connected());
                 return 1;
             });
 
@@ -37,26 +37,26 @@ namespace Vital::Sandbox::API {
                 auto id = static_cast<uint64_t>(std::stoull(vm -> get_string(1)));
                 bool authenticate = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 bool force_reauth = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                vm -> push_value(Vital::System::Discord::get_singleton() -> set_application_id(id, authenticate, force_reauth));
+                vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_application_id(id, authenticate, force_reauth));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "reset_application", [](auto vm) -> int {
-                vm -> push_value(Vital::System::Discord::get_singleton() -> reset_application());
+                vm -> push_value(Vital::Manager::Discord::get_singleton() -> reset_application());
                 return 1;
             });
 
             API::bind(vm, {base_name}, "set_state", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_string(1);
-                vm -> push_value(Vital::System::Discord::get_singleton() -> set_state(state));
+                vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_state(state));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "set_details", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto details = vm -> get_string(1);
-                vm -> push_value(Vital::System::Discord::get_singleton() -> set_details(details));
+                vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_details(details));
                 return 1;
             });
 
@@ -64,8 +64,8 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto key = vm -> get_string(1);
                 std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
-                if (!text.empty()) vm -> push_value(Vital::System::Discord::get_singleton() -> set_largeimage(key, text));
-                else vm -> push_value(Vital::System::Discord::get_singleton() -> set_largeimage(key));
+                if (!text.empty()) vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_largeimage(key, text));
+                else vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_largeimage(key));
                 return 1;
             });
 
@@ -73,8 +73,8 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto key = vm -> get_string(1);
                 std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
-                if (!text.empty()) vm -> push_value(Vital::System::Discord::get_singleton() -> set_smallimage(key, text));
-                else vm -> push_value(Vital::System::Discord::get_singleton() -> set_smallimage(key));
+                if (!text.empty()) vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_smallimage(key, text));
+                else vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_smallimage(key));
                 return 1;
             });
 
@@ -82,19 +82,19 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto start_at = static_cast<int64_t>(vm -> get_int(1));
                 int64_t end_at = vm -> is_number(2) ? static_cast<int64_t>(vm -> get_int(2)) : 0;
-                vm -> push_value(Vital::System::Discord::get_singleton() -> set_timestamps(start_at, end_at));
+                vm -> push_value(Vital::Manager::Discord::get_singleton() -> set_timestamps(start_at, end_at));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_userid", [](auto vm) -> int {
-                if (!Vital::System::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
-                else vm -> push_value(std::to_string(Vital::System::Discord::get_singleton() -> get_userid()));
+                if (!Vital::Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
+                else vm -> push_value(std::to_string(Vital::Manager::Discord::get_singleton() -> get_userid()));
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_username", [](auto vm) -> int {
-                if (!Vital::System::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
-                else vm -> push_value(Vital::System::Discord::get_singleton() -> get_username());
+                if (!Vital::Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
+                else vm -> push_value(Vital::Manager::Discord::get_singleton() -> get_username());
                 return 1;
             });
         }
