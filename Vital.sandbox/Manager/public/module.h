@@ -26,7 +26,7 @@
 // Vital: Manager: Module //
 /////////////////////////////
 
-namespace Vital::Manager {
+namespace Vital::Manager::Module {
     extern std::mutex content_mutex;
     extern std::unordered_map<std::string, std::string> content_cache;
     extern std::unordered_map<std::string, rapidjson::Document> json_cache;

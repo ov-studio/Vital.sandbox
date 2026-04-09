@@ -356,13 +356,13 @@ namespace Vital::Engine {
     #endif
 
     std::string Console::fetch_mode_label(const std::string& mode) {
-        const auto label = Manager::fetch_json_value("config/console", "log", mode, "label");
+        const auto label = Manager::Module::fetch_json_value("config/console", "log", mode, "label");
         if (label.is<std::string>()) return label.as<std::string>();
         return mode;
     }
 
     std::string Console::fetch_mode_badge(const std::string& mode) {
-        const auto badge = Manager::fetch_json_value("config/console", "log", mode, "badge");
+        const auto badge = Manager::Module::fetch_json_value("config/console", "log", mode, "badge");
         if (badge.is<std::string>()) return badge.as<std::string>();
         std::string upper = mode;
         std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
@@ -370,9 +370,9 @@ namespace Vital::Engine {
     }
 
     Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
-        const auto r = Manager::fetch_json_value("config/console", "log", mode, "color", 0);
-        const auto g = Manager::fetch_json_value("config/console", "log", mode, "color", 1);
-        const auto b = Manager::fetch_json_value("config/console", "log", mode, "color", 2);
+        const auto r = Manager::Module::fetch_json_value("config/console", "log", mode, "color", 0);
+        const auto g = Manager::Module::fetch_json_value("config/console", "log", mode, "color", 1);
+        const auto b = Manager::Module::fetch_json_value("config/console", "log", mode, "color", 2);
         return Vital::Tool::Stack(
             r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()
             ? std::initializer_list<Vital::Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
@@ -394,7 +394,7 @@ namespace Vital::Engine {
         std::ostringstream oss;
         oss << "Available Commands:\n";
         auto append_section = [&](const std::string& section, const std::string& label) {
-            auto& help = Manager::fetch_json("config/help");
+            auto& help = Manager::Module::fetch_json("config/help");
             if (help.HasParseError() || !help.HasMember(section.c_str())) return;
             const auto& cmds = help[section.c_str()];
             if (!cmds.IsObject()) return;
@@ -439,7 +439,7 @@ namespace Vital::Engine {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         document.SetObject();
         auto& alloc = document.GetAllocator();
-        const auto bind = Manager::fetch_json_value("config/console", "bind");
+        const auto bind = Manager::Module::fetch_json_value("config/console", "bind");
         auto make_color = [&](const Vital::Tool::Stack& color) {
             rapidjson::Value result(rapidjson::kArrayType);
             result.PushBack(color.array[0].as<int32_t>(), alloc);
@@ -450,14 +450,14 @@ namespace Vital::Engine {
         document.AddMember("action", "init", alloc);
         document.AddMember("bind", rapidjson::Value(bind.as<std::string>().c_str(), alloc), alloc);
         rapidjson::Value types(rapidjson::kObjectType);
-        auto logs = Manager::fetch_json_node("config/console", "log");
+        auto logs = Manager::Module::fetch_json_node("config/console", "log");
         if (logs && logs -> IsObject()) {
             for (auto it = logs -> MemberBegin(); it != logs -> MemberEnd(); ++it) {
                 const std::string mode = it -> name.GetString();
                 const auto label = fetch_mode_label(mode);
                 const auto badge = fetch_mode_badge(mode);
                 const auto color = fetch_mode_color(mode);
-                const auto priority = Manager::fetch_json_value("config/console", "log", mode, "priority");
+                const auto priority = Manager::Module::fetch_json_value("config/console", "log", mode, "priority");
                 rapidjson::Value entry(rapidjson::kObjectType);
                 entry.AddMember("label", rapidjson::Value(label.c_str(), alloc), alloc);
                 entry.AddMember("badge", rapidjson::Value(badge.c_str(), alloc), alloc);
@@ -577,7 +577,7 @@ namespace Vital::Engine {
     // Events //
     #if defined(Vital_SDK_Client)
     bool Console::on_key(int keycode) {
-        const auto bind = Manager::fetch_json_value("config/console", "bind");
+        const auto bind = Manager::Module::fetch_json_value("config/console", "bind");
         if (keycode != godot::OS::get_singleton() -> find_keycode_from_string(to_godot_string(bind.as<std::string>()))) return false;
         Vital::Engine::Console::get_singleton() -> toggle();
         Core::get_singleton() -> get_viewport() -> set_input_as_handled();

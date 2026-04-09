@@ -21,7 +21,7 @@
 // Vital: Manager: Module //
 /////////////////////////////
 
-namespace Vital::Manager {
+namespace Vital::Manager::Module {
     // TODO: Improve
     std::mutex content_mutex;
     std::unordered_map<std::string, std::string> content_cache;
