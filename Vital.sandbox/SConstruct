@@ -54,7 +54,7 @@ elif os_info["type"] == "Linux":
 
 
 # Extension sources & paths
-ext_cwd = os.path.abspath("../Vital.extension")  # adjust if your layout differs
+ext_cwd = os.path.abspath("../Vital.extension")
 env = SConscript("../Vital.extension/Vendor/godot/SConstruct", {"env": env.Clone()})
 env.Append(CPPPATH=[
     ext_cwd,
@@ -63,17 +63,12 @@ env.Append(CPPPATH=[
 ])
 
 
-# Build metadata (was set at top of extension script)
-ARGUMENTS["target"] = f"template_{ARGUMENTS['build_type'].lower()}"
-ARGUMENTS["use_static_cpp"] = "no"
-
-
 # Builds
 build_dir = f".build/{env.Args['platform_type'].lower()}/{env['platform']}"
 bin_dir = (
     f".bin/{env.Args['platform_type'].lower()}/{env['platform']}/"
     f"{env.name}"
-    f"{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env[chr(112)+chr(108)+chr(97)+chr(116)+chr(102)+chr(111)+chr(114)+chr(109)]}','').replace('template_','')}"
+    f"{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{env['platform']}','').replace('template_','')}"
     f"{env.subst('$SHLIBSUFFIX')}"
 )
 bin = env.SharedLibrary(bin_dir, source=env.sources)
