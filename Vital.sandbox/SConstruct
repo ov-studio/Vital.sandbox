@@ -35,15 +35,18 @@ elif os_info["type"] == "Linux":
 
 # Sandbox
 env = SConscript("Vendor/godot-cpp/SConstruct", {"env": env.Clone()})
+vendor_exclude = [
+    "Vendor/godot-cpp"
+]
 env.sources = (
     env.RGlob("Tool", "*.cpp") +
     env.RGlob("Sandbox", "*.cpp") +
     env.RGlob("Engine", "*.cpp") +
     env.RGlob("Manager", "*.cpp") +
     env.RGlob("System", "*.cpp") +
-    env.RGlob("Vendor", "*.cpp", exclude="Vendor/godot-cpp") +
-    env.RGlob("Vendor", "*.c",   exclude="Vendor/godot-cpp") +
-    env.RGlob("Vendor", "*.cc",  exclude="Vendor/godot-cpp")
+    env.RGlob("Vendor", "*.cpp", exclude=vendor_exclude) +
+    env.RGlob("Vendor", "*.c",   exclude=vendor_exclude) +
+    env.RGlob("Vendor", "*.cc",  exclude=vendor_exclude)
 )
 env.Append(CPPPATH=[
     cwd,
