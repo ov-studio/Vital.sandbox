@@ -81,7 +81,7 @@ namespace Vital::Manager {
         if (activity.timestamp_start > 0) client_timestamps.SetStart(activity.timestamp_start);
         if (activity.timestamp_end > 0) client_timestamps.SetEnd(activity.timestamp_end);
         client_activity.SetTimestamps(client_timestamps);
-        client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult& result) {
+        client -> UpdateRichPresence(client_activity, [this](const discordpp::ClientResult& result) {
             if (!result.Successful()) log("error", fmt::format("rpc ~ update failed | reason ~ {}", result.ToString()));
         });
     }
