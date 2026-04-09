@@ -25,7 +25,7 @@
 namespace Vital::Manager::Kit {
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
-        try { data = Tool::Rest::get(url, kit_headers, 120); }
+        try { data = Tool::Rest::get(url, {}, 120); }
         catch (const std::exception& e) {
             Vital::print("sbox", "Kit: download error -> ", e.what());
             return false;
