@@ -22,95 +22,7 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    std::tuple<std::string, std::string, std::string> fetch_release_info() {
-        std::string response;
-        try { response = Tool::Rest::get(std::string(toolkit_api), kit_headers); }
-        catch (const std::exception& e) {
-            Vital::print("sbox", "Kit: release fetch error -> ", e.what());
-            return {};
-        }
-        if (response.empty()) {
-            Vital::print("sbox", "Kit: release response empty");
-            return {};
-        }
-
-        rapidjson::Document doc;
-        doc.Parse(response.c_str());
-        if (doc.HasParseError()) {
-            Vital::print("sbox", "Kit: release JSON parse error -> code: ", std::to_string(doc.GetParseError()).c_str(), " offset: ", std::to_string(doc.GetErrorOffset()).c_str());
-            Vital::print("sbox", "Kit: raw response -> ", response.substr(0, 200).c_str());
-            return {};
-        }
-        if (!doc.IsObject()) {
-            Vital::print("sbox", "Kit: release JSON not object");
-            return {};
-        }
-
-        std::string tag, zip_url, checksum_url;
-        if (doc.HasMember("tag_name") && doc["tag_name"].IsString())
-            tag = doc["tag_name"].GetString();
-        if (doc.HasMember("assets") && doc["assets"].IsArray()) {
-            for (auto& asset : doc["assets"].GetArray()) {
-                if (!asset.HasMember("name") || !asset.HasMember("browser_download_url")) continue;
-                std::string asset_name = asset["name"].GetString();
-                std::string asset_url  = asset["browser_download_url"].GetString();
-                if (asset_name == "checksum.json")
-                    checksum_url = asset_url;
-                if (asset_name.rfind(kit_name, 0) == 0 && asset_name.size() > 4 &&
-                    asset_name.substr(asset_name.size() - 4) == ".zip")
-                    zip_url = asset_url;
-            }
-        }
-        return { tag, zip_url, checksum_url };
-    }
-
-    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash) {
-        rapidjson::Document doc;
-        if (checksum_url.empty()) return doc;
-        std::string data;
-        try { data = Tool::Rest::get(checksum_url, kit_headers); }
-        catch (const std::exception& e) {
-            Vital::print("sbox", "Kit: checksum fetch error -> ", e.what());
-            return doc;
-        }
-        if (data.empty()) return doc;
-        checksum_hash = Tool::Crypto::hash("SHA256", data);
-        doc.Parse(data.c_str());
-        return doc;
-    }
-
-    bool extract_zip(const std::string& zip_path, const std::string& dest_dir) {
-        int err = 0;
-        zip_t* archive = zip_open(zip_path.c_str(), ZIP_RDONLY, &err);
-        if (!archive) return false;
-
-        zip_int64_t count = zip_get_num_entries(archive, 0);
-        for (zip_int64_t i = 0; i < count; ++i) {
-            const char* entry_name = zip_get_name(archive, i, 0);
-            if (!entry_name) continue;
-            std::string entry(entry_name);
-            if (entry.empty() || entry.back() == '/') continue;
-
-            zip_file_t* zf = zip_fopen_index(archive, i, 0);
-            if (!zf) continue;
-            std::string contents;
-            char buf[65536];
-            zip_int64_t n;
-            while ((n = zip_fread(zf, buf, sizeof(buf))) > 0)
-                contents.append(buf, static_cast<size_t>(n));
-            zip_fclose(zf);
-
-            std::filesystem::path out = std::filesystem::path(dest_dir) / entry;
-            std::filesystem::create_directories(out.parent_path());
-            std::ofstream out_f(out, std::ios::binary | std::ios::trunc);
-            if (out_f) out_f.write(contents.data(), static_cast<std::streamsize>(contents.size()));
-        }
-
-        zip_close(archive);
-        return true;
-    }
-
-    bool download_file(const std::string& url, const std::string& dest_path) {
+    bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::Rest::get(url, kit_headers, 120); }
         catch (const std::exception& e) {
@@ -125,10 +37,38 @@ namespace Vital::Manager::Kit {
         return out.good();
     }
 
-    bool ensure_kit() {
+    bool extract(const std::string& zip_path, const std::string& dest_dir) {
+        int err = 0;
+        zip_t* archive = zip_open(zip_path.c_str(), ZIP_RDONLY, &err);
+        if (!archive) return false;
+        zip_int64_t count = zip_get_num_entries(archive, 0);
+        for (zip_int64_t i = 0; i < count; ++i) {
+            const char* entry_name = zip_get_name(archive, i, 0);
+            if (!entry_name) continue;
+            std::string entry(entry_name);
+            if (entry.empty() || entry.back() == '/') continue;
+            zip_file_t* zf = zip_fopen_index(archive, i, 0);
+            if (!zf) continue;
+            std::string contents;
+            char buf[65536];
+            zip_int64_t n;
+            while ((n = zip_fread(zf, buf, sizeof(buf))) > 0) {
+                contents.append(buf, static_cast<size_t>(n));                
+            }
+            zip_fclose(zf);
+            std::filesystem::path out = std::filesystem::path(dest_dir)/entry;
+            std::filesystem::create_directories(out.parent_path());
+            std::ofstream out_f(out, std::ios::binary | std::ios::trunc);
+            if (out_f) out_f.write(contents.data(), static_cast<std::streamsize>(contents.size()));
+        }
+        zip_close(archive);
+        return true;
+    }
+
+    bool ensure() {
         const std::string kit_dir  = std::string(cache_base) + "/" + std::string(kit_name);
         const std::string zip_path = std::string(cache_base) + "/" + std::string(kit_name) + ".zip";
-        auto [tag, zip_url, checksum_url] = fetch_release_info();
+        auto [tag, zip_url, checksum_url] = fetch_release();
 
         if (tag.empty() || zip_url.empty()) {
             Vital::print("sbox", "Kit: failed to fetch release info");
@@ -201,12 +141,12 @@ namespace Vital::Manager::Kit {
         if (needs_download) {
             std::filesystem::remove_all(kit_dir);
             Vital::print("sbox", "Kit: downloading...");
-            if (!download_file(zip_url, zip_path)) {
+            if (!download(zip_url, zip_path)) {
                 Vital::print("sbox", "Kit: download failed");
                 return false;
             }
             Vital::print("sbox", "Kit: extracting...");
-            if (!extract_zip(zip_path, kit_dir)) {
+            if (!extract(zip_path, kit_dir)) {
                 Vital::print("sbox", "Kit: extraction failed");
                 return false;
             }

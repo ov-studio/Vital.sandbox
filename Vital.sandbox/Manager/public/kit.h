@@ -33,13 +33,7 @@ namespace Vital::Manager::Kit {
     inline std::unordered_map<std::string, std::string> content_cache;
     inline std::unordered_map<std::string, rapidjson::Document> json_cache;
     inline const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
-    inline std::string version;
-
-    std::tuple<std::string, std::string, std::string> fetch_release_info();
-    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash);
-    bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
-    bool download_file(const std::string& url, const std::string& dest_path);
-    bool ensure_kit();
+    inline std::string version = "";
 
     inline const std::string& get_version() {
         if (!version.empty()) return version;
@@ -149,4 +143,46 @@ namespace Vital::Manager::Kit {
         }
         return result;
     }
+
+    inline std::tuple<std::string, std::string, std::string> fetch_release() {
+        std::tuple<std::string, std::string, std::string> result;
+        std::string response;
+        try { response = Tool::Rest::get(std::string(toolkit_api), kit_headers); }
+        catch (...) {}
+        if (!response.empty()) {
+            rapidjson::Document doc;
+            doc.Parse(response.c_str());
+            if (!doc.HasParseError() && doc.IsObject()) {
+                auto& [tag, zip_url, checksum_url] = result;
+                if (doc.HasMember("tag_name") && doc["tag_name"].IsString()) tag = doc["tag_name"].GetString();
+                if (doc.HasMember("assets") && doc["assets"].IsArray()) {
+                    for (auto& asset : doc["assets"].GetArray()) {
+                        if (!asset.HasMember("name") || !asset.HasMember("browser_download_url")) continue;
+                        std::string asset_name = asset["name"].GetString();
+                        std::string asset_url  = asset["browser_download_url"].GetString();
+                        if (asset_name == "checksum.json") checksum_url = asset_url;
+                        if (asset_name.rfind(kit_name, 0) == 0 && asset_name.size() > 4 && asset_name.substr(asset_name.size() - 4) == ".zip") zip_url = asset_url;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash) {
+        rapidjson::Document doc;
+        if (checksum_url.empty()) return doc;
+        std::string data;
+        try { data = Tool::Rest::get(checksum_url, kit_headers); }
+        catch (...) {}
+        if (!data.empty()) {
+            checksum_hash = Tool::Crypto::hash("SHA256", data);
+            doc.Parse(data.c_str());
+        }
+        return doc;
+    }
+
+    bool download(const std::string& url, const std::string& dest_path);
+    bool extract(const std::string& zip_path, const std::string& dest_dir);
+    bool ensure();
 }
