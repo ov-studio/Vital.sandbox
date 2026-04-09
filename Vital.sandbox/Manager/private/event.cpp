@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------
-     Resource: Vital.extension
+     Resource: Vital.sandbox
      Script: Boostrap: event.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene

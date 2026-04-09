@@ -18,7 +18,6 @@ class Build:
             "output_path": os.path.join(dist_dir, f"Vital.{self.platform_type.lower()}" + self.info["output_ext"]),
             "project_dir": os.path.join(self.script_dir, f"Vital.{self.platform_type.lower()}"),
             "sandbox_dir": os.path.join(self.script_dir, "Vital.sandbox"),
-            "extension_dir": os.path.join(self.script_dir, "Vital.extension"),
             "preset": self.info["preset"].format(platform_type=self.platform_type),
             "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
         }
@@ -179,7 +178,7 @@ class Build:
 
         if os_type == "Windows":
             dll_name = f"vital.sdk.{build_suffix}.x86_64.dll"
-            dll_src = os.path.join(b["extension_dir"], "bin", build_suffix, dll_name)
+            dll_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, dll_name)
             dll_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "windows")
             dll_dst = os.path.join(dll_dst_dir, dll_name)
             if os.path.exists(dll_src) and not os.path.exists(dll_dst):
@@ -188,7 +187,7 @@ class Build:
                 shutil.copy2(dll_src, dll_dst)
         elif os_type == "Linux":
             so_name = f"vital.sdk.{build_suffix}.x86_64.so"
-            so_src = os.path.join(b["extension_dir"], "bin", build_suffix, so_name)
+            so_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, so_name)
             so_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "linux")
             so_dst = os.path.join(so_dst_dir, so_name)
             if os.path.exists(so_src) and not os.path.exists(so_dst):
@@ -197,7 +196,7 @@ class Build:
                 shutil.copy2(so_src, so_dst)
         elif os_type == "Darwin":
             dylib_name = f"vital.sdk.{build_suffix}.dylib"
-            dylib_src = os.path.join(b["extension_dir"], "bin", build_suffix, dylib_name)
+            dylib_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, dylib_name)
             dylib_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "macos")
             dylib_dst = os.path.join(dylib_dst_dir, dylib_name)
             if os.path.exists(dylib_src) and not os.path.exists(dylib_dst):
@@ -216,8 +215,8 @@ class Build:
         env = os.environ.copy()
         build_suffix = self.build_type.lower()
         extra_paths = [
-            os.path.join(b["extension_dir"], "bin"),
-            os.path.join(b["extension_dir"], f"bin/{build_suffix}"),
+            os.path.join(b["sandbox_dir"], "bin"),
+            os.path.join(b["sandbox_dir"], f"bin/{build_suffix}"),
             os.path.join(b["project_dir"], "bin"),
         ]
         env["PATH"] = os.pathsep.join(extra_paths) + os.pathsep + env.get("PATH", "")
