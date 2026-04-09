@@ -57,17 +57,17 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .godot
-          key: godot-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
+          key: godot-windows-${{ hashFiles('Vital.sandbox/Vendor/godot-cpp/gen/include/godot_cpp/core/version.hpp') }}
           restore-keys: godot-windows-
 
       - name: Restore godot-cpp cache
         uses: actions/cache/restore@v4
         with:
           path: |
-            Vital.extension/Vendor/godot/bin
+            Vital.sandbox/Vendor/godot-cpp/bin
             Vital.extension/.build_godotcpp.debug
             Vital.extension/.build_godotcpp.release
-          key: godot-cpp-windows-${{ hashFiles('Vital.extension/Vendor/godot/gen/include/godot_cpp/core/version.hpp') }}
+          key: godot-cpp-windows-${{ hashFiles('Vital.sandbox/Vendor/godot-cpp/gen/include/godot_cpp/core/version.hpp') }}
           restore-keys: godot-cpp-windows-
 
       - name: Restore Conan cache

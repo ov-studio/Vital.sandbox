@@ -55,7 +55,7 @@ elif os_info["type"] == "Linux":
 
 # Extension sources & paths
 ext_cwd = os.path.abspath("../Vital.extension")
-env = SConscript("../Vital.extension/Vendor/godot/SConstruct", {"env": env.Clone()})
+env = SConscript("../Vital.sandbox/Vendor/godot-cpp/SConstruct", {"env": env.Clone()})
 env.Append(CPPPATH=[
     ext_cwd,
     os.path.join(ext_cwd, "../"),

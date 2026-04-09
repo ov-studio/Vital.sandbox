@@ -126,7 +126,7 @@ class Godot:
         godot = self.init()
 
         if not godot["version"]:
-            Throw_Error("Could not detect Godot version from Vital.extension/Vendor/godot")
+            Throw_Error("Could not detect Godot version from Vital.sandbox/Vendor/godot-cpp")
 
         log_step(f"Godot [{godot['version']}]")
         os.makedirs(godot["cache_dir"], exist_ok=True)
