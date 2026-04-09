@@ -23,8 +23,6 @@
 ////////////
 
 namespace Vital {
-    namespace System {}
-
     static std::string indent(int level) {
         #if defined(Vital_SDK_Client)
         return std::string(level*4, ' ');

@@ -169,7 +169,7 @@ namespace Vital::Manager::Kit {
         return result;
     }
 
-    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash) {
+    inline rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash) {
         rapidjson::Document doc;
         if (checksum_url.empty()) return doc;
         std::string data;
