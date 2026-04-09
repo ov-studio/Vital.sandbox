@@ -51,6 +51,7 @@ namespace Vital::Tool::Rest {
 
     inline httplib::Headers make_headers(const rest_headers& headers, std::string* out_content_type = nullptr) {
         httplib::Headers result;
+        result.insert({ "User-Agent", "Vital.sandbox/" + Vital::Build.to_string() });
         for (const auto& h : headers) {
             size_t colon_pos = h.find(":");
             if (colon_pos == std::string::npos) continue;
