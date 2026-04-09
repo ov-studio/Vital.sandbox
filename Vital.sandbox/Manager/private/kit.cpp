@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Manager: module.cpp
+     Script: Manager: kit.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Module Manager
+     Desc: Kit Manager
 ----------------------------------------------------------------*/
 
 
@@ -13,60 +13,8 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Manager/public/module.h>
+#include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Engine/public/console.h>
-
-
-/////////////////////////////
-// Vital: Manager: Module //
-/////////////////////////////
-
-namespace Vital::Manager::Module {
-    std::mutex content_mutex;
-    std::unordered_map<std::string, std::string> content_cache;
-    std::unordered_map<std::string, rapidjson::Document> json_cache;
-
-    const std::string& fetch_content(std::string_view path) {
-        std::lock_guard<std::mutex> lock(content_mutex);
-        std::string key(path);
-        auto it = content_cache.find(key);
-        if (it != content_cache.end()) return it -> second;
-        std::string value = Manager::Kit::read(key);
-        if (value.empty()) {
-            static const std::string empty{};
-            return empty;
-        }
-        return content_cache.emplace(key, std::move(value)).first -> second;
-    }
-
-    rapidjson::Document& fetch_json(const std::string& name) {
-        auto it = json_cache.find(name);
-        if (it != json_cache.end()) return it -> second;
-        rapidjson::Document document;
-        document.Parse(fetch_content(name + ".json").c_str());
-        if (document.HasParseError()) {
-            static rapidjson::Document empty_doc;
-            return empty_doc;
-        }
-        return json_cache.emplace(name, std::move(document)).first -> second;
-    }
-
-    std::string fetch_module(const std::string& name) {
-        auto& document = fetch_json(name + "/manifest");
-        if (document.HasParseError() || !document.HasMember("source")) return "";
-        return fetch_content(name + "/" + document["source"].GetString());
-    }
-
-    std::vector<std::string> fetch_modules(const std::string& name) {
-        std::vector<std::string> result;
-        auto& document = fetch_json(name + "/manifest");
-        if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
-        for (auto& i : document["sources"].GetArray()) {
-            result.push_back(fetch_content(name + "/" + std::string(i.GetString())));
-        }
-        return result;
-    }
-}
 
 
 //////////////////////////
@@ -77,6 +25,9 @@ namespace Vital::Manager::Kit {
     const std::string toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
     const std::string cache_base  = "cache";
     const std::string kit_name    = "Vital.kit";
+    std::mutex content_mutex;
+    std::unordered_map<std::string, std::string> content_cache;
+    std::unordered_map<std::string, rapidjson::Document> json_cache;
 
     const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
     static std::string s_version;
@@ -295,10 +246,51 @@ namespace Vital::Manager::Kit {
         return true;
     }
 
-    std::string read(const std::string& rel_path) {
+    std::string fetch_file(const std::string& rel_path) {
         std::filesystem::path full = std::filesystem::path(Kit::cache_base)/Kit::kit_name/rel_path;
         std::ifstream f(full, std::ios::binary);
         if (!f) return {};
         return { std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
+    }
+
+    const std::string& fetch_content(std::string_view path) {
+        std::lock_guard<std::mutex> lock(content_mutex);
+        std::string key(path);
+        auto it = content_cache.find(key);
+        if (it != content_cache.end()) return it -> second;
+        std::string value = fetch_file(key);
+        if (value.empty()) {
+            static const std::string empty{};
+            return empty;
+        }
+        return content_cache.emplace(key, std::move(value)).first -> second;
+    }
+
+    rapidjson::Document& fetch_json(const std::string& name) {
+        auto it = json_cache.find(name);
+        if (it != json_cache.end()) return it -> second;
+        rapidjson::Document document;
+        document.Parse(fetch_content(name + ".json").c_str());
+        if (document.HasParseError()) {
+            static rapidjson::Document empty_doc;
+            return empty_doc;
+        }
+        return json_cache.emplace(name, std::move(document)).first -> second;
+    }
+
+    std::string fetch_module(const std::string& name) {
+        auto& document = fetch_json(name + "/manifest");
+        if (document.HasParseError() || !document.HasMember("source")) return "";
+        return fetch_content(name + "/" + document["source"].GetString());
+    }
+
+    std::vector<std::string> fetch_modules(const std::string& name) {
+        std::vector<std::string> result;
+        auto& document = fetch_json(name + "/manifest");
+        if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
+        for (auto& i : document["sources"].GetArray()) {
+            result.push_back(fetch_content(name + "/" + std::string(i.GetString())));
+        }
+        return result;
     }
 }
