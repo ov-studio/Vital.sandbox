@@ -77,9 +77,7 @@ namespace Vital::Manager {
         if (activity.timestamp_end > 0) client_timestamps.SetEnd(activity.timestamp_end);
         client_activity.SetTimestamps(client_timestamps);
         client -> UpdateRichPresence(client_activity, [](const discordpp::ClientResult& result) {
-            if (!result.Successful()) {
-                Vital::print("error", "[Discord] RPC update failed ~", result.ToString());
-            }
+            if (!result.Successful()) log("error", fmt::format("RPC ~ Update Failed | Reason ~ {}", result.ToString()));
         });
     }
 
@@ -92,31 +90,29 @@ namespace Vital::Manager {
         client -> Authorize(args, [this, verifier, token_directory, token_file, force_reauth](discordpp::ClientResult result, std::string code, std::string redirectUri) {
             if (!result.Successful()) {
                 if (force_reauth) {
-                    Vital::print("warn", "[Discord] Authorization rejected ~ Retrying");
+                    log("warn", "Authorization ~ Rejected | Action ~ Retrying");
                     authorize(token_directory, token_file, force_reauth);
                 }
                 else {
-                    Vital::print("warn", "[Discord] Authorization rejected ~ Presence only");
+                    log("warn", "Authorization ~ Rejected | Action ~ Presence Only");
                     client -> Connect();
                 }
                 return;
             }
             client -> GetToken(application_id, code, verifier.Verifier(), redirectUri, [this, token_directory, token_file](discordpp::ClientResult result, std::string accessToken, std::string refreshToken, discordpp::AuthorizationTokenType tokenType, int32_t expiresIn, std::string scopes) {
-                    if (!result.Successful()) {
-                        Vital::print("error", "[Discord] Token exchange failed ~", result.ToString());
-                        return;
-                    }
+                    if (!result.Successful()) { log("error", fmt::format("Token ~ Exchange Failed | Reason ~ {}", result.ToString())); return; }
                     Tool::File::write_text(token_directory, token_file, accessToken);
                     client -> UpdateToken(tokenType, accessToken, [this](discordpp::ClientResult result) {
-                        if (!result.Successful()) {
-                            Vital::print("error", "[Discord] Token update failed ~", result.ToString());
-                            return;
-                        }
+                        if (!result.Successful()) { log("error", fmt::format("Token ~ Update Failed | Reason ~ {}", result.ToString())); return; }
                         client -> Connect();
                     });
                 }
             );
         });
+    }
+
+    void Discord::log(const std::string& mode, const std::string& message) {
+        Vital::print(mode, fmt::format("[Discord] {}", message));
     }
 
 
@@ -135,9 +131,8 @@ namespace Vital::Manager {
         activity = default_activity;
         client -> SetApplicationId(application_id);
         client -> SetStatusChangedCallback([this](discordpp::Client::Status status, discordpp::Client::Error, int32_t errorCode) {
-            Vital::print("info", "[Discord] Status ~", std::string(discordpp::EnumToString(status)), "| Code ~", errorCode);
-            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected)
-                update();
+            log("info", fmt::format("Status ~ {} | Code ~ {}", std::string(discordpp::EnumToString(status)), errorCode));
+            if (status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected) update();
         });
         if (!authenticate) {
             client -> Connect();
@@ -149,7 +144,7 @@ namespace Vital::Manager {
         if (!token_value.empty()) {
             client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
                 if (!result.Successful()) {
-                    Vital::print("warn", "[Discord] Cached token expired ~ Re-authenticating");
+                    log("warn", "Token ~ Cached Expired | Action ~ Re-authenticating");
                     Tool::File::remove(token_directory, token_file);
                     authorize(token_directory, token_file, force_reauth);
                     return;
@@ -158,7 +153,7 @@ namespace Vital::Manager {
             });
             return true;
         }
-        Vital::print("info", "[Discord] Awaiting authorization");
+        log("info", "Authorization ~ Awaiting");
         authorize(token_directory, token_file, force_reauth);
         return true;
     }
