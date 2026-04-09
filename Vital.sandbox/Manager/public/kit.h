@@ -33,7 +33,7 @@ namespace Vital::Manager::Kit {
     inline std::unordered_map<std::string, std::string> content_cache;
     inline std::unordered_map<std::string, rapidjson::Document> json_cache;
     inline const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
-    inline std::string s_version;
+    inline std::string version;
 
     const std::string& get_version();
     std::tuple<std::string, std::string, std::string> fetch_release_info();
