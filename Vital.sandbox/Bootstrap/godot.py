@@ -20,7 +20,7 @@ class Godot:
         }
 
     def _get_version(self, script_dir):
-        version_file = os.path.join(script_dir, "Vital.extension", "Vendor", "godot", "version.py")
+        version_file = os.path.join(script_dir, "Vital.sandbox", "Vendor", "godot-cpp", "version.py")
         if os.path.exists(version_file):
             ns = {}
             with open(version_file) as f:
@@ -36,7 +36,7 @@ class Godot:
             return f"{major}.{minor}.{patch}-{status}" if patch else f"{major}.{minor}-{status}"
         try:
             result = subprocess.run(
-                ["git", "-C", os.path.join(script_dir, "Vital.extension", "Vendor", "godot"),
+                ["git", "-C", os.path.join(script_dir, "Vital.sandbox", "Vendor", "godot-cpp"),
                  "describe", "--tags", "--exact-match"],
                 capture_output=True, text=True
             )

@@ -25,8 +25,8 @@ class Build:
 
     def build_godot_cpp(self, force=False):
         b = self.init()
-        godot_dir = os.path.join(b["extension_dir"], "Vendor", "godot")
-        stamp = os.path.join(b["extension_dir"], f".build_godotcpp.{self.build_type.lower()}")
+        godot_dir = os.path.join(b["sandbox_dir"], "Vendor", "godot-cpp")
+        stamp = os.path.join(b["sandbox_dir"], f".build_godotcpp.{self.build_type.lower()}")
         if force and os.path.exists(stamp):
             os.remove(stamp)
         if os.path.exists(stamp):
