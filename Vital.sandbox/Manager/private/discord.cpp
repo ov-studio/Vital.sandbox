@@ -112,7 +112,7 @@ namespace Vital::Manager {
     }
 
     void Discord::log(const std::string& mode, const std::string& message) {
-        Vital::print(mode, fmt::format("[Discord] {}", message));
+        print(mode, fmt::format("[Discord] {}", message));
     }
 
 

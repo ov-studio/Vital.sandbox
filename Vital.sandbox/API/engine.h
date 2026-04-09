@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
                     if (i != 2) buffer << " ";
                     buffer << vm -> to_string(i);
                 }
-                Vital::print(type, buffer.str());
+                print(type, buffer.str());
                 vm -> push_value(true);
                 return 1;
             });

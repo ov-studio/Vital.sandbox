@@ -78,7 +78,7 @@ namespace Vital::Sandbox {
 
     namespace API {
         void log(const std::string& type, const std::string& message) {
-            Vital::print(type, message);
+            print(type, message);
         }
     
         void bind(Machine* vm, const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
