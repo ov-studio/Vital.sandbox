@@ -58,6 +58,7 @@ namespace Vital::Manager {
             void process();
             void update();
             void authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth = false);
+            void log(const std::string& mode, const std::string& message);
 
 
             // Checkers //
