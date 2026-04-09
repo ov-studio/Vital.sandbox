@@ -37,7 +37,7 @@ namespace Vital::Manager::Kit {
 
     const std::string& get_version();
     std::tuple<std::string, std::string, std::string> fetch_release_info();
-    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& out_remote_hash);
+    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash);
     bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
     bool download_file(const std::string& url, const std::string& dest_path);
     bool ensure_kit();

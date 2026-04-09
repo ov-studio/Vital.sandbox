@@ -83,7 +83,7 @@ namespace Vital::Manager::Kit {
         return { tag, zip_url, checksum_url };
     }
 
-    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& out_remote_hash) {
+    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash) {
         rapidjson::Document doc;
         if (checksum_url.empty()) return doc;
         std::string data;
@@ -93,7 +93,7 @@ namespace Vital::Manager::Kit {
             return doc;
         }
         if (data.empty()) return doc;
-        out_remote_hash = Tool::Crypto::hash("SHA256", data);
+        checksum_hash = Tool::Crypto::hash("SHA256", data);
         doc.Parse(data.c_str());
         return doc;
     }
