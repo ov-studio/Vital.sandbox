@@ -39,8 +39,8 @@ namespace Vital::Engine {
                 push_deferred([this]() {
                     Vital::print("sbox", "Core: Vital.kit ready");
                     kit_ready.store(true);
-                    Vital::Tool::Event::emit("vital.kit:ready");
-                    Vital::Tool::Event::emit("vital.core:ready");
+                    Tool::Event::emit("vital.kit:ready");
+                    Tool::Event::emit("vital.core:ready");
                     set_process(true);
                 });
                 call_deferred("flush_deferred_queue");
@@ -58,7 +58,7 @@ namespace Vital::Engine {
         }
         if (!is_ready()) return;
         teardown();
-        Vital::Tool::Event::emit("vital.core:free");
+        Tool::Event::emit("vital.core:free");
     }
 
     void Core::_process(double delta) {
@@ -99,7 +99,7 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif
-        Vital::Tool::Event::emit("vital.core:teardown");
+        Tool::Event::emit("vital.core:teardown");
     }
 
     void Core::push_deferred(std::function<void()> fn) {

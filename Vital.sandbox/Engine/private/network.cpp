@@ -221,7 +221,7 @@ namespace Vital::Engine {
         data["object"]   = obj;
 
         // Convert to Stack and emit into the event system
-        Vital::Tool::Event::emit("network:packet", Vital::Tool::Stack::from_dict(data));
+        Tool::Event::emit("network:packet", Tool::Stack::from_dict(data));
     }
 
     #if defined(Vital_SDK_Client)
@@ -248,7 +248,7 @@ namespace Vital::Engine {
         reconnect_timer    = 0.0f;
         pending_handshake  = false;
         Vital::print("sbox", "Network: connecting to ", ip.c_str(), ":", port);
-        Vital::Tool::Event::emit("network:connecting", {});
+        Tool::Event::emit("network:connecting", {});
         return true;
     }
 
@@ -262,7 +262,7 @@ namespace Vital::Engine {
         auto tree = get_scene_tree();
         if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
         Vital::print("sbox", "Network: disconnected");
-        Vital::Tool::Event::emit("network:disconnected", {});
+        Tool::Event::emit("network:disconnected", {});
         return true;
     }
 
@@ -270,7 +270,7 @@ namespace Vital::Engine {
         reconnect_attempts = 0;
         pending_handshake = true;
         Vital::print("sbox", "Network: connected (handshake deferred)");
-        Vital::Tool::Event::emit("network:connected", {});
+        Tool::Event::emit("network:connected", {});
     }
 
     void Network::_on_connection_failed() {
@@ -278,7 +278,7 @@ namespace Vital::Engine {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Vital::Tool::Event::emit("network:connection_failed", {});
+        Tool::Event::emit("network:connection_failed", {});
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -287,7 +287,7 @@ namespace Vital::Engine {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Vital::Tool::Event::emit("network:server_disconnected", {});
+        Tool::Event::emit("network:server_disconnected", {});
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -300,13 +300,13 @@ namespace Vital::Engine {
         if (reconnect_attempts >= reconnect_max) {
             Vital::print("sbox", "Network: max reconnect attempts reached");
             auto_reconnect = false;
-            Vital::Tool::Event::emit("network:reconnect_failed", {});
+            Tool::Event::emit("network:reconnect_failed", {});
             return;
         }
         reconnect_attempts++;
         reconnect_timer = reconnect_delay;
         Vital::print("sbox", "Network: retry in ", reconnect_delay, "s  attempt ", reconnect_attempts, "/", reconnect_max);
-        Vital::Tool::Event::emit("network:reconnecting", {});
+        Tool::Event::emit("network:reconnecting", {});
     }
 
     std::string Network::get_server_ip() const {
@@ -336,7 +336,7 @@ namespace Vital::Engine {
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_server_signals();
         Vital::print("sbox", "Network: hosting on port ", port);
-        Vital::Tool::Event::emit("network:hosted", {});
+        Tool::Event::emit("network:hosted", {});
         return true;
     }
 
@@ -349,24 +349,24 @@ namespace Vital::Engine {
         auto tree = get_scene_tree();
         if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
         Vital::print("sbox", "Network: server closed");
-        Vital::Tool::Event::emit("network:closed", {});
+        Tool::Event::emit("network:closed", {});
         return true;
     }
 
     void Network::_on_peer_connected(int id) {
         connected_peers.insert(id);
         Vital::print("sbox", "Network: peer joined -> ", id, "  total: ", (int)connected_peers.size());
-        Vital::Tool::Stack args;
-        args.array.push_back(Vital::Tool::StackValue((int32_t)id));
-        Vital::Tool::Event::emit("network:peer_joined", args);
+        Tool::Stack args;
+        args.array.push_back(Tool::StackValue((int32_t)id));
+        Tool::Event::emit("network:peer_joined", args);
     }
 
     void Network::_on_peer_disconnected(int id) {
         connected_peers.erase(id);
         Vital::print("sbox", "Network: peer left -> ", id, "  remaining: ", (int)connected_peers.size());
-        Vital::Tool::Stack args;
-        args.array.push_back(Vital::Tool::StackValue((int32_t)id));
-        Vital::Tool::Event::emit("network:peer_left", args);
+        Tool::Stack args;
+        args.array.push_back(Tool::StackValue((int32_t)id));
+        Tool::Event::emit("network:peer_left", args);
     }
 
     const std::unordered_set<int>& Network::get_connected_peers() const {
@@ -383,7 +383,7 @@ namespace Vital::Engine {
     //   Send / Receive   //
     //--------------------//
 
-    bool Network::send(const Vital::Tool::Stack& stack, int peerID) {
+    bool Network::send(const Tool::Stack& stack, int peerID) {
         if (!node || !peer.is_valid()) return false;
         #if defined(Vital_SDK_Client)
         if (!is_active()) return false;
@@ -393,15 +393,15 @@ namespace Vital::Engine {
         return true;
     }
 
-    bool Network::broadcast(const Vital::Tool::Stack& stack) {
+    bool Network::broadcast(const Tool::Stack& stack) {
         return send(stack, 0);
     }
 
-    bool Network::send_to_server(const Vital::Tool::Stack& stack) {
+    bool Network::send_to_server(const Tool::Stack& stack) {
         return send(stack, 1);
     }
 
-    void Network::emit(Vital::Tool::Stack& arguments, int peerID) {
+    void Network::emit(Tool::Stack& arguments, int peerID) {
         get_singleton() -> send(arguments, peerID);
     }
 
@@ -427,9 +427,9 @@ namespace Vital::Engine {
         if (pending_handshake && is_active()) {
             pending_handshake = false;
             Vital::print("sbox", "Network: sending handshake, peer_id=", get_peer_id());
-            Vital::Tool::Stack msg;
-            msg.array.push_back(Vital::Tool::StackValue(std::string("ping")));
-            msg.object["type"] = Vital::Tool::StackValue(std::string("system"));
+            Tool::Stack msg;
+            msg.array.push_back(Tool::StackValue(std::string("ping")));
+            msg.object["type"] = Tool::StackValue(std::string("system"));
             send_to_server(msg);
         }
         #endif

@@ -62,7 +62,7 @@ namespace Vital::Manager {
     }
 
     void Sandbox::process(double delta) {
-        signal("vital.sandbox:process", Vital::Tool::StackValue(delta));
+        signal("vital.sandbox:process", Tool::StackValue(delta));
     }
 
     #if defined(Vital_SDK_Client)
@@ -75,21 +75,21 @@ namespace Vital::Manager {
             if (event_key -> is_echo()) return;
             if (event_key -> is_pressed() && Engine::Console::get_singleton() -> on_key(event_key -> get_keycode())) return;
             signal("vital.sandbox:key_input",
-                Vital::Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
-                Vital::Tool::StackValue(event_key -> is_pressed())
+                Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
+                Tool::StackValue(event_key -> is_pressed())
             );
         }
         else if (auto event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
             signal("vital.sandbox:key_input",
-                Vital::Tool::StackValue(fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())))),
-                Vital::Tool::StackValue(event_mouse_button -> is_pressed())
+                Tool::StackValue(fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())))),
+                Tool::StackValue(event_mouse_button -> is_pressed())
             );
         }
         else if (auto event_mouse_motion = godot::Object::cast_to<godot::InputEventMouseMotion>(event.ptr())) {
             auto position = event_mouse_motion -> get_position();
             signal("vital.sandbox:mouse_move",
-                Vital::Tool::StackValue(position.x),
-                Vital::Tool::StackValue(position.y)
+                Tool::StackValue(position.x),
+                Tool::StackValue(position.y)
             );
         }
     }

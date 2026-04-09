@@ -23,22 +23,22 @@
 namespace Vital::Engine {
     class SrvConfig {
         private:
-            Vital::Tool::YAML yaml;
+            Tool::YAML yaml;
             bool loaded = false;
 
             std::string get_str(const char* section, const char* key, const std::string& fallback = "") const {
                 if (!loaded || !yaml.has(section)) return fallback;
-                return Vital::Tool::YAML::get_str(yaml.get_root()[section], key, fallback);
+                return Tool::YAML::get_str(yaml.get_root()[section], key, fallback);
             }
 
             int get_int(const char* section, const char* key, int fallback = 0) const {
                 if (!loaded || !yaml.has(section)) return fallback;
-                return Vital::Tool::YAML::get_int(yaml.get_root()[section], key, fallback);
+                return Tool::YAML::get_int(yaml.get_root()[section], key, fallback);
             }
 
             bool get_bool(const char* section, const char* key, bool fallback = false) const {
                 if (!loaded || !yaml.has(section)) return fallback;
-                return Vital::Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
+                return Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
             }
 
         public:
@@ -47,11 +47,11 @@ namespace Vital::Engine {
 
             bool load() {
                 const std::string config_path = "config.yaml";
-                if (!Vital::Tool::File::exists(get_directory(), config_path)) {
+                if (!Tool::File::exists(get_directory(), config_path)) {
                     Vital::print("warn", "SrvConfig: File not found - '", config_path.c_str(), "'");
                     return false;
                 }
-                const std::string content = Vital::Tool::File::read_text(get_directory(), config_path);
+                const std::string content = Tool::File::read_text(get_directory(), config_path);
                 try {
                     yaml.parse(content);
                 }

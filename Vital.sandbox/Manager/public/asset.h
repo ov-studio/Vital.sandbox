@@ -123,7 +123,7 @@ namespace Vital::Manager {
 
             // Client //
             #if defined(Vital_SDK_Client)
-            void receive_manifest(const Vital::Tool::Stack& args);
+            void receive_manifest(const Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
             void cancel(const std::string& path);
             void cancel_group(const std::string& group);

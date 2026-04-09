@@ -106,7 +106,7 @@ namespace Vital::Manager {
                         Vital::print("error", "[Discord] Token exchange failed ~", result.ToString());
                         return;
                     }
-                    Vital::Tool::File::write_text(token_directory, token_file, accessToken);
+                    Tool::File::write_text(token_directory, token_file, accessToken);
                     client -> UpdateToken(tokenType, accessToken, [this](discordpp::ClientResult result) {
                         if (!result.Successful()) {
                             Vital::print("error", "[Discord] Token update failed ~", result.ToString());
@@ -145,12 +145,12 @@ namespace Vital::Manager {
         }
         auto token_directory = Vital::get_directory("data", "discord");
         auto token_file = std::to_string(application_id) + ".token";
-        std::string token_value = Vital::Tool::File::exists(token_directory, token_file) ? Vital::Tool::File::read_text(token_directory, token_file) : "";
+        std::string token_value = Tool::File::exists(token_directory, token_file) ? Tool::File::read_text(token_directory, token_file) : "";
         if (!token_value.empty()) {
             client -> UpdateToken(discordpp::AuthorizationTokenType::Bearer, token_value, [this, token_directory, token_file, force_reauth](discordpp::ClientResult result) {
                 if (!result.Successful()) {
                     Vital::print("warn", "[Discord] Cached token expired ~ Re-authenticating");
-                    Vital::Tool::File::remove(token_directory, token_file);
+                    Tool::File::remove(token_directory, token_file);
                     authorize(token_directory, token_file, force_reauth);
                     return;
                 }

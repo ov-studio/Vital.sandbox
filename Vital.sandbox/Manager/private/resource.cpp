@@ -43,7 +43,7 @@ namespace Vital::Manager {
 
     // Checkers //
     bool Resource::is_name(const std::string& name) {
-        if (name.empty() || !Vital::Tool::File::sanitize(name)) return false;
+        if (name.empty() || !Tool::File::sanitize(name)) return false;
         for (const char c : name) {
             if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_'))
                 return false;
@@ -114,7 +114,7 @@ namespace Vital::Manager {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-    bool Resource::parse_manifest(ResourceManifest& resource, Vital::Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
+    bool Resource::parse_manifest(ResourceManifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name    = manifest.get_str("name",    resource.ref);
         resource.author  = manifest.get_str("author",  "");
         resource.version = manifest.get_str("version", "");
@@ -127,24 +127,24 @@ namespace Vital::Manager {
             return false;
 
         for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
-            if (!node.is_map() || !Vital::Tool::YAML::has(node, "src") || !Vital::Tool::YAML::has(node, "type")) {
+            if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) {
                 errors.push_back("script entry missing `src` or `type`");
                 continue;
             }
-            const std::string src  = Vital::Tool::YAML::get_str(node, "src");
-            const std::string type = Vital::Tool::YAML::get_str(node, "type");
+            const std::string src  = Tool::YAML::get_str(node, "src");
+            const std::string type = Tool::YAML::get_str(node, "type");
             if (valid_types.find(type) == valid_types.end()) {
                 errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type));
                 continue;
             }
-            std::vector<std::string> expanded = Vital::Tool::File::glob(base, src);
+            std::vector<std::string> expanded = Tool::File::glob(base, src);
             if (expanded.empty()) {
                 errors.push_back(fmt::format("script pattern `{}` matched no files", src));
                 continue;
             }
             for (const auto& s : expanded) {
                 resource.scripts.push_back({ s, type });
-                resource.script_hashes[s] = Vital::Tool::File::hash(base, s);
+                resource.script_hashes[s] = Tool::File::hash(base, s);
             }
         }
 
@@ -152,14 +152,14 @@ namespace Vital::Manager {
             for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
                 std::string file_pattern;
                 node >> file_pattern;
-                std::vector<std::string> expanded = Vital::Tool::File::glob(base, file_pattern);
+                std::vector<std::string> expanded = Tool::File::glob(base, file_pattern);
                 if (expanded.empty()) {
                     errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern));
                     continue;
                 }
                 for (const auto& f : expanded) {
                     resource.files.push_back(f);
-                    resource.file_hashes[f] = Vital::Tool::File::hash(base, f);
+                    resource.file_hashes[f] = Tool::File::hash(base, f);
                 }
             }
         }
@@ -175,7 +175,7 @@ namespace Vital::Manager {
 
         std::vector<std::string> contents;
         try {
-            contents = Vital::Tool::File::contents(Vital::get_directory(), "resources", true);
+            contents = Tool::File::contents(Vital::get_directory(), "resources", true);
         }
         catch (...) {
             Vital::print("error", "Resource scan skipped — `resources/` directory not found");
@@ -198,18 +198,18 @@ namespace Vital::Manager {
                 Vital::print("error", fmt::format("Duplicate resource found — skipping `{}`", name));
                 continue;
             }
-            if (!Vital::Tool::File::exists(get_resource_base(name), "manifest.yaml")) continue;
+            if (!Tool::File::exists(get_resource_base(name), "manifest.yaml")) continue;
 
             std::string content;
             try {
-                content = Vital::Tool::File::read_text(get_resource_base(name), "manifest.yaml");
+                content = Tool::File::read_text(get_resource_base(name), "manifest.yaml");
             }
             catch (...) {
                 Vital::print("error", fmt::format("Failed to read manifest for `{}` — skipping", name));
                 continue;
             }
 
-            Vital::Tool::YAML manifest;
+            Tool::YAML manifest;
             try {
                 manifest.parse(content);
             }
@@ -268,7 +268,7 @@ namespace Vital::Manager {
         static bool server_bound = false;
         if (!server_bound) {
             server_bound = true;
-            Vital::Tool::Event::bind("vital.network:peer_connected", [](Vital::Tool::Stack args) {
+            Tool::Event::bind("vital.network:peer_connected", [](Tool::Stack args) {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> push_deferred([peer_id]() {
@@ -287,7 +287,7 @@ namespace Vital::Manager {
 
             Vital::print("sbox", "Initializing client resource manager...");
 
-            Vital::Tool::Event::bind("asset:file_ready", [](Vital::Tool::Stack args) {
+            Tool::Event::bind("asset:file_ready", [](Tool::Stack args) {
                 if (!args.object.count("path")) return;
                 const std::string path = args.object.at("path").as<std::string>();
                 auto* rm = Resource::get_singleton();
@@ -300,7 +300,7 @@ namespace Vital::Manager {
                 }
             });
 
-            Vital::Tool::Event::bind("network:packet", [](Vital::Tool::Stack args) {
+            Tool::Event::bind("network:packet", [](Tool::Stack args) {
                 if (!args.object.count("type")) return;
                 const std::string type = args.object.at("type").as<std::string>();
                 auto* rm = Resource::get_singleton();
@@ -359,19 +359,19 @@ namespace Vital::Manager {
         const auto* resource = get_resource(name);
         if (!resource) return;
 
-        Vital::Tool::Stack msg;
-        msg.object["type"] = Vital::Tool::StackValue(std::string("vital.resource:started"));
-        msg.object["name"] = Vital::Tool::StackValue(name);
+        Tool::Stack msg;
+        msg.object["type"] = Tool::StackValue(std::string("vital.resource:started"));
+        msg.object["name"] = Tool::StackValue(name);
 
-        msg.object["script_count"] = Vital::Tool::StackValue((int32_t)resource->scripts.size());
+        msg.object["script_count"] = Tool::StackValue((int32_t)resource->scripts.size());
         for (int i = 0; i < (int)resource->scripts.size(); i++) {
-            msg.object[fmt::format("script_src_{}", i)]  = Vital::Tool::StackValue(resource->scripts[i].src);
-            msg.object[fmt::format("script_type_{}", i)] = Vital::Tool::StackValue(resource->scripts[i].type);
+            msg.object[fmt::format("script_src_{}", i)]  = Tool::StackValue(resource->scripts[i].src);
+            msg.object[fmt::format("script_type_{}", i)] = Tool::StackValue(resource->scripts[i].type);
         }
 
-        msg.object["file_count"] = Vital::Tool::StackValue((int32_t)resource->files.size());
+        msg.object["file_count"] = Tool::StackValue((int32_t)resource->files.size());
         for (int i = 0; i < (int)resource->files.size(); i++) {
-            msg.object[fmt::format("file_{}", i)] = Vital::Tool::StackValue(resource->files[i]);
+            msg.object[fmt::format("file_{}", i)] = Tool::StackValue(resource->files[i]);
         }
 
         for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
@@ -380,9 +380,9 @@ namespace Vital::Manager {
     }
 
     void Resource::notify_resource_stopped(const std::string& name) {
-        Vital::Tool::Stack msg;
-        msg.object["type"] = Vital::Tool::StackValue(std::string("vital.resource:stopped"));
-        msg.object["name"] = Vital::Tool::StackValue(name);
+        Tool::Stack msg;
+        msg.object["type"] = Tool::StackValue(std::string("vital.resource:stopped"));
+        msg.object["name"] = Tool::StackValue(name);
         for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
             Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
         }
@@ -420,7 +420,7 @@ namespace Vital::Manager {
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             notify_resource_started(name);
         });
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
+        Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
 
         // Phase 3: Execute scripts
         vm->create_environment(name);
@@ -431,7 +431,7 @@ namespace Vital::Manager {
 
             std::string source;
             try {
-                source = Vital::Tool::File::read_text(get_resource_base(name), script.src);
+                source = Tool::File::read_text(get_resource_base(name), script.src);
             }
             catch (...) {
                 Vital::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
@@ -470,7 +470,7 @@ namespace Vital::Manager {
             notify_resource_stopped(name);
         });
 
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+        Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         vm->clear_environment_id(name);
 
         running.erase(name);
@@ -486,7 +486,7 @@ namespace Vital::Manager {
 
         stop(name);
         const std::string base = get_resource_base(name);
-        if (!Vital::Tool::File::exists(base, "manifest.yaml")) {
+        if (!Tool::File::exists(base, "manifest.yaml")) {
             resources.erase(
                 std::remove_if(resources.begin(), resources.end(),
                     [&name](const ResourceManifest& m) { return m.ref == name; }),
@@ -498,14 +498,14 @@ namespace Vital::Manager {
 
         std::string content;
         try {
-            content = Vital::Tool::File::read_text(base, "manifest.yaml");
+            content = Tool::File::read_text(base, "manifest.yaml");
         }
         catch (...) {
             Vital::print("error", fmt::format("Resource `{}` failed to read manifest — skipping restart", name));
             return false;
         }
 
-        Vital::Tool::YAML manifest;
+        Tool::YAML manifest;
         try {
             manifest.parse(content);
         }
@@ -656,7 +656,7 @@ namespace Vital::Manager {
         pending.insert(name);
 
         for (const auto& path : asset_paths) {
-            if (Vital::Tool::File::exists(get_directory(), path)) {
+            if (Tool::File::exists(get_directory(), path)) {
                 Vital::print("sbox", fmt::format("Resource `{}` asset cached: {}", name, path));
             } else {
                 resource_assets[name].insert(path);
@@ -699,7 +699,7 @@ namespace Vital::Manager {
 
             std::string source;
             try {
-                source = Vital::Tool::File::read_text(get_directory(), asset_path);
+                source = Tool::File::read_text(get_directory(), asset_path);
             }
             catch (...) {
                 Vital::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
@@ -728,7 +728,7 @@ namespace Vital::Manager {
 
         running.insert(name);
         Vital::print("sbox", fmt::format("Resource `{}` loaded on client", name));
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Vital::Tool::StackValue(name));
+        Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
 
     bool Resource::unload(const std::string& name) {
@@ -754,7 +754,7 @@ namespace Vital::Manager {
 
         unregister_remote(name);
         Vital::print("sbox", fmt::format("Resource `{}` unloaded on client", name));
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Vital::Tool::StackValue(name));
+        Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;
     }
 

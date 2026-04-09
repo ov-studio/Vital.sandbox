@@ -132,10 +132,10 @@ namespace Vital::Engine {
             #endif
 
             // Shared — Stack-based send/receive API (RPC transport is internal)
-            bool send(const Vital::Tool::Stack& stack, int peerID = 0);
-            bool broadcast(const Vital::Tool::Stack& stack);
-            bool send_to_server(const Vital::Tool::Stack& stack);
+            bool send(const Tool::Stack& stack, int peerID = 0);
+            bool broadcast(const Tool::Stack& stack);
+            bool send_to_server(const Tool::Stack& stack);
             void poll(double delta = 0.0);
-            static void emit(Vital::Tool::Stack& arguments, int peerID = 0);
+            static void emit(Tool::Stack& arguments, int peerID = 0);
     };
 }

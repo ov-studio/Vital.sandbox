@@ -31,7 +31,6 @@ namespace Vital::Manager::Module {
     extern std::unordered_map<std::string, std::string> content_cache;
     extern std::unordered_map<std::string, rapidjson::Document> json_cache;
 
-    std::string read_kit_file(const std::string& rel_path);
     const std::string& fetch_content(std::string_view path);
     rapidjson::Document& fetch_json(const std::string& name);
     std::string fetch_module(const std::string& name);
@@ -102,4 +101,6 @@ namespace Vital::Manager::Kit {
     bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
     bool download_file(const std::string& url, const std::string& dest_path);
     bool ensure_kit();
+
+    std::string read(const std::string& rel_path);
 }

@@ -86,7 +86,7 @@ namespace Vital::Manager {
             void scan();
             void init();
             #if !defined(Vital_SDK_Client)
-            bool parse_manifest(ResourceManifest& resource, Vital::Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+            bool parse_manifest(ResourceManifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
             bool start(const std::string& name);
             bool stop(const std::string& name);
             bool restart(const std::string& name);

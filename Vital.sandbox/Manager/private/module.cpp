@@ -26,19 +26,12 @@ namespace Vital::Manager::Module {
     std::unordered_map<std::string, std::string> content_cache;
     std::unordered_map<std::string, rapidjson::Document> json_cache;
 
-    std::string read_kit_file(const std::string& rel_path) {
-        std::filesystem::path full = std::filesystem::path(Kit::cache_base) / Kit::kit_name / rel_path;
-        std::ifstream f(full, std::ios::binary);
-        if (!f) return {};
-        return { std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
-    }
-
     const std::string& fetch_content(std::string_view path) {
         std::lock_guard<std::mutex> lock(content_mutex);
         std::string key(path);
         auto it = content_cache.find(key);
         if (it != content_cache.end()) return it -> second;
-        std::string value = read_kit_file(key);
+        std::string value = Manager::Kit::read(key);
         if (value.empty()) {
             static const std::string empty{};
             return empty;
@@ -300,5 +293,12 @@ namespace Vital::Manager::Kit {
             Vital::print("sbox", "Kit: ready ( ", get_version(), " )");
         }
         return true;
+    }
+
+    std::string read(const std::string& rel_path) {
+        std::filesystem::path full = std::filesystem::path(Kit::cache_base)/Kit::kit_name/rel_path;
+        std::ifstream f(full, std::ios::binary);
+        if (!f) return {};
+        return { std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
     }
 }

@@ -47,7 +47,7 @@ namespace Vital::Manager {
     // Hash a PackedByteArray — used for small buffers already in memory
     std::string Asset::compute_hash(const godot::PackedByteArray& buffer) {
         std::string_view data(reinterpret_cast<const char*>(buffer.ptr()), buffer.size());
-        return Vital::Tool::Crypto::hash("SHA256", data);
+        return Tool::Crypto::hash("SHA256", data);
     }
 
     // Hash directly from disk without loading into memory — used at register time
@@ -56,7 +56,7 @@ namespace Vital::Manager {
         size_t last_sep = full_path.find_last_of("/\\");
         std::string base = (last_sep != std::string::npos) ? full_path.substr(0, last_sep) : ".";
         std::string file = (last_sep != std::string::npos) ? full_path.substr(last_sep + 1) : full_path;
-        return Vital::Tool::File::hash(base, file, "SHA256");
+        return Tool::File::hash(base, file, "SHA256");
     }
 
 
@@ -261,16 +261,16 @@ namespace Vital::Manager {
     void Asset::broadcast_manifest(int peer_id) {
         if (registered_assets.empty()) return;
 
-        Vital::Tool::Stack msg;
-        msg.object["type"]        = Vital::Tool::StackValue(std::string("asset:manifest"));
-        msg.object["asset_count"] = Vital::Tool::StackValue((int32_t)registered_assets.size());
-        msg.object["http_port"]   = Vital::Tool::StackValue((int32_t)http_port);
+        Tool::Stack msg;
+        msg.object["type"]        = Tool::StackValue(std::string("asset:manifest"));
+        msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
+        msg.object["http_port"]   = Tool::StackValue((int32_t)http_port);
 
         int i = 0;
         for (auto& [path, entry] : registered_assets) {
-            msg.object["asset_path_"  + std::to_string(i)] = Vital::Tool::StackValue(path);
-            msg.object["asset_hash_"  + std::to_string(i)] = Vital::Tool::StackValue(entry.hash);
-            msg.object["asset_group_" + std::to_string(i)] = Vital::Tool::StackValue(entry.group);
+            msg.object["asset_path_"  + std::to_string(i)] = Tool::StackValue(path);
+            msg.object["asset_hash_"  + std::to_string(i)] = Tool::StackValue(entry.hash);
+            msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
             i++;
         }
 
@@ -296,7 +296,7 @@ namespace Vital::Manager {
 
     #if defined(Vital_SDK_Client)
 
-    void Asset::receive_manifest(const Vital::Tool::Stack& args) {
+    void Asset::receive_manifest(const Tool::Stack& args) {
         int count     = args.object.at("asset_count").as<int32_t>();
         int http_port = args.object.count("http_port")
             ? args.object.at("http_port").as<int32_t>() : 7778;
@@ -330,10 +330,10 @@ namespace Vital::Manager {
 
             if (hash_matches) {
                 Vital::print("sbox", "Asset: up to date -> ", path.c_str());
-                Vital::Tool::Stack ready_args;
-                ready_args.object["path"]   = Vital::Tool::StackValue(path);
-                ready_args.object["cached"] = Vital::Tool::StackValue(true);
-                Vital::Tool::Event::emit("asset:file_ready", ready_args);
+                Tool::Stack ready_args;
+                ready_args.object["path"]   = Tool::StackValue(path);
+                ready_args.object["cached"] = Tool::StackValue(true);
+                Tool::Event::emit("asset:file_ready", ready_args);
                 continue;
             }
 
@@ -344,7 +344,7 @@ namespace Vital::Manager {
         Vital::print("sbox", "Asset: ", needs_download, " assets to download");
         if (needs_download == 0) {
             Vital::print("sbox", "Asset: all assets ready (cached)");
-            Vital::Tool::Event::emit("asset:ready", {});
+            Tool::Event::emit("asset:ready", {});
         }
     }
 
@@ -378,7 +378,7 @@ namespace Vital::Manager {
 
             std::string response_body;
             try {
-                response_body = Vital::Tool::Rest::get(base_url + "/asset?path=" + path);
+                response_body = Tool::Rest::get(base_url + "/asset?path=" + path);
             } catch (const std::exception& e) {
                 Vital::print("sbox", "Asset: download failed -> ", path.c_str(),
                     " error=", e.what());
@@ -414,13 +414,13 @@ namespace Vital::Manager {
             active_downloads.erase(path);
 
             Engine::Core::get_singleton() -> push_deferred([path]() {
-                Vital::Tool::Stack ready_args;
-                ready_args.object["path"]   = Vital::Tool::StackValue(path);
-                ready_args.object["cached"] = Vital::Tool::StackValue(false);
-                Vital::Tool::Event::emit("asset:file_ready", ready_args);
+                Tool::Stack ready_args;
+                ready_args.object["path"]   = Tool::StackValue(path);
+                ready_args.object["cached"] = Tool::StackValue(false);
+                Tool::Event::emit("asset:file_ready", ready_args);
                 if (!Asset::get_singleton() -> is_downloading()) {
                     Vital::print("sbox", "Asset: all assets ready");
-                    Vital::Tool::Event::emit("asset:ready", {});
+                    Tool::Event::emit("asset:ready", {});
                 }
             });
         });

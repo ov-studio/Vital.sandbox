@@ -237,7 +237,7 @@ namespace Vital::Engine {
     bool Model::load(const std::string& name, const std::string& path) {
         return load_from_buffer(
             name,
-            Vital::Tool::File::read_binary(get_directory(), path)
+            Tool::File::read_binary(get_directory(), path)
         );
     }
 

@@ -37,8 +37,8 @@ namespace Vital::Engine {
                 on_message(message);
             });
 
-            Vital::Tool::Event::bind("vital.kit:ready", [this](Vital::Tool::Stack arguments) {
-                webview -> load_html(Vital::Tool::fetch_module("console"));
+            Tool::Event::bind("vital.kit:ready", [this](Tool::Stack arguments) {
+                webview -> load_html(Tool::fetch_module("console"));
             });
         #else
             #if defined(Vital_SDK_WINDOWS)
@@ -248,7 +248,7 @@ namespace Vital::Engine {
         return oss.str();
     }
 
-    std::string Console::ansi_rgb(const Vital::Tool::Stack& color) {
+    std::string Console::ansi_rgb(const Tool::Stack& color) {
         return ansi_rgb(
             color.array[0].as<int32_t>(),
             color.array[1].as<int32_t>(),
@@ -256,7 +256,7 @@ namespace Vital::Engine {
         );
     }
 
-    std::string Console::ansi_rgb_lighten(const Vital::Tool::Stack& color, float factor) {
+    std::string Console::ansi_rgb_lighten(const Tool::Stack& color, float factor) {
         const int r = color.array[0].as<int32_t>();
         const int g = color.array[1].as<int32_t>();
         const int b = color.array[2].as<int32_t>();
@@ -267,7 +267,7 @@ namespace Vital::Engine {
         );
     }
 
-    std::string Console::format_inline(const Vital::Tool::Stack& mode_rgb, const std::string& content) {
+    std::string Console::format_inline(const Tool::Stack& mode_rgb, const std::string& content) {
         const std::string mode_color = ansi_rgb(mode_rgb);
         std::string result;
         size_t i = 0;
@@ -285,7 +285,7 @@ namespace Vital::Engine {
         return result;
     }
 
-    std::string Console::format_line(const Vital::Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
+    std::string Console::format_line(const Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
         const std::string mode_color = ansi_rgb(mode_rgb);
         const std::string marker = ANSI_BOLD + mode_color + "│ " + ANSI_RESET;
         const std::string indent_str(18 + mode_label.size(), ' ');
@@ -310,8 +310,8 @@ namespace Vital::Engine {
     }
     
     std::string Console::format_output(const std::string& mode, const std::string& message) {
-        const Vital::Tool::Stack ts = Vital::get_timestamp();
-        const Vital::Tool::Stack mode_rgb = fetch_mode_color(mode);
+        const Tool::Stack ts = Vital::get_timestamp();
+        const Tool::Stack mode_rgb = fetch_mode_color(mode);
         auto mode_badge = fetch_mode_badge(mode);
         std::ostringstream ts_oss;
         ts_oss << std::setfill('0')
@@ -369,14 +369,14 @@ namespace Vital::Engine {
         return upper;
     }
 
-    Vital::Tool::Stack Console::fetch_mode_color(const std::string& mode) {
+    Tool::Stack Console::fetch_mode_color(const std::string& mode) {
         const auto r = Manager::Module::fetch_json_value("config/console", "log", mode, "color", 0);
         const auto g = Manager::Module::fetch_json_value("config/console", "log", mode, "color", 1);
         const auto b = Manager::Module::fetch_json_value("config/console", "log", mode, "color", 2);
-        return Vital::Tool::Stack(
+        return Tool::Stack(
             r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()
-            ? std::initializer_list<Vital::Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
-            : std::initializer_list<Vital::Tool::StackValue>{ int32_t(220), int32_t(220), int32_t(220) }
+            ? std::initializer_list<Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
+            : std::initializer_list<Tool::StackValue>{ int32_t(220), int32_t(220), int32_t(220) }
         );
     }
 
@@ -440,7 +440,7 @@ namespace Vital::Engine {
         document.SetObject();
         auto& alloc = document.GetAllocator();
         const auto bind = Manager::Module::fetch_json_value("config/console", "bind");
-        auto make_color = [&](const Vital::Tool::Stack& color) {
+        auto make_color = [&](const Tool::Stack& color) {
             rapidjson::Value result(rapidjson::kArrayType);
             result.PushBack(color.array[0].as<int32_t>(), alloc);
             result.PushBack(color.array[1].as<int32_t>(), alloc);
@@ -496,14 +496,14 @@ namespace Vital::Engine {
             return false;
         };
         if (exec(tokens)) return;
-        Vital::Tool::Stack arguments;
+        Tool::Stack arguments;
         arguments.array.reserve(tokens.size() - 1);
         for (std::size_t i = 1; i < tokens.size(); ++i) {
             arguments.array.emplace_back(tokens[i]);
         }
         Manager::Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
-            Vital::Tool::StackValue(tokens[0]),
-            Vital::Tool::StackValue(std::move(arguments))
+            Tool::StackValue(tokens[0]),
+            Tool::StackValue(std::move(arguments))
         );
     }
 

@@ -58,11 +58,11 @@ namespace Vital::Manager {
 
 			template<typename... Args>
 			void signal(const std::string& name, Args&&... args) {
-				static_assert((std::is_same_v<std::decay_t<Args>, Vital::Tool::StackValue> && ...), "Sandbox::signal() expects StackValue arguments");
-				Vital::Tool::Stack stack;
+				static_assert((std::is_same_v<std::decay_t<Args>, Tool::StackValue> && ...), "Sandbox::signal() expects StackValue arguments");
+				Tool::Stack stack;
 				stack.array.reserve(sizeof...(Args));
 				(stack.array.emplace_back(std::forward<Args>(args)), ...);
-				Vital::Tool::Event::emit(name, stack);
+				Tool::Event::emit(name, stack);
 				if (!vm || !vm -> is_reference(signal_reference)) return;
 				vm -> get_reference(signal_reference, true);
 				vm -> push_value(name);
