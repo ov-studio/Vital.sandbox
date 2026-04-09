@@ -53,25 +53,25 @@ namespace Vital::Manager::Kit {
         std::lock_guard<std::mutex> lock(content_mutex);
         std::string key(path);
         auto it = content_cache.find(key);
-        if (it != content_cache.end()) return it->second;
+        if (it != content_cache.end()) return it -> second;
         std::string value = fetch_file(key);
         if (value.empty()) {
             static const std::string empty{};
             return empty;
         }
-        return content_cache.emplace(key, std::move(value)).first->second;
+        return content_cache.emplace(key, std::move(value)).first -> second;
     }
 
     inline rapidjson::Document& fetch_json(const std::string& name) {
         auto it = json_cache.find(name);
-        if (it != json_cache.end()) return it->second;
+        if (it != json_cache.end()) return it -> second;
         rapidjson::Document document;
         document.Parse(fetch_content(name + ".json").c_str());
         if (document.HasParseError()) {
             static rapidjson::Document empty_doc;
             return empty_doc;
         }
-        return json_cache.emplace(name, std::move(document)).first->second;
+        return json_cache.emplace(name, std::move(document)).first -> second;
     }
 
     template<typename... Keys>
