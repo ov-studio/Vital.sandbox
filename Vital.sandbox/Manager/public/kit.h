@@ -27,12 +27,15 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    extern const std::string toolkit_api;
-    extern const std::string cache_base;
-    extern const std::string kit_name;
-    extern std::mutex content_mutex;
-    extern std::unordered_map<std::string, std::string> content_cache;
-    extern std::unordered_map<std::string, rapidjson::Document> json_cache;
+    inline constexpr std::string_view toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
+    inline constexpr std::string_view cache_base = "cache";
+    inline constexpr std::string_view kit_name = "Vital.kit";
+    inline std::mutex content_mutex;
+    inline std::unordered_map<std::string, std::string> content_cache;
+    inline std::unordered_map<std::string, rapidjson::Document> json_cache;
+
+    inline const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
+    inline std::string s_version;
 
     const std::string& get_version();
     std::tuple<std::string, std::string, std::string> fetch_release_info();

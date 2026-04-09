@@ -22,19 +22,9 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    const std::string toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
-    const std::string cache_base  = "cache";
-    const std::string kit_name    = "Vital.kit";
-    std::mutex content_mutex;
-    std::unordered_map<std::string, std::string> content_cache;
-    std::unordered_map<std::string, rapidjson::Document> json_cache;
-
-    const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
-    static std::string s_version;
-
     const std::string& get_version() {
         if (!s_version.empty()) return s_version;
-        const std::string checksum_path = cache_base + "/" + kit_name + "/checksum.json";
+        const std::string checksum_path = std::string(cache_base) + "/" + std::string(kit_name) + "/checksum.json";
         std::ifstream f(checksum_path, std::ios::binary);
         if (!f) {
             Vital::print("sbox", "Kit: get_version -> checksum.json not found");
@@ -53,7 +43,7 @@ namespace Vital::Manager::Kit {
 
     std::tuple<std::string, std::string, std::string> fetch_release_info() {
         std::string response;
-        try { response = Tool::Rest::get(toolkit_api, kit_headers); }
+        try { response = Tool::Rest::get(std::string(toolkit_api), kit_headers); }
         catch (const std::exception& e) {
             Vital::print("sbox", "Kit: release fetch error -> ", e.what());
             return {};
@@ -155,8 +145,8 @@ namespace Vital::Manager::Kit {
     }
 
     bool ensure_kit() {
-        const std::string kit_dir  = cache_base + "/" + kit_name;
-        const std::string zip_path = cache_base + "/" + kit_name + ".zip";
+        const std::string kit_dir  = std::string(cache_base) + "/" + std::string(kit_name);
+        const std::string zip_path = std::string(cache_base) + "/" + std::string(kit_name) + ".zip";
         auto [tag, zip_url, checksum_url] = fetch_release_info();
 
         if (tag.empty() || zip_url.empty()) {
@@ -247,7 +237,7 @@ namespace Vital::Manager::Kit {
     }
 
     std::string fetch_file(const std::string& rel_path) {
-        std::filesystem::path full = std::filesystem::path(Kit::cache_base)/Kit::kit_name/rel_path;
+        std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/rel_path;
         std::ifstream f(full, std::ios::binary);
         if (!f) return {};
         return { std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
