@@ -30,9 +30,6 @@ namespace Vital::Manager::Module {
     extern std::mutex content_mutex;
     extern std::unordered_map<std::string, std::string> content_cache;
     extern std::unordered_map<std::string, rapidjson::Document> json_cache;
-    extern const std::string toolkit_api;
-    extern const std::string cache_base;
-    extern const std::string kit_name;
 
     std::string read_kit_file(const std::string& rel_path);
     const std::string& fetch_content(std::string_view path);
@@ -72,7 +69,7 @@ namespace Vital::Manager::Module {
         if (!node || (!node -> IsObject() && !node -> IsArray())) return nullptr;
         return node;
     }
-    
+
     template<typename... Keys>
     inline Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
         auto& document = fetch_json(name);
@@ -87,13 +84,22 @@ namespace Vital::Manager::Module {
         else if (node -> IsBool()) return node -> GetBool();
         return {};
     }
+}
 
-    namespace Kit {
-        const std::string& get_version();
-        std::tuple<std::string, std::string, std::string> fetch_release_info();
-        rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& out_remote_hash);
-        bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
-        bool download_file(const std::string& url, const std::string& dest_path);
-        bool ensure_kit();
-    }
+
+//////////////////////////
+// Vital: Manager: Kit //
+//////////////////////////
+
+namespace Vital::Manager::Kit {
+    extern const std::string toolkit_api;
+    extern const std::string cache_base;
+    extern const std::string kit_name;
+
+    const std::string& get_version();
+    std::tuple<std::string, std::string, std::string> fetch_release_info();
+    rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& out_remote_hash);
+    bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
+    bool download_file(const std::string& url, const std::string& dest_path);
+    bool ensure_kit();
 }
