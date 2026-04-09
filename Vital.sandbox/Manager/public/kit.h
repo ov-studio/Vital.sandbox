@@ -54,8 +54,8 @@ namespace Vital::Manager::Kit {
         return version;
     }
 
-    inline std::string fetch_file(const std::string& rel_path) {
-        std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/rel_path;
+    inline std::string fetch_file(const std::string& path) {
+        std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/path;
         std::ifstream file(full, std::ios::binary);
         if (!file) return {};
         return { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
@@ -144,8 +144,9 @@ namespace Vital::Manager::Kit {
         std::vector<std::string> result;
         auto& document = fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
-        for (auto& i : document["sources"].GetArray())
+        for (auto& i : document["sources"].GetArray()) {
             result.push_back(std::string(fetch_content(name + "/" + std::string(i.GetString()))));
+        }
         return result;
     }
 }
