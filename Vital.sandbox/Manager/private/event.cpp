@@ -41,7 +41,7 @@ void load_server_config() {
     }
     
     // Set server info on Asset for /info endpoint
-    Vital::Engine::ServerInfo info;
+    Vital::Manager::ServerInfo info;
     if (g_server_config.is_loaded()) {
         info.name = g_server_config.get_server_name();
         info.version = g_server_config.get_server_version();
@@ -146,8 +146,8 @@ void initialize_vital_events() {
         Vital::Manager::Discord::get_singleton();
         #endif
         Vital::Engine::Console::get_singleton();
-        Vital::Engine::Sandbox::get_singleton() -> ready();
-        Vital::Engine::ResourceManager::get_singleton() -> init();
+        Vital::Manager::Sandbox::get_singleton() -> ready();
+        Vital::Manager::Resource::get_singleton() -> init();
         setup();
     });
 
@@ -157,8 +157,8 @@ void initialize_vital_events() {
         Vital::Manager::Discord::free_singleton();
         #endif
         Vital::Engine::Console::free_singleton();
-        Vital::Engine::Sandbox::free_singleton();
-        Vital::Engine::ResourceManager::free_singleton();
+        Vital::Manager::Sandbox::free_singleton();
+        Vital::Manager::Resource::free_singleton();
         shutdown();
     });
 

@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Engine/public/resource.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 
 
 ///////////////////////
@@ -31,10 +31,10 @@ namespace Vital::Sandbox::API {
                 if (slash == std::string::npos) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 const std::string target = path.substr(1, slash - 1);
                 path = path.substr(slash + 1);
-                return Vital::Engine::ResourceManager::get_resource_base(target, true);
+                return Vital::Manager::Resource::get_resource_base(target, true);
             }
-            const std::string name = Vital::Engine::ResourceManager::get_resource_from_vm(vm);
-            return name.empty() ? get_directory("resources") : Vital::Engine::ResourceManager::get_resource_base(name);
+            const std::string name = Vital::Manager::Resource::get_resource_from_vm(vm);
+            return name.empty() ? get_directory("resources") : Vital::Manager::Resource::get_resource_base(name);
         }
 
         static void bind(Machine* vm) {

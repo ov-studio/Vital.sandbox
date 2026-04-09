@@ -67,13 +67,13 @@ namespace Vital::Engine {
             std::lock_guard<std::mutex> lock(deferred_mutex);
             if (!deferred_queue.empty()) call_deferred("flush_deferred_queue");
         }
-        Sandbox::get_singleton() -> process(delta);
+        Manager::Sandbox::get_singleton() -> process(delta);
     }
 
     #if defined(Vital_SDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (!is_ready()) return;
-        Sandbox::get_singleton() -> input(event);
+        Manager::Sandbox::get_singleton() -> input(event);
     }
     #endif
 

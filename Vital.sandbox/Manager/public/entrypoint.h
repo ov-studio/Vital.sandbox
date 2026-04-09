@@ -23,8 +23,8 @@
 #include <Vital.sandbox/Engine/public/texture.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 #include <Vital.sandbox/Engine/public/console.h>
-#include <Vital.sandbox/Engine/public/resource.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 
 
 ////////////////

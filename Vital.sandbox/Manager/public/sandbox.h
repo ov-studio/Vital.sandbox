@@ -21,7 +21,7 @@
 /////////////////////////////
 
 // TODO: Scope under Manager namespace
-namespace Vital::Engine {
+namespace Vital::Manager {
 	class Canvas;
 	class Sandbox;
 	class Sandbox : public godot::Node {

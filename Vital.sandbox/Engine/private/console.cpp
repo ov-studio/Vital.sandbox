@@ -15,8 +15,8 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
-#include <Vital.sandbox/Engine/public/resource.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 
 
 /////////////////////////////
@@ -484,13 +484,13 @@ namespace Vital::Engine {
             if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
             if (tokens[0] == "clear") { clear(); return true; }
             #if !defined(Vital_SDK_Client)
-            if (tokens[0] == "refresh") { Vital::Engine::ResourceManager::get_singleton() -> scan(); return true; }
-            if (tokens[0] == "start") { Vital::Engine::ResourceManager::get_singleton() -> start(tokens[1]); return true; }
-            if (tokens[0] == "stop") { Vital::Engine::ResourceManager::get_singleton() -> stop(tokens[1]); return true; }
-            if (tokens[0] == "restart") { Vital::Engine::ResourceManager::get_singleton() -> restart(tokens[1]); return true; }
-            if (tokens[0] == "start_all") { Vital::Engine::ResourceManager::get_singleton() -> start_all(); return true; }
-            if (tokens[0] == "restart_all") { Vital::Engine::ResourceManager::get_singleton() -> restart_all(); return true; }
-            if (tokens[0] == "stop_all") { Vital::Engine::ResourceManager::get_singleton() -> stop_all(); return true; }
+            if (tokens[0] == "refresh") { Vital::Manager::Resource::get_singleton() -> scan(); return true; }
+            if (tokens[0] == "start") { Vital::Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
+            if (tokens[0] == "stop") { Vital::Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
+            if (tokens[0] == "restart") { Vital::Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
+            if (tokens[0] == "start_all") { Vital::Manager::Resource::get_singleton() -> start_all(); return true; }
+            if (tokens[0] == "restart_all") { Vital::Manager::Resource::get_singleton() -> restart_all(); return true; }
+            if (tokens[0] == "stop_all") { Vital::Manager::Resource::get_singleton() -> stop_all(); return true; }
             if (tokens[0] == "shutdown") { shutdown(); return true; }
             #endif
             return false;
@@ -501,7 +501,7 @@ namespace Vital::Engine {
         for (std::size_t i = 1; i < tokens.size(); ++i) {
             arguments.array.emplace_back(tokens[i]);
         }
-        Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
+        Manager::Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Vital::Tool::StackValue(tokens[0]),
             Vital::Tool::StackValue(std::move(arguments))
         );

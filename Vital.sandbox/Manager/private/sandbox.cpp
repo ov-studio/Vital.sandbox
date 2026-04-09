@@ -24,7 +24,7 @@
 /////////////////////////////
 
 // TODO: Scope under Manager namespace
-namespace Vital::Engine {
+namespace Vital::Manager {
     // Instantiators //
     Sandbox::Sandbox() {
         vm = new Vital::Sandbox::Machine();

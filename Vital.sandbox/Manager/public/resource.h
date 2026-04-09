@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: resource.h
+     Script: Manager: resource.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Resource Utilities
+     Desc: Resource Manager
 ----------------------------------------------------------------*/
 
 
@@ -16,13 +16,13 @@
 #include <Vital.sandbox/Engine/public/index.h>
 
 
-//////////////////////////////
-// Vital: Engine: Resource //
-//////////////////////////////
+///////////////////////////////
+// Vital: Manager: Resource //
+///////////////////////////////
 
-namespace Vital::Engine {
+namespace Vital::Manager {
     // TODO: Improve
-    class ResourceManager {
+    class Resource {
         public:
             struct ResourceScript {
                 std::string src;
@@ -46,7 +46,7 @@ namespace Vital::Engine {
                 "client"
             };
         protected:
-            inline static ResourceManager* singleton = nullptr;
+            inline static Resource* singleton = nullptr;
             std::vector<ResourceManifest> resources;
             std::unordered_set<std::string> running;
             #if defined(Vital_SDK_Client)
@@ -55,12 +55,12 @@ namespace Vital::Engine {
             #endif
         public:
             // Instantiators //
-            ResourceManager() = default;
-            ~ResourceManager() = default;
+            Resource() = default;
+            ~Resource() = default;
 
 
             // Utils //
-            static ResourceManager* get_singleton();
+            static Resource* get_singleton();
             static void free_singleton();
 
 
