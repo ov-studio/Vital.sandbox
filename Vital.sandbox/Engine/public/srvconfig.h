@@ -48,6 +48,7 @@ namespace Vital::Engine {
             bool load() {
                 const std::string config_path = "config.yaml";
                 if (!Tool::File::exists(get_directory(), config_path)) {
+                    // TODO: Where is it linking from?
                     Vital::print("warn", "SrvConfig: File not found - '", config_path.c_str(), "'");
                     return false;
                 }
