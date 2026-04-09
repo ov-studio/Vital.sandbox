@@ -55,10 +55,10 @@ class Build:
         open(stamp, "w").close()
         log_ok("Done")
 
-    def build_extension(self):
+    def build_sandbox(self):
         import tempfile
         b = self.init()
-        log_step(f"Building Vital.extension [{self.platform_type} | {self.build_type}]")
+        log_step(f"Building Vital.sandbox [{self.platform_type} | {self.build_type}]")
 
         ignore = (
             "scons: ", "WARNING:", "platform_type=", "build_type=",
@@ -277,7 +277,7 @@ def main():
 
     for platform_type in platforms:
         build = Build(script_dir, platform_type, build_type, verbose=args.verbose)
-        build.build_extension()
+        build.build_sandbox()
         if not args.skip_export:
             build.export()
 
