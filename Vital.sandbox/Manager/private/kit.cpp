@@ -24,13 +24,13 @@
 
 namespace Vital::Manager::Kit {
     void log(const std::string& message) {
-        print("sbox", fmt::format("[Vital.kit] {}", message));
+        Vital::print("sbox", fmt::format("Vital.kit: {}", message));
     }
 
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::Rest::get(url, {}, 120); }
-        catch (const std::exception& e) { log(fmt::format("Status ~ Download Failed | Reason ~ {}", e.what())); return false; }
+        catch (const std::exception& e) { log(fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
         if (data.empty()) return false;
         std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
         std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
@@ -54,9 +54,8 @@ namespace Vital::Manager::Kit {
             std::string contents;
             char buf[65536];
             zip_int64_t n;
-            while ((n = zip_fread(zf, buf, sizeof(buf))) > 0) {
+            while ((n = zip_fread(zf, buf, sizeof(buf))) > 0)
                 contents.append(buf, static_cast<size_t>(n));
-            }
             zip_fclose(zf);
             std::filesystem::path out = std::filesystem::path(dest_dir)/entry;
             std::filesystem::create_directories(out.parent_path());
@@ -73,47 +72,47 @@ namespace Vital::Manager::Kit {
         auto [tag, zip_url, checksum_url] = fetch_release();
 
         if (tag.empty() || zip_url.empty()) {
-            log("Status ~ Release Fetch Failed");
+            log("status ~ release fetch failed");
             return std::filesystem::exists(kit_dir);
         }
-        log(fmt::format("Release ~ {}", tag));
+        log(fmt::format("release ~ {}", tag));
 
         auto do_download = [&]() -> bool {
             std::filesystem::remove_all(kit_dir);
-            log("Status ~ Downloading");
-            if (!download(zip_url, zip_path)) { log("Status ~ Download Failed"); return false; }
-            log("Status ~ Extracting");
-            if (!extract(zip_path, kit_dir)) { log("Status ~ Extraction Failed"); return false; }
+            log("status ~ downloading");
+            if (!download(zip_url, zip_path)) { log("status ~ download failed"); return false; }
+            log("status ~ extracting");
+            if (!extract(zip_path, kit_dir)) { log("status ~ extraction failed"); return false; }
             std::filesystem::remove(zip_path);
             version.clear();
-            log(fmt::format("Status ~ Ready | Version ~ {}", get_version()));
+            log(fmt::format("status ~ ready | version ~ {}", get_version()));
             return true;
         };
 
         auto validate_files = [&](const rapidjson::Document& checksum_doc) -> bool {
-            if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("Checksum ~ Invalid | Reason ~ Missing files"); return false; }
+            if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("checksum ~ invalid | reason ~ missing files"); return false; }
             const auto& files = checksum_doc["files"];
             const int total = static_cast<int>(files.MemberCount());
             int checked = 0;
             for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
                 const std::string rel_path = it -> name.GetString();
-                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log(fmt::format("Checksum ~ Malformed | File ~ {}", rel_path)); return false; }
+                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log(fmt::format("checksum ~ malformed | file ~ {}", rel_path)); return false; }
                 const std::string expected = it -> value["sha256"].GetString();
-                if (!Tool::File::exists(kit_dir, rel_path)) { log(fmt::format("File ~ Missing | Progress ~ {}/{} | Path ~ {}", checked, total, rel_path)); return false; }
-                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { log(fmt::format("Checksum ~ Mismatch | Progress ~ {}/{} | File ~ {}", checked, total, rel_path)); return false; }
+                if (!Tool::File::exists(kit_dir, rel_path)) { log(fmt::format("file ~ missing | progress ~ {}/{} | path ~ {}", checked, total, rel_path)); return false; }
+                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { log(fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
-            log(fmt::format("Status ~ Cache Valid | Files ~ {}/{} | Version ~ {}", checked, total, get_version()));
+            log(fmt::format("status ~ cache valid | files ~ {}/{} | version ~ {}", checked, total, get_version()));
             return true;
         };
 
         auto needs_download = [&]() -> bool {
-            if (!std::filesystem::exists(kit_dir)) { log("Status ~ Cache Missing"); return true; }
+            if (!std::filesystem::exists(kit_dir)) { log("status ~ cache missing"); return true; }
             std::string remote_hash;
             auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
-            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("Checksum ~ Fetch Failed"); return true; }
-            if (get_version() != tag) { log(fmt::format("Version ~ Mismatch | Local ~ {} | Remote ~ {}", get_version(), tag)); return true; }
-            if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("Checksum ~ Tampered"); return true; }
+            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("checksum ~ fetch failed"); return true; }
+            if (get_version() != tag) { log(fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", get_version(), tag)); return true; }
+            if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("checksum ~ tampered"); return true; }
             return !validate_files(checksum_doc);
         };
 
