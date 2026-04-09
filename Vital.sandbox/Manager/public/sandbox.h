@@ -21,8 +21,11 @@
 /////////////////////////////
 
 // TODO: Scope under Manager namespace
-namespace Vital::Manager {
+namespace Vital::Engine {
 	class Canvas;
+}
+
+namespace Vital::Manager {
 	class Sandbox;
 	class Sandbox : public godot::Node {
 		protected:
@@ -49,7 +52,7 @@ namespace Vital::Manager {
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)
-			void draw(Canvas* canvas);
+			void draw(Engine::Canvas* canvas);
 			void input(godot::Ref<godot::InputEvent> event);
 			#endif
 

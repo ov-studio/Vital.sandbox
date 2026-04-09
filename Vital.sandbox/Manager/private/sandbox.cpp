@@ -66,14 +66,14 @@ namespace Vital::Manager {
     }
 
     #if defined(Vital_SDK_Client)
-    void Sandbox::draw(Canvas* canvas) {
+    void Sandbox::draw(Engine::Canvas* canvas) {
         signal("vital.sandbox:draw");
     }
 
     void Sandbox::input(godot::Ref<godot::InputEvent> event) {
         if (auto event_key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if (event_key -> is_echo()) return;
-            if (event_key -> is_pressed() && Console::get_singleton() -> on_key(event_key -> get_keycode())) return;
+            if (event_key -> is_pressed() && Engine::Console::get_singleton() -> on_key(event_key -> get_keycode())) return;
             signal("vital.sandbox:key_input",
                 Vital::Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
                 Vital::Tool::StackValue(event_key -> is_pressed())
