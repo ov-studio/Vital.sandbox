@@ -23,10 +23,6 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    static const auto log = [](const std::string& message) {
-        Vital::print("sbox", fmt::format("[Vital.kit] {}", message));
-    };
-
     void log(const std::string& message) {
         Vital::print("sbox", fmt::format("[Vital.kit] {}", message));
     }
@@ -58,8 +54,9 @@ namespace Vital::Manager::Kit {
             std::string contents;
             char buf[65536];
             zip_int64_t n;
-            while ((n = zip_fread(zf, buf, sizeof(buf))) > 0)
+            while ((n = zip_fread(zf, buf, sizeof(buf))) > 0) {
                 contents.append(buf, static_cast<size_t>(n));
+            }
             zip_fclose(zf);
             std::filesystem::path out = std::filesystem::path(dest_dir)/entry;
             std::filesystem::create_directories(out.parent_path());
