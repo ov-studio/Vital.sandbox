@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/index.h>
 #include <Vital.sandbox/Sandbox/mixin.h>
+#include <Vital.sandbox/Manager/public/module.h>
 
 
 //////////////////////////////
@@ -75,7 +76,7 @@ namespace Vital::Sandbox {
                     push_global(value);
                 }
                 hook("bind");
-                for (auto& value : Vital::Tool::fetch_modules("lua")) {
+                for (auto& value : Vital::Manager::fetch_modules("lua")) {
                     load_string(value);
                 }
                 hook("inject");

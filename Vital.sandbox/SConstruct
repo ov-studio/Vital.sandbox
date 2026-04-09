@@ -21,6 +21,7 @@ if env.Args["platform_type"] == "Client":
 
 if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
+    env.Append(CPPDEFINES=["_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WIN32_LEAN_AND_MEAN", "NOMINMAX"])
     env.Append(CPPFLAGS=["/EHsc", "/wd4244", "/MD"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
     env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMT", "/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])

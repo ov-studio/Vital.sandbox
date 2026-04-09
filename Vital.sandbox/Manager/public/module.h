@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Tool: module.h
+     Script: Manager: module.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Module Tools
+     Desc: Module Manager
 ----------------------------------------------------------------*/
 
 
@@ -22,12 +22,11 @@
 #include <zip.h>
 
 
-//////////////////////////
-// Vital: Tool: Module //
-//////////////////////////
+/////////////////////////////
+// Vital: Manager: Module //
+/////////////////////////////
 
-namespace Vital::Tool {
-    // TODO: Improve
+namespace Vital::Manager {
     extern std::mutex content_mutex;
     extern std::unordered_map<std::string, std::string> content_cache;
     extern std::unordered_map<std::string, rapidjson::Document> json_cache;
@@ -92,7 +91,7 @@ namespace Vital::Tool {
     namespace Kit {
         const std::string& get_version();
         std::tuple<std::string, std::string, std::string> fetch_release_info();
-        rapidjson::Document fetch_checksum(const std::string& checksum_url);
+        rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& out_remote_hash);
         bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
         bool download_file(const std::string& url, const std::string& dest_path);
         bool ensure_kit();

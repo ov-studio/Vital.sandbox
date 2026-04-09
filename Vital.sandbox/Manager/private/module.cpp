@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Tool: module.cpp
+     Script: Manager: module.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Module Tools
+     Desc: Module Manager
 ----------------------------------------------------------------*/
 
 
@@ -13,16 +13,19 @@
 //////////////
 
 #pragma once
+#if defined(_WIN32) && !defined(_WIN32_WINNT)
+    #define _WIN32_WINNT 0x0A00
+#endif
 #define CPPHTTPLIB_OPENSSL_SUPPORT
-#include <Vital.sandbox/Tool/module.h>
+#include <Vital.sandbox/Manager/public/module.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
 
-//////////////////////////
-// Vital: Tool: Module //
-//////////////////////////
+/////////////////////////////
+// Vital: Manager: Module //
+/////////////////////////////
 
-namespace Vital::Tool {
+namespace Vital::Manager {
     // TODO: Improve
     std::mutex content_mutex;
     std::unordered_map<std::string, std::string> content_cache;
@@ -86,7 +89,7 @@ namespace Vital::Tool {
     ///////////////////////////
 
     namespace Kit {
-        const Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
+        const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
         static std::string s_version;
 
         const std::string& get_version() {
@@ -110,7 +113,7 @@ namespace Vital::Tool {
 
         std::tuple<std::string, std::string, std::string> fetch_release_info() {
             std::string response;
-            try { response = Rest::get(toolkit_api, kit_headers); }
+            try { response = Tool::Rest::get(toolkit_api, kit_headers); }
             catch (const std::exception& e) {
                 Vital::print("sbox", "Kit: release fetch error -> ", e.what());
                 return {};
@@ -154,7 +157,7 @@ namespace Vital::Tool {
             rapidjson::Document doc;
             if (checksum_url.empty()) return doc;
             std::string data;
-            try { data = Rest::get(checksum_url, kit_headers); }
+            try { data = Tool::Rest::get(checksum_url, kit_headers); }
             catch (const std::exception& e) {
                 Vital::print("sbox", "Kit: checksum fetch error -> ", e.what());
                 return doc;
@@ -199,7 +202,7 @@ namespace Vital::Tool {
 
         bool download_file(const std::string& url, const std::string& dest_path) {
             std::string data;
-            try { data = Rest::get(url, kit_headers, 120); }
+            try { data = Tool::Rest::get(url, kit_headers, 120); }
             catch (const std::exception& e) {
                 Vital::print("sbox", "Kit: download error -> ", e.what());
                 return false;
