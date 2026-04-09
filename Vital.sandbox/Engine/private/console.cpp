@@ -38,7 +38,7 @@ namespace Vital::Engine {
             });
 
             Tool::Event::bind("vital.kit:ready", [this](Tool::Stack arguments) {
-                webview -> load_html(Tool::fetch_module("console"));
+                webview -> load_html(Manager::Kit::fetch_module("console"));
             });
         #else
             #if defined(Vital_SDK_WINDOWS)
