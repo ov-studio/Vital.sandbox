@@ -22,6 +22,13 @@ class Build:
             "export_mode": "--export-release" if self.build_type == "Release" else "--export-debug",
         }
 
+    def reload_vendors(self):
+        b = self.init()
+        if b["sandbox_dir"] not in sys.path:
+            sys.path.insert(0, b["sandbox_dir"])
+        from Bootstrap.vendor import Vendor
+        Vendor(None).build()
+
     def build_godot_cpp(self, force=False):
         b = self.init()
         godot_dir = os.path.join(b["sandbox_dir"], "Vendor", "godot-cpp")
@@ -274,7 +281,9 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
-    Build(script_dir, platforms[0], build_type, verbose=args.verbose).build_godot_cpp(force=args.rebuild_godot)
+    b = Build(script_dir, platforms[0], build_type, verbose=args.verbose)
+    b.reload_vendors()
+    b.build_godot_cpp(force=args.rebuild_godot)
 
     for platform_type in platforms:
         build = Build(script_dir, platform_type, build_type, verbose=args.verbose)

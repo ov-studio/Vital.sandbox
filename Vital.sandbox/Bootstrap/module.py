@@ -7,7 +7,6 @@ class Module:
         self.env = env
 
     def build(self):
-        self.env.Vendor.build()
         self.env.Conan.build()
         self.env.Discord.build()
 
