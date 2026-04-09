@@ -22,25 +22,6 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    const std::string& get_version() {
-        if (!version.empty()) return version;
-        const std::string checksum_path = std::string(cache_base) + "/" + std::string(kit_name) + "/checksum.json";
-        std::ifstream f(checksum_path, std::ios::binary);
-        if (!f) {
-            Vital::print("sbox", "Kit: get_version -> checksum.json not found");
-            return version;
-        }
-        std::string raw{ std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
-        rapidjson::Document doc;
-        doc.Parse(raw.c_str());
-        if (doc.HasParseError() || !doc.IsObject()) {
-            Vital::print("sbox", "Kit: get_version -> checksum.json parse error");
-            return version;
-        }
-        if (doc.HasMember("version") && doc["version"].IsString()) version = doc["version"].GetString();
-        return version;
-    }
-
     std::tuple<std::string, std::string, std::string> fetch_release_info() {
         std::string response;
         try { response = Tool::Rest::get(std::string(toolkit_api), kit_headers); }

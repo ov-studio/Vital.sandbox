@@ -35,12 +35,24 @@ namespace Vital::Manager::Kit {
     inline const Tool::Rest::rest_headers kit_headers = { "User-Agent: Vital.sandbox" };
     inline std::string version;
 
-    const std::string& get_version();
     std::tuple<std::string, std::string, std::string> fetch_release_info();
     rapidjson::Document fetch_checksum(const std::string& checksum_url, std::string& checksum_hash);
     bool extract_zip(const std::string& zip_path, const std::string& dest_dir);
     bool download_file(const std::string& url, const std::string& dest_path);
     bool ensure_kit();
+
+    inline const std::string& get_version() {
+        if (!version.empty()) return version;
+        const std::string checksum_path = std::string(cache_base) + "/" + std::string(kit_name) + "/checksum.json";
+        std::ifstream f(checksum_path, std::ios::binary);
+        if (!f) return version;
+        std::string raw{ std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
+        rapidjson::Document doc;
+        doc.Parse(raw.c_str());
+        if (doc.HasParseError() || !doc.IsObject()) return version;
+        if (doc.HasMember("version") && doc["version"].IsString()) version = doc["version"].GetString();
+        return version;
+    }
 
     inline std::string fetch_file(const std::string& rel_path) {
         std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/rel_path;
