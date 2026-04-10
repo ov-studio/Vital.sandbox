@@ -240,7 +240,7 @@ namespace Vital::Manager {
             client_initialized = true;
             log("sbox", "initializing client resource manager...");
 
-            Tool::Event::bind("asset:file_ready", [](Tool::Stack args) {
+            Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
                 if (!args.object.count("path")) return;
                 const std::string path = args.object.at("path").as<std::string>();
                 auto* rm = Resource::get_singleton();
@@ -253,7 +253,7 @@ namespace Vital::Manager {
                 }
             });
 
-            Tool::Event::bind("network:packet", [](Tool::Stack args) {
+            Tool::Event::bind("network:packet", [this](Tool::Stack args) {
                 if (!args.object.count("type")) return;
                 const std::string type = args.object.at("type").as<std::string>();
                 auto* rm = Resource::get_singleton();
