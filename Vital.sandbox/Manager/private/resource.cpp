@@ -97,7 +97,7 @@ namespace Vital::Manager {
     }
 
     std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
-        std::vector<Resource::Script> result;
+        std::vector<Script> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;
         for (const auto& script : resource->scripts) {
