@@ -236,7 +236,6 @@ namespace Vital::Manager {
             static bool client_initialized = false;
             if (client_initialized) return;
             client_initialized = true;
-
             log("sbox", "initializing client resource manager...");
 
             Tool::Event::bind("asset:file_ready", [](Tool::Stack args) {
