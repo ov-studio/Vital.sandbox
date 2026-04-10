@@ -485,17 +485,20 @@ namespace Vital::Manager {
     void Resource::start_all() {
         Tool::print("sbox", "Starting all resources...");
         int count = 0;
-        for (const auto* resource : get_all_resources())
-            if (start(resource->ref)) count++;
+        for (const auto* resource : get_all_resources()) {
+            if (start(resource -> ref)) count++;
+        }
         Tool::print("sbox", fmt::format("All resources started — {} resource(s) running", count));
     }
-    
+
     void Resource::stop_all() {
         Tool::print("sbox", "Stopping all resources...");
         std::unordered_set<std::string> snapshot = running;
         int count = 0;
         for (const auto& name : snapshot)
+        for (const auto& name : snapshot) {
             if (stop(name)) count++;
+        }
         Tool::print("sbox", fmt::format("All resources stopped — {} resource(s) stopped", count));
     }
     
