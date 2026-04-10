@@ -394,7 +394,7 @@ namespace Vital::Manager {
         Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         vm -> clear_environment_id(name);
         running.erase(name);
-        log("sbox",  fmt::format("resource `{}` stopped", name));
+        log("sbox", fmt::format("resource `{}` stopped", name));
         return true;
     }
 
