@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: resource.cpp
      Script: Manager: resource.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
