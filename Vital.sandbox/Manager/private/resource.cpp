@@ -427,48 +427,26 @@ namespace Vital::Manager {
     }
 
     bool Resource::restart(const std::string& name) {
-        if (!is_running(name)) {
-            Tool::print("error", fmt::format("Cannot restart `{}` — not running", name));
-            return false;
-        }
+        if (!is_running(name)) { Tool::print("error", fmt::format("Cannot restart `{}` — not running", name)); return false; }
 
         stop(name);
         const std::string base = get_resource_base(name);
         if (!Tool::File::exists(base, "manifest.yaml")) {
-            resources.erase(
-                std::remove_if(resources.begin(), resources.end(),
-                    [&name](const Manifest& m) { return m.ref == name; }),
-                resources.end()
-            );
+            resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
             Tool::print("error", fmt::format("Resource `{}` manifest not found — unregistered", name));
             return false;
         }
-
         std::string content;
-        try {
-            content = Tool::File::read_text(base, "manifest.yaml");
-        }
-        catch (...) {
-            Tool::print("error", fmt::format("Resource `{}` failed to read manifest — skipping restart", name));
-            return false;
-        }
-
+        try { content = Tool::File::read_text(base, "manifest.yaml"); }
+        catch (...) { Tool::print("error", fmt::format("Resource `{}` failed to read manifest — skipping restart", name)); return false; }
         Tool::YAML manifest;
-        try {
-            manifest.parse(content);
-        }
-        catch (const std::exception& e) {
-            Tool::print("error", fmt::format("Resource `{}` malformed YAML — {} — skipping restart", name, e.what()));
-            return false;
-        }
+        try { manifest.parse(content); }
+        catch (const std::exception& e) { Tool::print("error", fmt::format("Resource `{}` malformed YAML — {} — skipping restart", name, e.what())); return false; }
 
         for (auto& resource : resources) {
             if (resource.ref != name) continue;
-
-            // Snapshot old hashes
             const auto old_script_hashes = resource.script_hashes;
-            const auto old_file_hashes   = resource.file_hashes;
-
+            const auto old_file_hashes = resource.file_hashes;
             std::vector<std::string> errors;
             if (!parse_manifest(resource, manifest, base, errors)) {
                 if (!errors.empty()) {
@@ -476,52 +454,31 @@ namespace Vital::Manager {
                     for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
                     Tool::print("error", error_list);
                 }
-                else {
-                    Tool::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping restart", name));
-                }
+                else Tool::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping restart", name));
                 return false;
             }
 
-            // Diff scripts
+            auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
+                for (const auto& [k, v] : old_map) {
+                    if (!new_map.count(k)) changes.push_back(fmt::format("> `{}` ({} deleted)", k, label));
+                    else if (new_map.at(k) != v) changes.push_back(fmt::format("> `{}` ({} modified)", k, label));
+                }
+                for (const auto& [k, v] : new_map)
+                    if (!old_map.count(k)) changes.push_back(fmt::format("> `{}` ({} added)", k, label));
+            };
+
             std::vector<std::string> changes;
-            for (const auto& [src, hash] : old_script_hashes) {
-                if (!resource.script_hashes.count(src))
-                    changes.push_back(fmt::format("> `{}` (script deleted)", src));
-                else if (resource.script_hashes.at(src) != hash)
-                    changes.push_back(fmt::format("> `{}` (script modified)", src));
-            }
-            for (const auto& [src, hash] : resource.script_hashes) {
-                if (!old_script_hashes.count(src))
-                    changes.push_back(fmt::format("> `{}` (script added)", src));
-            }
-
-            // Diff files
-            for (const auto& [file, hash] : old_file_hashes) {
-                if (!resource.file_hashes.count(file))
-                    changes.push_back(fmt::format("> `{}` (file deleted)", file));
-                else if (resource.file_hashes.at(file) != hash)
-                    changes.push_back(fmt::format("> `{}` (file modified)", file));
-            }
-            for (const auto& [file, hash] : resource.file_hashes) {
-                if (!old_file_hashes.count(file))
-                    changes.push_back(fmt::format("> `{}` (file added)", file));
-            }
-
-            // Report
+            diff(old_script_hashes, resource.script_hashes, "script", changes);
+            diff(old_file_hashes, resource.file_hashes, "file",   changes);
             std::string report = fmt::format("Resource `{}` restarted\n", name);
-            if (changes.empty()) {
-                report += "> No changes detected";
-            }
+            if (changes.empty()) report += "> No changes detected";
             else {
                 report += fmt::format("> Changes ({}):\n", changes.size());
-                for (const auto& change : changes)
-                    report += change + "\n";
+                for (const auto& change : changes) report += change + "\n";
             }
             Tool::print("sbox", report);
-
             break;
         }
-
         return start(name);
     }
 
