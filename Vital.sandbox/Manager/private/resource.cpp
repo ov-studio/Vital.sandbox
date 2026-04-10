@@ -108,21 +108,18 @@ namespace Vital::Manager {
     // APIs //
     #if !defined(Vital_SDK_Client)
     bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
-        resource.name    = manifest.get_str("name",    resource.ref);
-        resource.author  = manifest.get_str("author",  "");
+        resource.name = manifest.get_str("name", resource.ref);
+        resource.author = manifest.get_str("author", "");
         resource.version = manifest.get_str("version", "");
         resource.scripts.clear();
         resource.files.clear();
         resource.script_hashes.clear();
         resource.file_hashes.clear();
-
         if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
 
         for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
             if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) {
-                errors.push_back("script entry missing `src` or `type`");
-                continue;
-            }
+            if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) { errors.push_back("script entry missing `src` or `type`"); continue; }
             const std::string src  = Tool::YAML::get_str(node, "src");
             const std::string type = Tool::YAML::get_str(node, "type");
             if (Types.find(type) == Types.end()) {
@@ -144,18 +141,14 @@ namespace Vital::Manager {
             for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
                 std::string file_pattern;
                 node >> file_pattern;
-                std::vector<std::string> expanded = Tool::File::glob(base, file_pattern);
-                if (expanded.empty()) {
-                    errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern));
-                    continue;
-                }
+                auto expanded = Tool::File::glob(base, file_pattern);
+                if (expanded.empty()) { errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern)); continue; }
                 for (const auto& f : expanded) {
                     resource.files.push_back(f);
                     resource.file_hashes[f] = Tool::File::hash(base, f);
                 }
             }
         }
-
         return errors.empty();
     }
 
