@@ -539,29 +539,34 @@ namespace Vital::Manager {
             resource_assets.erase(name);
             return;
         }
-
-        bool status = true;
-        vm -> create_environment(name);
-        vm -> pop(1);
+    
+        std::vector<std::pair<std::string, std::string>> sources;
+        std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
             if (script.type != "shared" && script.type != "client") continue;
-            const std::string asset_path = fmt::format("resources/{}/{}", name, script.src);
             std::string source;
-            try { source = Tool::File::read_text(Tool::get_directory(), asset_path); }
-            catch (...) { log("error", fmt::format("resource `{}` failed to read script `{}`", name, script.src)); status = false; break; }
-            vm -> get_reference(name, true);
-            if (!vm -> load_string(source, true, true, vm -> get_count())) {
-                log("error", fmt::format("resource `{}` failed to execute script `{}`", name, script.src));
-                vm -> pop(1);
-                status = false;
-                break;
-            }
-            vm -> pop(1);
+            try { source = Tool::File::read_text(Tool::get_directory(), fmt::format("resources/{}/{}", name, script.src)); }
+            catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
+            if (!vm -> compile_string(source)) errors.push_back(fmt::format("`{}` failed to compile", script.src));
+            else sources.emplace_back(script.src, std::move(source));
         }
-
+    
         pending.erase(name);
         resource_assets.erase(name);
-        if (!status) { vm -> clear_environment_id(name); log("error", fmt::format("resource `{}` failed to load — env released", name)); return; }
+        if (!errors.empty()) {
+            std::string report = fmt::format("resource `{}` failed to load\n> errors ({}):", name, errors.size());
+            for (const auto& err : errors) report += "\n  " + err;
+            log("error", report);
+            return;
+        }
+    
+        vm -> create_environment(name);
+        vm -> pop(1);
+        for (const auto& [src, source] : sources) {
+            vm -> get_reference(name, true);
+            vm -> load_string(source, true, true, vm -> get_count());
+            vm -> pop(1);
+        }
         running.insert(name);
         log("sbox", fmt::format("resource `{}` loaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
