@@ -98,9 +98,8 @@ namespace Vital::Manager {
         std::vector<Script> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;
-        for (const auto& script : resource->scripts) {
-            if (type.empty() || script.type == type)
-                result.push_back(script);
+        for (const auto& script : resource -> scripts) {
+            if (type.empty() || script.type == type) result.push_back(script);
         }
         return result;
     }
