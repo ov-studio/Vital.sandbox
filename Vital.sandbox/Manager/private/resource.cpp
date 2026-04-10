@@ -74,10 +74,9 @@ namespace Vital::Manager {
 
     // Getters //
     std::vector<const Resource::Manifest*> Resource::get_all_resources() const {
-        std::vector<const Resource::Manifest*> result;
+        std::vector<const Manifest*> result;
         result.reserve(resources.size());
-        for (const auto& resource : resources)
-            result.push_back(&resource);
+        for (const auto& resource : resources) result.push_back(&resource);
         return result;
     }
 
