@@ -348,18 +348,22 @@ namespace Vital::Manager {
     
         const auto* resource = get_resource(name);
         std::vector<std::pair<std::string, std::string>> sources;
+        std::vector<std::string> compile_errors;
         for (const auto& script : resource -> scripts) {
             if (!is_type(script.type)) continue;
             std::string source;
             try { source = Tool::File::read_text(get_resource_base(name), script.src); }
-            catch (...) { log("error", fmt::format("resource `{}` failed to read script `{}`", name, script.src)); return false; }
-            if (!vm -> compile_string(source)) {
-                log("error", fmt::format("resource `{}` failed to compile script `{}`", name, script.src));
-                return false;
-            }
-            sources.emplace_back(script.src, std::move(source));
+            catch (...) { compile_errors.push_back(fmt::format("> `{}` (failed to read)", script.src)); continue; }
+            if (!vm -> compile_string(source)) compile_errors.push_back(fmt::format("> `{}` (failed to compile)", script.src));
+            else sources.emplace_back(script.src, std::move(source));
         }
-    
+        if (!compile_errors.empty()) {
+            std::string error_list = fmt::format("resource `{}` failed to start — {} error(s):\n", name, compile_errors.size());
+            for (const auto& err : compile_errors) error_list += "  " + err + "\n";
+            log("error", error_list);
+            return false;
+        }
+
         std::vector<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
