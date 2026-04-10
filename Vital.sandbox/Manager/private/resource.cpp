@@ -52,16 +52,13 @@ namespace Vital::Manager {
     }
 
     bool Resource::is_type(const std::string& type) {
-        if (type == "shared") return true;
-        return type == Tool::get_platform();
+        return (type == "shared") || (type == Tool::get_platform());
     }
 
     bool Resource::is_loaded(const std::string& name) const {
-        for (const auto& resource : resources) {
-            if (resource.ref == name)
-                return true;
-        }
-        return false;
+        return std::any_of(resources.begin(), resources.end(), [&](const Manifest& r) { 
+            return resource.ref == name; 
+        });
     }
 
     bool Resource::is_running(const std::string& name) const {
