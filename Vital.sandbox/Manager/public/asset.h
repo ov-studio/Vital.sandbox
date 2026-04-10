@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Engine/public/index.h>
+#include <Vital.sandbox/Engine/public/core.h>
 
 // TODO: REMOVE??
 // Forward declare httplib::Server so the header does not need to include
