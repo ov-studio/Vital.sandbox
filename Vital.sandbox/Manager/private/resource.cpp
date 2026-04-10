@@ -341,11 +341,10 @@ namespace Vital::Manager {
         Tool::Stack msg;
         msg.object["type"] = Tool::StackValue(std::string("vital.resource:started"));
         msg.object["name"] = Tool::StackValue(name);
-
-        msg.object["script_count"] = Tool::StackValue((int32_t)resource->scripts.size());
-        for (int i = 0; i < (int)resource->scripts.size(); i++) {
-            msg.object[fmt::format("script_src_{}", i)]  = Tool::StackValue(resource->scripts[i].src);
-            msg.object[fmt::format("script_type_{}", i)] = Tool::StackValue(resource->scripts[i].type);
+        msg.object["script_count"] = Tool::StackValue((int32_t)resource -> scripts.size());
+        for (int i = 0; i < (int)resource -> scripts.size(); i++) {
+            msg.object[fmt::format("script_src_{}", i)]  = Tool::StackValue(resource -> scripts[i].src);
+            msg.object[fmt::format("script_type_{}", i)] = Tool::StackValue(resource -> scripts[i].type);
         }
 
         msg.object["file_count"] = Tool::StackValue((int32_t)resource->files.size());
@@ -438,16 +437,7 @@ namespace Vital::Manager {
     bool Resource::stop(const std::string& name) {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
-        
-        if (!is_running(name)) {
-            Tool::print("error", fmt::format("Cannot stop `{}` — not running", name));
-            return false;
-        }
-
-        am->unregister_group(name);
-        Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            notify_resource_stopped(name);
-        });
+        if (!is_running(name)) { Tool::print("error", fmt::format("Cannot stop `{}` — not running", name)); return false; }
 
         Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         vm->clear_environment_id(name);
