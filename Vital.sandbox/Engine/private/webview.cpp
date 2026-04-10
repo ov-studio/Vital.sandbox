@@ -142,11 +142,11 @@ namespace Vital::Engine {
 
     // APIs //
     void Webview::load_url(const std::string& url) {
-        webview -> call_deferred("load_url", to_godot_string(url));
+        webview -> call_deferred("load_url", Tool::to_godot_string(url));
     }
 
     void Webview::load_html(const std::string& raw) {
-        webview -> call_deferred("load_html", to_godot_string(raw));
+        webview -> call_deferred("load_html", Tool::to_godot_string(raw));
     }
 
     void Webview::clear_history() {
@@ -171,11 +171,11 @@ namespace Vital::Engine {
     }
 
     void Webview::eval(const std::string& input) {
-        webview -> call_deferred("eval", to_godot_string(input));
+        webview -> call_deferred("eval", Tool::to_godot_string(input));
     }
 
     void Webview::emit(const std::string& input) {
-        webview -> call_deferred("post_message", to_godot_string(input));
+        webview -> call_deferred("post_message", Tool::to_godot_string(input));
     }
 
 

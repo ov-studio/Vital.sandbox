@@ -44,11 +44,11 @@ namespace Vital::Engine {
     }
 
     void Texture::heartbeat() {
-        reference_tick = get_tick();
+        reference_tick = Tool::get_tick();
     }
 
     void Texture::flush() {
-        auto tick = get_tick();
+        auto tick = Tool::get_tick();
         std::vector<std::string> expired;
         for (const auto& reference_cache : reference_cache) {
             if (tick - reference_cache.second -> reference_tick > flush_interval) {
@@ -145,7 +145,7 @@ namespace Vital::Engine {
     Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
+        godot::Error status = image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0);
         if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         SVG payload;
         auto texture = memnew(Texture({Type::SVG, payload}, reference));
@@ -168,7 +168,7 @@ namespace Vital::Engine {
         if (command.type != Type::SVG) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status = image -> load_svg_from_string(to_godot_string(raw), 1.0);
+        godot::Error status = image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0);
         if (status != godot::OK) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
         const auto& payload = std::get<SVG>(command.payload);
         payload.texture -> update(image);

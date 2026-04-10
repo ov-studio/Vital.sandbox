@@ -89,7 +89,7 @@ namespace Vital::Manager {
             return;
         }
         try {
-            const std::string full_path = Vital::get_directory() + "/" + path;
+            const std::string full_path = Tool::get_directory() + "/" + path;
             registered_assets[path] = { compute_hash_file(full_path), group };
             if (!silenced) {
                 std::string report = fmt::format("Asset: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
@@ -163,9 +163,9 @@ namespace Vital::Manager {
                 return;
             }
 
-            const std::string full_path = Vital::get_directory() + "/" + path;
+            const std::string full_path = Tool::get_directory() + "/" + path;
 
-            if (!http_server->set_mount_point("/", Vital::get_directory())) {
+            if (!http_server->set_mount_point("/", Tool::get_directory())) {
                 // Fallback: manual file streaming with range support
             }
 

@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
                 return Manager::Resource::get_resource_base(target, true);
             }
             const std::string name = Manager::Resource::get_resource_from_vm(vm);
-            return name.empty() ? get_directory("resources") : Manager::Resource::get_resource_base(name);
+            return name.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(name);
         }
 
         static void bind(Machine* vm) {

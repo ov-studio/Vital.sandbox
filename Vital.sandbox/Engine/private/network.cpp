@@ -184,7 +184,7 @@ namespace Vital::Engine {
     }
 
     bool Network::is_server() {
-        return get_platform() == "server";
+        return Tool::get_platform() == "server";
     }
 
     int Network::get_peer_id() const {

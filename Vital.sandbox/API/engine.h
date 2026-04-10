@@ -32,17 +32,17 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "get_tick", [](auto vm) -> int {
-                vm -> push_value(get_tick());
+                vm -> push_value(Tool::get_tick());
                 return 1;
             });
         
             API::bind(vm, {base_name}, "get_platform", [](auto vm) -> int {
-                vm -> push_value(get_platform());
+                vm -> push_value(Tool::get_platform());
                 return 1;
             });
 
             API::bind(vm, {base_name}, "get_timestamp", [](auto vm) -> int {
-                auto timestamp = get_timestamp();
+                auto timestamp = Tool::get_timestamp();
                 vm -> create_table();
                 for (auto& [key, value] : timestamp.object) {
                     vm -> table_set_value(key, value);

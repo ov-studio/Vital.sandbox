@@ -113,7 +113,7 @@ namespace Vital::Engine {
         vm -> load_string(rwString);
 
         font.instantiate();
-        font -> load_dynamic_font(to_godot_string(get_directory()) + to_godot_string("/") + to_godot_string("fonts/Roboto-Bold.ttf"));
+        font -> load_dynamic_font(Tool::to_godot_string(get_directory()) + Tool::to_godot_string("/") + Tool::to_godot_string("fonts/Roboto-Bold.ttf"));
         tex = Vital::Engine::Texture::create_texture_2d("flower.jpg");
         svg = Vital::Engine::Texture::create_svg("square.svg");
     }
@@ -139,7 +139,7 @@ namespace Vital::Engine {
         )";
 
         std::string text = u8"Hello from Аниса from Netherland Hello from Аниса from Netherland 2";
-        float rotation = std::sin(get_tick()*0.0005)*360.0f;
+        float rotation = std::sin(Tool::get_tick()*0.0005)*360.0f;
         canvas -> draw_image({100 + (310)*0, 20}, {300, 300}, tex -> get_texture(), 0, {0.0f, 0.0f}, {1, 1, 1, 0.35});
         canvas -> draw_text(
             text,

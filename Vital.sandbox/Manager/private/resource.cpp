@@ -53,7 +53,7 @@ namespace Vital::Manager {
 
     bool Resource::is_type(const std::string& type) {
         if (type == "shared") return true;
-        return type == Vital::get_platform();
+        return type == Tool::get_platform();
     }
 
     bool Resource::is_loaded(const std::string& name) const {
@@ -97,7 +97,7 @@ namespace Vital::Manager {
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
         if (!is_name(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, "invalid resource name");
         if (require_running && !get_singleton() -> is_running(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, "resource not running");
-        return Vital::get_directory("resources", name);
+        return Tool::get_directory("resources", name);
     }
 
     std::vector<Resource::ResourceScript> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
@@ -175,7 +175,7 @@ namespace Vital::Manager {
 
         std::vector<std::string> contents;
         try {
-            contents = Tool::File::contents(Vital::get_directory(), "resources", true);
+            contents = Tool::File::contents(Tool::get_directory(), "resources", true);
         }
         catch (...) {
             Vital::print("error", "Resource scan skipped — `resources/` directory not found");

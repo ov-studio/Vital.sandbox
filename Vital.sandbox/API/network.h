@@ -26,7 +26,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "emit", [](auto vm) -> int {
-                bool client = get_platform() == "client";
+                bool client = Tool::get_platform() == "client";
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 int queryArg = client ? 3 : 4;
                 auto name = vm -> get_string(1);

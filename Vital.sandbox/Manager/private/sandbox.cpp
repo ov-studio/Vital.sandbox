@@ -75,13 +75,13 @@ namespace Vital::Manager {
             if (event_key -> is_echo()) return;
             if (event_key -> is_pressed() && Engine::Console::get_singleton() -> on_key(event_key -> get_keycode())) return;
             signal("vital.sandbox:key_input",
-                Tool::StackValue(to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
+                Tool::StackValue(Tool::to_std_string(godot::String::num_int64(event_key -> get_keycode()))),
                 Tool::StackValue(event_key -> is_pressed())
             );
         }
         else if (auto event_mouse_button = godot::Object::cast_to<godot::InputEventMouseButton>(event.ptr())) {
             signal("vital.sandbox:key_input",
-                Tool::StackValue(fmt::format("mouse_{}", to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())))),
+                Tool::StackValue(fmt::format("mouse_{}", Tool::to_std_string(godot::String::num_int64(event_mouse_button -> get_button_index())))),
                 Tool::StackValue(event_mouse_button -> is_pressed())
             );
         }

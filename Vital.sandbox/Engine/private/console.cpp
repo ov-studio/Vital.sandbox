@@ -310,7 +310,7 @@ namespace Vital::Engine {
     }
     
     std::string Console::format_output(const std::string& mode, const std::string& message) {
-        const Tool::Stack ts = Vital::get_timestamp();
+        const Tool::Stack ts = Tool::get_timestamp();
         const Tool::Stack mode_rgb = fetch_mode_color(mode);
         auto mode_badge = fetch_mode_badge(mode);
         std::ostringstream ts_oss;
@@ -578,7 +578,7 @@ namespace Vital::Engine {
     #if defined(Vital_SDK_Client)
     bool Console::on_key(int keycode) {
         const auto bind = Manager::Kit::fetch_json_value("config/console", "bind");
-        if (keycode != godot::OS::get_singleton() -> find_keycode_from_string(to_godot_string(bind.as<std::string>()))) return false;
+        if (keycode != godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()))) return false;
         Vital::Engine::Console::get_singleton() -> toggle();
         Core::get_singleton() -> get_viewport() -> set_input_as_handled();
         return true;
@@ -586,7 +586,7 @@ namespace Vital::Engine {
 
     void Console::on_message(godot::String message) {
         rapidjson::Document document;
-        document.Parse(to_std_string(message).c_str());
+        document.Parse(Tool::to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
         if (action == "ready") init();

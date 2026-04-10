@@ -439,7 +439,7 @@ namespace Vital::Engine {
     ) {
         if (!font.is_valid() || text.empty()) return;
         Text payload;
-        payload.text = to_godot_string(text);
+        payload.text = Tool::to_godot_string(text);
         payload.rect = {start_at, end_at - start_at};
         payload.font = font;
         payload.font_size = font_size;

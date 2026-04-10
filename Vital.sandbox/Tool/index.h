@@ -22,7 +22,7 @@
 // Vital //
 ////////////
 
-namespace Vital {
+namespace Vital::Tool {
     static std::string indent(int level) {
         #if defined(Vital_SDK_Client)
         return std::string(level*4, ' ');
@@ -65,7 +65,7 @@ namespace Vital {
 
     template<typename... Args>
     inline std::string get_directory(Args&&... args) {
-        std::string base = to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
+        std::string base = Tool::to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
         ((base += "/" + std::string(std::forward<Args>(args))), ...);
         return base;
     }

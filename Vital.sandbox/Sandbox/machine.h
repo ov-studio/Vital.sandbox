@@ -133,7 +133,7 @@ namespace Vital::Sandbox {
                 return false;
             }
             bool is_color(int index = 1) {
-                if (is_string(index)) return godot::Color::html_is_valid(to_godot_string(get_string(index)));
+                if (is_string(index)) return godot::Color::html_is_valid(Tool::to_godot_string(get_string(index)));
                 return is_table(index) && get_length(index) >= 4;
             }
             bool is_vector2(int index = 1) { return is_table(index) && get_length(index) >= 2; }
@@ -199,7 +199,7 @@ namespace Vital::Sandbox {
             }
             godot::Color get_color(int index = 1) {
                 if (is_string(index)) {
-                    auto html = to_godot_string(get_string(index));
+                    auto html = Tool::to_godot_string(get_string(index));
                     if (godot::Color::html_is_valid(html)) return godot::Color::html(html);
                 }
                 godot::Color value = {1, 1, 1, 1};

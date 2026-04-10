@@ -29,7 +29,7 @@ namespace Vital::Engine {
     void Core::_ready() {
         singleton = singleton ? singleton : this;
         set_process(false);
-        if (!Vital::is_runtime()) return;
+        if (!Tool::is_runtime()) return;
 
         kit_abort.store(false);
         Vital::print("sbox", "Core: bootstrapping Vital.kit...");
@@ -90,7 +90,7 @@ namespace Vital::Engine {
 
     // Managers //
     bool Core::is_ready() {
-        return Vital::is_runtime() && kit_ready.load();
+        return Tool::is_runtime() && kit_ready.load();
     }
 
     void Core::teardown() {
