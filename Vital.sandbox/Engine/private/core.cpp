@@ -102,9 +102,9 @@ namespace Vital::Engine {
         Tool::Event::emit("vital.core:teardown");
     }
 
-    void Core::push_deferred(std::function<void()> fn) {
+    void Core::push_deferred(std::function<void()> exec) {
         std::lock_guard<std::mutex> lock(deferred_mutex);
-        deferred_queue.push_back(std::move(fn));
+        deferred_queue.push_back(std::move(exec));
     }
 
     void Core::flush_deferred_queue() {
@@ -113,7 +113,7 @@ namespace Vital::Engine {
             std::lock_guard<std::mutex> lock(deferred_mutex);
             local.swap(deferred_queue);
         }
-        for (auto& fn : local) fn();
+        for (auto& exec : local) exec();
     }
 
 
