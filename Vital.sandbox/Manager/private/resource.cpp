@@ -154,7 +154,6 @@ namespace Vital::Manager {
         std::lock_guard<std::mutex> lock(scan_mutex);
         log("sbox", "rescanning resources...");
         resources.clear();
-
         std::vector<std::string> contents;
         try { contents = Tool::File::contents(Tool::get_directory(), "resources", true); }
         catch (...) { log("error", "resource scan skipped — `resources/` directory not found"); return; }
@@ -511,14 +510,11 @@ namespace Vital::Manager {
 
         const auto* resource = get_resource(name);
         if (!resource) { log("error", fmt::format("cannot load `{}` — manifest is null", name)); return false; }
-
         std::unordered_set<std::string> asset_paths;
-        for (const auto& file : resource -> files)
-            asset_paths.insert(fmt::format("resources/{}/{}", name, file));
-        for (const auto& script : resource -> scripts)
-            if (script.type == "client" || script.type == "shared")
-                asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
-
+        for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
+        for (const auto& script : resource -> scripts) {
+            if (script.type == "client" || script.type == "shared") asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
+        }
         pending.insert(name);
         for (const auto& path : asset_paths) {
             if (Tool::File::exists(Tool::get_directory(), path)) log("sbox",  fmt::format("resource `{}` asset cached: {}", name, path));
@@ -535,10 +531,8 @@ namespace Vital::Manager {
 
     void Resource::execute_scripts(const std::string& name) {
         if (!is_pending(name)) return;
-
-        auto* vm             = Manager::Sandbox::get_singleton() -> get_vm();
+        auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         const auto* resource = get_resource(name);
-
         if (!resource) {
             log("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
             pending.erase(name);
@@ -568,9 +562,7 @@ namespace Vital::Manager {
 
         pending.erase(name);
         resource_assets.erase(name);
-
         if (!status) { vm -> clear_environment_id(name); log("error", fmt::format("resource `{}` failed to load — env released", name)); return; }
-
         running.insert(name);
         log("sbox",  fmt::format("resource `{}` loaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
