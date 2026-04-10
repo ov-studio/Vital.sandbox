@@ -483,9 +483,10 @@ namespace Vital::Engine {
         auto check_args = [&](const std::string& cmd) -> bool {
             auto& help = Manager::Kit::fetch_json("config/help");
             if (help.HasParseError()) return true;
-            for (const char* section : {"shared", "server", "client"}) {
-                if (!help.HasMember(section)) continue;
-                const auto& cmds = help[section];
+            const std::vector<std::string> sections = { "shared", Tool::get_platform() };
+            for (const auto& section : sections) {
+                if (!help.HasMember(section.c_str())) continue;
+                const auto& cmds = help[section.c_str()];
                 if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
                 const auto& entry = cmds[cmd.c_str()];
                 std::string syntax = entry.HasMember("syntax") && entry["syntax"].IsString() ? entry["syntax"].GetString() : "";
