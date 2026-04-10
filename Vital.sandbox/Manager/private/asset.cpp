@@ -43,13 +43,6 @@ namespace Vital::Manager {
     //----------------//
     //    Helpers     //
     //----------------//
-
-    // Hash a PackedByteArray — used for small buffers already in memory
-    std::string Asset::compute_hash(const godot::PackedByteArray& buffer) {
-        std::string_view data(reinterpret_cast<const char*>(buffer.ptr()), buffer.size());
-        return Tool::Crypto::hash("SHA256", data);
-    }
-
     // Hash directly from disk without loading into memory — used at register time
     // so we never hold large files in RAM just to hash them
     std::string Asset::compute_hash_file(const std::string& full_path) {

@@ -72,7 +72,6 @@ namespace Vital::Manager {
             #endif
 
             // Helpers
-            static std::string compute_hash(const godot::PackedByteArray& buffer);
             static std::string compute_hash_file(const std::string& full_path);
 
         public:
