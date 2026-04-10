@@ -14,16 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
-#include <godot_cpp/classes/e_net_multiplayer_peer.hpp>
-#include <godot_cpp/classes/multiplayer_api.hpp>
-#include <godot_cpp/classes/multiplayer_peer.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/variant.hpp>
 
 
 /////////////////////////////

@@ -54,6 +54,7 @@
 
 // Externals //
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
@@ -96,6 +97,9 @@
 #include <godot_cpp/classes/font_file.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
+#include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/multiplayer_peer.hpp>
+#include <godot_cpp/classes/e_net_multiplayer_peer.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/variant.hpp>
