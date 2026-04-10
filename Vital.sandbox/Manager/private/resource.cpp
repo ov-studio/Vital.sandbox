@@ -39,6 +39,12 @@ namespace Vital::Manager {
     }
 
 
+    // Managers //
+    void Resource::log(const std::string& mode, const std::string& message) {
+        Tool::print(mode, fmt::format("Resource: {}", message));
+    }
+
+
     // Checkers //
     bool Resource::is_name(const std::string& name) {
         if (name.empty() || !Tool::File::sanitize(name)) return false;

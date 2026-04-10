@@ -24,11 +24,6 @@
 /////////////////////////////
 
 namespace Vital::Manager {
-    void Discord::log(const std::string& mode, const std::string& message) {
-        Tool::print(mode, fmt::format("Discord: {}", message));
-    }
-
-
     // Instantiators //
     Discord::Discord() {
         default_application_id = static_cast<uint64_t>(std::stoull(Manager::Kit::fetch_json_value("config/discord", "application_id").as<std::string>()));
@@ -114,6 +109,10 @@ namespace Vital::Manager {
                 }
             );
         });
+    }
+
+    void Discord::log(const std::string& mode, const std::string& message) {
+        Tool::print(mode, fmt::format("Discord: {}", message));
     }
 
 

@@ -65,6 +65,10 @@ namespace Vital::Manager {
             static void free_singleton();
 
 
+            // Managers //
+            void log(const std::string& mode, const std::string& message);
+
+    
             // Checkers //
             static bool is_name(const std::string& name);
             static bool is_type(const std::string& type);
