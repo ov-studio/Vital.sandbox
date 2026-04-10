@@ -683,9 +683,8 @@ namespace Vital::Manager {
         }
 
         bool status = true;
-
-        vm->create_environment(name);
-        vm->pop();
+        vm -> create_environment(name);
+        vm -> pop();
 
         for (const auto& script : resource->scripts) {
             if (script.type != "shared" && script.type != "client") continue;
