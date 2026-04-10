@@ -210,8 +210,9 @@ namespace Vital::Manager {
         #if !defined(Vital_SDK_Client)
         {
             std::vector<std::string> stale;
-            for (const auto& name : running)
+            for (const auto& name : running) {
                 if (!is_loaded(name)) stale.push_back(name);
+            }
             for (const auto& name : stale) {
                 log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
                 stop(name);
