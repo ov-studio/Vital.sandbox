@@ -480,55 +480,42 @@ namespace Vital::Engine {
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
     
-        auto get_required_args = [&](const std::string& cmd) -> int {
-            auto& help = Manager::Kit::fetch_json("config/help");
-            if (help.HasParseError()) return 0;
-            for (const char* section : {"shared", "server", "client"}) {
-                if (!help.HasMember(section)) continue;
-                const auto& cmds = help[section];
-                if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
-                const auto& entry = cmds[cmd.c_str()];
-                if (!entry.HasMember("syntax") || !entry["syntax"].IsString()) return 0;
-                std::string syntax = entry["syntax"].GetString();
-                int count = 0;
-                for (char c : syntax) if (c == '<') count++;
-                return count;
-            }
-            return 0;
-        };
-    
         auto check_args = [&](const std::string& cmd) -> bool {
-            const int required = get_required_args(cmd);
-            if ((int)tokens.size() - 1 >= required) return true;
             auto& help = Manager::Kit::fetch_json("config/help");
+            if (help.HasParseError()) return true;
             for (const char* section : {"shared", "server", "client"}) {
                 if (!help.HasMember(section)) continue;
                 const auto& cmds = help[section];
                 if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
                 const auto& entry = cmds[cmd.c_str()];
                 std::string syntax = entry.HasMember("syntax") && entry["syntax"].IsString() ? entry["syntax"].GetString() : "";
+                int required = 0;
+                for (char c : syntax) if (c == '<') required++;
+                if ((int)tokens.size() - 1 >= required) return true;
                 print("error", fmt::format("Command Syntax:\n> `{}` {}", cmd, syntax));
                 return false;
             }
-            return false;
+            return true;
         };
     
         auto exec = [&](const std::vector<std::string>& tokens) {
-            if (tokens[0] == "version") { if (check_args("version")) print("sbox", fetch_version()); return true; }
-            if (tokens[0] == "help") { if (check_args("help")) print("sbox", fetch_help()); return true; }
-            if (tokens[0] == "clear") { if (check_args("clear")) clear(); return true; }
+            const std::string& cmd = tokens[0];
+            if (!check_args(cmd)) return true;
+            if (cmd == "version") { print("sbox", fetch_version()); return true; }
+            if (cmd == "help") { print("sbox", fetch_help()); return true; }
+            if (cmd == "clear") { clear(); return true; }
             #if defined(Vital_SDK_Client)
-            if (tokens[0] == "crun") { if (!check_args("crun")) return true; }
+            if (cmd == "crun") { return true; }
             #else
-            if (tokens[0] == "srun") { if (!check_args("srun")) return true; }
-            if (tokens[0] == "refresh") { if (check_args("refresh")) Manager::Resource::get_singleton() -> scan(); return true; }
-            if (tokens[0] == "start") { if (check_args("start")) Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
-            if (tokens[0] == "stop") { if (check_args("stop")) Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
-            if (tokens[0] == "restart") { if (check_args("restart")) Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
-            if (tokens[0] == "start_all") { if (check_args("start_all")) Manager::Resource::get_singleton() -> start_all(); return true; }
-            if (tokens[0] == "stop_all") { if (check_args("stop_all")) Manager::Resource::get_singleton() -> stop_all(); return true; }
-            if (tokens[0] == "restart_all") { if (check_args("restart_all")) Manager::Resource::get_singleton() -> restart_all(); return true; }
-            if (tokens[0] == "shutdown") { if (check_args("shutdown")) shutdown(); return true; }
+            if (cmd == "srun") { return true; }
+            if (cmd == "refresh") { Manager::Resource::get_singleton()->scan(); return true; }
+            if (cmd == "start") { Manager::Resource::get_singleton()->start(tokens[1]); return true; }
+            if (cmd == "stop") { Manager::Resource::get_singleton()->stop(tokens[1]); return true; }
+            if (cmd == "restart") { Manager::Resource::get_singleton()->restart(tokens[1]); return true; }
+            if (cmd == "start_all") { Manager::Resource::get_singleton()->start_all(); return true; }
+            if (cmd == "stop_all") { Manager::Resource::get_singleton()->stop_all(); return true; }
+            if (cmd == "restart_all") { Manager::Resource::get_singleton()->restart_all(); return true; }
+            if (cmd == "shutdown") { shutdown(); return true; }
             #endif
             return false;
         };
