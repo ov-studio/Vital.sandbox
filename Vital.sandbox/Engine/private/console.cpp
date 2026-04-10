@@ -479,15 +479,49 @@ namespace Vital::Engine {
         std::string token;
         while (iss >> token) tokens.push_back(token);
         if (tokens.empty()) return;
+    
+        auto get_required_args = [&](const std::string& cmd) -> int {
+            auto& help = Manager::Kit::fetch_json("config/help");
+            if (help.HasParseError()) return 0;
+            for (const char* section : {"shared", "server", "client"}) {
+                if (!help.HasMember(section)) continue;
+                const auto& cmds = help[section];
+                if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
+                const auto& entry = cmds[cmd.c_str()];
+                if (!entry.HasMember("syntax") || !entry["syntax"].IsString()) return 0;
+                std::string syntax = entry["syntax"].GetString();
+                int count = 0;
+                for (char c : syntax) if (c == '<') count++;
+                return count;
+            }
+            return 0;
+        };
+    
+        auto check_args = [&](const std::string& cmd) -> bool {
+            const int required = get_required_args(cmd);
+            if ((int)tokens.size() - 1 >= required) return true;
+            auto& help = Manager::Kit::fetch_json("config/help");
+            for (const char* section : {"shared", "server", "client"}) {
+                if (!help.HasMember(section)) continue;
+                const auto& cmds = help[section];
+                if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
+                const auto& entry = cmds[cmd.c_str()];
+                std::string syntax = entry.HasMember("syntax") && entry["syntax"].IsString() ? entry["syntax"].GetString() : "";
+                print("error", fmt::format("Command Syntax:\n> `{}` {}", cmd, syntax));
+                return false;
+            }
+            return false;
+        };
+    
         auto exec = [&](const std::vector<std::string>& tokens) {
             if (tokens[0] == "version") { print("sbox", fetch_version()); return true; }
             if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
             if (tokens[0] == "clear") { clear(); return true; }
             #if !defined(Vital_SDK_Client)
             if (tokens[0] == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
-            if (tokens[0] == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
-            if (tokens[0] == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
-            if (tokens[0] == "restart") { Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
+            if (tokens[0] == "start") { if (check_args("start")) Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
+            if (tokens[0] == "stop") { if (check_args("stop")) Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
+            if (tokens[0] == "restart") { if (check_args("restart")) Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
             if (tokens[0] == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
             if (tokens[0] == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
             if (tokens[0] == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
@@ -495,12 +529,11 @@ namespace Vital::Engine {
             #endif
             return false;
         };
+    
         if (exec(tokens)) return;
         Tool::Stack arguments;
         arguments.array.reserve(tokens.size() - 1);
-        for (std::size_t i = 1; i < tokens.size(); ++i) {
-            arguments.array.emplace_back(tokens[i]);
-        }
+        for (std::size_t i = 1; i < tokens.size(); ++i) arguments.array.emplace_back(tokens[i]);
         Manager::Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
             Tool::StackValue(tokens[0]),
             Tool::StackValue(std::move(arguments))
