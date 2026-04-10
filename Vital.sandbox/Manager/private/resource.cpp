@@ -43,8 +43,7 @@ namespace Vital::Manager {
     bool Resource::is_name(const std::string& name) {
         if (name.empty() || !Tool::File::sanitize(name)) return false;
         for (const char c : name) {
-            if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_'))
-                return false;
+            if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_')) return false;
         }
         return true;
     }
@@ -80,8 +79,7 @@ namespace Vital::Manager {
 
     const Resource::Manifest* Resource::get_resource(const std::string& name) const {
         for (const auto& resource : resources) {
-            if (resource.ref == name)
-                return &resource;
+            if (resource.ref == name) return &resource;
         }
         return nullptr;
     }
