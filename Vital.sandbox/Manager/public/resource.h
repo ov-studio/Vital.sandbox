@@ -21,7 +21,6 @@
 ///////////////////////////////
 
 namespace Vital::Manager {
-    // TODO: Improve
     class Resource {
         public:
             struct Script {
@@ -34,21 +33,22 @@ namespace Vital::Manager {
                 std::string name;
                 std::string author;
                 std::string version;
-                std::vector<Script>  scripts;
-                std::vector<std::string>     files;
+                std::vector<Script> scripts;
+                std::vector<std::string> files;
                 std::unordered_map<std::string, std::string> script_hashes;
                 std::unordered_map<std::string, std::string> file_hashes;
             };
 
-            inline static const std::unordered_set<std::string> Types = {
-                "shared",
-                "server",
+            inline static const std::unordered_set<std::string> Types = { 
+                "shared", 
+                "server", 
                 "client"
             };
         protected:
             inline static Resource* singleton = nullptr;
             std::vector<Manifest> resources;
             std::unordered_set<std::string> running;
+            std::mutex scan_mutex;
             #if defined(Vital_SDK_Client)
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
             std::unordered_set<std::string> pending;
@@ -79,9 +79,9 @@ namespace Vital::Manager {
             const Manifest* get_resource(const std::string& name) const;
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
             static std::string get_resource_base(const std::string& name, bool require_running = false);
-            std::vector<Script> get_resource_scripts(const std::string& name, const std::string& type) const;
+            std::vector<Script> get_resource_scripts(const std::string& name, const std::string& type = "") const;
 
-
+    
             // APIs //
             void scan();
             void init();
