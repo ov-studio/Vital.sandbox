@@ -492,7 +492,7 @@ namespace Vital::Engine {
                 int required = 0;
                 for (char c : syntax) if (c == '<') required++;
                 if ((int)tokens.size() - 1 >= required) return true;
-                print("error", fmt::format("Command Syntax:\n> `{}` {}", cmd, syntax));
+                print("error", fmt::format("Command syntax:\n> `{}` {}", cmd, syntax));
                 return false;
             }
             return true;
