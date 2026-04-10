@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Manager/public/entrypoint.h>
+#include <Vital.sandbox/Manager/public/engine.h>
 
 // TODO: Improve / Remove later
 
