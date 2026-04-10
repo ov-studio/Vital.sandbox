@@ -73,7 +73,7 @@ namespace Vital::Sandbox {
                 return 0;
             }, 0);
             vm -> set_table_field("__gc", -2);
-            vm -> pop();
+            vm -> pop(1);
         }
 
         template<typename T>

@@ -47,14 +47,14 @@ namespace Vital::Sandbox {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 self() -> push_nil();
                 self() -> set_table_field(self() -> get_length(-2) + 1, -2);
-                if (!nspace.empty()) self() -> pop();
+                if (!nspace.empty()) self() -> pop(1);
             }
             template<typename T>
             void table_push_value(T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 push_value(value);
                 self() -> set_table_field(self() -> get_length(-2) + 1, -2);
-                if (!nspace.empty()) self() -> pop();
+                if (!nspace.empty()) self() -> pop(1);
             }
             void table_push_table(const std::string& nspace = "") {
                 if (!nspace.empty()) {
@@ -71,14 +71,14 @@ namespace Vital::Sandbox {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 self() -> push_nil();
                 self() -> set_table_field(index, -2);
-                if (!nspace.empty()) self() -> pop();
+                if (!nspace.empty()) self() -> pop(1);
             }
             template<typename T>
             void table_set_value(const std::string& index, T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 push_value(value);
                 self() -> set_table_field(index, -2);
-                if (!nspace.empty()) self() -> pop();
+                if (!nspace.empty()) self() -> pop(1);
             }
             void table_set_table(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) {

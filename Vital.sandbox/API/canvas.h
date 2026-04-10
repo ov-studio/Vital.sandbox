@@ -143,10 +143,10 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_table(7)) {
                     vm -> get_table_field(1, 7);
                     alignment.first = vm -> get_horizontal_alignment(-1);
-                    vm -> pop();
+                    vm -> pop(1);
                     vm -> get_table_field(2, 7);
                     alignment.second = vm -> get_vertical_alignment(-1);
-                    vm -> pop();
+                    vm -> pop(1);
                 }
                 auto clip = vm -> is_bool(8) ? vm -> get_bool(8) : false;
                 auto wordwrap = vm -> is_bool(9) ? vm -> get_bool(9) : false;
