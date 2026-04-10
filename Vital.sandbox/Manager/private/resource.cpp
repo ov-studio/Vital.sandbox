@@ -244,11 +244,11 @@ namespace Vital::Manager {
                 if (!args.object.count("path")) return;
                 const std::string path = args.object.at("path").as<std::string>();
                 auto* rm = Resource::get_singleton();
-                for (auto& [name, remaining] : rm->resource_assets) {
+                for (auto& [name, remaining] : rm -> resource_assets) {
                     if (!remaining.count(path)) continue;
                     remaining.erase(path);
                     log("sbox", fmt::format("resource `{}` asset ready: {}", name, path));
-                    if (remaining.empty()) rm->execute_scripts(name);
+                    if (remaining.empty()) rm -> execute_scripts(name);
                     break;
                 }
             });
@@ -287,15 +287,15 @@ namespace Vital::Manager {
                         }
                     }
 
-                    rm->register_remote(name, scripts, files);
+                    rm -> register_remote(name, scripts, files);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    if (!rm->is_running(name) && !rm->is_pending(name)) rm->load(name);
+                    if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name);
                 }
                 else if (type == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
                     const std::string name = args.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
-                    rm->unload(name);
+                    rm -> unload(name);
                 }
             });
             log("sbox", "client resource manager initialized");
