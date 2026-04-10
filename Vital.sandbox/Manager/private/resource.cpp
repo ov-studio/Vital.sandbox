@@ -25,7 +25,6 @@
 ///////////////////////////////
 
 namespace Vital::Manager {
-    // TODO: Improve
     // Utils //
     Resource* Resource::get_singleton() {
         if (!singleton) singleton = new Resource();
