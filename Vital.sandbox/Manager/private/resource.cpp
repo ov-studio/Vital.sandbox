@@ -170,7 +170,7 @@ namespace Vital::Manager {
     #endif
 
     void Resource::scan() {
-        ("sbox", "Rescanning resources...");
+        Vital::print("sbox", "Rescanning resources...");
         resources.clear();
 
         std::vector<std::string> contents;
@@ -178,7 +178,7 @@ namespace Vital::Manager {
             contents = Tool::File::contents(Vital::get_directory(), "resources", true);
         }
         catch (...) {
-            ("error", "Resource scan skipped — `resources/` directory not found");
+            Vital::print("error", "Resource scan skipped — `resources/` directory not found");
             return;
         }
 
@@ -191,11 +191,11 @@ namespace Vital::Manager {
         for (const auto& path : contents) {
             const std::string name = path.substr(path.find_last_of("/\\") + 1);
             if (!is_name(name)) {
-                ("error", fmt::format("Invalid resource name `{}` — skipping", name));
+                Vital::print("error", fmt::format("Invalid resource name `{}` — skipping", name));
                 continue;
             }
             if (resource_count[name] > 1) {
-                ("error", fmt::format("Duplicate resource found — skipping `{}`", name));
+                Vital::print("error", fmt::format("Duplicate resource found — skipping `{}`", name));
                 continue;
             }
             if (!Tool::File::exists(get_resource_base(name), "manifest.yaml")) continue;
@@ -205,7 +205,7 @@ namespace Vital::Manager {
                 content = Tool::File::read_text(get_resource_base(name), "manifest.yaml");
             }
             catch (...) {
-                ("error", fmt::format("Failed to read manifest for `{}` — skipping", name));
+                Vital::print("error", fmt::format("Failed to read manifest for `{}` — skipping", name));
                 continue;
             }
 
@@ -214,7 +214,7 @@ namespace Vital::Manager {
                 manifest.parse(content);
             }
             catch (const std::exception& e) {
-                ("error", fmt::format(
+                Vital::print("error", fmt::format(
                     "Malformed YAML in manifest for `{}` — skipping\n"
                     "> {}",
                     name, e.what()
@@ -237,10 +237,10 @@ namespace Vital::Manager {
                 if (!errors.empty()) {
                     std::string error_list = fmt::format("Resource `{}` skipped — {} error(s):\n", name, errors.size());
                     for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
-                    ("error", error_list);
+                    Vital::print("error", error_list);
                 }
                 else {
-                    ("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping", name));
+                    Vital::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping", name));
                 }
                 continue;
             }
@@ -251,7 +251,7 @@ namespace Vital::Manager {
         std::string report = fmt::format("Resource scan complete — {} resource(s) loaded\n", resources.size());
         for (const auto& resource : resources)
             report += fmt::format("> `{}`\n", resource.ref);
-        ("sbox", report);
+        Vital::print("sbox", report);
 
         #if !defined(Vital_SDK_Client)
         {
@@ -260,7 +260,7 @@ namespace Vital::Manager {
                 if (!is_loaded(name)) stale.push_back(name);
             }
             for (const auto& name : stale) {
-                ("sbox", fmt::format("Resource `{}` no longer exists — stopping", name));
+                Vital::print("sbox", fmt::format("Resource `{}` no longer exists — stopping", name));
                 stop(name);
             }
         }
@@ -285,7 +285,7 @@ namespace Vital::Manager {
             if (client_initialized) return;
             client_initialized = true;
 
-            ("sbox", "Initializing client resource manager...");
+            Vital::print("sbox", "Initializing client resource manager...");
 
             Tool::Event::bind("asset:file_ready", [](Tool::Stack args) {
                 if (!args.object.count("path")) return;
@@ -294,7 +294,7 @@ namespace Vital::Manager {
                 for (auto& [name, remaining] : rm->resource_assets) {
                     if (!remaining.count(path)) continue;
                     remaining.erase(path);
-                    ("sbox", fmt::format("Resource `{}` asset ready: {}", name, path));
+                    Vital::print("sbox", fmt::format("Resource `{}` asset ready: {}", name, path));
                     if (remaining.empty()) rm->execute_scripts(name);
                     break;
                 }
@@ -336,17 +336,17 @@ namespace Vital::Manager {
                     }
 
                     rm->register_remote(name, scripts, files);
-                    ("sbox", fmt::format("Client received resource start: `{}`", name));
+                    Vital::print("sbox", fmt::format("Client received resource start: `{}`", name));
                     if (!rm->is_running(name) && !rm->is_pending(name)) rm->load(name);
                 }
                 else if (type == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
                     const std::string name = args.object.at("name").as<std::string>();
-                    ("sbox", fmt::format("Client received resource stop: `{}`", name));
+                    Vital::print("sbox", fmt::format("Client received resource stop: `{}`", name));
                     rm->unload(name);
                 }
             });
-            ("sbox", "Client resource manager initialized");
+            Vital::print("sbox", "Client resource manager initialized");
         #else
             scan();
         #endif
@@ -393,11 +393,11 @@ namespace Vital::Manager {
         auto* am = Manager::Asset::get_singleton();
 
         if (!is_loaded(name)) {
-            ("error", fmt::format("Cannot start `{}` — resource not loaded", name));
+            Vital::print("error", fmt::format("Cannot start `{}` — resource not loaded", name));
             return false;
         }
         if (is_running(name)) {
-            ("error", fmt::format("Cannot start `{}` — already running", name));
+            Vital::print("error", fmt::format("Cannot start `{}` — already running", name));
             return false;
         }
 
@@ -416,7 +416,7 @@ namespace Vital::Manager {
 
         // Phase 2: Mark as started and notify
         running.insert(name);
-        ("sbox", fmt::format("Resource `{}` started", name));
+        Vital::print("sbox", fmt::format("Resource `{}` started", name));
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             notify_resource_started(name);
         });
@@ -434,7 +434,7 @@ namespace Vital::Manager {
                 source = Tool::File::read_text(get_resource_base(name), script.src);
             }
             catch (...) {
-                ("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
+                Vital::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
                 running.erase(name);
                 vm->clear_environment_id(name);
                 am->unregister_group(name);
@@ -443,7 +443,7 @@ namespace Vital::Manager {
 
             vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
-                ("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
+                Vital::print("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
                 vm->pop();
                 running.erase(name);
                 vm->clear_environment_id(name);
@@ -461,7 +461,7 @@ namespace Vital::Manager {
         auto* am = Manager::Asset::get_singleton();
         
         if (!is_running(name)) {
-            ("error", fmt::format("Cannot stop `{}` — not running", name));
+            Vital::print("error", fmt::format("Cannot stop `{}` — not running", name));
             return false;
         }
 
@@ -474,13 +474,13 @@ namespace Vital::Manager {
         vm->clear_environment_id(name);
 
         running.erase(name);
-        ("sbox", fmt::format("Resource `{}` stopped", name));
+        Vital::print("sbox", fmt::format("Resource `{}` stopped", name));
         return true;
     }
 
     bool Resource::restart(const std::string& name) {
         if (!is_running(name)) {
-            ("error", fmt::format("Cannot restart `{}` — not running", name));
+            Vital::print("error", fmt::format("Cannot restart `{}` — not running", name));
             return false;
         }
 
@@ -492,7 +492,7 @@ namespace Vital::Manager {
                     [&name](const ResourceManifest& m) { return m.ref == name; }),
                 resources.end()
             );
-            ("error", fmt::format("Resource `{}` manifest not found — unregistered", name));
+            Vital::print("error", fmt::format("Resource `{}` manifest not found — unregistered", name));
             return false;
         }
 
@@ -501,7 +501,7 @@ namespace Vital::Manager {
             content = Tool::File::read_text(base, "manifest.yaml");
         }
         catch (...) {
-            ("error", fmt::format("Resource `{}` failed to read manifest — skipping restart", name));
+            Vital::print("error", fmt::format("Resource `{}` failed to read manifest — skipping restart", name));
             return false;
         }
 
@@ -510,7 +510,7 @@ namespace Vital::Manager {
             manifest.parse(content);
         }
         catch (const std::exception& e) {
-            ("error", fmt::format("Resource `{}` malformed YAML — {} — skipping restart", name, e.what()));
+            Vital::print("error", fmt::format("Resource `{}` malformed YAML — {} — skipping restart", name, e.what()));
             return false;
         }
 
@@ -526,10 +526,10 @@ namespace Vital::Manager {
                 if (!errors.empty()) {
                     std::string error_list = fmt::format("Resource `{}` restart aborted — {} error(s):\n", name, errors.size());
                     for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
-                    ("error", error_list);
+                    Vital::print("error", error_list);
                 }
                 else {
-                    ("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping restart", name));
+                    Vital::print("error", fmt::format("Resource `{}` has no valid `scripts` section — skipping restart", name));
                 }
                 return false;
             }
@@ -569,7 +569,7 @@ namespace Vital::Manager {
                 for (const auto& change : changes)
                     report += change + "\n";
             }
-            ("sbox", report);
+            Vital::print("sbox", report);
 
             break;
         }
@@ -578,29 +578,29 @@ namespace Vital::Manager {
     }
 
     void Resource::start_all() {
-        ("sbox", "Starting all resources...");
+        Vital::print("sbox", "Starting all resources...");
         int count = 0;
         for (const auto* resource : get_all_resources())
             if (start(resource->ref)) count++;
-        ("sbox", fmt::format("All resources started — {} resource(s) running", count));
+        Vital::print("sbox", fmt::format("All resources started — {} resource(s) running", count));
     }
     
     void Resource::stop_all() {
-        ("sbox", "Stopping all resources...");
+        Vital::print("sbox", "Stopping all resources...");
         std::unordered_set<std::string> snapshot = running;
         int count = 0;
         for (const auto& name : snapshot)
             if (stop(name)) count++;
-        ("sbox", fmt::format("All resources stopped — {} resource(s) stopped", count));
+        Vital::print("sbox", fmt::format("All resources stopped — {} resource(s) stopped", count));
     }
     
     void Resource::restart_all() {
-        ("sbox", "Restarting all resources...");
+        Vital::print("sbox", "Restarting all resources...");
         std::unordered_set<std::string> snapshot = running;
         int count = 0;
         for (const auto& name : snapshot)
             if (restart(name)) count++;
-        ("sbox", fmt::format("All resources restarted — {} resource(s) restarted", count));
+        Vital::print("sbox", fmt::format("All resources restarted — {} resource(s) restarted", count));
     }
     #endif
 
@@ -615,7 +615,7 @@ namespace Vital::Manager {
         manifest.scripts = scripts;
         manifest.files   = files;
         resources.push_back(std::move(manifest));
-        ("sbox", fmt::format("Resource `{}` manifest registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
+        Vital::print("sbox", fmt::format("Resource `{}` manifest registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
         return true;
     }
 
@@ -631,17 +631,17 @@ namespace Vital::Manager {
         auto* am = Manager::Asset::get_singleton();
 
         if (!is_loaded(name)) {
-            ("error", fmt::format("Cannot load `{}` — resource not registered", name));
+            Vital::print("error", fmt::format("Cannot load `{}` — resource not registered", name));
             return false;
         }
         if (is_running(name) || is_pending(name)) {
-            ("error", fmt::format("Cannot load `{}` — already running or pending", name));
+            Vital::print("error", fmt::format("Cannot load `{}` — already running or pending", name));
             return false;
         }
 
         const auto* resource = get_resource(name);
         if (!resource) {
-            ("error", fmt::format("Cannot load `{}` — manifest is null", name));
+            Vital::print("error", fmt::format("Cannot load `{}` — manifest is null", name));
             return false;
         }
 
@@ -657,16 +657,16 @@ namespace Vital::Manager {
 
         for (const auto& path : asset_paths) {
             if (Tool::File::exists(get_directory(), path)) {
-                ("sbox", fmt::format("Resource `{}` asset cached: {}", name, path));
+                Vital::print("sbox", fmt::format("Resource `{}` asset cached: {}", name, path));
             } else {
                 resource_assets[name].insert(path);
             }
         }
 
-        ("sbox", fmt::format("Resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
+        Vital::print("sbox", fmt::format("Resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
 
         if (resource_assets[name].empty()) {
-            ("sbox", fmt::format("Resource `{}` all assets cached — executing immediately", name));
+            Vital::print("sbox", fmt::format("Resource `{}` all assets cached — executing immediately", name));
             execute_scripts(name);
         }
 
@@ -681,7 +681,7 @@ namespace Vital::Manager {
         const auto* resource = get_resource(name);
 
         if (!resource) {
-            ("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
+            Vital::print("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
             pending.erase(name);
             resource_assets.erase(name);
             return;
@@ -702,14 +702,14 @@ namespace Vital::Manager {
                 source = Tool::File::read_text(get_directory(), asset_path);
             }
             catch (...) {
-                ("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
+                Vital::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
                 status = false;
                 break;
             }
 
             vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
-                ("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
+                Vital::print("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
                 vm->pop();
                 status = false;
                 break;
@@ -722,12 +722,12 @@ namespace Vital::Manager {
 
         if (!status) {
             vm->clear_environment_id(name);
-            ("error", fmt::format("Resource `{}` failed to load — env released", name));
+            Vital::print("error", fmt::format("Resource `{}` failed to load — env released", name));
             return;
         }
 
         running.insert(name);
-        ("sbox", fmt::format("Resource `{}` loaded on client", name));
+        Vital::print("sbox", fmt::format("Resource `{}` loaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
 
@@ -736,7 +736,7 @@ namespace Vital::Manager {
         auto* am = Manager::Asset::get_singleton();
 
         if (!is_running(name) && !is_pending(name)) {
-            ("error", fmt::format("Cannot unload `{}` — not running or pending", name));
+            Vital::print("error", fmt::format("Cannot unload `{}` — not running or pending", name));
             return false;
         }
 
@@ -744,7 +744,7 @@ namespace Vital::Manager {
             resource_assets.erase(name);
             pending.erase(name);
             am->cancel_group(name);
-            ("sbox", fmt::format("Resource `{}` download cancelled", name));
+            Vital::print("sbox", fmt::format("Resource `{}` download cancelled", name));
         }
 
         if (is_running(name)) {
@@ -753,7 +753,7 @@ namespace Vital::Manager {
         }
 
         unregister_remote(name);
-        ("sbox", fmt::format("Resource `{}` unloaded on client", name));
+        Vital::print("sbox", fmt::format("Resource `{}` unloaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;
     }
