@@ -192,9 +192,10 @@ namespace Vital::Manager {
             if (false) {
             #endif
                 if (!errors.empty()) {
-                    std::string error_list = fmt::format("resource `{}` skipped — {} error(s):\n", name, errors.size());
-                    for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
-                    log("error", error_list);
+                    // TODO: MERGE
+                    std::string report = fmt::format("resource `{}` skipped — {} error(s):\n", name, errors.size());
+                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                    log("error", report);
                 }
                 else log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping", name));
                 continue;
@@ -368,7 +369,7 @@ namespace Vital::Manager {
         am -> broadcast_manifest_deferred();
         running.insert(name);
     
-        log("sbox",  fmt::format("resource `{}` started", name));
+        log("sbox", fmt::format("resource `{}` started", name));
         Engine::Core::get_singleton() -> push_deferred([this, name]() { notify_resource_started(name); });
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
         vm -> create_environment(name);
@@ -419,15 +420,16 @@ namespace Vital::Manager {
             std::vector<std::string> errors;
             if (!parse_manifest(resource, manifest, base, errors)) {
                 if (!errors.empty()) {
-                    std::string error_list = fmt::format("resource `{}` restart aborted — {} error(s):\n", name, errors.size());
-                    for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
-                    log("error", error_list);
+                    std::string report = fmt::format("resource `{}` restart aborted — {} error(s):\n", name, errors.size());
+                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                    log("error", report);
                 }
                 else log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping restart", name));
                 return false;
             }
 
             auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
+                // TODO: CHANGE
                 for (const auto& [k, v] : old_map) {
                     if (!new_map.count(k)) changes.push_back(fmt::format("> `{}` ({} deleted)", k, label));
                     else if (new_map.at(k) != v) changes.push_back(fmt::format("> `{}` ({} modified)", k, label));
@@ -439,11 +441,12 @@ namespace Vital::Manager {
 
             std::vector<std::string> changes;
             diff(old_script_hashes, resource.script_hashes, "script", changes);
-            diff(old_file_hashes, resource.file_hashes, "file",   changes);
+            diff(old_file_hashes, resource.file_hashes, "file", changes);
             std::string report = fmt::format("resource `{}` restarted\n", name);
             if (changes.empty()) report += "> No changes detected";
             else {
                 report += fmt::format("> Changes ({}):\n", changes.size());
+                // TODO: CHANGE
                 for (const auto& change : changes) report += change + "\n";
             }
             log("sbox", report);
@@ -514,13 +517,13 @@ namespace Vital::Manager {
         }
         pending.insert(name);
         for (const auto& path : asset_paths) {
-            if (Tool::File::exists(Tool::get_directory(), path)) log("sbox",  fmt::format("resource `{}` asset cached: {}", name, path));
+            if (Tool::File::exists(Tool::get_directory(), path)) log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
             else resource_assets[name].insert(path);
         }
 
-        log("sbox",  fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
+        log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
         if (resource_assets[name].empty()) {
-            log("sbox",  fmt::format("resource `{}` all assets cached — executing immediately", name));
+            log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
             execute_scripts(name);
         }
         return true;
@@ -561,7 +564,7 @@ namespace Vital::Manager {
         resource_assets.erase(name);
         if (!status) { vm -> clear_environment_id(name); log("error", fmt::format("resource `{}` failed to load — env released", name)); return; }
         running.insert(name);
-        log("sbox",  fmt::format("resource `{}` loaded on client", name));
+        log("sbox", fmt::format("resource `{}` loaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
 
@@ -573,12 +576,12 @@ namespace Vital::Manager {
             resource_assets.erase(name);
             pending.erase(name);
             am -> cancel_group(name);
-            log("sbox",  fmt::format("resource `{}` download cancelled", name));
+            log("sbox", fmt::format("resource `{}` download cancelled", name));
         }
 
         if (is_running(name)) { vm -> clear_environment_id(name); running.erase(name); }
         unregister_remote(name);
-        log("sbox",  fmt::format("resource `{}` unloaded on client", name));
+        log("sbox", fmt::format("resource `{}` unloaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;
     }
