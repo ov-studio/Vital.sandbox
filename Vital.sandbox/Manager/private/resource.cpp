@@ -119,8 +119,7 @@ namespace Vital::Manager {
         resource.script_hashes.clear();
         resource.file_hashes.clear();
 
-        if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq())
-            return false;
+        if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
 
         for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
             if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) {
