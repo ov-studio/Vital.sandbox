@@ -490,10 +490,10 @@ namespace Vital::Manager {
     bool Resource::register_remote(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
         unregister_remote(name);
         Manifest manifest;
-        manifest.ref     = name;
-        manifest.name    = name;
+        manifest.ref = name;
+        manifest.name = name;
         manifest.scripts = scripts;
-        manifest.files   = files;
+        manifest.files = files;
         resources.push_back(std::move(manifest));
         log("sbox", fmt::format("resource `{}` manifest registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
         return true;
