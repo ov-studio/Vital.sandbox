@@ -420,7 +420,8 @@ namespace Vital::Manager {
             std::vector<std::string> errors;
             if (!parse_manifest(resource, manifest, base, errors)) {
                 if (!errors.empty()) {
-                    std::string report = fmt::format("resource `{}` restart aborted — {} error(s):\n", name, errors.size());
+                    std::string report = fmt::format("resource `{}` restart aborted\n", name);
+                    report += fmt::format("> Errors ({}):\n", errors.size());
                     for (const auto& err : errors) report += fmt::format("> {}\n", err);
                     log("error", report);
                 }
@@ -429,13 +430,12 @@ namespace Vital::Manager {
             }
 
             auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
-                // TODO: CHANGE
                 for (const auto& [k, v] : old_map) {
-                    if (!new_map.count(k)) changes.push_back(fmt::format("> `{}` ({} deleted)", k, label));
-                    else if (new_map.at(k) != v) changes.push_back(fmt::format("> `{}` ({} modified)", k, label));
+                    if (!new_map.count(k)) changes.push_back(fmt::format("`{}` ({} deleted)", k, label));
+                    else if (new_map.at(k) != v) changes.push_back(fmt::format("`{}` ({} modified)", k, label));
                 }
                 for (const auto& [k, v] : new_map) {
-                    if (!old_map.count(k)) changes.push_back(fmt::format("> `{}` ({} added)", k, label));
+                    if (!old_map.count(k)) changes.push_back(fmt::format("`{}` ({} added)", k, label));
                 }
             };
 
@@ -446,8 +446,7 @@ namespace Vital::Manager {
             if (changes.empty()) report += "> No changes detected";
             else {
                 report += fmt::format("> Changes ({}):\n", changes.size());
-                // TODO: CHANGE
-                for (const auto& change : changes) report += change + "\n";
+                for (const auto& change : changes) report += fmt::format("> {}\n", change);
             }
             log("sbox", report);
             break;
