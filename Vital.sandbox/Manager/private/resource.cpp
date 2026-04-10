@@ -192,8 +192,8 @@ namespace Vital::Manager {
             if (false) {
             #endif
                 if (!errors.empty()) {
-                    // TODO: MERGE
-                    std::string report = fmt::format("resource `{}` skipped — {} error(s):\n", name, errors.size());
+                    std::string report = fmt::format("resource `{}` skipped:\n", name);
+                    report += fmt::format("> Errors ({}):\n", errors.size());
                     for (const auto& err : errors) report += fmt::format("> {}\n", err);
                     log("error", report);
                 }
