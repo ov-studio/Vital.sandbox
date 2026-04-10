@@ -514,18 +514,21 @@ namespace Vital::Engine {
         };
     
         auto exec = [&](const std::vector<std::string>& tokens) {
-            if (tokens[0] == "version") { print("sbox", fetch_version()); return true; }
-            if (tokens[0] == "help") { print("sbox", fetch_help()); return true; }
-            if (tokens[0] == "clear") { clear(); return true; }
-            #if !defined(Vital_SDK_Client)
-            if (tokens[0] == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
+            if (tokens[0] == "version") { if (check_args("version")) print("sbox", fetch_version()); return true; }
+            if (tokens[0] == "help") { if (check_args("help")) print("sbox", fetch_help()); return true; }
+            if (tokens[0] == "clear") { if (check_args("clear")) clear(); return true; }
+            #if defined(Vital_SDK_Client)
+            if (tokens[0] == "crun") { if (!check_args("crun")) return true; }
+            #else
+            if (tokens[0] == "srun") { if (!check_args("srun")) return true; }
+            if (tokens[0] == "refresh") { if (check_args("refresh")) Manager::Resource::get_singleton() -> scan(); return true; }
             if (tokens[0] == "start") { if (check_args("start")) Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
             if (tokens[0] == "stop") { if (check_args("stop")) Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }
             if (tokens[0] == "restart") { if (check_args("restart")) Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
-            if (tokens[0] == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
-            if (tokens[0] == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
-            if (tokens[0] == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
-            if (tokens[0] == "shutdown") { shutdown(); return true; }
+            if (tokens[0] == "start_all") { if (check_args("start_all")) Manager::Resource::get_singleton() -> start_all(); return true; }
+            if (tokens[0] == "stop_all") { if (check_args("stop_all")) Manager::Resource::get_singleton() -> stop_all(); return true; }
+            if (tokens[0] == "restart_all") { if (check_args("restart_all")) Manager::Resource::get_singleton() -> restart_all(); return true; }
+            if (tokens[0] == "shutdown") { if (check_args("shutdown")) shutdown(); return true; }
             #endif
             return false;
         };
