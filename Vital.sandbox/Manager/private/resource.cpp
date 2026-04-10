@@ -304,7 +304,6 @@ namespace Vital::Manager {
 
 
     #if !defined(Vital_SDK_Client)
-
     void Resource::notify_resource_started(const std::string& name) {
         const auto* resource = get_resource(name);
         if (!resource) return;
