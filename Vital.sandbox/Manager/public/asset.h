@@ -15,13 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 
-// TODO: REMOVE??
-// Forward declare httplib::Server so the header does not need to include
-// httplib.h — the full include lives in asset_manager.cpp only
-#if !defined(Vital_SDK_Client)
-namespace httplib { class Server; }
-#endif
-
 
 ////////////////////////////
 // Vital: Manager: Asset //
