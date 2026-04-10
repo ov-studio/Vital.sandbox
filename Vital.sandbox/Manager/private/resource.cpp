@@ -738,7 +738,7 @@ namespace Vital::Manager {
         if (is_pending(name)) {
             resource_assets.erase(name);
             pending.erase(name);
-            am->cancel_group(name);
+            am -> cancel_group(name);
             Tool::print("sbox", fmt::format("Resource `{}` download cancelled", name));
         }
 
