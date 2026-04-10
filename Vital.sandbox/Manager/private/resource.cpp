@@ -356,6 +356,7 @@ namespace Vital::Manager {
             std::string report = fmt::format("resource `{}` failed to start\n", name);
             report += fmt::format("> Errors ({}):\n", errors.size());
             for (const auto& err : errors) report += fmt::format("> {}\n", err);
+            log("error", report);
             return false;
         }
     
