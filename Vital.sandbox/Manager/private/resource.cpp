@@ -76,15 +76,15 @@ namespace Vital::Manager {
 
 
     // Getters //
-    std::vector<const Resource::ResourceManifest*> Resource::get_all_resources() const {
-        std::vector<const Resource::ResourceManifest*> result;
+    std::vector<const Resource::Manifest*> Resource::get_all_resources() const {
+        std::vector<const Resource::Manifest*> result;
         result.reserve(resources.size());
         for (const auto& resource : resources)
             result.push_back(&resource);
         return result;
     }
 
-    const Resource::ResourceManifest* Resource::get_resource(const std::string& name) const {
+    const Resource::Manifest* Resource::get_resource(const std::string& name) const {
         for (const auto& resource : resources)
             if (resource.ref == name) return &resource;
         return nullptr;
@@ -100,8 +100,8 @@ namespace Vital::Manager {
         return Tool::get_directory("resources", name);
     }
 
-    std::vector<Resource::ResourceScript> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
-        std::vector<Resource::ResourceScript> result;
+    std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
+        std::vector<Resource::Script> result;
         const auto* resource = get_resource(name);
         if (!resource) return result;
         for (const auto& script : resource->scripts) {
@@ -114,7 +114,7 @@ namespace Vital::Manager {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-    bool Resource::parse_manifest(ResourceManifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
+    bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name    = manifest.get_str("name",    resource.ref);
         resource.author  = manifest.get_str("author",  "");
         resource.version = manifest.get_str("version", "");
@@ -133,7 +133,7 @@ namespace Vital::Manager {
             }
             const std::string src  = Tool::YAML::get_str(node, "src");
             const std::string type = Tool::YAML::get_str(node, "type");
-            if (valid_types.find(type) == valid_types.end()) {
+            if (Types.find(type) == Types.end()) {
                 errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type));
                 continue;
             }
@@ -222,7 +222,7 @@ namespace Vital::Manager {
                 continue;
             }
 
-            ResourceManifest resource;
+            Manifest resource;
             resource.ref = name;
 
             std::vector<std::string> errors;
@@ -309,7 +309,7 @@ namespace Vital::Manager {
                     if (!args.object.count("name")) return;
                     const std::string name = args.object.at("name").as<std::string>();
 
-                    std::vector<Resource::ResourceScript> scripts;
+                    std::vector<Resource::Script> scripts;
                     if (args.object.count("script_count")) {
                         const int count = args.object.at("script_count").as<int32_t>();
                         scripts.reserve(count);
@@ -489,7 +489,7 @@ namespace Vital::Manager {
         if (!Tool::File::exists(base, "manifest.yaml")) {
             resources.erase(
                 std::remove_if(resources.begin(), resources.end(),
-                    [&name](const ResourceManifest& m) { return m.ref == name; }),
+                    [&name](const Manifest& m) { return m.ref == name; }),
                 resources.end()
             );
             Tool::print("error", fmt::format("Resource `{}` manifest not found — unregistered", name));
@@ -607,9 +607,9 @@ namespace Vital::Manager {
 
     #if defined(Vital_SDK_Client)
 
-    bool Resource::register_remote(const std::string& name, const std::vector<ResourceScript>& scripts, const std::vector<std::string>& files) {
+    bool Resource::register_remote(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
         unregister_remote(name);
-        ResourceManifest manifest;
+        Manifest manifest;
         manifest.ref     = name;
         manifest.name    = name;
         manifest.scripts = scripts;
@@ -622,7 +622,7 @@ namespace Vital::Manager {
     void Resource::unregister_remote(const std::string& name) {
         resources.erase(
             std::remove_if(resources.begin(), resources.end(),
-                [&name](const ResourceManifest& m) { return m.ref == name; }),
+                [&name](const Manifest& m) { return m.ref == name; }),
             resources.end()
         );
     }

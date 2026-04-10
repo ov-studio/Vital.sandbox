@@ -24,30 +24,30 @@ namespace Vital::Manager {
     // TODO: Improve
     class Resource {
         public:
-            struct ResourceScript {
+            struct Script {
                 std::string src;
                 std::string type;
             };
 
-            struct ResourceManifest {
+            struct Manifest {
                 std::string ref;
                 std::string name;
                 std::string author;
                 std::string version;
-                std::vector<ResourceScript>  scripts;
+                std::vector<Script>  scripts;
                 std::vector<std::string>     files;
                 std::unordered_map<std::string, std::string> script_hashes;
                 std::unordered_map<std::string, std::string> file_hashes;
             };
 
-            inline static const std::unordered_set<std::string> valid_types = {
+            inline static const std::unordered_set<std::string> Types = {
                 "shared",
                 "server",
                 "client"
             };
         protected:
             inline static Resource* singleton = nullptr;
-            std::vector<ResourceManifest> resources;
+            std::vector<Manifest> resources;
             std::unordered_set<std::string> running;
             #if defined(Vital_SDK_Client)
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
@@ -75,18 +75,18 @@ namespace Vital::Manager {
 
 
             // Getters //
-            std::vector<const ResourceManifest*> get_all_resources() const;
-            const ResourceManifest* get_resource(const std::string& name) const;
+            std::vector<const Manifest*> get_all_resources() const;
+            const Manifest* get_resource(const std::string& name) const;
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
             static std::string get_resource_base(const std::string& name, bool require_running = false);
-            std::vector<ResourceScript> get_resource_scripts(const std::string& name, const std::string& type) const;
+            std::vector<Script> get_resource_scripts(const std::string& name, const std::string& type) const;
 
 
             // APIs //
             void scan();
             void init();
             #if !defined(Vital_SDK_Client)
-            bool parse_manifest(ResourceManifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+            bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
             bool start(const std::string& name);
             bool stop(const std::string& name);
             bool restart(const std::string& name);
@@ -97,7 +97,7 @@ namespace Vital::Manager {
             void notify_resource_stopped(const std::string& name);
             #endif
             #if defined(Vital_SDK_Client)
-            bool register_remote(const std::string& name, const std::vector<ResourceScript>& scripts, const std::vector<std::string>& files);
+            bool register_remote(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
             void unregister_remote(const std::string& name);
             bool load(const std::string& name);
             bool unload(const std::string& name);
