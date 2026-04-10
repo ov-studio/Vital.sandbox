@@ -316,13 +316,12 @@ namespace Vital::Manager {
                 ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
             bool hash_matches = false;
-            const std::string local_path = get_directory() + "/" + path;
+            const std::string local_path = Tool::get_directory() + "/" + path;
             try {
                 if (std::filesystem::exists(local_path)) {
                     hash_matches = (compute_hash_file(local_path) == hash);
                 }
-                Tool::print("sbox", "Asset: checked -> ", path.c_str(),
-                    " match=", hash_matches ? "yes" : "no");
+                Tool::print("sbox", "Asset: checked -> ", path.c_str(), " match=", hash_matches ? "yes" : "no");
             }
             catch (...) {
                 hash_matches = false;
@@ -357,7 +356,7 @@ namespace Vital::Manager {
         dl->group = group;
         active_downloads[path] = dl;
 
-        const std::string local_base = get_directory();
+        const std::string local_base = Tool::get_directory();
         const std::string local_path = local_base + "/" + path;
 
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {

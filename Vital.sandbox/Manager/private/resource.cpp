@@ -656,7 +656,7 @@ namespace Vital::Manager {
         pending.insert(name);
 
         for (const auto& path : asset_paths) {
-            if (Tool::File::exists(get_directory(), path)) {
+            if (Tool::File::exists(Tool::get_directory(), path)) {
                 Tool::print("sbox", fmt::format("Resource `{}` asset cached: {}", name, path));
             } else {
                 resource_assets[name].insert(path);
@@ -699,7 +699,7 @@ namespace Vital::Manager {
 
             std::string source;
             try {
-                source = Tool::File::read_text(get_directory(), asset_path);
+                source = Tool::File::read_text(Tool::get_directory(), asset_path);
             }
             catch (...) {
                 Tool::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
