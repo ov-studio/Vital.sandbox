@@ -87,7 +87,7 @@ namespace Vital::Manager {
     }
 
     std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
-        return vm->get_environment_id();
+        return vm -> get_environment_id();
     }
 
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
@@ -704,11 +704,12 @@ namespace Vital::Manager {
             vm->get_reference(name, true);
             if (!vm->load_string(source, true, true, vm->get_count())) {
                 Tool::print("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
-                vm->pop();
+                vm -> pop(1);
                 status = false;
                 break;
             }
             vm->pop();
+            vm -> pop(1);
         }
 
         pending.erase(name);
