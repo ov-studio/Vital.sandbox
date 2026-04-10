@@ -122,15 +122,9 @@ namespace Vital::Manager {
             if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) { errors.push_back("script entry missing `src` or `type`"); continue; }
             const std::string src  = Tool::YAML::get_str(node, "src");
             const std::string type = Tool::YAML::get_str(node, "type");
-            if (Types.find(type) == Types.end()) {
-                errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type));
-                continue;
-            }
-            std::vector<std::string> expanded = Tool::File::glob(base, src);
-            if (expanded.empty()) {
-                errors.push_back(fmt::format("script pattern `{}` matched no files", src));
-                continue;
-            }
+            if (!Types.count(type)) { errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type)); continue; }
+            auto expanded = Tool::File::glob(base, src);
+            if (expanded.empty()) { errors.push_back(fmt::format("script pattern `{}` matched no files", src)); continue; }
             for (const auto& s : expanded) {
                 resource.scripts.push_back({ s, type });
                 resource.script_hashes[s] = Tool::File::hash(base, s);
