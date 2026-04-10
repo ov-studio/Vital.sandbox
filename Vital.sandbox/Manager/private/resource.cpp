@@ -439,9 +439,10 @@ namespace Vital::Manager {
         auto* am = Manager::Asset::get_singleton();
         if (!is_running(name)) { Tool::print("error", fmt::format("Cannot stop `{}` — not running", name)); return false; }
 
+        am -> unregister_group(name);
+        Engine::Core::get_singleton() -> push_deferred([this, name]() { notify_resource_stopped(name); });
         Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
-        vm->clear_environment_id(name);
-
+        vm -> clear_environment_id(name);
         running.erase(name);
         Tool::print("sbox", fmt::format("Resource `{}` stopped", name));
         return true;
