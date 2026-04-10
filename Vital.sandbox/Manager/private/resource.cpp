@@ -176,11 +176,9 @@ namespace Vital::Manager {
 
             std::string content;
             if (!try_read(get_resource_base(name), "manifest.yaml", content)) { log("error", fmt::format("failed to read manifest for `{}` — skipping", name)); continue; }
-
             Tool::YAML manifest;
             try { manifest.parse(content); }
             catch (const std::exception& e) { log("error", fmt::format("malformed yaml in manifest for `{}` — skipping\n> {}", name, e.what())); continue; }
-
             Manifest resource;
             resource.ref = name;
             std::vector<std::string> errors;
@@ -352,7 +350,7 @@ namespace Vital::Manager {
             std::string source;
             try { source = Tool::File::read_text(get_resource_base(name), script.src); }
             catch (...) { errors.push_back(fmt::format("> `{}` (failed to read)", script.src)); continue; }
-            if (!vm -> compile_string(source)) errors.push_back(fmt::format("> `{}` (failed to compile)", script.src));
+            if (!vm -> compile_string(source)) errors.push_back(fmt::format("`{}` (failed to compile)", script.src));
             else sources.emplace_back(script.src, std::move(source));
         }
         if (!errors.empty()) {
