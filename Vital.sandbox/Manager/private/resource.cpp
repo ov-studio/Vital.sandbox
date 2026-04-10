@@ -352,9 +352,10 @@ namespace Vital::Manager {
             else sources.emplace_back(script.src, std::move(source));
         }
         if (!errors.empty()) {
-            std::string error_list = fmt::format("resource `{}` failed to start — {} error(s)\n", name, errors.size());
-            for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
-            log("error", error_list);
+            std::string report = fmt::format("resource `{}` failed to start\n", name, errors.size());
+            report += fmt::format("> Errors ({}):\n", errors.size());
+            for (const auto& err : errors) report += fmt::format("> {}\n", err);
+            log("error", report);
             return false;
         }
 
