@@ -54,7 +54,7 @@ namespace Vital::Manager {
     }
 
     bool Resource::is_loaded(const std::string& name) const {
-        return std::any_of(resources.begin(), resources.end(), [&](const Manifest& r) { 
+        return std::any_of(resources.begin(), resources.end(), [&](const Manifest& resource) { 
             return resource.ref == name; 
         });
     }
@@ -79,8 +79,10 @@ namespace Vital::Manager {
     }
 
     const Resource::Manifest* Resource::get_resource(const std::string& name) const {
-        for (const auto& resource : resources)
-            if (resource.ref == name) return &resource;
+        for (const auto& resource : resources) {
+            if (resource.ref == name)
+                return &resource;
+        }
         return nullptr;
     }
 
