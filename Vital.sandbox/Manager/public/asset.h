@@ -66,14 +66,12 @@ namespace Vital::Manager {
             };
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::string server_http_ip;
-            void download_file(const std::string& path, const std::string& expected_hash,
-                               const std::string& base_url, const std::string& group);
+            void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void _on_download_failed(const std::string& path);
             #endif
 
             // Helpers
-            static std::string compute_hash_file(const std::string& full_path);
-
+            static std::string hash_file(const std::string& path);
         public:
             Asset()  = default;
             ~Asset() = default;

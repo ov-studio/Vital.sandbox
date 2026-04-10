@@ -45,11 +45,11 @@ namespace Vital::Manager {
     //----------------//
     // Hash directly from disk without loading into memory — used at register time
     // so we never hold large files in RAM just to hash them
-    std::string Asset::compute_hash_file(const std::string& full_path) {
-        size_t last_sep = full_path.find_last_of("/\\");
-        std::string base = (last_sep != std::string::npos) ? full_path.substr(0, last_sep) : ".";
-        std::string file = (last_sep != std::string::npos) ? full_path.substr(last_sep + 1) : full_path;
-        return Tool::File::hash(base, file, "SHA256");
+    std::string Asset::hash_file(const std::string& path) {
+        size_t last_sep = path.find_last_of("/\\");
+        std::string base = (last_sep != std::string::npos) ? path.substr(0, last_sep) : ".";
+        std::string file = (last_sep != std::string::npos) ? path.substr(last_sep + 1) : path;
+        return Tool::File::hash(base, file);
     }
 
 
@@ -83,7 +83,7 @@ namespace Vital::Manager {
         }
         try {
             const std::string full_path = Tool::get_directory() + "/" + path;
-            registered_assets[path] = { compute_hash_file(full_path), group };
+            registered_assets[path] = { hash_file(full_path), group };
             if (!silenced) {
                 std::string report = fmt::format("Asset: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
                 report += fmt::format("> {} — {}", path, registered_assets[path].hash);
@@ -312,7 +312,7 @@ namespace Vital::Manager {
             const std::string local_path = Tool::get_directory() + "/" + path;
             try {
                 if (std::filesystem::exists(local_path)) {
-                    hash_matches = (compute_hash_file(local_path) == hash);
+                    hash_matches = (hash_file(local_path) == hash);
                 }
                 Tool::print("sbox", "Asset: checked -> ", path.c_str(), " match=", hash_matches ? "yes" : "no");
             }
@@ -389,7 +389,7 @@ namespace Vital::Manager {
             }
 
             try {
-                const std::string actual_hash = compute_hash_file(local_path);
+                const std::string actual_hash = hash_file(local_path);
                 if (actual_hash != expected_hash) {
                     try { std::filesystem::remove(local_path); } catch (...) {}
                     Tool::print("sbox", "Asset: hash mismatch -> ", path.c_str());
