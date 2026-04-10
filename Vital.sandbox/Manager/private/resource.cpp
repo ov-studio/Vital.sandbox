@@ -354,7 +354,7 @@ namespace Vital::Manager {
             else sources.emplace_back(script.src, std::move(source));
         }
         if (!errors.empty()) {
-            std::string report = fmt::format("resource `{}` failed to start\n", name, errors.size());
+            std::string report = fmt::format("resource `{}` failed to start\n", name);
             report += fmt::format("> Errors ({}):\n", errors.size());
             for (const auto& err : errors) report += fmt::format("> {}\n", err);
             log("error", report);
@@ -554,8 +554,9 @@ namespace Vital::Manager {
         pending.erase(name);
         resource_assets.erase(name);
         if (!errors.empty()) {
-            std::string report = fmt::format("resource `{}` failed to load\n> errors ({}):", name, errors.size());
-            for (const auto& err : errors) report += "\n  " + err;
+            std::string report = fmt::format("resource `{}` failed to load\n", name);
+            report += fmt::format("> Errors ({}):\n", errors.size());
+            for (const auto& err : errors) report += fmt::format("> {}\n", err);
             log("error", report);
             return;
         }
