@@ -504,9 +504,7 @@ namespace Vital::Engine {
             if (cmd == "version") { print("sbox", fetch_version()); return true; }
             if (cmd == "help") { print("sbox", fetch_help()); return true; }
             if (cmd == "clear") { clear(); return true; }
-            #if defined(Vital_SDK_Client)
-            if (cmd == "crun") { return true; }
-            #else
+            #if !defined(Vital_SDK_Client)
             if (cmd == "srun") { return true; }
             if (cmd == "refresh") { Manager::Resource::get_singleton()->scan(); return true; }
             if (cmd == "start") { Manager::Resource::get_singleton()->start(tokens[1]); return true; }
