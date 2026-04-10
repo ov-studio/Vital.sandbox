@@ -369,68 +369,46 @@ namespace Vital::Manager {
     bool Resource::start(const std::string& name) {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
-
-        if (!is_loaded(name)) {
-            Tool::print("error", fmt::format("Cannot start `{}` — resource not loaded", name));
-            return false;
-        }
-        if (is_running(name)) {
-            Tool::print("error", fmt::format("Cannot start `{}` — already running", name));
-            return false;
-        }
-
+        if (!is_loaded(name)) { Tool::print("error", fmt::format("Cannot start `{}` — resource not loaded", name)); return false; }
+        if (is_running(name)) { Tool::print("error", fmt::format("Cannot start `{}` — already running", name)); return false; }
+    
         const auto* resource = get_resource(name);
-
-        // Phase 1: Register assets grouped under resource name
         std::vector<std::string> asset_paths;
-        for (const auto& file : resource->files)
-            asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
-        for (const auto& script : resource->scripts) {
-            if (script.type == "client" || script.type == "shared")
-                asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+        for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
+        for (const auto& script : resource -> scripts) {
+            if (script.type == "client" || script.type == "shared") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
         }
-        am->register_assets(asset_paths, name);
-        am->broadcast_manifest_deferred();
-
-        // Phase 2: Mark as started and notify
+        am -> register_assets(asset_paths, name);
+        am -> broadcast_manifest_deferred();
         running.insert(name);
+
         Tool::print("sbox", fmt::format("Resource `{}` started", name));
-        Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            notify_resource_started(name);
-        });
+        Engine::Core::get_singleton() -> push_deferred([this, name]() { notify_resource_started(name); });
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+        vm -> create_environment(name);
+        vm -> pop(1);
 
-        // Phase 3: Execute scripts
-        vm->create_environment(name);
-        vm->pop();
-
-        for (const auto& script : resource->scripts) {
+        auto abort = [&]() {
+            running.erase(name);
+            vm -> clear_environment_id(name);
+            am -> unregister_group(name);
+        };
+    
+        for (const auto& script : resource -> scripts) {
             if (!is_type(script.type)) continue;
 
             std::string source;
-            try {
-                source = Tool::File::read_text(get_resource_base(name), script.src);
-            }
-            catch (...) {
-                Tool::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src));
-                running.erase(name);
-                vm->clear_environment_id(name);
-                am->unregister_group(name);
-                return false;
-            }
-
-            vm->get_reference(name, true);
-            if (!vm->load_string(source, true, true, vm->get_count())) {
+            try { source = Tool::File::read_text(get_resource_base(name), script.src); }
+            catch (...) { Tool::print("error", fmt::format("Resource `{}` failed to read script `{}`", name, script.src)); abort(); return false; }
+            vm -> get_reference(name, true);
+            if (!vm -> load_string(source, true, true, vm -> get_count())) {
                 Tool::print("error", fmt::format("Resource `{}` failed to execute script `{}`", name, script.src));
-                vm->pop();
-                running.erase(name);
-                vm->clear_environment_id(name);
-                am->unregister_group(name);
+                vm -> pop(1);
+                abort();
                 return false;
             }
             vm -> pop(1);
         }
-
         return true;
     }
 
