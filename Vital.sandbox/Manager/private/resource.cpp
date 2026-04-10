@@ -347,6 +347,19 @@ namespace Vital::Manager {
         if (is_running(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
     
         const auto* resource = get_resource(name);
+        std::vector<std::pair<std::string, std::string>> sources;
+        for (const auto& script : resource -> scripts) {
+            if (!is_type(script.type)) continue;
+            std::string source;
+            try { source = Tool::File::read_text(get_resource_base(name), script.src); }
+            catch (...) { log("error", fmt::format("resource `{}` failed to read script `{}`", name, script.src)); return false; }
+            if (!vm -> compile_string(source)) {
+                log("error", fmt::format("resource `{}` failed to compile script `{}`", name, script.src));
+                return false;
+            }
+            sources.emplace_back(script.src, std::move(source));
+        }
+    
         std::vector<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
@@ -355,31 +368,15 @@ namespace Vital::Manager {
         am -> register_assets(asset_paths, name);
         am -> broadcast_manifest_deferred();
         running.insert(name);
-
+    
         log("sbox",  fmt::format("resource `{}` started", name));
         Engine::Core::get_singleton() -> push_deferred([this, name]() { notify_resource_started(name); });
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
         vm -> create_environment(name);
         vm -> pop(1);
-
-        auto abort = [&]() {
-            running.erase(name);
-            vm -> clear_environment_id(name);
-            am -> unregister_group(name);
-        };
-    
-        for (const auto& script : resource -> scripts) {
-            if (!is_type(script.type)) continue;
-            std::string source;
-            try { source = Tool::File::read_text(get_resource_base(name), script.src); }
-            catch (...) { log("error", fmt::format("resource `{}` failed to read script `{}`", name, script.src)); abort(); return false; }
+        for (const auto& [src, source] : sources) {
             vm -> get_reference(name, true);
-            if (!vm -> load_string(source, true, true, vm -> get_count())) {
-                log("error", fmt::format("resource `{}` failed to execute script `{}`", name, script.src));
-                vm -> pop(1);
-                abort();
-                return false;
-            }
+            vm -> load_string(source, true, true, vm -> get_count());
             vm -> pop(1);
         }
         return true;
