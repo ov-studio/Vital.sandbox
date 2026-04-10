@@ -543,7 +543,6 @@ namespace Vital::Manager {
         bool status = true;
         vm -> create_environment(name);
         vm -> pop(1);
-
         for (const auto& script : resource -> scripts) {
             if (script.type != "shared" && script.type != "client") continue;
             const std::string asset_path = fmt::format("resources/{}/{}", name, script.src);
