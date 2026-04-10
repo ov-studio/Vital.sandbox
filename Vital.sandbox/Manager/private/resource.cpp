@@ -501,13 +501,14 @@ namespace Vital::Manager {
         }
         Tool::print("sbox", fmt::format("All resources stopped — {} resource(s) stopped", count));
     }
-    
+
     void Resource::restart_all() {
         Tool::print("sbox", "Restarting all resources...");
         std::unordered_set<std::string> snapshot = running;
         int count = 0;
-        for (const auto& name : snapshot)
+        for (const auto& name : snapshot) {
             if (restart(name)) count++;
+        }
         Tool::print("sbox", fmt::format("All resources restarted — {} resource(s) restarted", count));
     }
     #endif
