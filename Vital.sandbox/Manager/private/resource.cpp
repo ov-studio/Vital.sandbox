@@ -545,8 +545,7 @@ namespace Vital::Manager {
             std::string source;
             try { source = Tool::File::read_text(Tool::get_directory(), fmt::format("resources/{}/{}", name, script.src)); }
             catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
-            if (!vm -> compile_string(source)) errors.push_back(fmt::format("`{}` failed to compile", script.src));
-            else sources.emplace_back(script.src, std::move(source));
+            sources.emplace_back(script.src, std::move(source));
         }
     
         pending.erase(name);
