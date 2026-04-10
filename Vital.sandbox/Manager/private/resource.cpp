@@ -435,8 +435,9 @@ namespace Vital::Manager {
                     if (!new_map.count(k)) changes.push_back(fmt::format("> `{}` ({} deleted)", k, label));
                     else if (new_map.at(k) != v) changes.push_back(fmt::format("> `{}` ({} modified)", k, label));
                 }
-                for (const auto& [k, v] : new_map)
+                for (const auto& [k, v] : new_map) {
                     if (!old_map.count(k)) changes.push_back(fmt::format("> `{}` ({} added)", k, label));
+                }
             };
 
             std::vector<std::string> changes;
