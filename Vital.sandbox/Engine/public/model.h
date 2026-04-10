@@ -14,11 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
-#include <godot_cpp/classes/multiplayer_synchronizer.hpp>
-#include <godot_cpp/classes/multiplayer_spawner.hpp>
-#include <godot_cpp/classes/scene_replication_config.hpp>
-#include <godot_cpp/classes/multiplayer_api.hpp>
-#include <godot_cpp/classes/multiplayer_peer.hpp>
 
 
 ///////////////////////////
