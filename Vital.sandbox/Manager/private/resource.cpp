@@ -188,8 +188,8 @@ namespace Vital::Manager {
             #if !defined(Vital_SDK_Client)
             if (!parse_manifest(resource, manifest, get_resource_base(name), errors)) {
             #else
-            resource.name    = manifest.get_str("name",    name);
-            resource.author  = manifest.get_str("author",  "");
+            resource.name = manifest.get_str("name", name);
+            resource.author = manifest.get_str("author", "");
             resource.version = manifest.get_str("version", "");
             if (false) {
             #endif
@@ -261,11 +261,10 @@ namespace Vital::Manager {
 
                 if (type == "vital.resource:started") {
                     if (!args.object.count("name")) return;
-                    const std::string name = args.object.at("name").as<std::string>();
 
+                    const std::string name = args.object.at("name").as<std::string>();
                     auto fetch_str = [&](const std::string& key) { return args.object.at(key).as<std::string>(); };
                     auto has = [&](const std::string& key) { return args.object.count(key) > 0; };
-
                     std::vector<Script> scripts;
                     if (has("script_count")) {
                         const int count = args.object.at("script_count").as<int32_t>();
@@ -300,7 +299,6 @@ namespace Vital::Manager {
                     rm->unload(name);
                 }
             });
-
             log("sbox", "client resource manager initialized");
         #else
             scan();
@@ -348,18 +346,18 @@ namespace Vital::Manager {
     
         const auto* resource = get_resource(name);
         std::vector<std::pair<std::string, std::string>> sources;
-        std::vector<std::string> compile_errors;
+        std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
             if (!is_type(script.type)) continue;
             std::string source;
             try { source = Tool::File::read_text(get_resource_base(name), script.src); }
-            catch (...) { compile_errors.push_back(fmt::format("> `{}` (failed to read)", script.src)); continue; }
-            if (!vm -> compile_string(source)) compile_errors.push_back(fmt::format("> `{}` (failed to compile)", script.src));
+            catch (...) { errors.push_back(fmt::format("> `{}` (failed to read)", script.src)); continue; }
+            if (!vm -> compile_string(source)) errors.push_back(fmt::format("> `{}` (failed to compile)", script.src));
             else sources.emplace_back(script.src, std::move(source));
         }
-        if (!compile_errors.empty()) {
-            std::string error_list = fmt::format("resource `{}` failed to start — {} error(s):\n", name, compile_errors.size());
-            for (const auto& err : compile_errors) error_list += "  " + err + "\n";
+        if (!errors.empty()) {
+            std::string error_list = fmt::format("resource `{}` failed to start — {} error(s)\n", name, errors.size());
+            for (const auto& err : errors) error_list += fmt::format("> {}\n", err);
             log("error", error_list);
             return false;
         }
@@ -445,9 +443,9 @@ namespace Vital::Manager {
             diff(old_script_hashes, resource.script_hashes, "script", changes);
             diff(old_file_hashes, resource.file_hashes, "file",   changes);
             std::string report = fmt::format("resource `{}` restarted\n", name);
-            if (changes.empty()) report += "> no changes detected";
+            if (changes.empty()) report += "> No changes detected";
             else {
-                report += fmt::format("> changes ({}):\n", changes.size());
+                report += fmt::format("> Changes ({}):\n", changes.size());
                 for (const auto& change : changes) report += change + "\n";
             }
             log("sbox", report);
