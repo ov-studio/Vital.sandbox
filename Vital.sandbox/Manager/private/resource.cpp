@@ -445,7 +445,7 @@ namespace Vital::Manager {
                 am->unregister_group(name);
                 return false;
             }
-            vm->pop();
+            vm -> pop(1);
         }
 
         return true;
