@@ -21,6 +21,7 @@
 ///////////////////////////////
 
 namespace Vital::Manager {
+    // TODO: Improve
     class Resource {
         public:
             struct Script {
