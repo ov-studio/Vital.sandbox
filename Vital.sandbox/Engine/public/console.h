@@ -91,7 +91,7 @@ namespace Vital::Engine {
     };
 }
 
-namespace Vital {
+namespace Vital::Tool {
     template<typename... Args>
     inline void print(const std::string& mode, Args&&... args) {
         std::ostringstream oss;

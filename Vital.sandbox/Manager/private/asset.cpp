@@ -70,7 +70,7 @@ namespace Vital::Manager {
 
     void Asset::set_server_info(const ServerInfo& info) {
         server_info = info;
-        Vital::print("sbox", "Server info set: '", info.name, "' v", info.version);
+        Tool::print("sbox", "Server info set: '", info.name, "' v", info.version);
     }
 
     const ServerInfo& Asset::get_server_info() const {
@@ -94,11 +94,11 @@ namespace Vital::Manager {
             if (!silenced) {
                 std::string report = fmt::format("Asset: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
                 report += fmt::format("> {} — {}", path, registered_assets[path].hash);
-                Vital::print("sbox", report);
+                Tool::print("sbox", report);
             }
         }
         catch (...) {
-            Vital::print("error", "Asset: failed to register -> ", path.c_str());
+            Tool::print("error", "Asset: failed to register -> ", path.c_str());
         }
     }
     
@@ -115,7 +115,7 @@ namespace Vital::Manager {
         std::string report = fmt::format("Asset: registered {} asset(s) for group `{}`:\n", registered.size(), group);
         for (const auto& path : registered)
             report += fmt::format("> {} — {}\n", path, registered_assets[path].hash);
-        Vital::print("sbox", report);
+        Tool::print("sbox", report);
     }
 
     void Asset::unregister_asset(const std::string& path) {
@@ -134,7 +134,7 @@ namespace Vital::Manager {
                 ++it;
             }
         }
-        Vital::print("sbox", fmt::format("Asset: unregistered group `{}` — {} asset(s) removed", group, count));
+        Tool::print("sbox", fmt::format("Asset: unregistered group `{}` — {} asset(s) removed", group, count));
     }
 
 
@@ -235,13 +235,13 @@ namespace Vital::Manager {
 
         http_running = true;
         http_thread = std::thread([this]() {
-            Vital::print("sbox", "Asset: HTTP server starting on port ", http_port);
+            Tool::print("sbox", "Asset: HTTP server starting on port ", http_port);
             http_server->listen("0.0.0.0", http_port);
-            Vital::print("sbox", "Asset: HTTP server stopped");
+            Tool::print("sbox", "Asset: HTTP server stopped");
         });
 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        Vital::print("sbox", "Asset: HTTP server running on port ", http_port);
+        Tool::print("sbox", "Asset: HTTP server running on port ", http_port);
         return true;
     }
 
@@ -251,7 +251,7 @@ namespace Vital::Manager {
         if (http_server) http_server->stop();
         if (http_thread.joinable()) http_thread.join();
         http_server.reset();
-        Vital::print("sbox", "Asset: HTTP server stopped");
+        Tool::print("sbox", "Asset: HTTP server stopped");
     }
 
     bool Asset::is_http_running() const {
@@ -275,7 +275,7 @@ namespace Vital::Manager {
         }
 
         Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
-        Vital::print("sbox", "Asset: sent manifest (",
+        Tool::print("sbox", "Asset: sent manifest (",
             (int)registered_assets.size(), " assets) to peer ", peer_id);
     }
 
@@ -304,7 +304,7 @@ namespace Vital::Manager {
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url  = "http://" + server_ip + ":" + std::to_string(http_port);
 
-        Vital::print("sbox", "Asset: received manifest, ", count,
+        Tool::print("sbox", "Asset: received manifest, ", count,
             " assets from ", base_url.c_str());
 
         int needs_download = 0;
@@ -321,7 +321,7 @@ namespace Vital::Manager {
                 if (std::filesystem::exists(local_path)) {
                     hash_matches = (compute_hash_file(local_path) == hash);
                 }
-                Vital::print("sbox", "Asset: checked -> ", path.c_str(),
+                Tool::print("sbox", "Asset: checked -> ", path.c_str(),
                     " match=", hash_matches ? "yes" : "no");
             }
             catch (...) {
@@ -329,7 +329,7 @@ namespace Vital::Manager {
             }
 
             if (hash_matches) {
-                Vital::print("sbox", "Asset: up to date -> ", path.c_str());
+                Tool::print("sbox", "Asset: up to date -> ", path.c_str());
                 Tool::Stack ready_args;
                 ready_args.object["path"]   = Tool::StackValue(path);
                 ready_args.object["cached"] = Tool::StackValue(true);
@@ -341,9 +341,9 @@ namespace Vital::Manager {
             download_file(path, hash, base_url, group);
         }
 
-        Vital::print("sbox", "Asset: ", needs_download, " assets to download");
+        Tool::print("sbox", "Asset: ", needs_download, " assets to download");
         if (needs_download == 0) {
-            Vital::print("sbox", "Asset: all assets ready (cached)");
+            Tool::print("sbox", "Asset: all assets ready (cached)");
             Tool::Event::emit("asset:ready", {});
         }
     }
@@ -361,7 +361,7 @@ namespace Vital::Manager {
         const std::string local_path = local_base + "/" + path;
 
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
-            Vital::print("sbox", "Asset: downloading -> ", path.c_str());
+            Tool::print("sbox", "Asset: downloading -> ", path.c_str());
 
             try {
                 std::filesystem::create_directories(
@@ -371,7 +371,7 @@ namespace Vital::Manager {
 
             std::ofstream out(local_path, std::ios::binary | std::ios::trunc);
             if (!out) {
-                Vital::print("sbox", "Asset: cannot open output file -> ", path.c_str());
+                Tool::print("sbox", "Asset: cannot open output file -> ", path.c_str());
                 _on_download_failed(path);
                 return;
             }
@@ -380,7 +380,7 @@ namespace Vital::Manager {
             try {
                 response_body = Tool::Rest::get(base_url + "/asset?path=" + path);
             } catch (const std::exception& e) {
-                Vital::print("sbox", "Asset: download failed -> ", path.c_str(),
+                Tool::print("sbox", "Asset: download failed -> ", path.c_str(),
                     " error=", e.what());
                 _on_download_failed(path);
                 return;
@@ -391,7 +391,7 @@ namespace Vital::Manager {
 
             if (dl->cancelled.load()) {
                 try { std::filesystem::remove(local_path); } catch (...) {}
-                Vital::print("sbox", "Asset: download cancelled -> ", path.c_str());
+                Tool::print("sbox", "Asset: download cancelled -> ", path.c_str());
                 active_downloads.erase(path);
                 return;
             }
@@ -400,7 +400,7 @@ namespace Vital::Manager {
                 const std::string actual_hash = compute_hash_file(local_path);
                 if (actual_hash != expected_hash) {
                     try { std::filesystem::remove(local_path); } catch (...) {}
-                    Vital::print("sbox", "Asset: hash mismatch -> ", path.c_str());
+                    Tool::print("sbox", "Asset: hash mismatch -> ", path.c_str());
                     _on_download_failed(path);
                     return;
                 }
@@ -410,7 +410,7 @@ namespace Vital::Manager {
                 return;
             }
 
-            Vital::print("sbox", "Asset: downloaded -> ", path.c_str());
+            Tool::print("sbox", "Asset: downloaded -> ", path.c_str());
             active_downloads.erase(path);
 
             Engine::Core::get_singleton() -> push_deferred([path]() {
@@ -419,7 +419,7 @@ namespace Vital::Manager {
                 ready_args.object["cached"] = Tool::StackValue(false);
                 Tool::Event::emit("asset:file_ready", ready_args);
                 if (!Asset::get_singleton() -> is_downloading()) {
-                    Vital::print("sbox", "Asset: all assets ready");
+                    Tool::print("sbox", "Asset: all assets ready");
                     Tool::Event::emit("asset:ready", {});
                 }
             });
@@ -431,7 +431,7 @@ namespace Vital::Manager {
     void Asset::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
         Engine::Core::get_singleton() -> push_deferred([path]() {
-            Vital::print("sbox", "Asset: download failed -> ", path);
+            Tool::print("sbox", "Asset: download failed -> ", path);
         });
     }
 
@@ -439,7 +439,7 @@ namespace Vital::Manager {
         auto it = active_downloads.find(path);
         if (it == active_downloads.end()) return;
         it->second->cancelled.store(true);
-        Vital::print("sbox", "Asset: cancelling -> ", path.c_str());
+        Tool::print("sbox", "Asset: cancelling -> ", path.c_str());
     }
 
     void Asset::cancel_group(const std::string& group) {
@@ -450,7 +450,7 @@ namespace Vital::Manager {
                 cancelled_count++;
             }
         }
-        Vital::print("sbox", "Asset: cancelling group '", group.c_str(),
+        Tool::print("sbox", "Asset: cancelling group '", group.c_str(),
             "' (", cancelled_count, " download(s) flagged)");
     }
 
@@ -458,7 +458,7 @@ namespace Vital::Manager {
         for (auto& [path, dl] : active_downloads) {
             dl->cancelled.store(true);
         }
-        Vital::print("sbox", "Asset: cancelling all downloads (threads will clean up on next poll)");
+        Tool::print("sbox", "Asset: cancelling all downloads (threads will clean up on next poll)");
     }
 
     bool Asset::is_downloading(const std::string& path) const {
@@ -482,7 +482,7 @@ namespace Vital::Manager {
 
     void Asset::queue_spawn(const std::string& name, int authority_peer) {
         spawn_queue[name] = authority_peer;
-        Vital::print("sbox", "Asset: queued spawn -> ", name.c_str());
+        Tool::print("sbox", "Asset: queued spawn -> ", name.c_str());
     }
 
     void Asset::flush_spawn_queue(const std::string& loaded_name) {

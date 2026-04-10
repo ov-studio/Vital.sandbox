@@ -48,7 +48,7 @@ namespace Vital::Engine {
             bool load() {
                 const std::string config_path = "config.yaml";
                 if (!Tool::File::exists(Tool::get_directory(), config_path)) {
-                    Vital::print("warn", "SrvConfig: File not found - '", config_path.c_str(), "'");
+                    Tool::print("warn", "SrvConfig: File not found - '", config_path.c_str(), "'");
                     return false;
                 }
                 const std::string content = Tool::File::read_text(Tool::get_directory(), config_path);
@@ -56,11 +56,11 @@ namespace Vital::Engine {
                     yaml.parse(content);
                 }
                 catch (const std::exception& e) {
-                    Vital::print("error", "SrvConfig: Malformed YAML — ", e.what());
+                    Tool::print("error", "SrvConfig: Malformed YAML — ", e.what());
                     return false;
                 }
                 loaded = true;
-                Vital::print("sbox", "SrvConfig: Loaded from '", config_path.c_str(), "'");
+                Tool::print("sbox", "SrvConfig: Loaded from '", config_path.c_str(), "'");
                 return true;
             }
 

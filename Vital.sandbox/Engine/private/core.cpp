@@ -32,12 +32,12 @@ namespace Vital::Engine {
         if (!Tool::is_runtime()) return;
 
         kit_abort.store(false);
-        Vital::print("sbox", "Core: bootstrapping Vital.kit...");
+        Tool::print("sbox", "Core: bootstrapping Vital.kit...");
         kit_thread = std::thread([this]() {
             Manager::Kit::ensure();
             if (!kit_abort.load()) {
                 push_deferred([this]() {
-                    Vital::print("sbox", "Core: Vital.kit ready");
+                    Tool::print("sbox", "Core: Vital.kit ready");
                     kit_ready.store(true);
                     Tool::Event::emit("vital.kit:ready");
                     Tool::Event::emit("vital.core:ready");
