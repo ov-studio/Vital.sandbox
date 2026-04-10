@@ -20,12 +20,12 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
-            void push_value(const Vital::Tool::StackValue& value) {
+            void push_value(const Tool::StackValue& value) {
                 std::visit([this](auto&& v) {
                     using T = std::decay_t<decltype(v)>;
                     if constexpr (std::is_same_v<T, std::nullptr_t>)
                         self() -> push_nil();
-                    else if constexpr (std::is_same_v<T, std::shared_ptr<Vital::Tool::Stack>>) {
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<Tool::Stack>>) {
                         self() -> create_table();
                         if (!v) return;
                         for (int i = 0; i < static_cast<int>(v->array.size()); ++i) {

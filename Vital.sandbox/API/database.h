@@ -24,7 +24,7 @@
 namespace Vital::Sandbox::API {
     struct DatabaseQuery : vm_module {
         inline static const std::string base_name = "db_query";
-        using base_class = Vital::Tool::Database::QueryBuilder;
+        using base_class = Tool::Database::QueryBuilder;
 
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
             std::unordered_map<std::string, std::string> result;
@@ -71,16 +71,16 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_table(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 int index = 2;
-                Vital::Tool::Database::SchemaActions actions;
+                Tool::Database::SchemaActions actions;
                 vm -> get_table_field("add", index);
                 if (vm -> is_table(-1)) {
-                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Vital::Tool::Database::SchemaAction::Type::Add);
+                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Add);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
                 vm -> get_table_field("modify", index);
                 if (vm -> is_table(-1)) {
-                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Vital::Tool::Database::SchemaAction::Type::Modify);
+                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Modify);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
@@ -90,8 +90,8 @@ namespace Vital::Sandbox::API {
                     for (int i = 1; i <= vm -> get_length(step_index); i++) {
                         vm -> get_table_field(i, step_index);
                         if (vm -> is_string(-1)) {
-                            Vital::Tool::Database::SchemaAction step;
-                            step.type = Vital::Tool::Database::SchemaAction::Type::Drop;
+                            Tool::Database::SchemaAction step;
+                            step.type = Tool::Database::SchemaAction::Type::Drop;
                             step.column = vm -> get_string(-1);
                             actions.push_back(step);
                         }
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
 
     struct Database : vm_module {
         inline static const std::string base_name = "database";
-        using base_class = Vital::Tool::Database;
+        using base_class = Tool::Database;
 
         static base_class::Column read_schema_definition(Machine* vm, int index) {
             base_class::Column definition;

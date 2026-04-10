@@ -33,19 +33,19 @@ namespace Vital::Sandbox::API {
                 int peerID = client ? 0 : vm -> get_int(2);
                 bool isLatent = vm -> is_bool(queryArg - 1) ? vm -> get_bool(queryArg - 1) : false;
                 auto payload = vm -> is_string(queryArg) ? vm -> get_string(queryArg) : "";
-                Vital::Tool::Stack arguments;
-                arguments.object["network.name"] = Vital::Tool::StackValue(name);
-                arguments.object["network.payload"] = Vital::Tool::StackValue(payload);
+                Tool::Stack arguments;
+                arguments.object["network.name"] = Tool::StackValue(name);
+                arguments.object["network.payload"] = Tool::StackValue(payload);
                 /*
                 Usage Example:
-                Vital::Tool::Stack arguments;
+                Tool::Stack arguments;
                 arguments.array.emplace_back(42);
                 arguments.array.emplace_back(3.14f);
                 arguments.array.emplace_back(2.718);
-                arguments.object["pi"] = Vital::Tool::StackValue(3.14159);
-                arguments.object["answer"] = Vital::Tool::StackValue(42);
+                arguments.object["pi"] = Tool::StackValue(3.14159);
+                arguments.object["answer"] = Tool::StackValue(42);
                 std::string data = arguments.serialize();
-                Vital::Tool::Stack restored = Vital::Tool::Stack::deserialize(data);
+                Tool::Stack restored = Tool::Stack::deserialize(data);
 
                 int number = restored.array[0].as<int32_t>();
                 godot::UtilityFunctions::print(number);

@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);
-                Vital::Tool::Rest::rest_headers headers = {};
+                Tool::Rest::rest_headers headers = {};
                 int timeout = 60;
                 if (vm -> is_table(2)) {
                     for (int i = 1; i <= vm -> get_length(2); i++) {
@@ -39,9 +39,9 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (vm -> is_number(3)) timeout = vm -> get_int(3);
-                Vital::Tool::Thread([=](Vital::Tool::Thread* thread) {
+                Tool::Thread([=](Tool::Thread* thread) {
                     try {
-                        vm -> push_value(Vital::Tool::Rest::get(url, headers, timeout));
+                        vm -> push_value(Tool::Rest::get(url, headers, timeout));
                         vm -> push_value(false);
                     }
                     catch(const std::runtime_error& error) {
@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
-                Vital::Tool::Rest::rest_headers headers = {};
+                Tool::Rest::rest_headers headers = {};
                 int timeout = 60;
                 if (vm -> is_table(3)) {
                     for (int i = 1; i <= vm -> get_length(3); i++) {
@@ -69,9 +69,9 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (vm -> is_number(4)) timeout = vm -> get_int(4);
-                Vital::Tool::Thread([=](Vital::Tool::Thread* thread) {
+                Tool::Thread([=](Tool::Thread* thread) {
                     try {
-                        vm -> push_value(Vital::Tool::Rest::post(url, body, headers, timeout));
+                        vm -> push_value(Tool::Rest::post(url, body, headers, timeout));
                         vm -> push_value(false);
                     }
                     catch(const std::runtime_error& error) {

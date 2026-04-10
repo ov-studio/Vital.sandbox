@@ -28,14 +28,14 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "compress", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
-                vm -> push_value(Vital::Tool::Shrinker::compress(input));
+                vm -> push_value(Tool::Shrinker::compress(input));
                 return 1;
             });
         
             API::bind(vm, {base_name}, "decompress", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
-                vm -> push_value(Vital::Tool::Shrinker::decompress(input));
+                vm -> push_value(Tool::Shrinker::decompress(input));
                 return 1;
             });
         }

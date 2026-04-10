@@ -78,24 +78,24 @@ namespace Vital::Engine {
         */
 
         /*
-        Vital::Tool::Timer([](auto self) {
+        Tool::Timer([](auto self) {
             godot::UtilityFunctions::print("executed c++ timer");
         }, 5000, 0);
         */
 
         // Run in another thread
         /*
-        Vital::Tool::Thread([=](Vital::Tool::Thread* thread) {
+        Tool::Thread([=](Tool::Thread* thread) {
             try {
                 std::string url = "https://jsonplaceholder.typicode.com/posts/1";
-                std::string response = Vital::Tool::Rest::get(url);
+                std::string response = Tool::Rest::get(url);
                 godot::UtilityFunctions::print(response.c_str());
             }
             catch(const std::runtime_error& error) { godot::UtilityFunctions::print(error.what()); }
         }).detach();
         */
         
-        //auto stuff = Vital::Tool::Crypto::hash("SHA256", "hello");
+        //auto stuff = Tool::Crypto::hash("SHA256", "hello");
         //godot::UtilityFunctions::print(stuff.c_str());
         //ClassDB::register_abstract_class<Machine>();
 

@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
 
             #if defined(Vital_SDK_Client)
             API::bind(vm, {base_name}, "get_serial", [](auto vm) -> int {
-                vm -> push_value(Vital::Tool::Inspect::fingerprint());
+                vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
             });
             #endif
