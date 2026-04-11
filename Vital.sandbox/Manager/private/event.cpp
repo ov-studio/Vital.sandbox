@@ -77,10 +77,6 @@ void setup() {
     Vital::Tool::Event::bind("network:peer_joined", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::Tool::print("sbox", "Player joined: ", id);
-        // Manifest is broadcast via broadcast_manifest_deferred() when resources start
-        // and via the peer_connected event in resource.cpp scan()
-        // Direct broadcast here handles clients joining after resources are already running
-        Vital::Manager::Asset::get_singleton() -> broadcast_manifest(id);
     });
 
     Vital::Tool::Event::bind("network:peer_left", [](Vital::Tool::Stack& args) {
