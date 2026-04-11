@@ -332,7 +332,7 @@ namespace Vital::Manager {
         std::vector<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
-            if (script.type == "client" || script.type == "shared") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+            if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
         }
         am -> register_assets(asset_paths, name);
         am -> broadcast_manifest_deferred();
