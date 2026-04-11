@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Rendertarget : vm_module {
         inline static const std::string base_name = "rendertarget";
-        using base_class = Vital::Engine::Rendertarget;
+        using base_class = Engine::Rendertarget;
 
         static void bind(Machine* vm) {
             vm_module::register_type<Rendertarget>(vm, base_name);

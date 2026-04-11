@@ -24,7 +24,7 @@
 namespace Vital::Sandbox::API {
     struct SSIL : vm_module {
         inline static const std::string base_name = "gfx";
-        using base_class = Vital::Engine::Core;
+        using base_class = Engine::Core;
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "ssil"}, "is_enabled", [](auto vm) -> int {

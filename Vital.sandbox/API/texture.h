@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Texture : vm_module {
         inline static const std::string base_name = "texture";
-        using base_class = Vital::Engine::Texture;
+        using base_class = Engine::Texture;
 
         static void bind(Machine* vm) {
             vm_module::register_type<Texture>(vm, base_name);
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::API {
 
     struct SVG : vm_module {
         inline static const std::string base_name = "svg";
-        using base_class = Vital::Engine::Texture;
+        using base_class = Engine::Texture;
 
         static void bind(Machine* vm) {
             vm_module::register_type<SVG>(vm, base_name);

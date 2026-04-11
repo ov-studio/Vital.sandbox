@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Font : vm_module {
         inline static const std::string base_name = "font";
-        using base_class = Vital::Engine::Font;
+        using base_class = Engine::Font;
 
         static void bind(Machine* vm) {
             vm_module::register_type<Font>(vm, base_name);

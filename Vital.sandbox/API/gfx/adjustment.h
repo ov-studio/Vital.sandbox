@@ -26,7 +26,7 @@ namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {
         inline static const std::string base_name = "gfx";
         inline static const std::string lut_reference = fmt::format("{}.adjustment:lut", base_name);
-        using base_class = Vital::Engine::Core;
+        using base_class = Engine::Core;
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "adjustment"}, "is_enabled", [](auto vm) -> int {
@@ -84,8 +84,8 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto path = vm -> get_string(1);
-                auto lut_texture = Vital::Engine::Texture::get_from_reference(path);
-                if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);
+                auto lut_texture = Engine::Texture::get_from_reference(path);
+                if (!lut_texture) lut_texture = Engine::Texture::create_texture_2d(path, path);
                 godot::Ref<godot::Image> lut_image = lut_texture -> get_texture() -> get_image();
                 int img_w = lut_image -> get_width();
                 int img_h = lut_image -> get_height();

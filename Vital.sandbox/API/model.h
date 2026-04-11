@@ -24,7 +24,7 @@
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
         inline static const std::string base_name = "model";
-        using base_class = Vital::Engine::Model;
+        using base_class = Engine::Model;
 
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
