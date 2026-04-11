@@ -39,9 +39,9 @@ namespace Vital::Manager {
                 std::unordered_map<std::string, std::string> file_hashes;
             };
 
-            inline static const std::unordered_set<std::string> Types = { 
-                "shared", 
-                "server", 
+            inline static const std::unordered_set<std::string> Types = {
+                "shared",
+                "server",
                 "client"
             };
         protected:
@@ -67,7 +67,7 @@ namespace Vital::Manager {
             // Managers //
             void log(const std::string& mode, const std::string& message);
 
-    
+
             // Checkers //
             static bool is_name(const std::string& name);
             static bool is_type(const std::string& type);
@@ -85,7 +85,7 @@ namespace Vital::Manager {
             static std::string get_resource_base(const std::string& name, bool require_running = false);
             std::vector<Script> get_resource_scripts(const std::string& name, const std::string& type = "") const;
 
-    
+
             // APIs //
             void scan();
             void init();
@@ -97,8 +97,7 @@ namespace Vital::Manager {
             void start_all();
             void stop_all();
             void restart_all();
-            void notify_resource_started(const std::string& name);
-            void notify_resource_stopped(const std::string& name);
+            void broadcast_resource_event(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
             #endif
             #if defined(Vital_SDK_Client)
             bool register_remote(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
@@ -106,6 +105,7 @@ namespace Vital::Manager {
             bool load(const std::string& name);
             bool unload(const std::string& name);
             void execute_scripts(const std::string& name);
+            void unpack_manifest_payload(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             #endif
     };
 }
