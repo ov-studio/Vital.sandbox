@@ -494,7 +494,7 @@ namespace Vital::Manager {
         std::unordered_set<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
-            if (script.type == "client" || script.type == "shared") asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
+            if (is_type(script.type)) asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
         }
         pending.insert(name);
         for (const auto& path : asset_paths) {
