@@ -271,6 +271,7 @@ namespace Vital::Manager {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> push_deferred([peer_id]() {
+                    // TODO: Merge both???
                     Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
                     Manager::Resource::get_singleton() -> send_running_resources_to_peer(peer_id);
                 });
