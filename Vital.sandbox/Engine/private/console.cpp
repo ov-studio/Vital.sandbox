@@ -313,11 +313,14 @@ namespace Vital::Engine {
         const Tool::Stack ts = Tool::get_timestamp();
         const Tool::Stack mode_rgb = fetch_mode_color(mode);
         auto mode_badge = fetch_mode_badge(mode);
-        std::ostringstream ts_oss;
-        ts_oss << std::setfill('0')
-               << std::setw(2) << ts.object.at("hour").as<int32_t>() << ":"
-               << std::setw(2) << ts.object.at("minute").as<int32_t>() << ":"
-               << std::setw(2) << ts.object.at("second").as<int32_t>();
+        const Tool::Stack mode_rgb = fetch_mode_color(mode);
+        const Tool::Stack ts = Tool::get_timestamp();
+        const std::string ts_str = fmt::format(
+            "{:02d}:{:02d}:{:02d}", 
+            ts.object.at("hour").as<int32_t>(), 
+            ts.object.at("minute").as<int32_t>(), 
+            ts.object.at("second").as<int32_t>()
+        );
         std::string normalized;
         normalized.reserve(message.size());
         std::size_t start = 0, pos;
@@ -334,7 +337,7 @@ namespace Vital::Engine {
         while (std::getline(stream, line)) {
             if (!line.empty() && line.back() == '\r') line.pop_back();
             if (line.empty()) continue;
-            oss << format_line(mode_rgb, ts_oss.str(), mode_badge, line, !first);
+            oss << format_line(mode_rgb, ts_str, mode_badge, line, !first);
             first = false;
         }
         oss << "\n";
