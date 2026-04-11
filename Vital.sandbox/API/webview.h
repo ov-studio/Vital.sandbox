@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Webview : vm_module {
         inline static const std::string base_name = "webview";
-        using base_class = Engine::Webview;
+        using base_class = Vital::Engine::Webview;
 
         static std::string handler_key(void* ptr) {
             return "webview_message_handler_" + std::to_string(reinterpret_cast<uintptr_t>(ptr));

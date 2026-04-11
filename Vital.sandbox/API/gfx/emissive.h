@@ -24,7 +24,7 @@
 namespace Vital::Sandbox::API {
     struct Emissive : vm_module {
         inline static const std::string base_name = "gfx";
-        using base_class = Engine::Core;
+        using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name, "emissive"}, "is_enabled", [](auto vm) -> int {
