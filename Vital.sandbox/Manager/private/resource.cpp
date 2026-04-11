@@ -286,9 +286,8 @@ namespace Vital::Manager {
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
                     unpack_manifest_payload(args, scripts, files);
-                    rm -> register_remote(name, scripts, files);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name);
+                    if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name, scripts, files);
                 }
                 else if (type == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
@@ -338,10 +337,8 @@ namespace Vital::Manager {
         am -> register_assets(asset_paths, name);
         am -> broadcast_manifest_deferred();
         running.insert(name);
-
         log("sbox", fmt::format("resource `{}` started", name));
-        Engine::Core::get_singleton() -> push_deferred([this, name]() { broadcast_resource_event("vital.resource:started", name, get_resource(name)); });
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+
         vm -> create_environment(name);
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
@@ -349,6 +346,11 @@ namespace Vital::Manager {
             vm -> load_string(source, src, true, true, vm -> get_count());
             vm -> pop(1);
         }
+    
+        Engine::Core::get_singleton() -> push_deferred([this, name]() {
+            broadcast_resource_event("vital.resource:started", name, get_resource(name));
+            Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+        });
         return true;
     }
 
@@ -358,11 +360,14 @@ namespace Vital::Manager {
         if (!is_running(name)) { log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
 
         am -> unregister_group(name);
-        Engine::Core::get_singleton() -> push_deferred([this, name]() { broadcast_resource_event("vital.resource:stopped", name); });
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         vm -> clear_environment_id(name);
         running.erase(name);
         log("sbox", fmt::format("resource `{}` stopped", name));
+
+        Engine::Core::get_singleton() -> push_deferred([this, name]() {
+            broadcast_resource_event("vital.resource:stopped", name);
+            Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
+        });
         return true;
     }
 
@@ -468,33 +473,24 @@ namespace Vital::Manager {
         if (const auto* sv = args.get("files")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             files.reserve(nested.array.size());
-            for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
+            for (const auto& entry : nested.array)
+                files.push_back(entry.as<std::string>());
         }
     }
 
-    bool Resource::register_remote(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
-        unregister_remote(name);
+    bool Resource::load(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
+        if (is_running(name) || is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
+
+        resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
         Manifest manifest;
         manifest.ref = name;
         manifest.name = name;
         manifest.scripts = scripts;
         manifest.files = files;
         resources.push_back(std::move(manifest));
-        log("sbox", fmt::format("resource `{}` manifest registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
-        return true;
-    }
-
-    void Resource::unregister_remote(const std::string& name) {
-        resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
-    }
-
-    bool Resource::load(const std::string& name) {
-        auto* am = Manager::Asset::get_singleton();
-        if (!is_loaded(name)) { log("error", fmt::format("cannot load `{}` — resource not registered", name)); return false; }
-        if (is_running(name) || is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
+        log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
 
         const auto* resource = get_resource(name);
-        if (!resource) { log("error", fmt::format("cannot load `{}` — manifest is null", name)); return false; }
         std::unordered_set<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
@@ -571,7 +567,7 @@ namespace Vital::Manager {
         }
 
         if (is_running(name)) { vm -> clear_environment_id(name); running.erase(name); }
-        unregister_remote(name);
+        resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
         log("sbox", fmt::format("resource `{}` unloaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;

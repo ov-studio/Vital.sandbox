@@ -100,9 +100,7 @@ namespace Vital::Manager {
             void broadcast_resource_event(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
             #endif
             #if defined(Vital_SDK_Client)
-            bool register_remote(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
-            void unregister_remote(const std::string& name);
-            bool load(const std::string& name);
+            bool load(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
             bool unload(const std::string& name);
             void execute_scripts(const std::string& name);
             void unpack_manifest_payload(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
