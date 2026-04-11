@@ -272,6 +272,7 @@ namespace Vital::Manager {
             (int)registered_assets.size(), " assets) to peer ", peer_id);
     }
 
+    // TODO: Needed still??
     void Asset::broadcast_manifest_deferred() {
         for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
             Engine::Core::get_singleton() -> push_deferred([peer_id]() {
