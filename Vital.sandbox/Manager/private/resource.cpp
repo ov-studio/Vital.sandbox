@@ -491,7 +491,7 @@ namespace Vital::Manager {
         manifest.files = files;
         resources.push_back(std::move(manifest));
         log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
-
+    
         const auto* resource = get_resource(name);
         std::unordered_set<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
@@ -503,12 +503,11 @@ namespace Vital::Manager {
             if (Tool::File::exists(Tool::get_directory(), path)) log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
             else resource_assets[name].insert(path);
         }
-
-        log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
+    
         if (resource_assets[name].empty()) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
             execute_scripts(name);
-        }
+        else log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
         return true;
     }
 
