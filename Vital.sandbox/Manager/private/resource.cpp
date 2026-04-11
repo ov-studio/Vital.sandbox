@@ -349,7 +349,8 @@ namespace Vital::Manager {
             std::string source;
             try { source = Tool::File::read_text(get_resource_base(name), script.src); }
             catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
-            if (!vm -> compile_string(source)) { errors.push_back(fmt::format("`{}` failed to compile", script.src)); continue; }
+            auto err = vm -> compile_string(source, script.src);
+            if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
             if (is_type(script.type)) sources.emplace_back(script.src, std::move(source));
         }
         if (!errors.empty()) {
@@ -376,7 +377,7 @@ namespace Vital::Manager {
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
             vm -> get_reference(name, true);
-            vm -> load_string(source, true, true, vm -> get_count());
+            vm -> load_string(source, src, true, true, vm -> get_count());
             vm -> pop(1);
         }
         return true;
@@ -546,6 +547,8 @@ namespace Vital::Manager {
             std::string source;
             try { source = Tool::File::read_text(Tool::get_directory(), fmt::format("resources/{}/{}", name, script.src)); }
             catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
+            auto err = vm -> compile_string(source, script.src);
+            if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
             sources.emplace_back(script.src, std::move(source));
         }
     
@@ -563,7 +566,7 @@ namespace Vital::Manager {
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
             vm -> get_reference(name, true);
-            vm -> load_string(source, true, true, vm -> get_count());
+            vm -> load_string(source, src, true, true, vm -> get_count());
             vm -> pop(1);
         }
         running.insert(name);
