@@ -473,7 +473,7 @@ namespace Vital::Manager {
         if (const auto* sv = args.get("files")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             files.reserve(nested.array.size());
-                files.push_back(entry.as<std::string>());
+            for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
         }
     }
 
