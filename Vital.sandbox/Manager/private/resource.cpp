@@ -280,7 +280,7 @@ namespace Vital::Manager {
                     const std::string name = args.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
-                    unpack_manifest_payload(args, scripts, files);
+                    unpack_manifest(args, scripts, files);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name, scripts, files);
                 }
@@ -464,7 +464,7 @@ namespace Vital::Manager {
 
 
     #if defined(Vital_SDK_Client)
-    void Resource::unpack_manifest_payload(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
+    void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
         if (const auto* sv = args.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());

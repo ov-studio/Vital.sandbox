@@ -104,7 +104,7 @@ namespace Vital::Manager {
             bool load(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
             bool unload(const std::string& name);
             void execute_scripts(const std::string& name);
-            void unpack_manifest_payload(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
+            void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             #endif
     };
 }
