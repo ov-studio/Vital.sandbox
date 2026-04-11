@@ -507,6 +507,7 @@ namespace Vital::Manager {
         if (resource_assets[name].empty()) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
             execute_scripts(name);
+        }
         else log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
         return true;
     }
