@@ -43,6 +43,8 @@ namespace Vital::Engine {
             struct termios stdin_termios{};
             #endif
 
+
+            // Helpers //
             static constexpr const char* ANSI_RESET = "\033[0m";
             static constexpr const char* ANSI_BOLD = "\033[1m";
             static constexpr const char* ANSI_DIM = "\033[2m";
