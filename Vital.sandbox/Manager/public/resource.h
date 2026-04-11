@@ -97,7 +97,7 @@ namespace Vital::Manager {
             void start_all();
             void stop_all();
             void restart_all();
-            void broadcast_resource_event(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
+            Tool::Stack build_resource_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
             void send_running_resources_to_peer(int peer_id) const;
             #endif
             #if defined(Vital_SDK_Client)

@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Canvas : vm_module {
         inline static const std::string base_name = "engine";
-        using base_class = Vital::Engine::Canvas;
+        using base_class = Engine::Canvas;
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get_resolution", [](auto vm) -> int {
@@ -114,16 +114,16 @@ namespace Vital::Sandbox::API {
                     auto path = vm -> get_string(3);
                     base_class::get_singleton() -> draw_image(position, size, path, rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "texture", 3)) {
-                    auto texture = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
+                else if (vm_module::is_userdata<Engine::Texture>(vm, "texture", 3)) {
+                    auto texture = static_cast<Engine::Texture*>(vm -> get_userdata(3));
                     base_class::get_singleton() -> draw_image(position, size, texture, rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, "rendertarget", 3)) {
-                    auto rt = static_cast<Vital::Engine::Rendertarget*>(vm -> get_userdata(3));
+                else if (vm_module::is_userdata<Engine::Rendertarget>(vm, "rendertarget", 3)) {
+                    auto rt = static_cast<Engine::Rendertarget*>(vm -> get_userdata(3));
                     base_class::get_singleton() -> draw_image(position, size, rt, rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "svg", 3)) {
-                    auto svg = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
+                else if (vm_module::is_userdata<Engine::Texture>(vm, "svg", 3)) {
+                    auto svg = static_cast<Engine::Texture*>(vm -> get_userdata(3));
                     base_class::get_singleton() -> draw_image(position, size, svg, rotation, pivot, color);
                 }
                 else throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
@@ -132,11 +132,11 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "draw_text", [](auto vm) -> int {
-                if ((vm -> get_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm_module::is_userdata<Vital::Engine::Font>(vm, "font", 4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if ((vm -> get_count() < 5) || (!vm -> is_string(1)) || (!vm -> is_vector2(2)) || (!vm -> is_vector2(3)) || (!vm_module::is_userdata<Engine::Font>(vm, "font", 4)) || (!vm -> is_number(5))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);
-                auto font = static_cast<Vital::Engine::Font*>(vm -> get_userdata(4));
+                auto font = static_cast<Engine::Font*>(vm -> get_userdata(4));
                 auto font_size = vm -> get_int(5);
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};

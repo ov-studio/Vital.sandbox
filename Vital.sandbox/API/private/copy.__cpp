@@ -28,7 +28,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             auto fov = vm -> get_float(1);
-            Vital::Engine::Core::get_environment() -> set_sky_custom_fov(fov);
+            Engine::Core::get_environment() -> set_sky_custom_fov(fov);
             vm -> push_value(true);
             return 1;
         });
@@ -37,7 +37,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
     API::bind(vm, "environment", "get_sky_custom_fov", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
-            vm -> push_value(Vital::Engine::Core::get_environment() -> get_sky_custom_fov());
+            vm -> push_value(Engine::Core::get_environment() -> get_sky_custom_fov());
             return 1;
         });
     });
@@ -47,7 +47,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
         return vm -> execute([&]() -> int {
             if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
             auto energy = vm -> get_float(1);
-            Vital::Engine::Core::get_environment() -> set_bg_energy_multiplier(energy);
+            Engine::Core::get_environment() -> set_bg_energy_multiplier(energy);
             vm -> push_value(true);
             return 1;
         });
@@ -56,7 +56,7 @@ void Vital::Sandbox::API::Environment::bind(void* instance) {
     API::bind(vm, "environment", "get_bg_energy_multiplier", [](auto ref) -> int {
         auto vm = Machine::fetch_machine(ref);
         return vm -> execute([&]() -> int {
-            vm -> push_value(Vital::Engine::Core::get_environment() -> get_bg_energy_multiplier());
+            vm -> push_value(Engine::Core::get_environment() -> get_bg_energy_multiplier());
             return 1;
         });
     });

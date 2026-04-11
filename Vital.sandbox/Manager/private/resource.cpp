@@ -111,7 +111,7 @@ namespace Vital::Manager {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-    void Resource::broadcast_resource_event(const std::string& type, const std::string& name, const Manifest* manifest) const {
+    Tool::Stack Resource::build_resource_packet(const std::string& type, const std::string& name, const Manifest* manifest) const {
         Tool::Stack msg;
         msg.object["type"] = Tool::StackValue(type);
         msg.object["name"] = Tool::StackValue(name);
@@ -124,35 +124,19 @@ namespace Vital::Manager {
                 scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
             }
             msg.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
-
             Tool::Stack files_stack;
-            for (const auto& f : manifest -> files)
-                files_stack.array.push_back(Tool::StackValue(f));
+            for (const auto& f : manifest -> files) files_stack.array.push_back(Tool::StackValue(f));
             msg.object["files"] = Tool::StackValue(std::move(files_stack));
         }
-        Vital::Engine::Network::get_singleton() -> broadcast(msg);
+        return msg;
     }
-
+    
     // Sends all currently running resource manifests to a single peer (late-join catchup)
     void Resource::send_running_resources_to_peer(int peer_id) const {
         for (const auto& name : running) {
             const auto* r = get_resource(name);
             if (!r) continue;
-            Tool::Stack msg;
-            msg.object["type"] = Tool::StackValue(std::string("vital.resource:started"));
-            msg.object["name"] = Tool::StackValue(name);
-            Tool::Stack scripts_stack;
-            for (const auto& s : r -> scripts) {
-                Tool::Stack entry;
-                entry.object["src"] = Tool::StackValue(s.src);
-                entry.object["type"] = Tool::StackValue(s.type);
-                scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
-            }
-            msg.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
-            Tool::Stack files_stack;
-            for (const auto& f : r -> files) files_stack.array.push_back(Tool::StackValue(f));
-            msg.object["files"] = Tool::StackValue(std::move(files_stack));
-            Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
+            Engine::Network::get_singleton() -> send(build_resource_packet("vital.resource:started", name, r), peer_id);
         }
     }
 
@@ -374,7 +358,7 @@ namespace Vital::Manager {
         }
 
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            broadcast_resource_event("vital.resource:started", name, get_resource(name));
+            Engine::Network::get_singleton() -> broadcast(build_resource_packet("vital.resource:started", name, get_resource(name)));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
         });
         return true;
@@ -391,7 +375,7 @@ namespace Vital::Manager {
         log("sbox", fmt::format("resource `{}` stopped", name));
 
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            broadcast_resource_event("vital.resource:stopped", name);
+            Engine::Network::get_singleton() -> broadcast(build_resource_packet("vital.resource:stopped", name));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         });
         return true;
