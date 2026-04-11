@@ -322,18 +322,14 @@ namespace Vital::Manager {
         for (int i = 0; i < (int)resource -> files.size(); i++) {
             msg.object[fmt::format("file_{}", i)] = Tool::StackValue(resource -> files[i]);
         }
-        for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
-            Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
-        }
+        Vital::Engine::Network::get_singleton() -> broadcast(msg);
     }
 
     void Resource::notify_resource_stopped(const std::string& name) {
         Tool::Stack msg;
         msg.object["type"] = Tool::StackValue(std::string("vital.resource:stopped"));
         msg.object["name"] = Tool::StackValue(name);
-        for (int peer_id : Vital::Engine::Network::get_singleton() -> get_connected_peers()) {
-            Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
-        }
+        Vital::Engine::Network::get_singleton() -> broadcast(msg);
     }
 
     bool Resource::start(const std::string& name) {
