@@ -132,7 +132,8 @@ namespace Vital::Manager {
     }
     
     // Sends all currently running resource manifests to a single peer (late-join catchup)
-    void Resource::send_running_resources_to_peer(int peer_id) const {
+    void Resource::sync_peer(int peer_id) const {
+        Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         for (const auto& name : running) {
             const auto* r = get_resource(name);
             if (!r) continue;
@@ -246,21 +247,6 @@ namespace Vital::Manager {
                 stop(name);
             }
         }
-
-        static bool server_bound = false;
-        if (!server_bound) {
-            server_bound = true;
-            // On peer connect: send asset manifest then all running resource manifests
-            Tool::Event::bind("vital.network:peer_connected", [](Tool::Stack args) {
-                if (args.array.empty()) return;
-                const int peer_id = args.array[0].as<int32_t>();
-                Engine::Core::get_singleton() -> push_deferred([peer_id]() {
-                    // TODO: Merge both???
-                    Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
-                    Manager::Resource::get_singleton() -> send_running_resources_to_peer(peer_id);
-                });
-            });
-        }
         #endif
     }
 
@@ -279,7 +265,6 @@ namespace Vital::Manager {
                     if (!remaining.count(path)) continue;
                     remaining.erase(path);
                     log("sbox", fmt::format("resource `{}` asset ready: {}", name, path));
-                    // TODO: Utilize load() for this?? to register safely or send_running_resources_to_peer handles it?
                     if (remaining.empty()) rm -> execute_scripts(name);
                     break;
                 }
@@ -308,10 +293,18 @@ namespace Vital::Manager {
             });
             log("sbox", "client resource manager initialized");
         #else
+            static bool server_initialized = false;
+            if (!server_initialized) {
+                server_initialized = true;
+                Tool::Event::bind("vital.network:peer_connected", [](Tool::Stack args) {
+                    if (args.array.empty()) return;
+                    const int peer_id = args.array[0].as<int32_t>();
+                    Engine::Core::get_singleton() -> push_deferred([peer_id]() {  Manager::Resource::get_singleton() -> sync_peer(peer_id); });
+                });
+            }
             scan();
         #endif
     }
-
 
     #if !defined(Vital_SDK_Client)
     bool Resource::start(const std::string& name) {

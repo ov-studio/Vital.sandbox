@@ -98,7 +98,7 @@ namespace Vital::Manager {
             void stop_all();
             void restart_all();
             Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
-            void send_running_resources_to_peer(int peer_id) const;
+            void sync_peer(int peer_id) const;
             #endif
             #if defined(Vital_SDK_Client)
             bool load(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
