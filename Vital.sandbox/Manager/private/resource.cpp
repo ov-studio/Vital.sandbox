@@ -545,6 +545,7 @@ namespace Vital::Manager {
             return;
         }
 
+        log("sbox", fmt::format("resource `{}` started", name));
         vm -> create_environment(name);
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
@@ -553,7 +554,6 @@ namespace Vital::Manager {
             vm -> pop(1);
         }
         running.insert(name);
-        log("sbox", fmt::format("resource `{}` loaded on client", name));
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
 
@@ -572,7 +572,7 @@ namespace Vital::Manager {
         const bool was_running = is_running(name);
         if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
         resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
-        log("sbox", fmt::format("resource `{}` unloaded on client", name));
+        log("sbox", fmt::format("resource `{}` stopped", name));
         if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;
     }
