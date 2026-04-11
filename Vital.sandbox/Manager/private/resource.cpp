@@ -526,7 +526,7 @@ namespace Vital::Manager {
         std::vector<std::pair<std::string, std::string>> sources;
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
-            if (script.type != "shared" && script.type != "client") continue;
+            if (!is_type(script.type)) continue;
             std::string source;
             try { source = Tool::File::read_text(Tool::get_directory(), fmt::format("resources/{}/{}", name, script.src)); }
             catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
@@ -561,6 +561,7 @@ namespace Vital::Manager {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
         if (!is_running(name) && !is_pending(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
+    
         if (is_pending(name)) {
             resource_assets.erase(name);
             pending.erase(name);
@@ -568,10 +569,11 @@ namespace Vital::Manager {
             log("sbox", fmt::format("resource `{}` download cancelled", name));
         }
 
-        if (is_running(name)) { vm -> clear_environment_id(name); running.erase(name); }
+        const bool was_running = is_running(name);
+        if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
         resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
         log("sbox", fmt::format("resource `{}` unloaded on client", name));
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
+        if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;
     }
     #endif
