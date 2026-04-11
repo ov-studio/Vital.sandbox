@@ -546,7 +546,7 @@ namespace Vital::Engine {
             #if defined(Vital_SDK_Debug)
             const Tool::Stack ts = Tool::get_timestamp();
             godot::UtilityFunctions::print_rich(Tool::to_godot_string(fmt::format(
-                "[color=#808080][{:02d}:{:02d}:{:02d}] [{}] {}[/color]",
+                "[color=#808080][{:02d}:{:02d}:{:02d}]   [{}]  {}[/color]",
                 ts.object.at("hour").as<int32_t>(),
                 ts.object.at("minute").as<int32_t>(),
                 ts.object.at("second").as<int32_t>(),
