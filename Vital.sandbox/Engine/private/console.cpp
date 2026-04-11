@@ -543,7 +543,7 @@ namespace Vital::Engine {
             document.Accept(writer);
             webview -> emit(buffer.GetString());
             #if defined(Vital_SDK_Debug)
-            godot::UtilityFunctions::print(Tool::to_godot_string(fmt::format("[{}] {}", fetch_mode_badge(mode), message)))
+            godot::UtilityFunctions::print(Tool::to_godot_string(fmt::format("[{}] {}", fetch_mode_badge(mode), message)));
             #endif
         #else
             {
