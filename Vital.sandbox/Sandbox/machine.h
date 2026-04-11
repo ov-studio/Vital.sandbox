@@ -470,19 +470,22 @@ namespace Vital::Sandbox {
                 return std::string(value, length);
             }
 
-            bool compile_string(const std::string& raw) {
-                if (raw.empty()) return false;
-                if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
+            std::string compile_string(const std::string& raw, const std::string& chunk_name = "") {
+                if (raw.empty()) return "empty source";
+                const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
+                if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
+                    std::string err = get_string(-1);
                     pop();
-                    return false;
+                    return err;
                 }
                 pop();
-                return true;
+                return "";
             }
-
-            int load_string(const std::string& raw, bool auto_load = true, bool use_env = false, int env_index = 1) {
+        
+            int load_string(const std::string& raw, const std::string& chunk_name = "", bool auto_load = true, bool use_env = false, int env_index = 1) {
                 if (raw.empty()) return 0;
-                if (luaL_loadstring(state, raw.c_str()) != LUA_OK) {
+                const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
+                if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
                     API::log(std::string(Vital::Log::Error::label), get_string(-1));
                     pop();
                     return 0;
