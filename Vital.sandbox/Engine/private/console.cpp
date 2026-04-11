@@ -542,6 +542,9 @@ namespace Vital::Engine {
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
+            #if defined(Vital_SDK_Debug)
+            godot::UtilityFunctions::print(Tool::to_godot_string(fmt::format("[{}] {}", fetch_mode_badge(mode), message)))
+            #endif
         #else
             {
                 std::lock_guard<std::mutex> lock(stdout_mutex);
