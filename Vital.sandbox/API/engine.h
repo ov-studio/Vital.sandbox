@@ -60,22 +60,31 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "compile_string", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
-                auto result = vm -> compile_string(input);
-                vm -> push_value(result);
-                return 1;
+                auto chunk_name = vm -> is_string(2) ? vm -> get_string(2) : "";
+                auto result = vm -> compile_string(input, chunk_name);
+                if (result.empty()) {
+                    vm -> push_value(true);
+                    vm -> push_value(false);
+                }
+                else {
+                    vm -> push_value(false);
+                    vm -> push_value(result);
+                }
+                return 2;
             });
 
             API::bind(vm, {base_name}, "load_string", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto input = vm -> get_string(1);
-                bool auto_load = vm -> is_bool(2) ? vm -> get_bool(2) : true;
-                bool use_env = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                if (use_env && !vm -> is_table(4)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                int results = vm -> load_string(input, auto_load, use_env, 4);
+                auto chunk_name = vm -> is_string(2) ? vm -> get_string(2) : "";
+                bool auto_load = vm -> is_bool(3) ? vm -> get_bool(3) : true;
+                bool use_env = vm -> is_bool(4) ? vm -> get_bool(4) : false;
+                if (use_env && !vm -> is_table(5)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                int results = vm -> load_string(input, chunk_name, auto_load, use_env, 5);
                 if (results == 0) vm -> push_value(false);
                 return results == 0 ? 1 : results;
             });
-
+            
             API::bind(vm, {base_name}, "print", [](auto vm) -> int {
                 if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 std::string type = vm -> get_string(1);
