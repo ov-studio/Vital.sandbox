@@ -133,12 +133,13 @@ namespace Vital::Manager::Kit {
         return std::string(fetch_content(name + "/" + document["source"].GetString()));
     }
 
-    inline std::vector<std::string> fetch_modules(const std::string& name) {
-        std::vector<std::string> result;
+    inline std::vector<std::pair<std::string, std::string>> fetch_modules(const std::string& name) {
+        std::vector<std::pair<std::string, std::string>> result;
         auto& document = fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
-            result.push_back(std::string(fetch_content(name + "/" + std::string(i.GetString()))));
+            std::string src = i.GetString();
+            result.emplace_back(src, std::string(fetch_content(name + "/" + src)));
         }
         return result;
     }

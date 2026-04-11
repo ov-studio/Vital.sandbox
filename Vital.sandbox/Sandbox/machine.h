@@ -76,8 +76,8 @@ namespace Vital::Sandbox {
                     push_global(value);
                 }
                 hook("bind");
-                for (auto& value : Manager::Kit::fetch_modules("lua")) {
-                    load_string(value);
+                for (auto& [name, source] : Manager::Kit::fetch_modules("lua")) {
+                    load_string(source, name);
                 }
                 hook("inject");
             }
