@@ -25,7 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Canvas : vm_module {
         inline static const std::string base_name = "engine";
-        using base_class = Engine::Canvas;
+        using base_class = Vital::Engine::Canvas;
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get_resolution", [](auto vm) -> int {
