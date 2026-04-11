@@ -134,6 +134,29 @@ namespace Vital::Manager {
         Vital::Engine::Network::get_singleton() -> broadcast(msg);
     }
 
+    // Sends all currently running resource manifests to a single peer (late-join catchup)
+    void Resource::send_running_resources_to_peer(int peer_id) const {
+        for (const auto& name : running) {
+            const auto* r = get_resource(name);
+            if (!r) continue;
+            Tool::Stack msg;
+            msg.object["type"] = Tool::StackValue(std::string("vital.resource:started"));
+            msg.object["name"] = Tool::StackValue(name);
+            Tool::Stack scripts_stack;
+            for (const auto& s : r -> scripts) {
+                Tool::Stack entry;
+                entry.object["src"] = Tool::StackValue(s.src);
+                entry.object["type"] = Tool::StackValue(s.type);
+                scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
+            }
+            msg.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
+            Tool::Stack files_stack;
+            for (const auto& f : r -> files) files_stack.array.push_back(Tool::StackValue(f));
+            msg.object["files"] = Tool::StackValue(std::move(files_stack));
+            Vital::Engine::Network::get_singleton() -> send(msg, peer_id);
+        }
+    }
+
     bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name = manifest.get_str("name", resource.ref);
         resource.author = manifest.get_str("author", "");
@@ -244,11 +267,13 @@ namespace Vital::Manager {
         static bool server_bound = false;
         if (!server_bound) {
             server_bound = true;
+            // On peer connect: send asset manifest then all running resource manifests
             Tool::Event::bind("vital.network:peer_connected", [](Tool::Stack args) {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> push_deferred([peer_id]() {
                     Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
+                    Manager::Resource::get_singleton() -> send_running_resources_to_peer(peer_id);
                 });
             });
         }
