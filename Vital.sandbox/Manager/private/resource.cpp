@@ -270,6 +270,7 @@ namespace Vital::Manager {
                     if (!remaining.count(path)) continue;
                     remaining.erase(path);
                     log("sbox", fmt::format("resource `{}` asset ready: {}", name, path));
+                    // TODO: Utilize load() for this?? to register safely or send_running_resources_to_peer handles it?
                     if (remaining.empty()) rm -> execute_scripts(name);
                     break;
                 }
@@ -346,7 +347,7 @@ namespace Vital::Manager {
             vm -> load_string(source, src, true, true, vm -> get_count());
             vm -> pop(1);
         }
-    
+
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             broadcast_resource_event("vital.resource:started", name, get_resource(name));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
