@@ -55,6 +55,9 @@ namespace Vital::Engine {
             inline static ModelSpawnerDelegate* net_spawner_delegate = nullptr;
             inline static Models cache_loaded;
             inline static SyncedMap cache_synced;
+
+
+            // Helpers //
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
             godot::Skeleton3D* find_skeleton(godot::Node* node);
