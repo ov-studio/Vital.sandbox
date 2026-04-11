@@ -438,7 +438,7 @@ namespace Vital::Manager {
         for (const auto* resource : get_all_resources()) {
             if (start(resource -> ref)) count++;
         }
-        log("sbox", fmt::format("all resources started — {} resource(s) running", count));
+        log("sbox", fmt::format("all resources started — {} resource(s) started", count));
     }
 
     void Resource::stop_all() {
