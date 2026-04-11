@@ -310,8 +310,6 @@ namespace Vital::Engine {
     }
     
     std::string Console::format_output(const std::string& mode, const std::string& message) {
-        const Tool::Stack ts = Tool::get_timestamp();
-        const Tool::Stack mode_rgb = fetch_mode_color(mode);
         auto mode_badge = fetch_mode_badge(mode);
         const Tool::Stack mode_rgb = fetch_mode_color(mode);
         const Tool::Stack ts = Tool::get_timestamp();
@@ -343,7 +341,7 @@ namespace Vital::Engine {
         oss << "\n";
         return oss.str();
     }
-    
+
     void Console::format_input_prompt() {
         std::lock_guard<std::mutex> lock(stdout_mutex);
         const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
@@ -546,7 +544,15 @@ namespace Vital::Engine {
             document.Accept(writer);
             webview -> emit(buffer.GetString());
             #if defined(Vital_SDK_Debug)
-            godot::UtilityFunctions::print(Tool::to_godot_string(fmt::format("[{}] {}", fetch_mode_badge(mode), message)));
+            const Tool::Stack ts = Tool::get_timestamp();
+            godot::UtilityFunctions::print_rich(Tool::to_godot_string(fmt::format(
+                "[color=#808080][{:02d}:{:02d}:{:02d}] [{}] {}[/color]",
+                ts.object.at("hour").as<int32_t>(),
+                ts.object.at("minute").as<int32_t>(),
+                ts.object.at("second").as<int32_t>(),
+                fetch_mode_badge(mode),
+                message
+            )));
             #endif
         #else
             {
