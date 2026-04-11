@@ -19,6 +19,8 @@ env.Append(CPPDEFINES=["CPPHTTPLIB_OPENSSL_SUPPORT"])
 
 if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["Vital_SDK_Client"])
+if env.Args["build_type"] == "Debug":
+    env.Append(CPPDEFINES=["Vital_SDK_Debug"])
 
 if os_info["type"] == "Windows":
     env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
