@@ -111,7 +111,7 @@ namespace Vital::Manager {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-    Tool::Stack Resource::build_resource_packet(const std::string& type, const std::string& name, const Manifest* manifest) const {
+    Tool::Stack Resource::build_packet(const std::string& type, const std::string& name, const Manifest* manifest) const {
         Tool::Stack msg;
         msg.object["type"] = Tool::StackValue(type);
         msg.object["name"] = Tool::StackValue(name);
@@ -136,7 +136,7 @@ namespace Vital::Manager {
         for (const auto& name : running) {
             const auto* r = get_resource(name);
             if (!r) continue;
-            Engine::Network::get_singleton() -> send(build_resource_packet("vital.resource:started", name, r), peer_id);
+            Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, r), peer_id);
         }
     }
 
@@ -358,7 +358,7 @@ namespace Vital::Manager {
         }
 
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            Engine::Network::get_singleton() -> broadcast(build_resource_packet("vital.resource:started", name, get_resource(name)));
+            Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, get_resource(name)));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
         });
         return true;
@@ -375,7 +375,7 @@ namespace Vital::Manager {
         log("sbox", fmt::format("resource `{}` stopped", name));
 
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            Engine::Network::get_singleton() -> broadcast(build_resource_packet("vital.resource:stopped", name));
+            Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:stopped", name));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         });
         return true;
