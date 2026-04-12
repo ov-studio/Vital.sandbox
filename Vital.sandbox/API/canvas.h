@@ -141,12 +141,9 @@ namespace Vital::Sandbox::API {
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
                 if (vm -> is_table(7)) {
-                    vm -> get_table_field(1, 7);
-                    alignment.first = vm -> get_horizontal_alignment(-1);
-                    vm -> pop(1);
-                    vm -> get_table_field(2, 7);
-                    alignment.second = vm -> get_vertical_alignment(-1);
-                    vm -> pop(1);
+                    vm -> get_table_field(1, 7); alignment.first = vm -> get_horizontal_alignment(-1);
+                    vm -> get_table_field(2, 7); alignment.second = vm -> get_vertical_alignment(-1);
+                    vm -> pop(2);
                 }
                 auto clip = vm -> is_bool(8) ? vm -> get_bool(8) : false;
                 auto wordwrap = vm -> is_bool(9) ? vm -> get_bool(9) : false;
