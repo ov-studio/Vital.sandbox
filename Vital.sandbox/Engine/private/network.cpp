@@ -358,7 +358,7 @@ namespace Vital::Engine {
         Tool::print("sbox", "Network: peer joined -> ", id, "  total: ", (int)connected_peers.size());
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
-        Tool::Event::emit("vital.network:peer:joi", args);
+        Tool::Event::emit("vital.network:peer:join", args);
     }
 
     void Network::_on_peer_disconnected(int id) {
