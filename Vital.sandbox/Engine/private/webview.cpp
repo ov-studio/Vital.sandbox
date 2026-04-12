@@ -101,26 +101,6 @@ namespace Vital::Engine {
         webview -> call("focus_parent");
     }
 
-    void Webview::set_fullscreen(bool state) {
-        webview -> call("set_full_window_size", state);
-    }
-
-    void Webview::set_transparent(bool state) {
-        webview -> call("set_transparent", state);
-    }
-
-    void Webview::set_incognito(bool state) {
-        webview -> call("set_incognito", state);
-    }
-    
-    void Webview::set_autoplay(bool state) {
-        webview -> call("set_autoplay", state);
-    }
-
-    void Webview::set_zoomable(bool state) {
-        webview -> call("set_zoom_hotkeys", state);
-    }
-
     void Webview::set_devtools_visible(bool state) {
         if (state) webview -> call_deferred("open_devtools");
         else webview -> call_deferred("close_devtools");

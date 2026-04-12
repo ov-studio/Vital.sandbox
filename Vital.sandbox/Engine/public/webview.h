@@ -60,11 +60,6 @@ namespace Vital::Engine {
 
             // Setters //
             void set_visible(bool state);
-            void set_fullscreen(bool state);
-            void set_transparent(bool state);
-            void set_incognito(bool state);
-            void set_autoplay(bool state);
-            void set_zoomable(bool state);
             void set_devtools_visible(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
