@@ -110,7 +110,7 @@ void setup() {
         // asset:chunk no longer exists — HTTP handles delivery
     });
 
-    Vital::Tool::Event::bind("vital.network:connection_failed", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connection:failed", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
 
@@ -118,7 +118,7 @@ void setup() {
         Vital::Tool::print("sbox", "Retrying...");
     });
 
-    Vital::Tool::Event::bind("vital.network:reconnect_failed", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:reconnect:failed", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Gave up reconnecting");
     });
 
@@ -185,7 +185,7 @@ void initialize_vital_events() {
         );
     });
 
-    Vital::Tool::Event::bind("vital.network:server_disconnected", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:server:disconnected", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Lost connection to server");
         Vital::Engine::Model::cleanup_spawned();
         Vital::Manager::Asset::get_singleton() -> clear();

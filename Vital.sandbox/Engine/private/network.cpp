@@ -278,7 +278,7 @@ namespace Vital::Engine {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Tool::Event::emit("vital.network:connection_failed", {});
+        Tool::Event::emit("vital.network:connection:failed", {});
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -287,7 +287,7 @@ namespace Vital::Engine {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Tool::Event::emit("vital.network:server_disconnected", {});
+        Tool::Event::emit("vital.network:server:disconnected", {});
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -300,7 +300,7 @@ namespace Vital::Engine {
         if (reconnect_attempts >= reconnect_max) {
             Tool::print("sbox", "Network: max reconnect attempts reached");
             auto_reconnect = false;
-            Tool::Event::emit("vital.network:reconnect_failed", {});
+            Tool::Event::emit("vital.network:reconnect:failed", {});
             return;
         }
         reconnect_attempts++;
