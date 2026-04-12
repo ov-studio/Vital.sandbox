@@ -115,6 +115,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<base_class>(vm, base_name, "set_incognito", [](auto vm, auto self) -> int {
+                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                auto state = vm -> get_bool(2);
+                self -> set_incognito(state);
+                vm -> push_value(true);
+                return 1;
+            });
+            
             vm_module::bind_method<base_class>(vm, base_name, "set_autoplay", [](auto vm, auto self) -> int {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);

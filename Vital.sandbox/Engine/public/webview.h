@@ -53,6 +53,7 @@ namespace Vital::Engine {
             void set_visible(bool state);
             void set_fullscreen(bool state);
             void set_transparent(bool state);
+            void set_incognito(bool state);
             void set_autoplay(bool state);
             void set_zoomable(bool state);
             void set_devtools_visible(bool state);

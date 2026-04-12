@@ -104,6 +104,10 @@ namespace Vital::Engine {
         webview -> call("set_transparent", state);
     }
 
+    void Webview::set_incognito(bool state) {
+        webview -> call("set_incognito", state);
+    }
+    
     void Webview::set_autoplay(bool state) {
         webview -> call("set_autoplay", state);
     }

@@ -31,6 +31,7 @@ namespace Vital::Engine {
             webview -> set_position({0, 0});
             webview -> set_fullscreen(true);
             webview -> set_transparent(true);
+            webview -> set_incognito(true);
             webview -> set_autoplay(false);
             webview -> set_zoomable(false);
             webview -> set_message_handler([this](godot::String message) {
