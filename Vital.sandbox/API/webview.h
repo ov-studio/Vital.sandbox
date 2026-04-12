@@ -35,16 +35,16 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Webview>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                base_class::Config config;
+                base_class::Options options;
                 if (vm -> is_table(1)) {
-                    vm -> get_table_field("fullscreen", 1); config.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.fullscreen;
-                    vm -> get_table_field("transparent", 1); config.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.transparent;
-                    vm -> get_table_field("incognito", 1); config.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.incognito;
-                    vm -> get_table_field("autoplay", 1); config.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.autoplay;
-                    vm -> get_table_field("zoomable", 1); config.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.zoomable;
+                    vm -> get_table_field("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
+                    vm -> get_table_field("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
+                    vm -> get_table_field("incognito", 1); options.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.incognito;
+                    vm -> get_table_field("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
+                    vm -> get_table_field("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> pop(5);
                 }
-                auto object = base_class::create(config);
+                auto object = base_class::create(options);
                 vm -> create_object(base_name, object);
                 return 1;
             });
