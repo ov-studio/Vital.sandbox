@@ -36,7 +36,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
                 base_class::Config config;
-                if (vm -> get_count() >= 1 && vm -> is_table(1)) {
+                if (vm -> get_count() >= 1) {
+                    if (!vm -> is_table(1)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                     vm -> get_table_field("fullscreen", 1); config.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.fullscreen;
                     vm -> get_table_field("transparent", 1); config.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.transparent;
                     vm -> get_table_field("incognito", 1); config.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.incognito;
