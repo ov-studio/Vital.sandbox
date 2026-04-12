@@ -24,7 +24,7 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Webview::Webview() {
+    Webview::Webview(const Config& config) {
         godot::Object* object = godot::ClassDB::instantiate("WebView");
         if (!object) throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible plugin found");
         else {
@@ -34,6 +34,11 @@ namespace Vital::Engine {
                 throw Vital::Log::fetch("webview-failed", Vital::Log::Type::Error, "No compatible device found");
             }
         }
+        webview -> set("full_window_size", config.fullscreen);
+        webview -> set("transparent", config.transparent);
+        webview -> set("incognito", config.incognito);
+        webview -> set("autoplay", config.autoplay);
+        webview -> set("zoom_hotkeys", config.zoomable);
         Core::get_singleton() -> push_deferred([this]() {
             Canvas::get_singleton() -> add_child(webview);
             webview -> connect("ipc_message", godot::Callable(this, "on_message"));
@@ -55,8 +60,8 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Webview* Webview::create() {
-        return memnew(Webview);
+    Webview* Webview::create(const Config& config) {
+        return memnew(Webview(config));
     }
 
     void Webview::destroy() {

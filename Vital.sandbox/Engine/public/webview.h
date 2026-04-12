@@ -24,6 +24,14 @@
 namespace Vital::Engine {
     class Webview : public godot::Node2D {
         GDCLASS(Webview, godot::Node2D)
+        public:
+            struct Config {
+                bool fullscreen = true;
+                bool transparent = true;
+                bool incognito = true;
+                bool autoplay = false;
+                bool zoomable = false;
+            };
         protected:
             static void _bind_methods();
         private:
@@ -31,12 +39,13 @@ namespace Vital::Engine {
             std::function<void(godot::String)> message_handler;
         public:
             // Instantiators //
-            Webview();
+            Webview() : Webview(Config{}) {}
+            Webview(const Config& config);
             ~Webview();
 
 
             // Managers //
-            static Webview* create();
+            static Webview* create(const Config& config = {});
             void destroy();
 
 
