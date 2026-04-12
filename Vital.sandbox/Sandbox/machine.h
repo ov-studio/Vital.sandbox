@@ -203,16 +203,18 @@ namespace Vital::Sandbox {
                     if (godot::Color::html_is_valid(html)) return godot::Color::html(html);
                 }
                 godot::Color value = {1, 1, 1, 1};
-                get_table_field(1, index); value.r = get_float(-1); pop();
-                get_table_field(2, index); value.g = get_float(-1); pop();
-                get_table_field(3, index); value.b = get_float(-1); pop();
-                get_table_field(4, index); value.a = get_float(-1); pop();
+                get_table_field(1, index); value.r = get_float(-1);
+                get_table_field(2, index); value.g = get_float(-1);
+                get_table_field(3, index); value.b = get_float(-1);
+                get_table_field(4, index); value.a = get_float(-1);
+                pop(4);
                 return value;
             }
             godot::Vector2 get_vector2(int index = 1) {
                 godot::Vector2 value = {0.0f, 0.0f};
-                get_table_field(1, index); value.x = get_float(-1); pop();
-                get_table_field(2, index); value.y = get_float(-1); pop();
+                get_table_field(1, index); value.x = get_float(-1);
+                get_table_field(2, index); value.y = get_float(-1);
+                pop(2);
                 return value;
             }
             godot::PackedVector2Array get_vector2_array(int index = 1) {
@@ -226,9 +228,10 @@ namespace Vital::Sandbox {
             }
             godot::Vector3 get_vector3(int index = 1) {
                 godot::Vector3 value = {0.0f, 0.0f, 0.0f};
-                get_table_field(1, index); value.x = get_float(-1); pop();
-                get_table_field(2, index); value.y = get_float(-1); pop();
-                get_table_field(3, index); value.z = get_float(-1); pop();
+                get_table_field(1, index); value.x = get_float(-1);
+                get_table_field(2, index); value.y = get_float(-1);
+                get_table_field(3, index); value.z = get_float(-1);
+                pop(3);
                 return value;
             }
             godot::PackedVector3Array get_vector3_array(int index = 1) {
