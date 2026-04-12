@@ -35,7 +35,16 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Webview>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                auto object = base_class::create();
+                base_class::Config config;
+                if (vm -> get_count() >= 1 && vm -> is_table(1)) {
+                    vm -> get_table_field("fullscreen", 1); config.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.fullscreen;
+                    vm -> get_table_field("transparent", 1); config.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.transparent;
+                    vm -> get_table_field("incognito", 1); config.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.incognito;
+                    vm -> get_table_field("autoplay", 1); config.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.autoplay;
+                    vm -> get_table_field("zoomable", 1); config.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : config.zoomable;
+                    vm -> pop(5);
+                }
+                auto object = base_class::create(config);
                 vm -> create_object(base_name, object);
                 return 1;
             });
