@@ -66,6 +66,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<base_class>(vm, base_name, "is_incognito", [](auto vm, auto self) -> int {
+                vm -> push_value(self -> is_incognito());
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "is_autoplay", [](auto vm, auto self) -> int {
                 vm -> push_value(self -> is_autoplay());
                 return 1;
@@ -95,46 +100,6 @@ namespace Vital::Sandbox::API {
                 if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 auto state = vm -> get_bool(2);
                 self -> set_visible(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "set_fullscreen", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto state = vm -> get_bool(2);
-                self -> set_fullscreen(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "set_transparent", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto state = vm -> get_bool(2);
-                self -> set_transparent(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "set_incognito", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto state = vm -> get_bool(2);
-                self -> set_incognito(state);
-                vm -> push_value(true);
-                return 1;
-            });
-            
-            vm_module::bind_method<base_class>(vm, base_name, "set_autoplay", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto state = vm -> get_bool(2);
-                self -> set_autoplay(state);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "set_zoomable", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-                auto state = vm -> get_bool(2);
-                self -> set_zoomable(state);
                 vm -> push_value(true);
                 return 1;
             });
