@@ -248,7 +248,7 @@ namespace Vital::Engine {
         reconnect_timer    = 0.0f;
         pending_handshake  = false;
         Tool::print("sbox", "Network: connecting to ", ip.c_str(), ":", port);
-        Tool::Event::emit("vital.network:connecting", {});
+        Tool::Event::emit("vital.network:connect", {});
         return true;
     }
 
@@ -262,7 +262,7 @@ namespace Vital::Engine {
         auto tree = get_scene_tree();
         if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
         Tool::print("sbox", "Network: disconnected");
-        Tool::Event::emit("vital.network:disconnected", {});
+        Tool::Event::emit("vital.network:disconnect", {});
         return true;
     }
 
@@ -270,7 +270,7 @@ namespace Vital::Engine {
         reconnect_attempts = 0;
         pending_handshake = true;
         Tool::print("sbox", "Network: connected (handshake deferred)");
-        Tool::Event::emit("vital.network:connected", {});
+        Tool::Event::emit("vital.network:connect:success", {});
     }
 
     void Network::_on_connection_failed() {
@@ -278,7 +278,7 @@ namespace Vital::Engine {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Tool::Event::emit("vital.network:connection:failed", {});
+        Tool::Event::emit("vital.network:connect:failed", {});
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -287,7 +287,7 @@ namespace Vital::Engine {
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
-        Tool::Event::emit("vital.network:server:disconnected", {});
+        Tool::Event::emit("vital.network:server:disconnect", {});
         if (auto_reconnect) _schedule_reconnect();
     }
 
@@ -306,7 +306,7 @@ namespace Vital::Engine {
         reconnect_attempts++;
         reconnect_timer = reconnect_delay;
         Tool::print("sbox", "Network: retry in ", reconnect_delay, "s  attempt ", reconnect_attempts, "/", reconnect_max);
-        Tool::Event::emit("vital.network:reconnecting", {});
+        Tool::Event::emit("vital.network:reconnect", {});
     }
 
     std::string Network::get_server_ip() const {
@@ -336,7 +336,7 @@ namespace Vital::Engine {
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_server_signals();
         Tool::print("sbox", "Network: hosting on port ", port);
-        Tool::Event::emit("vital.network:hosted", {});
+        Tool::Event::emit("vital.network:host", {});
         return true;
     }
 
@@ -349,7 +349,7 @@ namespace Vital::Engine {
         auto tree = get_scene_tree();
         if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
         Tool::print("sbox", "Network: server closed");
-        Tool::Event::emit("vital.network:closed", {});
+        Tool::Event::emit("vital.network:close", {});
         return true;
     }
 
@@ -358,7 +358,7 @@ namespace Vital::Engine {
         Tool::print("sbox", "Network: peer joined -> ", id, "  total: ", (int)connected_peers.size());
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
-        Tool::Event::emit("vital.network:peer:joined", args);
+        Tool::Event::emit("vital.network:peer:joi", args);
     }
 
     void Network::_on_peer_disconnected(int id) {
@@ -366,7 +366,7 @@ namespace Vital::Engine {
         Tool::print("sbox", "Network: peer left -> ", id, "  remaining: ", (int)connected_peers.size());
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
-        Tool::Event::emit("vital.network:peer:left", args);
+        Tool::Event::emit("vital.network:peer:leave", args);
     }
 
     const std::unordered_set<int>& Network::get_connected_peers() const {

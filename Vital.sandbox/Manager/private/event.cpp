@@ -70,16 +70,16 @@ void setup() {
     auto* net = Vital::Engine::Network::get_singleton();
 
     #if !defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:hosted", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Server is live");
     });
 
-    Vital::Tool::Event::bind("vital.network:peer:joined", [](Vital::Tool::Stack& args) {
+    Vital::Tool::Event::bind("vital.network:peer:joi", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::Tool::print("sbox", "Player joined: ", id);
     });
 
-    Vital::Tool::Event::bind("vital.network:peer:left", [](Vital::Tool::Stack& args) {
+    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::Tool::print("sbox", "Player left: ", id);
     });
@@ -91,13 +91,13 @@ void setup() {
         // No asset:request or asset:chunk handling needed here
     });
 
-    Vital::Tool::Event::bind("vital.network:closed", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:close", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Server closed");
     });
     #endif
 
     #if defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:connecting", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Connecting...");
     });
 
@@ -110,11 +110,11 @@ void setup() {
         // asset:chunk no longer exists — HTTP handles delivery
     });
 
-    Vital::Tool::Event::bind("vital.network:connection:failed", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connect:failed", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
 
-    Vital::Tool::Event::bind("vital.network:reconnecting", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:reconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Retrying...");
     });
 
@@ -122,7 +122,7 @@ void setup() {
         Vital::Tool::print("sbox", "Gave up reconnecting");
     });
 
-    Vital::Tool::Event::bind("vital.network:disconnected", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:disconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Disconnected cleanly");
     });
 
@@ -167,14 +167,14 @@ void initialize_vital_events() {
 
     // Network //
     #if !defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:peer:left", [](Vital::Tool::Stack& args) {
+    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
         int32_t id = args.array[0].as<int32_t>();
         Vital::Engine::Model::clear_synced();
     });
     #endif
 
     #if defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:connected", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack&) {
         auto* net = Vital::Engine::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", net->get_peer_id());
         Vital::Engine::Model::on_connected();
@@ -185,7 +185,7 @@ void initialize_vital_events() {
         );
     });
 
-    Vital::Tool::Event::bind("vital.network:server:disconnected", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:server:disconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Lost connection to server");
         Vital::Engine::Model::cleanup_spawned();
         Vital::Manager::Asset::get_singleton() -> clear();

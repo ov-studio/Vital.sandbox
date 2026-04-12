@@ -296,7 +296,7 @@ namespace Vital::Manager {
             static bool server_initialized = false;
             if (!server_initialized) {
                 server_initialized = true;
-                Tool::Event::bind("vital.network:peer:joined", [](Tool::Stack args) {
+                Tool::Event::bind("vital.network:peer:joi", [](Tool::Stack args) {
                     if (args.array.empty()) return;
                     const int peer_id = args.array[0].as<int32_t>();
                     Engine::Core::get_singleton() -> push_deferred([peer_id]() {  Manager::Resource::get_singleton() -> sync_peer(peer_id); });
