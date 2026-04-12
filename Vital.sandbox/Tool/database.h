@@ -29,10 +29,10 @@ namespace Vital::Tool {
     class Database {
         public:
             struct Column {
-                std::string type;
-                bool nullable = true;
+                std::string type = "VARCHAR(255)";
                 bool primary = false;
                 bool autoincrement = false;
+                bool nullable = true;
             };
 
             struct SchemaAction {
