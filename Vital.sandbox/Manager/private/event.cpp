@@ -69,33 +69,6 @@ void shutdown() {
 void setup() {
     auto* net = Vital::Engine::Network::get_singleton();
 
-    #if !defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack&) {
-        Vital::Tool::print("sbox", "Server is live");
-    });
-
-    Vital::Tool::Event::bind("vital.network:peer:join", [](Vital::Tool::Stack& args) {
-        int32_t id = args.array[0].as<int32_t>();
-        Vital::Tool::print("sbox", "Player joined: ", id);
-    });
-
-    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
-        int32_t id = args.array[0].as<int32_t>();
-        Vital::Tool::print("sbox", "Player left: ", id);
-    });
-
-    Vital::Tool::Event::bind("vital.network:packet", [net](Vital::Tool::Stack& args) {
-        int32_t sender   = args.object.at("sender_id").as<int32_t>();
-        std::string type = args.object.count("type") ? args.object.at("type").as<std::string>() : "";
-        // All asset delivery is now handled by the HTTP server on port 7778
-        // No asset:request or asset:chunk handling needed here
-    });
-
-    Vital::Tool::Event::bind("vital.network:close", [](Vital::Tool::Stack&) {
-        Vital::Tool::print("sbox", "Server closed");
-    });
-    #endif
-
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Connecting...");
@@ -107,7 +80,6 @@ void setup() {
             Vital::Manager::Asset::get_singleton() -> receive_manifest(args);
             return;
         }
-        // asset:chunk no longer exists — HTTP handles delivery
     });
 
     Vital::Tool::Event::bind("vital.network:connect:failed", [](Vital::Tool::Stack&) {
@@ -126,11 +98,25 @@ void setup() {
         Vital::Tool::print("sbox", "Disconnected cleanly");
     });
 
-    Vital::Tool::Event::bind("asset:ready", [](Vital::Tool::Stack&) {
-        Vital::Tool::print("sbox", "Asset: all assets ready");
+    net->set_reconnect_config(5, 3.0f);
+    #else
+    Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack&) {
+        Vital::Tool::print("sbox", "Server is live");
     });
 
-    net->set_reconnect_config(5, 3.0f);
+    Vital::Tool::Event::bind("vital.network:peer:join", [](Vital::Tool::Stack& args) {
+        int32_t id = args.array[0].as<int32_t>();
+        Vital::Tool::print("sbox", "Player joined: ", id);
+    });
+
+    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
+        int32_t id = args.array[0].as<int32_t>();
+        Vital::Tool::print("sbox", "Player left: ", id);
+    });
+
+    Vital::Tool::Event::bind("vital.network:close", [](Vital::Tool::Stack&) {
+        Vital::Tool::print("sbox", "Server closed");
+    });
     #endif
 }
 
