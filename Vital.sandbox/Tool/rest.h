@@ -65,16 +65,20 @@ namespace Vital::Tool::Rest {
         return result;
     }
 
-    inline std::string get(const std::string& url, const rest_headers& headers = {}, int timeout = 60, bool follow_redirects = true) {
+    inline std::string get(const std::string& url, const rest_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr) {
         std::string path;
         auto cli = make_client(url, path, 10, timeout, follow_redirects);
         auto httplib_headers = make_headers(headers);
         std::string buffer;
-        auto res = cli.Get(path.c_str(), httplib_headers, [&buffer](const char* data, size_t len) {
+        auto res = cli.Get(path.c_str(), httplib_headers, [&buffer, cancelled](const char* data, size_t len) {
+            if (cancelled && cancelled->load()) return false;
             buffer.append(data, len);
             return true;
         });
-        if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        if (!res) {
+            if (cancelled && res.error() == httplib::Error::Canceled) return "";
+            throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        }
         if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status));
         return buffer;
     }
