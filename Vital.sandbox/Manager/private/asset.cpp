@@ -280,10 +280,6 @@ namespace Vital::Manager {
 
     void Asset::broadcast_manifest_deferred() {
         for (int peer_id : Engine::Network::get_singleton() -> get_connected_peers()) {
-            // Already have a deferred broadcast queued for this peer — skip.
-            // The queued call will fire after the current call stack unwinds and
-            // will include every asset registered so far, covering all resources
-            // that started in the same batch (same frame or rapid successive frames).
             if (pending_manifest_peers.count(peer_id)) continue;
             pending_manifest_peers.insert(peer_id);
 
@@ -318,9 +314,6 @@ namespace Vital::Manager {
             std::string group = args.object.count("asset_group_" + std::to_string(i))
                 ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
-            // File is already being downloaded by a previous manifest.
-            // Just register this group's interest so a cancel_group for the
-            // original group doesn't kill a download another group still needs.
             if (active_downloads.count(path)) {
                 active_downloads[path]->groups.insert(group);
                 Tool::print("sbox", "Asset: already downloading -> ", path.c_str(), " (group '", group.c_str(), "' added)");
@@ -431,8 +424,6 @@ namespace Vital::Manager {
         });
     }
 
-    // Remove one group's interest in a specific file.
-    // The download is cancelled only when no group needs it anymore.
     void Asset::cancel(const std::string& path, const std::string& group) {
         auto it = active_downloads.find(path);
         if (it == active_downloads.end()) return;
@@ -446,8 +437,6 @@ namespace Vital::Manager {
         }
     }
 
-    // Remove one group's interest from every download it owns.
-    // Cancels only those whose groups set becomes empty afterwards.
     void Asset::cancel_group(const std::string& group) {
         int flagged = 0;
         for (auto& [path, dl] : active_downloads) {
@@ -458,7 +447,6 @@ namespace Vital::Manager {
         Tool::print("sbox", "Asset: cancelling group '", group.c_str(), "' (", flagged, " download(s) flagged)");
     }
 
-    // Hard-cancel everything regardless of group interest (disconnect / clear).
     void Asset::cancel_all() {
         for (auto& [path, dl] : active_downloads) dl->cancelled.store(true);
         Tool::print("sbox", "Asset: cancelling all downloads");
