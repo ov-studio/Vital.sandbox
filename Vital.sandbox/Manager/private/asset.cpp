@@ -332,7 +332,6 @@ namespace Vital::Manager {
         Tool::print("sbox", "Asset: received manifest, ", count, " assets from ", base_url.c_str());
 
         int needs_download = 0;
-
         for (int i = 0; i < count; i++) {
             std::string path  = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
             std::string hash  = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
