@@ -95,7 +95,7 @@ namespace Vital::Manager {
 
     void Asset::set_server_info(const ServerInfo& info) {
         server_info = info;
-        Tool::print("sbox", "Server info set: '", info.name, "' v", info.version);
+        Tool::print("sbox", "Asset: server info set: '", info.name, "' v", info.version);
     }
 
     const ServerInfo& Asset::get_server_info() const {
@@ -126,20 +126,17 @@ namespace Vital::Manager {
             Tool::print("error", "Asset: failed to register -> ", path.c_str());
         }
     }
-    
+
     void Asset::register_assets(const std::vector<std::string>& paths, const std::string& group) {
         std::vector<std::string> registered;
         for (const auto& path : paths) {
             const size_t before = registered_assets.size();
             register_asset(path, group, true);
-            if (registered_assets.size() > before)
-                registered.push_back(path);
+            if (registered_assets.size() > before) registered.push_back(path);
         }
-    
         if (registered.empty()) return;
         std::string report = fmt::format("Asset: registered {} asset(s) for group `{}`:\n", registered.size(), group);
-        for (const auto& path : registered)
-            report += fmt::format("> {} — {}\n", path, registered_assets[path].hash);
+        for (const auto& path : registered) report += fmt::format("> {} — {}\n", path, registered_assets[path].hash);
         Tool::print("sbox", report);
     }
 
@@ -152,12 +149,8 @@ namespace Vital::Manager {
     void Asset::unregister_group(const std::string& group) {
         int count = 0;
         for (auto it = registered_assets.begin(); it != registered_assets.end(); ) {
-            if (it->second.group == group) {
-                it = registered_assets.erase(it);
-                count++;
-            } else {
-                ++it;
-            }
+            if (it->second.group == group) { it = registered_assets.erase(it); count++; }
+            else ++it;
         }
         Tool::print("sbox", fmt::format("Asset: unregistered group `{}` — {} asset(s) removed", group, count));
     }
@@ -175,35 +168,16 @@ namespace Vital::Manager {
         http_server = std::make_unique<httplib::Server>();
 
         http_server->Get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
-            if (!req.has_param("path")) {
-                res.status = 400;
-                res.set_content("Missing path", "text/plain");
-                return;
-            }
+            if (!req.has_param("path")) { res.status = 400; res.set_content("Missing path", "text/plain"); return; }
             const std::string path = req.get_param_value("path");
-
-            if (!registered_assets.count(path)) {
-                res.status = 404;
-                res.set_content("Not found", "text/plain");
-                return;
-            }
+            if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
 
             const std::string full_path = Tool::get_directory() + "/" + path;
-
-            if (!http_server->set_mount_point("/", Tool::get_directory())) {
-                // Fallback: manual file streaming with range support
-            }
-
             std::ifstream file(full_path, std::ios::binary | std::ios::ate);
-            if (!file) {
-                res.status = 500;
-                res.set_content("File read error", "text/plain");
-                return;
-            }
+            if (!file) { res.status = 500; res.set_content("File read error", "text/plain"); return; }
 
             const size_t file_size = file.tellg();
             file.seekg(0);
-
             res.set_content_provider(
                 file_size,
                 "application/octet-stream",
