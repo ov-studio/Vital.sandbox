@@ -337,7 +337,7 @@ namespace Vital::Manager {
             if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
         }
         am -> register_assets(asset_paths, name);
-        am -> broadcast_manifest_deferred();
+        am -> broadcast_manifest(-1, true);
         running.insert(name);
         log("sbox", fmt::format("resource `{}` started", name));
 
