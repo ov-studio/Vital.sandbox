@@ -111,9 +111,9 @@ namespace Vital::Manager {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-    Tool::Stack Resource::build_packet(const std::string& type, const std::string& name, const Manifest* manifest) const {
+    Tool::Stack Resource::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) const {
         Tool::Stack msg;
-        msg.object["type"] = Tool::StackValue(type);
+        msg.object["event"] = Tool::StackValue(event);
         msg.object["name"] = Tool::StackValue(name);
         if (manifest) {
             Tool::Stack scripts_stack;
@@ -271,11 +271,11 @@ namespace Vital::Manager {
             });
 
             Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
-                if (!args.object.count("type")) return;
-                const std::string type = args.object.at("type").as<std::string>();
+                if (!args.object.count("event")) return;
+                const std::string event = args.object.at("event").as<std::string>();
                 auto* rm = Resource::get_singleton();
 
-                if (type == "vital.resource:started") {
+                if (event == "vital.resource:started") {
                     if (!args.object.count("name")) return;
                     const std::string name = args.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
@@ -284,7 +284,7 @@ namespace Vital::Manager {
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name, scripts, files);
                 }
-                else if (type == "vital.resource:stopped") {
+                else if (event == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
                     const std::string name = args.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
