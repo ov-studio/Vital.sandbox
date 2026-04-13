@@ -379,11 +379,8 @@ namespace Vital::Manager {
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             Tool::print("sbox", "Asset: downloading -> ", path.c_str());
 
-            try {
-                std::filesystem::create_directories(
-                    std::filesystem::path(local_path).parent_path()
-                );
-            } catch (...) {}
+            try { std::filesystem::create_directories(std::filesystem::path(local_path).parent_path()); }
+            catch (...) {}
 
             std::ofstream out(local_path, std::ios::binary | std::ios::trunc);
             if (!out) {
