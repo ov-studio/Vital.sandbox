@@ -21,7 +21,6 @@
 ////////////////////////////
 
 namespace Vital::Manager {
-    // Server info structure for /info endpoint
     struct ServerInfo {
         std::string name = "Vital Sandbox Server";
         std::string version = "1.0.0";
@@ -35,32 +34,19 @@ namespace Vital::Manager {
     class Asset {
         private:
             inline static Asset* singleton = nullptr;
-
-            // Server + Client: registered assets path → { hash, group }
             struct AssetEntry {
                 std::string hash;
                 std::string group; // empty string = no group
             };
             std::unordered_map<std::string, AssetEntry> registered_assets;
-
             // Spawn queue — shared between platforms (used by model system)
             std::unordered_map<std::string, int> spawn_queue;
 
-            #if !defined(Vital_SDK_Client)
-            // HTTP server runs on a background thread — never blocks Godot
-            std::unique_ptr<httplib::Server> http_server;
-            std::thread http_thread;
-            int http_port = 7778;
-            bool http_running = false;
-
-            // Server info for /info endpoint
-            ServerInfo server_info;
-            #endif
 
             #if defined(Vital_SDK_Client)
             struct Download {
                 std::string path;
-                std::string group; // empty string = no group
+                std::string group = "";
                 std::thread thread;
                 std::atomic<bool> cancelled{false};
             };
@@ -68,9 +54,17 @@ namespace Vital::Manager {
             std::string server_http_ip;
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void _on_download_failed(const std::string& path);
+            #else
+            std::unique_ptr<httplib::Server> http_server;
+            std::thread http_thread;
+            int http_port = 7778;
+            bool http_running = false;
+            ServerInfo server_info; //Server info for /info endpoint
             #endif
 
-            // Helpers
+            inline static Asset* singleton = nullptr;
+            std::unordered_map<std::string, AssetEntry> registered_assets;
+            std::unordered_map<std::string, int> spawn_queue;
             static std::string hash_file(const std::string& path);
         public:
             Asset()  = default;
