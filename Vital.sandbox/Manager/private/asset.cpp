@@ -360,6 +360,21 @@ namespace Vital::Manager {
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             Tool::print("sbox", "Asset: downloading -> ", path.c_str());
 
+            std::string response_body;
+            try { response_body = Tool::Rest::get(base_url + "/asset?path=" + path, {}, 60, true, &dl->cancelled); }
+            catch (const std::exception& e) {
+                Tool::print("sbox", "Asset: download failed -> ", path.c_str(), " error=", e.what());
+                _on_download_failed(path);
+                return;
+            }
+
+            if (dl->cancelled.load()) {
+                try { std::filesystem::remove(local_path); } catch (...) {}
+                Tool::print("sbox", "Asset: download cancelled -> ", path.c_str());
+                active_downloads.erase(path);
+                return;
+            }
+
             try { std::filesystem::create_directories(std::filesystem::path(local_path).parent_path()); }
             catch (...) {}
 
@@ -369,24 +384,8 @@ namespace Vital::Manager {
                 _on_download_failed(path);
                 return;
             }
-
-            std::string response_body;
-            try { response_body = Tool::Rest::get(base_url + "/asset?path=" + path); }
-            catch (const std::exception& e) {
-                Tool::print("sbox", "Asset: download failed -> ", path.c_str(), " error=", e.what());
-                _on_download_failed(path);
-                return;
-            }
-
             out.write(response_body.data(), static_cast<std::streamsize>(response_body.size()));
             out.close();
-
-            if (dl->cancelled.load()) {
-                try { std::filesystem::remove(local_path); } catch (...) {}
-                Tool::print("sbox", "Asset: download cancelled -> ", path.c_str());
-                active_downloads.erase(path);
-                return;
-            }
 
             try {
                 const std::string actual_hash = hash_file(local_path);
