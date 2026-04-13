@@ -35,18 +35,18 @@ namespace Vital::Manager {
         private:
             struct AssetEntry {
                 std::string hash;
-                std::string group;
+                std::string group = "";
             };
 
             #if defined(Vital_SDK_Client)
             struct Download {
                 std::string path;
+                // Every resource group that currently needs this file.
+                // The download is only cancelled once this set becomes empty,
+                // so shared files survive an individual resource stopping.
                 std::unordered_set<std::string> groups;
                 std::thread thread;
                 std::atomic<bool> cancelled{false};
-                // How many resources currently need this file.
-                // When it drops to 0 mid-download the download is cancelled.
-                std::atomic<int> ref_count{1};
             };
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::string server_http_ip;
@@ -58,9 +58,9 @@ namespace Vital::Manager {
             int http_port = 7778;
             bool http_running = false;
             ServerInfo server_info;
-            // Peers that already have a deferred broadcast queued — prevents
-            // multiple resources starting in the same frame from sending the
-            // manifest more than once per peer.
+            // Peers that already have a deferred broadcast queued.
+            // Prevents multiple resource starts (same frame or across frames
+            // before the deferred fires) from sending redundant manifests.
             std::unordered_set<int> pending_manifest_peers;
             #endif
 
@@ -115,11 +115,12 @@ namespace Vital::Manager {
             #if defined(Vital_SDK_Client)
             void receive_manifest(const Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
-            // cancel(path)      — decrements ref-count; cancels only when it hits 0
-            // cancel_group(grp) — decrements ref-count of every download belonging to
-            //                     the group; cancels those whose count reaches 0
-            // cancel_all()      — force-cancels everything regardless of ref-count
-            void cancel(const std::string& path);
+            // cancel(path, group)  — removes one group's interest in a file;
+            //                        cancels only when no group needs it anymore
+            // cancel_group(group)  — removes interest for all downloads owned by
+            //                        the group; cancels those with no remaining interest
+            // cancel_all()         — force-cancels everything (disconnect / clear)
+            void cancel(const std::string& path, const std::string& group = "");
             void cancel_group(const std::string& group);
             void cancel_all();
             bool is_downloading(const std::string& path) const;
