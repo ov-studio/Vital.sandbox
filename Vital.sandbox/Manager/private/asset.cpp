@@ -305,11 +305,9 @@ namespace Vital::Manager {
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url  = "http://" + server_ip + ":" + std::to_string(http_port);
 
-        // Categorise each asset in the manifest before logging anything so we
-        // can emit one tidy summary block instead of one line per file.
         std::vector<std::string> to_download;
         std::vector<std::string> up_to_date;
-        std::vector<std::string> in_progress; // already downloading, group bumped
+        std::vector<std::string> in_progress;
 
         for (int i = 0; i < count; i++) {
             std::string path  = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
@@ -343,7 +341,6 @@ namespace Vital::Manager {
             }
         }
 
-        // Single grouped summary log
         std::string report = fmt::format("Asset: manifest received — {} asset(s) total\n", count);
         if (!up_to_date.empty()) {
             report += fmt::format("> Cached ({}):\n", up_to_date.size());

@@ -90,11 +90,7 @@ namespace Vital::Manager {
             void register_assets(const std::vector<std::string>& paths, const std::string& group = "");
             void unregister_asset(const std::string& path);
             void unregister_group(const std::string& group);
-
-
-            // Manifest //
-            void broadcast_manifest(int peer_id);
-            void broadcast_manifest_deferred();
+            void broadcast_manifest(int peer_id = -1, bool deferred = false);
 
 
             // Server //
