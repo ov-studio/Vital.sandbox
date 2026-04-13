@@ -37,10 +37,6 @@ namespace Vital::Manager {
                 std::string hash;
                 std::string group = "";
             };
-            std::unordered_map<std::string, AssetEntry> registered_assets;
-            // Spawn queue — shared between platforms (used by model system)
-            std::unordered_map<std::string, int> spawn_queue;
-
 
             #if defined(Vital_SDK_Client)
             struct Download {
@@ -71,6 +67,11 @@ namespace Vital::Manager {
 
             static Asset* get_singleton();
             static void free_singleton();
+
+
+            // APIs //
+            void init();
+            void clear();
 
 
             // Config //
