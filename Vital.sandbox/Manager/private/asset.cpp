@@ -287,7 +287,7 @@ namespace Vital::Manager {
         if (registered_assets.empty()) return;
 
         Tool::Stack msg;
-        msg.object["event"]        = Tool::StackValue(std::string("asset:manifest"));
+        msg.object["event"]      = Tool::StackValue(std::string("asset:manifest"));
         msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
         msg.object["http_port"]   = Tool::StackValue((int32_t)http_port);
 
