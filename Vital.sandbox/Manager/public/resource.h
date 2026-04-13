@@ -91,9 +91,9 @@ namespace Vital::Manager {
             void init();
             #if !defined(Vital_SDK_Client)
             bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
-            bool start(const std::string& name);
-            bool stop(const std::string& name);
-            bool restart(const std::string& name);
+            bool start(std::string name);
+            bool stop(std::string name);
+            bool restart(std::string name);
             void start_all();
             void stop_all();
             void restart_all();
@@ -101,8 +101,8 @@ namespace Vital::Manager {
             void sync_peer(int peer_id) const;
             #endif
             #if defined(Vital_SDK_Client)
-            bool load(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
-            bool unload(const std::string& name);
+            bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
+            bool unload(std::string name);
             void execute_scripts(std::string name);
             void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             #endif

@@ -306,7 +306,7 @@ namespace Vital::Manager {
     }
 
     #if !defined(Vital_SDK_Client)
-    bool Resource::start(const std::string& name) {
+    bool Resource::start(std::string name) {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
         if (!is_loaded(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
@@ -356,7 +356,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    bool Resource::stop(const std::string& name) {
+    bool Resource::stop(std::string name) {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
         if (!is_running(name)) { log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
@@ -373,7 +373,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    bool Resource::restart(const std::string& name) {
+    bool Resource::restart(std::string name) {
         if (!is_running(name)) { log("error", fmt::format("cannot restart `{}` — not running", name)); return false; }
 
         stop(name);
@@ -479,7 +479,7 @@ namespace Vital::Manager {
         }
     }
 
-    bool Resource::load(const std::string& name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
+    bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
         if (is_running(name) || is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
 
         resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
@@ -556,7 +556,7 @@ namespace Vital::Manager {
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
 
-    bool Resource::unload(const std::string& name) {
+    bool Resource::unload(std::string name) {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
         if (!is_running(name) && !is_pending(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
