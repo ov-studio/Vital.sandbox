@@ -80,6 +80,7 @@ namespace Vital::Manager {
         cancel_all();
         active_downloads.clear();
         #else
+        pending_manifest_peers.clear();
         stop_http_server();
         #endif
     }
@@ -277,11 +278,18 @@ namespace Vital::Manager {
         Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), peer_id));
     }
 
-    // TODO: Needed still??
     void Asset::broadcast_manifest_deferred() {
         for (int peer_id : Engine::Network::get_singleton() -> get_connected_peers()) {
-            Engine::Core::get_singleton() -> push_deferred([peer_id]() {
-                Asset::get_singleton() -> broadcast_manifest(peer_id);
+            // If we already queued a deferred broadcast for this peer in this
+            // batch (e.g. start_all called start() for N resources), skip it.
+            // The single queued call will include ALL registered assets because
+            // it runs after the current call stack unwinds.
+            if (pending_manifest_peers.count(peer_id)) continue;
+            pending_manifest_peers.insert(peer_id);
+
+            Engine::Core::get_singleton() -> push_deferred([this, peer_id]() {
+                pending_manifest_peers.erase(peer_id);
+                broadcast_manifest(peer_id);
             });
         }
     }
@@ -309,6 +317,16 @@ namespace Vital::Manager {
             std::string hash  = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
             std::string group = args.object.count("asset_group_" + std::to_string(i))
                 ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
+
+            // If this file is already being downloaded (e.g. a second manifest
+            // arrived because a new resource started mid-download), just bump
+            // the ref-count so a cancel_group for the old resource doesn't kill
+            // a download that the new resource also needs.
+            if (active_downloads.count(path)) {
+                active_downloads[path]->ref_count++;
+                Tool::print("sbox", "Asset: already downloading -> ", path.c_str(), " (ref bumped)");
+                continue;
+            }
 
             bool hash_matches = false;
             const std::string local_path = Tool::get_directory() + "/" + path;
@@ -342,6 +360,7 @@ namespace Vital::Manager {
         auto dl = std::make_shared<Download>();
         dl->path  = path;
         dl->group = group;
+        dl->ref_count.store(1);
         active_downloads[path] = dl;
 
         const std::string local_base = Tool::get_directory();
@@ -414,21 +433,33 @@ namespace Vital::Manager {
         });
     }
 
+    // Decrement ref-count for a single path. Only flag cancelled when the
+    // count reaches zero, meaning no resource still needs this file.
     void Asset::cancel(const std::string& path) {
         auto it = active_downloads.find(path);
         if (it == active_downloads.end()) return;
-        it->second->cancelled.store(true);
-        Tool::print("sbox", "Asset: cancelling -> ", path.c_str());
-    }
-
-    void Asset::cancel_group(const std::string& group) {
-        int count = 0;
-        for (auto& [path, dl] : active_downloads) {
-            if (dl->group == group) { dl->cancelled.store(true); count++; }
+        const int remaining = --it->second->ref_count;
+        if (remaining <= 0) {
+            it->second->cancelled.store(true);
+            Tool::print("sbox", "Asset: cancelling -> ", path.c_str());
         }
-        Tool::print("sbox", "Asset: cancelling group '", group.c_str(), "' (", count, " download(s) flagged)");
+        else {
+            Tool::print("sbox", "Asset: cancel skipped (still needed by ", remaining, " resource(s)) -> ", path.c_str());
+        }
     }
 
+    // Decrement ref-count for every active download that belongs to the group.
+    void Asset::cancel_group(const std::string& group) {
+        int flagged = 0;
+        for (auto& [path, dl] : active_downloads) {
+            if (dl->group != group) continue;
+            const int remaining = --dl->ref_count;
+            if (remaining <= 0) { dl->cancelled.store(true); flagged++; }
+        }
+        Tool::print("sbox", "Asset: cancelling group '", group.c_str(), "' (", flagged, " download(s) flagged)");
+    }
+
+    // Hard-cancel everything regardless of ref-count (used on disconnect / clear).
     void Asset::cancel_all() {
         for (auto& [path, dl] : active_downloads) dl->cancelled.store(true);
         Tool::print("sbox", "Asset: cancelling all downloads");

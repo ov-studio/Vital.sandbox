@@ -44,6 +44,9 @@ namespace Vital::Manager {
                 std::string group = "";
                 std::thread thread;
                 std::atomic<bool> cancelled{false};
+                // How many resources currently need this file.
+                // When it drops to 0 mid-download the download is cancelled.
+                std::atomic<int> ref_count{1};
             };
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::string server_http_ip;
@@ -54,13 +57,18 @@ namespace Vital::Manager {
             std::thread http_thread;
             int http_port = 7778;
             bool http_running = false;
-            ServerInfo server_info; //Server info for /info endpoint
+            ServerInfo server_info;
+            // Peers that already have a deferred broadcast queued — prevents
+            // multiple resources starting in the same frame from sending the
+            // manifest more than once per peer.
+            std::unordered_set<int> pending_manifest_peers;
             #endif
 
             inline static Asset* singleton = nullptr;
             std::unordered_map<std::string, AssetEntry> registered_assets;
             std::unordered_map<std::string, int> spawn_queue;
             static std::string hash_file(const std::string& path);
+
         public:
             Asset()  = default;
             ~Asset() = default;
@@ -107,6 +115,10 @@ namespace Vital::Manager {
             #if defined(Vital_SDK_Client)
             void receive_manifest(const Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
+            // cancel(path)      — decrements ref-count; cancels only when it hits 0
+            // cancel_group(grp) — decrements ref-count of every download belonging to
+            //                     the group; cancels those whose count reaches 0
+            // cancel_all()      — force-cancels everything regardless of ref-count
             void cancel(const std::string& path);
             void cancel_group(const std::string& group);
             void cancel_all();
