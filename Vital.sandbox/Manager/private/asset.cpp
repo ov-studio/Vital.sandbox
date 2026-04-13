@@ -258,35 +258,40 @@ namespace Vital::Manager {
         return http_running;
     }
 
-    void Asset::broadcast_manifest(int peer_id) {
-        if (registered_assets.empty()) return;
-
-        Tool::Stack msg;
-        msg.object["event"]       = Tool::StackValue(std::string("asset:manifest"));
-        msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
-        msg.object["http_port"]   = Tool::StackValue((int32_t)http_port);
-
-        int i = 0;
-        for (auto& [path, entry] : registered_assets) {
-            msg.object["asset_path_"  + std::to_string(i)] = Tool::StackValue(path);
-            msg.object["asset_hash_"  + std::to_string(i)] = Tool::StackValue(entry.hash);
-            msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
-            i++;
+    void Asset::broadcast_manifest(int peer_id, bool deferred) {
+        if (deferred) {
+            auto& net = *Engine::Network::get_singleton();
+            const auto peers = (peer_id == -1) ? net.get_connected_peers() : std::unordered_set<int>{ peer_id };
+            for (int pid : peers) {
+                if (pending_manifest_peers.count(pid)) continue;
+                pending_manifest_peers.insert(pid);
+                Engine::Core::get_singleton() -> push_deferred([this, pid]() {
+                    pending_manifest_peers.erase(pid);
+                    broadcast_manifest(pid);
+                });
+            }
+            return;
         }
 
-        Engine::Network::get_singleton() -> send(msg, peer_id);
-        Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), peer_id));
-    }
+        if (registered_assets.empty()) return;
+        const auto& net = *Engine::Network::get_singleton();
+        const auto peers = (peer_id == -1) ? net.get_connected_peers() : std::unordered_set<int>{ peer_id };
+        for (int pid : peers) {
+            Tool::Stack msg;
+            msg.object["event"]       = Tool::StackValue(std::string("asset:manifest"));
+            msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
+            msg.object["http_port"]   = Tool::StackValue((int32_t)http_port);
 
-    void Asset::broadcast_manifest_deferred() {
-        for (int peer_id : Engine::Network::get_singleton() -> get_connected_peers()) {
-            if (pending_manifest_peers.count(peer_id)) continue;
-            pending_manifest_peers.insert(peer_id);
+            int i = 0;
+            for (auto& [path, entry] : registered_assets) {
+                msg.object["asset_path_"  + std::to_string(i)] = Tool::StackValue(path);
+                msg.object["asset_hash_"  + std::to_string(i)] = Tool::StackValue(entry.hash);
+                msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
+                i++;
+            }
 
-            Engine::Core::get_singleton() -> push_deferred([this, peer_id]() {
-                pending_manifest_peers.erase(peer_id);
-                broadcast_manifest(peer_id);
-            });
+            net.send(msg, pid);
+            Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), pid));
         }
     }
     #endif
