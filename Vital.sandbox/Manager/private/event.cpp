@@ -53,7 +53,6 @@ void load_server_config() {
 }
 #endif
 
-// TODO: Improve
 void shutdown() {
     #if !defined(Vital_SDK_Client)
     Vital::Engine::Network::get_singleton() -> close();
