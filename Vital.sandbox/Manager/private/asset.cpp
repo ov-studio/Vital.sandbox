@@ -398,7 +398,7 @@ namespace Vital::Manager {
             }
             catch (...) { _on_download_failed(path); return; }
 
-            Tool::print("sbox", "Asset: downloaded -> ", path.c_str());
+            Tool::print("sbox", fmt::format("Asset: downloaded — {}", path));
             active_downloads.erase(path);
 
             Engine::Core::get_singleton() -> push_deferred([path]() {
@@ -419,7 +419,7 @@ namespace Vital::Manager {
     void Asset::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
         Engine::Core::get_singleton() -> push_deferred([path]() {
-            Tool::print("sbox", "Asset: download failed -> ", path);
+            Tool::print("error", fmt::format("Asset: download failed — {}", path));
         });
     }
 
@@ -429,10 +429,7 @@ namespace Vital::Manager {
         if (!group.empty()) it->second->groups.erase(group);
         if (it->second->groups.empty()) {
             it->second->cancelled.store(true);
-            Tool::print("sbox", "Asset: cancelling -> ", path.c_str());
-        }
-        else {
-            Tool::print("sbox", "Asset: cancel skipped (still needed by ", it->second->groups.size(), " group(s)) -> ", path.c_str());
+            Tool::print("sbox", fmt::format("Asset: cancelling — {}", path));
         }
     }
 
@@ -447,8 +444,9 @@ namespace Vital::Manager {
     }
 
     void Asset::cancel_all() {
+        if (active_downloads.empty()) return;
         for (auto& [path, dl] : active_downloads) dl->cancelled.store(true);
-        Tool::print("sbox", "Asset: cancelling all downloads");
+        Tool::print("sbox", fmt::format("Asset: cancelled all downloads — {} stopped", active_downloads.size()));
     }
 
     bool Asset::is_downloading(const std::string& path) const { return active_downloads.count(path) > 0; }
