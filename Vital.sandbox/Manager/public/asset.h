@@ -116,7 +116,6 @@ namespace Vital::Manager {
 
 
             // Shared //
-            void clear();
             void queue_spawn(const std::string& name, int authority_peer);
             void flush_spawn_queue(const std::string& loaded_name);
     };
