@@ -53,6 +53,39 @@ namespace Vital::Manager {
 
 
     //----------------//
+    //     APIs       //
+    //----------------//
+
+    void Asset::init() {
+        #if defined(Vital_SDK_Client)
+            static bool initialized = false;
+            if (initialized) return;
+            initialized = true;
+
+            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
+                if (!args.object.count("event")) return;
+                const std::string event = args.object.at("event").as<std::string>();
+                if (event != "asset:manifest") return;
+                receive_manifest(args);
+            });
+
+            Tool::print("sbox", "Asset: initialized");
+        #endif
+    }
+
+    void Asset::clear() {
+        registered_assets.clear();
+        spawn_queue.clear();
+        #if defined(Vital_SDK_Client)
+        cancel_all();
+        active_downloads.clear();
+        #else
+        stop_http_server();
+        #endif
+    }
+
+
+    //----------------//
     //    Config      //
     //----------------//
 
@@ -466,16 +499,5 @@ namespace Vital::Manager {
         Engine::Core::get_singleton() -> push_deferred([loaded_name, authority_peer]() {
             Engine::Model::spawn_synced(loaded_name, authority_peer);
         });
-    }
-
-    void Asset::clear() {
-        registered_assets.clear();
-        spawn_queue.clear();
-        #if defined(Vital_SDK_Client)
-        cancel_all();
-        active_downloads.clear();
-        #else
-        stop_http_server();
-        #endif
     }
 }
