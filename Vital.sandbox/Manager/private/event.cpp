@@ -74,15 +74,6 @@ void setup() {
         Vital::Tool::print("sbox", "Connecting...");
     });
 
-    Vital::Tool::Event::bind("vital.network:packet", [](Vital::Tool::Stack& args) {
-        if (!args.object.count("event")) return;
-        const std::string event = args.object.at("event").as<std::string>();
-        if (event == "asset:manifest") {
-            Vital::Manager::Asset::get_singleton() -> receive_manifest(args);
-            return;
-        }
-    });
-
     Vital::Tool::Event::bind("vital.network:connect:failed", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
@@ -130,6 +121,7 @@ void initialize_vital_events() {
         #endif
         Vital::Engine::Console::get_singleton();
         Vital::Manager::Sandbox::get_singleton() -> ready();
+        Vital::Manager::Asset::get_singleton() -> init();
         Vital::Manager::Resource::get_singleton() -> init();
         setup();
     });
