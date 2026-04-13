@@ -21,13 +21,11 @@
 // Events //
 /////////////
 
-// Global config instance - loaded once at startup
 #if !defined(Vital_SDK_Client)
 #include <Engine/public/srvconfig.h>
 static Vital::Engine::SrvConfig g_server_config;
 #endif
 
-// Load server configuration from config.yaml
 #if !defined(Vital_SDK_Client)
 void load_server_config() {
     bool loaded = g_server_config.load();
@@ -39,8 +37,7 @@ void load_server_config() {
         Vital::Tool::print("sbox", "SrvConfig: HTTP port: ", g_server_config.get_http_port());
         Vital::Tool::print("sbox", "SrvConfig: Max clients: ", g_server_config.get_max_clients());
     }
-    
-    // Set server info on Asset for /info endpoint
+
     Vital::Manager::ServerInfo info;
     if (g_server_config.is_loaded()) {
         info.name = g_server_config.get_server_name();
