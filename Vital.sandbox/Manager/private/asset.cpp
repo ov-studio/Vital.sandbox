@@ -458,14 +458,13 @@ namespace Vital::Manager {
 
     void Asset::cancel_group(const std::string& group) {
         int cancelled_count = 0;
+        int count = 0;
         for (auto& [path, dl] : active_downloads) {
-            if (dl->group == group) {
-                dl->cancelled.store(true);
-                cancelled_count++;
-            }
+            if (dl->group == group) { dl->cancelled.store(true); count++; }
         }
         Tool::print("sbox", "Asset: cancelling group '", group.c_str(),
             "' (", cancelled_count, " download(s) flagged)");
+        Tool::print("sbox", "Asset: cancelling group '", group.c_str(), "' (", count, " download(s) flagged)");
     }
 
     void Asset::cancel_all() {
