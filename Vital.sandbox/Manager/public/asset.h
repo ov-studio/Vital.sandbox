@@ -77,8 +77,6 @@ namespace Vital::Manager {
             #if !defined(Vital_SDK_Client)
             void set_http_port(int port);
             int  get_http_port() const;
-
-            // Server info setters (for config integration)
             void set_server_info(const ServerInfo& info);
             const ServerInfo& get_server_info() const;
             #endif
