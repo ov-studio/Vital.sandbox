@@ -393,12 +393,9 @@ namespace Vital::Manager {
             }
 
             std::string response_body;
-            try {
-                response_body = Tool::Rest::get(base_url + "/asset?path=" + path);
-            } catch (const std::exception& e) {
-                Tool::print("sbox", "Asset: download failed -> ", path.c_str(),
-                    " error=", e.what());
+            try { response_body = Tool::Rest::get(base_url + "/asset?path=" + path); }
             catch (const std::exception& e) {
+                Tool::print("sbox", "Asset: download failed -> ", path.c_str(), " error=", e.what());
                 _on_download_failed(path);
                 return;
             }
