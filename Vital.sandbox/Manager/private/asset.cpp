@@ -119,7 +119,7 @@ namespace Vital::Manager {
             registered_assets[path] = { hash_file(full_path), group };
             if (!silenced) {
                 std::string report = fmt::format("Asset: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
-                report += fmt::format("│ {} — {}", path, registered_assets[path].hash);
+                report += fmt::format("  > {} — {}", path, registered_assets[path].hash);
                 Tool::print("sbox", report);
             }
         }
@@ -137,7 +137,7 @@ namespace Vital::Manager {
         }
         if (registered.empty()) return;
         std::string report = fmt::format("Asset: registered {} asset(s) for group `{}`:\n", registered.size(), group.empty() ? "(none)" : group);
-        for (const auto& path : registered) report += fmt::format("│ {} — {}\n", path, registered_assets[path].hash);
+        for (const auto& path : registered) report += fmt::format("  > {} — {}\n", path, registered_assets[path].hash);
         Tool::print("sbox", report);
     }
 
@@ -346,16 +346,16 @@ namespace Vital::Manager {
         // Single grouped summary log
         std::string report = fmt::format("Asset: manifest received — {} asset(s) total\n", count);
         if (!up_to_date.empty()) {
-            report += fmt::format("│ cached ({}):\n", up_to_date.size());
-            for (const auto& p : up_to_date) report += fmt::format("│   {}\n", p);
+            report += fmt::format("> Cached ({}):\n", up_to_date.size());
+            for (const auto& p : up_to_date) report += fmt::format(" > {}\n", p);
         }
         if (!in_progress.empty()) {
-            report += fmt::format("│ already downloading ({}):\n", in_progress.size());
-            for (const auto& p : in_progress) report += fmt::format("│   {}\n", p);
+            report += fmt::format("> Downloading ({}):\n", in_progress.size());
+            for (const auto& p : in_progress) report += fmt::format(" > {}\n", p);
         }
         if (!to_download.empty()) {
-            report += fmt::format("│ queued ({}):\n", to_download.size());
-            for (const auto& p : to_download) report += fmt::format("│   {}\n", p);
+            report += fmt::format("> Queued ({}):\n", to_download.size());
+            for (const auto& p : to_download) report += fmt::format(" > {}\n", p);
         }
         Tool::print("sbox", report);
 
