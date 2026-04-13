@@ -22,8 +22,8 @@
 // Vital: Manager: Asset //
 ////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
-    // TODO: Improve
     Asset* Asset::get_singleton() {
         if (!singleton) singleton = new Asset();
         return singleton;
@@ -33,7 +33,7 @@ namespace Vital::Manager {
         if (!singleton) return;
         singleton -> clear();
         #if !defined(Vital_SDK_Client)
-        singleton->stop_http_server();
+        singleton -> stop_http_server();
         #endif
         delete singleton;
         singleton = nullptr;
@@ -43,8 +43,7 @@ namespace Vital::Manager {
     //----------------//
     //    Helpers     //
     //----------------//
-    // Hash directly from disk without loading into memory — used at register time
-    // so we never hold large files in RAM just to hash them
+
     std::string Asset::hash_file(const std::string& path) {
         size_t last_sep = path.find_last_of("/\\");
         std::string base = (last_sep != std::string::npos) ? path.substr(0, last_sep) : ".";
@@ -73,7 +72,7 @@ namespace Vital::Manager {
 
 
     //--------------------//
-    //  Asset Registration//
+    //    Registration    //
     //--------------------//
 
     void Asset::register_asset(const std::string& path, const std::string& group, bool silenced) {
@@ -131,9 +130,9 @@ namespace Vital::Manager {
     }
 
 
-    //------------------------//
-    //  Server: HTTP + Manifest//
-    //------------------------//
+    //----------------------------//
+    //    Server: HTTP + Manifest //
+    //----------------------------//
 
     #if !defined(Vital_SDK_Client)
 
@@ -215,13 +214,13 @@ namespace Vital::Manager {
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
-            document.AddMember("name", rapidjson::Value(server_info.name.c_str(), alloc), alloc);
-            document.AddMember("version", rapidjson::Value(server_info.version.c_str(), alloc), alloc);
-            document.AddMember("description", rapidjson::Value(server_info.description.c_str(), alloc), alloc);
-            document.AddMember("http_port", http_port, alloc);
-            document.AddMember("max_clients", server_info.max_clients, alloc);
-            document.AddMember("discord_invite", rapidjson::Value(server_info.discord.c_str(), alloc), alloc);
-            document.AddMember("website", rapidjson::Value(server_info.website.c_str(), alloc), alloc);
+            document.AddMember("name",           rapidjson::Value(server_info.name.c_str(), alloc),        alloc);
+            document.AddMember("version",         rapidjson::Value(server_info.version.c_str(), alloc),     alloc);
+            document.AddMember("description",     rapidjson::Value(server_info.description.c_str(), alloc), alloc);
+            document.AddMember("http_port",       http_port,                                                alloc);
+            document.AddMember("max_clients",     server_info.max_clients,                                  alloc);
+            document.AddMember("discord_invite",  rapidjson::Value(server_info.discord.c_str(), alloc),     alloc);
+            document.AddMember("website",         rapidjson::Value(server_info.website.c_str(), alloc),     alloc);
             document.Accept(writer);
             res.set_content(buffer.GetString(), "application/json");
         });
@@ -292,14 +291,12 @@ namespace Vital::Manager {
 
     void Asset::receive_manifest(const Tool::Stack& args) {
         int count     = args.object.at("asset_count").as<int32_t>();
-        int http_port = args.object.count("http_port")
-            ? args.object.at("http_port").as<int32_t>() : 7778;
+        int http_port = args.object.count("http_port") ? args.object.at("http_port").as<int32_t>() : 7778;
 
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url  = "http://" + server_ip + ":" + std::to_string(http_port);
 
-        Tool::print("sbox", "Asset: received manifest, ", count,
-            " assets from ", base_url.c_str());
+        Tool::print("sbox", "Asset: received manifest, ", count, " assets from ", base_url.c_str());
 
         int needs_download = 0;
 
@@ -312,14 +309,10 @@ namespace Vital::Manager {
             bool hash_matches = false;
             const std::string local_path = Tool::get_directory() + "/" + path;
             try {
-                if (std::filesystem::exists(local_path)) {
-                    hash_matches = (hash_file(local_path) == hash);
-                }
+                if (std::filesystem::exists(local_path)) hash_matches = (hash_file(local_path) == hash);
                 Tool::print("sbox", "Asset: checked -> ", path.c_str(), " match=", hash_matches ? "yes" : "no");
             }
-            catch (...) {
-                hash_matches = false;
-            }
+            catch (...) { hash_matches = false; }
 
             if (hash_matches) {
                 Tool::print("sbox", "Asset: up to date -> ", path.c_str());
@@ -341,10 +334,7 @@ namespace Vital::Manager {
         }
     }
 
-    void Asset::download_file(const std::string& path,
-                                      const std::string& expected_hash,
-                                      const std::string& base_url,
-                                      const std::string& group) {
+    void Asset::download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group) {
         auto dl = std::make_shared<Download>();
         dl->path  = path;
         dl->group = group;
@@ -375,6 +365,7 @@ namespace Vital::Manager {
             } catch (const std::exception& e) {
                 Tool::print("sbox", "Asset: download failed -> ", path.c_str(),
                     " error=", e.what());
+            catch (const std::exception& e) {
                 _on_download_failed(path);
                 return;
             }
@@ -398,10 +389,7 @@ namespace Vital::Manager {
                     return;
                 }
             }
-            catch (...) {
-                _on_download_failed(path);
-                return;
-            }
+            catch (...) { _on_download_failed(path); return; }
 
             Tool::print("sbox", "Asset: downloaded -> ", path.c_str());
             active_downloads.erase(path);
@@ -454,17 +442,9 @@ namespace Vital::Manager {
         Tool::print("sbox", "Asset: cancelling all downloads (threads will clean up on next poll)");
     }
 
-    bool Asset::is_downloading(const std::string& path) const {
-        return active_downloads.count(path) > 0;
-    }
-
-    bool Asset::is_downloading() const {
-        return !active_downloads.empty();
-    }
-
-    void Asset::set_server_http_ip(const std::string& ip) {
-        server_http_ip = ip;
-    }
+    bool Asset::is_downloading(const std::string& path) const { return active_downloads.count(path) > 0; }
+    bool Asset::is_downloading() const { return !active_downloads.empty(); }
+    void Asset::set_server_http_ip(const std::string& ip) { server_http_ip = ip; }
 
     #endif
 
