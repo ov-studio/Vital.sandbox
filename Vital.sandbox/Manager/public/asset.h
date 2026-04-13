@@ -20,6 +20,7 @@
 // Vital: Manager: Asset //
 ////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
     struct ServerInfo {
         std::string name = "Vital Sandbox Server";
