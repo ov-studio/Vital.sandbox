@@ -30,13 +30,11 @@ namespace Vital::Manager {
         std::string website = "";
     };
 
-    // TODO: Improve
     class Asset {
         private:
-            inline static Asset* singleton = nullptr;
             struct AssetEntry {
                 std::string hash;
-                std::string group; // empty string = no group
+                std::string group = "";
             };
             std::unordered_map<std::string, AssetEntry> registered_assets;
             // Spawn queue — shared between platforms (used by model system)
