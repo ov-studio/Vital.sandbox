@@ -469,10 +469,8 @@ namespace Vital::Manager {
     }
 
     void Asset::cancel_all() {
-        for (auto& [path, dl] : active_downloads) {
-            dl->cancelled.store(true);
-        }
-        Tool::print("sbox", "Asset: cancelling all downloads (threads will clean up on next poll)");
+        for (auto& [path, dl] : active_downloads) dl->cancelled.store(true);
+        Tool::print("sbox", "Asset: cancelling all downloads");
     }
 
     bool Asset::is_downloading(const std::string& path) const { return active_downloads.count(path) > 0; }
