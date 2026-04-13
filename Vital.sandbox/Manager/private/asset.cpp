@@ -323,6 +323,7 @@ namespace Vital::Manager {
             // the ref-count so a cancel_group for the old resource doesn't kill
             // a download that the new resource also needs.
             if (active_downloads.count(path)) {
+                active_downloads[path]->groups.insert(group);
                 active_downloads[path]->ref_count++;
                 Tool::print("sbox", "Asset: already downloading -> ", path.c_str(), " (ref bumped)");
                 continue;
@@ -359,7 +360,7 @@ namespace Vital::Manager {
     void Asset::download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group) {
         auto dl = std::make_shared<Download>();
         dl->path  = path;
-        dl->group = group;
+        dl->groups.insert(group);
         dl->ref_count.store(1);
         active_downloads[path] = dl;
 
@@ -452,7 +453,8 @@ namespace Vital::Manager {
     void Asset::cancel_group(const std::string& group) {
         int flagged = 0;
         for (auto& [path, dl] : active_downloads) {
-            if (dl->group != group) continue;
+            if (!dl->groups.count(group)) continue;
+            dl->groups.erase(group);
             const int remaining = --dl->ref_count;
             if (remaining <= 0) { dl->cancelled.store(true); flagged++; }
         }

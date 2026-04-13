@@ -35,13 +35,13 @@ namespace Vital::Manager {
         private:
             struct AssetEntry {
                 std::string hash;
-                std::string group = "";
+                std::string group;
             };
 
             #if defined(Vital_SDK_Client)
             struct Download {
                 std::string path;
-                std::string group = "";
+                std::unordered_set<std::string> groups;
                 std::thread thread;
                 std::atomic<bool> cancelled{false};
                 // How many resources currently need this file.
