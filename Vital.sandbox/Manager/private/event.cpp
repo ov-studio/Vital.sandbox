@@ -166,10 +166,7 @@ void initialize_vital_events() {
         Vital::Tool::print("sbox", "Connected! My ID: ", net->get_peer_id());
         Vital::Engine::Model::on_connected();
         Vital::Manager::Asset::get_singleton() -> clear();
-        // Store server IP so HTTP downloads know where to connect
-        Vital::Manager::Asset::get_singleton() -> set_server_http_ip(
-            net->get_server_ip()
-        );
+        Vital::Manager::Asset::get_singleton() -> set_server_http_ip(net->get_server_ip());
     });
 
     Vital::Tool::Event::bind("vital.network:server:disconnect", [](Vital::Tool::Stack&) {
