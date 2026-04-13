@@ -130,8 +130,7 @@ namespace Vital::Manager {
         }
         return msg;
     }
-    
-    // Sends all currently running resource manifests to a single peer (late-join catchup)
+
     void Resource::sync_peer(int peer_id) const {
         Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         for (const auto& name : running) {
@@ -299,7 +298,7 @@ namespace Vital::Manager {
                 Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
                     if (args.array.empty()) return;
                     const int peer_id = args.array[0].as<int32_t>();
-                    Engine::Core::get_singleton() -> push_deferred([peer_id]() {  Manager::Resource::get_singleton() -> sync_peer(peer_id); });
+                    Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync_peer(peer_id); });
                 });
             }
             scan();
@@ -491,7 +490,7 @@ namespace Vital::Manager {
         manifest.files = files;
         resources.push_back(std::move(manifest));
         log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
-    
+
         const auto* resource = get_resource(name);
         std::unordered_set<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
@@ -503,7 +502,7 @@ namespace Vital::Manager {
             if (Tool::File::exists(Tool::get_directory(), path)) log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
             else resource_assets[name].insert(path);
         }
-    
+
         if (resource_assets[name].empty()) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
             execute_scripts(name);
@@ -512,7 +511,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    void Resource::execute_scripts(const std::string& name) {
+    void Resource::execute_scripts(std::string name) {
         if (!is_pending(name)) return;
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         const auto* resource = get_resource(name);
@@ -561,7 +560,7 @@ namespace Vital::Manager {
         auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto* am = Manager::Asset::get_singleton();
         if (!is_running(name) && !is_pending(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
-    
+
         if (is_pending(name)) {
             resource_assets.erase(name);
             pending.erase(name);
