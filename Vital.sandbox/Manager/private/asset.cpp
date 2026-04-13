@@ -274,8 +274,7 @@ namespace Vital::Manager {
         }
 
         Engine::Network::get_singleton() -> send(msg, peer_id);
-        Tool::print("sbox", "Asset: sent manifest (",
-            (int)registered_assets.size(), " assets) to peer ", peer_id);
+        Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), peer_id));
     }
 
     // TODO: Needed still??
@@ -286,7 +285,6 @@ namespace Vital::Manager {
             });
         }
     }
-
     #endif
 
 
