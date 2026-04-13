@@ -429,7 +429,7 @@ namespace Vital::Engine {
             Tool::print("sbox", "Network: sending handshake, peer_id=", get_peer_id());
             Tool::Stack msg;
             msg.array.push_back(Tool::StackValue(std::string("ping")));
-            msg.object["type"] = Tool::StackValue(std::string("system"));
+            msg.object["event"] = Tool::StackValue(std::string("system"));
             send_to_server(msg);
         }
         #endif
