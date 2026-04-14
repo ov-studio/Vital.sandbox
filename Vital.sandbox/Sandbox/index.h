@@ -40,7 +40,7 @@ namespace Vital::Sandbox {
     using vm_exec = lua_CFunction;
     using vm_machines = std::unordered_map<vm_state*, Machine*>;
     using vm_refs = std::unordered_map<std::string, int>;
-    using vm_bind = std::function<int(Machine*)>;
+    using vm_bind = std::function<int(Machine*, const std::string&)>;
 
     struct vm_api {
         std::function<void(Machine*)> bind;
@@ -53,11 +53,11 @@ namespace Vital::Sandbox {
         std::string usage;
         std::vector<std::string> arg_names;
 
-        inline vm_args(Machine* vm, std::string usage) : vm(vm), usage(std::move(usage)) {
-            auto start = this->usage.find('(');
-            auto end   = this->usage.find(')');
+        inline vm_args(Machine* vm, const std::string& symbol, const std::string& args) : vm(vm), usage(symbol + args) {
+            auto start = usage.find('(');
+            auto end = usage.find(')');
             if (start != std::string::npos && end != std::string::npos) {
-                std::string args_str = this->usage.substr(start + 1, end - start - 1);
+                std::string args_str = usage.substr(start + 1, end - start - 1);
                 std::stringstream ss(args_str);
                 std::string token;
                 while (std::getline(ss, token, ',')) {
