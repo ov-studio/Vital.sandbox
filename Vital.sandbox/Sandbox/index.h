@@ -117,28 +117,31 @@ namespace Vital::Sandbox {
         }
 
         template<typename T>
-        static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*)> exec) {
-            auto heap_exec = new std::function<int(Machine*, T*)>(std::move(exec));
+        static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*, const std::string&)> exec) {
+            auto heap_exec = new std::function<int(Machine*, T*, const std::string&)>(std::move(exec));
             auto heap_type = new std::string(type_name);
+            auto heap_id = new std::string(type_name + ":" + name);
             lua_pushlightuserdata(vm -> get_state(), heap_exec);
             lua_pushlightuserdata(vm -> get_state(), heap_type);
+            lua_pushlightuserdata(vm -> get_state(), heap_id);
             lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
-                auto fn = static_cast<std::function<int(Machine*, T*)>*>(lua_touserdata(state, lua_upvalueindex(1)));
+                auto fn = static_cast<std::function<int(Machine*, T*, const std::string&)>*>(lua_touserdata(state, lua_upvalueindex(1)));
                 auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
+                auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
                 auto vm = Machine::fetch_machine(state);
                 return vm -> execute([&]() -> int {
                     void** ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                     if (!ud || !*ud) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Invalid {} instance", *type));
-                    return (*fn)(vm, static_cast<T*>(*ud));
+                    return (*fn)(vm, static_cast<T*>(*ud), *id);
                 });
-            }, 2);
+            }, 3);
             lua_setfield(vm -> get_state(), -2, name.c_str());
         }
 
         template<typename T>
         static void bind_natives(Machine* vm, const std::string& type_name) {
-            bind_method<T>(vm, type_name, "is_type", [type_name](auto vm, auto self) -> int {
-                vm_args(vm, "instance:is_type(type_name)")
+            bind_method<T>(vm, type_name, "is_type", [type_name](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(type_name)")
                     .require(2, &Machine::is_string);
 
                 auto name = vm -> get_string(2);
@@ -146,7 +149,7 @@ namespace Vital::Sandbox {
                 return 1;
             });
 
-            bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self) -> int {
+            bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self, auto& id) -> int {
                 if (type_name.empty()) vm -> push_value(false);
                 else vm -> push_value(type_name);
                 return 1;
