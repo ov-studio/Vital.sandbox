@@ -54,6 +54,7 @@ namespace Vital::Sandbox {
         std::string usage;
         std::vector<std::string> arg_names;
 
+        inline vm_args(Machine* vm, const std::string& usage) : vm_args(vm, usage, "") {}
         inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), usage(id + args) {
             auto start = usage.find('(');
             auto end = usage.find(')');
@@ -68,8 +69,6 @@ namespace Vital::Sandbox {
                 }
             }
         }
-
-        inline vm_args(Machine* vm, const std::string& usage) : vm_args(vm, usage, "") {}
 
         template<typename F>
         inline vm_args& require(int index, F&& check) {
