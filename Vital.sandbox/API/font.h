@@ -22,7 +22,6 @@
 // Vital: API: Font //
 ///////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct Font : vm_module {
         inline static const std::string base_name = "font";
@@ -31,8 +30,10 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Font>(vm, base_name);
 
-            API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 auto object = base_class::create(path);
                 vm -> create_object(base_name, object);
@@ -41,33 +42,37 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 self -> destroy();
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_antialiasing", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_bool(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            vm_module::bind_method<base_class>(vm, base_name, "set_antialiasing", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)")
+                    .require(2, &Machine::is_bool);
+
                 self -> set_antialiasing(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_antialiasing", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "get_antialiasing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> get_antialiasing());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_oversampling", [](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_number(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            vm_module::bind_method<base_class>(vm, base_name, "set_oversampling", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(2, &Machine::is_number);
+
                 self -> set_oversampling(static_cast<float>(vm -> get_float(2)));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_oversampling", [](auto vm, auto self) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "get_oversampling", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> get_oversampling());
                 return 1;
             });
