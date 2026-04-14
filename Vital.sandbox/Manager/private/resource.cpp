@@ -100,7 +100,7 @@ namespace Vital::Manager {
 
     std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
         std::vector<Script> result;
-        const auto* resource = get_resource(name);
+        auto resource = get_resource(name);
         if (!resource) return result;
         for (const auto& script : resource -> scripts) {
             if (type.empty() || script.type == type) result.push_back(script);
@@ -134,9 +134,9 @@ namespace Vital::Manager {
     void Resource::sync_peer(int peer_id) const {
         Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         for (const auto& name : running) {
-            const auto* r = get_resource(name);
-            if (!r) continue;
-            Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, r), peer_id);
+            auto resource = get_resource(name);
+            if (!resource) continue;
+            Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, resource), peer_id);
         }
     }
 
@@ -314,7 +314,7 @@ namespace Vital::Manager {
         if (!is_loaded(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
         if (is_running(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
 
-        const auto* resource = get_resource(name);
+        auto resource = get_resource(name);
         std::vector<std::pair<std::string, std::string>> sources;
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
@@ -436,7 +436,7 @@ namespace Vital::Manager {
     void Resource::start_all() {
         log("sbox", "starting all resources...");
         int count = 0;
-        for (const auto* resource : get_all_resources()) {
+        for (auto resource : get_all_resources()) {
             if (start(resource -> ref)) count++;
         }
         log("sbox", fmt::format("all resources started — {} resource(s) started", count));
@@ -493,7 +493,7 @@ namespace Vital::Manager {
         resources.push_back(std::move(manifest));
         log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
 
-        const auto* resource = get_resource(name);
+        auto resource = get_resource(name);
         std::unordered_set<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
@@ -516,7 +516,7 @@ namespace Vital::Manager {
     void Resource::execute_scripts(std::string name) {
         if (!is_pending(name)) return;
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-        const auto* resource = get_resource(name);
+        auto resource = get_resource(name);
         if (!resource) {
             log("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
             pending.erase(name);
