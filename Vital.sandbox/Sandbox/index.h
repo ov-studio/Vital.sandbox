@@ -137,7 +137,9 @@ namespace Vital::Sandbox {
         template<typename T>
         static void bind_natives(Machine* vm, const std::string& type_name) {
             bind_method<T>(vm, type_name, "is_type", [type_name](auto vm, auto self) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, "instance:is_type(type_name)")
+                    .require(2, &Machine::is_string);
+
                 auto name = vm -> get_string(2);
                 vm -> push_value(type_name == name);
                 return 1;
