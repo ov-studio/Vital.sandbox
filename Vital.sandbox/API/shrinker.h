@@ -20,21 +20,24 @@
 // Vital: API: Shrinker //
 ///////////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct Shrinker : vm_module {
         inline static const std::string base_name = "shrinker";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "compress", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "compress", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(input)")
+                    .require(1, &Machine::is_string);
+
                 auto input = vm -> get_string(1);
                 vm -> push_value(Tool::Shrinker::compress(input));
                 return 1;
             });
-        
-            API::bind(vm, {base_name}, "decompress", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name}, "decompress", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(input)")
+                    .require(1, &Machine::is_string);
+
                 auto input = vm -> get_string(1);
                 vm -> push_value(Tool::Shrinker::decompress(input));
                 return 1;
