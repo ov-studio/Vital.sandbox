@@ -380,7 +380,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "play_animation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, loop, speed)")
+                vm_args(vm, id, "(name, loop = true, speed = 1.0)")
                     .require(2, &Machine::is_string)
                     .optional(3, &Machine::is_bool)
                     .optional(4, &Machine::is_number);

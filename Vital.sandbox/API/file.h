@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "contents", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path, directory_search)")
+                vm_args(vm, id, "(path, directory_search = false)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_bool);
 

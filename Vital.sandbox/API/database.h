@@ -109,7 +109,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(limit)")
+                vm_args(vm, id, "(limit = 0)")
                     .optional(2, &Machine::is_number);
 
                 if (vm -> is_number(2)) self -> limit = vm -> get_int(2);
@@ -221,7 +221,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Database>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(host, user, password, database, port)")
+                vm_args(vm, id, "(host, user, password, database, port = 3306)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)

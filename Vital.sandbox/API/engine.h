@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
             #endif
 
             API::bind(vm, {base_name}, "compile_string", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(input, chunk_name)")
+                vm_args(vm, id, "(input, chunk_name = \"\")")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
 
@@ -77,7 +77,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "load_string", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(input, chunk_name, auto_load, use_env, env)")
+                vm_args(vm, id, "(input, chunk_name = \"\", auto_load = true, use_env = false, env = nil)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string)
                     .optional(3, &Machine::is_bool)

@@ -33,7 +33,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "set_application_id", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id, authenticate, force_reauth)")
+                vm_args(vm, id, "(id, authenticate = false, force_reauth = false)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_bool)
                     .optional(3, &Machine::is_bool);
@@ -69,7 +69,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "set_largeimage", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(key, text)")
+                vm_args(vm, id, "(key, text = \"N/A\")")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
 
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "set_smallimage", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(key, text)")
+                vm_args(vm, id, "(key, text = \"N/A\")")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
 
@@ -93,7 +93,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "set_timestamps", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(start_at, end_at)")
+                vm_args(vm, id, "(start_at, end_at = 0)")
                     .require(1, &Machine::is_number)
                     .optional(2, &Machine::is_number);
 
