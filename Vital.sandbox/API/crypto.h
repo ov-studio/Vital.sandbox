@@ -26,29 +26,40 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "hash", [](auto vm) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, "crypto.hash(mode, input)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_string);
+                    
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
                 vm -> push_value(Tool::Crypto::hash(mode, input));
                 return 1;
             });
-        
+
             API::bind(vm, {base_name}, "encode", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, "crypto.encode(input)")
+                    .require(1, &Machine::is_string);
+
                 auto input = vm -> get_string(1);
                 vm -> push_value(Tool::Crypto::encode(input));
                 return 1;
             });
-        
+
             API::bind(vm, {base_name}, "decode", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, "crypto.decode(input)")
+                    .require(1, &Machine::is_string);
+
                 auto input = vm -> get_string(1);
                 vm -> push_value(Tool::Crypto::decode(input));
                 return 1;
             });
-        
+
             API::bind(vm, {base_name}, "encrypt", [](auto vm) -> int {
-                if ((vm -> get_count() < 3) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, "crypto.encrypt(mode, input, key)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string);
+
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
                 auto key = vm -> get_string(3);
@@ -57,9 +68,14 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(result.second);
                 return 2;
             });
-        
+
             API::bind(vm, {base_name}, "decrypt", [](auto vm) -> int {
-                if ((vm -> get_count() < 4) || (!vm -> is_string(1)) || (!vm -> is_string(2)) || (!vm -> is_string(3)) || (!vm -> is_string(4))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, "crypto.decrypt(mode, input, key, iv)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string)
+                    .require(4, &Machine::is_string);
+
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
                 auto key = vm -> get_string(3);
