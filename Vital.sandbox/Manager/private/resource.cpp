@@ -465,22 +465,6 @@ namespace Vital::Manager {
 
 
     #if defined(Vital_SDK_Client)
-    void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
-        if (const auto* sv = args.get("scripts")) {
-            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
-            scripts.reserve(nested.array.size());
-            for (const auto& entry : nested.array) {
-                const auto& s = *entry.as<std::shared_ptr<Tool::Stack>>();
-                scripts.push_back({ s.object.at("src").as<std::string>(), s.object.at("type").as<std::string>() });
-            }
-        }
-        if (const auto* sv = args.get("files")) {
-            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
-            files.reserve(nested.array.size());
-            for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
-        }
-    }
-
     bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
         if (is_running(name) || is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
 
@@ -511,6 +495,42 @@ namespace Vital::Manager {
         }
         else log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
         return true;
+    }
+
+    bool Resource::unload(std::string name) {
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto am = Manager::Asset::get_singleton();
+        if (!is_running(name) && !is_pending(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
+
+        if (is_pending(name)) {
+            resource_assets.erase(name);
+            pending.erase(name);
+            am -> cancel_group(name);
+            log("sbox", fmt::format("resource `{}` download cancelled", name));
+        }
+
+        const bool was_running = is_running(name);
+        if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
+        resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
+        log("sbox", fmt::format("resource `{}` stopped", name));
+        if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
+        return true;
+    }
+
+    void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
+        if (const auto* sv = args.get("scripts")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            scripts.reserve(nested.array.size());
+            for (const auto& entry : nested.array) {
+                const auto& s = *entry.as<std::shared_ptr<Tool::Stack>>();
+                scripts.push_back({ s.object.at("src").as<std::string>(), s.object.at("type").as<std::string>() });
+            }
+        }
+        if (const auto* sv = args.get("files")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            files.reserve(nested.array.size());
+            for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
+        }
     }
 
     void Resource::execute_scripts(std::string name) {
@@ -556,26 +576,6 @@ namespace Vital::Manager {
         }
         running.insert(name);
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
-    }
-
-    bool Resource::unload(std::string name) {
-        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-        auto am = Manager::Asset::get_singleton();
-        if (!is_running(name) && !is_pending(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
-
-        if (is_pending(name)) {
-            resource_assets.erase(name);
-            pending.erase(name);
-            am -> cancel_group(name);
-            log("sbox", fmt::format("resource `{}` download cancelled", name));
-        }
-
-        const bool was_running = is_running(name);
-        if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
-        resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
-        log("sbox", fmt::format("resource `{}` stopped", name));
-        if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
-        return true;
     }
     #endif
 }

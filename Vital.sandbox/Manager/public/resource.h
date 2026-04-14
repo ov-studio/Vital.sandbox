@@ -103,8 +103,8 @@ namespace Vital::Manager {
             #if defined(Vital_SDK_Client)
             bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
             bool unload(std::string name);
-            void execute_scripts(std::string name);
             void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
+            void execute_scripts(std::string name);
             #endif
 
 
