@@ -41,6 +41,7 @@ namespace Vital::Sandbox {
     using vm_machines = std::unordered_map<vm_state*, Machine*>;
     using vm_refs = std::unordered_map<std::string, int>;
     using vm_bind = std::function<int(Machine*, const std::string&)>;
+    using vm_method = std::function<int(Machine*, void*, const std::string&)>;
 
     struct vm_api {
         std::function<void(Machine*)> bind;
@@ -67,6 +68,8 @@ namespace Vital::Sandbox {
                 }
             }
         }
+
+        inline vm_args(Machine* vm, const std::string& usage) : vm_args(vm, usage, "") {}
 
         template<typename F>
         inline vm_args& require(int index, F&& check) {
