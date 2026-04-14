@@ -53,7 +53,7 @@ namespace Vital::Sandbox {
         std::string usage;
         std::vector<std::string> arg_names;
 
-        inline vm_args(Machine* vm, const std::string& symbol, const std::string& args) : vm(vm), usage(symbol + args) {
+        inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), usage(id + args) {
             auto start = usage.find('(');
             auto end = usage.find(')');
             if (start != std::string::npos && end != std::string::npos) {
