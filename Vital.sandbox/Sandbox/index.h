@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Tool/yaml.h>

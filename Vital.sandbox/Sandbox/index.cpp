@@ -13,8 +13,8 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/API/engine.h>
 #include <Vital.sandbox/API/database.h>
 #include <Vital.sandbox/API/discord.h>
