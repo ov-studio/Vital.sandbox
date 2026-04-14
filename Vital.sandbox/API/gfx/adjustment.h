@@ -22,7 +22,6 @@
 // Vital: API: Adjustment //
 /////////////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {
         inline static const std::string base_name = "gfx";
@@ -30,60 +29,70 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name, "adjustment"}, "is_enabled", [](auto vm) -> int {
+            API::bind(vm, {base_name, "adjustment"}, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_adjustment_enabled());
                 return 1;
             });
-    
-            API::bind(vm, {base_name, "adjustment"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "adjustment"}, "set_enabled", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(state)")
+                    .require(1, &Machine::is_bool);
+
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_adjustment_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "adjustment"}, "set_brightness", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "adjustment"}, "set_brightness", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_brightness(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "adjustment"}, "get_brightness", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "adjustment"}, "get_brightness", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_adjustment_brightness());
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "adjustment"}, "set_contrast", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "adjustment"}, "set_contrast", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_contrast(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "adjustment"}, "get_contrast", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "adjustment"}, "get_contrast", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_adjustment_contrast());
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "adjustment"}, "set_saturation", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "adjustment"}, "set_saturation", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_saturation(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "adjustment"}, "get_saturation", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "adjustment"}, "get_saturation", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_adjustment_saturation());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 auto lut_texture = Vital::Engine::Texture::get_from_reference(path);
                 if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);
@@ -134,13 +143,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "get_lut", [](auto vm) -> int {
+            API::bind(vm, {base_name, "adjustment"}, "get_lut", [](auto vm, auto& id) -> int {
                 if (vm -> is_reference(lut_reference)) vm -> get_reference(lut_reference, true);
                 else vm -> push_value(false);
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "reset_lut", [](auto vm) -> int {
+            API::bind(vm, {base_name, "adjustment"}, "reset_lut", [](auto vm, auto& id) -> int {
                 base_class::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
                 vm -> del_reference(lut_reference);
                 vm -> push_value(true);
