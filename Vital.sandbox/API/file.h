@@ -21,7 +21,6 @@
 // Vital: API: File //
 ///////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct File : vm_module {
         inline static const std::string base_name = "file";
@@ -39,52 +38,69 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "exists", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "exists", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 vm -> push_value(Tool::File::exists(get_base(vm, path), path));
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "size", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "size", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 vm -> push_value(static_cast<double>(Tool::File::size(get_base(vm, path), path)));
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "hash", [](auto vm) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "hash", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path, mode)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 auto mode = vm -> get_string(2);
                 vm -> push_value(Tool::File::hash(get_base(vm, path), path, mode));
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "delete", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "delete", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 vm -> push_value(Tool::File::remove(get_base(vm, path), path));
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "read", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "read", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 vm -> push_value(Tool::File::read_text(get_base(vm, path), path));
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "write", [](auto vm) -> int {
-                if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "write", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path, buffer)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_string);
+
                 auto path = vm -> get_string(1);
                 auto buffer = vm -> get_string(2);
                 vm -> push_value(Tool::File::write_text(get_base(vm, path), path, buffer));
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "contents", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "contents", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path, directory_search)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
+
                 auto path = vm -> get_string(1);
                 bool directory_search = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 const std::string base = get_base(vm, path);
