@@ -70,10 +70,8 @@ namespace Vital::Sandbox {
         template<typename F>
         inline vm_args& require(int index, F&& check) {
             if (vm -> get_count() < index || !std::invoke(std::forward<F>(check), vm, index)) {
-                const std::string arg = (index - 1) < (int)arg_names.size()
-                    ? arg_names[index - 1] : std::to_string(index);
-                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error,
-                    fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
+                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
+                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
             }
             return *this;
         }
@@ -81,10 +79,8 @@ namespace Vital::Sandbox {
         template<typename F>
         inline vm_args& optional(int index, F&& check) {
             if (vm -> get_count() >= index && !std::invoke(std::forward<F>(check), vm, index)) {
-                const std::string arg = (index - 1) < (int)arg_names.size()
-                    ? arg_names[index - 1] : std::to_string(index);
-                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error,
-                    fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
+                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
+                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
             }
             return *this;
         }
