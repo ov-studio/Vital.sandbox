@@ -20,15 +20,19 @@
 // Vital: API: Network //
 //////////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct Network : vm_module {
         inline static const std::string base_name = "network";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "emit", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "emit", [](auto vm, auto& id) -> int {
                 bool client = Tool::get_platform() == "client";
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1)) || (!client && (!vm -> is_number(2)))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, id, client ? "(name, is_latent, payload)" : "(name, peer_id, is_latent, payload)")
+                    .require(1, &Machine::is_string)
+                    .require(2, [client](Machine* vm, int index) {
+                        return client ? true : vm -> is_number(index);
+                    });
+
                 int queryArg = client ? 3 : 4;
                 auto name = vm -> get_string(1);
                 int peerID = client ? 0 : vm -> get_int(2);
