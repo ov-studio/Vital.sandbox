@@ -119,7 +119,7 @@ namespace Vital::Manager {
             registered_assets[path] = { hash_file(full_path), group };
             if (!silenced) {
                 std::string report = fmt::format("Asset: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
-                report += fmt::format("  > {} — {}", path, registered_assets[path].hash);
+                report += fmt::format("> `{}` — {}", path, registered_assets[path].hash);
                 Tool::print("sbox", report);
             }
         }
@@ -137,7 +137,7 @@ namespace Vital::Manager {
         }
         if (registered.empty()) return;
         std::string report = fmt::format("Asset: registered {} asset(s) for group `{}`:\n", registered.size(), group.empty() ? "(none)" : group);
-        for (const auto& path : registered) report += fmt::format("  > {} — {}\n", path, registered_assets[path].hash);
+        for (const auto& path : registered) report += fmt::format("> `{}` — {}\n", path, registered_assets[path].hash);
         Tool::print("sbox", report);
     }
 
@@ -259,10 +259,11 @@ namespace Vital::Manager {
     }
 
     void Asset::broadcast_manifest(int peer_id, bool deferred) {
+        auto net = Engine::Network::get_singleton();
+        const std::unordered_set<int> all_peers = (peer_id == -1) ? net->get_connected_peers() : std::unordered_set<int>{ peer_id };
+    
         if (deferred) {
-            auto& net = *Engine::Network::get_singleton();
-            const auto peers = (peer_id == -1) ? net.get_connected_peers() : std::unordered_set<int>{ peer_id };
-            for (int pid : peers) {
+            for (int pid : all_peers) {
                 if (pending_manifest_peers.count(pid)) continue;
                 pending_manifest_peers.insert(pid);
                 Engine::Core::get_singleton() -> push_deferred([this, pid]() {
@@ -272,16 +273,13 @@ namespace Vital::Manager {
             }
             return;
         }
-
+    
         if (registered_assets.empty()) return;
-        const auto& net = *Engine::Network::get_singleton();
-        const auto peers = (peer_id == -1) ? net.get_connected_peers() : std::unordered_set<int>{ peer_id };
-        for (int pid : peers) {
+        for (int pid : all_peers) {
             Tool::Stack msg;
             msg.object["event"]       = Tool::StackValue(std::string("asset:manifest"));
             msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
             msg.object["http_port"]   = Tool::StackValue((int32_t)http_port);
-
             int i = 0;
             for (auto& [path, entry] : registered_assets) {
                 msg.object["asset_path_"  + std::to_string(i)] = Tool::StackValue(path);
@@ -289,8 +287,7 @@ namespace Vital::Manager {
                 msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
                 i++;
             }
-
-            net.send(msg, pid);
+            net->send(msg, pid);
             Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), pid));
         }
     }
@@ -349,15 +346,15 @@ namespace Vital::Manager {
         std::string report = fmt::format("Asset: manifest received — {} asset(s) total\n", count);
         if (!up_to_date.empty()) {
             report += fmt::format("> Cached ({}):\n", up_to_date.size());
-            for (const auto& p : up_to_date) report += fmt::format("> {}\n", p);
+            for (const auto& p : up_to_date) report += fmt::format("> `{}`\n", p);
         }
         if (!in_progress.empty()) {
             report += fmt::format("> Downloading ({}):\n", in_progress.size());
-            for (const auto& p : in_progress) report += fmt::format("> {}\n", p);
+            for (const auto& p : in_progress) report += fmt::format("> `{}`\n", p);
         }
         if (!to_download.empty()) {
             report += fmt::format("> Queued ({}):\n", to_download.size());
-            for (const auto& p : to_download) report += fmt::format("> {}\n", p);
+            for (const auto& p : to_download) report += fmt::format("> `{}`\n", p);
         }
         Tool::print("sbox", report);
 
