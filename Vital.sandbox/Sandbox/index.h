@@ -47,6 +47,49 @@ namespace Vital::Sandbox {
     };
     using vm_apis = std::vector<vm_api>;
 
+    struct vm_args {
+        Machine* vm;
+        std::string usage;
+        std::vector<std::string> arg_names;
+
+        inline vm_args(Machine* vm, std::string usage) : vm(vm), usage(std::move(usage)) {
+            auto start = this->usage.find('(');
+            auto end   = this->usage.find(')');
+            if (start != std::string::npos && end != std::string::npos) {
+                std::string args_str = this->usage.substr(start + 1, end - start - 1);
+                std::stringstream ss(args_str);
+                std::string token;
+                while (std::getline(ss, token, ',')) {
+                    token.erase(0, token.find_first_not_of(" \t"));
+                    token.erase(token.find_last_not_of(" \t") + 1);
+                    if (!token.empty()) arg_names.push_back(token);
+                }
+            }
+        }
+
+        template<typename F>
+        inline vm_args& require(int index, F&& check) {
+            if (vm -> get_count() < index || !std::invoke(std::forward<F>(check), vm, index)) {
+                const std::string arg = (index - 1) < (int)arg_names.size()
+                    ? arg_names[index - 1] : std::to_string(index);
+                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error,
+                    fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
+            }
+            return *this;
+        }
+
+        template<typename F>
+        inline vm_args& optional(int index, F&& check) {
+            if (vm -> get_count() >= index && !std::invoke(std::forward<F>(check), vm, index)) {
+                const std::string arg = (index - 1) < (int)arg_names.size()
+                    ? arg_names[index - 1] : std::to_string(index);
+                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error,
+                    fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
+            }
+            return *this;
+        }
+    };
+
     struct vm_module {
         static void bind(Machine* vm) {}
         static void methods(Machine* vm) {}
@@ -103,7 +146,7 @@ namespace Vital::Sandbox {
                 vm -> push_value(type_name == name);
                 return 1;
             });
-        
+
             bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self) -> int {
                 if (type_name.empty()) vm -> push_value(false);
                 else vm -> push_value(type_name);
@@ -116,7 +159,7 @@ namespace Vital::Sandbox {
             void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             return ud && *ud;
         }
-    
+
         template<typename T = void>
         static std::string get_userdata_type(Machine* vm, int index = 1) {
             if (!lua_isuserdata(vm -> get_state(), index)) return "";
