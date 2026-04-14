@@ -21,74 +21,83 @@
 // Vital: API: SSIL //
 ///////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct SSIL : vm_module {
         inline static const std::string base_name = "gfx";
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name, "ssil"}, "is_enabled", [](auto vm) -> int {
+            API::bind(vm, {base_name, "ssil"}, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_ssil_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssil"}, "set_enabled", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_bool(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name, "ssil"}, "set_enabled", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(state)")
+                    .require(1, &Machine::is_bool);
+
                 auto state = vm -> get_bool(1);
                 base_class::get_environment() -> set_ssil_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "set_radius", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "ssil"}, "set_radius", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_radius(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "get_radius", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "ssil"}, "get_radius", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssil_radius());
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "set_intensity", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "ssil"}, "set_intensity", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_intensity(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "get_intensity", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "ssil"}, "get_intensity", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssil_intensity());
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "set_sharpness", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "ssil"}, "set_sharpness", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_sharpness(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "get_sharpness", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "ssil"}, "get_sharpness", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssil_sharpness());
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "set_normal_rejection", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name, "ssil"}, "set_normal_rejection", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_normal_rejection(value);
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name, "ssil"}, "get_normal_rejection", [](auto vm) -> int {
+
+            API::bind(vm, {base_name, "ssil"}, "get_normal_rejection", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssil_normal_rejection());
                 return 1;
             });
