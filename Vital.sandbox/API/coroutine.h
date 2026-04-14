@@ -20,22 +20,26 @@
 // Vital: API: Coroutine //
 ////////////////////////////
 
-// TODO: Update API
+// TODO: Update API ?                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error); handle via vm_args too?
 namespace Vital::Sandbox::API {
     struct Coroutine : vm_module {
         inline static const std::string base_name = "coroutine";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "create", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_function(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(handler)")
+                    .require(1, &Machine::is_function);
+
                 auto thread = vm -> create_thread();
                 vm -> push(1);
                 vm -> move(thread, 1);
                 return 1;
             });
-        
-            API::bind(vm, {base_name}, "resume", [](auto vm) -> int {
-                if ((vm -> get_count() < 1) || (!vm -> is_thread(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+
+            API::bind(vm, {base_name}, "resume", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(thread)")
+                    .require(1, &Machine::is_thread);
+
                 auto thread = vm -> get_thread(1);
                 auto thread_vm = Machine::fetch_machine(thread);
                 if (!thread_vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
@@ -43,17 +47,19 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name}, "pause", [](auto vm) -> int {
+
+            API::bind(vm, {base_name}, "pause", [](auto vm, auto& id) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
                 vm -> pause();
                 vm -> push_value(true);
                 return 1;
             });
-        
-            API::bind(vm, {base_name}, "sleep", [](auto vm) -> int {
+
+            API::bind(vm, {base_name}, "sleep", [](auto vm, auto& id) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
-                if ((vm -> get_count() < 1) || (!vm -> is_number(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, id, "(duration)")
+                    .require(1, &Machine::is_number);
+
                 auto duration = vm -> get_int(1);
                 Tool::Timer([=](Tool::Timer* self) {
                     vm -> push_value(true);
