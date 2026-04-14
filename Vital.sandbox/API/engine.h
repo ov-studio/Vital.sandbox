@@ -21,28 +21,27 @@
 // Vital: API: Engine //
 /////////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct Engine : vm_module {
         inline static const std::string base_name = "engine";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "get_version", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_version", [](auto vm, auto& id) -> int {
                 vm -> push_value(Build.to_string());
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_tick", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_tick", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::get_tick());
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_platform", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_platform", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::get_platform());
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_timestamp", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_timestamp", [](auto vm, auto& id) -> int {
                 auto timestamp = Tool::get_timestamp();
                 vm -> create_table();
                 for (auto& [key, value] : timestamp.object) {
@@ -52,14 +51,14 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(Vital_SDK_Client)
-            API::bind(vm, {base_name}, "get_serial", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
             });
             #endif
 
-            API::bind(vm, {base_name}, "compile_string", [](auto vm) -> int {
-                vm_args(vm, "engine.compile_string(input, chunk_name)")
+            API::bind(vm, {base_name}, "compile_string", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(input, chunk_name)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
 
@@ -77,8 +76,8 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
 
-            API::bind(vm, {base_name}, "load_string", [](auto vm) -> int {
-                vm_args(vm, "engine.load_string(input, chunk_name, auto_load, use_env, env)")
+            API::bind(vm, {base_name}, "load_string", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(input, chunk_name, auto_load, use_env, env)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string)
                     .optional(3, &Machine::is_bool)
@@ -94,8 +93,8 @@ namespace Vital::Sandbox::API {
                 return results == 0 ? 1 : results;
             });
 
-            API::bind(vm, {base_name}, "print", [](auto vm) -> int {
-                vm_args(vm, "engine.print(type, ...)")
+            API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(type, ...)")
                     .require(1, &Machine::is_string);
 
                 std::string type = vm -> get_string(1);
