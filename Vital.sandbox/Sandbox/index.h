@@ -102,7 +102,7 @@ namespace Vital::Sandbox {
                 [](Machine* vm) { T::inject(vm); }
             };
         }
-        
+
         template<typename T>
         static void register_type(Machine* vm, const std::string& type_name) {
             vm -> create_metatable(type_name);
