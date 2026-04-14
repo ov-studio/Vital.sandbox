@@ -412,13 +412,15 @@ namespace Vital::Sandbox {
                     }
                 }
                 lua_pushlightuserdata(state, heap_exec);
+                lua_pushlightuserdata(state, heap_id);
                 lua_pushcclosure(state, [](vm_state* state) -> int {
                     auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
+                    auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
                     auto vm = Machine::fetch_machine(state);
                     return vm -> execute([&]() -> int {
-                        return (*exec)(vm);
+                        return (*exec)(vm, *id);
                     });
-                }, 1);
+                }, 2);
                 set_table_field(name, -2);
                 pop(static_cast<int>(scope.size()));
             }
