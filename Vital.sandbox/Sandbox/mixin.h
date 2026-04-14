@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------
+     Resource: Vital.sandbox
+     Script: Sandbox: mixin.h
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Sandbox Mixins
+----------------------------------------------------------------*/
+
+
+////////////////////////////
+// Vital: Sandbox: Mixin //
+////////////////////////////
+
 namespace Vital::Sandbox {
     template<typename Derived>
     struct Mixin {
