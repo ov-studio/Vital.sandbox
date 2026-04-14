@@ -401,6 +401,10 @@ namespace Vital::Sandbox {
 
             void bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
                 auto heap_exec = new vm_bind(std::move(exec));
+                std::string id = scope[0];
+                for (std::size_t i = 1; i < scope.size(); ++i) id += "." + scope[i];
+                id += "." + name;
+                auto heap_id = new std::string(std::move(id));
                 create_namespace(scope[0]);
                 for (std::size_t i = 1; i < scope.size(); ++i) {
                     get_table_field(scope[i], -1);
