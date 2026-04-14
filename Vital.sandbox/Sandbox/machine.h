@@ -353,10 +353,7 @@ namespace Vital::Sandbox {
                     const char* upname = lua_getupvalue(state, -1, 1);
                     lua_remove(state, -2);
                     if (!upname) continue;
-                    if (!lua_istable(state, -1)) {
-                        lua_pop(state, 1);
-                        continue;
-                    }
+                    if (!lua_istable(state, -1)) { lua_pop(state, 1); continue; }
                     lua_rawget(state, LUA_REGISTRYINDEX);
                     if (lua_isstring(state, -1)) {
                         std::string result = lua_tostring(state, -1);
@@ -398,12 +395,8 @@ namespace Vital::Sandbox {
             }
 
             void hook(const std::string& mode) {
-                for (auto& i : internal_apis) {
-                    mode == "bind" ? i.bind(this) : i.inject(this);
-                }
-                for (auto& i : external_apis) {
-                    mode == "bind" ? i.bind(this) : i.inject(this);
-                }
+                for (auto& i : internal_apis) { mode == "bind" ? i.bind(this) : i.inject(this); }
+                for (auto& i : external_apis) { mode == "bind" ? i.bind(this) : i.inject(this); }
             }
 
             void bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
