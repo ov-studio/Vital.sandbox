@@ -20,15 +20,16 @@
 // Vital: API: Rest //
 ///////////////////////
 
-// TODO: Update API
 namespace Vital::Sandbox::API {
     struct Rest : public vm_module {
         inline static const std::string base_name = "rest";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "get", [](auto vm) -> int {
+            API::bind(vm, {base_name}, "get", [](auto vm, auto& id) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
-                if ((vm -> get_count() < 1) || (!vm -> is_string(1))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, id, "(url, headers, timeout)")
+                    .require(1, &Machine::is_string);
+
                 auto url = vm -> get_string(1);
                 Tool::Rest::rest_headers headers = {};
                 int timeout = 60;
@@ -54,10 +55,13 @@ namespace Vital::Sandbox::API {
                 vm -> pause();
                 return 0;
             });
-            
-            API::bind(vm, {base_name}, "post", [](auto vm) -> int {
+
+            API::bind(vm, {base_name}, "post", [](auto vm, auto& id) -> int {
                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
-                if ((vm -> get_count() < 2) || (!vm -> is_string(1)) || (!vm -> is_string(2))) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                vm_args(vm, id, "(url, body, headers, timeout)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_string);
+
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
                 Tool::Rest::rest_headers headers = {};
