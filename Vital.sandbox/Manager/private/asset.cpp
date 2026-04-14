@@ -349,15 +349,15 @@ namespace Vital::Manager {
         std::string report = fmt::format("Asset: manifest received — {} asset(s) total\n", count);
         if (!up_to_date.empty()) {
             report += fmt::format("> Cached ({}):\n", up_to_date.size());
-            for (const auto& p : up_to_date) report += fmt::format(" > {}\n", p);
+            for (const auto& p : up_to_date) report += fmt::format("> {}\n", p);
         }
         if (!in_progress.empty()) {
             report += fmt::format("> Downloading ({}):\n", in_progress.size());
-            for (const auto& p : in_progress) report += fmt::format(" > {}\n", p);
+            for (const auto& p : in_progress) report += fmt::format("> {}\n", p);
         }
         if (!to_download.empty()) {
             report += fmt::format("> Queued ({}):\n", to_download.size());
-            for (const auto& p : to_download) report += fmt::format(" > {}\n", p);
+            for (const auto& p : to_download) report += fmt::format("> {}\n", p);
         }
         Tool::print("sbox", report);
 
