@@ -259,12 +259,14 @@ namespace Vital::Manager {
             Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
                 if (!args.object.count("path")) return;
                 const std::string path = args.object.at("path").as<std::string>();
-                auto* rm = Resource::get_singleton();
+                auto rm = Resource::get_singleton();
                 for (auto& [name, remaining] : rm -> resource_assets) {
                     if (!remaining.count(path)) continue;
                     remaining.erase(path);
-                    log("sbox", fmt::format("resource `{}` asset ready: {}", name, path));
-                    if (remaining.empty()) rm -> execute_scripts(name);
+                    if (remaining.empty()) {
+                        log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", name));
+                        rm -> execute_scripts(name);
+                    }
                     break;
                 }
             });
@@ -272,7 +274,7 @@ namespace Vital::Manager {
             Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
                 if (!args.object.count("event")) return;
                 const std::string event = args.object.at("event").as<std::string>();
-                auto* rm = Resource::get_singleton();
+                auto rm = Resource::get_singleton();
 
                 if (event == "vital.resource:started") {
                     if (!args.object.count("name")) return;
@@ -307,8 +309,8 @@ namespace Vital::Manager {
 
     #if !defined(Vital_SDK_Client)
     bool Resource::start(std::string name) {
-        auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
-        auto* am = Manager::Asset::get_singleton();
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto am = Manager::Asset::get_singleton();
         if (!is_loaded(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
         if (is_running(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
 
@@ -357,8 +359,8 @@ namespace Vital::Manager {
     }
 
     bool Resource::stop(std::string name) {
-        auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
-        auto* am = Manager::Asset::get_singleton();
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto am = Manager::Asset::get_singleton();
         if (!is_running(name)) { log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
 
         am -> unregister_group(name);
@@ -513,7 +515,7 @@ namespace Vital::Manager {
 
     void Resource::execute_scripts(std::string name) {
         if (!is_pending(name)) return;
-        auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         const auto* resource = get_resource(name);
         if (!resource) {
             log("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
@@ -557,8 +559,8 @@ namespace Vital::Manager {
     }
 
     bool Resource::unload(std::string name) {
-        auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
-        auto* am = Manager::Asset::get_singleton();
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto am = Manager::Asset::get_singleton();
         if (!is_running(name) && !is_pending(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
 
         if (is_pending(name)) {

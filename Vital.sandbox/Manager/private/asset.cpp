@@ -412,7 +412,6 @@ namespace Vital::Manager {
             }
             catch (...) { _on_download_failed(path); return; }
 
-            Tool::print("sbox", fmt::format("Asset: downloaded — {}", path));
             active_downloads.erase(path);
 
             Engine::Core::get_singleton() -> push_deferred([path]() {
