@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 vm -> pop(1);
-                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error);
+                if (actions.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: no actions specified");
                 self -> db -> alter(self -> table, actions);
                 self -> destroy();
                 vm -> push_value(true);
@@ -139,7 +139,7 @@ namespace Vital::Sandbox::API {
 
                 int count = vm -> get_count();
                 for (int i = 2; i <= count; i++) {
-                    if (!vm -> is_string(i)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error);
+                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid column name");
                     self -> select.push_back(vm -> get_string(i));
                 }
                 vm -> create_object(base_name, self);
