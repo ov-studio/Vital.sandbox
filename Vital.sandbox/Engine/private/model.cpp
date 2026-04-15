@@ -442,7 +442,7 @@ namespace Vital::Engine {
     }
 
     bool Model::set_material_feature(const std::string& component, const std::string& material, int feature, bool state) {
-        if ((feature < 0) || (feature >= godot::BaseMaterial3D::FEATURE_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        validate_feature(feature);
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](int index) {
@@ -469,7 +469,7 @@ namespace Vital::Engine {
     }
 
     bool Model::set_material_flag(const std::string& component, const std::string& material, int flag, bool state) {
-        if ((flag < 0) || (flag >= godot::BaseMaterial3D::FLAG_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        validate_flag(flag);
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](int index) {
