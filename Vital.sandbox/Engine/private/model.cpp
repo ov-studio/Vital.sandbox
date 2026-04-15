@@ -234,10 +234,7 @@ namespace Vital::Engine {
 
     // Managers //
     bool Model::load(const std::string& name, const std::string& path) {
-        return load_from_buffer(
-            name,
-            Tool::File::read_binary(Tool::get_directory(), path)
-        );
+        return load_from_buffer(name, Tool::File::read_binary(Tool::get_directory(), path));
     }
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
