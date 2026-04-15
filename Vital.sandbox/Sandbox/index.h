@@ -50,17 +50,23 @@ namespace Vital::Sandbox {
     using vm_apis = std::vector<vm_api>;
 
     struct vm_args {
-        Machine* vm;
-        std::string usage;
-        std::vector<std::string> arg_names;
-
-        inline vm_args(Machine* vm, const std::string& usage) : vm_args(vm, usage, "") {}
-        inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), usage(id + args) {
-            auto start = usage.find('(');
-            auto end = usage.find(')');
-            if (start != std::string::npos && end != std::string::npos) {
-                std::string args_str = usage.substr(start + 1, end - start - 1);
-                std::stringstream ss(args_str);
+        private:
+            inline void throw_error(int index, const std::string& reason = "") const {
+                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
+                const std::string detail = reason.empty() ? fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage) : fmt::format("Bad argument #{} '{}' — {} — Usage: {}", index, arg, reason, usage);
+                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, detail);
+            }
+        public:
+            Machine* vm;
+            std::string usage;
+            std::vector<std::string> arg_names;
+        
+            inline vm_args(Machine* vm, const std::string& usage) : vm_args(vm, usage, "") {}
+            inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), usage(id + args) {
+                auto start = usage.find('(');
+                auto end = usage.find(')');
+                if (start == std::string::npos || end == std::string::npos) return;
+                std::stringstream ss(usage.substr(start + 1, end - start - 1));
                 std::string token;
                 while (std::getline(ss, token, ',')) {
                     token.erase(0, token.find_first_not_of(" \t"));
@@ -68,34 +74,24 @@ namespace Vital::Sandbox {
                     if (!token.empty()) arg_names.push_back(token);
                 }
             }
-        }
-
-        template<typename F>
-        inline vm_args& require(int index, F&& check) {
-            if ((vm -> get_count() < index) || !std::invoke(std::forward<F>(check), vm, index)) {
-                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
-                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
+        
+            template<typename F>
+            inline vm_args& require(int index, F&& check) {
+                if ((vm -> get_count() < index) || !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
+                return *this;
             }
-            return *this;
-        }
-
-        template<typename F>
-        inline vm_args& optional(int index, F&& check) {
-            if ((vm -> get_count() >= index) && (!vm -> is_nil(index)) && !std::invoke(std::forward<F>(check), vm, index)) {
-                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
-                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage));
+        
+            template<typename F>
+            inline vm_args& optional(int index, F&& check) {
+                if ((vm -> get_count() >= index) && !vm -> is_nil(index) && !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
+                return *this;
             }
-            return *this;
-        }
-
-        template<typename F>
-        inline vm_args& validate(int index, F&& check, const std::string& reason = "out of range") {
-            if (!std::invoke(std::forward<F>(check), vm, index)) {
-                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
-                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, fmt::format("Bad argument #{} '{}' — {} — Usage: {}", index, arg, reason, usage));
+        
+            template<typename F>
+            inline vm_args& validate(int index, F&& check, const std::string& reason = "out of range") {
+                if (!std::invoke(std::forward<F>(check), vm, index)) throw_error(index, reason);
+                return *this;
             }
-            return *this;
-        }
     };
 
     struct vm_module {
