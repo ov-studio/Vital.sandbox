@@ -143,7 +143,7 @@ namespace Vital::Engine {
     }
 
     void Model::validate_material_flag(int flag) {
-        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error, "\n> Reason: invalid material flag");
+        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid material flag");
     }
 
     
@@ -253,7 +253,7 @@ namespace Vital::Engine {
                 break;
             }
         }
-        if (scene.is_null()) throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error);
+        if (scene.is_null()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error);
         cache_loaded[name] = scene;
         return true;
     }

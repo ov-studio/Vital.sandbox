@@ -55,7 +55,7 @@ namespace Vital::Tool::Log {
     };
 
     inline constexpr Command List[] = {
-        {"invalid-arguments", "invalid argument(s) {}"},
+        {"invalid-argument", "invalid argument {}"},
         {"request-failed", "Request failed {}"},
 
         // TODO: UPDATE FOR ALL EM
