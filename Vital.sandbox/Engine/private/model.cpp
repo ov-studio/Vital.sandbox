@@ -108,16 +108,11 @@ namespace Vital::Engine {
     }
 
     godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
-        if (!node) return nullptr;
-        if (!animation_player) {
-            auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
-            if (result) animation_player = result;
-            else {
-                for (int i = 0; i < node->get_child_count(); i++) {
-                    auto result = find_animation_player(node->get_child(i));
-                    if (result) { animation_player = result; break; }
-                }
-            }
+        if (!node || animation_player) return animation_player;
+        auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
+        if (result) { animation_player = result; return animation_player; }
+        for (int i = 0; i < node->get_child_count(); i++) {
+            auto result = find_animation_player(node->get_child(i));
             if (result) break;
         }
         return animation_player;
