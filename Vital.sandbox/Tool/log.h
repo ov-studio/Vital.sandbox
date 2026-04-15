@@ -21,7 +21,7 @@
 // Vital //
 ////////////
 
-namespace Vital::Log {
+namespace Vital::Tool::Log {
     enum class Type {
         SBox,
         Info,

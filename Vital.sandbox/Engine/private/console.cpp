@@ -532,7 +532,7 @@ namespace Vital::Engine {
     }
 
     void Console::print(const std::string& mode, const std::string& message) {
-        if (!Log::is_type(mode)) throw Log::fetch("invalid-arguments", Log::Type::Error);
+        if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error);
         if (message.empty()) return;
         #if defined(Vital_SDK_Client)
             rapidjson::Document document;
