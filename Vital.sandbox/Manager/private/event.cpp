@@ -29,9 +29,8 @@ static Vital::Engine::SrvConfig g_server_config;
 #if !defined(Vital_SDK_Client)
 void load_server_config() {
     bool loaded = g_server_config.load();
-    if (!loaded) {
-        Vital::Tool::print("sbox", "SrvConfig: No config.yaml found, using default values");
-    } else {
+    if (!loaded) Vital::Tool::print("sbox", "SrvConfig: No config.yaml found, using default values");
+    else {
         Vital::Tool::print("sbox", "SrvConfig: Server name: '", g_server_config.get_server_name(), "'");
         Vital::Tool::print("sbox", "SrvConfig: Network port: ", g_server_config.get_network_port());
         Vital::Tool::print("sbox", "SrvConfig: HTTP port: ", g_server_config.get_http_port());
