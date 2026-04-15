@@ -98,7 +98,7 @@ namespace Vital::Sandbox {
         static void bind(Machine* vm) {}
         static void methods(Machine* vm) {}
         static void inject(Machine* vm) {}
-
+    
         template<typename T>
         static vm_api make_api() {
             return {
@@ -106,7 +106,7 @@ namespace Vital::Sandbox {
                 [](Machine* vm) { T::inject(vm); }
             };
         }
-
+    
         template<typename T>
         static void register_type(Machine* vm, const std::string& type_name) {
             vm -> create_metatable(type_name);
@@ -122,7 +122,7 @@ namespace Vital::Sandbox {
             vm -> set_table_field("__gc", -2);
             vm -> pop(1);
         }
-
+    
         template<typename T>
         static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*, const std::string&)> exec) {
             auto heap_exec = new std::function<int(Machine*, T*, const std::string&)>(std::move(exec));
@@ -144,41 +144,39 @@ namespace Vital::Sandbox {
             }, 3);
             lua_setfield(vm -> get_state(), -2, name.c_str());
         }
-
+    
         template<typename T>
         static void bind_natives(Machine* vm, const std::string& type_name) {
             bind_method<T>(vm, type_name, "is_type", [type_name](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(type_name)")
                     .require(2, &Machine::is_string);
 
-                auto name = vm -> get_string(2);
-                vm -> push_value(type_name == name);
+                vm -> push_value(type_name == vm -> get_string(2));
                 return 1;
             });
-
+    
             bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self, auto& id) -> int {
-                if (type_name.empty()) vm -> push_value(false);
-                else vm -> push_value(type_name);
+                vm -> push_value(type_name.empty() ? false : type_name);
                 return 1;
             });
         }
-
+    
         template<typename T = void>
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
             void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             return ud && *ud;
         }
-
+    
         template<typename T = void>
         static std::string get_userdata_type(Machine* vm, int index = 1) {
-            if (!lua_isuserdata(vm -> get_state(), index)) return "";
-            if (!lua_getmetatable(vm -> get_state(), index)) return "";
-            lua_getfield(vm -> get_state(), -1, "__name");
-            const char* name = lua_tostring(vm -> get_state(), -1);
-            lua_pop(vm -> get_state(), 2);
+            auto state = vm -> get_state();
+            if (!lua_isuserdata(state, index) || !lua_getmetatable(state, index)) return "";
+            lua_getfield(state, -1, "__name");
+            const char* name = lua_tostring(state, -1);
+            lua_pop(state, 2);
             return name ? name : "";
         }
-
+    
         template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
             void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
