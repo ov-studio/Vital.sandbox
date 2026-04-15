@@ -173,9 +173,7 @@ namespace Vital::Engine {
         if (!core) return;
         for (int i = core->get_child_count() - 1; i >= 0; i--) {
             godot::Node* child = core->get_child(i);
-            if (godot::Object::cast_to<Model>(child)) {
-                child->queue_free();
-            }
+            if (godot::Object::cast_to<Model>(child)) child->queue_free();
         }
         cache_synced.clear();
     }
