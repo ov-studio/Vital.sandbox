@@ -63,6 +63,9 @@ namespace Vital::Engine {
             godot::Skeleton3D* find_skeleton(godot::Node* node);
             godot::AnimationPlayer* find_animation_player(godot::Node* node);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
+            std::pair<godot::MeshInstance3D*, int> resolve_material(const std::string& component, const std::string& material);
+            static void validate_feature(int feature);
+            static void validate_flag(int flag);
             void setup_sync(int authority_peer);
         public:
             // Instantiators //
