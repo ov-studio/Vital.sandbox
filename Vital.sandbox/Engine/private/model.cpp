@@ -124,11 +124,8 @@ namespace Vital::Engine {
             godot::Node* child = node->get_child(i);
             std::string child_name = Tool::to_std_string(child->get_name());
             bool is_generated = !child_name.empty() && child_name[0] == '@';
-            std::string child_path = (current_path.empty() || is_generated)
-                ? (is_generated ? "" : child_name)
-                : current_path + "/" + child_name;
-            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child))
-                out.push_back(child_path);
+            std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : current_path + "/" + child_name;
+            if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
             collect_mesh_nodes(child, out, child_path);
         }
     }
