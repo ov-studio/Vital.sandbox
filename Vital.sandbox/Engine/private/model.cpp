@@ -253,7 +253,7 @@ namespace Vital::Engine {
                 break;
             }
         }
-        if (scene.is_null()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error);
+        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "invalid model buffer");
         cache_loaded[name] = scene;
         return true;
     }
