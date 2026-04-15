@@ -127,7 +127,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component, material, feature)")
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_number)
+                    .require(4, &Machine::is_number);
 
                 auto component = vm -> get_string(2);
                 auto material = vm -> get_string(3);
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component, material, flag)")
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_number)
+                    .require(4, &Machine::is_number);
 
                 auto component = vm -> get_string(2);
                 auto material = vm -> get_string(3);
