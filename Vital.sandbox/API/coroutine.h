@@ -20,7 +20,6 @@
 // Vital: API: Coroutine //
 ////////////////////////////
 
-// TODO: Update API ?                 if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error); handle via vm_args too?
 namespace Vital::Sandbox::API {
     struct Coroutine : vm_module {
         inline static const std::string base_name = "coroutine";

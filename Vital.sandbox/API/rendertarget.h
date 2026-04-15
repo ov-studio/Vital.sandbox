@@ -50,6 +50,7 @@ namespace Vital::Sandbox::API {
                         .require(1, [](Machine* vm, int index) {
                             return vm -> is_userdata(index) && vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index);
                         });
+        
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;

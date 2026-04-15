@@ -44,10 +44,13 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name, "fog"}, "set_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number);
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](auto vm, int index) {
+                        auto value = vm -> get_int(index);
+                        return (value >= godot::Environment::FOG_MODE_EXPONENTIAL) && (value <= godot::Environment::FOG_MODE_DEPTH);
+                    });
 
                 auto value = vm -> get_int(1);
-                if ((value < godot::Environment::FOG_MODE_EXPONENTIAL) || (value > godot::Environment::FOG_MODE_DEPTH)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 base_class::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
                 vm -> push_value(true);
                 return 1;

@@ -140,10 +140,13 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name, "emissive"}, "set_blend_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number);
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](auto vm, int index) {
+                        auto value = vm -> get_int(index);
+                        return (value >= godot::Environment::GLOW_BLEND_MODE_ADDITIVE) && (value <= godot::Environment::GLOW_BLEND_MODE_MIX);
+                    });
 
                 auto value = vm -> get_int(1);
-                if ((value < godot::Environment::GLOW_BLEND_MODE_ADDITIVE) || (value > godot::Environment::GLOW_BLEND_MODE_MIX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
                 base_class::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
                 vm -> push_value(true);
                 return 1;

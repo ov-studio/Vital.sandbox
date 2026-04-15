@@ -87,6 +87,15 @@ namespace Vital::Sandbox {
             }
             return *this;
         }
+
+        template<typename F>
+        inline vm_args& validate(int index, F&& check, const std::string& reason = "out of range") {
+            if (!std::invoke(std::forward<F>(check), vm, index)) {
+                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
+                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, fmt::format("Bad argument #{} '{}' — {} — Usage: {}", index, arg, reason, usage));
+            }
+            return *this;
+        }
     };
 
     struct vm_module {
