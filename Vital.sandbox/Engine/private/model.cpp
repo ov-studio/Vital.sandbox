@@ -139,11 +139,11 @@ namespace Vital::Engine {
     }
     
     void Model::validate_material_feature(int feature) {
-        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error); // TODO: Mention invalid feature
+        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid material feature");
     }
 
     void Model::validate_material_flag(int flag) {
-        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error); // TODO: Mention invalid flag
+        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error, "\n> Reason: invalid material flag");
     }
 
     
