@@ -397,11 +397,9 @@ namespace Vital::Engine {
     bool Model::set_component_visible(const std::string& component, bool state) {
         auto exec = [&](const std::string& name) {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
-            if (mesh) {
-                mesh -> set_visible(state);
-                return true;
-            }
-            return false;
+            if (!mesh) return false;
+            mesh -> set_visible(state);
+            return true;
         };
         if (Tool::contains_wildcard(component)) {
             for (const auto& name : get_components()) {
