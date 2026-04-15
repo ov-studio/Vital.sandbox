@@ -38,7 +38,8 @@ namespace Vital::Tool::Rest {
         if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
             host = host_part.substr(0, port_pos);
             port = std::stoi(host_part.substr(port_pos + 1));
-        } else {
+        }
+        else {
             host = host_part;
             port = (scheme == "https") ? 443 : 80;
         }
