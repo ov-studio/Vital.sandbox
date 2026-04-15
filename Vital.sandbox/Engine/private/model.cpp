@@ -130,6 +130,44 @@ namespace Vital::Engine {
         }
     }
 
+    void Model::validate_feature(int feature) {
+        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+    }
+
+    void Model::validate_flag(int flag) {
+        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+    }
+
+    std::pair<godot::MeshInstance3D*, int> Model::resolve_material(const std::string& component, const std::string& material) {
+        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
+        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        int index = find_material_index(mesh, material);
+        if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        return { mesh, index };
+    }
+    
+    
+    //------------------------//
+    //  Sync Setup (private)  //
+    //------------------------//
+
+    void Model::setup_sync(int authority_peer) {
+        if (net_sync) return;
+
+        auto config = memnew(godot::SceneReplicationConfig);
+        config->add_property(godot::NodePath(".:position"));
+        config->property_set_replication_mode(godot::NodePath(".:position"), godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS);
+        config->add_property(godot::NodePath(".:rotation"));
+        config->property_set_replication_mode(godot::NodePath(".:rotation"), godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS);
+
+        net_sync = memnew(godot::MultiplayerSynchronizer);
+        net_sync->set_name("NetSync");
+        net_sync->set_replication_config(config);
+        net_sync->set_root_path(godot::NodePath(".."));
+        net_sync->set_multiplayer_authority(authority_peer);
+        add_child(net_sync);
+    }
+
 
     //---------------------------//
     //  Spawner Setup (private)  //
@@ -191,34 +229,6 @@ namespace Vital::Engine {
             net_spawner->set_multiplayer_authority(1);
             godot::UtilityFunctions::print("ModelSpawner: refreshed for new session");
         }
-    }
-
-
-    //------------------------//
-    //  Sync Setup (private)  //
-    //------------------------//
-
-    void Model::setup_sync(int authority_peer) {
-        if (net_sync) return;
-    
-        auto config = memnew(godot::SceneReplicationConfig);
-        config->add_property(godot::NodePath(".:position"));
-        config->property_set_replication_mode(
-            godot::NodePath(".:position"),
-            godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
-        );
-        config->add_property(godot::NodePath(".:rotation"));
-        config->property_set_replication_mode(
-            godot::NodePath(".:rotation"),
-            godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS
-        );
-    
-        net_sync = memnew(godot::MultiplayerSynchronizer);
-        net_sync->set_name("NetSync");
-        net_sync->set_replication_config(config);
-        net_sync->set_root_path(godot::NodePath(".."));
-        net_sync->set_multiplayer_authority(authority_peer);
-        add_child(net_sync); // direct, not deferred — safe inside _ready
     }
 
 
