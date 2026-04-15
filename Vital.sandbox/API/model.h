@@ -130,6 +130,7 @@ namespace Vital::Sandbox::API {
                     .require(4, &Machine::is_number)
                     .validate(4, [](auto vm, int index) {
                         auto value = vm -> get_int(index);
+                        // TODO: validate_material_feature  HWO TO HOOK IT DOESNT RETURN BOOL...   also reduce redundancy maybe it can return bool and utilize that way in model.cpp etc?
                         return (value >= 0) && (value < godot::BaseMaterial3D::FEATURE_MAX);
                     });
 
