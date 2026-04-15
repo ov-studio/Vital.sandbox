@@ -55,7 +55,7 @@ namespace Vital::Log {
     };
 
     inline constexpr Command List[] = {
-        {"invalid-arguments", "invalid arguments {}"},
+        {"invalid-arguments", "invalid argument(s) {}"},
 
         // TODO: UPDATE FOR ALL EM
         {"invalid-thread", "Invalid thread"},
