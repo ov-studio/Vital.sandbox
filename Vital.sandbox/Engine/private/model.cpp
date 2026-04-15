@@ -493,11 +493,9 @@ namespace Vital::Engine {
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](const std::string& name) {
             int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
-            if (index >= 0) {
-                mesh -> set_blend_shape_value(index, value);
-                return true;
-            }
-            return false;
+            if (index < 0) return false;
+            mesh -> set_blend_shape_value(index, value);
+            return true;
         };
         if (Tool::contains_wildcard(blend_shape)) {
             for (const auto& name : get_blendshapes(component)) {
