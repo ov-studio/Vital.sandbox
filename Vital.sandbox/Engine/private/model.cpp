@@ -452,9 +452,7 @@ namespace Vital::Engine {
         };
         if (Tool::contains_wildcard(material)) {
             for (const auto& name : get_materials(component)) {
-                if (!Tool::match_wildcard(material, name)) continue;
-                int index = find_material_index(mesh, name);
-                if (index >= 0) exec(index);
+                if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
             }
         }
         else if (!exec(find_material_index(mesh, material))) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
