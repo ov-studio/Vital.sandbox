@@ -371,8 +371,7 @@ namespace Vital::Engine {
     }
 
     bool Model::is_animation_playing() {
-        if (!animation_player) return false;
-        return animation_player->is_playing();
+        return animation_player && animation_player->is_playing();
     }
 
     bool Model::is_synced() const {
@@ -390,7 +389,7 @@ namespace Vital::Engine {
             set_global_position(position);
         });
     }
-    
+
     void Model::set_rotation(godot::Vector3 rotation) {
         Core::get_singleton() -> push_deferred([this, rotation]() {
             set_rotation_degrees(rotation);
