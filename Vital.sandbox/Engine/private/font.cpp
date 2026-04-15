@@ -37,7 +37,7 @@ namespace Vital::Engine {
         godot::Ref<godot::FontFile> font;
         font.instantiate();
         font -> set_data(buffer);
-        if (font -> get_face_count() <= 0) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+        if (font -> get_face_count() <= 0) throw Log::fetch("invalid-arguments", Log::Type::Error);
         return memnew(Font(font));
     }
 

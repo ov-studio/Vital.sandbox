@@ -55,7 +55,7 @@ namespace Vital::Sandbox {
                 const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
                 std::string detail = fmt::format("\n> Syntax: `{}`", syntax);
                 detail += fmt::format("\n> Reason: bad argument #{} '{}' {}", index, arg, reason.empty() ? "" : fmt::format("({})", reason));
-                throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, detail);
+                throw Log::fetch("invalid-arguments", Log::Type::Error, detail);
             }
         public:
             Machine* vm;
@@ -139,7 +139,7 @@ namespace Vital::Sandbox {
                 auto vm = Machine::fetch_machine(state);
                 return vm -> execute([&]() -> int {
                     void** ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
-                    if (!ud || !*ud) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Invalid {} instance", *type));
+                    if (!ud || !*ud) throw Log::fetch("request-failed", Log::Type::Error, fmt::format("Invalid {} instance", *type));
                     return (*fn)(vm, static_cast<T*>(*ud), *id);
                 });
             }, 3);

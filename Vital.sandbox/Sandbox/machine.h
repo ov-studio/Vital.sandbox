@@ -388,11 +388,11 @@ namespace Vital::Sandbox {
             template<typename F>
             int execute(F&& exec) {
                 try { return exec(); }
-                catch (const Vital::Log::Info& e) { log(std::string(Vital::Log::Info::label), e.what()); }
-                catch (const Vital::Log::Warning& e) { log(std::string(Vital::Log::Warning::label), e.what()); }
-                catch (const Vital::Log::Error& e) { log(std::string(Vital::Log::Error::label), e.what()); }
-                catch (const std::runtime_error& e) { log(std::string(Vital::Log::Error::label), e.what()); }
-                catch (...) { log(std::string(Vital::Log::Error::label)); }
+                catch (const Log::Info& e) { log(std::string(Log::Info::label), e.what()); }
+                catch (const Log::Warning& e) { log(std::string(Log::Warning::label), e.what()); }
+                catch (const Log::Error& e) { log(std::string(Log::Error::label), e.what()); }
+                catch (const std::runtime_error& e) { log(std::string(Log::Error::label), e.what()); }
+                catch (...) { log(std::string(Log::Error::label)); }
                 return 1;
             }
 
@@ -490,7 +490,7 @@ namespace Vital::Sandbox {
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
-                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                    API::log(std::string(Log::Error::label), get_string(-1));
                     pop();
                     return 0;
                 }
@@ -499,7 +499,7 @@ namespace Vital::Sandbox {
                     if (!lua_setupvalue(state, -2, 1)) pop();
                 }
                 if (auto_load && !pcall(0, LUA_MULTRET)) {
-                    API::log(std::string(Vital::Log::Error::label), get_string(-1));
+                    API::log(std::string(Log::Error::label), get_string(-1));
                     pop();
                     return 0;
                 }

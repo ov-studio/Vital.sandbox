@@ -93,8 +93,8 @@ namespace Vital::Manager {
     }
 
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
-        if (!is_name(name)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, "invalid resource name");
-        if (require_running && !get_singleton() -> is_running(name)) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("resource `{}` not running", name));
+        if (!is_name(name)) throw Log::fetch("invalid-arguments", Log::Type::Error, "invalid resource name");
+        if (require_running && !get_singleton() -> is_running(name)) throw Log::fetch("request-failed", Log::Type::Error, fmt::format("resource `{}` not running", name));
         return Tool::get_directory("resources", name);
     }
 

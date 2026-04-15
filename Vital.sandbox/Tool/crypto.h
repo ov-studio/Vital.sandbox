@@ -32,14 +32,14 @@ namespace Vital::Tool::Crypto {
             if (mode == "SHA256") return EVP_sha256();
             if (mode == "SHA384") return EVP_sha384();
             if (mode == "SHA512") return EVP_sha512();
-            throw Vital::Log::fetch("hash-mode-nonexistent", Vital::Log::Type::Error, mode);
+            throw Log::fetch("hash-mode-nonexistent", Log::Type::Error, mode);
         }
 
         inline const EVP_CIPHER* cipher_mode(std::string_view mode) {
             if (mode == "AES128") return EVP_aes_128_cbc();
             if (mode == "AES192") return EVP_aes_192_cbc();
             if (mode == "AES256") return EVP_aes_256_cbc();
-            throw Vital::Log::fetch("cipher-mode-nonexistent", Vital::Log::Type::Error, mode);
+            throw Log::fetch("cipher-mode-nonexistent", Log::Type::Error, mode);
         }
 
         inline std::string base64_encode(std::string_view in) {
@@ -70,9 +70,9 @@ namespace Vital::Tool::Crypto {
 
         inline std::string cipher_run(const EVP_CIPHER* algo, bool encrypt, std::string_view data, std::string_view key, std::string_view iv) {
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-            if (!ctx) throw Vital::Log::fetch("cipher-context-failed", Vital::Log::Type::Error);
-            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Vital::Log::fetch("cipher-invalid-key", Vital::Log::Type::Error, std::string(key));
-            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Vital::Log::fetch("cipher-invalid-iv", Vital::Log::Type::Error, std::string(iv));
+            if (!ctx) throw Log::fetch("cipher-context-failed", Log::Type::Error);
+            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Log::fetch("cipher-invalid-key", Log::Type::Error, std::string(key));
+            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Log::fetch("cipher-invalid-iv", Log::Type::Error, std::string(iv));
             std::string out;
             int outLen1 = 0;
             int outLen2 = 0;
@@ -111,10 +111,10 @@ namespace Vital::Tool::Crypto {
 
     inline std::string hash_file(std::string_view mode, std::string_view path) {
         std::ifstream f(std::string(path), std::ios::binary);
-        if (!f) throw Vital::Log::fetch("file-read-failed", Vital::Log::Type::Error, path);
+        if (!f) throw Log::fetch("file-read-failed", Log::Type::Error, path);
         const EVP_MD* md = Internal::hash_mode(mode);
         EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-        if (!ctx) throw Vital::Log::fetch("hash-context-failed", Vital::Log::Type::Error);
+        if (!ctx) throw Log::fetch("hash-context-failed", Log::Type::Error);
         EVP_DigestInit_ex(ctx, md, nullptr);
         const size_t CHUNK = 65536; // Stream in 64KB chunks to avoid large allocations
         std::string chunk(CHUNK, '\0');
