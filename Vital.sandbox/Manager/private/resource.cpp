@@ -94,7 +94,7 @@ namespace Vital::Manager {
 
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
         if (!is_name(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid resource name");
-        if (require_running && !get_singleton() -> is_running(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n > Reason: resource `{}` not running", name));
+        if (require_running && !get_singleton() -> is_running(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: resource `{}` not running", name));
         return Tool::get_directory("resources", name);
     }
 
