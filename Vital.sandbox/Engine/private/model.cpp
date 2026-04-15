@@ -130,14 +130,6 @@ namespace Vital::Engine {
         }
     }
 
-    void Model::validate_feature(int feature) {
-        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-    }
-
-    void Model::validate_flag(int flag) {
-        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-    }
-
     std::pair<godot::MeshInstance3D*, int> Model::resolve_material(const std::string& component, const std::string& material) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
