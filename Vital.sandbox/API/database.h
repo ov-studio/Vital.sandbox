@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 vm -> pop(1);
-                if (actions.empty()) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if (actions.empty()) throw Log::fetch("invalid-arguments", Log::Type::Error);
                 self -> db -> alter(self -> table, actions);
                 self -> destroy();
                 vm -> push_value(true);
@@ -139,7 +139,7 @@ namespace Vital::Sandbox::API {
 
                 int count = vm -> get_count();
                 for (int i = 2; i <= count; i++) {
-                    if (!vm -> is_string(i)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                    if (!vm -> is_string(i)) throw Log::fetch("invalid-arguments", Log::Type::Error);
                     self -> select.push_back(vm -> get_string(i));
                 }
                 vm -> create_object(base_name, self);

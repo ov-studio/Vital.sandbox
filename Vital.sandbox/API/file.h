@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
         static std::string get_base(Machine* vm, std::string& path) {
             if (!path.empty() && path[0] == ':') {
                 const size_t slash = path.find('/');
-                if (slash == std::string::npos) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
+                if (slash == std::string::npos) throw Log::fetch("invalid-arguments", Log::Type::Error);
                 const std::string target = path.substr(1, slash - 1);
                 path = path.substr(slash + 1);
                 return Manager::Resource::get_resource_base(target, true);

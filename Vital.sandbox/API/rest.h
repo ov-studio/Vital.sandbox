@@ -26,7 +26,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get", [](auto vm, auto& id) -> int {
-                if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
+                if (!vm -> is_virtual()) throw Log::fetch("invalid-thread", Log::Type::Error);
                 vm_args(vm, id, "(url, headers, timeout)")
                     .require(1, &Machine::is_string);
 
@@ -57,7 +57,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "post", [](auto vm, auto& id) -> int {
-                if (!vm -> is_virtual()) throw Vital::Log::fetch("invalid-thread", Vital::Log::Type::Error);
+                if (!vm -> is_virtual()) throw Log::fetch("invalid-thread", Log::Type::Error);
                 vm_args(vm, id, "(url, body, headers, timeout)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
