@@ -489,7 +489,7 @@ namespace Vital::Engine {
                 if (Tool::match_wildcard(blend_shape, name)) exec(name);
             }
         }
-        else if (!exec(blend_shape)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blend shape '{}' not found in component '{}'", blend_shape, component));
+        else if (!exec(blend_shape)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
         return true;
     }
 
@@ -585,7 +585,7 @@ namespace Vital::Engine {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
         if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blend shape '{}' not found in component '{}'", blend_shape, component));
+        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
         return mesh -> get_blend_shape_value(index);
     }
 
