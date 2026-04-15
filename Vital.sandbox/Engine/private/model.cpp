@@ -337,33 +337,22 @@ namespace Vital::Engine {
     }
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int material_index = find_material_index(mesh, material);
-        if (material_index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        return !mesh -> get_surface_override_material(material_index).is_valid();
+        auto [mesh, index] = resolve_material(component, material);
+        return !mesh -> get_surface_override_material(index).is_valid();
     }
 
     bool Model::is_material_feature(const std::string& component, const std::string& material, int feature) {
-        if ((feature < 0) || (feature >= godot::BaseMaterial3D::FEATURE_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = find_material_index(mesh, material);
-        if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        godot::Ref<godot::Material> mat = mesh->get_active_material(index);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
+        validate_feature(feature);
+        auto [mesh, index] = resolve_material(component, material);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh->get_active_material(index).ptr());
         if (!std_mat.is_valid()) return false;
         return std_mat->get_feature(static_cast<godot::BaseMaterial3D::Feature>(feature));
     }
 
     bool Model::is_material_flag(const std::string& component, const std::string& material, int flag) {
-        if ((flag < 0) || (flag >= godot::BaseMaterial3D::FLAG_MAX)) throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error);
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
-        int index = find_material_index(mesh, material);
-        if (index < 0) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
-        godot::Ref<godot::Material> mat = mesh->get_active_material(index);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
+        validate_flag(flag);
+        auto [mesh, index] = resolve_material(component, material);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh->get_active_material(index).ptr());
         if (!std_mat.is_valid()) return false;
         return std_mat->get_flag(static_cast<godot::BaseMaterial3D::Flags>(flag));
     }
