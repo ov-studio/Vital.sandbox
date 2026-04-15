@@ -55,7 +55,7 @@ namespace Vital::Log {
     };
 
     inline constexpr Command List[] = {
-        {"invalid-arguments", "Invalid arguments ('{}')"},
+        {"invalid-arguments", "invalid arguments {}"},
         {"invalid-thread", "Invalid thread"},
         {"request-failed", "Request failed ('{}')"},
         {"hash-mode-nonexistent", "Hash mode not found ('{}')"},
