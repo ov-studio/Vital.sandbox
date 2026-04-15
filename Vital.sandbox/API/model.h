@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
             #if defined(Vital_SDK_Client)
             #else
             API::bind(vm, {base_name}, "create_synced", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, authority)")
+                vm_args(vm, id, "(name, authority = 1)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_number);
 
