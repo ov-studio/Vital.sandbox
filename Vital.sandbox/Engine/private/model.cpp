@@ -244,10 +244,9 @@ namespace Vital::Engine {
             case Format::GLB: {
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-                godot::Error status = document->append_from_buffer(buffer, "", state);
-                if (status != godot::OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
+                if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
                 godot::Node* root = document->generate_scene(state);
-                if (root == nullptr) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
+                if (!root) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
                 scene->pack(root);
                 memdelete(root);
