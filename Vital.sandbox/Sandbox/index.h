@@ -54,21 +54,21 @@ namespace Vital::Sandbox {
             inline void throw_error(int index, const std::string& reason = "") const {
                 const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
                 std::string detail = fmt::format("(bad argument #{} '{}')", index, arg);
-                detail += fmt::format("\n> Syntax: `{}`", usage);
+                detail += fmt::format("\n> Syntax: `{}`", syntax);
                 if (!reason.empty()) detail += fmt::format("\n> Reason: `{}`", reason);
                 throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, detail);
             }
         public:
             Machine* vm;
-            std::string usage;
+            std::string syntax;
             std::vector<std::string> arg_names;
         
-            inline vm_args(Machine* vm, const std::string& usage) : vm_args(vm, usage, "") {}
-            inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), usage(id + args) {
-                auto start = usage.find('(');
-                auto end = usage.find(')');
+            inline vm_args(Machine* vm, const std::string& syntax) : vm_args(vm, syntax, "") {}
+            inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), syntax(id + args) {
+                auto start = syntax.find('(');
+                auto end = syntax.find(')');
                 if (start == std::string::npos || end == std::string::npos) return;
-                std::stringstream ss(usage.substr(start + 1, end - start - 1));
+                std::stringstream ss(syntax.substr(start + 1, end - start - 1));
                 std::string token;
                 while (std::getline(ss, token, ',')) {
                     token.erase(0, token.find_first_not_of(" \t"));
