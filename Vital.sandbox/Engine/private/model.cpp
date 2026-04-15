@@ -132,9 +132,9 @@ namespace Vital::Engine {
 
     std::pair<godot::MeshInstance3D*, int> Model::resolve_material(const std::string& component, const std::string& material) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         int index = find_material_index(mesh, material);
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return { mesh, index };
     }
     
@@ -238,29 +238,29 @@ namespace Vital::Engine {
     }
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
-        if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Model '{}' is already loaded", name));
+        if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: model '{}' is already loaded", name));
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
             case Format::GLB: {
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-                if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("Failed to parse buffer for model '{}'", name));
+                if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid model buffer");
                 godot::Node* root = document->generate_scene(state);
-                if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("Failed to generate scene for model '{}'", name));
+                if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: failed to generate scene");
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
                 scene->pack(root);
                 memdelete(root);
                 break;
             }
         }
-        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "invalid model buffer");
+        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: no scene detected");
         cache_loaded[name] = scene;
         return true;
     }
 
     bool Model::unload(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
         cache_loaded.erase(it);
         cache_synced.erase(name);
         return true;
@@ -268,13 +268,13 @@ namespace Vital::Engine {
 
     Model* Model::create(const std::string& name) {
         auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
         Model* object = memnew(Model);
         object -> set_model_name(name);
         godot::Node* instance = it->second->instantiate();
         if (!instance) {
             memdelete(object);
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("Failed to instantiate model '{}'", name));
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: failed to instantiate model '{}'", name));
         }
         object -> add_child(instance);
         Core::get_singleton() -> add_child(object);
@@ -282,7 +282,7 @@ namespace Vital::Engine {
     }
 
     void Model::create_synced(const std::string& name, int authority_peer) {
-        if (cache_loaded.find(name) == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        if (cache_loaded.find(name) == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
         Core::get_singleton() -> push_deferred([name, authority_peer]() {
             spawn_synced(name, authority_peer);
         });
@@ -332,7 +332,7 @@ namespace Vital::Engine {
 
     bool Model::is_component_visible(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         return mesh -> is_visible();
     }
 
@@ -395,13 +395,13 @@ namespace Vital::Engine {
                 if (Tool::match_wildcard(component, name)) exec(name);
             }
         }
-        else if (!exec(component)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        else if (!exec(component)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         return true;
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](int index) {
             if (index < 0) return false;
             if (!state) {
@@ -419,14 +419,14 @@ namespace Vital::Engine {
                 if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
             }
         }
-        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return true;
     }
 
     bool Model::set_material_feature(const std::string& component, const std::string& material, int feature, bool state) {
         validate_material_feature(feature);
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](int index) {
             if (index < 0) return false;
             godot::Ref<godot::Material> mat = mesh->get_active_material(index);
@@ -444,14 +444,14 @@ namespace Vital::Engine {
                 if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
             }
         }
-        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return true;
     }
 
     bool Model::set_material_flag(const std::string& component, const std::string& material, int flag, bool state) {
         validate_material_flag(flag);
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](int index) {
             if (index < 0) return false;
             godot::Ref<godot::Material> mat = mesh->get_active_material(index);
@@ -471,13 +471,13 @@ namespace Vital::Engine {
                 if (index >= 0) exec(index);
             }
         }
-        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Material '{}' not found in component '{}'", material, component));
+        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return true;
     }
 
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         auto exec = [&](const std::string& name) {
             int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
             if (index < 0) return false;
@@ -489,7 +489,7 @@ namespace Vital::Engine {
                 if (Tool::match_wildcard(blend_shape, name)) exec(name);
             }
         }
-        else if (!exec(blend_shape)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
+        else if (!exec(blend_shape)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blend shape '{}' not found in component '{}'", blend_shape, component));
         return true;
     }
 
@@ -538,7 +538,7 @@ namespace Vital::Engine {
 
     std::vector<std::string> Model::get_materials(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> materials;
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return materials;
@@ -550,7 +550,7 @@ namespace Vital::Engine {
 
     std::vector<std::string> Model::get_blendshapes(const std::string& component) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         std::vector<std::string> blendshapes;
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return blendshapes;
@@ -583,16 +583,16 @@ namespace Vital::Engine {
 
     float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
         godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Component '{}' not found in model '{}'", component, model_name));
+        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Blend shape '{}' not found in component '{}'", blend_shape, component));
+        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blend shape '{}' not found in component '{}'", blend_shape, component));
         return mesh -> get_blend_shape_value(index);
     }
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
-        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("No skeleton found in model '{}'", model_name));
+        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: no skeleton found in model '{}'", model_name));
         int index = skeleton->find_bone(Tool::to_godot_string(bone));
-        if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("Bone '{}' not found in model '{}'", bone, model_name));
+        if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
         return skeleton->get_global_transform().xform(skeleton->get_bone_global_pose(index).origin);
     }
 
