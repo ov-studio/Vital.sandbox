@@ -97,14 +97,12 @@ namespace Vital::Engine {
     }
 
     godot::Skeleton3D* Model::find_skeleton(godot::Node* node) {
-        if (!node) return nullptr;
-        if (!skeleton) {
-            auto result = godot::Object::cast_to<godot::Skeleton3D>(node);
-            if (result) return result;
-            for (int i = 0; i < node->get_child_count(); i++) {
-                auto result = find_skeleton(node->get_child(i));
-                if (result) { skeleton = result; break; }
-            }
+        if (!node || skeleton) return skeleton;
+        auto result = godot::Object::cast_to<godot::Skeleton3D>(node);
+        if (result) { skeleton = result; return skeleton; }
+        for (int i = 0; i < node->get_child_count(); i++) {
+            auto result = find_skeleton(node->get_child(i));
+            if (result) break;
         }
         return skeleton;
     }
