@@ -52,7 +52,7 @@ namespace Vital::Sandbox {
     struct vm_args {
         private:
             inline void throw_error(int index, const std::string& reason = "") const {
-                const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
+                const std::string arg = (index - 1) < (int)arguments.size() ? arguments[index - 1] : std::to_string(index);
                 std::string detail = fmt::format("\n> Syntax: `{}`", syntax);
                 detail += fmt::format("\n> Reason: bad argument #{} '{}' {}", index, arg, reason.empty() ? "" : fmt::format("({})", reason));
                 throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error, detail);
@@ -60,7 +60,7 @@ namespace Vital::Sandbox {
         public:
             Machine* vm;
             std::string syntax;
-            std::vector<std::string> arg_names;
+            std::vector<std::string> arguments;
         
             inline vm_args(Machine* vm, const std::string& syntax) : vm_args(vm, syntax, "") {}
             inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), syntax(id + args) {
@@ -72,7 +72,7 @@ namespace Vital::Sandbox {
                 while (std::getline(ss, token, ',')) {
                     token.erase(0, token.find_first_not_of(" \t"));
                     token.erase(token.find_last_not_of(" \t") + 1);
-                    if (!token.empty()) arg_names.push_back(token);
+                    if (!token.empty()) arguments.push_back(token);
                 }
             }
         
