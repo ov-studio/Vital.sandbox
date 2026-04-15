@@ -43,7 +43,7 @@ void load_server_config() {
         info.version = g_server_config.get_server_version();
         info.description = g_server_config.get_server_description();
         info.max_clients = g_server_config.get_max_clients();
-        info.discord     = g_server_config.get_discord_invite();
+        info.discord = g_server_config.get_discord_invite();
     }
     Vital::Manager::Asset::get_singleton() -> set_server_info(info);
 }
