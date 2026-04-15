@@ -282,8 +282,7 @@ namespace Vital::Engine {
     }
 
     void Model::create_synced(const std::string& name, int authority_peer) {
-        auto it = cache_loaded.find(name);
-        if (it == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
+        if (cache_loaded.find(name) == cache_loaded.end()) throw Vital::Log::fetch("request-failed", Vital::Log::Type::Warning, fmt::format("Model '{}' isn't loaded yet", name));
         Core::get_singleton() -> push_deferred([name, authority_peer]() {
             spawn_synced(name, authority_peer);
         });
