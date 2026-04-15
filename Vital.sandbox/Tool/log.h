@@ -56,10 +56,10 @@ namespace Vital::Tool::Log {
 
     inline constexpr Command List[] = {
         {"invalid-arguments", "invalid argument(s) {}"},
+        {"request-failed", "Request failed {}"},
 
         // TODO: UPDATE FOR ALL EM
         {"invalid-thread", "Invalid thread"},
-        {"request-failed", "Request failed ('{}')"},
         {"hash-mode-nonexistent", "Hash mode not found ('{}')"},
         {"cipher-mode-nonexistent", "Cipher mode not found ('{}')"},
         {"cipher-invalid-key", "Invalid cipher key ('{}')"},
