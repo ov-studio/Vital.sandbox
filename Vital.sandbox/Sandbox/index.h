@@ -55,7 +55,7 @@ namespace Vital::Sandbox {
                 const std::string arg = (index - 1) < (int)arguments.size() ? arguments[index - 1] : std::to_string(index);
                 std::string detail = fmt::format("\n> Syntax: `{}`", syntax);
                 detail += fmt::format("\n> Reason: bad argument #{} '{}' {}", index, arg, reason.empty() ? "" : fmt::format("({})", reason));
-                throw Tool::Log::fetch("invalid-arguments", Tool::Log::Type::Error, detail);
+                throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, detail);
             }
         public:
             Machine* vm;
