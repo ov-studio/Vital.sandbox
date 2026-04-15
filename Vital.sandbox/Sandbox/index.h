@@ -53,7 +53,9 @@ namespace Vital::Sandbox {
         private:
             inline void throw_error(int index, const std::string& reason = "") const {
                 const std::string arg = (index - 1) < (int)arg_names.size() ? arg_names[index - 1] : std::to_string(index);
-                const std::string detail = reason.empty() ? fmt::format("Bad argument #{} '{}' — Usage: {}", index, arg, usage) : fmt::format("Bad argument #{} '{}' — {} — Usage: {}", index, arg, reason, usage);
+                std::string detail = fmt::format("(bad argument #{} '{}')", index, arg);
+                detail += fmt::format("\n> Syntax: `{}`", usage);
+                if (!reason.empty()) detail += fmt::format("\n> Reason: `{}`", reason);
                 throw Vital::Log::fetch("invalid-arguments", Vital::Log::Type::Error, detail);
             }
         public:
