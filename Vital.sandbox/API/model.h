@@ -128,11 +128,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number)
-                    .validate(4, [](auto vm, int index) {
-                        auto value = vm -> get_int(index);
-                        // TODO: validate_material_feature  HWO TO HOOK IT DOESNT RETURN BOOL...   also reduce redundancy maybe it can return bool and utilize that way in model.cpp etc?
-                        return (value >= 0) && (value < godot::BaseMaterial3D::FEATURE_MAX);
-                    });
 
                 auto component = vm -> get_string(2);
                 auto material = vm -> get_string(3);
@@ -146,10 +141,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number)
-                    .validate(4, [](auto vm, int index) {
-                        auto value = vm -> get_int(index);
-                        return (value >= 0) && (value < godot::BaseMaterial3D::FLAG_MAX);
-                    });
 
                 auto component = vm -> get_string(2);
                 auto material = vm -> get_string(3);
@@ -218,10 +209,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number)
-                    .validate(4, [](auto vm, int index) {
-                        auto value = vm -> get_int(index);
-                        return (value >= 0) && (value < godot::BaseMaterial3D::FEATURE_MAX);
-                    })
                     .require(5, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
@@ -237,10 +224,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number)
-                    .validate(4, [](auto vm, int index) {
-                        auto value = vm -> get_int(index);
-                        return (value >= 0) && (value < godot::BaseMaterial3D::FLAG_MAX);
-                    })
                     .require(5, &Machine::is_bool);
 
                 auto component = vm -> get_string(2);
