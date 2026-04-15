@@ -139,7 +139,7 @@ namespace Vital::Sandbox::API {
 
                 int count = vm -> get_count();
                 for (int i = 2; i <= count; i++) {
-                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid column name at index #{}", i - 1));
+                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
                     self -> select.push_back(vm -> get_string(i));
                 }
                 vm -> create_object(base_name, self);
