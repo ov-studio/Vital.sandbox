@@ -378,8 +378,10 @@ namespace Vital::Sandbox {
             void log(const std::string& type, const std::string& message = "") {
                 lua_Debug debug;
                 lua_getstack(state, 1, &debug);
-                lua_getinfo(state, "nSl", &debug);
-                API::log(type, fmt::format("{}\n> Line: {}", message.empty() ? "N/A" : message, std::to_string(debug.currentline)));
+                lua_getinfo(state, "Sl", &debug);
+                std::string source = fmt::format("{}:{}", (debug.source && debug.source[0] == '@') ? debug.source + 1 : (debug.source ? debug.source : "?"), debug.currentline);
+                std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
+                API::log(type, err);
                 push_value(false);
             }
 
