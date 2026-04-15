@@ -139,7 +139,7 @@ namespace Vital::Sandbox {
                 auto vm = Machine::fetch_machine(state);
                 return vm -> execute([&]() -> int {
                     void** ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
-                    if (!ud || !*ud) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid {} type", *type));
+                    if (!ud || !*ud) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type));
                     return (*fn)(vm, static_cast<T*>(*ud), *id);
                 });
             }, 3);
