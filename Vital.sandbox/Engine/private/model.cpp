@@ -118,6 +118,7 @@ namespace Vital::Engine {
                     if (result) { animation_player = result; break; }
                 }
             }
+            if (result) break;
         }
         return animation_player;
     }
