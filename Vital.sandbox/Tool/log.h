@@ -47,8 +47,8 @@ namespace Vital::Tool::Log {
     using error = Entry<Label_error>;
 
     inline constexpr Command List[] = {
-        {"invalid-argument", "invalid argument\n> Reason: {}"},
-        {"request-failed", "request failed\n> Reason: {}"},
+        {"invalid-argument", "invalid argument {}"},
+        {"request-failed", "request failed {}"},
         {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"}
     };
 
