@@ -22,11 +22,11 @@
 ////////////
 
 namespace Vital::Tool::Log {
-    enum class Type {
-        SBox,
+    enum class Type { 
+        SBox, 
         Info,
-        Error,
-        Warning
+        Warning, 
+        Error 
     };
 
     struct Command {
@@ -34,56 +34,41 @@ namespace Vital::Tool::Log {
         std::string_view message;
     };
 
-    struct SBox : std::runtime_error {
+    template <std::string_view const& Label>
+    struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = "sbox";
+        static constexpr std::string_view label = Label;
     };
 
-    struct Info : std::runtime_error {
-        using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = "info";
-    };
+    inline constexpr std::string_view
+        LabelSBox = "sbox",
+        LabelInfo = "info",
+        LabelWarning = "warn",
+        LabelError = "error";
 
-    struct Warning : std::runtime_error {
-        using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = "warn";
-    };
-
-    struct Error : std::runtime_error {
-        using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = "error";
-    };
+    using SBox = Entry<LabelSBox>;
+    using Info = Entry<LabelInfo>;
+    using Warning = Entry<LabelWarning>;
+    using Error = Entry<LabelError>;
 
     inline constexpr Command List[] = {
-        {"invalid-argument", "invalid argument {}"},
-        {"request-failed", "request failed {}"},
-        {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"}
+        {"invalid-argument", "invalid argument\n> Reason: {}"},
+        {"request-failed", "request failed\n> Reason: {}"},
+        {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"},
     };
 
-    inline bool is_type(std::string_view label) {
-        for (const auto& type : {
-            std::string_view(SBox::label),
-            std::string_view(Info::label),
-            std::string_view(Warning::label),
-            std::string_view(Error::label)
-        }) if (label == type) return true;
-        return false;
-    }
-
     inline std::string_view resolve(std::string_view code) {
-        for (const auto& e : List) {
-            if (code == e.code) return e.message;
-        }
-        return "N/A";
+        for (const auto& e : List) if (code == e.code) return e.message;
+        return "unknown error";
     }
 
-    inline std::runtime_error fetch(std::string_view code, Type type = Type::Info, std::string_view message = "") {
-        auto formatted = fmt::format(std::string(resolve(code)), std::string(message));
+    inline std::runtime_error fetch(std::string_view code, Type type = Type::Info, std::string_view detail = "") {
+        auto body = fmt::format(fmt::runtime(resolve(code)), detail);
         switch (type) {
-            case Type::SBox: return SBox(formatted);
-            case Type::Info: return Info(formatted);
-            case Type::Warning: return Warning(formatted);
-            default: return Error(formatted);
+            case Type::SBox: return SBox(body);
+            case Type::Info: return Info(body);
+            case Type::Warning: return Warning(body);
+            default: return Error(body);
         }
     }
 }
