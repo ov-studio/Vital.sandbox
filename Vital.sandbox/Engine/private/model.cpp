@@ -160,7 +160,7 @@ namespace Vital::Engine {
         return { mesh, index };
     }
 
-    godot::MeshInstance3D* Model::assert_skeleton() {
+    godot::Skeleton3D* Model::assert_skeleton() {
         if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: no skeleton found in model '{}'", model_name));
         return skeleton;
     }
