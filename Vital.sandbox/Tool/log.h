@@ -22,7 +22,7 @@
 ////////////
 
 namespace Vital::Tool::Log {
-    enum class Type { SBox, Info, Warning, Error };
+    enum class Type { SBox, Info, Warn, Error };
 
     struct Command {
         std::string_view code;
@@ -38,12 +38,12 @@ namespace Vital::Tool::Log {
     inline constexpr std::string_view
         Label_sbox = "sbox",
         Label_info = "info",
-        Label_warning = "warn", 
+        Label_warn = "warn", 
         Label_error = "error";
 
     using SBox = Entry<Label_sbox>;
     using Info = Entry<Label_info>;
-    using Warning = Entry<Label_warning>;
+    using Warn = Entry<Label_warn>;
     using Error = Entry<Label_error>;
 
     inline constexpr Command List[] = {
@@ -53,12 +53,9 @@ namespace Vital::Tool::Log {
     };
 
     template <typename... Types>
-    inline bool is_type_impl(std::string_view label) {
-        return (... || (label == Types::label));
-    }
-
+    inline bool is_type_impl(std::string_view label) { return (... || (label == Types::label)); }
     inline bool is_type(std::string_view label) {
-        return is_type_impl<SBox, Info, Warning, Error>(label);
+        return is_type_impl<SBox, Info, Warn, Error>(label);
     }
 
     inline std::string_view resolve(std::string_view code) {
@@ -71,7 +68,7 @@ namespace Vital::Tool::Log {
         switch (type) {
             case Type::SBox: return SBox(body);
             case Type::Info: return Info(body);
-            case Type::Warning: return Warning(body);
+            case Type::Warn: return Warn(body);
             default: return Error(body);
         }
     }

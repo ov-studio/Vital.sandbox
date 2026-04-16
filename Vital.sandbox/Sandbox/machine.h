@@ -389,7 +389,7 @@ namespace Vital::Sandbox {
             int execute(F&& exec) {
                 try { return exec(); }
                 catch (const Tool::Log::Info& e) { log(std::string(Tool::Log::Info::label), e.what()); }
-                catch (const Tool::Log::Warning& e) { log(std::string(Tool::Log::Warning::label), e.what()); }
+                catch (const Tool::Log::Warn& e) { log(std::string(Tool::Log::Warn::label), e.what()); }
                 catch (const Tool::Log::Error& e) { log(std::string(Tool::Log::Error::label), e.what()); }
                 catch (const std::runtime_error& e) { log(std::string(Tool::Log::Error::label), e.what()); }
                 catch (...) { log(std::string(Tool::Log::Error::label)); }
