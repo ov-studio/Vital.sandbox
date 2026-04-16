@@ -312,7 +312,6 @@ namespace Vital::Tool {
                     bool first = true;
                     int index = 0;
                     for (const auto& [k, v] : query -> data) {
-                        if (!is_column_allowed(query -> table, k)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", k, query -> table));
                         if (!first) { columns += ", "; placeholders += ", "; }
                         first = false;
                         push_bind(query -> table, k, v, index++, columns, placeholders, binds, bind_names);
@@ -328,7 +327,6 @@ namespace Vital::Tool {
                     bool first = true;
                     int index = 0;
                     for (const auto& [k, v] : query -> data) {
-                        if (!is_column_allowed(query -> table, k)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", k, query -> table));
                         if (!first) sets += ", ";
                         first = false;
                         std::string column, placeholder;
