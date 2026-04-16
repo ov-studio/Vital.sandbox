@@ -319,10 +319,9 @@ namespace Vital::Tool {
                         if (!is_column_allowed(query -> table, k)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", k, query -> table));
                         if (!first) sets += ", ";
                         first = false;
-                        auto pname = fmt::format("d{}", index++);
-                        sets += fmt::format("`{}` = :{}", k, pname);
-                        bind_names.push_back(pname);
-                        binds.push_back(v);
+                        std::string column, placeholder;
+                        push_bind(query -> table, k, v, index++, column, placeholder, binds, bind_names);
+                        sets += fmt::format("{} = {}", column, placeholder);
                     }
                     sql = fmt::format("UPDATE `{}` SET {}", query -> table, sets);
                     query -> apply_where(sql, binds, bind_names);
