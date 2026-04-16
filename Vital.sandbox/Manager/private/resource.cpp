@@ -219,11 +219,22 @@ namespace Vital::Manager {
             Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
-                Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync_peer(peer_id); });
+                Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
             scan();
         #endif
     }
+
+    #if !defined(Vital_SDK_Client)
+    void Resource::sync(int peer_id) const {
+        Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
+        for (const auto& name : running) {
+            auto resource = get_resource(name);
+            if (!resource) continue;
+            Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, resource), peer_id);
+        }
+    }
+    #endif
 
 
     // Checkers //
@@ -293,17 +304,6 @@ namespace Vital::Manager {
 
 
     // APIs //
-    #if !defined(Vital_SDK_Client)
-    void Resource::sync_peer(int peer_id) const {
-        Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
-        for (const auto& name : running) {
-            auto resource = get_resource(name);
-            if (!resource) continue;
-            Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, resource), peer_id);
-        }
-    }
-    #endif
-
     #if !defined(Vital_SDK_Client)
     void Resource::scan() {
         std::lock_guard<std::mutex> lock(scan_mutex);
@@ -484,10 +484,8 @@ namespace Vital::Manager {
         for (const auto& name : snapshot) if (restart(name)) count++;
         log("sbox", fmt::format("all resources restarted — {} resource(s) restarted", count));
     }
-    #endif
 
-
-    #if defined(Vital_SDK_Client)
+    #else
     bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
         if (is_running(name) || is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
 
