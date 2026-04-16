@@ -104,7 +104,7 @@ namespace Vital::Manager {
         msg.object["event"] = Tool::StackValue(event);
         msg.object["name"] = Tool::StackValue(name);
         if (manifest) {
-            // TOOD: ADD pack_manifest
+            // TODO: ADD pack_manifest
             Tool::Stack scripts_stack;
             for (const auto& s : manifest -> scripts) {
                 Tool::Stack entry;
