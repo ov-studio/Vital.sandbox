@@ -26,14 +26,8 @@ namespace Vital::Engine {
     // Instantiators //
     Webview::Webview(const Options& options) {
         godot::Object* object = godot::ClassDB::instantiate("WebView");
-        if (!object) throw Tool::Log::fetch("webview-failed", Tool::Log::Type::Error, "No compatible plugin found");
-        else {
-            webview = godot::Object::cast_to<godot::Control>(object);
-            if (!webview) {
-                memdelete(object);
-                throw Tool::Log::fetch("webview-failed", Tool::Log::Type::Error, "No compatible device found");
-            }
-        }
+        if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: webview plugin missing");
+        else webview = godot::Object::cast_to<godot::Control>(object);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
         webview -> set("incognito", options.incognito);

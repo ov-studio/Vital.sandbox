@@ -64,8 +64,7 @@ namespace Vital::Tool::Log {
         {"file-path-invalid", "Invalid file path (`{}`)"},
         {"file-nonexistent", "File not found (`{}`)"},
         {"directory-nonexistent", "Directory not found (`{}`)"},
-        {"file-busy", "File busy (`{}`)"},
-        {"webview-failed", "Webview failed ('{}')"}
+        {"file-busy", "File busy (`{}`)"}
     };
 
     inline bool is_type(std::string_view label) {
