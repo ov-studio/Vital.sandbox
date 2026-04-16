@@ -128,7 +128,6 @@ namespace Vital::Tool {
             }
 
             void push_bind(const std::string& table, const std::string& column, const std::string& value, int index, std::string& columns_out, std::string& placeholders_out, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
-                if (!is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
                 assert_column(table, column);
                 auto pname = fmt::format("d{}", index);
                 columns_out += fmt::format("`{}`", column);
