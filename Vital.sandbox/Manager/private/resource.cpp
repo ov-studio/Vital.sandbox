@@ -381,7 +381,6 @@ namespace Vital::Manager {
         running.insert(name);
         log("sbox", fmt::format("resource `{}` started", name));
         execute_scripts_impl(name, sources);
-    
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, get_resource(name)));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
@@ -398,7 +397,6 @@ namespace Vital::Manager {
         vm -> clear_environment_id(name);
         running.erase(name);
         log("sbox", fmt::format("resource `{}` stopped", name));
-
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:stopped", name));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
