@@ -120,7 +120,7 @@ namespace Vital::Tool {
                 assert_table(table);
             }
 
-            std::string build_schema_definition(const std::string& column, const Column& definition) {
+            std::string build_column(const std::string& column, const Column& definition) {
                 std::string statement = fmt::format("`{}` {}", column, definition.type);
                 if (definition.autoincrement) statement += " AUTO_INCREMENT";
                 if (!definition.nullable) statement += " NOT NULL";
@@ -186,7 +186,7 @@ namespace Vital::Tool {
                     for (const auto& [column, definition] : columns) {
                         if (!first) sql += ", ";
                         first = false;
-                        sql += build_schema_definition(column, definition);
+                        sql += build_column(column, definition);
                         if (definition.primary) primary_key = column;
                     }
                     if (!primary_key.empty()) sql += fmt::format(", PRIMARY KEY (`{}`)", primary_key);
@@ -225,9 +225,9 @@ namespace Vital::Tool {
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
-                        case SchemaAction::Type::Add: sql += fmt::format("ADD COLUMN {}", build_schema_definition(action.column, action.definition)); break;
+                        case SchemaAction::Type::Add: sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
                         case SchemaAction::Type::Drop: sql += fmt::format("DROP COLUMN `{}`", action.column); break;
-                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_schema_definition(action.column, action.definition)); break;
+                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
                     }
                 }
                 *session << sql;
