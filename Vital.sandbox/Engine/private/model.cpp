@@ -541,13 +541,13 @@ namespace Vital::Engine {
     }
 
     std::vector<std::string> Model::get_blendshapes(const std::string& component) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
-        std::vector<std::string> blendshapes;
+        godot::MeshInstance3D* mesh = assert_component(component);
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        std::vector<std::string> blendshapes;
         if (!array_mesh) return blendshapes;
         for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
             blendshapes.push_back(Tool::to_std_string(array_mesh->get_blend_shape_name(i)));
+            blendshapes.push_back(Tool::to_std_string(array_mesh -> get_blend_shape_name(i)));
         }
         return blendshapes;
     }
