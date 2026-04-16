@@ -214,15 +214,9 @@ namespace Vital::Tool {
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
-                        case SchemaAction::Type::Add:
-                            sql += fmt::format("ADD COLUMN {}", build_schema_definition(action.column, action.definition));
-                            break;
-                        case SchemaAction::Type::Drop:
-                            sql += fmt::format("DROP COLUMN `{}`", action.column);
-                            break;
-                        case SchemaAction::Type::Modify:
-                            sql += fmt::format("MODIFY COLUMN {}", build_schema_definition(action.column, action.definition));
-                            break;
+                        case SchemaAction::Type::Add: sql += fmt::format("ADD COLUMN {}", build_schema_definition(action.column, action.definition)); break;
+                        case SchemaAction::Type::Drop: sql += fmt::format("DROP COLUMN `{}`", action.column); break;
+                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_schema_definition(action.column, action.definition)); break;
                     }
                 }
                 *session << sql;
