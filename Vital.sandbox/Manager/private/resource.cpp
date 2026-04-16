@@ -194,7 +194,8 @@ namespace Vital::Manager {
             Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
                 if (!args.object.count("event")) return;
                 const std::string event = args.object.at("event").as<std::string>();
-                // TODO: Check if it event name contains "vital.rersource" or return
+                if (event.rfind("vital.resource:", 0) != 0) return;
+
                 auto rm = Resource::get_singleton();
                 if (event == "vital.resource:started") {
                     if (!args.object.count("name")) return;
