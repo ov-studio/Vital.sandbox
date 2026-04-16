@@ -45,6 +45,22 @@ namespace Vital::Manager {
         return fmt::format("@{}/{}", resource, src);
     }
 
+    Tool::Stack Resource::pack_manifest(const Manifest& manifest) const {
+        Tool::Stack out;
+        Tool::Stack scripts_stack;
+        for (const auto& s : manifest.scripts) {
+            Tool::Stack entry;
+            entry.object["src"] = Tool::StackValue(s.src);
+            entry.object["type"] = Tool::StackValue(s.type);
+            scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
+        }
+        out.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
+        Tool::Stack files_stack;
+        for (const auto& f : manifest.files) files_stack.array.push_back(Tool::StackValue(f));
+        out.object["files"] = Tool::StackValue(std::move(files_stack));
+        return out;
+    }
+
     void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
         if (const auto* sv = args.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
@@ -104,18 +120,9 @@ namespace Vital::Manager {
         msg.object["event"] = Tool::StackValue(event);
         msg.object["name"] = Tool::StackValue(name);
         if (manifest) {
-            // TODO: ADD pack_manifest
-            Tool::Stack scripts_stack;
-            for (const auto& s : manifest -> scripts) {
-                Tool::Stack entry;
-                entry.object["src"]  = Tool::StackValue(s.src);
-                entry.object["type"] = Tool::StackValue(s.type);
-                scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
-            }
-            msg.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
-            Tool::Stack files_stack;
-            for (const auto& f : manifest -> files) files_stack.array.push_back(Tool::StackValue(f));
-            msg.object["files"] = Tool::StackValue(std::move(files_stack));
+            auto packed = pack_manifest(*manifest);
+            msg.object["scripts"] = std::move(packed.object["scripts"]);
+            msg.object["files"] = std::move(packed.object["files"]);
         }
         return msg;
     }
