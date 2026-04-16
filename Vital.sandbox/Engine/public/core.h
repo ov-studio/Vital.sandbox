@@ -24,7 +24,7 @@ namespace Vital::Engine {
     class Core : public godot::Node {
         GDCLASS(Core, godot::Node)
         protected:
-            inline static Core* singleton  = nullptr;
+            inline static Core* singleton = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
             std::thread kit_thread;
             std::atomic<bool> kit_ready { false };
