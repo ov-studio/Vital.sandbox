@@ -41,7 +41,7 @@ namespace Vital::Manager {
 
 
     // Helpers //
-    std::string Resource::chunk_name(const std::string& resource, const std::string& src) {
+    std::string Resource::chunk_name(const std::string& resource, const std::string& src) const {
         return fmt::format("@{}/{}", resource, src);
     }
 

@@ -58,7 +58,7 @@ namespace Vital::Manager {
 
 
             // Helpers //
-            std::string chunk_name(const std::string& resource, const std::string& src);
+            std::string chunk_name(const std::string& resource, const std::string& src) const;
             void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             #if !defined(Vital_SDK_Client)
             bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
