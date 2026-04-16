@@ -95,8 +95,8 @@ namespace Vital::Engine {
 
     godot::Ref<godot::Texture2D> Texture::get_texture() const {
         switch (command.type) {
-            case Type::Texture2D: const auto& payload = std::get<Texture2D>(command.payload); return payload.texture;
-            case Type::SVG: const auto& payload = std::get<SVG>(command.payload); return payload.texture;
+            case Type::Texture2D: { const auto& payload = std::get<Texture2D>(command.payload); return payload.texture; }
+            case Type::SVG: { const auto& payload = std::get<SVG>(command.payload); return payload.texture; }
         }
         return godot::Ref<godot::Texture2D>();
     }
@@ -110,7 +110,7 @@ namespace Vital::Engine {
     Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::error status;
+        godot::Error status;
         switch (get_format(buffer)) {
             case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
             case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;

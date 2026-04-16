@@ -67,7 +67,7 @@ namespace Vital::Engine {
     void Canvas::execute(godot::Node2D* node, std::vector<Command>& queue) {
         for (const auto &command : queue) {
             switch (command.type) {
-                case Type::Line:
+                case Type::Line: {
                     const auto& payload = std::get<Line>(command.payload);
                     node -> draw_set_transform({0, 0}, 0, {1, 1});
                     node -> draw_polyline(
@@ -77,7 +77,8 @@ namespace Vital::Engine {
                         true
                     );
                     break;
-                case Type::Polygon:
+                }
+                case Type::Polygon: {
                     const auto& payload = std::get<Polygon>(command.payload);
                     node -> draw_set_transform(payload.rect.position + payload.pivot, payload.rotation, {1, 1});
                     if (payload.stroke > 0.0f) {
@@ -93,7 +94,8 @@ namespace Vital::Engine {
                         payload.color
                     );
                     break;
-                case Type::Rectangle:
+                }
+                case Type::Rectangle: {
                     const auto& payload = std::get<Rectangle>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
@@ -114,7 +116,8 @@ namespace Vital::Engine {
                         true
                     );
                     break;
-                case Type::Circle:
+                }
+                case Type::Circle: {
                     const auto& payload = std::get<Circle>(command.payload);
                     auto pivot = payload.pivot;
                     node -> draw_set_transform(payload.position + pivot, payload.rotation, {1, 1});
@@ -137,7 +140,8 @@ namespace Vital::Engine {
                         true
                     );
                     break;
-                case Type::IMAGE:
+                }
+                case Type::IMAGE: {
                     const auto& payload = std::get<Image>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     node -> draw_set_transform(payload.rect.position + pivot, payload.rotation, {1, 1});
@@ -148,7 +152,8 @@ namespace Vital::Engine {
                         payload.color
                     );
                     break;
-                case Type::TEXT:
+                }
+                case Type::TEXT: {
                     const auto& payload = std::get<Text>(command.payload);
                     auto pivot = payload.rect.size*0.5f + payload.pivot;
                     pivot.y -= payload.font_ascent;
@@ -177,6 +182,7 @@ namespace Vital::Engine {
                         payload.color
                     );
                     break;
+                }
             }
         }
         queue.clear();
