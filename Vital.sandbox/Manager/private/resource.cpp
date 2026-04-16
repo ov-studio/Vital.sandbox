@@ -212,8 +212,6 @@ namespace Vital::Manager {
                     Resource::get_singleton() -> unload(name);
                 }
             });
-
-            log("sbox", "client resource manager initialized");
         #else
             Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
                 if (args.array.empty()) return;
