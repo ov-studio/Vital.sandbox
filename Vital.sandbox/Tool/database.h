@@ -279,26 +279,11 @@ namespace Vital::Tool {
                         if (row_out.get_indicator(i) == soci::i_null) cell = nullptr;
                         else {
                             switch (props.get_data_type()) {
-                                case soci::dt_string: {
-                                    cell = row_out.get<std::string>(i);
-                                    break;
-                                }
-                                case soci::dt_integer: {
-                                    cell = (int32_t)row_out.get<int>(i);
-                                    break;
-                                }
-                                case soci::dt_long_long: {
-                                    cell = (int64_t)row_out.get<long long>(i);
-                                    break;
-                                }
-                                case soci::dt_double: {
-                                    cell = row_out.get<double>(i);
-                                    break;
-                                }
-                                default: {
-                                    cell = row_out.get<std::string>(i);
-                                    break;
-                                }
+                                case soci::dt_string: cell = row_out.get<std::string>(i); break;
+                                case soci::dt_integer: cell = static_cast<int32_t>(row_out.get<int>(i)); break;
+                                case soci::dt_long_long: cell = static_cast<int64_t>(row_out.get<long long>(i)); break;
+                                case soci::dt_double: cell = row_out.get<double>(i); break;
+                                default: cell = row_out.get<std::string>(i); break;
                             }
                         }
                         row.emplace_back(props.get_name(), cell);
