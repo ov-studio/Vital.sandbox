@@ -176,8 +176,6 @@ namespace Vital::Manager {
         if (initialized) return;
         initialized = true;
         #if defined(Vital_SDK_Client)
-            log("sbox", "initializing client resource manager...");
-
             Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
                 if (!args.object.count("path")) return;
                 const std::string path = args.object.at("path").as<std::string>();
@@ -214,6 +212,7 @@ namespace Vital::Manager {
                     Resource::get_singleton() -> unload(name);
                 }
             });
+
             log("sbox", "client resource manager initialized");
         #else
             Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
