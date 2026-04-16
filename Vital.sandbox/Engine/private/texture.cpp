@@ -110,13 +110,13 @@ namespace Vital::Engine {
     Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        godot::Error status;
+        godot::error status;
         switch (get_format(buffer)) {
             case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
             case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;
             case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
         }
-        if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid texture buffer");
+        if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
         Texture2D payload;
         auto texture = memnew(Texture({Type::Texture2D, payload}, reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
@@ -130,7 +130,7 @@ namespace Vital::Engine {
     Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid svg buffer");
+        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         SVG payload;
         auto texture = memnew(Texture({Type::SVG, payload}, reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
@@ -140,7 +140,7 @@ namespace Vital::Engine {
     Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid svg buffer");
+        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         SVG payload;
         auto texture = memnew(Texture({Type::SVG, payload}, reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
@@ -148,20 +148,20 @@ namespace Vital::Engine {
     }
 
     void Texture::update_svg_from_raw(const std::string& raw) {
-        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid command type");
+        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid svg buffer");
+        if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         const auto& payload = std::get<SVG>(command.payload);
         payload.texture -> update(image);
         heartbeat();
     }
 
     void Texture::update_svg_from_buffer(const godot::PackedByteArray& buffer) {
-        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid command type");
+        if (command.type != Type::SVG) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
         godot::Ref<godot::Image> image;
         image.instantiate();
-        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid svg buffer");
+        if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         const auto& payload = std::get<SVG>(command.payload);
         payload.texture -> update(image);
         heartbeat();

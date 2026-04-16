@@ -41,21 +41,21 @@ namespace Vital::Sandbox::API {
 
                 auto thread = vm -> get_thread(1);
                 auto thread_vm = Machine::fetch_machine(thread);
-                if (!thread_vm -> is_virtual()) throw Tool::Log::fetch("invalid-thread", Tool::Log::Type::Error);
+                if (!thread_vm -> is_virtual()) throw Tool::Log::fetch("invalid-thread", Tool::Log::Type::error);
                 thread_vm -> resume();
                 vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "pause", [](auto vm, auto& id) -> int {
-                if (!vm -> is_virtual()) throw Tool::Log::fetch("invalid-thread", Tool::Log::Type::Error);
+                if (!vm -> is_virtual()) throw Tool::Log::fetch("invalid-thread", Tool::Log::Type::error);
                 vm -> pause();
                 vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, {base_name}, "sleep", [](auto vm, auto& id) -> int {
-                if (!vm -> is_virtual()) throw Tool::Log::fetch("invalid-thread", Tool::Log::Type::Error);
+                if (!vm -> is_virtual()) throw Tool::Log::fetch("invalid-thread", Tool::Log::Type::error);
                 vm_args(vm, id, "(duration)")
                     .require(1, &Machine::is_number);
 

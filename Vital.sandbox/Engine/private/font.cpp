@@ -37,7 +37,7 @@ namespace Vital::Engine {
         godot::Ref<godot::FontFile> font;
         font.instantiate();
         font -> set_data(buffer);
-        if (font -> get_face_count() <= 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid font buffer");
+        if (font -> get_face_count() <= 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid font buffer");
         return memnew(Font(font));
     }
 

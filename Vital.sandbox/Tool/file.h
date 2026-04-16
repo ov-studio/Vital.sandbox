@@ -53,13 +53,13 @@ namespace Vital::Tool::File {
 
         inline godot::Ref<godot::DirAccess> assert_base(const godot::String& path) {
             auto dir = godot::DirAccess::open(path);
-            if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid base path `{}`", Tool::to_std_string(path)));
+            if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid base path `{}`", Tool::to_std_string(path)));
             return dir;
         }
 
         inline godot::String assert_path(const godot::String& path) {
             auto norm = normalize(path);
-            if (!sanitize(norm)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
+            if (!sanitize(norm)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
             return norm;
         }
 
@@ -72,10 +72,10 @@ namespace Vital::Tool::File {
         inline godot::Ref<godot::FileAccess> assert_file(const godot::String& base, const godot::String& target, godot::FileAccess::ModeFlags mode) {
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(base);
             auto [dir, dest, full_path] = assert_base_and_path(base, target);
-            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
+            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
             auto file = godot::FileAccess::open(full_path, mode);
-            if (!file.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` busy", Tool::to_std_string(target)));
+            if (!file.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` busy", Tool::to_std_string(target)));
             return file;
         }
     }
@@ -108,7 +108,7 @@ namespace Vital::Tool::File {
 
     inline std::string hash(const godot::String& base, const godot::String& target, std::string_view mode = "SHA256") {
         auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
+        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
         return Tool::Crypto::hash_file(mode, Tool::to_std_string(full_path));
     }
 
@@ -167,7 +167,7 @@ namespace Vital::Tool::File {
     inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
         auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
         dir = godot::DirAccess::open(dest.is_empty() ? dir -> get_current_dir() : full_path);
-        if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: directory `{}` non-existent", Tool::to_std_string(target)));
+        if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: directory `{}` non-existent", Tool::to_std_string(target)));
         std::vector<std::string> result;
         dir -> list_dir_begin();
         while (true) {

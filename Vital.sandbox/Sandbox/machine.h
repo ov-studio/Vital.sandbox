@@ -388,11 +388,11 @@ namespace Vital::Sandbox {
             template<typename F>
             int execute(F&& exec) {
                 try { return exec(); }
-                catch (const Tool::Log::Info& e) { log(std::string(Tool::Log::Info::label), e.what()); }
-                catch (const Tool::Log::Warn& e) { log(std::string(Tool::Log::Warn::label), e.what()); }
-                catch (const Tool::Log::Error& e) { log(std::string(Tool::Log::Error::label), e.what()); }
-                catch (const std::runtime_error& e) { log(std::string(Tool::Log::Error::label), e.what()); }
-                catch (...) { log(std::string(Tool::Log::Error::label)); }
+                catch (const Tool::Log::info& e) { log(std::string(Tool::Log::info::label), e.what()); }
+                catch (const Tool::Log::warn& e) { log(std::string(Tool::Log::warn::label), e.what()); }
+                catch (const Tool::Log::error& e) { log(std::string(Tool::Log::error::label), e.what()); }
+                catch (const std::runtime_error& e) { log(std::string(Tool::Log::error::label), e.what()); }
+                catch (...) { log(std::string(Tool::Log::error::label)); }
                 return 1;
             }
 
@@ -490,7 +490,7 @@ namespace Vital::Sandbox {
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
-                    API::log(std::string(Tool::Log::Error::label), get_string(-1));
+                    API::log(std::string(Tool::Log::error::label), get_string(-1));
                     pop();
                     return 0;
                 }
@@ -499,7 +499,7 @@ namespace Vital::Sandbox {
                     if (!lua_setupvalue(state, -2, 1)) pop();
                 }
                 if (auto_load && !pcall(0, LUA_MULTRET)) {
-                    API::log(std::string(Tool::Log::Error::label), get_string(-1));
+                    API::log(std::string(Tool::Log::error::label), get_string(-1));
                     pop();
                     return 0;
                 }

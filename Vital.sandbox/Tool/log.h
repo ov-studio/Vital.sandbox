@@ -22,7 +22,7 @@
 ////////////
 
 namespace Vital::Tool::Log {
-    enum class Type { SBox, Info, Warn, Error };
+    enum class Type { sbox, info, warn, error };
 
     struct Command {
         std::string_view code;
@@ -41,10 +41,10 @@ namespace Vital::Tool::Log {
         Label_warn = "warn", 
         Label_error = "error";
 
-    using SBox = Entry<Label_sbox>;
-    using Info = Entry<Label_info>;
-    using Warn = Entry<Label_warn>;
-    using Error = Entry<Label_error>;
+    using sbox = Entry<Label_sbox>;
+    using info = Entry<Label_info>;
+    using warn = Entry<Label_warn>;
+    using error = Entry<Label_error>;
 
     inline constexpr Command List[] = {
         {"invalid-argument", "invalid argument\n> Reason: {}"},
@@ -55,7 +55,7 @@ namespace Vital::Tool::Log {
     template <typename... Types>
     inline bool is_type_impl(std::string_view label) { return (... || (label == Types::label)); }
     inline bool is_type(std::string_view label) {
-        return is_type_impl<SBox, Info, Warn, Error>(label);
+        return is_type_impl<sbox, info, warn, error>(label);
     }
 
     inline std::string_view resolve(std::string_view code) {
@@ -63,13 +63,13 @@ namespace Vital::Tool::Log {
         return "unknown error";
     }
 
-    inline std::runtime_error fetch(std::string_view code, Type type = Type::Info, std::string_view detail = "") {
+    inline std::runtime_error fetch(std::string_view code, Type type = Type::info, std::string_view detail = "") {
         auto body = fmt::format(fmt::runtime(resolve(code)), detail);
         switch (type) {
-            case Type::SBox: return SBox(body);
-            case Type::Info: return Info(body);
-            case Type::Warn: return Warn(body);
-            default: return Error(body);
+            case Type::sbox: return sbox(body);
+            case Type::info: return info(body);
+            case Type::warn: return warn(body);
+            default: return error(body);
         }
     }
 }

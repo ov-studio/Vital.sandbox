@@ -117,7 +117,7 @@ namespace Vital::Sandbox::API {
                         break;
                     }
                 }
-                if (lut_size == 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid lut dimensions");
+                if (lut_size == 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid lut dimensions");
                 godot::TypedArray<godot::Image> lut_slices;
                 lut_slices.resize(lut_size);
                 for (int b = 0; b < lut_size; b++) {

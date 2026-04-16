@@ -26,7 +26,7 @@ namespace Vital::Engine {
     // Instantiators //
     Webview::Webview(const Options& options) {
         godot::Object* object = godot::ClassDB::instantiate("WebView");
-        if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: webview plugin missing");
+        if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: webview plugin missing");
         else webview = godot::Object::cast_to<godot::Control>(object);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
