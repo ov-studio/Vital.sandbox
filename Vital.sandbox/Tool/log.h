@@ -61,7 +61,6 @@ namespace Vital::Tool::Log {
         // TODO: UPDATE FOR ALL EM
         {"invalid-thread", "Invalid thread"},
         {"hash-mode-nonexistent", "Hash mode not found ('{}')"},
-        {"cipher-mode-nonexistent", "Cipher mode not found ('{}')"},
         {"base-path-invalid", "Invalid base path (`{}`)"},
         {"file-path-invalid", "Invalid file path (`{}`)"},
         {"file-nonexistent", "File not found (`{}`)"},
