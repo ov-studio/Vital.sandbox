@@ -36,15 +36,15 @@ namespace Vital::Tool::Log {
     };
 
     inline constexpr std::string_view
-        LabelSBox = "sbox",
-        LabelInfo = "info",
-        LabelWarning = "warn", 
-        LabelError = "error";
+        Label_sbox = "sbox",
+        Label_info = "info",
+        Label_warning = "warn", 
+        Label_error = "error";
 
-    using SBox = Entry<LabelSBox>;
-    using Info = Entry<LabelInfo>;
-    using Warning = Entry<LabelWarning>;
-    using Error = Entry<LabelError>;
+    using SBox = Entry<Label_sbox>;
+    using Info = Entry<Label_info>;
+    using Warning = Entry<Label_warning>;
+    using Error = Entry<Label_error>;
 
     inline constexpr Command List[] = {
         {"invalid-argument", "invalid argument\n> Reason: {}"},
