@@ -154,7 +154,7 @@ namespace Vital::Engine {
     }
 
     std::pair<godot::MeshInstance3D*, int> Model::assert_material(const std::string& component, const std::string& material) {
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         int index = find_material_index(mesh, material);
         if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return { mesh, index };
@@ -406,7 +406,7 @@ namespace Vital::Engine {
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         auto exec = [&](int index) {
             if (index < 0) return false;
             if (!state) {
@@ -430,7 +430,7 @@ namespace Vital::Engine {
 
     bool Model::set_material_feature(const std::string& component, const std::string& material, int feature, bool state) {
         assert_material_feature(feature);
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         auto exec = [&](int index) {
             if (index < 0) return false;
             godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
@@ -454,7 +454,7 @@ namespace Vital::Engine {
 
     bool Model::set_material_flag(const std::string& component, const std::string& material, int flag, bool state) {
         assert_material_flag(flag);
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         auto exec = [&](int index) {
             if (index < 0) return false;
             godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
@@ -477,7 +477,7 @@ namespace Vital::Engine {
     }
 
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         auto exec = [&](const std::string& name) {
             int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
             if (index < 0) return false;
@@ -547,7 +547,7 @@ namespace Vital::Engine {
     }
 
     std::vector<std::string> Model::get_blendshapes(const std::string& component) {
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         std::vector<std::string> blendshapes;
         if (!array_mesh) return blendshapes;
@@ -579,7 +579,7 @@ namespace Vital::Engine {
     }
 
     float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
-        godot::MeshInstance3D* mesh = assert_component(component);
+        auto mesh = assert_component(component);
         int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
         if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
         return mesh -> get_blend_shape_value(index);
