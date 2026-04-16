@@ -93,16 +93,10 @@ namespace Vital::Engine {
         return it != reference_cache.end() ? it -> second : nullptr;
     }
 
-    godot::Ref<godot::Texture2D> Texture::get_texture() {
+    godot::Ref<godot::Texture2D> Texture::get_texture() const {
         switch (command.type) {
-            case Type::Texture2D: {
-                const auto& payload = std::get<Texture2D>(command.payload);
-                return payload.texture;
-            }
-            case Type::SVG: {
-                const auto& payload = std::get<SVG>(command.payload);
-                return payload.texture;
-            }
+            case Type::Texture2D: const auto& payload = std::get<Texture2D>(command.payload); return payload.texture;
+            case Type::SVG: const auto& payload = std::get<SVG>(command.payload); return payload.texture;
         }
         return godot::Ref<godot::Texture2D>();
     }
@@ -118,18 +112,9 @@ namespace Vital::Engine {
         image.instantiate();
         godot::Error status;
         switch (get_format(buffer)) {
-            case Format::PNG: {
-                status = image -> load_png_from_buffer(buffer);
-                break;
-            }
-            case Format::JPG: {
-                status = image -> load_jpg_from_buffer(buffer);
-                break;
-            }
-            case Format::WEBP: {
-                status = image -> load_webp_from_buffer(buffer);
-                break;
-            }
+            case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
+            case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;
+            case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
         }
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid texture buffer");
         Texture2D payload;

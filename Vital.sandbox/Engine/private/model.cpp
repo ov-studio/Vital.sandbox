@@ -249,7 +249,7 @@ namespace Vital::Engine {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: model '{}' is already loaded", name));
         godot::Ref<godot::PackedScene> scene;
         switch (get_format(buffer)) {
-            case Format::GLB: {
+            case Format::GLB:
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
                 if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid model buffer");
@@ -259,7 +259,6 @@ namespace Vital::Engine {
                 scene->pack(root);
                 memdelete(root);
                 break;
-            }
         }
         if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: no scene detected");
         cache_loaded[name] = scene;

@@ -70,7 +70,7 @@ namespace Vital::Engine {
             // Getters //
             static Format get_format(const godot::PackedByteArray& buffer);
             static Texture* get_from_reference(const std::string& reference);
-            godot::Ref<godot::Texture2D> get_texture();
+            godot::Ref<godot::Texture2D> get_texture() const;
 
 
             // APIs //
