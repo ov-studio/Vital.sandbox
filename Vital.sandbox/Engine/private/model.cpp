@@ -54,8 +54,6 @@ namespace Vital::Engine {
         godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
         find_skeleton(this);
         find_animation_player(this);
-        // Setup sync immediately in _ready instead of deferring
-        // Node is already in tree at this point so add_child is safe
         setup_sync(pending_authority);
     }
 
@@ -129,27 +127,6 @@ namespace Vital::Engine {
             collect_mesh_nodes(child, out, child_path);
         }
     }
-
-    std::pair<godot::MeshInstance3D*, int> Model::resolve_material(const std::string& component, const std::string& material) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
-        int index = find_material_index(mesh, material);
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
-        return { mesh, index };
-    }
-    
-    void Model::validate_material_feature(int feature) {
-        if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid material feature");
-    }
-
-    void Model::validate_material_flag(int flag) {
-        if (flag < 0 || flag >= godot::BaseMaterial3D::FLAG_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid material flag");
-    }
-
-    
-    //------------------------//
-    //  Sync Setup (private)  //
-    //------------------------//
 
     void Model::setup_sync(int authority_peer) {
         if (net_sync) return;
