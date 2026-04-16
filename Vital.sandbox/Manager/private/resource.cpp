@@ -101,7 +101,6 @@ namespace Vital::Manager {
     }
     #endif
 
-    bool Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
     void Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto resource = get_resource(name);
@@ -368,7 +367,6 @@ namespace Vital::Manager {
         if (!is_loaded(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
         if (is_running(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
         std::vector<std::pair<std::string, std::string>> sources;
-        std::vector<std::string> errors;
         if (!validate_scripts(name, sources)) return false;
         
         auto resource = get_resource(name);
