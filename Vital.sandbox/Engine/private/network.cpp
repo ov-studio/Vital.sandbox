@@ -314,7 +314,7 @@ namespace Vital::Engine {
     }
 
     #else
-    bool Network::host(int port, int max_clients) {
+    bool Network::host(int port, int max_peers) {
         if (!is_server()) {
             Tool::print("sbox", "Network: host() called on non-server");
             return false;
@@ -325,7 +325,7 @@ namespace Vital::Engine {
         }
         create_node();
         peer.instantiate();
-        godot::Error err = peer -> create_server(port, max_clients);
+        godot::Error err = peer -> create_server(port, max_peers);
         if (err != godot::OK) {
             Tool::print("sbox", "Network: failed to host on port ", port, " (err=", (int)err, ")");
             peer.unref();

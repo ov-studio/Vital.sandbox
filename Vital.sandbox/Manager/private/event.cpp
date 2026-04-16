@@ -42,7 +42,7 @@ void load_server_config() {
         info.name = g_server_config.get_server_name();
         info.version = g_server_config.get_server_version();
         info.description = g_server_config.get_server_description();
-        info.max_clients = g_server_config.get_max_clients();
+        info.max_peers = g_server_config.get_max_clients();
         info.discord = g_server_config.get_discord_invite();
     }
     Vital::Manager::Asset::get_singleton() -> set_server_info(info);
@@ -172,9 +172,9 @@ void initialize_vital_events() {
             #if !defined(Vital_SDK_Client)
             load_server_config();
             int server_port = g_server_config.is_loaded() ? g_server_config.get_network_port() : 7777;
-            int max_clients = g_server_config.is_loaded() ? g_server_config.get_max_clients() : 32;
-            Vital::Tool::print("sbox", "Starting server on port ", server_port, " (max ", max_clients, " clients)");
-            net->host(server_port, max_clients);
+            int max_peers = g_server_config.is_loaded() ? g_server_config.get_max_clients() : 32;
+            Vital::Tool::print("sbox", "Starting server on port ", server_port, " (max ", max_peers, " clients)");
+            net->host(server_port, max_peers);
 
             int http_port = g_server_config.is_loaded() ? g_server_config.get_http_port() : 7778;
             Vital::Tool::print("sbox", "Starting HTTP server on port ", http_port);

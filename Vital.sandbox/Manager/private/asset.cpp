@@ -226,7 +226,7 @@ namespace Vital::Manager {
             document.AddMember("version",         rapidjson::Value(server_info.version.c_str(), alloc),     alloc);
             document.AddMember("description",     rapidjson::Value(server_info.description.c_str(), alloc), alloc);
             document.AddMember("http_port",       http_port,                                                alloc);
-            document.AddMember("max_clients",     server_info.max_clients,                                  alloc);
+            document.AddMember("max_peers",     server_info.max_peers,                                  alloc);
             document.AddMember("discord_invite",  rapidjson::Value(server_info.discord.c_str(), alloc),     alloc);
             document.AddMember("website",         rapidjson::Value(server_info.website.c_str(), alloc),     alloc);
             document.Accept(writer);

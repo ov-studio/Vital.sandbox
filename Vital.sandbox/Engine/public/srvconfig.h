@@ -77,7 +77,7 @@ namespace Vital::Engine {
 
             // Network //
             int get_network_port() const { return get_int("network", "port", 7777); }
-            int get_max_clients() const { return get_int("network", "max_clients", 32); }
+            int get_max_clients() const { return get_int("network", "max_peers", 32); }
             int get_http_port() const { return get_int("http", "port", 7778); }
 
 

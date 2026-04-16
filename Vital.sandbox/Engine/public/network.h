@@ -113,7 +113,7 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(int port, int max_clients = 32);
+            bool host(int port, int max_peers = 32);
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
