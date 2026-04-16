@@ -54,11 +54,11 @@ namespace Vital::Tool {
                 return it != buffer.end() ? it -> second : nullptr;
             }
     
-            void join() const { 
+            void join() { 
                 if (thread.joinable()) thread.join(); 
             }
         
-            void detach() const { 
+            void detach() { 
                 if (thread.joinable()) thread.detach(); 
             }
         
