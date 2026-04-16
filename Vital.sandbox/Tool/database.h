@@ -243,12 +243,8 @@ namespace Vital::Tool {
                 for (const auto& action : actions) {
                     switch (action.type) {
                         case SchemaAction::Type::Add:
-                        case SchemaAction::Type::Modify:
-                            table_schema[action.column] = action.definition;
-                            break;
-                        case SchemaAction::Type::Drop:
-                            table_schema.erase(action.column);
-                            break;
+                        case SchemaAction::Type::Modify: table_schema[action.column] = action.definition; break;
+                        case SchemaAction::Type::Drop: table_schema.erase(action.column); break;
                     }
                 }
             }
