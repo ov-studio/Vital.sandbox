@@ -221,10 +221,8 @@ namespace Vital::Engine {
     }
 
     void Model::on_connected() {
-        // Clean up stale nodes from previous session
         Manager::Asset::get_singleton() -> clear();
         cleanup_spawned();
-        // Refresh spawner multiplayer authority for new session
         if (net_spawner) {
             net_spawner->set_multiplayer_authority(1);
             godot::UtilityFunctions::print("ModelSpawner: refreshed for new session");
