@@ -381,15 +381,7 @@ namespace Vital::Manager {
         am -> broadcast_manifest(-1, true);
         running.insert(name);
         log("sbox", fmt::format("resource `{}` started", name));
-
-        vm -> create_environment(name);
-        vm -> pop(1);
-        for (const auto& [src, source] : sources) {
-            vm -> get_reference(name, true);
-            vm -> load_string(source, chunk_name(resource -> ref, src), true, true, vm -> get_count());
-            vm -> pop(1);
-        }
-
+        execute_scripts_impl(name, sources);
     
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, get_resource(name)));
