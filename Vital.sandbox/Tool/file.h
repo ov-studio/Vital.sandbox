@@ -68,6 +68,16 @@ namespace Vital::Tool::File {
             auto dest = assert_path(path);
             return {dir, dest, dir -> get_current_dir() + godot::String("/") + dest};
         }
+
+        inline godot::Ref<godot::FileAccess> assert_file(const godot::String& base, const godot::String& target, godot::FileAccess::ModeFlags mode) {
+            if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(base);
+            auto [dir, dest, full_path] = assert_base_and_path(base, target);
+            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
+            if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
+            auto file = godot::FileAccess::open(full_path, mode);
+            if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+            return file;
+        }
     }
 
     inline bool sanitize(const godot::String& path) {
@@ -88,10 +98,7 @@ namespace Vital::Tool::File {
     }
 
     inline uint64_t size(const godot::String& base, const godot::String& target) {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
-        auto file = godot::FileAccess::open(full_path, godot::FileAccess::READ);
-        if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+        auto file = Internal::assert_file(base, target, godot::FileAccess::READ);
         return file -> get_length();
     }
 
@@ -120,10 +127,7 @@ namespace Vital::Tool::File {
     }
 
     inline std::string read_text(const godot::String& base, const godot::String& target) {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
-        auto file = godot::FileAccess::open(full_path, godot::FileAccess::READ);
-        if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+        auto file = Internal::assert_file(base, target, godot::FileAccess::READ);
         return Tool::to_std_string(file -> get_as_text());
     }
 
@@ -132,10 +136,7 @@ namespace Vital::Tool::File {
     }
 
     inline godot::PackedByteArray read_binary(const godot::String& base, const godot::String& target) {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
-        auto file = godot::FileAccess::open(full_path, godot::FileAccess::READ);
-        if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+        auto file = Internal::assert_file(base, target, godot::FileAccess::READ);
         return file -> get_buffer(file -> get_length());
     }
 
@@ -144,11 +145,7 @@ namespace Vital::Tool::File {
     }
 
     inline bool write_text(const godot::String& base, const godot::String& target, const std::string& text) {
-        godot::DirAccess::make_dir_recursive_absolute(base);
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
-        auto file = godot::FileAccess::open(full_path, godot::FileAccess::WRITE);
-        if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+        auto file = Internal::assert_file(base, target, godot::FileAccess::WRITE);
         file -> store_string(Tool::to_godot_string(text));
         return true;
     }
@@ -158,11 +155,7 @@ namespace Vital::Tool::File {
     }
 
     inline bool write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
-        godot::DirAccess::make_dir_recursive_absolute(base);
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
-        auto file = godot::FileAccess::open(full_path, godot::FileAccess::WRITE);
-        if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+        auto file = Internal::assert_file(base, target, godot::FileAccess::WRITE);
         file -> store_buffer(data);
         return true;
     }
