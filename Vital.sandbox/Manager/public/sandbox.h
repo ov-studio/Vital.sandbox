@@ -44,11 +44,7 @@ namespace Vital::Manager {
             static void free_singleton();
 
 
-			// Getters //
-			Vital::Sandbox::Machine* get_vm();
-
-
-			// APIs //
+			// Managers //
 			void ready();
 			void process(double delta);
 			#if defined(Vital_SDK_Client)
@@ -71,5 +67,9 @@ namespace Vital::Manager {
 				}
 				vm -> pcall(sizeof...(Args) + 1, 0);
 			}
+
+	
+			// Getters //
+			Vital::Sandbox::Machine* get_vm();
 	};	
 }

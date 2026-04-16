@@ -50,13 +50,7 @@ namespace Vital::Manager {
     }
 
 
-    // Getters //
-    Vital::Sandbox::Machine* Sandbox::get_vm() {
-        return vm;
-    }
-
-
-    // APIs //
+    // Managers //
     void Sandbox::ready() {
         signal("vital.sandbox:ready");
     }
@@ -94,4 +88,11 @@ namespace Vital::Manager {
         }
     }
     #endif
+
+
+    // Getters //
+    Vital::Sandbox::Machine* Sandbox::get_vm() {
+        return vm;
+    }
+
 }
