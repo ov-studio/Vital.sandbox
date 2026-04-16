@@ -396,8 +396,7 @@ namespace Vital::Engine {
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        godot::MeshInstance3D* mesh = assert_component(component);
         auto exec = [&](int index) {
             if (index < 0) return false;
             if (!state) {
@@ -468,8 +467,7 @@ namespace Vital::Engine {
     }
 
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        godot::MeshInstance3D* mesh = assert_component(component);
         auto exec = [&](const std::string& name) {
             int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
             if (index < 0) return false;
@@ -572,8 +570,7 @@ namespace Vital::Engine {
     }
 
     float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        godot::MeshInstance3D* mesh = assert_component(component);
         int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
         if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
         return mesh -> get_blend_shape_value(index);
@@ -581,9 +578,9 @@ namespace Vital::Engine {
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
         if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: no skeleton found in model '{}'", model_name));
-        int index = skeleton->find_bone(Tool::to_godot_string(bone));
+        int index = skeleton -> find_bone(Tool::to_godot_string(bone));
         if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
-        return skeleton->get_global_transform().xform(skeleton->get_bone_global_pose(index).origin);
+        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
     }
 
     std::string Model::get_current_animation() {
