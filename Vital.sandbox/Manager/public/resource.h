@@ -69,6 +69,7 @@ namespace Vital::Manager {
 
             // Managers //
             void log(const std::string& mode, const std::string& message);
+            void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
 
 
             // Checkers //
@@ -93,7 +94,7 @@ namespace Vital::Manager {
             void scan();
             void init();
             #if !defined(Vital_SDK_Client)
-            bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+            void scan();
             bool start(std::string name);
             bool stop(std::string name);
             bool restart(std::string name);
@@ -106,7 +107,6 @@ namespace Vital::Manager {
             #if defined(Vital_SDK_Client)
             bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
             bool unload(std::string name);
-            void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             void execute_scripts(std::string name);
             #endif
 
