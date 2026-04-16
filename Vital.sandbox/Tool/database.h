@@ -61,7 +61,7 @@ namespace Vital::Tool {
                     std::vector<std::string> binds;
                     for (int i = 0; i < (int)where.size(); i++) {
                         const auto& [column, op, value] = where[i];
-                        if (!db -> is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
+                        db -> assert_column(table, column);
                         if (!valid_ops.count(op)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid 'WHERE' clause operator '{}'", op));
                         if (i > 0) clause += " AND ";
                         clause += fmt::format("`{}` {} :w{}", column, op, i);
@@ -95,22 +95,29 @@ namespace Vital::Tool {
             std::unique_ptr<soci::session> session;
             GlobalSchema schema;
 
-            static bool is_safe_identifier(const std::string& name) {
-                if (name.empty() || name.size() > 64) return false;
+            void assert_identifier(const std::string& name) {
+                if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid identifier '{}'", name));
                 for (char c : name) {
-                    if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') return false;
+                    if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid identifier '{}'", name));
                 }
-                return true;
             }
 
-            bool is_table_allowed(const std::string& table) const {
-                return schema.find(table) != schema.end();
+            void assert_session() const {
+                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: no active session");
             }
 
-            bool is_column_allowed(const std::string& table, const std::string& column) const {
+            void assert_table(const std::string& table) const {
+                if (schema.find(table) == schema.end()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: table '{}' non-existent in schema", table));
+            }
+
+            void assert_column(const std::string& table, const std::string& column) const {
                 auto it = schema.find(table);
-                if (it == schema.end()) return false;
-                return it -> second.find(column) != it -> second.end();
+                if (it == schema.end() || it->second.find(column) == it->second.end()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
+            }
+
+            void assert_session_and_table(const std::string& table) const {
+                assert_session();
+                assert_table(table);
             }
 
             std::string build_schema_definition(const std::string& column, const Column& definition) {
@@ -120,21 +127,9 @@ namespace Vital::Tool {
                 return statement;
             }
 
-            void assert_session() const {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: no active session");
-            }
-
-            void assert_table(const std::string& table) const {
-                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: table '{}' non-existent in schema", table));
-            }
-
-            void assert_session_and_table(const std::string& table) const {
-                assert_session();
-                assert_table(table);
-            }
-
             void push_bind(const std::string& table, const std::string& column, const std::string& value, int index, std::string& columns_out, std::string& placeholders_out, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
                 if (!is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
+                assert_column(table, column);
                 auto pname = fmt::format("d{}", index);
                 columns_out += fmt::format("`{}`", column);
                 placeholders_out += fmt::format(":{}", pname);
@@ -178,10 +173,8 @@ namespace Vital::Tool {
             }
 
             void define(const std::string& table, const TableSchema& columns) {
-                if (!is_safe_identifier(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid table name '{}'", table));
-                for (const auto& [column, definition] : columns) {
-                    if (!is_safe_identifier(column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid column name '{}'", column));
-                }
+                assert_identifier(table);
+                for (const auto& [column, definition] : columns) assert_identifier(column);
                 schema[table] = columns;
             }
 
@@ -229,7 +222,7 @@ namespace Vital::Tool {
                 std::string sql = fmt::format("ALTER TABLE `{}` ", table);
                 bool first = true;
                 for (const auto& action : actions) {
-                    if (!is_safe_identifier(action.column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid column name '{}'", action.column));
+                    assert_identifier(action.column);
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
@@ -256,7 +249,7 @@ namespace Vital::Tool {
                 if (query -> select.empty()) columns = "*";
                 else {
                     for (int i = 0; i < (int)query -> select.size(); i++) {
-                        if (!is_column_allowed(query -> table, query -> select[i])) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", query -> select[i], query -> table));
+                        assert_column(query -> table, query -> select[i]);
                         if (i > 0) columns += ", ";
                         columns += fmt::format("`{}`", query -> select[i]);
                     }
