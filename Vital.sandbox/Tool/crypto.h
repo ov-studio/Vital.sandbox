@@ -71,8 +71,8 @@ namespace Vital::Tool::Crypto {
         inline std::string cipher_run(const EVP_CIPHER* algo, bool encrypt, std::string_view data, std::string_view key, std::string_view iv) {
             EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
             if (!ctx) throw Tool::Log::fetch("cipher-context-failed", Tool::Log::Type::Error);
-            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Tool::Log::fetch("cipher-invalid-key", Tool::Log::Type::Error, std::string(key));
-            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Tool::Log::fetch("cipher-invalid-iv", Tool::Log::Type::Error, std::string(iv));
+            if (key.size() != static_cast<size_t>(EVP_CIPHER_key_length(algo))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid cipher key '{}'", std::string(key)));
+            if (iv.size() != static_cast<size_t>(EVP_CIPHER_iv_length(algo))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid cipher iv '{}'", std::string(iv)));
             std::string out;
             int outLen1 = 0;
             int outLen2 = 0;

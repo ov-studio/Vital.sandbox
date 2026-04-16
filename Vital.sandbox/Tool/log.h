@@ -62,8 +62,6 @@ namespace Vital::Tool::Log {
         {"invalid-thread", "Invalid thread"},
         {"hash-mode-nonexistent", "Hash mode not found ('{}')"},
         {"cipher-mode-nonexistent", "Cipher mode not found ('{}')"},
-        {"cipher-invalid-key", "Invalid cipher key ('{}')"},
-        {"cipher-invalid-iv", "Invalid cipher IV ('{}')"},
         {"base-path-invalid", "Invalid base path (`{}`)"},
         {"file-path-invalid", "Invalid file path (`{}`)"},
         {"file-nonexistent", "File not found (`{}`)"},
