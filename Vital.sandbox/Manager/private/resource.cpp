@@ -42,16 +42,6 @@ namespace Vital::Manager {
         return fmt::format("@{}/{}", resource, src);
     }
 
-
-    // Managers //
-    void Resource::log(const std::string& mode, const std::string& message) {
-        Tool::print(mode, fmt::format("Resource: {}", message));
-    }
-
-    std::string Resource::chunk_name(const std::string& resource, const std::string& src) {
-        return fmt::format("@{}/{}", resource, src);
-    }
-
     void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
         if (const auto* sv = args.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
@@ -66,6 +56,72 @@ namespace Vital::Manager {
             files.reserve(nested.array.size());
             for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
         }
+    }
+
+    #if !defined(Vital_SDK_Client)
+    bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
+        resource.name = manifest.get_str("name", resource.ref);
+        resource.author = manifest.get_str("author", "");
+        resource.version = manifest.get_str("version", "");
+        resource.scripts.clear();
+        resource.files.clear();
+        resource.script_hashes.clear();
+        resource.file_hashes.clear();
+        if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
+
+        for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
+            if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) { errors.push_back("script entry missing `src` or `type`"); continue; }
+            const std::string src  = Tool::YAML::get_str(node, "src");
+            const std::string type = Tool::YAML::get_str(node, "type");
+            if (!Types.count(type)) { errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type)); continue; }
+            auto expanded = Tool::File::glob(base, src);
+            if (expanded.empty()) { errors.push_back(fmt::format("script pattern `{}` matched no files", src)); continue; }
+            for (const auto& s : expanded) {
+                resource.scripts.push_back({ s, type });
+                resource.script_hashes[s] = Tool::File::hash(base, s);
+            }
+        }
+        if (manifest.has("files") && manifest.get_root()["files"].is_seq()) {
+            for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
+                std::string file_pattern;
+                node >> file_pattern;
+                auto expanded = Tool::File::glob(base, file_pattern);
+                if (expanded.empty()) { errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern)); continue; }
+                for (const auto& f : expanded) {
+                    resource.files.push_back(f);
+                    resource.file_hashes[f] = Tool::File::hash(base, f);
+                }
+            }
+        }
+        return errors.empty();
+    }
+
+    Tool::Stack Resource::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) const {
+        Tool::Stack msg;
+        msg.object["event"] = Tool::StackValue(event);
+        msg.object["name"] = Tool::StackValue(name);
+        if (manifest) {
+            // TOOD: ADD pack_manifest
+            Tool::Stack scripts_stack;
+            for (const auto& s : manifest -> scripts) {
+                Tool::Stack entry;
+                entry.object["src"]  = Tool::StackValue(s.src);
+                entry.object["type"] = Tool::StackValue(s.type);
+                scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
+            }
+            msg.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
+            Tool::Stack files_stack;
+            for (const auto& f : manifest -> files) files_stack.array.push_back(Tool::StackValue(f));
+            msg.object["files"] = Tool::StackValue(std::move(files_stack));
+        }
+        return msg;
+    }
+    #endif
+
+
+    // Managers //
+    void Resource::log(const std::string& mode, const std::string& message) {
+        Tool::print(mode, fmt::format("Resource: {}", message));
     }
 
 
@@ -137,26 +193,6 @@ namespace Vital::Manager {
 
     // APIs //
     #if !defined(Vital_SDK_Client)
-    Tool::Stack Resource::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) const {
-        Tool::Stack msg;
-        msg.object["event"] = Tool::StackValue(event);
-        msg.object["name"] = Tool::StackValue(name);
-        if (manifest) {
-            Tool::Stack scripts_stack;
-            for (const auto& s : manifest -> scripts) {
-                Tool::Stack entry;
-                entry.object["src"]  = Tool::StackValue(s.src);
-                entry.object["type"] = Tool::StackValue(s.type);
-                scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
-            }
-            msg.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
-            Tool::Stack files_stack;
-            for (const auto& f : manifest -> files) files_stack.array.push_back(Tool::StackValue(f));
-            msg.object["files"] = Tool::StackValue(std::move(files_stack));
-        }
-        return msg;
-    }
-
     void Resource::sync_peer(int peer_id) const {
         Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         for (const auto& name : running) {
@@ -164,43 +200,6 @@ namespace Vital::Manager {
             if (!resource) continue;
             Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, resource), peer_id);
         }
-    }
-
-    bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
-        resource.name = manifest.get_str("name", resource.ref);
-        resource.author = manifest.get_str("author", "");
-        resource.version = manifest.get_str("version", "");
-        resource.scripts.clear();
-        resource.files.clear();
-        resource.script_hashes.clear();
-        resource.file_hashes.clear();
-        if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
-
-        for (ryml::ConstNodeRef node : manifest.get_root()["scripts"]) {
-            if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) { errors.push_back("script entry missing `src` or `type`"); continue; }
-            const std::string src  = Tool::YAML::get_str(node, "src");
-            const std::string type = Tool::YAML::get_str(node, "type");
-            if (!Types.count(type)) { errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type)); continue; }
-            auto expanded = Tool::File::glob(base, src);
-            if (expanded.empty()) { errors.push_back(fmt::format("script pattern `{}` matched no files", src)); continue; }
-            for (const auto& s : expanded) {
-                resource.scripts.push_back({ s, type });
-                resource.script_hashes[s] = Tool::File::hash(base, s);
-            }
-        }
-        if (manifest.has("files") && manifest.get_root()["files"].is_seq()) {
-            for (ryml::ConstNodeRef node : manifest.get_root()["files"]) {
-                std::string file_pattern;
-                node >> file_pattern;
-                auto expanded = Tool::File::glob(base, file_pattern);
-                if (expanded.empty()) { errors.push_back(fmt::format("file pattern `{}` matched no files", file_pattern)); continue; }
-                for (const auto& f : expanded) {
-                    resource.files.push_back(f);
-                    resource.file_hashes[f] = Tool::File::hash(base, f);
-                }
-            }
-        }
-        return errors.empty();
     }
     #endif
 
@@ -528,22 +527,6 @@ namespace Vital::Manager {
         log("sbox", fmt::format("resource `{}` stopped", name));
         if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
         return true;
-    }
-
-    void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
-        if (const auto* sv = args.get("scripts")) {
-            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
-            scripts.reserve(nested.array.size());
-            for (const auto& entry : nested.array) {
-                const auto& s = *entry.as<std::shared_ptr<Tool::Stack>>();
-                scripts.push_back({ s.object.at("src").as<std::string>(), s.object.at("type").as<std::string>() });
-            }
-        }
-        if (const auto* sv = args.get("files")) {
-            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
-            files.reserve(nested.array.size());
-            for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
-        }
     }
 
     void Resource::execute_scripts(std::string name) {
