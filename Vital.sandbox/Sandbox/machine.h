@@ -106,7 +106,7 @@ namespace Vital::Sandbox {
 
 
             // Checkers //
-            bool is_virtual() { return virtualized; }
+            bool is_virtual() const { return virtualized; }
             bool is_nil(int index = 1) { return lua_isnoneornil(state, index); }
             bool is_bool(int index = 1) { return lua_isboolean(state, index); }
             bool is_number(int index = 1) { return lua_isnumber(state, index); }
@@ -115,7 +115,7 @@ namespace Vital::Sandbox {
             bool is_thread(int index = 1) { return lua_isthread(state, index); }
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
-            bool is_reference(const std::string& name) { return reference.find(name) != reference.end(); }
+            bool is_reference(const std::string& name) const { return reference.find(name) != reference.end(); }
             bool is_horizontal_alignment(int index = 1) {
                 if (is_string(index)) return horizontal_alignment.count(get_string(index)) > 0;
                 else if (is_number(index)) {
@@ -157,7 +157,7 @@ namespace Vital::Sandbox {
 
 
             // Getters //
-            vm_state* get_state() { return state; }
+            vm_state* get_state() const { return state; }
             int get_count() { return lua_gettop(state); }
             bool get_global(const std::string& index) { return lua_getglobal(state, index.c_str()); }
             bool get_bool(int index = 1) { return lua_toboolean(state, index); }
