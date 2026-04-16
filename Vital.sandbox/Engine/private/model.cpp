@@ -165,6 +165,11 @@ namespace Vital::Engine {
         return skeleton;
     }
 
+    godot::AnimationPlayer* Model::assert_animation_player() {
+        if (!animation_player) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: no animation player found in model '{}'", model_name));
+        return animation_player;
+    }
+
     void Model::assert_material_feature(int feature) {
         if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid material feature");
     }
@@ -489,7 +494,7 @@ namespace Vital::Engine {
     }
 
     void Model::set_animation_speed(float speed) {
-        if (!animation_player) return;
+        auto animation_player = assert_animation_player();
         animation_player->set_speed_scale(speed);
     }
 
@@ -581,19 +586,19 @@ namespace Vital::Engine {
     }
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
-        godot::Skeleton3D* = assert_skeleton();
+        auto skeleton = assert_skeleton();
         int index = skeleton -> find_bone(Tool::to_godot_string(bone));
         if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
         return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
     }
 
     std::string Model::get_current_animation() {
-        if (!animation_player) return "";
+        auto animation_player = assert_animation_player();
         return Tool::to_std_string(animation_player->get_current_animation());
     }
 
     float Model::get_animation_speed() {
-        if (!animation_player) return 1.0f;
+        auto animation_player = assert_animation_player();
         return animation_player->get_speed_scale();
     }
 
