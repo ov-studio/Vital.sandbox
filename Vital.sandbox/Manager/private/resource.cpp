@@ -468,16 +468,16 @@ namespace Vital::Manager {
 
     void Resource::stop_all() {
         log("sbox", "stopping all resources...");
-        std::unordered_set<std::string> snapshot = running;
         int count = 0;
+        std::unordered_set<std::string> snapshot = running;
         for (const auto& name : snapshot) if (stop(name)) count++;
         log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
     }
 
     void Resource::restart_all() {
         log("sbox", "restarting all resources...");
-        std::unordered_set<std::string> snapshot = running;
         int count = 0;
+        std::unordered_set<std::string> snapshot = running;
         for (const auto& name : snapshot) if (restart(name)) count++;
         log("sbox", fmt::format("all resources restarted — {} resource(s) restarted", count));
     }
