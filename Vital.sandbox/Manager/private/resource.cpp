@@ -551,7 +551,6 @@ namespace Vital::Manager {
 
     void Resource::execute_scripts(std::string name) {
         if (!is_pending(name)) return;
-        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto resource = get_resource(name);
         if (!resource) {
             log("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
@@ -582,15 +581,10 @@ namespace Vital::Manager {
             return;
         }
 
-        log("sbox", fmt::format("resource `{}` started", name));
-        vm -> create_environment(name);
-        vm -> pop(1);
-        for (const auto& [src, source] : sources) {
-            vm -> get_reference(name, true);
-            vm -> load_string(source, chunk_name(resource -> ref, src), true, true, vm -> get_count());
-            vm -> pop(1);
-        }
         running.insert(name);
+        log("sbox", fmt::format("resource `{}` started", name));
+        execute_scripts_impl(name, sources);
+
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
     #endif
