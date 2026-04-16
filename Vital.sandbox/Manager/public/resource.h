@@ -53,6 +53,9 @@ namespace Vital::Manager {
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
             std::unordered_set<std::string> pending;
             #endif
+        private:
+            // Helpers //
+            std::string chunk_name(const std::string& resource, const std::string& src);
         public:
             // Instantiators //
             Resource() = default;
