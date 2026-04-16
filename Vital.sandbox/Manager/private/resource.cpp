@@ -26,7 +26,10 @@
 namespace Vital::Manager {
     // Utils //
     Resource* Resource::get_singleton() {
-        if (!singleton) singleton = new Resource();
+        if (!singleton) {
+            singleton = new Resource();
+            singleton -> ready();
+        }
         return singleton;
     }
 
@@ -124,6 +127,60 @@ namespace Vital::Manager {
         Tool::print(mode, fmt::format("Resource: {}", message));
     }
 
+    void Resource::ready() {
+        static bool initialized = false;
+        if (initialized) return;
+        initialized = true;
+        #if defined(Vital_SDK_Client)
+            log("sbox", "initializing client resource manager...");
+
+            Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
+                if (!args.object.count("path")) return;
+                const std::string path = args.object.at("path").as<std::string>();
+                auto rm = Resource::get_singleton();
+                for (auto& [name, remaining] : rm -> resource_assets) {
+                    if (!remaining.count(path)) continue;
+                    remaining.erase(path);
+                    if (remaining.empty()) {
+                        log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", name));
+                        rm -> execute_scripts(name);
+                    }
+                    break;
+                }
+            });
+
+            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
+                if (!args.object.count("event")) return;
+                const std::string event = args.object.at("event").as<std::string>();
+                auto rm = Resource::get_singleton();
+
+                if (event == "vital.resource:started") {
+                    if (!args.object.count("name")) return;
+                    const std::string name = args.object.at("name").as<std::string>();
+                    std::vector<Script> scripts;
+                    std::vector<std::string> files;
+                    unpack_manifest(args, scripts, files);
+                    log("sbox", fmt::format("client received resource start: `{}`", name));
+                    if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name, scripts, files);
+                }
+                else if (event == "vital.resource:stopped") {
+                    if (!args.object.count("name")) return;
+                    const std::string name = args.object.at("name").as<std::string>();
+                    log("sbox", fmt::format("client received resource stop: `{}`", name));
+                    rm -> unload(name);
+                }
+            });
+            log("sbox", "client resource manager initialized");
+        #else
+            Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
+                if (args.array.empty()) return;
+                const int peer_id = args.array[0].as<int32_t>();
+                Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync_peer(peer_id); });
+            });
+            scan();
+        #endif
+    }
+
 
     // Checkers //
     bool Resource::is_name(const std::string& name) {
@@ -202,64 +259,6 @@ namespace Vital::Manager {
         }
     }
     #endif
-
-    void Resource::init() {
-        #if defined(Vital_SDK_Client)
-            static bool client_initialized = false;
-            if (client_initialized) return;
-            client_initialized = true;
-            log("sbox", "initializing client resource manager...");
-
-            Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
-                if (!args.object.count("path")) return;
-                const std::string path = args.object.at("path").as<std::string>();
-                auto rm = Resource::get_singleton();
-                for (auto& [name, remaining] : rm -> resource_assets) {
-                    if (!remaining.count(path)) continue;
-                    remaining.erase(path);
-                    if (remaining.empty()) {
-                        log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", name));
-                        rm -> execute_scripts(name);
-                    }
-                    break;
-                }
-            });
-
-            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
-                if (!args.object.count("event")) return;
-                const std::string event = args.object.at("event").as<std::string>();
-                auto rm = Resource::get_singleton();
-
-                if (event == "vital.resource:started") {
-                    if (!args.object.count("name")) return;
-                    const std::string name = args.object.at("name").as<std::string>();
-                    std::vector<Script> scripts;
-                    std::vector<std::string> files;
-                    unpack_manifest(args, scripts, files);
-                    log("sbox", fmt::format("client received resource start: `{}`", name));
-                    if (!rm -> is_running(name) && !rm -> is_pending(name)) rm -> load(name, scripts, files);
-                }
-                else if (event == "vital.resource:stopped") {
-                    if (!args.object.count("name")) return;
-                    const std::string name = args.object.at("name").as<std::string>();
-                    log("sbox", fmt::format("client received resource stop: `{}`", name));
-                    rm -> unload(name);
-                }
-            });
-            log("sbox", "client resource manager initialized");
-        #else
-            static bool server_initialized = false;
-            if (!server_initialized) {
-                server_initialized = true;
-                Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
-                    if (args.array.empty()) return;
-                    const int peer_id = args.array[0].as<int32_t>();
-                    Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync_peer(peer_id); });
-                });
-            }
-            scan();
-        #endif
-    }
 
     #if !defined(Vital_SDK_Client)
     void Resource::scan() {

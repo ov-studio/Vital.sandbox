@@ -77,7 +77,8 @@ namespace Vital::Manager {
 
             // Managers //
             void log(const std::string& mode, const std::string& message);
-    
+            void ready();
+
 
             // Checkers //
             static bool is_name(const std::string& name);
@@ -98,7 +99,6 @@ namespace Vital::Manager {
 
 
             // APIs //
-            void init();
             #if !defined(Vital_SDK_Client)
             void scan();
             bool start(std::string name);
