@@ -60,7 +60,6 @@ namespace Vital::Tool::Log {
 
         // TODO: UPDATE FOR ALL EM
         {"invalid-thread", "Invalid thread"},
-        {"base-path-invalid", "Invalid base path (`{}`)"},
         {"file-path-invalid", "Invalid file path (`{}`)"},
         {"file-nonexistent", "File not found (`{}`)"},
         {"directory-nonexistent", "Directory not found (`{}`)"},

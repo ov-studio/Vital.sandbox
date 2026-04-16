@@ -26,7 +26,7 @@ namespace Vital::Tool::File {
     namespace Internal {
         inline godot::Ref<godot::DirAccess> assert_base(const godot::String& path) {
             auto dir = godot::DirAccess::open(path);
-            if (!dir.is_valid()) throw Tool::Log::fetch("base-path-invalid", Tool::Log::Type::Error, Tool::to_std_string(path));
+            if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid base path `{}`", Tool::to_std_string(path)));
             return dir;
         }
     }
