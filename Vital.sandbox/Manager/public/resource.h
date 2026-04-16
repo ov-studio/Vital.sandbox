@@ -46,10 +46,12 @@ namespace Vital::Manager {
             };
         protected:
             inline static Resource* singleton = nullptr;
+        private:
             std::vector<Manifest> resources;
             std::unordered_set<std::string> running;
+            #if !defined(Vital_SDK_Client)
             std::mutex scan_mutex;
-            #if defined(Vital_SDK_Client)
+            #else
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
             std::unordered_set<std::string> pending;
             #endif
