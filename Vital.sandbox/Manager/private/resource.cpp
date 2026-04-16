@@ -467,9 +467,7 @@ namespace Vital::Manager {
     void Resource::start_all() {
         log("sbox", "starting all resources...");
         int count = 0;
-        for (auto resource : get_all_resources()) {
-            if (start(resource -> ref)) count++;
-        }
+        for (auto resource : get_all_resources()) if (start(resource -> ref)) count++;
         log("sbox", fmt::format("all resources started — {} resource(s) started", count));
     }
 
@@ -477,9 +475,7 @@ namespace Vital::Manager {
         log("sbox", "stopping all resources...");
         std::unordered_set<std::string> snapshot = running;
         int count = 0;
-        for (const auto& name : snapshot) {
-            if (stop(name)) count++;
-        }
+        for (const auto& name : snapshot) if (stop(name)) count++;
         log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
     }
 
@@ -487,9 +483,7 @@ namespace Vital::Manager {
         log("sbox", "restarting all resources...");
         std::unordered_set<std::string> snapshot = running;
         int count = 0;
-        for (const auto& name : snapshot) {
-            if (restart(name)) count++;
-        }
+        for (const auto& name : snapshot) if (restart(name)) count++;
         log("sbox", fmt::format("all resources restarted — {} resource(s) restarted", count));
     }
     #endif
