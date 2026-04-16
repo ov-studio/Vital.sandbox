@@ -61,7 +61,8 @@ namespace Vital::Tool {
                     std::vector<std::string> binds;
                     for (int i = 0; i < (int)where.size(); i++) {
                         const auto& [column, op, value] = where[i];
-                        if (!db -> is_column_allowed(table, column) || !valid_ops.count(op)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' or operator '{}' — invalid in '{}'", column, op, table));
+                        if (!db -> is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
+                        if (!valid_ops.count(op)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid 'WHERE' clause operator '{}'", op));
                         if (i > 0) clause += " AND ";
                         clause += fmt::format("`{}` {} :w{}", column, op, i);
                         binds.push_back(value);
@@ -120,11 +121,11 @@ namespace Vital::Tool {
             }
 
             void assert_session() const {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
+                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: no active session");
             }
 
             void assert_table(const std::string& table) const {
-                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", table));
+                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: table '{}' non-existent in schema", table));
             }
 
             void assert_session_and_table(const std::string& table) const {
@@ -133,7 +134,7 @@ namespace Vital::Tool {
             }
 
             void push_bind(const std::string& table, const std::string& column, const std::string& value, int index, std::string& columns_out, std::string& placeholders_out, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
-                if (!is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", column, table));
+                if (!is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", column, table));
                 auto pname = fmt::format("d{}", index);
                 columns_out += fmt::format("`{}`", column);
                 placeholders_out += fmt::format(":{}", pname);
@@ -177,9 +178,9 @@ namespace Vital::Tool {
             }
 
             void define(const std::string& table, const TableSchema& columns) {
-                if (!is_safe_identifier(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — invalid identifier", table));
+                if (!is_safe_identifier(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid table name '{}'", table));
                 for (const auto& [column, definition] : columns) {
-                    if (!is_safe_identifier(column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — invalid identifier", column));
+                    if (!is_safe_identifier(column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid column name '{}'", column));
                 }
                 schema[table] = columns;
             }
@@ -223,12 +224,12 @@ namespace Vital::Tool {
 
             void alter(const std::string& table, const SchemaActions& actions) {
                 assert_session_and_table(table);
-                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, "\n> Reason: Actions — cannot be empty");
+                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, "\n> Reason: no actions specified");
 
                 std::string sql = fmt::format("ALTER TABLE `{}` ", table);
                 bool first = true;
                 for (const auto& action : actions) {
-                    if (!is_safe_identifier(action.column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — invalid identifier", action.column));
+                    if (!is_safe_identifier(action.column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid column name '{}'", action.column));
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
@@ -255,7 +256,7 @@ namespace Vital::Tool {
                 if (query -> select.empty()) columns = "*";
                 else {
                     for (int i = 0; i < (int)query -> select.size(); i++) {
-                        if (!is_column_allowed(query -> table, query -> select[i])) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", query -> select[i], query -> table));
+                        if (!is_column_allowed(query -> table, query -> select[i])) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: column '{}' non-existent in table '{}'", query -> select[i], query -> table));
                         if (i > 0) columns += ", ";
                         columns += fmt::format("`{}`", query -> select[i]);
                     }
@@ -332,7 +333,7 @@ namespace Vital::Tool {
                     sql = fmt::format("UPDATE `{}` SET {}", query -> table, sets);
                     query -> apply_where(sql, binds, bind_names);
                 }
-                else throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Query type '{}' — unrecognized", query -> query_type));
+                else throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid query type '{}'", query -> query_type));
                 run_statement(sql, binds, bind_names, nullptr);
                 return true;
             }
