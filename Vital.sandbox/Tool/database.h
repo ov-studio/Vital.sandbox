@@ -95,7 +95,7 @@ namespace Vital::Tool {
             std::unique_ptr<soci::session> session;
             GlobalSchema schema;
 
-            void assert_identifier(const std::string& name) {
+            void assert_identifier(const std::string& name) const {
                 if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid identifier '{}'", name));
                 for (char c : name) {
                     if (!std::isalnum(static_cast<unsigned char>(c)) && c != '_') throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid identifier '{}'", name));
@@ -120,7 +120,7 @@ namespace Vital::Tool {
                 assert_table(table);
             }
 
-            std::string build_column(const std::string& column, const Column& definition) {
+            std::string build_column(const std::string& column, const Column& definition) const {
                 std::string statement = fmt::format("`{}` {}", column, definition.type);
                 if (definition.autoincrement) statement += " AUTO_INCREMENT";
                 if (!definition.nullable) statement += " NOT NULL";
