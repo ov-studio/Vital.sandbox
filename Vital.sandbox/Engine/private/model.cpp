@@ -420,19 +420,18 @@ namespace Vital::Engine {
     }
 
     bool Model::set_material_feature(const std::string& component, const std::string& material, int feature, bool state) {
-        validate_material_feature(feature);
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        assert_material_feature(feature);
+        godot::MeshInstance3D* mesh = assert_component(component);
         auto exec = [&](int index) {
             if (index < 0) return false;
-            godot::Ref<godot::Material> mat = mesh->get_active_material(index);
+            godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
             godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
             if (!std_mat.is_valid()) {
                 if (mat.is_valid()) return false;
                 std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
-                mesh->set_surface_override_material(index, std_mat);
+                mesh -> set_surface_override_material(index, std_mat);
             }
-            std_mat->set_feature(static_cast<godot::BaseMaterial3D::Feature>(feature), state);
+            std_mat -> set_feature(static_cast<godot::BaseMaterial3D::Feature>(feature), state);
             return true;
         };
         if (Tool::contains_wildcard(material)) {
@@ -445,26 +444,23 @@ namespace Vital::Engine {
     }
 
     bool Model::set_material_flag(const std::string& component, const std::string& material, int flag, bool state) {
-        validate_material_flag(flag);
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        assert_material_flag(flag);
+        godot::MeshInstance3D* mesh = assert_component(component);
         auto exec = [&](int index) {
             if (index < 0) return false;
-            godot::Ref<godot::Material> mat = mesh->get_active_material(index);
+            godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
             godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
             if (!std_mat.is_valid()) {
                 if (mat.is_valid()) return false;
                 std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
-                mesh->set_surface_override_material(index, std_mat);
+                mesh -> set_surface_override_material(index, std_mat);
             }
-            std_mat->set_flag(static_cast<godot::BaseMaterial3D::Flags>(flag), state);
+            std_mat -> set_flag(static_cast<godot::BaseMaterial3D::Flags>(flag), state);
             return true;
         };
         if (Tool::contains_wildcard(material)) {
             for (const auto& name : get_materials(component)) {
-                if (!Tool::match_wildcard(material, name)) continue;
-                int index = find_material_index(mesh, name);
-                if (index >= 0) exec(index);
+                if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
             }
         }
         else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
