@@ -185,8 +185,7 @@ namespace Vital::Tool {
             }
 
             void sync() {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error,
-                    "\n> Reason: No active session");
+                assert_session();
                 for (const auto& [table, columns] : schema) {
                     std::string sql = fmt::format("CREATE TABLE IF NOT EXISTS `{}` (", table);
                     std::string primary_key;
@@ -212,21 +211,18 @@ namespace Vital::Tool {
             }
 
             void drop(const std::string& table) {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
-                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", table));
+                assert_session_and_table(table);
                 *session << fmt::format("DROP TABLE IF EXISTS `{}`", table);
                 schema.erase(table);
             }
-        
+
             void truncate(const std::string& table) {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
-                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", table));
+                assert_session_and_table(table);
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
 
             void alter(const std::string& table, const SchemaActions& actions) {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
-                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", table));
+                assert_session_and_table(table);
                 if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, "\n> Reason: Actions — cannot be empty");
 
                 std::string sql = fmt::format("ALTER TABLE `{}` ", table);
@@ -258,9 +254,7 @@ namespace Vital::Tool {
             }
 
             Rows fetch(QueryBuilder* query) {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
-                if (!is_table_allowed(query -> table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", query -> table));
-                
+                assert_session_and_table(query -> table);
                 std::string columns;
                 if (query -> select.empty()) columns = "*";
                 else {
