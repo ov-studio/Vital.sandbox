@@ -331,30 +331,28 @@ namespace Vital::Engine {
     }
 
     bool Model::is_component_visible(const std::string& component) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
-        return mesh -> is_visible();
+        return assert_component(component) -> is_visible();
     }
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
-        auto [mesh, index] = resolve_material(component, material);
+        auto [mesh, index] = assert_material(component, material);
         return !mesh -> get_surface_override_material(index).is_valid();
     }
 
     bool Model::is_material_feature(const std::string& component, const std::string& material, int feature) {
-        validate_material_feature(feature);
-        auto [mesh, index] = resolve_material(component, material);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh->get_active_material(index).ptr());
+        assert_material_feature(feature);
+        auto [mesh, index] = assert_material(component, material);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh -> get_active_material(index).ptr());
         if (!std_mat.is_valid()) return false;
-        return std_mat->get_feature(static_cast<godot::BaseMaterial3D::Feature>(feature));
+        return std_mat -> get_feature(static_cast<godot::BaseMaterial3D::Feature>(feature));
     }
 
     bool Model::is_material_flag(const std::string& component, const std::string& material, int flag) {
-        validate_material_flag(flag);
-        auto [mesh, index] = resolve_material(component, material);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh->get_active_material(index).ptr());
+        assert_material_flag(flag);
+        auto [mesh, index] = assert_material(component, material);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh -> get_active_material(index).ptr());
         if (!std_mat.is_valid()) return false;
-        return std_mat->get_flag(static_cast<godot::BaseMaterial3D::Flags>(flag));
+        return std_mat -> get_flag(static_cast<godot::BaseMaterial3D::Flags>(flag));
     }
 
     bool Model::is_animation_playing() {
