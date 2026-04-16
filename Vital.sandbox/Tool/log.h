@@ -22,28 +22,23 @@
 ////////////
 
 namespace Vital::Tool::Log {
-    enum class Type { 
-        SBox, 
-        Info,
-        Warning, 
-        Error 
-    };
+    enum class Type { SBox, Info, Warning, Error };
 
     struct Command {
         std::string_view code;
         std::string_view message;
     };
 
-    template <std::string_view const& Label>
+    template <std::string_view const& L>
     struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = Label;
+        static constexpr std::string_view label = L;
     };
 
     inline constexpr std::string_view
         LabelSBox = "sbox",
         LabelInfo = "info",
-        LabelWarning = "warn",
+        LabelWarning = "warn", 
         LabelError = "error";
 
     using SBox = Entry<LabelSBox>;
@@ -54,8 +49,17 @@ namespace Vital::Tool::Log {
     inline constexpr Command List[] = {
         {"invalid-argument", "invalid argument\n> Reason: {}"},
         {"request-failed", "request failed\n> Reason: {}"},
-        {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"},
+        {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"}
     };
+
+    template <typename... Types>
+    inline bool is_type_impl(std::string_view label) {
+        return (... || (label == Types::label));
+    }
+
+    inline bool is_type(std::string_view label) {
+        return is_type_impl<SBox, Info, Warning, Error>(label);
+    }
 
     inline std::string_view resolve(std::string_view code) {
         for (const auto& e : List) if (code == e.code) return e.message;
