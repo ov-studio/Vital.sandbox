@@ -61,8 +61,8 @@ namespace Vital::Manager {
             std::string chunk_name(const std::string& resource, const std::string& src);
             void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             #if !defined(Vital_SDK_Client)
-            Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
             bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+            Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
             #endif
         public:
             // Instantiators //
