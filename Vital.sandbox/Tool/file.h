@@ -59,7 +59,7 @@ namespace Vital::Tool::File {
 
         inline godot::String assert_path(const godot::String& path) {
             auto norm = normalize(path);
-            if (!sanitize(norm)) throw Tool::Log::fetch("file-path-invalid", Tool::Log::Type::Error, Tool::to_std_string(path));
+            if (!sanitize(norm)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
             return norm;
         }
     }
