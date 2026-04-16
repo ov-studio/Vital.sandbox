@@ -93,7 +93,6 @@ namespace Vital::Manager {
 
 
             // APIs //
-            void scan();
             void init();
             #if !defined(Vital_SDK_Client)
             void scan();
