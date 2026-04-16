@@ -77,8 +77,9 @@ namespace Vital::Manager {
 
 
             // Managers //
-            void log(const std::string& mode, const std::string& message);
+            void log(const std::string& mode, const std::string& message) const;
             void ready();
+            void sync_peer(int peer_id) const;
 
 
             // Checkers //
@@ -108,7 +109,6 @@ namespace Vital::Manager {
             void start_all();
             void stop_all();
             void restart_all();
-            void sync_peer(int peer_id) const;
             #endif
             #if defined(Vital_SDK_Client)
             bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);

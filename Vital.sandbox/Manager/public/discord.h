@@ -55,7 +55,7 @@ namespace Vital::Manager {
 
 
             // Managers //
-            void log(const std::string& mode, const std::string& message);
+            void log(const std::string& mode, const std::string& message) const;
             void process();
             void update();
             void authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth = false);
