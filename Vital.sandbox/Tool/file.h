@@ -72,7 +72,7 @@ namespace Vital::Tool::File {
         inline godot::Ref<godot::FileAccess> assert_file(const godot::String& base, const godot::String& target, godot::FileAccess::ModeFlags mode) {
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(base);
             auto [dir, dest, full_path] = assert_base_and_path(base, target);
-            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
+            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
             auto file = godot::FileAccess::open(full_path, mode);
             if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
@@ -108,7 +108,7 @@ namespace Vital::Tool::File {
 
     inline std::string hash(const godot::String& base, const godot::String& target, std::string_view mode = "SHA256") {
         auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
+        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
         return Tool::Crypto::hash_file(mode, Tool::to_std_string(full_path));
     }
 

@@ -60,7 +60,6 @@ namespace Vital::Tool::Log {
 
         // TODO: UPDATE FOR ALL EM
         {"invalid-thread", "Invalid thread"},
-        {"file-nonexistent", "File not found (`{}`)"},
         {"file-busy", "File busy (`{}`)"}
     };
 
