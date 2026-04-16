@@ -62,7 +62,7 @@ namespace Vital::Manager {
 
 
             // Checkers //
-            bool is_connected();
+            bool is_connected() const;
 
 
             // Setters //
@@ -76,8 +76,8 @@ namespace Vital::Manager {
 
 
             // Getters //
-            uint64_t get_userid();
-            std::string get_username();
+            uint64_t get_userid() const;
+            std::string get_username() const;
     };
 }
 #endif

@@ -117,7 +117,7 @@ namespace Vital::Manager {
 
 
     // Checkers //
-    bool Discord::is_connected() {
+    bool Discord::is_connected() const {
         auto status = client -> GetStatus();
         return status == discordpp::Client::Status::Ready || status == discordpp::Client::Status::Connected;
     }
@@ -199,13 +199,13 @@ namespace Vital::Manager {
 
 
     // Getters //
-    uint64_t Discord::get_userid() {
+    uint64_t Discord::get_userid() const {
         if (!is_connected()) return 0;
         auto user = client -> GetCurrentUser();
         return user.Id();
     }
 
-    std::string Discord::get_username() {
+    std::string Discord::get_username() const {
         if (!is_connected()) return "";
         auto user = client -> GetCurrentUser();
         return user.Username();
