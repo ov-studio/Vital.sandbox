@@ -509,7 +509,6 @@ namespace Vital::Manager {
             if (Tool::File::exists(Tool::get_directory(), path)) log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
             else resource_assets[name].insert(path);
         }
-
         if (resource_assets[name].empty()) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
             execute_scripts(name);
@@ -529,7 +528,6 @@ namespace Vital::Manager {
             am -> cancel_group(name);
             log("sbox", fmt::format("resource `{}` download cancelled", name));
         }
-
         const bool was_running = is_running(name);
         if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
         resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
