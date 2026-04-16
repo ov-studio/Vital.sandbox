@@ -57,15 +57,15 @@ namespace Vital::Engine {
 
 
     // Getters //
-    godot::Ref<godot::FontFile> Font::get_font() {
+    godot::Ref<godot::FontFile> Font::get_font() const {
         return font;
     }
 
-    bool Font::get_antialiasing() {
+    bool Font::get_antialiasing() const {
         return font -> get_antialiasing() != godot::TextServer::FONT_ANTIALIASING_NONE;
     }
 
-    float Font::get_oversampling() {
+    float Font::get_oversampling() const {
         return font -> get_oversampling();
     }
 }

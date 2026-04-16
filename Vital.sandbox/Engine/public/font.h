@@ -43,9 +43,9 @@ namespace Vital::Engine {
 
 
             // Getters //
-            godot::Ref<godot::FontFile> get_font();
-            bool get_antialiasing();
-            float get_oversampling();
+            godot::Ref<godot::FontFile> get_font() const;
+            bool get_antialiasing() const;
+            float get_oversampling() const;
     };
 }
 #endif
