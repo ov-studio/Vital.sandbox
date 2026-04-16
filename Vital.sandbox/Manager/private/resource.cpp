@@ -77,12 +77,14 @@ namespace Vital::Manager {
         }
     }
 
-    #if !defined(Vital_SDK_Client)
     bool Resource::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) const {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto resource = get_resource(name);
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
+            #if defined(Vital_SDK_Client)
+            if (!is_type(script.type)) continue;
+            #endif
             std::string source;
             try { source = Tool::File::read_text(get_resource_base(name), script.src); }
             catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
@@ -99,7 +101,6 @@ namespace Vital::Manager {
         }
         return true;
     }
-    #endif
 
     void Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
@@ -549,36 +550,10 @@ namespace Vital::Manager {
 
     void Resource::execute_scripts(std::string name) {
         if (!is_pending(name)) return;
-        auto resource = get_resource(name);
-        if (!resource) {
-            log("error", fmt::format("execute_scripts: manifest null for `{}` — aborting", name));
-            pending.erase(name);
-            resource_assets.erase(name);
-            return;
-        }
-
-        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-        pending.erase(name);
-        resource_assets.erase(name);
         std::vector<std::pair<std::string, std::string>> sources;
-        std::vector<std::string> errors;
-        for (const auto& script : resource -> scripts) {
-            if (!is_type(script.type)) continue;
-            std::string source;
-            try { source = Tool::File::read_text(Tool::get_directory(), fmt::format("resources/{}/{}", name, script.src)); }
-            catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
-            auto err = vm -> compile_string(source, chunk_name(resource -> ref, script.src));
-            if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
-            sources.emplace_back(script.src, std::move(source));
-        }
-        if (!errors.empty()) {
-            std::string report = fmt::format("resource `{}` failed to load\n", name);
-            report += fmt::format("> Errors ({}):\n", errors.size());
-            for (const auto& err : errors) report += fmt::format("> {}\n", err);
-            log("error", report);
-            return;
-        }
+        if (!validate_scripts(name, sources)) return;
 
+        auto resource = get_resource(name);
         running.insert(name);
         log("sbox", fmt::format("resource `{}` started", name));
         execute_scripts_impl(name, sources);

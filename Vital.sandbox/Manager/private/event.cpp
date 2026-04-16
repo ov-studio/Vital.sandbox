@@ -34,7 +34,7 @@ void load_server_config() {
         Vital::Tool::print("sbox", "SrvConfig: Server name: '", g_server_config.get_server_name(), "'");
         Vital::Tool::print("sbox", "SrvConfig: Network port: ", g_server_config.get_network_port());
         Vital::Tool::print("sbox", "SrvConfig: HTTP port: ", g_server_config.get_http_port());
-        Vital::Tool::print("sbox", "SrvConfig: Max clients: ", g_server_config.get_max_clients());
+        Vital::Tool::print("sbox", "SrvConfig: Max peers: ", g_server_config.get_max_clients());
     }
 
     Vital::Manager::ServerInfo info;
