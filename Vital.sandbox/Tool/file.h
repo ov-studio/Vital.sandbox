@@ -167,7 +167,7 @@ namespace Vital::Tool::File {
     inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
         auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
         dir = godot::DirAccess::open(dest.is_empty() ? dir -> get_current_dir() : full_path);
-        if (!dir.is_valid()) throw Tool::Log::fetch("directory-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
+        if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: directory `{}` non-existent", Tool::to_std_string(target)));
         std::vector<std::string> result;
         dir -> list_dir_begin();
         while (true) {
