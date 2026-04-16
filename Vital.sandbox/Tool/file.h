@@ -57,25 +57,24 @@ namespace Vital::Tool::File {
             return dir;
         }
 
-        inline godot::String assert_path(const godot::String& path) {
-            auto norm = normalize(path);
-            if (!sanitize(norm)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
-            return norm;
-        }
-
-        inline std::tuple<godot::Ref<godot::DirAccess>, godot::String, godot::String> assert_base_and_path(const godot::String& base, const godot::String& path) {
+        inline std::tuple<godot::Ref<godot::DirAccess>, godot::String, godot::String> assert_path(const godot::String& base, const godot::String& path, bool allow_root = false) {
             auto dir = assert_base(base);
-            auto dest = assert_path(path);
-            return {dir, dest, dir -> get_current_dir() + godot::String("/") + dest};
+            auto norm = normalize(path);
+            if (norm.is_empty()) {
+                if (allow_root) return {dir, godot::String(), dir -> get_current_dir()};
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
+            }
+            if (!sanitize(norm)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
+            return {dir, norm, dir -> get_current_dir() + godot::String("/") + norm};
         }
 
-        inline godot::Ref<godot::FileAccess> assert_file(const godot::String& base, const godot::String& target, godot::FileAccess::ModeFlags mode) {
+        inline godot::Ref<godot::FileAccess> assert_file(const godot::String& base, const godot::String& path, godot::FileAccess::ModeFlags mode) {
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(base);
-            auto [dir, dest, full_path] = assert_base_and_path(base, target);
-            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
+            auto [dir, dest, full_path] = assert_path(base, path);
+            if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(path)));
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
             auto file = godot::FileAccess::open(full_path, mode);
-            if (!file.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` busy", Tool::to_std_string(target)));
+            if (!file.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` busy", Tool::to_std_string(path)));
             return file;
         }
     }
@@ -88,86 +87,86 @@ namespace Vital::Tool::File {
         return sanitize(Tool::to_godot_string(path));
     }
 
-    inline bool exists(const godot::String& base, const godot::String& target) {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
+    inline bool exists(const godot::String& base, const godot::String& path) {
+        auto [dir, dest, full_path] = Internal::assert_path(base, path);
         return dir.is_valid() && dir -> file_exists(dest);
     }
 
-    inline bool exists(const std::string& base, const std::string& target) {
-        return exists(Tool::to_godot_string(base), Tool::to_godot_string(target));
+    inline bool exists(const std::string& base, const std::string& path) {
+        return exists(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
-    inline uint64_t size(const godot::String& base, const godot::String& target) {
-        auto file = Internal::assert_file(base, target, godot::FileAccess::READ);
+    inline uint64_t size(const godot::String& base, const godot::String& path) {
+        auto file = Internal::assert_file(base, path, godot::FileAccess::READ);
         return file -> get_length();
     }
 
-    inline uint64_t size(const std::string& base, const std::string& target) {
-        return size(Tool::to_godot_string(base), Tool::to_godot_string(target));
+    inline uint64_t size(const std::string& base, const std::string& path) {
+        return size(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
-    inline std::string hash(const godot::String& base, const godot::String& target, std::string_view mode = "SHA256") {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
-        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
+    inline std::string hash(const godot::String& base, const godot::String& path, std::string_view mode = "SHA256") {
+        auto [dir, dest, full_path] = Internal::assert_path(base, path);
+        if (!dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(path)));
         return Tool::Crypto::hash_file(mode, Tool::to_std_string(full_path));
     }
 
-    inline std::string hash(const std::string& base, const std::string& target, std::string_view mode = "SHA256") {
-        return hash(Tool::to_godot_string(base), Tool::to_godot_string(target), mode);
+    inline std::string hash(const std::string& base, const std::string& path, std::string_view mode = "SHA256") {
+        return hash(Tool::to_godot_string(base), Tool::to_godot_string(path), mode);
     }
 
-    inline bool remove(const godot::String& base, const godot::String& target) {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
+    inline bool remove(const godot::String& base, const godot::String& path) {
+        auto [dir, dest, full_path] = Internal::assert_path(base, path);
         if (!dir -> file_exists(dest)) return false;
         return dir -> remove(dest) == godot::OK;
     }
 
-    inline bool remove(const std::string& base, const std::string& target) {
-        return remove(Tool::to_godot_string(base), Tool::to_godot_string(target));
+    inline bool remove(const std::string& base, const std::string& path) {
+        return remove(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
-    inline std::string read_text(const godot::String& base, const godot::String& target) {
-        auto file = Internal::assert_file(base, target, godot::FileAccess::READ);
+    inline std::string read_text(const godot::String& base, const godot::String& path) {
+        auto file = Internal::assert_file(base, path, godot::FileAccess::READ);
         return Tool::to_std_string(file -> get_as_text());
     }
 
-    inline std::string read_text(const std::string& base, const std::string& target) {
-        return read_text(Tool::to_godot_string(base), Tool::to_godot_string(target));
+    inline std::string read_text(const std::string& base, const std::string& path) {
+        return read_text(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
-    inline godot::PackedByteArray read_binary(const godot::String& base, const godot::String& target) {
-        auto file = Internal::assert_file(base, target, godot::FileAccess::READ);
+    inline godot::PackedByteArray read_binary(const godot::String& base, const godot::String& path) {
+        auto file = Internal::assert_file(base, path, godot::FileAccess::READ);
         return file -> get_buffer(file -> get_length());
     }
 
-    inline godot::PackedByteArray read_binary(const std::string& base, const std::string& target) {
-        return read_binary(Tool::to_godot_string(base), Tool::to_godot_string(target));
+    inline godot::PackedByteArray read_binary(const std::string& base, const std::string& path) {
+        return read_binary(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
-    inline bool write_text(const godot::String& base, const godot::String& target, const std::string& text) {
-        auto file = Internal::assert_file(base, target, godot::FileAccess::WRITE);
+    inline bool write_text(const godot::String& base, const godot::String& path, const std::string& text) {
+        auto file = Internal::assert_file(base, path, godot::FileAccess::WRITE);
         file -> store_string(Tool::to_godot_string(text));
         return true;
     }
 
-    inline bool write_text(const std::string& base, const std::string& target, const std::string& text) {
-        return write_text(Tool::to_godot_string(base), Tool::to_godot_string(target), text);
+    inline bool write_text(const std::string& base, const std::string& path, const std::string& text) {
+        return write_text(Tool::to_godot_string(base), Tool::to_godot_string(path), text);
     }
 
-    inline bool write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
-        auto file = Internal::assert_file(base, target, godot::FileAccess::WRITE);
+    inline bool write_binary(const godot::String& base, const godot::String& path, const godot::PackedByteArray& data) {
+        auto file = Internal::assert_file(base, path, godot::FileAccess::WRITE);
         file -> store_buffer(data);
         return true;
     }
 
-    inline bool write_binary(const std::string& base, const std::string& target, const godot::PackedByteArray& data) {
-        return write_binary(Tool::to_godot_string(base), Tool::to_godot_string(target), data);
+    inline bool write_binary(const std::string& base, const std::string& path, const godot::PackedByteArray& data) {
+        return write_binary(Tool::to_godot_string(base), Tool::to_godot_string(path), data);
     }
 
-    inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
-        auto [dir, dest, full_path] = Internal::assert_base_and_path(base, target);
+    inline std::vector<std::string> contents(const godot::String& base, const godot::String& path, bool directory_search = false) {
+        auto [dir, dest, full_path] = Internal::assert_path(base, path, true);
         dir = godot::DirAccess::open(dest.is_empty() ? dir -> get_current_dir() : full_path);
-        if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: directory `{}` non-existent", Tool::to_std_string(target)));
+        if (!dir.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: directory `{}` non-existent", Tool::to_std_string(path)));
         std::vector<std::string> result;
         dir -> list_dir_begin();
         while (true) {
@@ -181,8 +180,8 @@ namespace Vital::Tool::File {
         return result;
     }
 
-    inline std::vector<std::string> contents(const std::string& base, const std::string& target, bool directory_search = false) {
-        return contents(Tool::to_godot_string(base), Tool::to_godot_string(target), directory_search);
+    inline std::vector<std::string> contents(const std::string& base, const std::string& path, bool directory_search = false) {
+        return contents(Tool::to_godot_string(base), Tool::to_godot_string(path), directory_search);
     }
 
     inline std::vector<std::string> glob(const godot::String& base, const godot::String& pattern) {
