@@ -59,8 +59,7 @@ namespace Vital::Tool::Log {
         {"request-failed", "request failed {}"},
 
         // TODO: UPDATE FOR ALL EM
-        {"invalid-thread", "Invalid thread"},
-        {"file-busy", "File busy (`{}`)"}
+        {"invalid-thread", "Invalid thread"}
     };
 
     inline bool is_type(std::string_view label) {

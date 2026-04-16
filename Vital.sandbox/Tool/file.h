@@ -75,7 +75,7 @@ namespace Vital::Tool::File {
             if (mode == godot::FileAccess::READ && !dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(target)));
             if (mode == godot::FileAccess::WRITE) godot::DirAccess::make_dir_recursive_absolute(full_path.get_base_dir());
             auto file = godot::FileAccess::open(full_path, mode);
-            if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
+            if (!file.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: file `{}` busy", Tool::to_std_string(target)))
             return file;
         }
     }
