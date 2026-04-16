@@ -559,6 +559,9 @@ namespace Vital::Manager {
             return;
         }
 
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        pending.erase(name);
+        resource_assets.erase(name);
         std::vector<std::pair<std::string, std::string>> sources;
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
@@ -570,9 +573,6 @@ namespace Vital::Manager {
             if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
             sources.emplace_back(script.src, std::move(source));
         }
-
-        pending.erase(name);
-        resource_assets.erase(name);
         if (!errors.empty()) {
             std::string report = fmt::format("resource `{}` failed to load\n", name);
             report += fmt::format("> Errors ({}):\n", errors.size());
