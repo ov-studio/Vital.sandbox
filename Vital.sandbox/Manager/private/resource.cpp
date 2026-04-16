@@ -77,6 +77,41 @@ namespace Vital::Manager {
         }
     }
 
+    bool Resource::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) const {
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto resource = get_resource(name);
+        std::vector<std::string> errors;
+        for (const auto& script : resource -> scripts) {
+            std::string source;
+            try { source = Tool::File::read_text(get_resource_base(name), script.src); }
+            catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
+            auto err = vm -> compile_string(source, chunk_name(resource -> ref, script.src));
+            if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
+            if (is_type(script.type)) sources.emplace_back(script.src, std::move(source));
+        }
+        if (!errors.empty()) {
+            std::string report = fmt::format("resource `{}` failed to start\n", name);
+            report += fmt::format("> Errors ({}):\n", errors.size());
+            for (const auto& err : errors) report += fmt::format("> {}\n", err);
+            log("error", report);
+            return false;
+        }
+        return true;
+    }
+
+    bool Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+        auto resource = get_resource(name);
+        vm -> create_environment(name);
+        vm -> pop(1);
+        for (const auto& [src, source] : sources) {
+            vm -> get_reference(name, true);
+            vm -> load_string(source, chunk_name(resource -> ref, src), true, true, vm -> get_count());
+            vm -> pop(1);
+        }
+        return true;
+    }
+
     #if !defined(Vital_SDK_Client)
     bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name = manifest.get_str("name", resource.ref);
@@ -327,30 +362,14 @@ namespace Vital::Manager {
     }
     
     bool Resource::start(std::string name) {
-        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto am = Manager::Asset::get_singleton();
         if (!is_loaded(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
         if (is_running(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
-
-        auto resource = get_resource(name);
         std::vector<std::pair<std::string, std::string>> sources;
         std::vector<std::string> errors;
-        for (const auto& script : resource -> scripts) {
-            std::string source;
-            try { source = Tool::File::read_text(get_resource_base(name), script.src); }
-            catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
-            auto err = vm -> compile_string(source, chunk_name(resource -> ref, script.src));
-            if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
-            if (is_type(script.type)) sources.emplace_back(script.src, std::move(source));
-        }
-        if (!errors.empty()) {
-            std::string report = fmt::format("resource `{}` failed to start\n", name);
-            report += fmt::format("> Errors ({}):\n", errors.size());
-            for (const auto& err : errors) report += fmt::format("> {}\n", err);
-            log("error", report);
-            return false;
-        }
-
+        if (!validate_scripts(name, sources)) return false;
+        
+        auto resource = get_resource(name);
         std::vector<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
         for (const auto& script : resource -> scripts) {
@@ -369,6 +388,7 @@ namespace Vital::Manager {
             vm -> pop(1);
         }
 
+    
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, get_resource(name)));
             Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
