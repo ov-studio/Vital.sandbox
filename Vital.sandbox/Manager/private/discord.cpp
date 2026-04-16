@@ -57,7 +57,7 @@ namespace Vital::Manager {
         Tool::print(mode, fmt::format("Discord: {}", message));
     }
 
-    void Discord::process() {
+    void Discord::process() const {
         discordpp::RunCallbacks();
     }
 
