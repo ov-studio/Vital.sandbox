@@ -77,8 +77,7 @@ namespace Vital::Tool::File {
     }
 
     inline bool exists(const godot::String& base, const godot::String& target) {
-        auto dest = Internal::assert_path(target);
-        auto dir = godot::DirAccess::open(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         return dir.is_valid() && dir -> file_exists(dest);
     }
 
@@ -87,8 +86,7 @@ namespace Vital::Tool::File {
     }
 
     inline uint64_t size(const godot::String& base, const godot::String& target) {
-        auto dest = Internal::assert_path(target);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + godot::String("/") + dest, godot::FileAccess::READ);
         if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
@@ -100,8 +98,7 @@ namespace Vital::Tool::File {
     }
 
     inline std::string hash(const godot::String& base, const godot::String& target, std::string_view mode = "SHA256") {
-        auto dest = Internal::assert_path(target);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
         auto full_path = Tool::to_std_string(dir -> get_current_dir() + godot::String("/") + dest);
         return Tool::Crypto::hash_file(mode, full_path);
@@ -112,8 +109,7 @@ namespace Vital::Tool::File {
     }
 
     inline bool remove(const godot::String& base, const godot::String& target) {
-        auto dest = Internal::assert_path(target);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         if (!dir -> file_exists(dest)) return false;
         return dir -> remove(dest) == godot::OK;
     }
@@ -123,8 +119,7 @@ namespace Vital::Tool::File {
     }
 
     inline std::string read_text(const godot::String& base, const godot::String& target) {
-        auto dest = Internal::assert_path(target);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + godot::String("/") + dest, godot::FileAccess::READ);
         if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
@@ -136,8 +131,7 @@ namespace Vital::Tool::File {
     }
 
     inline godot::PackedByteArray read_binary(const godot::String& base, const godot::String& target) {
-        auto dest = Internal::assert_path(target);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         if (!dir -> file_exists(dest)) throw Tool::Log::fetch("file-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
         auto file = godot::FileAccess::open(dir -> get_current_dir() + godot::String("/") + dest, godot::FileAccess::READ);
         if (!file.is_valid()) throw Tool::Log::fetch("file-busy", Tool::Log::Type::Error, Tool::to_std_string(target));
@@ -149,9 +143,8 @@ namespace Vital::Tool::File {
     }
 
     inline bool write_text(const godot::String& base, const godot::String& target, const std::string& text) {
-        auto dest = Internal::assert_path(target);
         godot::DirAccess::make_dir_recursive_absolute(base);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         auto path = dir -> get_current_dir() + godot::String("/") + dest;
         godot::DirAccess::make_dir_recursive_absolute(path.get_base_dir());
         auto file = godot::FileAccess::open(path, godot::FileAccess::WRITE);
@@ -165,9 +158,8 @@ namespace Vital::Tool::File {
     }
 
     inline bool write_binary(const godot::String& base, const godot::String& target, const godot::PackedByteArray& data) {
-        auto dest = Internal::assert_path(target);
         godot::DirAccess::make_dir_recursive_absolute(base);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         auto path = dir -> get_current_dir() + godot::String("/") + dest;
         godot::DirAccess::make_dir_recursive_absolute(path.get_base_dir());
         auto file = godot::FileAccess::open(path, godot::FileAccess::WRITE);
@@ -181,8 +173,7 @@ namespace Vital::Tool::File {
     }
 
     inline std::vector<std::string> contents(const godot::String& base, const godot::String& target, bool directory_search = false) {
-        auto dest = Internal::assert_path(target);
-        auto dir = Internal::assert_base(base);
+        auto [dir, dest] = Internal::assert_base_and_path(base, target);
         dir = godot::DirAccess::open(dest.is_empty() ? dir -> get_current_dir() : (dir -> get_current_dir() + godot::String("/") + dest));
         if (!dir.is_valid()) throw Tool::Log::fetch("directory-nonexistent", Tool::Log::Type::Error, Tool::to_std_string(target));
         std::vector<std::string> result;
