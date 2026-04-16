@@ -26,7 +26,7 @@ namespace Vital::Manager {
         std::string name = "Vital Sandbox Server";
         std::string version = "1.0.0";
         std::string description = "";
-        int max_clients = 32;
+        int max_peers = 32;
         std::string discord = "";
         std::string website = "";
     };
