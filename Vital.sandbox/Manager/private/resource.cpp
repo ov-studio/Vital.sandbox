@@ -557,7 +557,6 @@ namespace Vital::Manager {
         running.insert(name);
         log("sbox", fmt::format("resource `{}` started", name));
         execute_scripts_impl(name, sources);
-
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
     #endif
