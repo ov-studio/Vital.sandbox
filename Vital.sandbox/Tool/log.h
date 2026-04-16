@@ -75,8 +75,7 @@ namespace Vital::Tool::Log {
 
     inline std::string_view resolve(std::string_view code) {
         for (const auto& e : List) {
-            if (code == e.code) 
-                return e.message;
+            if (code == e.code) return e.message;
         }
         return "N/A";
     }
