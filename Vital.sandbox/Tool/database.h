@@ -119,6 +119,28 @@ namespace Vital::Tool {
                 return statement;
             }
 
+            void assert_session() const {
+                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
+            }
+
+            void assert_table(const std::string& table) const {
+                if (!is_table_allowed(table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", table));
+            }
+
+            void assert_session_and_table(const std::string& table) const {
+                assert_session();
+                assert_table(table);
+            }
+
+            void push_bind(const std::string& table, const std::string& column, const std::string& value, int index, std::string& columns_out, std::string& placeholders_out, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
+                if (!is_column_allowed(table, column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", column, table));
+                auto pname = fmt::format("d{}", index);
+                columns_out += fmt::format("`{}`", column);
+                placeholders_out += fmt::format(":{}", pname);
+                bind_names.push_back(pname);
+                binds.push_back(value);
+            }
+
             void run_statement(const std::string& sql, const std::vector<std::string>& binds, const std::vector<std::string>& bind_names, soci::row* row_out = nullptr) {
                 soci::statement st(*session);
                 st.alloc();
