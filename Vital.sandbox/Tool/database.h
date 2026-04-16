@@ -182,7 +182,7 @@ namespace Vital::Tool {
             }
 
             QueryBuilder* table(const std::string& name) {
-                if (!is_table_allowed(name)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", name));
+                assert_table(name);
                 auto query = new QueryBuilder();
                 query -> db = this;
                 query -> table = name;
@@ -288,9 +288,7 @@ namespace Vital::Tool {
             }
 
             bool execute(QueryBuilder* query) {
-                if (!session) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: No active session");
-                if (!is_table_allowed(query -> table)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Table '{}' — not defined", query -> table));
-
+                assert_session_and_table(query -> table);
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
                 if (query -> query_type == "insert") {
