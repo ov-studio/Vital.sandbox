@@ -77,6 +77,7 @@ namespace Vital::Manager {
         }
     }
 
+    #if !defined(Vital_SDK_Client)
     bool Resource::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) const {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto resource = get_resource(name);
@@ -98,8 +99,10 @@ namespace Vital::Manager {
         }
         return true;
     }
+    #endif
 
     bool Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+    void Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto resource = get_resource(name);
         vm -> create_environment(name);
@@ -109,7 +112,6 @@ namespace Vital::Manager {
             vm -> load_string(source, chunk_name(resource -> ref, src), true, true, vm -> get_count());
             vm -> pop(1);
         }
-        return true;
     }
 
     #if !defined(Vital_SDK_Client)
