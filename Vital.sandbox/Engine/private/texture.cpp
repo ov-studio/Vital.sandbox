@@ -95,8 +95,8 @@ namespace Vital::Engine {
 
     godot::Ref<godot::Texture2D> Texture::get_texture() const {
         switch (command.type) {
-            case Type::Texture2D: { const auto& payload = std::get<Texture2D>(command.payload); return payload.texture; }
-            case Type::SVG: { const auto& payload = std::get<SVG>(command.payload); return payload.texture; }
+            case Type::Texture2D: return std::get<Texture2D>(command.payload).texture;
+            case Type::SVG: return std::get<Texture2D>(command.payload).texture;
         }
         return godot::Ref<godot::Texture2D>();
     }
