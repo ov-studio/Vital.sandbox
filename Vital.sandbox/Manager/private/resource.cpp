@@ -48,6 +48,26 @@ namespace Vital::Manager {
         Tool::print(mode, fmt::format("Resource: {}", message));
     }
 
+    std::string Resource::chunk_name(const std::string& resource, const std::string& src) {
+        return fmt::format("@{}/{}", resource, src);
+    }
+
+    void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
+        if (const auto* sv = args.get("scripts")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            scripts.reserve(nested.array.size());
+            for (const auto& entry : nested.array) {
+                const auto& s = *entry.as<std::shared_ptr<Tool::Stack>>();
+                scripts.push_back({ s.object.at("src").as<std::string>(), s.object.at("type").as<std::string>() });
+            }
+        }
+        if (const auto* sv = args.get("files")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            files.reserve(nested.array.size());
+            for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
+        }
+    }
+
 
     // Checkers //
     bool Resource::is_name(const std::string& name) {
