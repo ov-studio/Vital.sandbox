@@ -55,7 +55,8 @@ namespace Vital::Manager {
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
             std::unordered_set<std::string> pending;
             #endif
-        private:
+
+
             // Helpers //
             std::string chunk_name(const std::string& resource, const std::string& src);
             void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
@@ -106,7 +107,6 @@ namespace Vital::Manager {
             void start_all();
             void stop_all();
             void restart_all();
-            Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
             void sync_peer(int peer_id) const;
             #endif
             #if defined(Vital_SDK_Client)
