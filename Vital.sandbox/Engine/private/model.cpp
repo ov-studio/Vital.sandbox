@@ -160,6 +160,11 @@ namespace Vital::Engine {
         return { mesh, index };
     }
 
+    godot::MeshInstance3D* Model::assert_skeleton() {
+        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: no skeleton found in model '{}'", model_name));
+        return skeleton;
+    }
+
     void Model::assert_material_feature(int feature) {
         if (feature < 0 || feature >= godot::BaseMaterial3D::FEATURE_MAX) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, "\n> Reason: invalid material feature");
     }
@@ -576,7 +581,7 @@ namespace Vital::Engine {
     }
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
-        if (!skeleton) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: no skeleton found in model '{}'", model_name));
+        godot::Skeleton3D* = assert_skeleton();
         int index = skeleton -> find_bone(Tool::to_godot_string(bone));
         if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
         return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);

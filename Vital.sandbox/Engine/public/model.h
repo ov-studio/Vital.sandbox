@@ -69,8 +69,9 @@ namespace Vital::Engine {
             // Asserts //
             godot::MeshInstance3D* assert_component(const std::string& component);
             std::pair<godot::MeshInstance3D*, int> assert_material(const std::string& component, const std::string& material);
-            static void assert_material_feature(int feature);
-            static void assert_material_flag(int flag);
+            godot::MeshInstance3D* Model::assert_skeleton();
+            void assert_material_feature(int feature);
+            void assert_material_flag(int flag);
         public:
             // Instantiators //
             Model() = default;
