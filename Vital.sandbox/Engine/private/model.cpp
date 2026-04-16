@@ -529,13 +529,11 @@ namespace Vital::Engine {
     }
 
     std::vector<std::string> Model::get_materials(const std::string& component) {
-        godot::MeshInstance3D* mesh = find_mesh_node(this, component);
-        if (!mesh) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Warning, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(assert_component(component) -> get_mesh().ptr());
         std::vector<std::string> materials;
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return materials;
-        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
-            materials.push_back(Tool::to_std_string(array_mesh->surface_get_name(i)));
+        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
+            materials.push_back(Tool::to_std_string(array_mesh -> surface_get_name(i)));
         }
         return materials;
     }
