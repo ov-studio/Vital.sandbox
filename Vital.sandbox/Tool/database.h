@@ -299,11 +299,7 @@ namespace Vital::Tool {
                         if (!is_column_allowed(query -> table, k)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::Error, fmt::format("\n> Reason: Column '{}' — not defined in '{}'", k, query -> table));
                         if (!first) { columns += ", "; placeholders += ", "; }
                         first = false;
-                        auto pname = fmt::format("d{}", index++);
-                        columns += fmt::format("`{}`", k);
-                        placeholders += fmt::format(":{}", pname);
-                        bind_names.push_back(pname);
-                        binds.push_back(v);
+                        push_bind(query -> table, k, v, index++, columns, placeholders, binds, bind_names);
                     }
                     sql = fmt::format("INSERT INTO `{}` ({}) VALUES ({})", query -> table, columns, placeholders);
                 }
