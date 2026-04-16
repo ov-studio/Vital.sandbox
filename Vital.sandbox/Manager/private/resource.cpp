@@ -196,9 +196,10 @@ namespace Vital::Manager {
             Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
                 if (!args.object.count("event")) return;
                 const std::string event = args.object.at("event").as<std::string>();
+                // TODO: Check if it event name contains "vital.rersource" or return
+                auto rm = Resource::get_singleton();
                 if (event == "vital.resource:started") {
                     if (!args.object.count("name")) return;
-                    auto rm = Resource::get_singleton();
                     const std::string name = args.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
@@ -208,7 +209,6 @@ namespace Vital::Manager {
                 }
                 else if (event == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
-                    auto rm = Resource::get_singleton();
                     const std::string name = args.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Resource::get_singleton() -> unload(name);
