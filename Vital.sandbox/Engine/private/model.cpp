@@ -542,7 +542,6 @@ namespace Vital::Engine {
         std::vector<std::string> blendshapes;
         if (!array_mesh) return blendshapes;
         for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
-            blendshapes.push_back(Tool::to_std_string(array_mesh->get_blend_shape_name(i)));
             blendshapes.push_back(Tool::to_std_string(array_mesh -> get_blend_shape_name(i)));
         }
         return blendshapes;
