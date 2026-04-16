@@ -351,9 +351,7 @@ namespace Vital::Manager {
         for (const auto& resource : resources) report += fmt::format("> `{}`\n", resource.ref);
         log("sbox", report);
         std::vector<std::string> stale;
-        for (const auto& name : running) {
-            if (!is_loaded(name)) stale.push_back(name);
-        }
+        for (const auto& name : running) if (!is_loaded(name)) stale.push_back(name);
         for (const auto& name : stale) {
             log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
             stop(name);
@@ -370,9 +368,7 @@ namespace Vital::Manager {
         auto resource = get_resource(name);
         std::vector<std::string> asset_paths;
         for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
-        for (const auto& script : resource -> scripts) {
-            if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
-        }
+        for (const auto& script : resource -> scripts) if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
         am -> register_assets(asset_paths, name);
         am -> broadcast_manifest(-1, true);
         running.insert(name);
