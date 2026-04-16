@@ -57,9 +57,7 @@ namespace Vital::Tool::Log {
     inline constexpr Command List[] = {
         {"invalid-argument", "invalid argument {}"},
         {"request-failed", "request failed {}"},
-
-        // TODO: UPDATE FOR ALL EM
-        {"invalid-thread", "Invalid thread"}
+        {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"}
     };
 
     inline bool is_type(std::string_view label) {
