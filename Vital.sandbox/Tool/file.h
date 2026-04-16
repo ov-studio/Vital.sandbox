@@ -62,6 +62,10 @@ namespace Vital::Tool::File {
             if (!sanitize(norm)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::Error, fmt::format("\n> Reason: invalid file path `{}`", Tool::to_std_string(path)));
             return norm;
         }
+
+        inline std::pair<godot::Ref<godot::DirAccess>, godot::String> assert_base_and_path(const godot::String& base, const godot::String& path) {
+            return {assert_base(base), assert_path(path)};
+        }
     }
 
     inline bool sanitize(const godot::String& path) {
