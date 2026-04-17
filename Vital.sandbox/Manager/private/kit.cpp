@@ -84,7 +84,12 @@ namespace Vital::Manager::Kit {
             log("status ~ extracting");
             if (!extract(zip_path, kit_dir)) { log("status ~ extraction failed"); return false; }
             std::filesystem::remove(zip_path);
-            version.clear();
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                version.clear();
+                content_cache.clear();
+                json_cache.clear();
+            }
             log(fmt::format("status ~ ready | version ~ {}", get_version()));
             return true;
         };
@@ -102,7 +107,12 @@ namespace Vital::Manager::Kit {
                 if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { log(fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
-            log(fmt::format("status ~ cache valid | files ~ {}/{} | version ~ {}", checked, total, get_version()));
+            std::string v;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                v = get_version_unsafe();
+            }
+            log(fmt::format("status ~ cache valid | files ~ {}/{} | version ~ {}", checked, total, v));
             return true;
         };
 
@@ -111,7 +121,12 @@ namespace Vital::Manager::Kit {
             std::string remote_hash;
             auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
             if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("checksum ~ fetch failed"); return true; }
-            if (get_version() != tag) { log(fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", get_version(), tag)); return true; }
+            std::string local_version;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                local_version = get_version_unsafe();
+            }
+            if (local_version != tag) { log(fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag)); return true; }
             if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("checksum ~ tampered"); return true; }
             return !validate_files(checksum_doc);
         };
