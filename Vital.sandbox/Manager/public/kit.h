@@ -26,19 +26,19 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    inline constexpr std::string_view toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
-    inline constexpr std::string_view cache_base = "cache";
-    inline constexpr std::string_view kit_name = "Vital.kit";
-    inline std::mutex mutex;
-    inline std::unordered_map<std::string, std::string> content_cache;
-    inline std::unordered_map<std::string, rapidjson::Document> json_cache;
-    inline std::string version = "";
-
     namespace Internal {
-        inline const std::string& fetch_content_unsafe(std::string_view path) {
+        inline constexpr std::string_view toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
+        inline constexpr std::string_view cache_base = "cache";
+        inline constexpr std::string_view kit_name = "Vital.kit";
+        inline std::mutex mutex;
+        inline std::unordered_map<std::string, std::string> content_cache;
+        inline std::unordered_map<std::string, rapidjson::Document> json_cache;
+        inline std::string version = "";
+    
+        inline const std::string& fetch_content(std::string_view path) {
             std::string key(path);
             auto it = content_cache.find(key);
-            if (it != content_cache.end()) return it -> second;
+            if (it != content_cache.end()) return it->second;
             std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/path;
             std::ifstream file(full, std::ios::binary);
             if (!file) {
@@ -50,22 +50,22 @@ namespace Vital::Manager::Kit {
                 static const std::string empty{};
                 return empty;
             }
-            return content_cache.emplace(key, std::move(value)).first -> second;
+            return content_cache.emplace(key, std::move(value)).first->second;
         }
-
-        inline rapidjson::Document& fetch_json_unsafe(const std::string& name) {
+    
+        inline rapidjson::Document& fetch_json(const std::string& name) {
             auto it = json_cache.find(name);
-            if (it != json_cache.end()) return it -> second;
+            if (it != json_cache.end()) return it->second;
             rapidjson::Document document;
-            document.Parse(fetch_content_unsafe(name + ".json").c_str());
+            document.Parse(fetch_content(name + ".json").c_str());
             if (document.HasParseError()) {
                 static rapidjson::Document empty_doc;
                 return empty_doc;
             }
-            return json_cache.emplace(name, std::move(document)).first -> second;
+            return json_cache.emplace(name, std::move(document)).first->second;
         }
-
-        inline const std::string& get_version_unsafe() {
+    
+        inline const std::string& get_version() {
             if (!version.empty()) return version;
             const std::string checksum_path = std::string(cache_base) + "/" + std::string(kit_name) + "/checksum.json";
             std::ifstream file(checksum_path, std::ios::binary);
@@ -80,18 +80,18 @@ namespace Vital::Manager::Kit {
     }
 
     inline const std::string& get_version() {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::get_version_unsafe();
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        return Internal::get_version();
     }
-
+    
     inline const std::string& fetch_content(std::string_view path) {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::fetch_content_unsafe(path);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        return Internal::fetch_content(path);
     }
-
+    
     inline rapidjson::Document& fetch_json(const std::string& name) {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::fetch_json_unsafe(name);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        return Internal::fetch_json(name);
     }
 
     template<typename... Keys>
@@ -120,8 +120,8 @@ namespace Vital::Manager::Kit {
 
     template<typename... Keys>
     inline const rapidjson::Value* fetch_json_node(const std::string& name, Keys&&... keys) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto& document = Internal::fetch_json_unsafe(name);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        auto& document = Internal::fetch_content(name);
         if (document.HasParseError() || !document.IsObject()) return nullptr;
         const rapidjson::Value* node = fetch_json_detail(&document, std::forward<Keys>(keys)...);
         if (!node || (!node -> IsObject() && !node -> IsArray())) return nullptr;
@@ -130,8 +130,8 @@ namespace Vital::Manager::Kit {
 
     template<typename... Keys>
     inline Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto& document = Internal::fetch_json_unsafe(name);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        auto& document = Internal::fetch_content(name);
         if (document.HasParseError() || !document.IsObject()) return {};
         const rapidjson::Value* node = fetch_json_detail(&document, std::forward<Keys>(keys)...);
         if (!node) return {};
@@ -145,20 +145,20 @@ namespace Vital::Manager::Kit {
     }
 
     inline std::string fetch_module(const std::string& name) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto& document = Internal::fetch_json_unsafe(name + "/manifest");
+        std::lock_guard<std::mutex> lock(Internal::mutex);
+        auto& document = Internal::fetch_content(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("source")) return "";
-        return std::string(Internal::fetch_content_unsafe(name + "/" + document["source"].GetString()));
+        return std::string(Internal::fetch_content(name + "/" + document["source"].GetString()));
     }
 
     inline std::vector<std::pair<std::string, std::string>> fetch_modules(const std::string& name) {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(Internal::mutex);
         std::vector<std::pair<std::string, std::string>> result;
-        auto& document = Internal::fetch_json_unsafe(name + "/manifest");
+        auto& document = Internal::fetch_content(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
             std::string src = i.GetString();
-            result.emplace_back(src, std::string(Internal::fetch_content_unsafe(name + "/" + src)));
+            result.emplace_back(src, std::string(Internal::fetch_content(name + "/" + src)));
         }
         return result;
     }
@@ -166,7 +166,7 @@ namespace Vital::Manager::Kit {
     inline std::tuple<std::string, std::string, std::string> fetch_release() {
         std::tuple<std::string, std::string, std::string> result;
         std::string response;
-        try { response = Tool::Rest::get(std::string(toolkit_api)); }
+        try { response = Tool::Rest::get(std::string(Internal::toolkit_api)); }
         catch (...) {}
         if (!response.empty()) {
             rapidjson::Document doc;
@@ -180,7 +180,7 @@ namespace Vital::Manager::Kit {
                         std::string asset_name = asset["name"].GetString();
                         std::string asset_url  = asset["browser_download_url"].GetString();
                         if (asset_name == "checksum.json") checksum_url = asset_url;
-                        if (asset_name.rfind(kit_name, 0) == 0 && asset_name.size() > 4 && asset_name.substr(asset_name.size() - 4) == ".zip") zip_url = asset_url;
+                        if (asset_name.rfind(Internal::kit_name, 0) == 0 && asset_name.size() > 4 && asset_name.substr(asset_name.size() - 4) == ".zip") zip_url = asset_url;
                     }
                 }
             }
