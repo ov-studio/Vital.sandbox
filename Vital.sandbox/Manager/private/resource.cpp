@@ -106,7 +106,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    void Resource::execute_scripts_impl(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+    void Resource::execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         const Manifest* resource;
         {
@@ -230,7 +230,7 @@ namespace Vital::Manager {
                 }
                 if (!ready_name.empty()) {
                     log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", ready_name));
-                    rm -> execute_scripts(ready_name);
+                    rm -> execute_resource(ready_name);
                 }
             });
 
@@ -427,7 +427,7 @@ namespace Vital::Manager {
             running.insert(name);
         }
         log("sbox", fmt::format("resource `{}` started", name));
-        execute_scripts_impl(name, sources);
+        execute_scripts(name, sources);
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             const Manifest* resource;
             {
@@ -595,7 +595,7 @@ namespace Vital::Manager {
         }
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
-            execute_scripts(name);
+            execute_resource(name);
         }
         else {
             std::lock_guard<std::mutex> lock(mutex);
@@ -626,7 +626,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    void Resource::execute_scripts(std::string name) {
+    void Resource::execute_resource(std::string name) {
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (!is_pending_unsafe(name)) return;
@@ -639,7 +639,7 @@ namespace Vital::Manager {
             running.insert(name);
         }
         log("sbox", fmt::format("resource `{}` started", name));
-        execute_scripts_impl(name, sources);
+        execute_scripts(name, sources);
         Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
     }
     #endif
