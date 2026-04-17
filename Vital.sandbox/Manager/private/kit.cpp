@@ -110,7 +110,7 @@ namespace Vital::Manager::Kit {
             std::string v;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                v = get_version_unsafe();
+                v = Internal::get_version_unsafe();
             }
             log(fmt::format("status ~ cache valid | files ~ {}/{} | version ~ {}", checked, total, v));
             return true;
@@ -124,7 +124,7 @@ namespace Vital::Manager::Kit {
             std::string local_version;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                local_version = get_version_unsafe();
+                local_version = Internal::get_version_unsafe();
             }
             if (local_version != tag) { log(fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag)); return true; }
             if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("checksum ~ tampered"); return true; }
