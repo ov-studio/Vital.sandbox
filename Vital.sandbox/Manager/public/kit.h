@@ -27,9 +27,9 @@
 
 namespace Vital::Manager::Kit {
     namespace Internal {
-        inline constexpr std::string_view toolkit_api = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
-        inline constexpr std::string_view cache_base = "cache";
-        inline constexpr std::string_view kit_name = "Vital.kit";
+        inline constexpr std::string_view toolkit_src = "https://api.github.com/repos/ov-studio/Vital.kit/releases/latest";
+        inline constexpr std::string_view toolkit_base = "cache";
+        inline constexpr std::string_view toolkit_name = "Vital.kit";
         inline std::mutex mutex;
         inline std::unordered_map<std::string, std::string> content_cache;
         inline std::unordered_map<std::string, rapidjson::Document> json_cache;
@@ -39,7 +39,7 @@ namespace Vital::Manager::Kit {
             std::string key(path);
             auto it = content_cache.find(key);
             if (it != content_cache.end()) return it->second;
-            std::filesystem::path full = std::filesystem::path(cache_base)/kit_name/path;
+            std::filesystem::path full = std::filesystem::path(toolkit_base)/toolkit_name/path;
             std::ifstream file(full, std::ios::binary);
             if (!file) {
                 static const std::string empty{};
@@ -67,7 +67,7 @@ namespace Vital::Manager::Kit {
     
         inline const std::string& get_version() {
             if (!version.empty()) return version;
-            const std::string checksum_path = std::string(cache_base) + "/" + std::string(kit_name) + "/checksum.json";
+            const std::string checksum_path = std::string(toolkit_base) + "/" + std::string(toolkit_name) + "/checksum.json";
             std::ifstream file(checksum_path, std::ios::binary);
             if (!file) return version;
             std::string raw{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
@@ -166,7 +166,7 @@ namespace Vital::Manager::Kit {
     inline std::tuple<std::string, std::string, std::string> fetch_release() {
         std::tuple<std::string, std::string, std::string> result;
         std::string response;
-        try { response = Tool::Rest::get(std::string(Internal::toolkit_api)); }
+        try { response = Tool::Rest::get(std::string(Internal::toolkit_src)); }
         catch (...) {}
         if (!response.empty()) {
             rapidjson::Document doc;
@@ -180,7 +180,7 @@ namespace Vital::Manager::Kit {
                         std::string asset_name = asset["name"].GetString();
                         std::string asset_url  = asset["browser_download_url"].GetString();
                         if (asset_name == "checksum.json") checksum_url = asset_url;
-                        if (asset_name.rfind(Internal::kit_name, 0) == 0 && asset_name.size() > 4 && asset_name.substr(asset_name.size() - 4) == ".zip") zip_url = asset_url;
+                        if (asset_name.rfind(Internal::toolkit_name, 0) == 0 && asset_name.size() > 4 && asset_name.substr(asset_name.size() - 4) == ".zip") zip_url = asset_url;
                     }
                 }
             }
