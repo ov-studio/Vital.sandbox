@@ -121,7 +121,7 @@ namespace Vital::Manager::Kit {
     template<typename... Keys>
     inline const rapidjson::Value* fetch_json_node(const std::string& name, Keys&&... keys) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
-        auto& document = Internal::fetch_content(name);
+        auto& document = Internal::fetch_json(name);
         if (document.HasParseError() || !document.IsObject()) return nullptr;
         const rapidjson::Value* node = fetch_json_detail(&document, std::forward<Keys>(keys)...);
         if (!node || (!node -> IsObject() && !node -> IsArray())) return nullptr;
@@ -131,7 +131,7 @@ namespace Vital::Manager::Kit {
     template<typename... Keys>
     inline Tool::StackValue fetch_json_value(const std::string& name, Keys&&... keys) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
-        auto& document = Internal::fetch_content(name);
+        auto& document = Internal::fetch_json(name);
         if (document.HasParseError() || !document.IsObject()) return {};
         const rapidjson::Value* node = fetch_json_detail(&document, std::forward<Keys>(keys)...);
         if (!node) return {};
@@ -146,7 +146,7 @@ namespace Vital::Manager::Kit {
 
     inline std::string fetch_module(const std::string& name) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
-        auto& document = Internal::fetch_content(name + "/manifest");
+        auto& document = Internal::fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("source")) return "";
         return std::string(Internal::fetch_content(name + "/" + document["source"].GetString()));
     }
@@ -154,7 +154,7 @@ namespace Vital::Manager::Kit {
     inline std::vector<std::pair<std::string, std::string>> fetch_modules(const std::string& name) {
         std::lock_guard<std::mutex> lock(Internal::mutex);
         std::vector<std::pair<std::string, std::string>> result;
-        auto& document = Internal::fetch_content(name + "/manifest");
+        auto& document = Internal::fetch_json(name + "/manifest");
         if (document.HasParseError() || !document.HasMember("sources") || !document["sources"].IsArray()) return result;
         for (auto& i : document["sources"].GetArray()) {
             std::string src = i.GetString();
