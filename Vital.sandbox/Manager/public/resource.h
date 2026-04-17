@@ -47,11 +47,10 @@ namespace Vital::Manager {
         protected:
             inline static Resource* singleton = nullptr;
         private:
+            mutable std::mutex mutex;
             std::vector<Manifest> resources;
             std::unordered_set<std::string> running;
-            #if !defined(Vital_SDK_Client)
-            std::mutex scan_mutex;
-            #else
+            #if defined(Vital_SDK_Client)
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
             std::unordered_set<std::string> pending;
             #endif
@@ -66,6 +65,16 @@ namespace Vital::Manager {
             #if !defined(Vital_SDK_Client)
             bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
             Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
+            #endif
+
+
+            // Facilitators //
+            bool is_loaded_unsafe(const std::string& name) const;
+            bool is_running_unsafe(const std::string& name) const;
+            const Manifest* get_resource_unsafe(const std::string& name) const;
+            std::vector<const Manifest*> get_all_resources_unsafe() const;
+            #if defined(Vital_SDK_Client)
+            bool is_pending_unsafe(const std::string& name) const;
             #endif
         public:
             // Instantiators //
