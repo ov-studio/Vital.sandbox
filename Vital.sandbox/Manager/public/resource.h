@@ -23,6 +23,8 @@
 namespace Vital::Manager {
     class Resource {
         public:
+            inline static const std::unordered_set<std::string> Types = {"shared", "server", "client"};
+    
             struct Script {
                 std::string src;
                 std::string type;
@@ -37,12 +39,6 @@ namespace Vital::Manager {
                 std::vector<std::string> files;
                 std::unordered_map<std::string, std::string> script_hashes;
                 std::unordered_map<std::string, std::string> file_hashes;
-            };
-
-            inline static const std::unordered_set<std::string> Types = {
-                "shared",
-                "server",
-                "client"
             };
         protected:
             inline static Resource* singleton = nullptr;
