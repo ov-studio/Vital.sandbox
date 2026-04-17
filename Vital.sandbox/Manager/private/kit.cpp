@@ -87,7 +87,7 @@ namespace Vital::Manager::Kit {
             std::filesystem::remove(zip_path);
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
-                version.clear();
+                Internal::version.clear();
                 Internal::content_cache.clear();
                 Internal::json_cache.clear();
             }
