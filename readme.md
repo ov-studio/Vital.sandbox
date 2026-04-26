@@ -4,7 +4,7 @@
 
 <div align="center">
 
-#### **Next-generation sandbox. Script It. Ship It. Limitless.**
+#### **Next-generation open-source sandbox <br/>Script It. Ship It. Limitless.**
 <sub>Founded & maintained by Aviril, Mario, Tron, Anisa & A-Variakojiene</sub>
 
 [![License](https://img.shields.io/badge/License-Open--Source-3A7D44?style=flat-square&logo=apache&logoColor=white)](https://github.com/ov-studio/Vital.sandbox/blob/main/LICENSE)
