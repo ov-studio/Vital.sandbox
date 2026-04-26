@@ -1,7 +1,6 @@
 ## Overview
 
 <div align="center">
-
   <br/>
   <img src="https://raw.githubusercontent.com/ov-studio/.github/main/profile/logo/avatar_transparent.png" width="300"/>
 
@@ -15,7 +14,6 @@
   [![Discord](https://img.shields.io/badge/Discord-Community-404EED?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
   
   <img src="https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png"/>
-
 </div>
 
 ##
