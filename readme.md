@@ -2,6 +2,7 @@
 
 <div align="center">
 
+  <br/>
   <img src="https://raw.githubusercontent.com/ov-studio/.github/main/profile/logo/avatar_transparent.png" width="300"/>
 
   #### **Next-generation open-source sandbox <br/>Script It. Ship It. Limitless.**
