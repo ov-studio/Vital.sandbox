@@ -16,9 +16,9 @@
 
 ##
 
-**Vital.sandbox** is a battle-tested, fully open-source sandbox built on the **Godot Engine** and engineered from the ground up in **C++17** for maximum performance and control. It exposes the full power of the engine through a clean, expressive **Lua scripting layer** — unifying rendering, networking, threading, and asset delivery within a single, cohesive workflow.
+**Vital.sandbox** is an open-source, high-performance sandbox built on Godot and powered by C++17. A clean Lua layer gives you full control over rendering, networking, threading, and assets — all in one seamless workflow.
 
-Whether you're building a small indie project or a large-scale multiplayer experience, Vital.sandbox provides a robust foundation to create without compromise.
+From indie ideas to large scale multiplayer worlds, build without compromise.
 
 ## Core Principles
 
