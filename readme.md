@@ -27,9 +27,9 @@ These four principles guide every architectural decision in Vital.sandbox:
 | Principle | Description |
 |---|---|
 | **Performance-first** | Lean by design. No bloat, no unnecessary abstractions. Nothing stands between your scripts and the engine. |
-| **Modular by nature** | Strict C++17 module system. Use what you need, extend what you want, leave the rest untouched. |
-| **Built for developers** | Async/await, promises, heartbeats, event-driven patterns — modern concurrency that feels natural without sacrificing low-level control. |
-| **Open to the core** | No licensing fees, no royalties, no strings attached. What you build belongs to you — completely and unconditionally. |
+| **Modular by nature** | A strict C++17 module system. Use only what you need, extend what you want, and leave the rest untouched. |
+| **Built for developers** | Async/await, promises, heartbeats, and event-driven patterns — modern concurrency without sacrificing low-level control. |
+| **Open at the core** | No licensing fees, no royalties, no restrictions. What you build is entirely yours. |
 
 ## Getting Started
 
