@@ -1,6 +1,7 @@
 ## Overview
 
 ![Vital.sandbox Banner](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
+<img width="161" height="130" alt="image" src="https://github.com/user-attachments/assets/5454cc68-ea80-4013-a4e5-1d9250baba70" />
 
 <div align="center">
 
