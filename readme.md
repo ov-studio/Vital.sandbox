@@ -32,8 +32,8 @@ From indie ideas to large scale multiplayer worlds, build without compromise.
 
 Vital.sandbox's Lua layer isn't a thin wrapper — it's a full-featured runtime that touches every system in the engine:
 
-- **Rendering** — Control scenes, shaders, and draw calls directly from script
-- **Networking** — Built-in async networking primitives for multiplayer-ready games
-- **Threading** — True multi-threading support with promise-based coordination
-- **Asset delivery** — Dynamic asset loading and streaming, managed entirely from Lua
-- **Event system** — Heartbeats, listeners, and reactive patterns that scale cleanly
+- **Rendering**: Control scenes, shaders, and draw calls directly from script
+- **Networking**: Built-in async networking primitives for multiplayer-ready games
+- **Threading**: True multi-threading support with promise-based coordination
+- **Asset delivery**: Dynamic asset loading and streaming, managed entirely from Lua
+- **Event system**: Heartbeats, listeners, and reactive patterns that scale cleanly
