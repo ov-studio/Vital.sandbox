@@ -1,9 +1,8 @@
 ## Overview
 
-![Vital.sandbox Banner](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
-<img width="161" height="130" alt="image" src="https://github.com/user-attachments/assets/5454cc68-ea80-4013-a4e5-1d9250baba70" />
-
 <div align="center">
+
+![Vital.sandbox Banner](https://github.com/user-attachments/assets/74fe65c9-f422-4a2f-85c0-df2ca9114d60)
 
 #### **Next-generation open-source sandbox <br/>Script It. Ship It. Limitless.**
 <sub>Founded & maintained by Aviril, Mario, Tron, Anisa & A-Variakojiene</sub>
@@ -13,6 +12,8 @@
 [![Language](https://img.shields.io/badge/Core-C%2B%2B17-004482?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
 [![Website](https://img.shields.io/badge/Website-Vital.sandbox-CFD8DC?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-site.vercel.app)
 [![Discord](https://img.shields.io/badge/Discord-Community-404EED?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
+
+![Vital.sandbox Banner](https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png)
 
 </div>
 
