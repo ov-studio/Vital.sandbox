@@ -20,17 +20,6 @@
 
 From indie ideas to large scale multiplayer worlds, build without compromise.
 
-## Core Principles
-
-These four principles guide every architectural decision in Vital.sandbox:
-
-| Principle | Description |
-|---|---|
-| **Performance-first** | Lean by design. No bloat, no unnecessary abstractions. Nothing stands between your scripts and the engine. |
-| **Modular by nature** | A strict C++17 module system. Use only what you need, extend what you want, and leave the rest untouched. |
-| **Built for developers** | Async/await, promises, heartbeats, and event-driven patterns — modern concurrency without sacrificing low-level control. |
-| **Open at the core** | No licensing fees, no royalties, no restrictions. What you build is entirely yours. |
-
 ## Getting Started
 
 - **Releases**: Grab the latest stable build from [Releases](https://github.com/ov-studio/Vital.sandbox/releases).
