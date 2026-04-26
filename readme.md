@@ -12,8 +12,6 @@
   [![Language](https://img.shields.io/badge/Core-C%2B%2B17-004482?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
   [![Website](https://img.shields.io/badge/Website-Vital.sandbox-CFD8DC?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-site.vercel.app)
   [![Discord](https://img.shields.io/badge/Discord-Community-404EED?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
-  
-  <img src="https://raw.githubusercontent.com/ov-studio/.github/main/profile/banner.png"/>
 </div>
 
 ##
