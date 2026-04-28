@@ -631,20 +631,38 @@ namespace Vital::Manager {
     }
 
     void Resource::execute_resource(std::string name) {
+        #if defined(Vital_SDK_Client)
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (!is_pending_unsafe(name)) return;
         }
+        #endif
         std::vector<std::pair<std::string, std::string>> sources;
         if (!validate_scripts(name, sources)) return;
 
         {
             std::lock_guard<std::mutex> lock(mutex);
+            #if defined(Vital_SDK_Client)
+            pending.erase(name);
+            #endif
             running.insert(name);
         }
         log("sbox", fmt::format("resource `{}` started", name));
         execute_scripts(name, sources);
-        Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+
+        #if !defined(Vital_SDK_Client)
+            Engine::Core::get_singleton() -> push_deferred([this, name]() {
+                const Manifest* resource;
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    resource = get_resource_unsafe(name);
+                }
+                Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, resource));
+                Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+            });
+        #else
+            Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+        #endif
     }
     #endif
 }
