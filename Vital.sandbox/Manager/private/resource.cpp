@@ -257,7 +257,7 @@ namespace Vital::Manager {
                     auto rm = Resource::get_singleton();
                     const std::string name = args.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
-                    rm -> unload(name);
+                    rm -> stop(name);
                 }
             });
         #else
@@ -443,18 +443,27 @@ namespace Vital::Manager {
     bool Resource::stop(std::string name) {
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto am = Manager::Asset::get_singleton();
+        bool was_running;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            if (!is_running_unsafe(name)) { log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
-            am -> unregister_group(name);
-            vm -> clear_environment_id(name);
-            running.erase(name);
+            #if defined(Vital_SDK_Client)
+                if (!is_running_unsafe(name) && !is_pending_unsafe(name)) { log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
+                if (is_pending_unsafe(name)) {
+                    resource_assets.erase(name);
+                    pending.erase(name);
+                }
+            #else
+                if (!is_running_unsafe(name)) { log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
+                am -> unregister_group(name);
+            #endif
+            was_running = is_running_unsafe(name);
+            if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
+            #if defined(Vital_SDK_Client)
         }
         log("sbox", fmt::format("resource `{}` stopped", name));
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
             Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:stopped", name));
-            Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
-        });
+        #if !defined(Vital_SDK_Client)
         return true;
     }
 
@@ -603,22 +612,6 @@ namespace Vital::Manager {
         }
         return true;
     }
-
-    bool Resource::unload(std::string name) {
-        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-        auto am = Manager::Asset::get_singleton();
-        bool was_running;
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (!is_running_unsafe(name) && !is_pending_unsafe(name)) { log("error", fmt::format("cannot unload `{}` — not running or pending", name)); return false; }
-            if (is_pending_unsafe(name)) {
-                resource_assets.erase(name);
-                pending.erase(name);
-                am -> cancel_group(name);
-                log("sbox", fmt::format("resource `{}` download cancelled", name));
-            }
-            was_running = is_running_unsafe(name);
-            if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
             resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
         }
         log("sbox", fmt::format("resource `{}` stopped", name));
