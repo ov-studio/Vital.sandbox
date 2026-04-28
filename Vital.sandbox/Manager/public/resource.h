@@ -58,6 +58,7 @@ namespace Vital::Manager {
             void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
             bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) const;
             void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
+            void execute_resource(std::string name);
             #if !defined(Vital_SDK_Client)
             bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
             Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
@@ -121,7 +122,6 @@ namespace Vital::Manager {
             #else
             bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
             #endif
-            void execute_resource(std::string name);
 
 
             // Shared //

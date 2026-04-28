@@ -122,6 +122,40 @@ namespace Vital::Manager {
         }
     }
 
+    void Resource::execute_resource(std::string name) {
+        #if defined(Vital_SDK_Client)
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (!is_pending_unsafe(name)) return;
+        }
+        #endif
+        std::vector<std::pair<std::string, std::string>> sources;
+        if (!validate_scripts(name, sources)) return;
+
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            #if defined(Vital_SDK_Client)
+            pending.erase(name);
+            #endif
+            running.insert(name);
+        }
+        log("sbox", fmt::format("resource `{}` started", name));
+        execute_scripts(name, sources);
+        #if !defined(Vital_SDK_Client)
+            Engine::Core::get_singleton() -> push_deferred([this, name]() {
+                const Manifest* resource;
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    resource = get_resource_unsafe(name);
+                }
+                Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, resource));
+                Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+            });
+        #else
+            Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+        #endif
+    }
+
     #if !defined(Vital_SDK_Client)
     bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name = manifest.get_str("name", resource.ref);
@@ -261,12 +295,12 @@ namespace Vital::Manager {
                 }
             });
         #else
+            scan();
             Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
-            scan();
         #endif
     }
 
@@ -617,39 +651,4 @@ namespace Vital::Manager {
         return true;
     }
     #endif
-
-    void Resource::execute_resource(std::string name) {
-        #if defined(Vital_SDK_Client)
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (!is_pending_unsafe(name)) return;
-        }
-        #endif
-        std::vector<std::pair<std::string, std::string>> sources;
-        if (!validate_scripts(name, sources)) return;
-
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            #if defined(Vital_SDK_Client)
-            pending.erase(name);
-            #endif
-            running.insert(name);
-        }
-        log("sbox", fmt::format("resource `{}` started", name));
-        execute_scripts(name, sources);
-
-        #if !defined(Vital_SDK_Client)
-            Engine::Core::get_singleton() -> push_deferred([this, name]() {
-                const Manifest* resource;
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    resource = get_resource_unsafe(name);
-                }
-                Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, resource));
-                Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
-            });
-        #else
-            Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
-        #endif
-    }
 }
