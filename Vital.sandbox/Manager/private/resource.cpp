@@ -648,5 +648,4 @@ namespace Vital::Manager {
             Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
         #endif
     }
-    #endif
 }
