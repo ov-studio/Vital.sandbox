@@ -457,7 +457,10 @@ namespace Vital::Manager {
                 am -> unregister_group(name);
             #endif
             was_running = is_running_unsafe(name);
-            if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
+            if (was_running) {
+                vm -> clear_environment_id(name);
+                running.erase(name);
+            }
             #if defined(Vital_SDK_Client)
             resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
             #endif
