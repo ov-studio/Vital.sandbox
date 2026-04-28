@@ -420,7 +420,6 @@ namespace Vital::Manager {
             for (const auto& script : resource -> scripts) if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
             am -> register_assets(asset_paths, name);
             am -> broadcast_manifest(-1, true);
-            running.insert(name);
         }
         #endif
         execute_resource(name);
