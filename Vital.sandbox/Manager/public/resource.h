@@ -110,19 +110,18 @@ namespace Vital::Manager {
 
 
             // APIs //
-            #if !defined(Vital_SDK_Client)
-            void scan();
             bool start(std::string name);
             bool stop(std::string name);
+            #if !defined(Vital_SDK_Client)
+            void scan();
             bool restart(std::string name);
             void start_all();
             void stop_all();
             void restart_all();
             #else
             bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
-            bool unload(std::string name);
-            void execute_resource(std::string name);
             #endif
+            void execute_resource(std::string name);
 
 
             // Shared //
