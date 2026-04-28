@@ -400,7 +400,9 @@ namespace Vital::Manager {
             auto resource = get_resource_unsafe(name);
             std::vector<std::string> asset_paths;
             for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
-            for (const auto& script : resource -> scripts) if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+            for (const auto& script : resource -> scripts) {
+                if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+            }
             am -> register_assets(asset_paths, name);
             am -> broadcast_manifest(-1, true);
         }
