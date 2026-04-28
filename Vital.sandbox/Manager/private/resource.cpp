@@ -465,8 +465,7 @@ namespace Vital::Manager {
             #endif
         }
         log("sbox", fmt::format("resource `{}` stopped", name));
-        Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:stopped", name));
+
         #if !defined(Vital_SDK_Client)
         return true;
     }
