@@ -604,7 +604,6 @@ namespace Vital::Manager {
         }
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
-            execute_resource(name);
             start(name);
         }
         else {
