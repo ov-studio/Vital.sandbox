@@ -467,6 +467,7 @@ namespace Vital::Manager {
         return true;
     }
 
+    #if !defined(Vital_SDK_Client)
     bool Resource::restart(std::string name) {
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -605,6 +606,7 @@ namespace Vital::Manager {
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
             execute_resource(name);
+            start(name);
         }
         else {
             std::lock_guard<std::mutex> lock(mutex);
@@ -612,12 +614,7 @@ namespace Vital::Manager {
         }
         return true;
     }
-            resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
-        }
-        log("sbox", fmt::format("resource `{}` stopped", name));
-        if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
-        return true;
-    }
+    #endif
 
     void Resource::execute_resource(std::string name) {
         #if defined(Vital_SDK_Client)
