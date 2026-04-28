@@ -183,6 +183,12 @@ namespace Vital::Manager {
         return running.count(name) > 0;
     }
 
+    #if defined(Vital_SDK_Client)
+    bool Resource::is_pending_unsafe(const std::string& name) const {
+        return pending.count(name) > 0;
+    }
+    #endif
+
     const Resource::Manifest* Resource::get_resource_unsafe(const std::string& name) const {
         for (const auto& resource : resources) {
             if (resource.ref == name) return &resource;
@@ -196,12 +202,6 @@ namespace Vital::Manager {
         for (const auto& resource : resources) result.push_back(&resource);
         return result;
     }
-
-    #if defined(Vital_SDK_Client)
-    bool Resource::is_pending_unsafe(const std::string& name) const {
-        return pending.count(name) > 0;
-    }
-    #endif
 
 
     // Managers //

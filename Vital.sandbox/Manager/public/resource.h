@@ -67,11 +67,11 @@ namespace Vital::Manager {
             // Facilitators //
             bool is_loaded_unsafe(const std::string& name) const;
             bool is_running_unsafe(const std::string& name) const;
-            const Manifest* get_resource_unsafe(const std::string& name) const;
-            std::vector<const Manifest*> get_all_resources_unsafe() const;
             #if defined(Vital_SDK_Client)
             bool is_pending_unsafe(const std::string& name) const;
             #endif
+            const Manifest* get_resource_unsafe(const std::string& name) const;
+            std::vector<const Manifest*> get_all_resources_unsafe() const;
         public:
             // Instantiators //
             Resource() = default;
