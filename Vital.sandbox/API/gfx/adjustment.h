@@ -24,17 +24,17 @@
 
 namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {
-        inline static const std::string base_name = "gfx";
-        inline static const std::string lut_reference = fmt::format("{}.adjustment:lut", base_name);
+        inline static const std::string base_name = "adjustment";
+        inline static const std::string lut_reference = fmt::format("{}:lut", base_name);
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name, "adjustment"}, "is_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_adjustment_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "set_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
 
@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "set_brightness", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_brightness", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -54,12 +54,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "get_brightness", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_brightness", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_adjustment_brightness());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "set_contrast", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_contrast", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -69,12 +69,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "get_contrast", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_contrast", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_adjustment_contrast());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "set_saturation", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_saturation", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -84,12 +84,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "get_saturation", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_saturation", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_adjustment_saturation());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "set_lut", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_lut", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
@@ -143,13 +143,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "get_lut", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_lut", [](auto vm, auto& id) -> int {
                 if (vm -> is_reference(lut_reference)) vm -> get_reference(lut_reference, true);
                 else vm -> push_value(false);
                 return 1;
             });
 
-            API::bind(vm, {base_name, "adjustment"}, "reset_lut", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "reset_lut", [](auto vm, auto& id) -> int {
                 base_class::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
                 vm -> del_reference(lut_reference);
                 vm -> push_value(true);

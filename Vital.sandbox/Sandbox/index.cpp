@@ -15,28 +15,28 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Engine/public/console.h>
-#include <Vital.sandbox/API/engine.h>
-#include <Vital.sandbox/API/database.h>
-#include <Vital.sandbox/API/discord.h>
-#include <Vital.sandbox/API/coroutine.h>
-#include <Vital.sandbox/API/file.h>
-#include <Vital.sandbox/API/network.h>
-#include <Vital.sandbox/API/rest.h>
-#include <Vital.sandbox/API/crypto.h>
-#include <Vital.sandbox/API/shrinker.h>
-#include <Vital.sandbox/API/canvas.h>
-#include <Vital.sandbox/API/model.h>
-#include <Vital.sandbox/API/webview.h>
-#include <Vital.sandbox/API/font.h>
-#include <Vital.sandbox/API/texture.h>
-#include <Vital.sandbox/API/rendertarget.h>
+#include <Vital.sandbox/API/core/engine.h>
+#include <Vital.sandbox/API/core/database.h>
+#include <Vital.sandbox/API/core/discord.h>
+#include <Vital.sandbox/API/core/coroutine.h>
+#include <Vital.sandbox/API/core/file.h>
+#include <Vital.sandbox/API/core/network.h>
+#include <Vital.sandbox/API/core/rest.h>
+#include <Vital.sandbox/API/core/crypto.h>
+#include <Vital.sandbox/API/core/shrinker.h>
+#include <Vital.sandbox/API/core/canvas.h>
+#include <Vital.sandbox/API/core/model.h>
+#include <Vital.sandbox/API/core/webview.h>
+#include <Vital.sandbox/API/core/font.h>
+#include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/rendertarget.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
 #include <Vital.sandbox/API/gfx/ssao.h>
 #include <Vital.sandbox/API/gfx/ssil.h>
 #include <Vital.sandbox/API/gfx/sdfgi.h>
-#include <Vital.sandbox/API/gfx/emissive.h>
 #include <Vital.sandbox/API/gfx/fog.h>
 #include <Vital.sandbox/API/gfx/volumetric_fog.h>
+#include <Vital.sandbox/API/gfx/emissive.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
 
 
@@ -70,9 +70,9 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::SSR>(),
         vm_module::make_api<API::SSIL>(),
         vm_module::make_api<API::SDFGI>(),
-        vm_module::make_api<API::Emissive>(),
         vm_module::make_api<API::Fog>(),
         vm_module::make_api<API::Volumetric_Fog>(),
+        vm_module::make_api<API::Emissive>(),
         vm_module::make_api<API::Adjustment>()
     };
 

@@ -23,16 +23,16 @@
 
 namespace Vital::Sandbox::API {
     struct SSR : vm_module {
-        inline static const std::string base_name = "gfx";
+        inline static const std::string base_name = "ssr";
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name, "ssr"}, "is_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_ssr_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "set_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
 
@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "set_max_steps", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_max_steps", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -52,12 +52,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "get_max_steps", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_max_steps", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssr_max_steps());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "set_fade_in", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_fade_in", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -67,12 +67,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "get_fade_in", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_fade_in", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssr_fade_in());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "set_fade_out", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_fade_out", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -82,12 +82,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "get_fade_out", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_fade_out", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssr_fade_out());
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "set_depth_tolerance", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "set_depth_tolerance", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name, "ssr"}, "get_depth_tolerance", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_depth_tolerance", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssr_depth_tolerance());
                 return 1;
             });
