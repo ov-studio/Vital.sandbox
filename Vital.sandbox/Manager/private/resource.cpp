@@ -411,9 +411,7 @@ namespace Vital::Manager {
             if (!is_loaded_unsafe(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
             if (is_running_unsafe(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
         }
-        std::vector<std::pair<std::string, std::string>> sources;
-        if (!validate_scripts(name, sources)) return false;
-
+        #if !defined(Vital_SDK_Client)
         {
             std::lock_guard<std::mutex> lock(mutex);
             auto resource = get_resource_unsafe(name);
@@ -424,17 +422,8 @@ namespace Vital::Manager {
             am -> broadcast_manifest(-1, true);
             running.insert(name);
         }
-        log("sbox", fmt::format("resource `{}` started", name));
-        execute_scripts(name, sources);
-        Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            const Manifest* resource;
-            {
-                std::lock_guard<std::mutex> lock(mutex);
-                resource = get_resource_unsafe(name);
-            }
-            Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, resource));
-            Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
-        });
+        #endif
+        execute_resource(name);
         return true;
     }
 
