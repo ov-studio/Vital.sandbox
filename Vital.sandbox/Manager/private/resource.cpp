@@ -451,6 +451,8 @@ namespace Vital::Manager {
                 if (is_pending_unsafe(name)) {
                     resource_assets.erase(name);
                     pending.erase(name);
+                    am -> cancel_group(name);
+                    log("sbox", fmt::format("resource `{}` download cancelled", name));
                 }
             #else
                 if (!is_running_unsafe(name)) { log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
@@ -459,6 +461,8 @@ namespace Vital::Manager {
             was_running = is_running_unsafe(name);
             if (was_running) { vm -> clear_environment_id(name); running.erase(name); }
             #if defined(Vital_SDK_Client)
+            resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
+            #endif
         }
         log("sbox", fmt::format("resource `{}` stopped", name));
         Engine::Core::get_singleton() -> push_deferred([this, name]() {
