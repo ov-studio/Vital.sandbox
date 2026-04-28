@@ -396,9 +396,7 @@ namespace Vital::Manager {
         log("sbox", report);
         std::vector<std::string> stale;
         for (const auto& name : running) if (!is_loaded_unsafe(name)) stale.push_back(name);
-        for (const auto& name : stale) {
-            log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
-        }
+        for (const auto& name : stale) log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
         if (!stale.empty()) {
             Engine::Core::get_singleton() -> push_deferred([this, stale]() {
                 for (const auto& name : stale) stop(name);
