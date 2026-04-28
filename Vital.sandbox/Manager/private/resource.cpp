@@ -348,61 +348,6 @@ namespace Vital::Manager {
 
 
     // APIs //
-    void Resource::scan() {
-        std::lock_guard<std::mutex> lock(mutex);
-        log("sbox", "rescanning resources...");
-        resources.clear();
-        std::vector<std::string> contents;
-        try { contents = Tool::File::contents(Tool::get_directory(), "resources", true); }
-        catch (...) { log("error", "resource scan skipped — `resources/` directory not found"); return; }
-
-        std::unordered_map<std::string, int> resource_count;
-        for (const auto& path : contents) resource_count[path.substr(path.find_last_of("/\\") + 1)]++;
-        auto try_read = [](const std::string& base, const std::string& file, std::string& out) -> bool {
-            try { out = Tool::File::read_text(base, file); return true; }
-            catch (...) { return false; }
-        };
-
-        for (const auto& path : contents) {
-            const std::string name = path.substr(path.find_last_of("/\\") + 1);
-            if (!is_name(name)) { log("error", fmt::format("invalid resource name `{}` — skipping", name)); continue; }
-            if (resource_count[name] > 1) { log("error", fmt::format("duplicate resource found — skipping `{}`", name)); continue; }
-            if (!Tool::File::exists(get_resource_base(name), "manifest.yaml")) continue;
-
-            std::string content;
-            if (!try_read(get_resource_base(name), "manifest.yaml", content)) { log("error", fmt::format("failed to read manifest for `{}` — skipping", name)); continue; }
-            Tool::YAML manifest;
-            try { manifest.parse(content); }
-            catch (const std::exception& e) { log("error", fmt::format("malformed yaml in manifest for `{}` — skipping\n> {}", name, e.what())); continue; }
-            Manifest resource;
-            resource.ref = name;
-            std::vector<std::string> errors;
-            if (!parse_manifest(resource, manifest, get_resource_base(name), errors)) {
-                if (!errors.empty()) {
-                    std::string report = fmt::format("resource `{}` skipped:\n", name);
-                    report += fmt::format("> Errors ({}):\n", errors.size());
-                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
-                    log("error", report);
-                }
-                else log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping", name));
-                continue;
-            }
-            resources.push_back(std::move(resource));
-        }
-
-        std::string report = fmt::format("scan complete — {} resource(s) loaded\n", resources.size());
-        for (const auto& resource : resources) report += fmt::format("> `{}`\n", resource.ref);
-        log("sbox", report);
-        std::vector<std::string> stale;
-        for (const auto& name : running) if (!is_loaded_unsafe(name)) stale.push_back(name);
-        for (const auto& name : stale) log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
-        if (!stale.empty()) {
-            Engine::Core::get_singleton() -> push_deferred([this, stale]() {
-                for (const auto& name : stale) stop(name);
-            });
-        }
-    }
-
     bool Resource::start(std::string name) {
         auto am = Manager::Asset::get_singleton();
         {
