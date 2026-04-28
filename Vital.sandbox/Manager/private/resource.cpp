@@ -408,8 +408,13 @@ namespace Vital::Manager {
         auto am = Manager::Asset::get_singleton();
         {
             std::lock_guard<std::mutex> lock(mutex);
+            #if !defined(Vital_SDK_Client)
             if (!is_loaded_unsafe(name)) { log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
+            #endif
             if (is_running_unsafe(name)) { log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
+            #if defined(Vital_SDK_Client)
+            if (is_pending_unsafe(name)) { log("error", fmt::format("cannot start `{}` — already pending", name)); return false; }
+            #endif
         }
         #if !defined(Vital_SDK_Client)
         {
