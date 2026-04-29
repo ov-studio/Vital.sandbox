@@ -60,22 +60,26 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "destroy",
-                std::function<int(Machine*, Instance*, const std::string&)>(
-                    [](Machine* vm, Instance* self, const std::string& id) -> int {
-                        if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
-                        self -> destroyed = true;
-                        auto inst = get_inst(self -> id);
-                        if (inst) {
-                            Vital::Engine::Core::get_singleton() -> push_deferred([inst]() {
-                                cleanup(inst);
-                            });
-                        }
-                        vm -> push_value(true);
-                        return 1;
-                    }
-                )
-            );
+            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
+                self -> destroyed = true;
+                auto inst = get_inst(self -> id);
+                if (inst) {
+                    Vital::Engine::Core::get_singleton() -> push_deferred([inst]() {
+                        cleanup(inst);
+                    });
+                }
+                vm -> push_value(true);
+
+
+                /*
+                // TODO: Should release userdata too // Anisa
+                vm_module::release_userdata(vm, 1);
+                vm -> push_value(true);
+                return 1;
+                */
+                return 1;
+            });
         }
 
         static void bind(Machine* vm) {
