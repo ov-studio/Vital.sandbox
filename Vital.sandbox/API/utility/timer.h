@@ -25,6 +25,7 @@
 namespace Vital::Sandbox::API {
     struct Timer : vm_module {
         inline static const std::string base_name = "timer";
+
         struct Instance {
             int id;
             std::string env_id;
