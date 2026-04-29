@@ -249,7 +249,10 @@ namespace Vital::Manager {
                     for (auto& [name, remaining] : rm -> resource_assets) {
                         if (!remaining.count(path)) continue;
                         remaining.erase(path);
-                        if (remaining.empty()) ready_name = name;
+                        if (remaining.empty()) {
+                            rm -> resource_assets.erase(name);
+                            ready_name = name;
+                        }
                         break;
                     }
                 }
