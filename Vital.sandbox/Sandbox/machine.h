@@ -443,7 +443,6 @@ namespace Vital::Sandbox {
             void push(int index = 1) { lua_pushvalue(state, index); }
             void pop(int count = 1) { lua_pop(state, count); }
             void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
-            bool pcall(int arguments, int returns = LUA_MULTRET) { return lua_pcall(state, arguments, returns, 0) == LUA_OK; }
             void set_table(int index = 1) { lua_settable(state, index); }
             void set_table_field(int field, int index = 1) { lua_seti(state, index, field); }
             void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
@@ -481,6 +480,15 @@ namespace Vital::Sandbox {
                 return std::string(value, length);
             }
 
+            bool pcall(int arguments, int returns = LUA_MULTRET) {
+                bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
+                if (!result) {
+                    API::log(std::string(Tool::Log::error::label), get_string(-1));
+                    pop();
+                }
+                return result;
+            }
+        
             std::string compile_string(const std::string& raw, const std::string& chunk_name = "") {
                 if (raw.empty()) return "empty source";
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
@@ -505,11 +513,7 @@ namespace Vital::Sandbox {
                     push(env_index);
                     if (!lua_setupvalue(state, -2, 1)) pop();
                 }
-                if (auto_load && !pcall(0)) {
-                    API::log(std::string(Tool::Log::error::label), get_string(-1));
-                    pop();
-                    return 0;
-                }
+                if (auto_load && !pcall(0)) return 0;
                 return 1;
             }
     };
