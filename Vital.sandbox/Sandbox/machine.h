@@ -443,7 +443,7 @@ namespace Vital::Sandbox {
             void push(int index = 1) { lua_pushvalue(state, index); }
             void pop(int count = 1) { lua_pop(state, count); }
             void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
-            bool pcall(int arguments, int returns) { return lua_pcall(state, arguments, returns, 0) == LUA_OK; }
+            bool pcall(int arguments, int returns = LUA_MULTRET) { return lua_pcall(state, arguments, returns, 0) == LUA_OK; }
             void set_table(int index = 1) { lua_settable(state, index); }
             void set_table_field(int field, int index = 1) { lua_seti(state, index, field); }
             void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
@@ -505,7 +505,7 @@ namespace Vital::Sandbox {
                     push(env_index);
                     if (!lua_setupvalue(state, -2, 1)) pop();
                 }
-                if (auto_load && !pcall(0, LUA_MULTRET)) {
+                if (auto_load && !pcall(0)) {
                     API::log(std::string(Tool::Log::error::label), get_string(-1));
                     pop();
                     return 0;
