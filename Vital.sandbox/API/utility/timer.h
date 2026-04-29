@@ -30,33 +30,30 @@ namespace Vital::Sandbox::API {
             int id;
             std::string env_id;
             std::atomic<bool> destroyed{false};
-            int func_ref = LUA_NOREF;
             Machine* vm = nullptr;
+            std::string ref_key() const { return fmt::format("{}:{}", base_name, id); }
         };
-        inline static std::mutex registry_mutex;
+        inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
         inline static std::atomic<int> next_id{1};
 
         static void cancel_env(const std::string& env_id) {
-            std::lock_guard<std::mutex> lock(registry_mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             for (auto& [id, inst] : registry) {
                 if (inst -> env_id == env_id) inst -> destroyed = true;
             }
         }
 
         static std::shared_ptr<Instance> get_inst(int id) {
-            std::lock_guard<std::mutex> lock(registry_mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             auto it = registry.find(id);
             return it != registry.end() ? it -> second : nullptr;
         }
 
         static void cleanup(std::shared_ptr<Instance> inst) {
             if (!inst) return;
-            if (inst -> func_ref != LUA_NOREF) {
-                luaL_unref(inst -> vm -> get_state(), LUA_REGISTRYINDEX, inst -> func_ref);
-                inst -> func_ref = LUA_NOREF;
-            }
-            std::lock_guard<std::mutex> lock(registry_mutex);
+            inst -> vm -> del_reference(inst -> ref_key());
+            std::lock_guard<std::mutex> lock(mutex);
             registry.erase(inst -> id);
         }
     
@@ -71,17 +68,16 @@ namespace Vital::Sandbox::API {
 
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
-                vm -> push(1);
-                int func_ref = luaL_ref(vm -> get_state(), LUA_REGISTRYINDEX);
                 std::string env_id = vm -> get_environment_id();
                 auto inst = std::make_shared<Instance>();
                 inst -> id = next_id.fetch_add(1);
                 inst -> env_id = env_id;
-                inst -> func_ref = func_ref;
                 inst -> vm = vm;
-
+                vm -> push(1);
+                vm -> set_reference(inst -> ref_key(), -1);
+                vm -> pop(1);
                 {
-                    std::lock_guard<std::mutex> lock(registry_mutex);
+                    std::lock_guard<std::mutex> lock(mutex);
                     registry[inst -> id] = inst;
                 }
                 vm -> create_object(base_name, inst.get());
@@ -96,8 +92,7 @@ namespace Vital::Sandbox::API {
                     Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
-                        lua_State* L = inst -> vm -> get_state();
-                        lua_rawgeti(L, LUA_REGISTRYINDEX, inst -> func_ref); // TOOD: USE MACHINE CALLS
+                        inst -> vm -> get_reference(inst -> ref_key(), true);
                         inst -> vm -> pcall(0, 0);
                     });
                 }, interval, executions);
@@ -129,7 +124,6 @@ namespace Vital::Sandbox::API {
                     });
                 }
                 vm -> push_value(true);
-
 
                 /*
                 // TODO: Should release userdata too // Anisa
