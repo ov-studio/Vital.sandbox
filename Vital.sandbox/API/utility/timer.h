@@ -97,16 +97,20 @@ namespace Vital::Sandbox::API {
                 inst -> env_id = env_id;
                 inst -> func_ref = func_ref;
                 inst -> vm = vm;
-        
+
                 {
                     std::lock_guard<std::mutex> lock(registry_mutex);
                     registry[inst -> id] = inst;
                 }
                 vm -> create_object(base_name, inst.get());
                 auto weak = std::weak_ptr<Instance>(inst);
+
                 Tool::Timer([weak](Tool::Timer* self) {
                     auto inst = weak.lock();
-                    if (!inst || inst -> destroyed) return;
+                    if (!inst || inst -> destroyed) {
+                        self -> stop();
+                        return;
+                    }
                     Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
@@ -125,10 +129,11 @@ namespace Vital::Sandbox::API {
                 }, interval, executions);
 
                 if (executions > 0) {
+                    // TODO: Needed?? above timer can intenrally handle it probably next to self -> stop();?? // Anisa
                     int cleanup_ms = interval * executions + interval;
                     Tool::Timer([weak](Tool::Timer* self) {
                         auto inst = weak.lock();
-                        if (!inst) return;
+                        if (!inst || inst -> destroyed) return;
                         inst -> destroyed = true;
                         Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
                             cleanup(weak.lock());
