@@ -123,20 +123,11 @@ namespace Vital::Manager {
     }
 
     void Resource::execute_resource(std::string name) {
-        #if defined(Vital_SDK_Client)
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (!is_pending_unsafe(name)) return;
-        }
-        #endif
         std::vector<std::pair<std::string, std::string>> sources;
         if (!validate_scripts(name, sources)) return;
 
         {
             std::lock_guard<std::mutex> lock(mutex);
-            #if defined(Vital_SDK_Client)
-            pending.erase(name);
-            #endif
             running.insert(name);
         }
         log("sbox", fmt::format("resource `{}` started", name));
@@ -219,7 +210,7 @@ namespace Vital::Manager {
 
     #if defined(Vital_SDK_Client)
     bool Resource::is_pending_unsafe(const std::string& name) const {
-        return pending.count(name) > 0;
+        return resource_assets.count(name) > 0;
     }
     #endif
 
@@ -421,7 +412,6 @@ namespace Vital::Manager {
                 if (!is_running_unsafe(name) && !is_pending_unsafe(name)) { log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
                 if (is_pending_unsafe(name)) {
                     resource_assets.erase(name);
-                    pending.erase(name);
                     am -> cancel_group(name);
                     log("sbox", fmt::format("resource `{}` download cancelled", name));
                 }
@@ -630,7 +620,6 @@ namespace Vital::Manager {
             for (const auto& script : resource -> scripts) {
                 if (is_type(script.type)) asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
             }
-            pending.insert(name);
             for (const auto& path : asset_paths) {
                 if (Tool::File::exists(Tool::get_directory(), path)) log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
                 else resource_assets[name].insert(path);
@@ -640,7 +629,7 @@ namespace Vital::Manager {
         bool all_cached;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            all_cached = resource_assets[name].empty();
+            all_cached = !is_pending_unsafe(name);
         }
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));

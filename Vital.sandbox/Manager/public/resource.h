@@ -48,7 +48,6 @@ namespace Vital::Manager {
             std::unordered_set<std::string> running;
             #if defined(Vital_SDK_Client)
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
-            std::unordered_set<std::string> pending;
             #endif
 
 
