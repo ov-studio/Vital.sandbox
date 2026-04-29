@@ -25,13 +25,13 @@
 #include <Vital.sandbox/API/core/font.h>
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
-
 #include <Vital.sandbox/API/utility/coroutine.h>
+#include <Vital.sandbox/API/utility/timer.h>
+#include <Vital.sandbox/API/utility/thread.h>
 #include <Vital.sandbox/API/utility/file.h>
 #include <Vital.sandbox/API/utility/rest.h>
 #include <Vital.sandbox/API/utility/crypto.h>
 #include <Vital.sandbox/API/utility/shrinker.h>
-
 #include <Vital.sandbox/API/gfx/ssr.h>
 #include <Vital.sandbox/API/gfx/ssao.h>
 #include <Vital.sandbox/API/gfx/ssil.h>
@@ -55,6 +55,8 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Discord>(),
         vm_module::make_api<API::Network>(),
         vm_module::make_api<API::Coroutine>(),
+        vm_module::make_api<API::Timer>(),
+        vm_module::make_api<API::Thread>(),
         vm_module::make_api<API::File>(),
         vm_module::make_api<API::Rest>(),
         vm_module::make_api<API::Crypto>(),
