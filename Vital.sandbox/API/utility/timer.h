@@ -26,16 +26,15 @@ namespace Vital::Sandbox::API {
     struct Timer : vm_module {
         inline static const std::string base_name = "timer";
         struct Instance {
-            int               id;
-            std::string       env_id;
+            int id;
+            std::string env_id;
             std::atomic<bool> destroyed{false};
-            int               func_ref = LUA_NOREF;
-            Machine*          vm       = nullptr;
+            int func_ref = LUA_NOREF;
+            Machine* vm = nullptr;
         };
-
-        inline static std::mutex                                          registry_mutex;
+        inline static std::mutex registry_mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
-        inline static std::atomic<int>                                    next_id{1};
+        inline static std::atomic<int> next_id{1};
 
         static void cancel_env(const std::string& env_id) {
             std::lock_guard<std::mutex> lock(registry_mutex);
