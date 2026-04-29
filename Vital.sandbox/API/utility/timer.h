@@ -97,17 +97,8 @@ namespace Vital::Sandbox::API {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
                         lua_State* L = inst -> vm -> get_state();
-                        lua_rawgeti(L, LUA_REGISTRYINDEX, inst -> func_ref);
-                        // TODO: No need to catch runtime error?? and function check // Anisa
-                        if (lua_isfunction(L, -1)) {
-                            if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-                                const char* err = lua_tostring(L, -1);
-                                Tool::print("error", fmt::format("Timer: runtime error: {}", err ? err : "?"));
-                                lua_pop(L, 1);
-                            }
-                        } else {
-                            lua_pop(L, 1);
-                        }
+                        lua_rawgeti(L, LUA_REGISTRYINDEX, inst -> func_ref); // TOOD: USE MACHINE CALLS
+                        inst -> vm -> pcall(0, 0);
                     });
                 }, interval, executions);
 
