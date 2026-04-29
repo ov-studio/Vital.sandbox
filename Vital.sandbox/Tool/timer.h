@@ -38,7 +38,7 @@ namespace Vital::Tool {
                     int targetExecutions = std::max(0, executions);
         
                     while (valid(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
-                        thread->sleep(targetInterval);
+                        thread -> sleep(targetInterval);
                         currentExecutions++;
                         exec(this);
                     }
