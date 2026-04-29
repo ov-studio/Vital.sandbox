@@ -39,33 +39,33 @@ namespace Vital::Sandbox::API {
         static void cancel_env(const std::string& env_id) {
             std::lock_guard<std::mutex> lock(registry_mutex);
             for (auto& [id, inst] : registry) {
-                if (inst->env_id == env_id) inst->destroyed = true;
+                if (inst -> env_id == env_id) inst -> destroyed = true;
             }
         }
 
         static std::shared_ptr<Instance> get_inst(int id) {
             std::lock_guard<std::mutex> lock(registry_mutex);
             auto it = registry.find(id);
-            return it != registry.end() ? it->second : nullptr;
+            return it != registry.end() ? it -> second : nullptr;
         }
 
         static void cleanup(std::shared_ptr<Instance> inst) {
             if (!inst) return;
-            if (inst->func_ref != LUA_NOREF) {
-                luaL_unref(inst->vm -> get_state(), LUA_REGISTRYINDEX, inst->func_ref);
-                inst->func_ref = LUA_NOREF;
+            if (inst -> func_ref != LUA_NOREF) {
+                luaL_unref(inst -> vm -> get_state(), LUA_REGISTRYINDEX, inst -> func_ref);
+                inst -> func_ref = LUA_NOREF;
             }
             std::lock_guard<std::mutex> lock(registry_mutex);
-            registry.erase(inst->id);
+            registry.erase(inst -> id);
         }
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "destroy",
                 std::function<int(Machine*, Instance*, const std::string&)>(
                     [](Machine* vm, Instance* self, const std::string& id) -> int {
-                        if (!self || self->destroyed) { vm -> push_value(false); return 1; }
-                        self->destroyed = true;
-                        auto inst = get_inst(self->id);
+                        if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
+                        self -> destroyed = true;
+                        auto inst = get_inst(self -> id);
                         if (inst) {
                             Vital::Engine::Core::get_singleton()->push_deferred([inst]() {
                                 cleanup(inst);
@@ -87,37 +87,31 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number);
 
-                int interval   = std::max(1, vm -> get_int(2));
+                int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
-
                 vm -> push(1);
                 int func_ref = luaL_ref(vm -> get_state(), LUA_REGISTRYINDEX);
-
                 std::string env_id = vm -> get_environment_id();
-
-                auto inst      = std::make_shared<Instance>();
-                inst->id       = next_id.fetch_add(1);
-                inst->env_id   = env_id;
-                inst->func_ref = func_ref;
-                inst->vm       = vm;
-
+                auto inst = std::make_shared<Instance>();
+                inst -> id = next_id.fetch_add(1);
+                inst -> env_id = env_id;
+                inst -> func_ref = func_ref;
+                inst -> vm = vm;
+        
                 {
                     std::lock_guard<std::mutex> lock(registry_mutex);
-                    registry[inst->id] = inst;
+                    registry[inst -> id] = inst;
                 }
-
                 vm -> create_object(base_name, inst.get());
-
                 auto weak = std::weak_ptr<Instance>(inst);
-
                 Tool::Timer([weak](Tool::Timer* self) {
                     auto inst = weak.lock();
-                    if (!inst || inst->destroyed) return;
+                    if (!inst || inst -> destroyed) return;
                     Vital::Engine::Core::get_singleton()->push_deferred([weak]() {
                         auto inst = weak.lock();
-                        if (!inst || inst->destroyed) return;
-                        lua_State* L = inst->vm -> get_state();
-                        lua_rawgeti(L, LUA_REGISTRYINDEX, inst->func_ref);
+                        if (!inst || inst -> destroyed) return;
+                        lua_State* L = inst -> vm -> get_state();
+                        lua_rawgeti(L, LUA_REGISTRYINDEX, inst -> func_ref);
                         if (lua_isfunction(L, -1)) {
                             if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
                                 const char* err = lua_tostring(L, -1);
@@ -135,13 +129,12 @@ namespace Vital::Sandbox::API {
                     Tool::Timer([weak](Tool::Timer* self) {
                         auto inst = weak.lock();
                         if (!inst) return;
-                        inst->destroyed = true;
+                        inst -> destroyed = true;
                         Vital::Engine::Core::get_singleton()->push_deferred([weak]() {
                             cleanup(weak.lock());
                         });
                     }, cleanup_ms, 1);
                 }
-
                 return 1;
             });
         }
