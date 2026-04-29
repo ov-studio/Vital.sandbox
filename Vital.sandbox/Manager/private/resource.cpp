@@ -264,7 +264,7 @@ namespace Vital::Manager {
                 }
                 if (!ready_name.empty()) {
                     log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", ready_name));
-                    rm -> execute_resource(ready_name);
+                    rm -> start(ready_name);
                 }
             });
 
@@ -644,6 +644,7 @@ namespace Vital::Manager {
         }
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
+            pending.erase(name);
             start(name);
         }
         else {
