@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
                         self -> destroyed = true;
                         auto inst = get_inst(self -> id);
                         if (inst) {
-                            Vital::Engine::Core::get_singleton()->push_deferred([inst]() {
+                            Vital::Engine::Core::get_singleton() -> push_deferred([inst]() {
                                 cleanup(inst);
                             });
                         }
@@ -107,7 +107,7 @@ namespace Vital::Sandbox::API {
                 Tool::Timer([weak](Tool::Timer* self) {
                     auto inst = weak.lock();
                     if (!inst || inst -> destroyed) return;
-                    Vital::Engine::Core::get_singleton()->push_deferred([weak]() {
+                    Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
                         lua_State* L = inst -> vm -> get_state();
@@ -130,7 +130,7 @@ namespace Vital::Sandbox::API {
                         auto inst = weak.lock();
                         if (!inst) return;
                         inst -> destroyed = true;
-                        Vital::Engine::Core::get_singleton()->push_deferred([weak]() {
+                        Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
                             cleanup(weak.lock());
                         });
                     }, cleanup_ms, 1);
