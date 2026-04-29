@@ -32,25 +32,24 @@ namespace Vital::Tool {
                     std::lock_guard<std::mutex> lock(mutex);
                     buffer.emplace(this, true);
                 }
+                interval = std::max(0, interval);
+                executions = std::max(0, executions);
                 Thread([=](Thread* thread) {
-                    int currentExecutions = 0;
-                    int targetInterval = std::max(0, interval);
-                    int targetExecutions = std::max(0, executions);
-        
-                    while (valid(this) && ((targetExecutions == 0) || (currentExecutions < targetExecutions))) {
-                        thread -> sleep(targetInterval);
-                        currentExecutions++;
+                    int count = 0;
+                    while (valid(this) && ((executions == 0) || (count < executions))) {
+                        thread -> sleep(interval);
+                        count++;
                         exec(this);
                     }
                     stop();
                 }).detach();
             }
-        
+
             static bool valid(Timer* identifier) {
                 std::lock_guard<std::mutex> lock(mutex);
                 return buffer.find(identifier) != buffer.end();
             }
-    
+
             void stop() {
                 std::lock_guard<std::mutex> lock(mutex);
                 buffer.erase(this);
