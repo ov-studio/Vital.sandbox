@@ -86,6 +86,7 @@ namespace Vital::Sandbox::API {
                 vm -> create_object(base_name, inst.get());
                 auto weak = std::weak_ptr<Instance>(inst);
 
+                Tool::Timer::create([weak](Tool::Timer* self) {
                     auto inst = weak.lock();
                     if (!inst || inst -> destroyed) {
                         self -> stop();
