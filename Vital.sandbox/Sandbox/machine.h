@@ -346,10 +346,6 @@ namespace Vital::Sandbox {
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 set_reference(id, -1);
             }
-
-            static void register_environment_cleaner(vm_env_cleaner exec) {
-                env_cleaners.push_back(std::move(exec));
-            }
     
             std::string get_environment_id(int level = 0) {
                 lua_Debug debug;
@@ -377,6 +373,10 @@ namespace Vital::Sandbox {
                 lua_pushnil(state);
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 del_reference(id);
+            }
+
+            static void register_environment_cleaner(vm_env_cleaner exec) {
+                env_cleaners.push_back(std::move(exec));
             }
 
 
