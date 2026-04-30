@@ -101,6 +101,10 @@ namespace Vital::Sandbox::API {
                         instance -> vm -> pcall(1, 0);
                         if ((executions > 0) && (count >= executions)) {
                             instance -> destroyed = true;
+                            if (instance -> userdata) {
+                                *instance -> userdata = nullptr;
+                                instance -> userdata = nullptr;
+                            }
                             cleanup(instance);
                         }
                     });
