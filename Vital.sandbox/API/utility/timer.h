@@ -61,8 +61,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_function)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number)
-                    .validate(2, [](Machine* vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0")
-                    .validate(3, [](Machine* vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
+                    .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0")
+                    .validate(3, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
                     
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
