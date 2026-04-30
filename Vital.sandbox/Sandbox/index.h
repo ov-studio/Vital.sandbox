@@ -95,6 +95,14 @@ namespace Vital::Sandbox {
                 if (!std::invoke(std::forward<F>(check), vm, index)) throw_error(index, reason);
                 return *this;
             }
+
+            template<typename E>
+            inline vm_args& validate_enum(int index, E min, E max) {
+                return validate(index, [min, max](Machine* vm, int index) {
+                    auto value = vm -> get_int(index);
+                    return value >= min && value <= max;
+                }, fmt::format("out of range ({} - {})", min, max));
+            }
     };
 
     struct vm_module {
