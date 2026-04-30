@@ -42,7 +42,6 @@ namespace Vital::Sandbox {
     using vm_refs = std::unordered_map<std::string, int>;
     using vm_bind = std::function<int(Machine*, const std::string&)>;
     using vm_method = std::function<int(Machine*, void*, const std::string&)>;
-    using vm_env_canceller = std::function<void(const std::string&)>;
 
     struct vm_api {
         std::function<void(Machine*)> bind;
