@@ -123,6 +123,7 @@ namespace Vital::Sandbox::API {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto& [id, instance] : registry) {
                 if (instance -> env == env) instance -> destroyed = true;
+                for (auto& [id, instance] : buffer) {
             }
         }
     };
