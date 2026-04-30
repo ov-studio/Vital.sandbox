@@ -105,7 +105,7 @@ namespace Vital::Sandbox {
 
         template<typename T>
         static vm_api make_api() {
-            Machine::register_env_cleaner([](const std::string& env_id) { T::clean(env_id); });
+            Machine::register_environment_cleaner([](const std::string& env_id) { T::clean(env_id); });
             return {
                 [](Machine* vm) { T::bind(vm); },
                 [](Machine* vm) { T::inject(vm); }
