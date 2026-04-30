@@ -26,6 +26,7 @@ namespace Vital::Sandbox {
     class Machine : public Mixin<Machine> {
         protected:
             static vm_apis internal_apis;
+            inline static vm_env_cancellers env_cancellers;
             inline static vm_machines machines;
 
             inline static std::vector<luaL_Reg> whitelist = {
@@ -96,6 +97,10 @@ namespace Vital::Sandbox {
             }
 
 
+            static void register_env_canceller(vm_env_canceller fn) {
+                env_cancellers.push_back(std::move(fn));
+            }
+            
             // APIs //
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
             static const vm_machines fetch_machines() { return machines; }
