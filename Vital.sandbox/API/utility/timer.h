@@ -37,13 +37,6 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
         inline static std::atomic<int> next_id{1};
 
-        static void clean(const std::string& env) {
-            std::lock_guard<std::mutex> lock(mutex);
-            for (auto& [id, inst] : registry) {
-                if (inst -> env == env) inst -> destroyed = true;
-            }
-        }
-
         static std::shared_ptr<Instance> get_inst(int id) {
             std::lock_guard<std::mutex> lock(mutex);
             auto it = registry.find(id);
@@ -136,6 +129,13 @@ namespace Vital::Sandbox::API {
                 */
                 return 1;
             });
+        }
+
+        static void clean(const std::string& env) {
+            std::lock_guard<std::mutex> lock(mutex);
+            for (auto& [id, inst] : registry) {
+                if (inst -> env == env) inst -> destroyed = true;
+            }
         }
     };
 }

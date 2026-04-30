@@ -34,13 +34,6 @@ namespace Vital::Sandbox::API {
         inline static std::mutex                                        sleep_mutex;
         inline static std::vector<std::shared_ptr<SleepEntry>>          sleep_registry;
 
-        static void clean(const std::string& env) {
-            std::lock_guard<std::mutex> lock(sleep_mutex);
-            for (auto& entry : sleep_registry) {
-                if (entry->env == env) entry->cancelled = true;
-            }
-        }
-
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(handler)")
@@ -122,6 +115,13 @@ namespace Vital::Sandbox::API {
                 vm -> pause();
                 return 0;
             });
+        }
+
+        static void clean(const std::string& env) {
+            std::lock_guard<std::mutex> lock(sleep_mutex);
+            for (auto& entry : sleep_registry) {
+                if (entry->env == env) entry->cancelled = true;
+            }
         }
     };
 }

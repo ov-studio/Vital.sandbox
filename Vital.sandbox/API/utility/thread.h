@@ -42,23 +42,19 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
         inline static std::atomic<int>                             next_id{1};
 
-        static void clean(const std::string& env) {
-            std::lock_guard<std::mutex> lock(registry_mutex);
-            for (auto& [id, inst] : registry) {
-                if (inst->env == env) {
-                    inst->destroyed = true;
-                    // Also kill any sleep timer
-                    if (inst->sleep_timer_id != -1) {
-                        auto it = Timer::registry.find(inst->sleep_timer_id);
-                        if (it != Timer::registry.end()) it->second->destroyed = true;
-                        inst->sleep_timer_id = -1;
-                    }
-                }
+        static void destroy_inst(std::shared_ptr<Instance>& inst) {
+            if (!inst || inst->destroyed) return;
+            inst->destroyed = true;
+            if (inst->func_ref != LUA_NOREF && inst->vm_thread) {
+                luaL_unref(inst->vm_thread->get_state(), LUA_REGISTRYINDEX, inst->func_ref);
+                inst->func_ref = LUA_NOREF;
             }
+            inst->vm_thread = nullptr;
+            std::lock_guard<std::mutex> lock(registry_mutex);
+            registry.erase(inst->id);
         }
 
         static void bind(Machine* vm) {
-
             // thread:create(exec)
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
@@ -188,16 +184,19 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        static void destroy_inst(std::shared_ptr<Instance>& inst) {
-            if (!inst || inst->destroyed) return;
-            inst->destroyed = true;
-            if (inst->func_ref != LUA_NOREF && inst->vm_thread) {
-                luaL_unref(inst->vm_thread->get_state(), LUA_REGISTRYINDEX, inst->func_ref);
-                inst->func_ref = LUA_NOREF;
-            }
-            inst->vm_thread = nullptr;
+        static void clean(const std::string& env) {
             std::lock_guard<std::mutex> lock(registry_mutex);
-            registry.erase(inst->id);
+            for (auto& [id, inst] : registry) {
+                if (inst->env == env) {
+                    inst->destroyed = true;
+                    // Also kill any sleep timer
+                    if (inst->sleep_timer_id != -1) {
+                        auto it = Timer::registry.find(inst->sleep_timer_id);
+                        if (it != Timer::registry.end()) it->second->destroyed = true;
+                        inst->sleep_timer_id = -1;
+                    }
+                }
+            }
         }
     };
 }
