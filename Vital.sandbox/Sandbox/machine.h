@@ -365,9 +365,6 @@ namespace Vital::Sandbox {
                 return "";
             }
 
-            // TODO: Improve later // Anisa
-            void clear_environment_id(const std::string& id);
-            /*
             void clear_environment_id(const std::string& id) {
                 if (!is_reference(id)) return;
                 for (auto& cancel : env_cancellers) cancel(id);
@@ -376,7 +373,6 @@ namespace Vital::Sandbox {
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 del_reference(id);
             }
-            */
 
 
             // Context Handles //
