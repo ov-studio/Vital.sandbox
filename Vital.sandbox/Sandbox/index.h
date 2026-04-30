@@ -42,12 +42,14 @@ namespace Vital::Sandbox {
     using vm_refs = std::unordered_map<std::string, int>;
     using vm_bind = std::function<int(Machine*, const std::string&)>;
     using vm_method = std::function<int(Machine*, void*, const std::string&)>;
+    using vm_env_canceller = std::function<void(const std::string&)>;
 
     struct vm_api {
         std::function<void(Machine*)> bind;
         std::function<void(Machine*)> inject;
     };
     using vm_apis = std::vector<vm_api>;
+    using vm_env_cancellers = std::vector<vm_env_canceller>;
 
     struct vm_args {
         private:
@@ -99,15 +101,17 @@ namespace Vital::Sandbox {
         static void bind(Machine* vm) {}
         static void methods(Machine* vm) {}
         static void inject(Machine* vm) {}
-    
+        static void cancel_env(const std::string& env_id) {}
+
         template<typename T>
         static vm_api make_api() {
+            });
             return {
                 [](Machine* vm) { T::bind(vm); },
                 [](Machine* vm) { T::inject(vm); }
             };
         }
-    
+
         template<typename T>
         static void register_type(Machine* vm, const std::string& type_name) {
             vm -> create_metatable(type_name);
