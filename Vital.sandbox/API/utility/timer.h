@@ -86,7 +86,6 @@ namespace Vital::Sandbox::API {
                 vm -> create_object(base_name, inst.get());
                 auto weak = std::weak_ptr<Instance>(inst);
 
-                Tool::Timer([weak](Tool::Timer* self) {
                     auto inst = weak.lock();
                     if (!inst || inst -> destroyed) {
                         self -> stop();
@@ -104,6 +103,7 @@ namespace Vital::Sandbox::API {
                     // TODO: Needed?? above timer can intenrally handle it probably next to self -> stop();?? // Anisa
                     int cleanup_ms = interval * executions + interval;
                     Tool::Timer([weak](Tool::Timer* self) {
+                    Tool::Timer::create([weak](Tool::Timer* self) {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
                         inst -> destroyed = true;
