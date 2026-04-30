@@ -37,7 +37,7 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
         inline static std::atomic<int> next_id{1};
 
-        static void cancel_env(const std::string& env_id) {
+        static void clean(const std::string& env_id) {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto& [id, inst] : registry) {
                 if (inst -> env_id == env_id) inst -> destroyed = true;

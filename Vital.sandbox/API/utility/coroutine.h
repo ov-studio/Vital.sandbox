@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
         inline static std::mutex                                        sleep_mutex;
         inline static std::vector<std::shared_ptr<SleepEntry>>          sleep_registry;
 
-        static void cancel_env(const std::string& env_id) {
+        static void clean(const std::string& env_id) {
             std::lock_guard<std::mutex> lock(sleep_mutex);
             for (auto& entry : sleep_registry) {
                 if (entry->env_id == env_id) entry->cancelled = true;
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
                 int duration = vm -> get_int(1);
                 std::string env_id = vm -> get_environment_id();
 
-                // Track this sleep so cancel_env can kill it
+                // Track this sleep so clean can kill it
                 auto entry = std::make_shared<SleepEntry>();
                 entry->vm     = vm;
                 entry->env_id = env_id;
