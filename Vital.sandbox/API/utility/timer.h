@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
             std::string env_id;
             std::atomic<bool> destroyed{false};
             Machine* vm = nullptr;
-            std::string ref_key() const { return fmt::format("{}:{}", base_name, id); }
+            std::string ref_key() const { return fmt::format("{}:{}:{}", base_name, env_id, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
@@ -52,11 +52,14 @@ namespace Vital::Sandbox::API {
 
         static void cleanup(std::shared_ptr<Instance> inst) {
             if (!inst) return;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (registry.find(inst -> id) == registry.end()) return;
+                registry.erase(inst -> id);
+            }
             inst -> vm -> del_reference(inst -> ref_key());
-            std::lock_guard<std::mutex> lock(mutex);
-            registry.erase(inst -> id);
         }
-    
+
         static void bind(Machine* vm) {
             vm_module::register_type<Timer>(vm, base_name);
 
