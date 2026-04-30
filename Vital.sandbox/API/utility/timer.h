@@ -102,7 +102,6 @@ namespace Vital::Sandbox::API {
                 if (executions > 0) {
                     // TODO: Needed?? above timer can intenrally handle it probably next to self -> stop();?? // Anisa
                     int cleanup_ms = interval * executions + interval;
-                    Tool::Timer([weak](Tool::Timer* self) {
                     Tool::Timer::create([weak](Tool::Timer* self) {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
