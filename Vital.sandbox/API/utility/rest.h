@@ -41,7 +41,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (vm -> is_number(3)) timeout = vm -> get_int(3);
-                Tool::Thread([=](Tool::Thread* thread) {
+                Tool::Thread::create([=](Tool::Thread* thread) {
                     try {
                         vm -> push_value(Tool::Rest::get(url, headers, timeout));
                         vm -> push_value(false);
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::API {
                         vm -> push_value(error.what());
                     }
                     vm -> resume(2);
-                }).detach();
+                }) -> detach();
                 vm -> pause();
                 return 0;
             });
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (vm -> is_number(4)) timeout = vm -> get_int(4);
-                Tool::Thread([=](Tool::Thread* thread) {
+                Tool::Thread::create([=](Tool::Thread* thread) {
                     try {
                         vm -> push_value(Tool::Rest::post(url, body, headers, timeout));
                         vm -> push_value(false);
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
                         vm -> push_value(error.what());
                     }
                     vm -> resume(2);
-                }).detach();
+                }) -> detach();
                 vm -> pause();
                 return 0;
             });
