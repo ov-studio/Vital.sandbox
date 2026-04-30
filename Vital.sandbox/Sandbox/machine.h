@@ -370,9 +370,7 @@ namespace Vital::Sandbox {
             /*
             void clear_environment_id(const std::string& id) {
                 if (!is_reference(id)) return;
-                // Cancel all timers and threads for this resource
-                Vital::Sandbox::API::Timer::cancel_env(id);
-                Vital::Sandbox::API::Thread::cancel_env(id);
+                for (auto& cancel : env_cancellers) cancel(id);
                 get_reference(id, true);
                 lua_pushnil(state);
                 lua_rawset(state, LUA_REGISTRYINDEX);
