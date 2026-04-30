@@ -37,7 +37,7 @@ namespace Vital::Sandbox::API {
         inline static std::atomic<int> next_id{1};
         inline static std::mutex mutex;
 
-        static std::shared_ptr<Instance> get_inst(int id) {
+        static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);
             auto it = registry.find(id);
             return it != registry.end() ? it -> second : nullptr;
@@ -107,20 +107,14 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
                 self -> destroyed = true;
-                auto inst = get_inst(self -> id);
+                auto inst = fetch_instance(self -> id);
                 if (inst) {
                     Vital::Engine::Core::get_singleton() -> push_deferred([inst]() {
                         cleanup(inst);
                     });
                 }
-                vm -> push_value(true);
-
-                /*
-                // TODO: Should release userdata too // Anisa
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
-                return 1;
-                */
                 return 1;
             });
         }
