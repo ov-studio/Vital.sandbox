@@ -55,13 +55,13 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Timer>(vm, base_name);
-
+        
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec, interval, executions)")
                     .require(1, &Machine::is_function)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_number);
-
+        
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
                 std::string env = vm -> get_environment_id();
@@ -78,33 +78,25 @@ namespace Vital::Sandbox::API {
                 }
                 vm -> create_object(base_name, inst.get());
                 auto weak = std::weak_ptr<Instance>(inst);
-
-                Tool::Timer::create([weak](Tool::Timer* self) {
+        
+                Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
                     auto inst = weak.lock();
                     if (!inst || inst -> destroyed) {
                         self -> stop();
                         return;
                     }
-                    Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
+                    Vital::Engine::Core::get_singleton() -> push_deferred([weak, count, executions]() {
                         auto inst = weak.lock();
                         if (!inst || inst -> destroyed) return;
                         inst -> vm -> get_reference(inst -> ref_key(), true);
-                        inst -> vm -> pcall(0, 0);
+                        inst -> vm -> push_value(count);
+                        inst -> vm -> pcall(1, 0);
+                        if ((executions > 0) && (count >= executions)) {
+                            inst -> destroyed = true;
+                            cleanup(inst);
+                        }
                     });
                 }, interval, executions);
-
-                if (executions > 0) {
-                    // TODO: Needed?? above timer can intenrally handle it probably next to self -> stop();?? // Anisa
-                    int cleanup_ms = interval * executions + interval;
-                    Tool::Timer::create([weak](Tool::Timer* self) {
-                        auto inst = weak.lock();
-                        if (!inst || inst -> destroyed) return;
-                        inst -> destroyed = true;
-                        Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
-                            cleanup(weak.lock());
-                        });
-                    }, cleanup_ms, 1);
-                }
                 return 1;
             });
         }
