@@ -28,19 +28,19 @@ namespace Vital::Sandbox::API {
 
         struct Instance {
             int id;
-            std::string env_id;
+            std::string env;
             std::atomic<bool> destroyed{false};
             Machine* vm = nullptr;
-            std::string ref_key() const { return fmt::format("{}:{}:{}", base_name, env_id, id); }
+            std::string ref_key() const { return fmt::format("{}:{}:{}", base_name, env, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
         inline static std::atomic<int> next_id{1};
 
-        static void clean(const std::string& env_id) {
+        static void clean(const std::string& env) {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto& [id, inst] : registry) {
-                if (inst -> env_id == env_id) inst -> destroyed = true;
+                if (inst -> env == env) inst -> destroyed = true;
             }
         }
 
@@ -71,10 +71,10 @@ namespace Vital::Sandbox::API {
 
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
-                std::string env_id = vm -> get_environment_id();
+                std::string env = vm -> get_environment_id();
                 auto inst = std::make_shared<Instance>();
                 inst -> id = next_id.fetch_add(1);
-                inst -> env_id = env_id;
+                inst -> env = env;
                 inst -> vm = vm;
                 vm -> push(1);
                 vm -> set_reference(inst -> ref_key(), -1);

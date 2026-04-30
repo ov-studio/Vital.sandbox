@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         struct Instance {
             int              id;
-            std::string      env_id;
+            std::string      env;
             Machine*         vm_thread  = nullptr; // the Lua coroutine Machine
             int              func_ref   = LUA_NOREF;
             Machine*         owner_vm   = nullptr;
@@ -42,10 +42,10 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
         inline static std::atomic<int>                             next_id{1};
 
-        static void clean(const std::string& env_id) {
+        static void clean(const std::string& env) {
             std::lock_guard<std::mutex> lock(registry_mutex);
             for (auto& [id, inst] : registry) {
-                if (inst->env_id == env_id) {
+                if (inst->env == env) {
                     inst->destroyed = true;
                     // Also kill any sleep timer
                     if (inst->sleep_timer_id != -1) {
@@ -64,11 +64,11 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                std::string env_id = vm -> get_environment_id();
+                std::string env = vm -> get_environment_id();
 
                 auto inst       = std::make_shared<Instance>();
                 inst->id        = next_id.fetch_add(1);
-                inst->env_id    = env_id;
+                inst->env    = env;
                 inst->owner_vm  = vm;
 
                 // Create Lua coroutine
