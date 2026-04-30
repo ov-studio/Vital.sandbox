@@ -1,18 +1,25 @@
-// New file: machine.cpp
-#pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
-//#include <Vital.sandbox/API/utility/coroutine.h>
-#include <Vital.sandbox/API/utility/timer.h>
-//#include <Vital.sandbox/API/utility/thread.h>
+/*----------------------------------------------------------------
+     Resource: Vital.sandbox
+     Script: Sandbox: machine.cpp
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Sandbox Machine
+----------------------------------------------------------------*/
 
-// TODO: Improve later // Anisa
+
+//////////////
+// Imports //
+//////////////
+
+#include <Vital.sandbox/Sandbox/machine.h>
 
 namespace Vital::Sandbox {
+    vm_env_cancellers Machine::env_cancellers = {};
+
     void Machine::clear_environment_id(const std::string& id) {
         if (!is_reference(id)) return;
-        //API::Coroutine::cancel_env(id);
-        API::Timer::cancel_env(id);
-        //API::Thread::cancel_env(id);
+        for (auto& cancel : env_cancellers) cancel(id);
         get_reference(id, true);
         lua_pushnil(state);
         lua_rawset(state, LUA_REGISTRYINDEX);
