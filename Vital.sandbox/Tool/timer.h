@@ -34,7 +34,7 @@ namespace Vital::Tool {
                 }
                 interval = std::max(0, interval);
                 executions = std::max(0, executions);
-                Thread::create([=](Thread* thread) {
+                Tool::Thread::create([=](Tool::Thread* thread) {
                     int count = 0;
                     while (valid(this) && ((executions == 0) || (count < executions))) {
                         thread -> sleep(interval);
