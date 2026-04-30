@@ -91,6 +91,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number)
                     .validate_enum(1, godot::Environment::SDFGI_Y_SCALE_50_PERCENT, godot::Environment::SDFGI_Y_SCALE_100_PERCENT);
+    
                 auto value = vm -> get_int(1);
                 base_class::get_environment() -> set_sdfgi_y_scale(static_cast<godot::Environment::SDFGIYScale>(value));
                 vm -> push_value(true);
