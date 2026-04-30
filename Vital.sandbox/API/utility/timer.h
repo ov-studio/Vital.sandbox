@@ -31,24 +31,29 @@ namespace Vital::Sandbox::API {
             std::string env;
             std::atomic<bool> destroyed{false};
             Machine* vm = nullptr;
+            void** userdata = nullptr;
             std::string ref_key() const { return fmt::format("{}:{}:{}", base_name, env, id); }
         };
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
+        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id{1};
         inline static std::mutex mutex;
 
         static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);
-            auto it = registry.find(id);
-            return it != registry.end() ? it -> second : nullptr;
+            auto it = buffer.find(id);
+            return it != buffer.end() ? it -> second : nullptr;
         }
 
         static void cleanup(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                if (registry.find(instance -> id) == registry.end()) return;
-                registry.erase(instance -> id);
+                if (buffer.find(instance -> id) == buffer.end()) return;
+                buffer.erase(instance -> id);
+            }
+            if (instance -> userdata) {
+                *instance -> userdata = nullptr;
+                instance -> userdata = nullptr;
             }
             instance -> vm -> del_reference(instance -> ref_key());
         }
@@ -76,9 +81,10 @@ namespace Vital::Sandbox::API {
                 vm -> pop(1);
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    registry[instance -> id] = instance;
+                    buffer[instance -> id] = instance;
                 }
                 vm -> create_object(base_name, instance.get());
+                instance -> userdata = static_cast<void**>(lua_touserdata(vm -> get_state(), -1));
                 auto weak = std::weak_ptr<Instance>(instance);
         
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
@@ -120,10 +126,16 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            std::lock_guard<std::mutex> lock(mutex);
-            for (auto& [id, instance] : registry) {
-                if (instance -> env == env) instance -> destroyed = true;
+            std::vector<std::shared_ptr<Instance>> to_clean;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
                 for (auto& [id, instance] : buffer) {
+                    if (instance -> env == env) to_clean.push_back(instance);
+                }
+            }
+            for (auto& instance : to_clean) {
+                instance -> destroyed = true;
+                cleanup(instance);
             }
         }
     };
