@@ -129,7 +129,7 @@ namespace Vital::Sandbox {
             vm -> set_table_field("__index", -2);
             lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                 void** ud = static_cast<void**>(lua_touserdata(state, 1));
-                if (ud) *ud = nullptr;
+                release_userdata_ptr(ud);
                 return 0;
             }, 0);
             vm -> set_table_field("__gc", -2);
@@ -189,11 +189,17 @@ namespace Vital::Sandbox {
             lua_pop(state, 2);
             return name ? name : "";
         }
-    
+
+        static void release_userdata_ptr(void**& userdata) {
+            if (!userdata) return;
+            *userdata = nullptr;
+            userdata = nullptr;
+        }
+
         template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
             void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
-            if (ud) *ud = nullptr;
+            release_userdata_ptr(ud);
         }
     };
 
