@@ -26,7 +26,7 @@ namespace Vital::Tool {
             inline static std::unordered_map<std::thread::id, Thread*> buffer;
             inline static std::mutex mutex;
             std::thread thread;
-        public:
+
             Thread(std::function<void(Thread*)> exec) {
                 thread = std::thread([this, exec = std::move(exec)]() {
                     std::thread::id id = std::this_thread::get_id();
@@ -35,33 +35,38 @@ namespace Vital::Tool {
                         buffer.emplace(id, this);
                     }
                     exec(this);
+                    {
+                        std::lock_guard<std::mutex> lock(mutex);
+                        buffer.erase(std::this_thread::get_id());
+                    }
+                    delete this;
                 });
             }
-        
+
+        public:
+            static Thread* create(std::function<void(Thread*)> exec) {
+                return new Thread(std::move(exec));
+            }
+
             ~Thread() {
-                std::thread::id id = std::this_thread::get_id();
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    buffer.erase(id);
-                }
                 detach();
             }
-        
+
             static Thread* fetch() {
                 std::thread::id id = std::this_thread::get_id();
                 std::lock_guard<std::mutex> lock(mutex);
                 auto it = buffer.find(id);
                 return it != buffer.end() ? it -> second : nullptr;
             }
-    
-            void join() { 
-                if (thread.joinable()) thread.join(); 
+
+            void join() {
+                if (thread.joinable()) thread.join();
             }
-        
-            void detach() { 
-                if (thread.joinable()) thread.detach(); 
+
+            void detach() {
+                if (thread.joinable()) thread.detach();
             }
-        
+
             void sleep(int duration) {
                 if (duration < 0) return;
                 if (fetch() != this) return;

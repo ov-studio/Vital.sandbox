@@ -26,23 +26,28 @@ namespace Vital::Tool {
         private:
             inline static std::map<Timer*, bool> buffer;
             inline static std::mutex mutex;
-        public:
-            Timer(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
+            
+            Timer(std::function<void(Timer*)> exec, int interval, int executions) {
                 {
                     std::lock_guard<std::mutex> lock(mutex);
                     buffer.emplace(this, true);
                 }
                 interval = std::max(0, interval);
                 executions = std::max(0, executions);
-                Thread([=](Thread* thread) {
+                Thread::create([=](Thread* thread) {
                     int count = 0;
                     while (valid(this) && ((executions == 0) || (count < executions))) {
                         thread -> sleep(interval);
+                        if (!valid(this)) break;
                         count++;
                         exec(this);
                     }
-                    stop();
-                }).detach();
+                    if (valid(this)) stop();
+                }) -> detach();
+            }
+        public:
+            static Timer* create(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
+                return new Timer(std::move(exec), interval, executions);
             }
 
             static bool valid(Timer* identifier) {
@@ -51,8 +56,11 @@ namespace Vital::Tool {
             }
 
             void stop() {
-                std::lock_guard<std::mutex> lock(mutex);
-                buffer.erase(this);
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    buffer.erase(this);
+                }
+                delete this;
             }
     };
 }
