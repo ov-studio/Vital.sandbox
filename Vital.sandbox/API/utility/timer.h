@@ -43,14 +43,14 @@ namespace Vital::Sandbox::API {
             return it != registry.end() ? it -> second : nullptr;
         }
 
-        static void cleanup(std::shared_ptr<Instance> inst) {
-            if (!inst) return;
+        static void cleanup(std::shared_ptr<Instance> instance) {
+            if (!instance) return;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                if (registry.find(inst -> id) == registry.end()) return;
-                registry.erase(inst -> id);
+                if (registry.find(instance -> id) == registry.end()) return;
+                registry.erase(instance -> id);
             }
-            inst -> vm -> del_reference(inst -> ref_key());
+            instance -> vm -> del_reference(instance -> ref_key());
         }
 
         static void bind(Machine* vm) {
@@ -67,35 +67,35 @@ namespace Vital::Sandbox::API {
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
                 std::string env = vm -> get_environment_id();
-                auto inst = std::make_shared<Instance>();
-                inst -> id = next_id.fetch_add(1);
-                inst -> env = env;
-                inst -> vm = vm;
+                auto instance = std::make_shared<Instance>();
+                instance -> id = next_id.fetch_add(1);
+                instance -> env = env;
+                instance -> vm = vm;
                 vm -> push(1);
-                vm -> set_reference(inst -> ref_key(), -1);
+                vm -> set_reference(instance -> ref_key(), -1);
                 vm -> pop(1);
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    registry[inst -> id] = inst;
+                    registry[instance -> id] = instance;
                 }
-                vm -> create_object(base_name, inst.get());
-                auto weak = std::weak_ptr<Instance>(inst);
+                vm -> create_object(base_name, instance.get());
+                auto weak = std::weak_ptr<Instance>(instance);
         
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
-                    auto inst = weak.lock();
-                    if (!inst || inst -> destroyed) {
+                    auto instance = weak.lock();
+                    if (!instance || instance -> destroyed) {
                         self -> stop();
                         return;
                     }
                     Vital::Engine::Core::get_singleton() -> push_deferred([weak, count, executions]() {
-                        auto inst = weak.lock();
-                        if (!inst || inst -> destroyed) return;
-                        inst -> vm -> get_reference(inst -> ref_key(), true);
-                        inst -> vm -> push_value(count);
-                        inst -> vm -> pcall(1, 0);
+                        auto instance = weak.lock();
+                        if (!instance || instance -> destroyed) return;
+                        instance -> vm -> get_reference(instance -> ref_key(), true);
+                        instance -> vm -> push_value(count);
+                        instance -> vm -> pcall(1, 0);
                         if ((executions > 0) && (count >= executions)) {
-                            inst -> destroyed = true;
-                            cleanup(inst);
+                            instance -> destroyed = true;
+                            cleanup(instance);
                         }
                     });
                 }, interval, executions);
@@ -107,10 +107,10 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
                 self -> destroyed = true;
-                auto inst = fetch_instance(self -> id);
-                if (inst) {
-                    Vital::Engine::Core::get_singleton() -> push_deferred([inst]() {
-                        cleanup(inst);
+                auto instance = fetch_instance(self -> id);
+                if (instance) {
+                    Vital::Engine::Core::get_singleton() -> push_deferred([instance]() {
+                        cleanup(instance);
                     });
                 }
                 vm_module::release_userdata(vm, 1);
@@ -121,8 +121,8 @@ namespace Vital::Sandbox::API {
 
         static void clean(const std::string& env) {
             std::lock_guard<std::mutex> lock(mutex);
-            for (auto& [id, inst] : registry) {
-                if (inst -> env == env) inst -> destroyed = true;
+            for (auto& [id, instance] : registry) {
+                if (instance -> env == env) instance -> destroyed = true;
             }
         }
     };
