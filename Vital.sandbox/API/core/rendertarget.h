@@ -47,9 +47,7 @@ namespace Vital::Sandbox::API {
                 base_class* rt = nullptr;
                 if (vm -> get_count() >= 1 && !vm -> is_nil(1)) {
                     vm_args(vm, id, "(rendertarget, clear, instant)")
-                        .require(1, [](Machine* vm, int index) {
-                            return vm -> is_userdata(index) && vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index);
-                        });
+                        .require(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); });
         
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }

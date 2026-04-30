@@ -128,7 +128,7 @@ namespace Vital::Sandbox {
             bind_natives<T>(vm, type_name);
             vm -> set_table_field("__index", -2);
             lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
-                void** ud = static_cast<void**>(lua_touserdata(state, 1));
+                auto ud = static_cast<void**>(lua_touserdata(state, 1));
                 release_userdata_ptr(ud);
                 return 0;
             }, 0);
@@ -150,7 +150,7 @@ namespace Vital::Sandbox {
                 auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
                 auto vm = Machine::fetch_machine(state);
                 return vm -> execute([&]() -> int {
-                    void** ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
+                    auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                     if (!ud || !*ud) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type));
                     return (*fn)(vm, static_cast<T*>(*ud), *id);
                 });
@@ -176,7 +176,7 @@ namespace Vital::Sandbox {
     
         template<typename T = void>
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
-            void** ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
+            auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             return ud && *ud;
         }
     
@@ -197,7 +197,7 @@ namespace Vital::Sandbox {
 
         template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
-            void** ud = get_userdata_ptr(vm, index);
+            auto ud = get_userdata_ptr(vm, index);
             release_userdata_ptr(ud);
         }
 
