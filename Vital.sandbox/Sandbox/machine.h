@@ -26,8 +26,8 @@ namespace Vital::Sandbox {
     class Machine : public Mixin<Machine> {
         protected:
             static vm_apis internal_apis;
-            inline static vm_env_cancellers env_cancellers;
             inline static vm_machines machines;
+            inline static vm_env_cleaners env_cleaners;
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -372,7 +372,7 @@ namespace Vital::Sandbox {
 
             void clear_environment_id(const std::string& id) {
                 if (!is_reference(id)) return;
-                for (auto& cancel : env_cancellers) cancel(id);
+                for (auto& clean : env_cleaners) clean(id);
                 get_reference(id, true);
                 lua_pushnil(state);
                 lua_rawset(state, LUA_REGISTRYINDEX);
