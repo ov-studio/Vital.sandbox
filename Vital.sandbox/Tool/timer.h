@@ -24,8 +24,8 @@
 namespace Vital::Tool {
     class Timer {
         private:
-            inline static std::map<Timer*, bool> buffer;
             inline static std::mutex mutex;
+            inline static std::map<Timer*, bool> buffer;
             
             Timer(std::function<void(Timer*)> exec, int interval, int executions) {
                 {
