@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
             return it != buffer.end() ? it -> second : nullptr;
         }
 
-        static void cleanup(std::shared_ptr<Instance> instance) {
+        static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
                 std::lock_guard<std::mutex> lock(mutex);
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
                         instance -> vm -> pcall(1, 0);
                         if ((executions > 0) && (count >= executions)) {
                             instance -> destroyed = true;
-                            cleanup(instance);
+                            clean_instance(instance);
                         }
                     });
                 }, interval, executions);
@@ -108,7 +108,7 @@ namespace Vital::Sandbox::API {
                 if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
                 self -> destroyed = true;
                 auto instance = fetch_instance(self -> id);
-                if (instance) Vital::Engine::Core::get_singleton() -> push_deferred([instance]() { cleanup(instance); });
+                if (instance) Vital::Engine::Core::get_singleton() -> push_deferred([instance]() { clean_instance(instance); });
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
@@ -125,7 +125,7 @@ namespace Vital::Sandbox::API {
             }
             for (auto& instance : to_clean) {
                 instance -> destroyed = true;
-                cleanup(instance);
+                clean_instance(instance);
             }
         }
     };
