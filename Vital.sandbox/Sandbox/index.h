@@ -49,7 +49,8 @@ namespace Vital::Sandbox {
         std::function<void(Machine*)> inject;
     };
     using vm_apis = std::vector<vm_api>;
-    using vm_env_cancellers = std::vector<vm_env_canceller>;
+    using vm_env_cleaner = std::function<void(const std::string&)>;
+    using vm_env_cleaners = std::vector<vm_env_cleaner>;
 
     struct vm_args {
         private:
@@ -105,7 +106,7 @@ namespace Vital::Sandbox {
 
         template<typename T>
         static vm_api make_api() {
-            Machine::register_env_canceller([](const std::string& env_id) { T::clean(env_id); });
+            Machine::register_env_cleaner([](const std::string& env_id) { T::clean(env_id); });
             return {
                 [](Machine* vm) { T::bind(vm); },
                 [](Machine* vm) { T::inject(vm); }
