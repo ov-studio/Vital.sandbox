@@ -27,7 +27,7 @@ namespace Vital::Tool {
             inline static std::mutex mutex;
             inline static std::map<Timer*, bool> buffer;
             
-            Timer(std::function<void(Timer*)> exec, int interval, int executions) {
+            Timer(std::function<void(Timer*, int)> exec, int interval, int executions) {
                 {
                     std::lock_guard<std::mutex> lock(mutex);
                     buffer.emplace(this, true);
@@ -40,13 +40,13 @@ namespace Vital::Tool {
                         thread -> sleep(interval);
                         if (!valid(this)) break;
                         count++;
-                        exec(this);
+                        exec(this, count);
                     }
                     if (valid(this)) stop();
                 }) -> detach();
             }
         public:
-            static Timer* create(std::function<void(Timer*)> exec, int interval = 0, int executions = 1) {
+            static Timer* create(std::function<void(Timer*, int)> exec, int interval = 0, int executions = 1) {
                 return new Timer(std::move(exec), interval, executions);
             }
 
