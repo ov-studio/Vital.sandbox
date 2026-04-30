@@ -101,7 +101,7 @@ namespace Vital::Sandbox {
                 return validate(index, [min, max](Machine* vm, int index) {
                     auto value = vm -> get_int(index);
                     return value >= min && value <= max;
-                }, fmt::format("out of range ({} - {})", min, max));
+                }, fmt::format("out of range [{} - {}]", min, max));
             }
     };
 
