@@ -96,10 +96,6 @@ namespace Vital::Sandbox {
                 state = nullptr;
             }
 
-
-            static void register_env_canceller(vm_env_canceller fn) {
-                env_cancellers.push_back(std::move(fn));
-            }
             
             // APIs //
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
@@ -351,6 +347,10 @@ namespace Vital::Sandbox {
                 set_reference(id, -1);
             }
 
+            static void register_environment_cleaner(vm_env_cleaner exec) {
+                env_cleaners.push_back(std::move(exec));
+            }
+    
             std::string get_environment_id(int level = 0) {
                 lua_Debug debug;
                 for (int index = level; lua_getstack(state, index, &debug); ++index) {
