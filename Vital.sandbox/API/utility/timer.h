@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> destroyed{false};
             Machine* vm = nullptr;
             void** userdata = nullptr;
-            std::string ref_key() const { return fmt::format("{}:{}:{}", base_name, env, id); }
+            std::string reference() const { return fmt::format("{}:{}:{}", base_name, env, id); }
         };
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id{1};
@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
                 buffer.erase(instance -> id);
             }
             vm_module::release_userdata_ptr(instance -> userdata);
-            instance -> vm -> del_reference(instance -> ref_key());
+            instance -> vm -> del_reference(instance -> reference());
         }
 
         static void bind(Machine* vm) {
@@ -74,7 +74,7 @@ namespace Vital::Sandbox::API {
                 instance -> env = env;
                 instance -> vm = vm;
                 vm -> push(1);
-                vm -> set_reference(instance -> ref_key(), -1);
+                vm -> set_reference(instance -> reference(), -1);
                 vm -> pop(1);
                 {
                     std::lock_guard<std::mutex> lock(mutex);
@@ -86,11 +86,11 @@ namespace Vital::Sandbox::API {
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
                     auto instance = weak.lock();
-                    if (!instance || instance -> destroyed) { self -> stop(); return; }
+                    if (!instance || instance -> destroyed) return self -> stop();
                     Vital::Engine::Core::get_singleton() -> push_deferred([weak, count, executions]() {
                         auto instance = weak.lock();
                         if (!instance || instance -> destroyed) return;
-                        instance -> vm -> get_reference(instance -> ref_key(), true);
+                        instance -> vm -> get_reference(instance -> reference(), true);
                         instance -> vm -> push_value(count);
                         instance -> vm -> pcall(1, 0);
                         if ((executions > 0) && (count >= executions)) {
