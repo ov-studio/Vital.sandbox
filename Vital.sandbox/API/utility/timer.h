@@ -81,9 +81,9 @@ namespace Vital::Sandbox::API {
                     buffer[instance -> id] = instance;
                 }
                 vm -> create_object(base_name, instance.get());
-                instance -> userdata = static_cast<void**>(lua_touserdata(vm -> get_state(), -1));
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+
                 auto weak = std::weak_ptr<Instance>(instance);
-        
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
                     auto instance = weak.lock();
                     if (!instance || instance -> destroyed) { self -> stop(); return; }

@@ -190,16 +190,21 @@ namespace Vital::Sandbox {
             return name ? name : "";
         }
 
-        static void release_userdata_ptr(void**& userdata) {
-            if (!userdata) return;
-            *userdata = nullptr;
-            userdata = nullptr;
+        template<typename T = void>
+        static void** get_userdata_ptr(Machine* vm, int index = 1) {
+            return static_cast<void**>(lua_touserdata(vm -> get_state(), index));
         }
 
         template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
-            void** ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
+            void** ud = get_userdata_ptr(vm, index);
             release_userdata_ptr(ud);
+        }
+
+        static void release_userdata_ptr(void**& userdata) {
+            if (!userdata) return;
+            *userdata = nullptr;
+            userdata = nullptr;
         }
     };
 
