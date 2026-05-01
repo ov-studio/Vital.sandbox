@@ -36,6 +36,7 @@ namespace Vital::Sandbox::API {
             Machine* thread_vm = nullptr;
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("{}:{}", base_name, id); }
+            std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -60,6 +61,8 @@ namespace Vital::Sandbox::API {
                 instance -> thread_vm = nullptr;
             }
             vm_module::release_userdata_ptr(instance -> userdata);
+            // FIX: also release the stored self-userdata reference
+            instance -> vm -> del_reference(instance -> self_reference());
             instance -> vm -> del_reference(instance -> reference());
         }
 
@@ -96,9 +99,23 @@ namespace Vital::Sandbox::API {
 
                 Machine* thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
+                // FIX: lua_newthread pushes the thread coroutine onto the owner stack;
+                // pop it now that we've wrapped it in a Machine*
+                vm -> pop(1);
 
+                // Store a reference to the exec function
                 vm -> push(1);
                 vm -> set_reference(instance -> reference(), -1);
+                vm -> pop(1);
+
+                // Create the userdata object and push it onto the stack
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+
+                // FIX: store a reference to the full userdata so resume can push it
+                // onto thread_vm without using light userdata (which can't hold metatables)
+                vm -> push(-1);
+                vm -> set_reference(instance -> self_reference(), -1);
                 vm -> pop(1);
 
                 {
@@ -106,8 +123,7 @@ namespace Vital::Sandbox::API {
                     buffer[instance -> id] = instance;
                 }
 
-                vm -> create_object(base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                // userdata is already on top of the stack — return it
                 return 1;
             });
         }
@@ -120,14 +136,17 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
 
-                // Push exec function onto thread stack
+                // Push exec function from owner vm registry onto owner vm stack,
+                // then move it to thread_vm
+                // FIX: was `self->thread_vm->move(self->thread_vm, 1)` — same src/dst = UB
                 self -> vm -> get_reference(self -> reference(), true);
-                self -> thread_vm -> move(self -> thread_vm, 1);
+                self -> vm -> move(self -> thread_vm, 1);
 
-                // Push self (thread userdata) as first argument to exec
-                void** ud = vm_module::get_userdata_ptr(vm, 1);
-                lua_pushlightuserdata(self -> thread_vm -> get_state(), ud ? *ud : nullptr);
-                luaL_setmetatable(self -> thread_vm -> get_state(), base_name.c_str());
+                // Push the full userdata (self) as first argument to exec.
+                // FIX: must use the stored full-userdata reference, NOT lua_pushlightuserdata,
+                // because light userdata cannot hold a metatable — methods on self would crash.
+                self -> vm -> get_reference(self -> self_reference(), true);
+                self -> vm -> move(self -> thread_vm, 1);
 
                 safe_resume(instance, 2); // exec(self)
                 vm -> push_value(true);
