@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/API/utility/promise.h>
 
 
 /////////////////////////
@@ -30,6 +31,7 @@ namespace Vital::Sandbox::API {
             std::string env;
             std::atomic<bool> destroyed{false};
             std::atomic<bool> sleeping{false};
+            std::atomic<bool> awaiting{false};
             Machine* vm = nullptr;
             Machine* thread_vm = nullptr;
             void** userdata = nullptr;
@@ -112,11 +114,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
                 auto instance = fetch_instance(self -> id);
-                if (instance) {
-                    Vital::Engine::Core::get_singleton() -> push_deferred([instance]() {
-                        clean_instance(instance);
-                    });
-                }
+                if (instance) Vital::Engine::Core::get_singleton() -> push_deferred([instance]() { clean_instance(instance); });
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
@@ -171,6 +169,55 @@ namespace Vital::Sandbox::API {
 
                 vm -> pause();
                 return 0;
+            });
+
+            // thread:await(promise) -> resolved, ...values
+            // Suspends the thread until the promise settles, then returns resolved bool + values
+            vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(promise)")
+                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata(vm, Promise::base_name, index); });
+
+                if (!self || self -> destroyed || self -> awaiting) { vm -> push_value(false); return 1; }
+                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
+
+                // Fetch promise instance from userdata
+                auto ud = static_cast<Promise::Instance**>(lua_touserdata(vm -> get_state(), 2));
+                if (!ud || !*ud) { vm -> push_value(false); return 1; }
+                auto promise_inst = Promise::fetch_instance((*ud) -> id);
+                if (!promise_inst) { vm -> push_value(false); return 1; }
+
+                // If already settled, return immediately
+                if (promise_inst -> state != Promise::State::Pending) {
+                    vm -> push_value(promise_inst -> resolved);
+                    if (promise_inst -> result_ref != LUA_NOREF) {
+                        lua_rawgeti(promise_inst -> vm -> get_state(), LUA_REGISTRYINDEX, promise_inst -> result_ref);
+                        int n = (int)lua_rawlen(promise_inst -> vm -> get_state(), -1);
+                        for (int i = 1; i <= n; ++i) lua_rawgeti(promise_inst -> vm -> get_state(), -n + i - 1, i);
+                        lua_remove(promise_inst -> vm -> get_state(), -(n + 1));
+                        return 1 + n;
+                    }
+                    return 1;
+                }
+
+                // Register this thread as waiting on the promise
+                self -> awaiting = true;
+                auto instance = fetch_instance(self -> id);
+                promise_inst -> waiting.push_back({ self -> thread_vm, self -> vm });
+
+                // Suspend — promise settle() will resume with (resolved_bool, result_table)
+                vm -> pause();
+
+                // After resume: stack has (resolved_bool, result_table) pushed by settle()
+                // Unpack result_table into individual return values
+                bool resolved = vm -> get_bool(1);
+                int n = 0;
+                if (vm -> is_table(2)) {
+                    n = vm -> get_length(2);
+                    for (int i = 1; i <= n; ++i) vm -> get_table_field(i, 2);
+                }
+
+                if (instance) instance -> awaiting = false;
+                return 1 + n; // resolved_bool + values
             });
         }
 
