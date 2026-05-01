@@ -242,14 +242,20 @@ namespace Vital::Sandbox::API {
                 // Already settled — return immediately without suspending
                 if (promise_inst -> state != Promise::State::Pending) {
                     vm -> push_value(promise_inst -> resolved);
+                    int n = 0;
                     if (promise_inst -> result_ref != LUA_NOREF) {
-                        lua_rawgeti(promise_inst -> vm -> get_state(), LUA_REGISTRYINDEX, promise_inst -> result_ref);
-                        int n = (int)lua_rawlen(promise_inst -> vm -> get_state(), -1);
-                        for (int i = 1; i <= n; ++i) lua_rawgeti(promise_inst -> vm -> get_state(), -(n - i + 2), i);
-                        lua_remove(promise_inst -> vm -> get_state(), -(n + 1));
-                        return 1 + n;
+                        // result table lives in promise_inst->vm's registry;
+                        // push it there, unpack each field, then move all to calling vm
+                        lua_State* psrc = promise_inst -> vm -> get_state();
+                        lua_rawgeti(psrc, LUA_REGISTRYINDEX, promise_inst -> result_ref);
+                        n = (int)lua_rawlen(psrc, -1);
+                        for (int i = 1; i <= n; ++i) lua_rawgeti(psrc, -1 - (i - 1), i);
+                        // remove the table itself, leaving only the n field values
+                        lua_remove(psrc, -(n + 1));
+                        // move all n values from promise vm -> calling vm
+                        if (n > 0) lua_xmove(psrc, vm -> get_state(), n);
                     }
-                    return 1;
+                    return 1 + n;
                 }
 
                 // Register this thread as waiting on the promise
@@ -257,15 +263,18 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self -> id);
                 promise_inst -> waiting.push_back({ self -> thread_vm, self -> vm });
 
-                // Suspend — promise settle() will resume with (resolved_bool, result_table)
+                // Suspend — promise settle() resumes with (resolved_bool, result_table)
                 vm -> pause();
 
-                // After resume: unpack result_table into return values
+                // After resume: stack is [bool, table]
+                // Unpack result_table fields onto the stack, then remove the table
                 bool resolved = vm -> get_bool(1);
                 int n = 0;
                 if (vm -> is_table(2)) {
                     n = vm -> get_length(2);
                     for (int i = 1; i <= n; ++i) vm -> get_table_field(i, 2);
+                    // remove the table at index 2, leaving [bool, field1, field2, ...]
+                    lua_remove(vm -> get_state(), 2);
                 }
 
                 if (instance) instance -> awaiting = false;
