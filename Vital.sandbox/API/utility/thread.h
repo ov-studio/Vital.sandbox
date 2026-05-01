@@ -63,6 +63,23 @@ namespace Vital::Sandbox::API {
             instance -> vm -> del_reference(instance -> reference());
         }
 
+        // Safe resume helper — reports errors through owner vm, cleans up if dead
+        static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
+            if (!instance || instance -> destroyed || !instance -> thread_vm) return false;
+            instance -> thread_vm -> resume(args);
+            int status = lua_status(instance -> thread_vm -> get_state());
+            if (status != LUA_YIELD) {
+                if (status != LUA_OK) {
+                    std::string err = lua_tostring(instance -> thread_vm -> get_state(), -1);
+                    lua_pop(instance -> thread_vm -> get_state(), 1);
+                    API::log(std::string(Tool::Log::error::label), err);
+                }
+                clean_instance(instance);
+                return false;
+            }
+            return true;
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm, base_name);
 
@@ -97,25 +114,22 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             // thread:resume()
-            // Pushes the userdata (self) as first arg to the coroutine function
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
 
-                // Push exec function
+                auto instance = fetch_instance(self -> id);
+                if (!instance) { vm -> push_value(false); return 1; }
+
+                // Push exec function onto thread stack
                 self -> vm -> get_reference(self -> reference(), true);
                 self -> thread_vm -> move(self -> thread_vm, 1);
 
-                // Push userdata (self) as first argument to the exec function
+                // Push self (thread userdata) as first argument to exec
                 void** ud = vm_module::get_userdata_ptr(vm, 1);
                 lua_pushlightuserdata(self -> thread_vm -> get_state(), ud ? *ud : nullptr);
                 luaL_setmetatable(self -> thread_vm -> get_state(), base_name.c_str());
 
-                self -> thread_vm -> resume(2); // exec(self, ...)
-
-                if (lua_status(self -> thread_vm -> get_state()) != LUA_YIELD) {
-                    auto instance = fetch_instance(self -> id);
-                    clean_instance(instance);
-                }
+                safe_resume(instance, 2); // exec(self)
                 vm -> push_value(true);
                 return 1;
             });
@@ -170,10 +184,7 @@ namespace Vital::Sandbox::API {
                         if (!instance || instance -> destroyed) return;
                         instance -> sleeping = false;
                         if (!instance -> thread_vm) return;
-                        instance -> thread_vm -> resume(0);
-                        if (lua_status(instance -> thread_vm -> get_state()) != LUA_YIELD) {
-                            clean_instance(instance);
-                        }
+                        safe_resume(instance, 0);
                     });
                 }, duration, 1);
 
@@ -200,24 +211,24 @@ namespace Vital::Sandbox::API {
                 if (promise_inst -> state != Promise::State::Pending) {
                     vm -> push_value(promise_inst -> resolved);
                     if (promise_inst -> result_ref != LUA_NOREF) {
-                        int n = (int)lua_rawlen(promise_inst -> vm -> get_state(), -1);
                         lua_rawgeti(promise_inst -> vm -> get_state(), LUA_REGISTRYINDEX, promise_inst -> result_ref);
-                        for (int i = 1; i <= n; ++i) lua_rawgeti(promise_inst -> vm -> get_state(), -n + i - 1, i);
+                        int n = (int)lua_rawlen(promise_inst -> vm -> get_state(), -1);
+                        for (int i = 1; i <= n; ++i) lua_rawgeti(promise_inst -> vm -> get_state(), -(n - i + 2), i);
                         lua_remove(promise_inst -> vm -> get_state(), -(n + 1));
                         return 1 + n;
                     }
                     return 1;
                 }
 
-                // Register this thread as waiting
+                // Register this thread as waiting on the promise
                 self -> awaiting = true;
                 auto instance = fetch_instance(self -> id);
                 promise_inst -> waiting.push_back({ self -> thread_vm, self -> vm });
 
-                // Suspend until promise settles
+                // Suspend — promise settle() will resume with (resolved_bool, result_table)
                 vm -> pause();
 
-                // After resume: stack has (resolved_bool, result_table) from settle()
+                // After resume: unpack result_table into return values
                 bool resolved = vm -> get_bool(1);
                 int n = 0;
                 if (vm -> is_table(2)) {
