@@ -56,6 +56,9 @@ namespace Vital::Sandbox::API {
                 buffer.erase(instance -> id);
             }
             instance -> destroyed = true;
+            // thread_vm may already have been deleted by Machine::resume() (which calls
+            // `delete this` on non-yield). safe_resume nulls it out in that case, so
+            // this guard prevents a double-free.
             if (instance -> thread_vm) {
                 delete instance -> thread_vm;
                 instance -> thread_vm = nullptr;
@@ -69,14 +72,25 @@ namespace Vital::Sandbox::API {
         // Safe resume helper — reports errors through owner vm, cleans up if dead
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance -> destroyed || !instance -> thread_vm) return false;
+
+            // Capture state pointer and status BEFORE calling resume.
+            // Machine::resume() calls `delete this` when the coroutine finishes
+            // (non-LUA_YIELD), so instance->thread_vm becomes a dangling pointer
+            // the moment resume() returns in that case — never touch it afterward.
+            vm_state* thread_state = instance -> thread_vm -> get_state();
             instance -> thread_vm -> resume(args);
-            int status = lua_status(instance -> thread_vm -> get_state());
+
+            // thread_vm may be deleted now — use the raw state pointer only
+            int status = lua_status(thread_state);
             if (status != LUA_YIELD) {
                 if (status != LUA_OK) {
-                    std::string err = lua_tostring(instance -> thread_vm -> get_state(), -1);
-                    lua_pop(instance -> thread_vm -> get_state(), 1);
+                    std::string err = lua_tostring(thread_state, -1);
+                    lua_pop(thread_state, 1);
                     API::log(std::string(Tool::Log::error::label), err);
                 }
+                // Machine::resume() already deleted thread_vm; null it out so
+                // clean_instance does not attempt a second delete
+                instance -> thread_vm = nullptr;
                 clean_instance(instance);
                 return false;
             }
@@ -103,20 +117,19 @@ namespace Vital::Sandbox::API {
                 // pop it now that we've wrapped it in a Machine*
                 vm -> pop(1);
 
-                // Store a reference to the exec function
-                vm -> push(1);
-                vm -> set_reference(instance -> reference(), -1);
-                vm -> pop(1);
+                // Store a reference to the exec function.
+                // set_reference internally does push(index) + luaL_ref (which pops the
+                // duplicate), so it is stack-neutral — do NOT pop afterward.
+                vm -> set_reference(instance -> reference(), 1);
 
-                // Create the userdata object and push it onto the stack
+                // Create the userdata object — leaves it on top of the stack
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
 
                 // FIX: store a reference to the full userdata so resume can push it
-                // onto thread_vm without using light userdata (which can't hold metatables)
-                vm -> push(-1);
+                // onto thread_vm without using light userdata (which can't hold metatables).
+                // set_reference is stack-neutral, so userdata stays at -1 for return.
                 vm -> set_reference(instance -> self_reference(), -1);
-                vm -> pop(1);
 
                 {
                     std::lock_guard<std::mutex> lock(mutex);
@@ -148,7 +161,7 @@ namespace Vital::Sandbox::API {
                 self -> vm -> get_reference(self -> self_reference(), true);
                 self -> vm -> move(self -> thread_vm, 1);
 
-                safe_resume(instance, 2); // exec(self)
+                safe_resume(instance, 1); // exec(self) — count is args only, not args+function
                 vm -> push_value(true);
                 return 1;
             });
