@@ -32,6 +32,7 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> sleeping{false};
             Machine* vm = nullptr;
             Machine* thread_vm = nullptr;
+            void** userdata = nullptr;
             std::string reference() const { return fmt::format("{}:{}", base_name, id); }
         };
         inline static std::mutex mutex;
@@ -56,11 +57,14 @@ namespace Vital::Sandbox::API {
                 delete instance -> thread_vm;
                 instance -> thread_vm = nullptr;
             }
+            vm_module::release_userdata_ptr(instance -> userdata);
             instance -> vm -> del_reference(instance -> reference());
         }
 
         static void bind(Machine* vm) {
-            // thread.create(exec) -> thread_id
+            vm_module::register_type<Thread>(vm, base_name);
+
+            // thread.create(exec) -> thread userdata
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
@@ -83,83 +87,73 @@ namespace Vital::Sandbox::API {
                     buffer[instance -> id] = instance;
                 }
 
-                vm -> push_number(instance -> id);
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
             });
+        }
 
-            // thread.resume(thread_id)
-            API::bind(vm, {base_name}, "resume", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(thread_id)")
-                    .require(1, &Machine::is_number);
-
-                int inst_id = vm -> get_int(1);
-                auto instance = fetch_instance(inst_id);
-                if (!instance || instance -> destroyed || !instance -> thread_vm) {
-                    vm -> push_value(false);
-                    return 1;
-                }
-
-                instance -> vm -> get_reference(instance -> reference(), true);
-                instance -> thread_vm -> move(instance -> thread_vm, 1);
-                instance -> thread_vm -> resume(1);
-
-                if (lua_status(instance -> thread_vm -> get_state()) != LUA_YIELD) {
+        static void methods(Machine* vm) {
+            // thread:resume()
+            vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
+                if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
+                self -> vm -> get_reference(self -> reference(), true);
+                self -> thread_vm -> move(self -> thread_vm, 1);
+                self -> thread_vm -> resume(1);
+                if (lua_status(self -> thread_vm -> get_state()) != LUA_YIELD) {
+                    auto instance = fetch_instance(self -> id);
                     clean_instance(instance);
                 }
                 vm -> push_value(true);
                 return 1;
             });
 
-            // thread.destroy(thread_id)
-            API::bind(vm, {base_name}, "destroy", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(thread_id)")
-                    .require(1, &Machine::is_number);
-
-                int inst_id = vm -> get_int(1);
-                auto instance = fetch_instance(inst_id);
-                if (!instance) { vm -> push_value(false); return 1; }
-                clean_instance(instance);
+            // thread:destroy()
+            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
+                auto instance = fetch_instance(self -> id);
+                if (instance) {
+                    Vital::Engine::Core::get_singleton() -> push_deferred([instance]() {
+                        clean_instance(instance);
+                    });
+                }
+                vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
             });
 
-            // thread.get_thread() -> thread_id or false
-            API::bind(vm, {base_name}, "get_thread", [](auto vm, auto& id) -> int {
-                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
-                std::lock_guard<std::mutex> lock(mutex);
-                for (auto& [inst_id, instance] : buffer) {
-                    if (instance -> thread_vm && instance -> thread_vm -> get_state() == vm -> get_state()) {
-                        vm -> push_number(inst_id);
-                        return 1;
-                    }
-                }
-                vm -> push_value(false);
+            // thread:is_instance()
+            vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self && !self -> destroyed);
                 return 1;
             });
 
-            // thread.pause()
-            API::bind(vm, {base_name}, "pause", [](auto vm, auto& id) -> int {
-                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
+            // thread:get_thread() -> bool (are we running inside this thread?)
+            vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id) -> int {
+                if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
+                vm -> push_value(self -> thread_vm -> get_state() == vm -> get_state());
+                return 1;
+            });
+
+            // thread:pause()
+            vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
+                if (!self || self -> destroyed || !vm -> is_virtual()) { vm -> push_value(false); return 1; }
                 vm -> pause();
                 return 0;
             });
 
-            // thread.sleep(thread_id, duration)
-            API::bind(vm, {base_name}, "sleep", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(thread_id, duration)")
-                    .require(1, &Machine::is_number)
+            // thread:sleep(duration)
+            vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(duration)")
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
-                int inst_id  = vm -> get_int(1);
-                int duration = vm -> get_int(2);
+                if (!self || self -> destroyed || self -> sleeping) { vm -> push_value(false); return 1; }
 
-                auto instance = fetch_instance(inst_id);
-                if (!instance || instance -> destroyed || instance -> sleeping) {
-                    vm -> push_value(false);
-                    return 1;
-                }
-                instance -> sleeping = true;
+                int duration = vm -> get_int(2);
+                self -> sleeping = true;
+
+                auto instance = fetch_instance(self -> id);
                 auto weak = std::weak_ptr<Instance>(instance);
 
                 Tool::Timer::create([weak](Tool::Timer* self, int) {
