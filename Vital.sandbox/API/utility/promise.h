@@ -40,8 +40,9 @@ namespace Vital::Sandbox::API {
             Machine* vm = nullptr;
             void** userdata = nullptr;
             std::vector<WaitingThread> waiting;
-            int result_ref = LUA_NOREF;
-            bool resolved = false; // true = resolved, false = rejected
+            int result_ref   = LUA_NOREF;
+            int result_count = 0;          // number of values packed into result_ref table
+            bool resolved = false;         // true = resolved, false = rejected
             std::string reference() const { return fmt::format("{}:{}", base_name, id); }
         };
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -71,10 +72,13 @@ namespace Vital::Sandbox::API {
 
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!instance || instance -> state != State::Pending) return;
-            instance -> state = result_state;
+            instance -> state    = result_state;
             instance -> resolved = (result_state == State::Resolved);
+            instance -> result_count = args_count;
 
-            // Pack result values into a table stored in the registry
+            // Pack result values into a sequence table stored in the promise vm's registry.
+            // This table is only used for the already-settled fast path in await; the
+            // deferred resume path pushes values directly onto each thread_vm below.
             vm -> create_table();
             for (int i = 0; i < args_count; ++i) {
                 vm -> push(args_start + i);
@@ -88,12 +92,27 @@ namespace Vital::Sandbox::API {
             Vital::Engine::Core::get_singleton() -> push_deferred([instance, waiting]() {
                 for (auto& wt : waiting) {
                     if (!wt.thread_vm) continue;
-                    // Push resolved state (bool) + unpacked result values
+
+                    int n = instance -> result_count;
+
+                    // Push resolved bool onto thread_vm
                     wt.thread_vm -> push_value(instance -> resolved);
-                    lua_rawgeti(instance -> vm -> get_state(), LUA_REGISTRYINDEX, instance -> result_ref);
-                    // Move result table to thread vm, unpack via lua_geti in await
-                    lua_xmove(instance -> vm -> get_state(), wt.thread_vm -> get_state(), 1);
-                    wt.thread_vm -> resume(2); // resume(resolved_bool, result_table)
+
+                    // Push each result value directly onto thread_vm.
+                    // wt.thread_vm and wt.owner_vm are coroutines of the same root Lua
+                    // state, so lua_xmove between them is safe.
+                    // We read from the result table in the promise vm's registry and
+                    // xmove each value to thread_vm one at a time.
+                    if (n > 0 && instance -> result_ref != LUA_NOREF) {
+                        lua_State* src = instance -> vm -> get_state();
+                        lua_rawgeti(src, LUA_REGISTRYINDEX, instance -> result_ref); // push table
+                        for (int i = 1; i <= n; ++i) lua_rawgeti(src, -1, i);       // push fields
+                        lua_remove(src, -(n + 1));                                    // remove table
+                        lua_xmove(src, wt.thread_vm -> get_state(), n);              // move to thread
+                    }
+
+                    // Resume with (bool, v1, v2, ...) — total of 1 + n values
+                    wt.thread_vm -> resume(1 + n);
                 }
             });
         }

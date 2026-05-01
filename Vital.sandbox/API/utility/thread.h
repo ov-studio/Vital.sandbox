@@ -239,21 +239,18 @@ namespace Vital::Sandbox::API {
                 auto promise_inst = Promise::fetch_instance((*ud) -> id);
                 if (!promise_inst) { vm -> push_value(false); return 1; }
 
-                // Already settled — return immediately without suspending
+                // Already settled — push resolved + unpacked values directly onto calling vm.
+                // promise_inst->vm shares the same root Lua state as this coroutine vm,
+                // so lua_xmove between them is safe (both are threads of the same state).
                 if (promise_inst -> state != Promise::State::Pending) {
                     vm -> push_value(promise_inst -> resolved);
-                    int n = 0;
-                    if (promise_inst -> result_ref != LUA_NOREF) {
-                        // result table lives in promise_inst->vm's registry;
-                        // push it there, unpack each field, then move all to calling vm
-                        lua_State* psrc = promise_inst -> vm -> get_state();
-                        lua_rawgeti(psrc, LUA_REGISTRYINDEX, promise_inst -> result_ref);
-                        n = (int)lua_rawlen(psrc, -1);
-                        for (int i = 1; i <= n; ++i) lua_rawgeti(psrc, -1 - (i - 1), i);
-                        // remove the table itself, leaving only the n field values
-                        lua_remove(psrc, -(n + 1));
-                        // move all n values from promise vm -> calling vm
-                        if (n > 0) lua_xmove(psrc, vm -> get_state(), n);
+                    int n = promise_inst -> result_count;
+                    if (n > 0 && promise_inst -> result_ref != LUA_NOREF) {
+                        lua_State* src = promise_inst -> vm -> get_state();
+                        lua_rawgeti(src, LUA_REGISTRYINDEX, promise_inst -> result_ref); // push table
+                        for (int i = 1; i <= n; ++i) lua_rawgeti(src, -1, i);           // push fields
+                        lua_remove(src, -(n + 1));                                        // remove table
+                        lua_xmove(src, vm -> get_state(), n);                             // move to caller
                     }
                     return 1 + n;
                 }
@@ -263,20 +260,14 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self -> id);
                 promise_inst -> waiting.push_back({ self -> thread_vm, self -> vm });
 
-                // Suspend — promise settle() resumes with (resolved_bool, result_table)
+                // Suspend — promise settle() will resume with (resolved_bool, v1, v2, ...)
+                // pushed directly onto thread_vm before resuming, so no table unpack needed here.
                 vm -> pause();
 
-                // After resume: stack is [bool, table]
-                // Unpack result_table fields onto the stack, then remove the table
-                bool resolved = vm -> get_bool(1);
-                int n = 0;
-                if (vm -> is_table(2)) {
-                    n = vm -> get_length(2);
-                    for (int i = 1; i <= n; ++i) vm -> get_table_field(i, 2);
-                    // remove the table at index 2, leaving [bool, field1, field2, ...]
-                    lua_remove(vm -> get_state(), 2);
-                }
-
+                // After resume: stack is [bool, v1, v2, ...] — n values follow the bool.
+                // settle() stores result_count on the instance before the deferred fires,
+                // so we can read it here once we wake up.
+                int n = promise_inst -> result_count;
                 if (instance) instance -> awaiting = false;
                 return 1 + n;
             });
