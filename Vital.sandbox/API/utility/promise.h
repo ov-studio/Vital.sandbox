@@ -27,132 +27,165 @@ namespace Vital::Sandbox::API {
 
         enum class State { Pending, Resolved, Rejected };
 
+        // A Lua value serialised to plain C++ — safe to copy across vm/coroutine
+        // boundaries and into deferred lambdas with no lua_State* dependency.
+        struct SerialValue {
+            int         type  { LUA_TNIL }; // named `type`, not `lua_type`, to avoid
+                                            // shadowing the lua_type() C API function
+            bool        b     {};
+            bool        is_int{};
+            lua_Integer i     {};
+            lua_Number  n     {};
+            std::string s     {};
+
+            // Push this value onto any lua_State* — no cross-state GC risk.
+            void push(lua_State* L) const {
+                switch (type) {
+                    case LUA_TBOOLEAN: lua_pushboolean(L, b ? 1 : 0);          break;
+                    case LUA_TNUMBER:
+                        if (is_int) lua_pushinteger(L, i);
+                        else        lua_pushnumber(L, n);
+                        break;
+                    case LUA_TSTRING:  lua_pushlstring(L, s.c_str(), s.size()); break;
+                    default:           lua_pushnil(L);                           break;
+                }
+            }
+
+            static SerialValue from(lua_State* L, int index) {
+                SerialValue v;
+                v.type = ::lua_type(L, index); // :: forces the global C function
+                switch (v.type) {
+                    case LUA_TBOOLEAN:
+                        v.b = lua_toboolean(L, index) != 0;
+                        break;
+                    case LUA_TNUMBER:
+                        v.is_int = lua_isinteger(L, index) != 0;
+                        if (v.is_int) v.i = lua_tointeger(L, index);
+                        else          v.n = lua_tonumber(L, index);
+                        break;
+                    case LUA_TSTRING: {
+                        size_t len;
+                        const char* s = lua_tolstring(L, index, &len);
+                        v.s = std::string(s, len);
+                        break;
+                    }
+                    default: break; // nil / unsupported → pushes nil
+                }
+                return v;
+            }
+        };
+
+        // promise.h stores only the integer ID of each waiting thread.
+        // No raw Machine* or Instance* — thread.h owns all thread lifetimes.
         struct WaitingThread {
-            Machine* thread_vm = nullptr; // the coroutine to resume
-            Machine* owner_vm  = nullptr; // the owner vm (for pushing values)
+            int thread_instance_id = -1;
         };
 
         struct Instance {
-            int id;
+            int  id {};
             std::string env;
-            std::atomic<bool> destroyed{false};
-            State state{State::Pending};
-            Machine* vm = nullptr;
-            void** userdata = nullptr;
+            std::atomic<bool> destroyed { false };
+            State      state    { State::Pending };
+            Machine*   vm       = nullptr;
+            void**     userdata = nullptr;
             std::vector<WaitingThread> waiting;
-            int result_ref   = LUA_NOREF;
-            int result_count = 0;          // number of values packed into result_ref table
-            bool resolved = false;         // true = resolved, false = rejected
+            bool resolved      = false;
+            // Serialised result — no lua_State* required after settle() returns.
+            std::vector<SerialValue> serial_values;
             std::string reference() const { return fmt::format("{}:{}", base_name, id); }
         };
+
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id{1};
+        inline static std::atomic<int> next_id { 1 };
         inline static std::mutex mutex;
+
+        // Registered once by thread.h after Thread is fully declared.
+        // Called from push_deferred (main thread). promise.h never calls into
+        // thread.h directly — zero circular dependency, zero raw Thread pointers.
+        using ResumeDispatcher = std::function<void(int /*thread_id*/, bool /*resolved*/,
+                                                    const std::vector<SerialValue>&)>;
+        inline static ResumeDispatcher resume_dispatcher;
+        static void register_resume_dispatcher(ResumeDispatcher fn) {
+            resume_dispatcher = std::move(fn);
+        }
 
         static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);
             auto it = buffer.find(id);
-            return it != buffer.end() ? it -> second : nullptr;
+            return it != buffer.end() ? it->second : nullptr;
         }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                if (buffer.find(instance -> id) == buffer.end()) return;
-                buffer.erase(instance -> id);
+                if (buffer.find(instance->id) == buffer.end()) return;
+                buffer.erase(instance->id);
             }
-            if (instance -> result_ref != LUA_NOREF && instance -> vm) {
-                luaL_unref(instance -> vm -> get_state(), LUA_REGISTRYINDEX, instance -> result_ref);
-                instance -> result_ref = LUA_NOREF;
+            if (instance->vm) {
+                vm_module::release_userdata_ptr(instance->userdata);
+                instance->vm->del_reference(instance->reference());
+                instance->vm = nullptr;
             }
-            vm_module::release_userdata_ptr(instance -> userdata);
-            instance -> vm -> del_reference(instance -> reference());
         }
 
-        static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
-            if (!instance || instance -> state != State::Pending) return;
-            instance -> state    = result_state;
-            instance -> resolved = (result_state == State::Resolved);
-            instance -> result_count = args_count;
+        static void settle(std::shared_ptr<Instance> instance, State result_state,
+                           Machine* vm, int args_start, int args_count) {
+            if (!instance || instance->destroyed ||
+                instance->state != State::Pending || !vm) return;
 
-            // Store a result table in the promise vm's registry for the already-settled
-            // fast path in await (same-vm access, no xmove needed there).
-            vm -> create_table();
-            for (int i = 0; i < args_count; ++i) {
-                vm -> push(args_start + i);
-                vm -> set_table_field(i + 1, -2);
-            }
-            instance -> result_ref = luaL_ref(vm -> get_state(), LUA_REGISTRYINDEX);
+            instance->state    = result_state;
+            instance->resolved = (result_state == State::Resolved);
 
-            auto waiting = instance -> waiting;
-            instance -> waiting.clear();
+            // Serialise result values immediately while vm's stack is intact.
+            // Stored on the Instance so the already-settled fast-path in await()
+            // can also read them without touching any lua_State*.
+            instance->serial_values.clear();
+            instance->serial_values.reserve(args_count);
+            lua_State* src = vm->get_state();
+            for (int i = 0; i < args_count; ++i)
+                instance->serial_values.push_back(SerialValue::from(src, args_start + i));
 
-            // For each waiting thread, store a copy of the result values as a table
-            // on owner_vm (which shares the same root Lua state as thread_vm).
-            // We do this NOW, before the deferred fires, while vm's stack is intact.
-            struct ResumeEntry {
-                Machine* thread_vm;
-                Machine* owner_vm;
-                int      ref;   // result table ref stored in owner_vm's registry
-            };
-            std::vector<ResumeEntry> entries;
-            entries.reserve(waiting.size());
-            for (auto& wt : waiting) {
-                if (!wt.thread_vm || !wt.owner_vm) continue;
-                // Build result table on owner_vm — same root as thread_vm, safe to xmove
-                wt.owner_vm -> create_table();
-                for (int i = 0; i < args_count; ++i) {
-                    vm -> push(args_start + i);                         // push value on settle vm
-                    lua_xmove(vm -> get_state(), wt.owner_vm -> get_state(), 1); // move to owner_vm
-                    wt.owner_vm -> set_table_field(i + 1, -2);
+            // Snapshot waiting list and clear it before going async so any
+            // new await() calls after settle() queue correctly for an already-
+            // settled promise (they hit the fast-path instead).
+            auto waiting = instance->waiting;
+            instance->waiting.clear();
+
+            bool           resolved = instance->resolved;
+            auto           values   = instance->serial_values; // value copy, no ptrs
+            std::vector<int> thread_ids;
+            thread_ids.reserve(waiting.size());
+            for (auto& wt : waiting)
+                if (wt.thread_instance_id >= 0)
+                    thread_ids.push_back(wt.thread_instance_id);
+
+            // Deferred: runs on main thread next frame.
+            // No raw pointers captured — only plain integers and serialised values.
+            Vital::Engine::Core::get_singleton()->push_deferred(
+                [thread_ids, resolved, values]() {
+                    if (!Promise::resume_dispatcher) return;
+                    for (int tid : thread_ids)
+                        Promise::resume_dispatcher(tid, resolved, values);
                 }
-                int ref = luaL_ref(wt.owner_vm -> get_state(), LUA_REGISTRYINDEX);
-                entries.push_back({ wt.thread_vm, wt.owner_vm, ref });
-            }
-
-            Vital::Engine::Core::get_singleton() -> push_deferred([instance, entries]() {
-                for (auto& e : entries) {
-                    if (!e.thread_vm) continue;
-
-                    int n = instance -> result_count;
-
-                    // Push resolved bool directly onto thread_vm
-                    e.thread_vm -> push_value(instance -> resolved);
-
-                    // Unpack result table from owner_vm (same root as thread_vm) onto
-                    // owner_vm stack, then xmove the n values to thread_vm — safe.
-                    if (n > 0) {
-                        lua_State* src = e.owner_vm -> get_state();
-                        lua_rawgeti(src, LUA_REGISTRYINDEX, e.ref); // push table
-                        for (int i = 1; i <= n; ++i) lua_rawgeti(src, -1, i); // push fields
-                        lua_remove(src, -(n + 1));                              // remove table
-                        lua_xmove(src, e.thread_vm -> get_state(), n);
-                    }
-                    // Release the per-thread ref now that we've consumed it
-                    luaL_unref(e.owner_vm -> get_state(), LUA_REGISTRYINDEX, e.ref);
-
-                    // Resume with (bool, v1, v2, ...) — 1 + n values
-                    e.thread_vm -> resume(1 + n);
-                }
-            });
+            );
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Promise>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                std::string env = vm -> get_environment_id();
-                auto instance = std::make_shared<Instance>();
-                instance -> id = next_id.fetch_add(1);
-                instance -> env = env;
-                instance -> vm = vm;
+                std::string env = vm->get_environment_id();
+                auto instance   = std::make_shared<Instance>();
+                instance->id    = next_id.fetch_add(1);
+                instance->env   = env;
+                instance->vm    = vm;
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    buffer[instance -> id] = instance;
+                    buffer[instance->id] = instance;
                 }
-                vm -> create_object(base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                vm->create_object(base_name, instance.get());
+                instance->userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
             });
         }
@@ -160,40 +193,39 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             // promise:resolve(...)
             vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
-                auto instance = fetch_instance(self -> id);
-                if (!instance) { vm -> push_value(false); return 1; }
-                int args = vm -> get_count() - 1;
-                settle(instance, State::Resolved, vm, 2, args);
-                vm -> push_value(true);
+                if (!self || self->destroyed || self->state != State::Pending) { vm->push_value(false); return 1; }
+                auto instance = fetch_instance(self->id);
+                if (!instance) { vm->push_value(false); return 1; }
+                settle(instance, State::Resolved, vm, 2, vm->get_count() - 1);
+                vm->push_value(true);
                 return 1;
             });
 
             // promise:reject(...)
             vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
-                auto instance = fetch_instance(self -> id);
-                if (!instance) { vm -> push_value(false); return 1; }
-                int args = vm -> get_count() - 1;
-                settle(instance, State::Rejected, vm, 2, args);
-                vm -> push_value(true);
+                if (!self || self->destroyed || self->state != State::Pending) { vm->push_value(false); return 1; }
+                auto instance = fetch_instance(self->id);
+                if (!instance) { vm->push_value(false); return 1; }
+                settle(instance, State::Rejected, vm, 2, vm->get_count() - 1);
+                vm->push_value(true);
                 return 1;
             });
 
             // promise:is_pending()
             vm_module::bind_method<Instance>(vm, base_name, "is_pending", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self && !self -> destroyed && self -> state == State::Pending);
+                vm->push_value(self && !self->destroyed && self->state == State::Pending);
                 return 1;
             });
 
             // promise:destroy()
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
-                self -> destroyed = true;
-                auto instance = fetch_instance(self -> id);
-                if (instance) Vital::Engine::Core::get_singleton() -> push_deferred([instance]() { clean_instance(instance); });
+                if (!self || self->destroyed) { vm->push_value(false); return 1; }
+                self->destroyed = true;
+                auto instance = fetch_instance(self->id);
+                if (instance) Vital::Engine::Core::get_singleton()->push_deferred(
+                    [instance]() { clean_instance(instance); });
                 vm_module::release_userdata(vm, 1);
-                vm -> push_value(true);
+                vm->push_value(true);
                 return 1;
             });
         }
@@ -202,14 +234,16 @@ namespace Vital::Sandbox::API {
             std::vector<std::shared_ptr<Instance>> to_clean;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                for (auto& [id, instance] : buffer) {
-                    if (instance -> env == env) to_clean.push_back(instance);
-                }
+                for (auto& [id, instance] : buffer)
+                    if (instance->env == env) to_clean.push_back(instance);
             }
+            // Mark ALL destroyed first — prevents in-flight timer resolves from
+            // calling settle() on half-torn-down instances.
             for (auto& instance : to_clean) {
-                instance -> destroyed = true;
-                clean_instance(instance);
+                instance->destroyed = true;
+                instance->waiting.clear();
             }
+            for (auto& instance : to_clean) clean_instance(instance);
         }
     };
 }
