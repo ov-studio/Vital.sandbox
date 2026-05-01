@@ -73,22 +73,25 @@ namespace Vital::Sandbox::API {
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance -> destroyed || !instance -> thread_vm) return false;
 
-            // Capture state pointer and status BEFORE calling resume.
-            // Machine::resume() calls `delete this` when the coroutine finishes
-            // (non-LUA_YIELD), so instance->thread_vm becomes a dangling pointer
-            // the moment resume() returns in that case — never touch it afterward.
+            // Capture the raw state pointer before calling resume.
+            // Machine::resume() calls `delete this` on non-LUA_YIELD, so
+            // instance->thread_vm is a dangling pointer after that — never touch it.
             vm_state* thread_state = instance -> thread_vm -> get_state();
+            Machine*  owner_vm     = instance -> vm;
+
             instance -> thread_vm -> resume(args);
 
-            // thread_vm may be deleted now — use the raw state pointer only
+            // Use the raw state pointer only from here on
             int status = lua_status(thread_state);
             if (status != LUA_YIELD) {
+                // LUA_ERRRUN etc. — surface the error through the owner vm log
                 if (status != LUA_OK) {
-                    std::string err = lua_tostring(thread_state, -1);
+                    const char* raw = lua_tostring(thread_state, -1);
+                    std::string err = raw ? raw : "(unknown error in thread)";
                     lua_pop(thread_state, 1);
                     API::log(std::string(Tool::Log::error::label), err);
                 }
-                // Machine::resume() already deleted thread_vm; null it out so
+                // Machine::resume() already deleted thread_vm; null it so
                 // clean_instance does not attempt a second delete
                 instance -> thread_vm = nullptr;
                 clean_instance(instance);
@@ -192,8 +195,10 @@ namespace Vital::Sandbox::API {
             // thread:pause()
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed || !vm -> is_virtual()) { vm -> push_value(false); return 1; }
-                vm -> pause();
-                return 0;
+                // Use lua_yieldk — lua_yield uses longjmp which skips C++ try/catch frames
+                // in execute(), causing undefined behaviour. lua_yieldk uses a continuation
+                // and is safe to call from inside a C closure wrapped by execute().
+                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
             // thread:sleep(duration)
@@ -220,8 +225,8 @@ namespace Vital::Sandbox::API {
                     });
                 }, duration, 1);
 
-                vm -> pause();
-                return 0;
+                // Yield via lua_yieldk — safe through C++ exception frames
+                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
             // thread:await(promise) -> resolved, ...values
@@ -239,18 +244,37 @@ namespace Vital::Sandbox::API {
                 auto promise_inst = Promise::fetch_instance((*ud) -> id);
                 if (!promise_inst) { vm -> push_value(false); return 1; }
 
-                // Already settled — push resolved + unpacked values directly onto calling vm.
-                // promise_inst->vm shares the same root Lua state as this coroutine vm,
-                // so lua_xmove between them is safe (both are threads of the same state).
+                // Already settled — push resolved + values onto the calling vm directly.
+                // We cannot xmove from promise_inst->vm to the calling vm if they are
+                // independent Lua states (promise created in a different resource/vm).
+                // Instead, read each value from the result table on the promise vm and
+                // re-push it onto the calling vm by type — safe for all primitive types.
                 if (promise_inst -> state != Promise::State::Pending) {
                     vm -> push_value(promise_inst -> resolved);
                     int n = promise_inst -> result_count;
                     if (n > 0 && promise_inst -> result_ref != LUA_NOREF) {
-                        lua_State* src = promise_inst -> vm -> get_state();
-                        lua_rawgeti(src, LUA_REGISTRYINDEX, promise_inst -> result_ref); // push table
-                        for (int i = 1; i <= n; ++i) lua_rawgeti(src, -1, i);           // push fields
-                        lua_remove(src, -(n + 1));                                        // remove table
-                        lua_xmove(src, vm -> get_state(), n);                             // move to caller
+                        lua_State* src  = promise_inst -> vm -> get_state();
+                        lua_State* dst  = vm -> get_state();
+                        lua_rawgeti(src, LUA_REGISTRYINDEX, promise_inst -> result_ref);
+                        for (int i = 1; i <= n; ++i) {
+                            lua_rawgeti(src, -1, i);
+                            // Copy each value onto dst by type — avoids cross-state GC issues
+                            switch (lua_type(src, -1)) {
+                                case LUA_TBOOLEAN: lua_pushboolean(dst, lua_toboolean(src, -1)); break;
+                                case LUA_TNUMBER:
+                                    if (lua_isinteger(src, -1)) lua_pushinteger(dst, lua_tointeger(src, -1));
+                                    else lua_pushnumber(dst, lua_tonumber(src, -1));
+                                    break;
+                                case LUA_TSTRING: {
+                                    size_t len; const char* s = lua_tolstring(src, -1, &len);
+                                    lua_pushlstring(dst, s, len);
+                                    break;
+                                }
+                                default: lua_pushnil(dst); break;
+                            }
+                            lua_pop(src, 1);
+                        }
+                        lua_pop(src, 1); // pop the table
                     }
                     return 1 + n;
                 }
@@ -260,16 +284,21 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self -> id);
                 promise_inst -> waiting.push_back({ self -> thread_vm, self -> vm });
 
-                // Suspend — promise settle() will resume with (resolved_bool, v1, v2, ...)
-                // pushed directly onto thread_vm before resuming, so no table unpack needed here.
-                vm -> pause();
-
-                // After resume: stack is [bool, v1, v2, ...] — n values follow the bool.
-                // settle() stores result_count on the instance before the deferred fires,
-                // so we can read it here once we wake up.
-                int n = promise_inst -> result_count;
-                if (instance) instance -> awaiting = false;
-                return 1 + n;
+                // Yield via lua_yieldk — safe through C++ exception frames in execute().
+                // promise settle() will resume this coroutine with (bool, v1, v2, ...).
+                // The continuation receives those values on the stack and returns them.
+                int captured_id = self -> id;
+                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* L, int status, lua_KContext ctx) -> int {
+                    auto vm = Machine::fetch_machine(L);
+                    auto promise_inst_ptr = reinterpret_cast<Promise::Instance*>(ctx); // not used, use stack
+                    // Stack after resume: [bool, v1, v2, ...] pushed by settle()
+                    // Count how many values were pushed: get_count() gives total stack size
+                    int total = vm -> get_count();
+                    // Mark awaiting as done — fetch instance by scanning (ctx holds id)
+                    auto inst = Thread::fetch_instance(static_cast<int>(ctx));
+                    if (inst) inst -> awaiting = false;
+                    return total; // return all values on stack (bool + n values)
+                });
             });
         }
 

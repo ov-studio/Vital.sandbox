@@ -76,9 +76,8 @@ namespace Vital::Sandbox::API {
             instance -> resolved = (result_state == State::Resolved);
             instance -> result_count = args_count;
 
-            // Pack result values into a sequence table stored in the promise vm's registry.
-            // This table is only used for the already-settled fast path in await; the
-            // deferred resume path pushes values directly onto each thread_vm below.
+            // Store a result table in the promise vm's registry for the already-settled
+            // fast path in await (same-vm access, no xmove needed there).
             vm -> create_table();
             for (int i = 0; i < args_count; ++i) {
                 vm -> push(args_start + i);
@@ -89,30 +88,52 @@ namespace Vital::Sandbox::API {
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
 
-            Vital::Engine::Core::get_singleton() -> push_deferred([instance, waiting]() {
-                for (auto& wt : waiting) {
-                    if (!wt.thread_vm) continue;
+            // For each waiting thread, store a copy of the result values as a table
+            // on owner_vm (which shares the same root Lua state as thread_vm).
+            // We do this NOW, before the deferred fires, while vm's stack is intact.
+            struct ResumeEntry {
+                Machine* thread_vm;
+                Machine* owner_vm;
+                int      ref;   // result table ref stored in owner_vm's registry
+            };
+            std::vector<ResumeEntry> entries;
+            entries.reserve(waiting.size());
+            for (auto& wt : waiting) {
+                if (!wt.thread_vm || !wt.owner_vm) continue;
+                // Build result table on owner_vm — same root as thread_vm, safe to xmove
+                wt.owner_vm -> create_table();
+                for (int i = 0; i < args_count; ++i) {
+                    vm -> push(args_start + i);                         // push value on settle vm
+                    lua_xmove(vm -> get_state(), wt.owner_vm -> get_state(), 1); // move to owner_vm
+                    wt.owner_vm -> set_table_field(i + 1, -2);
+                }
+                int ref = luaL_ref(wt.owner_vm -> get_state(), LUA_REGISTRYINDEX);
+                entries.push_back({ wt.thread_vm, wt.owner_vm, ref });
+            }
+
+            Vital::Engine::Core::get_singleton() -> push_deferred([instance, entries]() {
+                for (auto& e : entries) {
+                    if (!e.thread_vm) continue;
 
                     int n = instance -> result_count;
 
-                    // Push resolved bool onto thread_vm
-                    wt.thread_vm -> push_value(instance -> resolved);
+                    // Push resolved bool directly onto thread_vm
+                    e.thread_vm -> push_value(instance -> resolved);
 
-                    // Push each result value directly onto thread_vm.
-                    // wt.thread_vm and wt.owner_vm are coroutines of the same root Lua
-                    // state, so lua_xmove between them is safe.
-                    // We read from the result table in the promise vm's registry and
-                    // xmove each value to thread_vm one at a time.
-                    if (n > 0 && instance -> result_ref != LUA_NOREF) {
-                        lua_State* src = instance -> vm -> get_state();
-                        lua_rawgeti(src, LUA_REGISTRYINDEX, instance -> result_ref); // push table
-                        for (int i = 1; i <= n; ++i) lua_rawgeti(src, -1, i);       // push fields
-                        lua_remove(src, -(n + 1));                                    // remove table
-                        lua_xmove(src, wt.thread_vm -> get_state(), n);              // move to thread
+                    // Unpack result table from owner_vm (same root as thread_vm) onto
+                    // owner_vm stack, then xmove the n values to thread_vm — safe.
+                    if (n > 0) {
+                        lua_State* src = e.owner_vm -> get_state();
+                        lua_rawgeti(src, LUA_REGISTRYINDEX, e.ref); // push table
+                        for (int i = 1; i <= n; ++i) lua_rawgeti(src, -1, i); // push fields
+                        lua_remove(src, -(n + 1));                              // remove table
+                        lua_xmove(src, e.thread_vm -> get_state(), n);
                     }
+                    // Release the per-thread ref now that we've consumed it
+                    luaL_unref(e.owner_vm -> get_state(), LUA_REGISTRYINDEX, e.ref);
 
-                    // Resume with (bool, v1, v2, ...) — total of 1 + n values
-                    wt.thread_vm -> resume(1 + n);
+                    // Resume with (bool, v1, v2, ...) — 1 + n values
+                    e.thread_vm -> resume(1 + n);
                 }
             });
         }
