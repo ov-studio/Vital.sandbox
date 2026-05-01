@@ -34,9 +34,9 @@ namespace Vital::Sandbox::API {
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("{}:{}:{}", base_name, env, id); }
         };
+        inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id{1};
-        inline static std::mutex mutex;
 
         static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);

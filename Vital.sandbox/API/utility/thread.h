@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Thread APIs (replaces thread.lua)
+     Desc: Thread APIs
 ----------------------------------------------------------------*/
 
 
@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/API/utility/timer.h>
 #include <Vital.sandbox/Engine/public/core.h>
 
 
@@ -27,176 +26,169 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "thread";
 
         struct Instance {
-            int              id;
-            std::string      env;
-            Machine*         vm_thread  = nullptr; // the Lua coroutine Machine
-            int              func_ref   = LUA_NOREF;
-            Machine*         owner_vm   = nullptr;
+            int id;
+            std::string env;
             std::atomic<bool> destroyed{false};
-            // sleep state
-            bool             sleeping   = false;
-            int              sleep_timer_id = -1;
+            std::atomic<bool> sleeping{false};
+            Machine* vm = nullptr;
+            Machine* thread_vm = nullptr;
+            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
         };
+        inline static std::mutex mutex;
+        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
+        inline static std::atomic<int> next_id{1};
 
-        inline static std::mutex                                   registry_mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> registry;
-        inline static std::atomic<int>                             next_id{1};
+        static std::shared_ptr<Instance> fetch_instance(int id) {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto it = buffer.find(id);
+            return it != buffer.end() ? it -> second : nullptr;
+        }
 
-        static void destroy_inst(std::shared_ptr<Instance>& inst) {
-            if (!inst || inst->destroyed) return;
-            inst->destroyed = true;
-            if (inst->func_ref != LUA_NOREF && inst->vm_thread) {
-                luaL_unref(inst->vm_thread->get_state(), LUA_REGISTRYINDEX, inst->func_ref);
-                inst->func_ref = LUA_NOREF;
+        static void clean_instance(std::shared_ptr<Instance> instance) {
+            if (!instance) return;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                if (buffer.find(instance -> id) == buffer.end()) return;
+                buffer.erase(instance -> id);
             }
-            inst->vm_thread = nullptr;
-            std::lock_guard<std::mutex> lock(registry_mutex);
-            registry.erase(inst->id);
+            instance -> destroyed = true;
+            if (instance -> thread_vm) {
+                delete instance -> thread_vm;
+                instance -> thread_vm = nullptr;
+            }
+            instance -> vm -> del_reference(instance -> reference());
         }
 
         static void bind(Machine* vm) {
-            // thread:create(exec)
+            // thread.create(exec) -> thread_id
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
                 std::string env = vm -> get_environment_id();
+                auto instance = std::make_shared<Instance>();
+                instance -> id = next_id.fetch_add(1);
+                instance -> env = env;
+                instance -> vm = vm;
 
-                auto inst       = std::make_shared<Instance>();
-                inst->id        = next_id.fetch_add(1);
-                inst->env    = env;
-                inst->owner_vm  = vm;
-
-                // Create Lua coroutine
                 Machine* thread_vm = vm -> create_thread();
-                inst->vm_thread    = thread_vm;
+                instance -> thread_vm = thread_vm;
 
-                // Move the function into the coroutine
                 vm -> push(1);
-                vm -> move(thread_vm, 1);
-                inst->func_ref = luaL_ref(thread_vm -> get_state(), LUA_REGISTRYINDEX);
+                vm -> set_reference(instance -> reference(), -1);
+                vm -> pop(1);
 
                 {
-                    std::lock_guard<std::mutex> lock(registry_mutex);
-                    registry[inst->id] = inst;
+                    std::lock_guard<std::mutex> lock(mutex);
+                    buffer[instance -> id] = instance;
                 }
 
-                vm -> push_number(inst->id);
+                vm -> push_number(instance -> id);
                 return 1;
             });
 
-            // thread:resume(thread_id)
+            // thread.resume(thread_id)
             API::bind(vm, {base_name}, "resume", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(thread_id)")
                     .require(1, &Machine::is_number);
 
                 int inst_id = vm -> get_int(1);
-                std::shared_ptr<Instance> inst;
-                {
-                    std::lock_guard<std::mutex> lock(registry_mutex);
-                    auto it = registry.find(inst_id);
-                    if (it == registry.end()) { vm -> push_value(false); return 1; }
-                    inst = it->second;
+                auto instance = fetch_instance(inst_id);
+                if (!instance || instance -> destroyed || !instance -> thread_vm) {
+                    vm -> push_value(false);
+                    return 1;
                 }
-                if (inst->destroyed || !inst->vm_thread) { vm -> push_value(false); return 1; }
 
-                // Push the function and resume
-                lua_rawgeti(inst->vm_thread->get_state(), LUA_REGISTRYINDEX, inst->func_ref);
-                inst->vm_thread->resume(1);
+                instance -> vm -> get_reference(instance -> reference(), true);
+                instance -> thread_vm -> move(instance -> thread_vm, 1);
+                instance -> thread_vm -> resume(1);
 
-                // Clean up if dead
-                if (inst->vm_thread->get_state() &&
-                    lua_status(inst->vm_thread->get_state()) != LUA_YIELD) {
-                    destroy_inst(inst);
+                if (lua_status(instance -> thread_vm -> get_state()) != LUA_YIELD) {
+                    clean_instance(instance);
                 }
                 vm -> push_value(true);
                 return 1;
             });
 
-            // thread:destroy(thread_id)
+            // thread.destroy(thread_id)
             API::bind(vm, {base_name}, "destroy", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(thread_id)")
                     .require(1, &Machine::is_number);
 
                 int inst_id = vm -> get_int(1);
-                std::shared_ptr<Instance> inst;
-                {
-                    std::lock_guard<std::mutex> lock(registry_mutex);
-                    auto it = registry.find(inst_id);
-                    if (it == registry.end()) { vm -> push_value(false); return 1; }
-                    inst = it->second;
-                }
-                destroy_inst(inst);
+                auto instance = fetch_instance(inst_id);
+                if (!instance) { vm -> push_value(false); return 1; }
+                clean_instance(instance);
                 vm -> push_value(true);
                 return 1;
             });
 
-            // thread:is_instance(thread_id)
-            API::bind(vm, {base_name}, "is_instance", [](auto vm, auto& id) -> int {
-                if (!vm -> is_number(1)) { vm -> push_value(false); return 1; }
-                int inst_id = vm -> get_int(1);
-                std::lock_guard<std::mutex> lock(registry_mutex);
-                auto it = registry.find(inst_id);
-                vm -> push_value(it != registry.end() && !it->second->destroyed);
+            // thread.get_thread() -> thread_id or false
+            API::bind(vm, {base_name}, "get_thread", [](auto vm, auto& id) -> int {
+                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
+                std::lock_guard<std::mutex> lock(mutex);
+                for (auto& [inst_id, instance] : buffer) {
+                    if (instance -> thread_vm && instance -> thread_vm -> get_state() == vm -> get_state()) {
+                        vm -> push_number(inst_id);
+                        return 1;
+                    }
+                }
+                vm -> push_value(false);
                 return 1;
             });
 
-            // thread:sleep(thread_id, duration)  — called from within the thread itself
+            // thread.pause()
+            API::bind(vm, {base_name}, "pause", [](auto vm, auto& id) -> int {
+                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
+                vm -> pause();
+                return 0;
+            });
+
+            // thread.sleep(thread_id, duration)
             API::bind(vm, {base_name}, "sleep", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(thread_id, duration)")
                     .require(1, &Machine::is_number)
-                    .require(2, &Machine::is_number);
+                    .require(2, &Machine::is_number)
+                    .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
                 int inst_id  = vm -> get_int(1);
-                int duration = std::max(0, vm -> get_int(2));
+                int duration = vm -> get_int(2);
 
-                std::shared_ptr<Instance> inst;
-                {
-                    std::lock_guard<std::mutex> lock(registry_mutex);
-                    auto it = registry.find(inst_id);
-                    if (it == registry.end()) { vm -> push_value(false); return 1; }
-                    inst = it->second;
+                auto instance = fetch_instance(inst_id);
+                if (!instance || instance -> destroyed || instance -> sleeping) {
+                    vm -> push_value(false);
+                    return 1;
                 }
-                if (inst->destroyed || inst->sleeping) { vm -> push_value(false); return 1; }
+                instance -> sleeping = true;
+                auto weak = std::weak_ptr<Instance>(instance);
 
-                inst->sleeping = true;
-                auto weak = std::weak_ptr<Instance>(inst);
-
-                // Schedule a one-shot timer to resume after duration
-                Tool::Timer([weak](Tool::Timer* self) {
-                    Vital::Engine::Core::get_singleton()->push_deferred([weak]() {
-                        auto inst = weak.lock();
-                        if (!inst || inst->destroyed) return;
-                        inst->sleeping = false;
-                        inst->sleep_timer_id = -1;
-                        if (!inst->vm_thread) return;
-                        inst->vm_thread->resume(0);
-                        // Check if dead after resume
-                        if (lua_status(inst->vm_thread->get_state()) != LUA_YIELD) {
-                            destroy_inst(inst);
+                Tool::Timer::create([weak](Tool::Timer* self, int) {
+                    Vital::Engine::Core::get_singleton() -> push_deferred([weak]() {
+                        auto instance = weak.lock();
+                        if (!instance || instance -> destroyed) return;
+                        instance -> sleeping = false;
+                        if (!instance -> thread_vm) return;
+                        instance -> thread_vm -> resume(0);
+                        if (lua_status(instance -> thread_vm -> get_state()) != LUA_YIELD) {
+                            clean_instance(instance);
                         }
                     });
                 }, duration, 1);
 
-                // Yield the coroutine
                 vm -> pause();
                 return 0;
             });
         }
 
         static void clean(const std::string& env) {
-            std::lock_guard<std::mutex> lock(registry_mutex);
-            for (auto& [id, inst] : registry) {
-                if (inst->env == env) {
-                    inst->destroyed = true;
-                    // Also kill any sleep timer
-                    if (inst->sleep_timer_id != -1) {
-                        auto it = Timer::registry.find(inst->sleep_timer_id);
-                        if (it != Timer::registry.end()) it->second->destroyed = true;
-                        inst->sleep_timer_id = -1;
-                    }
+            std::vector<std::shared_ptr<Instance>> to_clean;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                for (auto& [id, instance] : buffer) {
+                    if (instance -> env == env) to_clean.push_back(instance);
                 }
             }
+            for (auto& instance : to_clean) clean_instance(instance);
         }
     };
 }
