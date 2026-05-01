@@ -97,11 +97,21 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             // thread:resume()
+            // Pushes the userdata (self) as first arg to the coroutine function
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
+
+                // Push exec function
                 self -> vm -> get_reference(self -> reference(), true);
                 self -> thread_vm -> move(self -> thread_vm, 1);
-                self -> thread_vm -> resume(1);
+
+                // Push userdata (self) as first argument to the exec function
+                void** ud = vm_module::get_userdata_ptr(vm, 1);
+                lua_pushlightuserdata(self -> thread_vm -> get_state(), ud ? *ud : nullptr);
+                luaL_setmetatable(self -> thread_vm -> get_state(), base_name.c_str());
+
+                self -> thread_vm -> resume(2); // exec(self, ...)
+
                 if (lua_status(self -> thread_vm -> get_state()) != LUA_YIELD) {
                     auto instance = fetch_instance(self -> id);
                     clean_instance(instance);
@@ -172,26 +182,26 @@ namespace Vital::Sandbox::API {
             });
 
             // thread:await(promise) -> resolved, ...values
-            // Suspends the thread until the promise settles, then returns resolved bool + values
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
-                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata(vm, Promise::base_name, index); });
+                    .require(2, [](Machine* vm, int index) {
+                        return vm_module::is_userdata(vm, Promise::base_name, index);
+                    });
 
                 if (!self || self -> destroyed || self -> awaiting) { vm -> push_value(false); return 1; }
                 if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
 
-                // Fetch promise instance from userdata
                 auto ud = static_cast<Promise::Instance**>(lua_touserdata(vm -> get_state(), 2));
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise_inst = Promise::fetch_instance((*ud) -> id);
                 if (!promise_inst) { vm -> push_value(false); return 1; }
 
-                // If already settled, return immediately
+                // Already settled — return immediately without suspending
                 if (promise_inst -> state != Promise::State::Pending) {
                     vm -> push_value(promise_inst -> resolved);
                     if (promise_inst -> result_ref != LUA_NOREF) {
-                        lua_rawgeti(promise_inst -> vm -> get_state(), LUA_REGISTRYINDEX, promise_inst -> result_ref);
                         int n = (int)lua_rawlen(promise_inst -> vm -> get_state(), -1);
+                        lua_rawgeti(promise_inst -> vm -> get_state(), LUA_REGISTRYINDEX, promise_inst -> result_ref);
                         for (int i = 1; i <= n; ++i) lua_rawgeti(promise_inst -> vm -> get_state(), -n + i - 1, i);
                         lua_remove(promise_inst -> vm -> get_state(), -(n + 1));
                         return 1 + n;
@@ -199,16 +209,15 @@ namespace Vital::Sandbox::API {
                     return 1;
                 }
 
-                // Register this thread as waiting on the promise
+                // Register this thread as waiting
                 self -> awaiting = true;
                 auto instance = fetch_instance(self -> id);
                 promise_inst -> waiting.push_back({ self -> thread_vm, self -> vm });
 
-                // Suspend — promise settle() will resume with (resolved_bool, result_table)
+                // Suspend until promise settles
                 vm -> pause();
 
-                // After resume: stack has (resolved_bool, result_table) pushed by settle()
-                // Unpack result_table into individual return values
+                // After resume: stack has (resolved_bool, result_table) from settle()
                 bool resolved = vm -> get_bool(1);
                 int n = 0;
                 if (vm -> is_table(2)) {
@@ -217,7 +226,7 @@ namespace Vital::Sandbox::API {
                 }
 
                 if (instance) instance -> awaiting = false;
-                return 1 + n; // resolved_bool + values
+                return 1 + n;
             });
         }
 
