@@ -32,8 +32,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(size, transparent = false)")
-                    .require(2, &Machine::is_vector2);
-                    // TODO: ADD OPTIONAL ARGS
+                    .require(1, &Machine::is_vector2);
+                    .optional(2, &Machine::is_bool);
 
                 auto size = vm -> get_vector2(1);
                 auto transparent = vm -> is_bool(2) ? vm -> get_bool(2) : false;
@@ -47,7 +47,8 @@ namespace Vital::Sandbox::API {
                 if (vm -> get_count() >= 1 && !vm -> is_nil(1)) {
                     vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
                         .require(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); });
-                        // TODO: ADD OPTIONAL ARGS
+                        .optional(2, &Machine::is_bool);
+                        .optional(3, &Machine::is_bool);
 
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }
