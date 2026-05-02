@@ -43,15 +43,12 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "set_active", [](auto vm, auto& id) -> int {
-                base_class* rt = nullptr;
-                if (vm -> get_count() >= 1 && !vm -> is_nil(1)) {
-                    vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
-                        .require(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); })
-                        .optional(2, &Machine::is_bool)
-                        .optional(3, &Machine::is_bool);
-
-                    rt = static_cast<base_class*>(vm -> get_userdata(1));
-                }
+                vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
+                    .optional(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); })
+                    .optional(2, &Machine::is_bool)
+                    .optional(3, &Machine::is_bool);
+                    
+                base_class* rt = vm -> is_nil(1) ? nullptr : static_cast<base_class*>(vm -> get_userdata(1));
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 base_class::set_active(rt, clear, instant);
