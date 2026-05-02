@@ -40,7 +40,7 @@ namespace Vital::Engine {
 
 
             // Managers //
-            static Rendertarget* create(int width, int height, bool transparent = false);
+            static Rendertarget* create(godot::Vector2 size, bool transparent = false);
             void destroy();
             void push(Canvas::Command command);
             void clear(bool clear, bool instant);
@@ -55,7 +55,7 @@ namespace Vital::Engine {
 
 
             // Getters //
-            godot::Vector2i get_size();
+            godot::Vector2 get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
             static Rendertarget* get_active();

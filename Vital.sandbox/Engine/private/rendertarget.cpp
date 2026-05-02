@@ -46,10 +46,10 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Rendertarget* Rendertarget::create(int width, int height, bool transparent) {
+    Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent) {
         auto rt = memnew(Rendertarget);
         rt -> viewport = memnew(godot::SubViewport);
-        rt -> viewport -> set_size({width, height});
+        rt -> viewport -> set_size(size);
         rt -> viewport -> set_disable_3d(true);
         rt -> viewport -> set_transparent_background(transparent);
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
@@ -91,7 +91,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    godot::Vector2i Rendertarget::get_size() {
+    godot::Vector2 Rendertarget::get_size() {
         return viewport -> get_size();
     }
 

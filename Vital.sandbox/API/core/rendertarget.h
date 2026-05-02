@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(size, transparent = false)")
-                    .require(1, &Machine::is_vector2);
+                    .require(1, &Machine::is_vector2)
                     .optional(2, &Machine::is_bool);
 
                 auto size = vm -> get_vector2(1);
@@ -46,8 +46,8 @@ namespace Vital::Sandbox::API {
                 base_class* rt = nullptr;
                 if (vm -> get_count() >= 1 && !vm -> is_nil(1)) {
                     vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
-                        .require(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); });
-                        .optional(2, &Machine::is_bool);
+                        .require(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); })
+                        .optional(2, &Machine::is_bool)
                         .optional(3, &Machine::is_bool);
 
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
@@ -86,7 +86,10 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_active", [](auto vm, auto self, auto& id) -> int {
-                // TODO: ADD VMARGS TO THIS + OPTIONAL ONES
+                vm_args(vm, id, "(clear = false, instant = false)")
+                    .optional(2, &Machine::is_bool)
+                    .optional(3, &Machine::is_bool);
+
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 base_class::set_active(self, clear, instant);
