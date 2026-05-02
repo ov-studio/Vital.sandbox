@@ -138,6 +138,7 @@ namespace Vital::Sandbox {
     
         template<typename T>
         static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*, const std::string&)> exec) {
+            // TODO: These needs to be freed when changing server // Anisa
             auto heap_exec = new std::function<int(Machine*, T*, const std::string&)>(std::move(exec));
             auto heap_type = new std::string(type_name);
             auto heap_id = new std::string(type_name + ":" + name);
