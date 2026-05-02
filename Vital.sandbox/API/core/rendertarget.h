@@ -31,14 +31,13 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Rendertarget>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(width, height, transparent)")
-                    .require(1, &Machine::is_number)
-                    .require(2, &Machine::is_number);
+                vm_args(vm, id, "(size, transparent = false)")
+                    .require(2, &Machine::is_vector2);
+                    // TODO: ADD OPTIONAL ARGS
 
-                auto width = vm -> get_int(1);
-                auto height = vm -> get_int(2);
-                auto transparent = vm -> is_bool(3) ? vm -> get_bool(3) : false;
-                auto object = base_class::create(width, height, transparent);
+                auto size = vm -> get_vector2(1);
+                auto transparent = vm -> is_bool(2) ? vm -> get_bool(2) : false;
+                auto object = base_class::create(size, transparent);
                 vm -> create_object(base_name, object);
                 return 1;
             });
@@ -46,9 +45,10 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "set_active", [](auto vm, auto& id) -> int {
                 base_class* rt = nullptr;
                 if (vm -> get_count() >= 1 && !vm -> is_nil(1)) {
-                    vm_args(vm, id, "(rendertarget, clear, instant)")
+                    vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
                         .require(1, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, Rendertarget::base_name, index); });
-        
+                        // TODO: ADD OPTIONAL ARGS
+
                     rt = static_cast<base_class*>(vm -> get_userdata(1));
                 }
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
@@ -85,6 +85,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "set_active", [](auto vm, auto self, auto& id) -> int {
+                // TODO: ADD VMARGS TO THIS + OPTIONAL ONES
                 auto clear = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instant = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 base_class::set_active(self, clear, instant);
