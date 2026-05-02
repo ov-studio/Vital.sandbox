@@ -27,21 +27,18 @@ namespace Vital::Sandbox::API {
 
         enum class State { Pending, Resolved, Rejected };
 
-        // A Lua value serialised to plain C++ — safe to copy across vm/coroutine
-        // boundaries and into deferred lambdas with no lua_State* dependency.
+        // Plain C++ value — safe to copy into deferred lambdas with no lua_State* dependency.
         struct SerialValue {
-            int         type  { LUA_TNIL }; // named `type`, not `lua_type`, to avoid
-                                            // shadowing the lua_type() C API function
-            bool        b     {};
-            bool        is_int{};
-            lua_Integer i     {};
-            lua_Number  n     {};
-            std::string s     {};
+            int         type   { LUA_TNIL };
+            bool        b      {};
+            bool        is_int {};
+            lua_Integer i      {};
+            lua_Number  n      {};
+            std::string s      {};
 
-            // Push this value onto any lua_State* — no cross-state GC risk.
             void push(lua_State* L) const {
                 switch (type) {
-                    case LUA_TBOOLEAN: lua_pushboolean(L, b ? 1 : 0);          break;
+                    case LUA_TBOOLEAN: lua_pushboolean(L, b ? 1 : 0);           break;
                     case LUA_TNUMBER:
                         if (is_int) lua_pushinteger(L, i);
                         else        lua_pushnumber(L, n);
@@ -53,7 +50,7 @@ namespace Vital::Sandbox::API {
 
             static SerialValue from(lua_State* L, int index) {
                 SerialValue v;
-                v.type = ::lua_type(L, index); // :: forces the global C function
+                v.type = ::lua_type(L, index);
                 switch (v.type) {
                     case LUA_TBOOLEAN:
                         v.b = lua_toboolean(L, index) != 0;
@@ -69,14 +66,12 @@ namespace Vital::Sandbox::API {
                         v.s = std::string(s, len);
                         break;
                     }
-                    default: break; // nil / unsupported → pushes nil
+                    default: break;
                 }
                 return v;
             }
         };
 
-        // promise.h stores only the integer ID of each waiting thread.
-        // No raw Machine* or Instance* — thread.h owns all thread lifetimes.
         struct WaitingThread {
             int thread_instance_id = -1;
         };
@@ -88,10 +83,9 @@ namespace Vital::Sandbox::API {
             State      state    { State::Pending };
             Machine*   vm       = nullptr;
             void**     userdata = nullptr;
-            std::vector<WaitingThread> waiting;
-            bool resolved      = false;
-            // Serialised result — no lua_State* required after settle() returns.
-            std::vector<SerialValue> serial_values;
+            std::vector<WaitingThread>  waiting;
+            bool                        resolved     = false;
+            std::vector<SerialValue>    serial_values;
             std::string reference() const { return fmt::format("{}:{}", base_name, id); }
         };
 
@@ -99,11 +93,7 @@ namespace Vital::Sandbox::API {
         inline static std::atomic<int> next_id { 1 };
         inline static std::mutex mutex;
 
-        // Registered once by thread.h after Thread is fully declared.
-        // Called from push_deferred (main thread). promise.h never calls into
-        // thread.h directly — zero circular dependency, zero raw Thread pointers.
-        using ResumeDispatcher = std::function<void(int /*thread_id*/, bool /*resolved*/,
-                                                    const std::vector<SerialValue>&)>;
+        using ResumeDispatcher = std::function<void(int, bool, const std::vector<SerialValue>&)>;
         inline static ResumeDispatcher resume_dispatcher;
         static void register_resume_dispatcher(ResumeDispatcher fn) {
             resume_dispatcher = std::move(fn);
@@ -137,31 +127,28 @@ namespace Vital::Sandbox::API {
             instance->state    = result_state;
             instance->resolved = (result_state == State::Resolved);
 
-            // Serialise result values immediately while vm's stack is intact.
-            // Stored on the Instance so the already-settled fast-path in await()
-            // can also read them without touching any lua_State*.
+            // Serialise immediately while the vm stack is intact.
             instance->serial_values.clear();
             instance->serial_values.reserve(args_count);
             lua_State* src = vm->get_state();
             for (int i = 0; i < args_count; ++i)
                 instance->serial_values.push_back(SerialValue::from(src, args_start + i));
 
-            // Snapshot waiting list and clear it before going async so any
-            // new await() calls after settle() queue correctly for an already-
-            // settled promise (they hit the fast-path instead).
+            // Snapshot and clear waiting list atomically so new await() calls
+            // on an already-settled promise hit the fast-path.
             auto waiting = instance->waiting;
             instance->waiting.clear();
 
-            bool           resolved = instance->resolved;
-            auto           values   = instance->serial_values; // value copy, no ptrs
-            std::vector<int> thread_ids;
+            bool                     resolved = instance->resolved;
+            std::vector<SerialValue> values   = instance->serial_values;
+            std::vector<int>         thread_ids;
             thread_ids.reserve(waiting.size());
             for (auto& wt : waiting)
                 if (wt.thread_instance_id >= 0)
                     thread_ids.push_back(wt.thread_instance_id);
 
             // Deferred: runs on main thread next frame.
-            // No raw pointers captured — only plain integers and serialised values.
+            // No raw pointers — only plain integers and serialised values.
             Vital::Engine::Core::get_singleton()->push_deferred(
                 [thread_ids, resolved, values]() {
                     if (!Promise::resume_dispatcher) return;
@@ -237,8 +224,6 @@ namespace Vital::Sandbox::API {
                 for (auto& [id, instance] : buffer)
                     if (instance->env == env) to_clean.push_back(instance);
             }
-            // Mark ALL destroyed first — prevents in-flight timer resolves from
-            // calling settle() on half-torn-down instances.
             for (auto& instance : to_clean) {
                 instance->destroyed = true;
                 instance->waiting.clear();
