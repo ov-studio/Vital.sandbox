@@ -186,15 +186,15 @@ namespace Vital::Manager {
     }
 
     Tool::Stack Resource::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) const {
-        Tool::Stack msg;
-        msg.object["event"] = Tool::StackValue(event);
-        msg.object["name"] = Tool::StackValue(name);
+        Tool::Stack packet;
+        packet.object["event"] = Tool::StackValue(event);
+        packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
             auto packed = pack_manifest(*manifest);
-            msg.object["scripts"] = std::move(packed.object["scripts"]);
-            msg.object["files"] = std::move(packed.object["files"]);
+            packet.object["scripts"] = std::move(packed.object["scripts"]);
+            packet.object["files"] = std::move(packed.object["files"]);
         }
-        return msg;
+        return packet;
     }
     #endif
 
@@ -558,14 +558,9 @@ namespace Vital::Manager {
                 break;
             }
         }
-
         log("sbox", change_report);
         stop(name);
-
-        Engine::Core::get_singleton() -> push_deferred([this, name]() {
-            start(name);
-        });
-
+        Engine::Core::get_singleton() -> push_deferred([this, name]() { start(name); });
         return true;
     }
 
