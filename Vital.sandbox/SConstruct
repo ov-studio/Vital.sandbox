@@ -65,6 +65,9 @@ env.Append(CPPPATH=[
     os.path.join(cwd, "Vendor/discord-sdk")
 ])
 
+if os_info["type"] == "Windows":
+    env["LINKFLAGS"].remove("/WX")
+    env.Append(LINKFLAGS=["/WX:NO", "/ignore:4099"])
 
 # Build
 platform = env["platform"]
