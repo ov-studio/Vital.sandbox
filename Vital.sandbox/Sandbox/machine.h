@@ -373,11 +373,12 @@ namespace Vital::Sandbox {
 
             void clear_environment_id(const std::string& id) {
                 if (!is_reference(id)) return;
-                for (auto& clean : env_cleaners) clean(id);
                 get_reference(id, true);
                 lua_pushnil(state);
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 del_reference(id);
+                lua_gc(state, LUA_GCCOLLECT, 0);
+                for (auto& clean : env_cleaners) clean(id);
             }
 
 
