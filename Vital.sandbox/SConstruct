@@ -69,6 +69,11 @@ if os_info["type"] == "Windows":
     env["LINKFLAGS"].remove("/WX")
     env.Append(LINKFLAGS=["/WX:NO", "/ignore:4099"])
 
+bin_platform_dir = f".bin/{env.Args['platform_type'].lower()}/{env['platform']}"
+if os.path.isdir(bin_platform_dir):
+    shutil.rmtree(bin_platform_dir)
+
+
 # Build
 platform = env["platform"]
 build_dir = f".build/{env.Args['platform_type'].lower()}/{platform}"
