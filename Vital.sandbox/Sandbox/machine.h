@@ -65,18 +65,6 @@ namespace Vital::Sandbox {
             vm_refs reference = {};
             vm_apis external_apis = {};
 
-            std::string build_error_message(const std::string& type, const std::string& what) {
-                lua_Debug debug;
-                std::string source = "?:0";
-                if (state && lua_getstack(state, 1, &debug)) {
-                    lua_getinfo(state, "Sl", &debug);
-                    const char* src = debug.source;
-                    source = fmt::format("{}:{}",
-                        (src && src[0] == '@') ? src + 1 : (src ? src : "?"),
-                        debug.currentline);
-                }
-                return what.empty() ? source : fmt::format("{}: {}", source, what);
-            }
         public:
             Machine(vm_apis apis = {}) : external_apis(std::move(apis)) {
                 state = luaL_newstate();
@@ -394,7 +382,7 @@ namespace Vital::Sandbox {
 
 
             // Context Handles //
-            void log(const std::string& type, const std::string& message = "") {
+            std::string fetch_source() {
                 lua_Debug debug;
                 std::string source = "?:0";
                 if (lua_getstack(state, 1, &debug)) {
@@ -404,25 +392,34 @@ namespace Vital::Sandbox {
                         (src && src[0] == '@') ? src + 1 : (src ? src : "?"),
                         debug.currentline);
                 }
-                std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
+                return source;
+            }
+
+            void log(const std::string& type, const std::string& message = "") {
+                const std::string source = fetch_source();
+                const std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
                 API::log(type, err);
-                push_value(false);
+                lua_pushstring(state, err.c_str());
+                lua_error(state);
+            }
+            
+            void log(const vm_error& e) {
+                const std::string source = fetch_source();
+                API::log(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
+                lua_pushstring(state, fmt::format("{}: {}", source, e.partial).c_str());
+                lua_error(state);
             }
 
             template<typename F>
             int execute(F&& exec) {
-                auto raise = [&](const std::string& label, const std::string& what) {
-                    const std::string msg = build_error_message(label, what);
-                    API::log(label, msg);
-                    lua_pushstring(state, msg.c_str());
-                };
                 try { return exec(); }
-                catch (const Tool::Log::info& e)  { raise(std::string(Tool::Log::info::label), e.what()); }
-                catch (const Tool::Log::warn& e)  { raise(std::string(Tool::Log::warn::label), e.what()); }
-                catch (const Tool::Log::error& e) { raise(std::string(Tool::Log::error::label), e.what()); }
-                catch (const std::runtime_error& e) { raise(std::string(Tool::Log::error::label), e.what()); }
-                catch (...) { raise(std::string(Tool::Log::error::label), "unknown exception"); }
-                return lua_error(state);
+                catch (const vm_error& e) { log(e); }
+                catch (const Tool::Log::info& e) { log(std::string(Tool::Log::info::label), e.what()); }
+                catch (const Tool::Log::warn& e) { log(std::string(Tool::Log::warn::label), e.what()); }
+                catch (const Tool::Log::error& e) { log(std::string(Tool::Log::error::label), e.what()); }
+                catch (const std::runtime_error& e) { log(std::string(Tool::Log::error::label), e.what()); }
+                catch (...) { log(std::string(Tool::Log::error::label), "unknown exception"); }
+                return 0;
             }
 
             void hook(const std::string& mode) {

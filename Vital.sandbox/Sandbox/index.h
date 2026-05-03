@@ -51,13 +51,19 @@ namespace Vital::Sandbox {
     using vm_env_cleaner = std::function<void(const std::string&)>;
     using vm_env_cleaners = std::vector<vm_env_cleaner>;
 
+    struct vm_error {
+        std::string detail;
+        std::string partial;
+        vm_error(const std::string& detail, const std::string& partial) : detail(detail), partial(partial) {}
+    };
+
     struct vm_args {
         private:
             inline void throw_error(int index, const std::string& reason = "") const {
                 const std::string arg = (index - 1) < (int)arguments.size() ? arguments[index - 1] : std::to_string(index);
-                std::string detail = fmt::format("\n> Syntax: `{}`", syntax);
-                detail += fmt::format("\n> Reason: bad argument #{} '{}' {}", index, arg, reason.empty() ? "" : fmt::format("({})", reason));
-                throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, detail);
+                const std::string partial = fmt::format("bad argument #{} '{}' {}", index, arg, reason.empty() ? "" : fmt::format("({})", reason));
+                const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", syntax, partial);
+                throw vm_error(detail, partial);
             }
         public:
             Machine* vm;
