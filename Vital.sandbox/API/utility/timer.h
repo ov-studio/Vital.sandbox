@@ -87,17 +87,13 @@ namespace Vital::Sandbox::API {
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
                     auto instance = weak.lock();
                     if (!instance || instance -> destroyed) return self -> stop();
-                    Vital::Engine::Core::get_singleton() -> push_deferred([weak, count, executions]() {
-                        auto instance = weak.lock();
-                        if (!instance || instance -> destroyed) return;
-                        instance -> vm -> get_reference(instance -> reference(), true);
-                        instance -> vm -> push_value(count);
-                        instance -> vm -> pcall(1, 0);
-                        if ((executions > 0) && (count >= executions)) {
-                            instance -> destroyed = true;
-                            clean_instance(instance);
-                        }
-                    });
+                    instance -> vm -> get_reference(instance -> reference(), true);
+                    instance -> vm -> push_value(count);
+                    instance -> vm -> pcall(1, 0);
+                    if ((executions > 0) && (count >= executions)) {
+                        instance -> destroyed = true;
+                        clean_instance(instance);
+                    }
                 }, interval, executions);
                 return 1;
             });
@@ -108,7 +104,7 @@ namespace Vital::Sandbox::API {
                 if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
                 self -> destroyed = true;
                 auto instance = fetch_instance(self -> id);
-                if (instance) Vital::Engine::Core::get_singleton() -> push_deferred([instance]() { clean_instance(instance); });
+                if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
