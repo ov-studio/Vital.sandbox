@@ -32,9 +32,13 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> destroyed { false };
             std::atomic<bool> sleeping  { false };
             std::atomic<bool> awaiting  { false };
-            // vm_owned: true means WE delete thread_vm.
-            // Set to false before Machine::resume() so clean_instance
-            // never double-frees a pointer Machine::resume() already deleted.
+            // vm_owned: true  = this Instance is responsible for deleting thread_vm.
+            // safe_resume atomically sets it false BEFORE calling Machine::resume(),
+            // so if Machine::resume() calls `delete this` on the coroutine Machine,
+            // no other path will also attempt to delete it.
+            // After a yield, safe_resume restores it to true.
+            // Any code path that wants to access thread_vm MUST hold vm_owned == true
+            // (checked via vm_owned.load()) or own the exchange result.
             std::atomic<bool> vm_owned  { true  };
             Machine* vm        = nullptr;
             Machine* thread_vm = nullptr;
@@ -53,6 +57,21 @@ namespace Vital::Sandbox::API {
             return it != buffer.end() ? it->second : nullptr;
         }
 
+        // ------------------------------------------------------------------
+        // clean_instance
+        //
+        // Removes the instance from the buffer and releases all resources.
+        //
+        // thread_vm ownership rule:
+        //   vm_owned == true  → we delete thread_vm here.
+        //   vm_owned == false → safe_resume transferred ownership to
+        //                       Machine::resume() which called `delete this`.
+        //                       We must NOT delete again.
+        //
+        // We null thread_vm BEFORE deleting so that any concurrent path
+        // that still holds the Instance shared_ptr cannot reach the
+        // dangling Machine* during the delete.
+        // ------------------------------------------------------------------
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
@@ -62,65 +81,128 @@ namespace Vital::Sandbox::API {
             }
             instance->destroyed = true;
 
-            // exchange(false): if we were the owner, delete. Otherwise already freed.
-            if (instance->vm_owned.exchange(false) && instance->thread_vm) {
-                delete instance->thread_vm;
+            // Atomically claim ownership. True → we must delete. False → already freed.
+            if (instance->vm_owned.exchange(false)) {
+                // Null the pointer FIRST so any concurrent reader sees nullptr
+                // and bails before we free the backing memory.
+                Machine* tvm = instance->thread_vm;
+                instance->thread_vm = nullptr;
+                if (tvm) delete tvm;
+            } else {
+                // Machine::resume() already called `delete this` on thread_vm.
+                // Just null our pointer — the memory is gone.
                 instance->thread_vm = nullptr;
             }
 
             if (instance->vm) {
                 vm_module::release_userdata_ptr(instance->userdata);
-                instance->vm->del_reference(instance->self_reference());
-                instance->vm->del_reference(instance->reference());
+                if (instance->vm->is_reference(instance->self_reference()))
+                    instance->vm->del_reference(instance->self_reference());
+                if (instance->vm->is_reference(instance->reference()))
+                    instance->vm->del_reference(instance->reference());
                 instance->vm = nullptr;
             }
         }
 
-        // safe_resume: single entry point for ALL resumes.
+        // ------------------------------------------------------------------
+        // safe_resume — the ONLY place that calls Machine::resume().
+        //
+        // Key invariant: vm_owned must be true on entry. We atomically
+        // set it false before calling resume() so no concurrent path can
+        // also delete thread_vm. If the coroutine yields we restore it to
+        // true; if it finishes (Machine::resume → delete this) we leave it
+        // false and null thread_vm ourselves before cleaning up.
+        //
+        // FIX 1: Pre-resume lua_status check.
+        // We verify the coroutine is actually resumable (LUA_OK = not yet
+        // started, LUA_YIELD = suspended) before calling lua_resume. Calling
+        // lua_resume on a dead coroutine makes Lua call luaS_new to intern
+        // "cannot resume dead coroutine", which walks the main state's string
+        // table through an internal pointer at offset 0x18. If that state is
+        // partially freed the result is an access violation in luaS_new or
+        // unroll().
+        //
+        // FIX 2: No post-resume Lua API calls on raw_state beyond lua_status.
+        // Machine::resume() now logs errors before `delete this` while the
+        // state is still fully alive. Any call to lua_tostring on raw_state
+        // after Machine::resume() returns is a potential UAF because `delete
+        // this` inside resume() frees the Machine object.
+        //
+        // FIX 3: Machine map membership check in the promise dispatcher.
+        // Before pushing values onto dst (the raw coroutine lua_State), we
+        // verify the state is still registered in the machines map via
+        // Machine::fetch_machine(dst). If it has already been erased by
+        // clean_instance / ~Machine, dst points to recycled memory and any
+        // lua_push* call would corrupt the heap.
+        // ------------------------------------------------------------------
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance->destroyed) return false;
-            if (!instance->vm_owned.load())       return false;
-            if (!instance->thread_vm)              return false;
+            // Only proceed if we hold ownership. This also prevents a second
+            // concurrent safe_resume from racing on the same instance.
+            if (!instance->vm_owned.load()) return false;
+            if (!instance->thread_vm)       return false;
 
             if (!instance->vm) {
-                // Owner vm gone — we own thread_vm, delete it cleanly.
-                if (instance->vm_owned.exchange(false) && instance->thread_vm) {
-                    delete instance->thread_vm;
-                    instance->thread_vm = nullptr;
-                }
+                // Owner vm already torn down — we still own thread_vm, delete it.
+                Machine* tvm = instance->thread_vm;
+                instance->thread_vm = nullptr;
+                instance->vm_owned.store(false);
+                if (tvm) delete tvm;
                 clean_instance(instance);
                 return false;
             }
 
-            // Capture raw state before resume — thread_vm may be freed after.
+            // Capture the raw Lua state BEFORE we transfer ownership.
+            // After resume() returns the Machine* may have been freed by
+            // `delete this` inside Machine::resume() — never dereference
+            // instance->thread_vm after the resume() call.
             vm_state* raw_state = instance->thread_vm->get_state();
+            if (!raw_state) return false;
 
-            // Transfer ownership BEFORE calling resume so clean_instance
-            // can't double-free if it runs concurrently.
+            // FIX 1: Guard against resuming a dead or errored coroutine.
+            // LUA_OK    → coroutine not yet started (first resume).
+            // LUA_YIELD → coroutine suspended mid-execution (normal resume).
+            // Anything else → coroutine finished or errored; resuming it
+            // causes Lua to intern an error string via luaS_new which reads
+            // a pointer at offset 0x18 inside the (potentially freed) state,
+            // producing the access violation seen in unroll() / luaS_new.
+            {
+                int pre_status = lua_status(raw_state);
+                if (pre_status != LUA_OK && pre_status != LUA_YIELD) {
+                    instance->thread_vm = nullptr;
+                    instance->vm_owned.store(false);
+                    clean_instance(instance);
+                    return false;
+                }
+            }
+
+            // Transfer ownership atomically. From this point, thread_vm's
+            // Machine lifetime is controlled by Machine::resume().
             instance->vm_owned.store(false);
 
             instance->thread_vm->resume(args);
-            // thread_vm is potentially freed now. Never dereference it again.
+            // thread_vm MAY be freed now (delete this in Machine::resume).
+            // Machine::resume() has already logged any error before deleting.
+            // Do NOT call lua_tostring or any other Lua API here — UAF risk.
 
+            // FIX 2: lua_status is the only Lua API call we allow on raw_state
+            // post-resume. It reads a single int field from the lua_State struct
+            // and is safe even if the Machine wrapper has been freed, as long as
+            // the lua_State memory itself is still alive (it is — only the parent
+            // main state's lua_close frees coroutine thread memory, and the parent
+            // is still running). We use this solely to decide vm_owned.
             int status = lua_status(raw_state);
             if (status != LUA_YIELD) {
-                if (status != LUA_OK) {
-                    // Guard: only pop if there is actually something on the stack.
-                    // A hard panic leaves the stack empty — popping it would
-                    // corrupt the main lua_State and cause "error in error handling"
-                    // on the next resource load.
-                    if (lua_gettop(raw_state) > 0) {
-                        const char* err = lua_tostring(raw_state, -1);
-                        if (err) API::log(std::string(Tool::Log::error::label), err);
-                        lua_pop(raw_state, 1);
-                    }
-                }
-                instance->thread_vm = nullptr; // already freed by Machine::resume
+                // Machine::resume() already freed thread_vm via `delete this`.
+                // Null our pointer before clean_instance so it doesn't try to
+                // free it a second time (vm_owned is false, but belt-and-suspenders).
+                instance->thread_vm = nullptr;
                 clean_instance(instance);
                 return false;
             }
 
-            // Still yielded — reclaim ownership.
+            // Coroutine is still alive — reclaim ownership so future resumes
+            // (sleep timer, promise dispatcher) can proceed.
             instance->vm_owned.store(true);
             return true;
         }
@@ -128,13 +210,51 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm, base_name);
 
+            // ------------------------------------------------------------------
+            // Promise → thread resume dispatcher.
+            // Registered once per Machine construction (harmless to overwrite).
+            // Called from flush_deferred_queue on the main thread.
+            //
+            // CRITICAL: Before accessing thread_vm, we must verify BOTH that the
+            // instance is not destroyed AND that vm_owned is true. There is a
+            // narrow window between safe_resume setting vm_owned=false and
+            // setting instance->thread_vm=nullptr where the instance is still in
+            // the buffer (not yet erased by clean_instance) with destroyed=false
+            // but thread_vm pointing to already-freed Machine memory. Checking
+            // vm_owned closes that window completely.
+            //
+            // FIX 3: Before pushing anything onto dst, confirm the raw lua_State
+            // is still registered in Machine::machines via fetch_machine(dst).
+            // Between the deferred lambda being queued and it executing on the
+            // main thread, clean_instance may have run and erased the Machine
+            // from the map (and called `delete tvm`). dst then points to freed
+            // memory. Pushing a value onto a freed lua_State corrupts the heap
+            // and produces the "attempt to call a nil value (method 'await')" /
+            // garbage-string errors and the `ci was nullptr` crash in unroll()
+            // on subsequent restarts.
+            // ------------------------------------------------------------------
             Promise::register_resume_dispatcher(
                 [](int thread_id, bool resolved,
                    const std::vector<Promise::SerialValue>& values) {
+
                     auto instance = Thread::fetch_instance(thread_id);
-                    if (!instance || instance->destroyed || !instance->thread_vm) return;
+                    if (!instance || instance->destroyed) return;
+
+                    // Guard: thread_vm is only safe to dereference while we hold
+                    // ownership (vm_owned == true). If false, safe_resume is
+                    // mid-flight and thread_vm may already be freed memory.
+                    if (!instance->vm_owned.load()) return;
+                    if (!instance->thread_vm)       return;
 
                     lua_State* dst = instance->thread_vm->get_state();
+                    if (!dst) return;
+
+                    // FIX 3: Confirm dst is still a live, registered state.
+                    // If clean_instance already ran, the Machine has been erased
+                    // from the map and dst may point to freed memory. Any
+                    // lua_push* call on a freed state corrupts the heap.
+                    if (!Machine::fetch_machine(dst)) return;
+
                     lua_pushboolean(dst, resolved ? 1 : 0);
                     for (auto& v : values) v.push(dst);
 
@@ -155,28 +275,24 @@ namespace Vital::Sandbox::API {
                 instance->vm    = vm;
 
                 // lua_newthread pushes the coroutine thread object onto the owner stack.
-                // create_thread() wraps it in a Machine* but does NOT pop the thread object.
                 // Stack before: [exec_fn]
-                // Stack after create_thread: [exec_fn, thread_obj]
+                // Stack after create_thread(): [exec_fn, thread_obj]
                 Machine* thread_vm  = vm->create_thread();
                 instance->thread_vm = thread_vm;
 
-                // Store exec ref from index 1 (exec_fn, still valid).
-                // set_reference(name, 1): pushes copy of index 1, then luaL_ref pops it.
+                // Store exec ref from index 1 (stack-neutral: push + luaL_ref pops).
                 // Stack stays: [exec_fn, thread_obj]
                 vm->set_reference(instance->reference(), 1);
 
-                // Pop the thread object left by lua_newthread.
-                // Stack after: [exec_fn]
+                // Pop the lua_newthread thread object — held via thread_vm Machine*.
+                // Stack: [exec_fn]
                 vm->pop(1);
 
-                // Create self userdata on owner vm.
-                // Stack: [exec_fn, userdata]
+                // Create self userdata. Stack: [exec_fn, userdata]
                 vm->create_object(base_name, instance.get());
                 instance->userdata = vm_module::get_userdata_ptr(vm, -1);
 
-                // Store self ref (pops userdata from stack).
-                // Stack: [exec_fn]
+                // Store full-userdata ref (stack-neutral). Stack: [exec_fn]
                 vm->set_reference(instance->self_reference(), -1);
 
                 {
@@ -184,8 +300,7 @@ namespace Vital::Sandbox::API {
                     buffer[instance->id] = instance;
                 }
 
-                // Push userdata back as the return value.
-                // Stack: [exec_fn, userdata]  -- exec_fn is arg, userdata is return
+                // Return the userdata. Stack: [exec_fn, userdata]
                 vm->get_reference(instance->self_reference(), true);
                 return 1;
             });
@@ -199,14 +314,16 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self->id);
                 if (!instance) { vm->push_value(false); return 1; }
 
-                // Move exec and self userdata from owner registry onto thread_vm stack.
-                self->vm->get_reference(self->reference(),      true); // owner +1
-                self->vm->move(self->thread_vm, 1);                    // owner -1, thread +1
+                // Move exec function then self-userdata onto thread_vm.
+                // xmove is safe: thread_vm is a coroutine of the same root state.
+                self->vm->get_reference(self->reference(),      true);
+                self->vm->move(self->thread_vm, 1);
 
-                self->vm->get_reference(self->self_reference(), true); // owner +1
-                self->vm->move(self->thread_vm, 1);                    // owner -1, thread +1
+                self->vm->get_reference(self->self_reference(), true);
+                self->vm->move(self->thread_vm, 1);
 
-                // thread_vm stack: [exec, self] — resume(1) = 1 argument (self).
+                // thread_vm stack: [exec, self_userdata]
+                // resume(1) = 1 argument; the function itself is not counted.
                 safe_resume(instance, 1);
                 vm->push_value(true);
                 return 1;
@@ -262,6 +379,8 @@ namespace Vital::Sandbox::API {
                         auto instance = weak.lock();
                         if (!instance || instance->destroyed) return;
                         instance->sleeping = false;
+                        // Guard vm_owned before resuming — same race as dispatcher.
+                        if (!instance->vm_owned.load() || !instance->thread_vm) return;
                         safe_resume(instance, 0);
                     });
                 }, duration, 1);
@@ -285,7 +404,7 @@ namespace Vital::Sandbox::API {
                 auto promise_inst = Promise::fetch_instance((*ud)->id);
                 if (!promise_inst) { vm->push_value(false); return 1; }
 
-                // Already settled — return immediately.
+                // Already settled — push from serialised values; no lua_State* needed.
                 if (promise_inst->state != Promise::State::Pending) {
                     lua_State* dst = vm->get_state();
                     lua_pushboolean(dst, promise_inst->resolved ? 1 : 0);
@@ -293,12 +412,16 @@ namespace Vital::Sandbox::API {
                     return 1 + static_cast<int>(promise_inst->serial_values.size());
                 }
 
+                // Pending — register and yield.
                 self->awaiting = true;
                 promise_inst->waiting.push_back({ self->id });
 
+                // Encode stack depth + thread_id into ctx so the continuation
+                // returns only the values pushed by the dispatcher (not the
+                // original call frame args self=1, promise=2).
                 int base = lua_gettop(vm->get_state());
-                lua_KContext ctx = (static_cast<lua_KContext>(base)     << 16)
-                                 | (static_cast<lua_KContext>(self->id) &  0xFFFF);
+                lua_KContext ctx = (static_cast<lua_KContext>(base)      << 16)
+                                 | (static_cast<lua_KContext>(self->id)  & 0xFFFF);
 
                 return lua_yieldk(vm->get_state(), 0, ctx,
                     [](lua_State* L, int, lua_KContext ctx) -> int {
@@ -313,6 +436,12 @@ namespace Vital::Sandbox::API {
             });
         }
 
+        // ------------------------------------------------------------------
+        // Thread::clean — called by Machine::clear_environment_id.
+        // Two-pass: mark ALL instances destroyed before deleting any.
+        // This prevents a sleeping thread's timer deferred from calling
+        // safe_resume on a sibling that is mid-teardown.
+        // ------------------------------------------------------------------
         static void clean(const std::string& env) {
             std::vector<std::shared_ptr<Instance>> to_clean;
             {
@@ -320,7 +449,6 @@ namespace Vital::Sandbox::API {
                 for (auto& [id, instance] : buffer)
                     if (instance->env == env) to_clean.push_back(instance);
             }
-            // Two-pass: mark all destroyed before deleting any.
             for (auto& instance : to_clean) instance->destroyed = true;
             for (auto& instance : to_clean) clean_instance(instance);
         }

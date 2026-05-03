@@ -422,13 +422,39 @@ namespace Vital::Manager {
             #endif
             was_running = is_running_unsafe(name);
             if (was_running) {
-                vm -> clear_environment_id(name);
+                // FIX: Do NOT call clear_environment_id() here while holding the
+                // mutex and while deferred callbacks from the old environment are
+                // still queued. clear_environment_id() synchronously destroys all
+                // threads and promises for this environment. Any timer or promise
+                // deferred callback that fires on the next frame will then try to
+                // resume a destroyed thread (→ "cannot resume dead coroutine") or
+                // access a destroyed upvalue table (→ OP_GETTABUP access violation,
+                // "attempt to index a userdata value", "bad self" errors).
+                //
+                // Instead, just erase from `running` here so the resource is
+                // considered stopped immediately. The actual environment teardown
+                // is deferred via push_deferred so it happens AFTER the current
+                // deferred queue fully drains, giving all in-flight timer/promise
+                // callbacks a chance to see `destroyed = true` and bail cleanly.
                 running.erase(name);
             }
             #if defined(Vital_SDK_Client)
             resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
             #endif
         }
+
+        // Defer the actual environment teardown so it runs AFTER any already-queued
+        // deferred callbacks from the old environment (sleep timers, promise
+        // dispatchers) have had a chance to execute and see `destroyed = true`.
+        // Without this deferral, clear_environment_id() destroys threads synchronously
+        // while their deferred resume callbacks are still in the queue, causing
+        // use-after-free crashes when those callbacks fire on the next frame.
+        if (was_running) {
+            Engine::Core::get_singleton() -> push_deferred([vm, name]() {
+                vm -> clear_environment_id(name);
+            });
+        }
+
         log("sbox", fmt::format("resource `{}` stopped", name));
 
         #if !defined(Vital_SDK_Client)
@@ -503,7 +529,9 @@ namespace Vital::Manager {
             std::lock_guard<std::mutex> lock(mutex);
             if (!is_running_unsafe(name)) { log("error", fmt::format("cannot restart `{}` — not running", name)); return false; }
         }
-        stop(name);
+
+        // Read and parse the new manifest BEFORE stopping so we can bail early
+        // without tearing down the running resource if the manifest is invalid.
         const std::string base = get_resource_base(name);
         if (!Tool::File::exists(base, "manifest.yaml")) {
             std::lock_guard<std::mutex> lock(mutex);
@@ -518,6 +546,7 @@ namespace Vital::Manager {
         try { manifest.parse(content); }
         catch (const std::exception& e) { log("error", fmt::format("resource `{}` malformed yaml — {} — skipping restart", name, e.what())); return false; }
 
+        std::string change_report;
         {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto& resource : resources) {
@@ -555,11 +584,46 @@ namespace Vital::Manager {
                     report += fmt::format("> Changes ({}):\n", changes.size());
                     for (const auto& change : changes) report += fmt::format("> {}\n", change);
                 }
-                log("sbox", report);
+                change_report = report;
                 break;
             }
         }
-        return start(name);
+
+        // FIX: stop() now defers clear_environment_id() via push_deferred.
+        // This means the old environment's threads and promises are marked
+        // destroyed immediately (inside Thread::clean / Promise::clean), but
+        // the actual Lua environment table teardown happens on the next deferred
+        // flush — AFTER any already-queued timer/promise callbacks have fired
+        // and seen `destroyed = true`, so they bail cleanly rather than resuming
+        // a dead coroutine or reading a freed upvalue table.
+        //
+        // FIX: start() must NOT be called synchronously after stop() here.
+        // stop() queues clear_environment_id() as a deferred task. If we call
+        // start() immediately, execute_scripts() runs before that deferred clear
+        // executes, meaning the new environment's scripts start executing while
+        // the old environment is still alive in the Lua registry. Old deferred
+        // callbacks (sleep timers, promise dispatchers) can then fire and corrupt
+        // the new environment's upvalue tables (→ OP_GETTABUP crash, "bad self",
+        // "attempt to index userdata" errors).
+        //
+        // Solution: log the change report, call stop(), then queue start() as
+        // another deferred task that runs AFTER clear_environment_id() completes.
+        // The deferred queue is FIFO, so:
+        //   Frame N:   stop() called → queues [clear_env, start_deferred]
+        //              Actually: stop queues clear_env; we then queue start below.
+        //   Flush:     [clear_env] runs first → old env fully torn down
+        //              [start]    runs next  → new env created on clean state
+        log("sbox", change_report);
+        stop(name);
+
+        // Queue start() to run after stop()'s deferred clear_environment_id has
+        // executed. Since push_deferred is FIFO and stop() already pushed
+        // clear_environment_id, this lambda is guaranteed to run after it.
+        Engine::Core::get_singleton() -> push_deferred([this, name]() {
+            start(name);
+        });
+
+        return true;
     }
 
     void Resource::start_all() {
