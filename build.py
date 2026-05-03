@@ -140,7 +140,30 @@ class Build:
 
         log_ok("Done")
 
-    def copy_configs(self, project_dir, dist_dir):
+    def stage_lib(self, b):
+        build_suffix = self.build_type.lower()
+        os_type = self.os_info["type"]
+
+        lib_info = {
+            "Windows": ("windows", f"vital.sdk.{build_suffix}.x86_64.dll"),
+            "Linux":   ("linux",   f"vital.sdk.{build_suffix}.x86_64.so"),
+            "Darwin":  ("macos",   f"vital.sdk.{build_suffix}.dylib"),
+        }.get(os_type)
+
+        if not lib_info:
+            return
+
+        subdir, lib_name = lib_info
+        lib_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, lib_name)
+        lib_dst_dir = os.path.join(b["project_dir"], "vital.sdk", subdir)
+        lib_dst = os.path.join(lib_dst_dir, lib_name)
+
+        if os.path.exists(lib_src) and not os.path.exists(lib_dst):
+            log_info(f"Staging {lib_name} to project folder ...")
+            os.makedirs(lib_dst_dir, exist_ok=True)
+            shutil.copy2(lib_src, lib_dst)
+
+    def copy_config(self, project_dir, dist_dir):
         log_step(f"Copying config files [{self.platform_type} | {self.build_type}]")
         config_exts = [".yaml"]
         configs_copied = False
@@ -156,7 +179,7 @@ class Build:
         if not configs_copied:
             log_info("No config files found")
 
-    def copy_libs(self, project_dir, dist_dir):
+    def copy_lib(self, project_dir, dist_dir):
         log_step(f"Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
         build_suffix = "release" if self.build_type == "Release" else "debug"
         lib_exts = self.info["lib_exts"]
@@ -183,7 +206,7 @@ class Build:
                 shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
                 log_info(f"Copied: {lib}")
 
-    def copy_pdbs(self, sandbox_dir, dist_dir):
+    def copy_pdb(self, sandbox_dir, dist_dir):
         log_step(f"Copying PDB files [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
 
         os_type = self.os_info["type"]
@@ -212,45 +235,13 @@ class Build:
         if not pdbs_copied:
             log_info("No PDB files found")
 
-    def _ensure_dll_staged(self, b):
-        build_suffix = self.build_type.lower()
-        os_type = self.os_info["type"]
-
-        if os_type == "Windows":
-            dll_name = f"vital.sdk.{build_suffix}.x86_64.dll"
-            dll_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, dll_name)
-            dll_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "windows")
-            dll_dst = os.path.join(dll_dst_dir, dll_name)
-            if os.path.exists(dll_src) and not os.path.exists(dll_dst):
-                log_info(f"Staging {dll_name} to project folder ...")
-                os.makedirs(dll_dst_dir, exist_ok=True)
-                shutil.copy2(dll_src, dll_dst)
-        elif os_type == "Linux":
-            so_name = f"vital.sdk.{build_suffix}.x86_64.so"
-            so_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, so_name)
-            so_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "linux")
-            so_dst = os.path.join(so_dst_dir, so_name)
-            if os.path.exists(so_src) and not os.path.exists(so_dst):
-                log_info(f"Staging {so_name} to project folder ...")
-                os.makedirs(so_dst_dir, exist_ok=True)
-                shutil.copy2(so_src, so_dst)
-        elif os_type == "Darwin":
-            dylib_name = f"vital.sdk.{build_suffix}.dylib"
-            dylib_src = os.path.join(b["sandbox_dir"], "bin", build_suffix, dylib_name)
-            dylib_dst_dir = os.path.join(b["project_dir"], "vital.sdk", "macos")
-            dylib_dst = os.path.join(dylib_dst_dir, dylib_name)
-            if os.path.exists(dylib_src) and not os.path.exists(dylib_dst):
-                log_info(f"Staging {dylib_name} to project folder ...")
-                os.makedirs(dylib_dst_dir, exist_ok=True)
-                shutil.copy2(dylib_src, dylib_dst)
-
     def export(self):
         b = self.init()
         os.makedirs(b["dist_dir"], exist_ok=True)
         log_step(f"Exporting Godot [{self.platform_type} | {self.build_type}]")
         log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
-        self._ensure_dll_staged(b)
+        self.stage_lib(b)
 
         env = os.environ.copy()
         build_suffix = self.build_type.lower()
@@ -288,10 +279,10 @@ class Build:
             sys.exit(1)
 
         log_ok("Done")
-        self.copy_configs(b["project_dir"], b["dist_dir"])
-        self.copy_libs(b["project_dir"], b["dist_dir"])
+        self.copy_config(b["project_dir"], b["dist_dir"])
+        self.copy_lib(b["project_dir"], b["dist_dir"])
         if self.build_type == "Debug":
-            self.copy_pdbs(b["sandbox_dir"], b["dist_dir"])
+            self.copy_pdb(b["sandbox_dir"], b["dist_dir"])
 
 
 def main():
