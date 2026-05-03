@@ -65,8 +65,6 @@ namespace Vital::Sandbox {
             vm_refs reference = {};
             vm_apis external_apis = {};
 
-            // Builds a source-annotated error message without touching the Lua
-            // stack. Safe to call from inside a catch block before lua_error().
             std::string build_error_message(const std::string& type, const std::string& what) {
                 lua_Debug debug;
                 std::string source = "?:0";
@@ -78,14 +76,6 @@ namespace Vital::Sandbox {
                         debug.currentline);
                 }
                 return what.empty() ? source : fmt::format("{}: {}", source, what);
-            }
-
-            // Returns true if this Machine's lua_State is still alive and
-            // registered. Used by load_string / compile_string to guard against
-            // being called on a Machine that is mid-destruction on fast restart.
-            bool is_state_valid() const {
-                if (!state) return false;
-                return machines.find(state) != machines.end();
             }
 
         public:
@@ -115,9 +105,6 @@ namespace Vital::Sandbox {
 
             ~Machine() {
                 if (!state) return;
-                // Only call lua_close on the main (non-virtual) state.
-                // Coroutine thread states are owned by their parent lua_State
-                // and must never be lua_close'd independently.
                 if (!virtualized) lua_close(state);
                 machines.erase(state);
                 state = nullptr;
@@ -409,12 +396,6 @@ namespace Vital::Sandbox {
 
             // Context Handles //
             void log(const std::string& type, const std::string& message = "") {
-                // lua_getstack returns 0 if the requested level does not exist.
-                // This happens when log() is called from a coroutine resumed via
-                // push_deferred (no C caller frame at level 1) or from safe_resume's
-                // error path. Calling lua_getinfo on an uninitialised lua_Debug from
-                // a failed lua_getstack reads garbage and can crash. Fall back to a
-                // generic source location in that case.
                 lua_Debug debug;
                 std::string source = "?:0";
                 if (lua_getstack(state, 1, &debug)) {
@@ -431,28 +412,6 @@ namespace Vital::Sandbox {
 
             template<typename F>
             int execute(F&& exec) {
-                // FIX: C++ exceptions must NEVER propagate through Lua frames.
-                //
-                // Lua uses setjmp/longjmp internally for its error handling
-                // (luaD_rawrunprotected / luaD_throw). When a C++ exception is
-                // thrown inside a lua_CFunction (called via lua_pcall, lua_resume,
-                // or luaV_execute), the C++ runtime tries to unwind the stack using
-                // DWARF/SEH unwinders. These unwinders encounter Lua's setjmp frames
-                // (which have no C++ unwind information) and produce:
-                //   "An invalid or unaligned stack was encountered during an unwind"
-                // crashing in ntdll!RtlUnwindEx / luaD_throw with errorJmp->status=0.
-                //
-                // The correct pattern is:
-                //   1. Catch the C++ exception inside the C function boundary.
-                //   2. Extract the message as a plain std::string (no more C++ objects
-                //      on the stack that need destructors across the longjmp).
-                //   3. Push the message string onto the Lua stack.
-                //   4. Call lua_error() which does longjmp — Lua's own mechanism —
-                //      so the unwind is handled entirely by Lua, not the C++ runtime.
-                //
-                // lua_error() never returns (it longjmps), so the [[noreturn]] path
-                // is safe. We log via the external API before raising so the message
-                // appears in the console, matching the previous behaviour.
                 try {
                     return exec();
                 }
@@ -481,8 +440,6 @@ namespace Vital::Sandbox {
                     API::log(std::string(Tool::Log::error::label), msg);
                     lua_pushstring(state, msg.c_str());
                 }
-                // All C++ objects with destructors are gone at this point.
-                // lua_error() longjmps — Lua unwinds its own frames cleanly.
                 return lua_error(state);
             }
 
@@ -548,11 +505,6 @@ namespace Vital::Sandbox {
                 if (!is_virtual()) return;
                 int ncount;
                 int result = lua_resume(state, nullptr, count, &ncount);
-                // FIX: Log the error string while `state` is still fully alive,
-                // BEFORE `delete this`. Previously this logging happened in
-                // safe_resume AFTER `delete this` was called here — a use-after-
-                // free that corrupted ci and the string table, crashing in
-                // unroll() and luaS_new() at offset 0x18.
                 if (result != LUA_OK && result != LUA_YIELD) {
                     if (lua_gettop(state) > 0) {
                         const char* err = lua_tostring(state, -1);
@@ -560,7 +512,6 @@ namespace Vital::Sandbox {
                         lua_pop(state, 1);
                     }
                 }
-                // All state access finished — now safe to destroy.
                 if (result != LUA_YIELD) delete this;
             }
 
@@ -586,13 +537,6 @@ namespace Vital::Sandbox {
             }
         
             std::string compile_string(const std::string& raw, const std::string& chunk_name = "") {
-                // FIX: Guard against being called on a Machine whose lua_State
-                // has already been closed/freed during a fast restart. The Manager
-                // may hold a raw Machine* and call compile_string after ~Machine()
-                // has nulled `state` and erased it from `machines`. Passing a freed
-                // or null lua_State to luaL_loadbuffer produces the poisoned pointer
-                // crash (f = 0xFFFFFFFFFFFFFF5) seen in lua_load → cllivalue.
-                if (!is_state_valid()) return "machine state is no longer valid";
                 if (raw.empty()) return "empty source";
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
@@ -605,14 +549,6 @@ namespace Vital::Sandbox {
             }
         
             int load_string(const std::string& raw, const std::string& chunk_name = "", bool auto_load = true, bool use_env = false, int env_index = 1) {
-                // FIX: Guard against being called on a Machine whose lua_State
-                // has already been closed/freed during a fast restart. The Manager
-                // may hold a raw Machine* and call load_string after ~Machine() has
-                // nulled `state` and erased it from `machines`. Passing a freed or
-                // null lua_State to luaL_loadbuffer corrupts the heap and produces
-                // the poisoned-pointer access violation in lua_load → cllivalue
-                // (f->nupvalues >= 1, f = 0xFFFFFFFFFFFFFF5) seen on random restarts.
-                if (!is_state_valid()) return 0;
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
