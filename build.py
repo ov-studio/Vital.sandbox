@@ -82,6 +82,7 @@ class Build:
             "use_static_cpp=no",
             "use_static_crt=no",
             "build_library=no",
+            f"debug_symbols={'yes' if self.build_type == 'Debug' else 'no'}",
             f"-j{int(self.os_info['nproc'])}",
         ]
 
