@@ -140,7 +140,8 @@ class Build:
 
         log_ok("Done")
 
-    def stage_lib(self, b):
+    def stage_lib(self):
+        b = self.init()
         build_suffix = self.build_type.lower()
         os_type = self.os_info["type"]
 
@@ -163,33 +164,35 @@ class Build:
             os.makedirs(lib_dst_dir, exist_ok=True)
             shutil.copy2(lib_src, lib_dst)
 
-    def copy_config(self, project_dir, dist_dir):
+    def copy_config(self):
+        b = self.init()
         log_step(f"Copying config files [{self.platform_type} | {self.build_type}]")
         config_exts = [".yaml"]
         configs_copied = False
 
-        for root, dirs, files in os.walk(project_dir):
+        for root, dirs, files in os.walk(b["project_dir"]):
             for f in files:
                 name_lower = f.lower()
                 if any(name_lower.endswith(ext) for ext in config_exts):
-                    shutil.copy2(os.path.join(root, f), os.path.join(dist_dir, f))
+                    shutil.copy2(os.path.join(root, f), os.path.join(b["dist_dir"], f))
                     log_info(f"Copied: {f}")
                     configs_copied = True
 
         if not configs_copied:
             log_info("No config files found")
 
-    def copy_lib(self, project_dir, dist_dir):
+    def copy_lib(self):
+        b = self.init()
         log_step(f"Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
         build_suffix = "release" if self.build_type == "Release" else "debug"
         lib_exts = self.info["lib_exts"]
 
         gdextension_roots = set()
-        for root, dirs, files in os.walk(project_dir):
+        for root, dirs, files in os.walk(b["project_dir"]):
             if any(f.endswith(".gdextension") for f in files):
                 gdextension_roots.add(os.path.normpath(root))
 
-        for root, dirs, files in os.walk(project_dir):
+        for root, dirs, files in os.walk(b["project_dir"]):
             if os.path.normpath(root) in gdextension_roots:
                 continue
             libs = []
@@ -203,24 +206,24 @@ class Build:
                     continue
                 libs.append(f)
             for lib in libs:
-                shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
+                shutil.copy2(os.path.join(root, lib), os.path.join(b["dist_dir"], lib))
                 log_info(f"Copied: {lib}")
 
-    def copy_pdb(self, sandbox_dir, dist_dir):
+    def copy_pdb(self):
+        b = self.init()
         log_step(f"Copying PDB files [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
 
-        os_type = self.os_info["type"]
-        if os_type == "Windows":
-            platform_subdir = "windows"
-        elif os_type == "Linux":
-            platform_subdir = "linux"
-        elif os_type == "Darwin":
-            platform_subdir = "macos"
-        else:
+        platform_subdir = {
+            "Windows": "windows",
+            "Linux":   "linux",
+            "Darwin":  "macos",
+        }.get(self.os_info["type"])
+
+        if not platform_subdir:
             log_info("PDB copying not supported on this platform")
             return
 
-        bin_dir = os.path.join(sandbox_dir, ".bin", self.platform_type.lower(), platform_subdir)
+        bin_dir = os.path.join(b["sandbox_dir"], ".bin", self.platform_type.lower(), platform_subdir)
         if not os.path.isdir(bin_dir):
             log_info(f"Bin directory not found, skipping: {bin_dir}")
             return
@@ -228,7 +231,7 @@ class Build:
         pdbs_copied = False
         for f in os.listdir(bin_dir):
             if f.lower().endswith(".pdb"):
-                shutil.copy2(os.path.join(bin_dir, f), os.path.join(dist_dir, f))
+                shutil.copy2(os.path.join(bin_dir, f), os.path.join(b["dist_dir"], f))
                 log_info(f"Copied: {f}")
                 pdbs_copied = True
 
@@ -241,7 +244,7 @@ class Build:
         log_step(f"Exporting Godot [{self.platform_type} | {self.build_type}]")
         log_info(f"Output → {b['output_path']}")
         godot_bin = Godot(None).get_bin()
-        self.stage_lib(b)
+        self.stage_lib()
 
         env = os.environ.copy()
         build_suffix = self.build_type.lower()
@@ -279,10 +282,10 @@ class Build:
             sys.exit(1)
 
         log_ok("Done")
-        self.copy_config(b["project_dir"], b["dist_dir"])
-        self.copy_lib(b["project_dir"], b["dist_dir"])
+        self.copy_config()
+        self.copy_lib()
         if self.build_type == "Debug":
-            self.copy_pdb(b["sandbox_dir"], b["dist_dir"])
+            self.copy_pdb()
 
 
 def main():
