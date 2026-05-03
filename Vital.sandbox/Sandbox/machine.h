@@ -510,7 +510,9 @@ namespace Vital::Sandbox {
             bool pcall(int arguments, int returns = LUA_MULTRET) {
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
-                    API::log(std::string(Tool::Log::error::label), get_string(-1));
+                    // TODO: Reuse machine calls wherever possible within machine.h
+                    const char* err = lua_tostring(state, -1);
+                    API::log(std::string(Tool::Log::error::label), err ? err : "unknown error");
                     pop();
                 }
                 return result;
