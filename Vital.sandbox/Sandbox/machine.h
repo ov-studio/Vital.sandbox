@@ -77,7 +77,6 @@ namespace Vital::Sandbox {
                 }
                 return what.empty() ? source : fmt::format("{}: {}", source, what);
             }
-
         public:
             Machine(vm_apis apis = {}) : external_apis(std::move(apis)) {
                 state = luaL_newstate();
