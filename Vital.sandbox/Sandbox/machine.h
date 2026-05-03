@@ -412,34 +412,17 @@ namespace Vital::Sandbox {
 
             template<typename F>
             int execute(F&& exec) {
-                try {
-                    return exec();
-                }
-                catch (const Tool::Log::info& e) {
-                    const std::string msg = build_error_message(std::string(Tool::Log::info::label), e.what());
-                    API::log(std::string(Tool::Log::info::label), msg);
+                auto raise = [&](const std::string& label, const std::string& what) {
+                    const std::string msg = build_error_message(label, what);
+                    API::log(label, msg);
                     lua_pushstring(state, msg.c_str());
-                }
-                catch (const Tool::Log::warn& e) {
-                    const std::string msg = build_error_message(std::string(Tool::Log::warn::label), e.what());
-                    API::log(std::string(Tool::Log::warn::label), msg);
-                    lua_pushstring(state, msg.c_str());
-                }
-                catch (const Tool::Log::error& e) {
-                    const std::string msg = build_error_message(std::string(Tool::Log::error::label), e.what());
-                    API::log(std::string(Tool::Log::error::label), msg);
-                    lua_pushstring(state, msg.c_str());
-                }
-                catch (const std::runtime_error& e) {
-                    const std::string msg = build_error_message(std::string(Tool::Log::error::label), e.what());
-                    API::log(std::string(Tool::Log::error::label), msg);
-                    lua_pushstring(state, msg.c_str());
-                }
-                catch (...) {
-                    const std::string msg = build_error_message(std::string(Tool::Log::error::label), "unknown exception");
-                    API::log(std::string(Tool::Log::error::label), msg);
-                    lua_pushstring(state, msg.c_str());
-                }
+                };
+                try { return exec(); }
+                catch (const Tool::Log::info& e)  { raise(std::string(Tool::Log::info::label), e.what()); }
+                catch (const Tool::Log::warn& e)  { raise(std::string(Tool::Log::warn::label), e.what()); }
+                catch (const Tool::Log::error& e) { raise(std::string(Tool::Log::error::label), e.what()); }
+                catch (const std::runtime_error& e) { raise(std::string(Tool::Log::error::label), e.what()); }
+                catch (...) { raise(std::string(Tool::Log::error::label), "unknown exception"); }
                 return lua_error(state);
             }
 
