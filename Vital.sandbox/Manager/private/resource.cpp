@@ -426,13 +426,7 @@ namespace Vital::Manager {
             resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
             #endif
         }
-
-        if (was_running) {
-            Engine::Core::get_singleton() -> push_deferred([vm, name]() {
-                vm -> clear_environment_id(name);
-            });
-        }
-
+        if (was_running) vm -> clear_environment_id(name);
         log("sbox", fmt::format("resource `{}` stopped", name));
 
         #if !defined(Vital_SDK_Client)
