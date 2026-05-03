@@ -69,21 +69,15 @@ if os_info["type"] == "Windows":
     env["LINKFLAGS"].remove("/WX")
     env.Append(LINKFLAGS=["/WX:NO", "/ignore:4099"])
 
-bin_platform_dir = f".bin/{env.Args['platform_type'].lower()}/{env['platform']}"
-if os.path.isdir(bin_platform_dir):
-    shutil.rmtree(bin_platform_dir)
-
 
 # Build
 platform = env["platform"]
+suffix = env["suffix"].replace(".dev","").replace(".universal","").replace(f".{platform}","").replace("template_","")
+bin_dir = f".bin/{env.Args['platform_type'].lower()}/{platform}"
 build_dir = f".build/{env.Args['platform_type'].lower()}/{platform}"
-bin_dir = (
-    f".bin/{env.Args['platform_type'].lower()}/{platform}/"
-    f"{env.name}"
-    f"{env['suffix'].replace('.dev','').replace('.universal','').replace(f'.{platform}','').replace('template_','')}"
-    f"{env.subst('$SHLIBSUFFIX')}"
-)
-bin = env.SharedLibrary(bin_dir, source=env.sources)
+bin_out = f"{bin_dir}/{env.name}{suffix}{env.subst('$SHLIBSUFFIX')}"
+shutil.rmtree(bin_dir, ignore_errors=True)
+bin = env.SharedLibrary(bin_out, source=env.sources)
 build = env.Install(build_dir, bin)
 env.Module.stage(build)
 Default([bin, build])
