@@ -96,10 +96,8 @@ namespace Vital::Sandbox::API {
 
             if (instance->vm) {
                 vm_module::release_userdata_ptr(instance->userdata);
-                if (instance->vm->is_reference(instance->self_reference()))
-                    instance->vm->del_reference(instance->self_reference());
-                if (instance->vm->is_reference(instance->reference()))
-                    instance->vm->del_reference(instance->reference());
+                instance->vm->del_reference(instance->self_reference());
+                instance->vm->del_reference(instance->reference());
                 instance->vm = nullptr;
             }
         }
