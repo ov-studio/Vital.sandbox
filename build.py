@@ -140,6 +140,22 @@ class Build:
 
         log_ok("Done")
 
+    def copy_configs(self, project_dir, dist_dir):
+        log_step(f"Copying config files [{self.platform_type} | {self.build_type}]")
+        config_exts = [".yaml"]
+        configs_copied = False
+
+        for root, dirs, files in os.walk(project_dir):
+            for f in files:
+                name_lower = f.lower()
+                if any(name_lower.endswith(ext) for ext in config_exts):
+                    shutil.copy2(os.path.join(root, f), os.path.join(dist_dir, f))
+                    log_info(f"Copied: {f}")
+                    configs_copied = True
+
+        if not configs_copied:
+            log_info("No config files found")
+
     def copy_libs(self, project_dir, dist_dir):
         log_step(f"Copying libraries [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
         build_suffix = "release" if self.build_type == "Release" else "debug"
@@ -167,21 +183,34 @@ class Build:
                 shutil.copy2(os.path.join(root, lib), os.path.join(dist_dir, lib))
                 log_info(f"Copied: {lib}")
 
-    def copy_configs(self, project_dir, dist_dir):
-        log_step(f"Copying config files [{self.platform_type} | {self.build_type}]")
-        config_exts = [".yaml"]
-        configs_copied = False
+    def copy_pdbs(self, sandbox_dir, dist_dir):
+        log_step(f"Copying PDB files [{self.platform_type} | {self.build_type} | {self.os_info['type']}]")
 
-        for root, dirs, files in os.walk(project_dir):
-            for f in files:
-                name_lower = f.lower()
-                if any(name_lower.endswith(ext) for ext in config_exts):
-                    shutil.copy2(os.path.join(root, f), os.path.join(dist_dir, f))
-                    log_info(f"Copied: {f}")
-                    configs_copied = True
+        os_type = self.os_info["type"]
+        if os_type == "Windows":
+            platform_subdir = "windows"
+        elif os_type == "Linux":
+            platform_subdir = "linux"
+        elif os_type == "Darwin":
+            platform_subdir = "macos"
+        else:
+            log_info("PDB copying not supported on this platform")
+            return
 
-        if not configs_copied:
-            log_info("No config files found")
+        build_dir = os.path.join(sandbox_dir, ".build", self.platform_type.lower(), platform_subdir)
+        if not os.path.isdir(build_dir):
+            log_info(f"Build directory not found, skipping: {build_dir}")
+            return
+
+        pdbs_copied = False
+        for f in os.listdir(build_dir):
+            if f.lower().endswith(".pdb"):
+                shutil.copy2(os.path.join(build_dir, f), os.path.join(dist_dir, f))
+                log_info(f"Copied: {f}")
+                pdbs_copied = True
+
+        if not pdbs_copied:
+            log_info("No PDB files found")
 
     def _ensure_dll_staged(self, b):
         build_suffix = self.build_type.lower()
@@ -259,8 +288,10 @@ class Build:
             sys.exit(1)
 
         log_ok("Done")
-        self.copy_libs(b["project_dir"], b["dist_dir"])
         self.copy_configs(b["project_dir"], b["dist_dir"])
+        self.copy_libs(b["project_dir"], b["dist_dir"])
+        if self.build_type == "Debug":
+            self.copy_pdbs(b["sandbox_dir"], b["dist_dir"])
 
 
 def main():
