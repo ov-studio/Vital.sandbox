@@ -199,8 +199,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self->destroyed) { vm->push_value(false); return 1; }
                 auto instance = fetch_instance(self->id);
-                if (instance) Vital::Engine::Core::get_singleton()->push_deferred(
-                    [instance]() { clean_instance(instance); });
+                if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm->push_value(true);
                 return 1;
@@ -241,13 +240,11 @@ namespace Vital::Sandbox::API {
                 auto weak     = std::weak_ptr<Instance>(instance);
 
                 Tool::Timer::create([weak](Tool::Timer*, int) {
-                    Vital::Engine::Core::get_singleton()->push_deferred([weak]() {
-                        auto instance = weak.lock();
-                        if (!instance || instance->destroyed) return;
-                        instance->sleeping = false;
-                        if (!instance->vm_owned.load() || !instance->thread_vm) return;
-                        safe_resume(instance, 0);
-                    });
+                    auto instance = weak.lock();
+                    if (!instance || instance->destroyed) return;
+                    instance->sleeping = false;
+                    if (!instance->vm_owned.load() || !instance->thread_vm) return;
+                    safe_resume(instance, 0);
                 }, duration, 1);
 
                 return lua_yieldk(vm->get_state(), 0, 0,
