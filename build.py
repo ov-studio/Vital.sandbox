@@ -197,15 +197,15 @@ class Build:
             log_info("PDB copying not supported on this platform")
             return
 
-        build_dir = os.path.join(sandbox_dir, ".build", self.platform_type.lower(), platform_subdir)
-        if not os.path.isdir(build_dir):
-            log_info(f"Build directory not found, skipping: {build_dir}")
+        bin_dir = os.path.join(sandbox_dir, ".bin", self.platform_type.lower(), platform_subdir)
+        if not os.path.isdir(bin_dir):
+            log_info(f"Bin directory not found, skipping: {bin_dir}")
             return
 
         pdbs_copied = False
-        for f in os.listdir(build_dir):
+        for f in os.listdir(bin_dir):
             if f.lower().endswith(".pdb"):
-                shutil.copy2(os.path.join(build_dir, f), os.path.join(dist_dir, f))
+                shutil.copy2(os.path.join(bin_dir, f), os.path.join(dist_dir, f))
                 log_info(f"Copied: {f}")
                 pdbs_copied = True
 
