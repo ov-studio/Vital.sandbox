@@ -149,13 +149,9 @@ namespace Vital::Sandbox::API {
 
             // Deferred: runs on main thread next frame.
             // No raw pointers — only plain integers and serialised values.
-            Vital::Engine::Core::get_singleton()->push_deferred(
-                [thread_ids, resolved, values]() {
-                    if (!Promise::resume_dispatcher) return;
-                    for (int tid : thread_ids)
-                        Promise::resume_dispatcher(tid, resolved, values);
-                }
-            );
+            if (!Promise::resume_dispatcher) return;
+            for (int tid : thread_ids)
+                Promise::resume_dispatcher(tid, resolved, values);
         }
 
         static void bind(Machine* vm) {
@@ -209,8 +205,7 @@ namespace Vital::Sandbox::API {
                 if (!self || self->destroyed) { vm->push_value(false); return 1; }
                 self->destroyed = true;
                 auto instance = fetch_instance(self->id);
-                if (instance) Vital::Engine::Core::get_singleton()->push_deferred(
-                    [instance]() { clean_instance(instance); });
+                if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm->push_value(true);
                 return 1;
