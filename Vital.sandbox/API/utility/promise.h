@@ -182,7 +182,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_pending", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self && !self -> destroyed && self -> state == State::Pending);
+                vm -> push_value(!self -> destroyed && self -> state == State::Pending);
                 return 1;
             });
         

@@ -177,7 +177,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self && !self -> destroyed);
+                vm -> push_value(!self -> destroyed);
                 return 1;
             });
 
