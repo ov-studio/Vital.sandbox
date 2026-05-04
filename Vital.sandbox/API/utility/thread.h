@@ -69,10 +69,8 @@ namespace Vital::Sandbox::API {
 
             if (instance->vm) {
                 vm_module::release_userdata_ptr(instance->userdata);
-                if (instance->vm->is_reference(instance->self_reference()))
-                    instance->vm->del_reference(instance->self_reference());
-                if (instance->vm->is_reference(instance->reference()))
-                    instance->vm->del_reference(instance->reference());
+                instance->vm->del_reference(instance->self_reference());
+                instance->vm->del_reference(instance->reference());
                 instance->vm = nullptr;
             }
         }
@@ -131,12 +129,13 @@ namespace Vital::Sandbox::API {
                     if (!instance->vm_owned.load()) return;
                     if (!instance->thread_vm)       return;
 
-                    lua_State* dst = instance->thread_vm->get_state();
+                    vm_state* dst = instance->thread_vm->get_state();
                     if (!dst) return;
 
-                    if (!Machine::fetch_machine(dst)) return;
+                    auto dst_vm = Machine::fetch_machine(dst);
+                    if (!dst_vm) return;
 
-                    lua_pushboolean(dst, resolved ? 1 : 0);
+                    dst_vm->push_bool(resolved);
                     for (auto& v : values) v.push(dst);
 
                     instance->awaiting = false;
@@ -261,14 +260,14 @@ namespace Vital::Sandbox::API {
                 if (!self || self->destroyed || self->awaiting) { vm->push_value(false); return 1; }
                 if (!vm->is_virtual()) { vm->push_value(false); return 1; }
 
-                auto ud = static_cast<Promise::Instance**>(lua_touserdata(vm->get_state(), 2));
+                auto ud = static_cast<Promise::Instance**>(vm->get_userdata(2));
                 if (!ud || !*ud) { vm->push_value(false); return 1; }
                 auto promise_inst = Promise::fetch_instance((*ud)->id);
                 if (!promise_inst) { vm->push_value(false); return 1; }
 
                 if (promise_inst->state != Promise::State::Pending) {
-                    lua_State* dst = vm->get_state();
-                    lua_pushboolean(dst, promise_inst->resolved ? 1 : 0);
+                    vm_state* dst = vm->get_state();
+                    vm->push_bool(promise_inst->resolved);
                     for (auto& v : promise_inst->serial_values) v.push(dst);
                     return 1 + static_cast<int>(promise_inst->serial_values.size());
                 }
@@ -276,7 +275,7 @@ namespace Vital::Sandbox::API {
                 self->awaiting = true;
                 promise_inst->waiting.push_back({ self->id });
 
-                int base = lua_gettop(vm->get_state());
+                int base = vm->get_count();
                 lua_KContext ctx = (static_cast<lua_KContext>(base)      << 16)
                                  | (static_cast<lua_KContext>(self->id)  & 0xFFFF);
 
