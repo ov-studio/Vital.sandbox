@@ -196,18 +196,22 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
                 auto instance = fetch_instance(self -> id);
-                if (!instance) { vm -> push_value(false); return 1; }
-                settle(instance, State::Resolved, vm, 2, vm -> get_count() - 1);
-                vm -> push_value(true);
+                if (!instance) vm -> push_value(false);
+                else {
+                    settle(instance, State::Resolved, vm, 2, vm -> get_count() - 1);
+                    vm -> push_value(true);
+                }
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
                 auto instance = fetch_instance(self -> id);
-                if (!instance) { vm -> push_value(false); return 1; }
-                settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
-                vm -> push_value(true);
+                if (!instance) vm -> push_value(false);
+                else {
+                    settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
+                    vm -> push_value(true);
+                }
                 return 1;
             });
         }
@@ -216,8 +220,9 @@ namespace Vital::Sandbox::API {
             std::vector<std::shared_ptr<Instance>> to_clean;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                for (auto& [id, instance] : buffer)
+                for (auto& [id, instance] : buffer) {
                     if (instance -> env == env) to_clean.push_back(instance);
+                }
             }
             for (auto& instance : to_clean) {
                 instance -> destroyed = true;
