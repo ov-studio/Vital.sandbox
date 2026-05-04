@@ -52,7 +52,7 @@ namespace Vital::Engine {
                 freopen("CONOUT$", "w", stderr);
                 freopen("CONIN$",  "r", stdin);
                 HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-                HANDLE hStdin  = GetStdHandle(STD_INPUT_HANDLE);
+                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                 CONSOLE_FONT_INFOEX fontInfo = {};
                 fontInfo.cbSize = sizeof(fontInfo);
                 fontInfo.dwFontSize.Y = 19;
@@ -78,7 +78,7 @@ namespace Vital::Engine {
                 struct termios term = stdin_termios;
                 term.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK);
                 term.c_lflag |= ISIG;
-                term.c_cc[VMIN]  = 1;
+                term.c_cc[VMIN] = 1;
                 term.c_cc[VTIME] = 0;
                 tcsetattr(STDIN_FILENO, TCSANOW, &term);
             #endif
@@ -94,7 +94,7 @@ namespace Vital::Engine {
                         if (!ReadConsoleInputA(hStdin, &rec, 1, &count)) break;
                         if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) continue;
                         char ch = rec.Event.KeyEvent.uChar.AsciiChar;
-                        WORD vk  = rec.Event.KeyEvent.wVirtualKeyCode;
+                        WORD vk = rec.Event.KeyEvent.wVirtualKeyCode;
                         if (vk == VK_RETURN) {
                             std::string line;
                             {

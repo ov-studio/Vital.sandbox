@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 instance -> id = next_id.fetch_add(1);
                 instance -> env = env;
                 instance -> vm = vm;
-                Machine* thread_vm  = vm -> create_thread();
+                Machine* thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
                 vm -> set_reference(instance -> reference(), 1);
                 vm -> pop(1);

@@ -48,10 +48,10 @@ namespace Vital::Engine {
     // set_rpc_config() requires a valid node path which only exists in-tree.
     void NetworkNode::setup_rpc() {
         godot::Dictionary cfg;
-        cfg["rpc_mode"]      = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
+        cfg["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
         cfg["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE;
-        cfg["call_local"]    = false;
-        cfg["channel"]       = 0;
+        cfg["call_local"] = false;
+        cfg["channel"] = 0;
         rpc_config("_receive", cfg);
     }
 
@@ -218,7 +218,7 @@ namespace Vital::Engine {
         int32_t sender = mp.is_valid() ? mp -> get_remote_sender_id() : 0;
         godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
         obj["sender_id"] = (int64_t)sender;
-        data["object"]   = obj;
+        data["object"] = obj;
 
         // Convert to Stack and emit into the event system
         Tool::Event::emit("vital.network:packet", Tool::Stack::from_dict(data));
@@ -241,12 +241,12 @@ namespace Vital::Engine {
         if (!tree) { peer.unref(); return false; }
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_client_signals();
-        auto_reconnect     = enable_reconnect;
-        reconnect_ip       = ip;
-        reconnect_port     = port;
+        auto_reconnect = enable_reconnect;
+        reconnect_ip = ip;
+        reconnect_port = port;
         reconnect_attempts = 0;
-        reconnect_timer    = 0.0f;
-        pending_handshake  = false;
+        reconnect_timer = 0.0f;
+        pending_handshake = false;
         Tool::print("sbox", "Network: connecting to ", ip.c_str(), ":", port);
         Tool::Event::emit("vital.network:connect", {});
         return true;

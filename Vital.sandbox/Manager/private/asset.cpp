@@ -277,13 +277,13 @@ namespace Vital::Manager {
         if (registered_assets.empty()) return;
         for (int pid : all_peers) {
             Tool::Stack msg;
-            msg.object["event"]       = Tool::StackValue(std::string("asset:manifest"));
+            msg.object["event"] = Tool::StackValue(std::string("asset:manifest"));
             msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
-            msg.object["http_port"]   = Tool::StackValue((int32_t)http_port);
+            msg.object["http_port"] = Tool::StackValue((int32_t)http_port);
             int i = 0;
             for (auto& [path, entry] : registered_assets) {
-                msg.object["asset_path_"  + std::to_string(i)] = Tool::StackValue(path);
-                msg.object["asset_hash_"  + std::to_string(i)] = Tool::StackValue(entry.hash);
+                msg.object["asset_path_" + std::to_string(i)] = Tool::StackValue(path);
+                msg.object["asset_hash_" + std::to_string(i)] = Tool::StackValue(entry.hash);
                 msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
                 i++;
             }
@@ -301,19 +301,19 @@ namespace Vital::Manager {
     #if defined(Vital_SDK_Client)
 
     void Asset::receive_manifest(const Tool::Stack& args) {
-        int count     = args.object.at("asset_count").as<int32_t>();
+        int count = args.object.at("asset_count").as<int32_t>();
         int http_port = args.object.count("http_port") ? args.object.at("http_port").as<int32_t>() : 7778;
 
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
-        const std::string base_url  = "http://" + server_ip + ":" + std::to_string(http_port);
+        const std::string base_url = "http://" + server_ip + ":" + std::to_string(http_port);
 
         std::vector<std::string> to_download;
         std::vector<std::string> up_to_date;
         std::vector<std::string> in_progress;
 
         for (int i = 0; i < count; i++) {
-            std::string path  = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
-            std::string hash  = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
+            std::string path = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
+            std::string hash = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
             std::string group = args.object.count("asset_group_" + std::to_string(i))
                 ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
@@ -333,7 +333,7 @@ namespace Vital::Manager {
             if (hash_matches) {
                 up_to_date.push_back(path);
                 Tool::Stack ready_args;
-                ready_args.object["path"]   = Tool::StackValue(path);
+                ready_args.object["path"] = Tool::StackValue(path);
                 ready_args.object["cached"] = Tool::StackValue(true);
                 Tool::Event::emit("asset:file_ready", ready_args);
             }
@@ -416,7 +416,7 @@ namespace Vital::Manager {
 
             Engine::Core::get_singleton() -> push_deferred([path]() {
                 Tool::Stack ready_args;
-                ready_args.object["path"]   = Tool::StackValue(path);
+                ready_args.object["path"] = Tool::StackValue(path);
                 ready_args.object["cached"] = Tool::StackValue(false);
                 Tool::Event::emit("asset:file_ready", ready_args);
                 if (!Asset::get_singleton() -> is_downloading()) {

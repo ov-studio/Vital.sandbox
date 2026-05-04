@@ -178,7 +178,7 @@ namespace Vital::Manager::Kit {
                     for (auto& asset : doc["assets"].GetArray()) {
                         if (!asset.HasMember("name") || !asset.HasMember("browser_download_url")) continue;
                         std::string asset_name = asset["name"].GetString();
-                        std::string asset_url  = asset["browser_download_url"].GetString();
+                        std::string asset_url = asset["browser_download_url"].GetString();
                         if (asset_name == "checksum.json") checksum_url = asset_url;
                         if (asset_name.rfind(Internal::toolkit_name, 0) == 0 && asset_name.size() > 4 && asset_name.substr(asset_name.size() - 4) == ".zip") zip_url = asset_url;
                     }

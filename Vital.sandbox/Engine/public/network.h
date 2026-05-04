@@ -61,14 +61,14 @@ namespace Vital::Engine {
             NetworkNode* node = nullptr;
 
             #if defined(Vital_SDK_Client)
-            bool        auto_reconnect     = false;
-            bool        pending_handshake  = false;
+            bool auto_reconnect = false;
+            bool pending_handshake = false;
             std::string reconnect_ip;
-            int         reconnect_port     = 0;
-            int         reconnect_attempts = 0;
-            int         reconnect_max      = 5;
-            float       reconnect_delay    = 3.0f;
-            float       reconnect_timer    = 0.0f;
+            int reconnect_port = 0;
+            int reconnect_attempts = 0;
+            int reconnect_max = 5;
+            float reconnect_delay = 3.0f;
+            float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
             #endif
@@ -87,7 +87,7 @@ namespace Vital::Engine {
             void unwire_signals();
 
         public:
-            Network()  = default;
+            Network() = default;
             ~Network() = default;
 
             static Network* get_singleton();

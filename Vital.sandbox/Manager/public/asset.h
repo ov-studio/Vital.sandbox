@@ -64,7 +64,7 @@ namespace Vital::Manager {
             static std::string hash_file(const std::string& path);
 
         public:
-            Asset()  = default;
+            Asset() = default;
             ~Asset() = default;
 
             static Asset* get_singleton();
