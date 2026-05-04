@@ -486,10 +486,9 @@ namespace Vital::Sandbox {
                 int ncount;
                 int result = lua_resume(state, nullptr, count, &ncount);
                 if (result != LUA_OK && result != LUA_YIELD) {
-                    if (lua_gettop(state) > 0) {
-                        const char* err = lua_tostring(state, -1);
-                        if (err) API::log(std::string(Tool::Log::error::label), err);
-                        lua_pop(state, 1);
+                    if (get_count() > 0) {
+                        API::log(std::string(Tool::Log::error::label), get_string(-1));
+                        pop();
                     }
                 }
                 if (result != LUA_YIELD) delete this;
@@ -510,9 +509,7 @@ namespace Vital::Sandbox {
             bool pcall(int arguments, int returns = LUA_MULTRET) {
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
-                    // TODO: Reuse machine calls wherever possible within machine.h
-                    const char* err = lua_tostring(state, -1);
-                    API::log(std::string(Tool::Log::error::label), err ? err : "unknown error");
+                    API::log(std::string(Tool::Log::error::label), get_string(-1));
                     pop();
                 }
                 return result;
