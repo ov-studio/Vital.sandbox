@@ -64,7 +64,6 @@ namespace Vital::Sandbox::API {
                 if (tvm) delete tvm;
             }
             else instance -> thread_vm = nullptr;
-
             if (instance -> vm) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 instance -> vm -> del_reference(instance -> self_reference());
@@ -77,7 +76,6 @@ namespace Vital::Sandbox::API {
             if (!instance || instance -> destroyed) return false;
             if (!instance -> vm_owned.load()) return false;
             if (!instance -> thread_vm) return false;
-
             if (!instance -> vm) {
                 Machine* tvm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;
@@ -90,8 +88,8 @@ namespace Vital::Sandbox::API {
             vm_state* raw_state = instance -> thread_vm -> get_state();
             if (!raw_state) return false;
             {
-                int pre_status = lua_status(raw_state);
-                if (pre_status != LUA_OK && pre_status != LUA_YIELD) {
+                int status = lua_status(raw_state);
+                if (status != LUA_OK && status != LUA_YIELD) {
                     instance -> thread_vm = nullptr;
                     instance -> vm_owned.store(false);
                     clean_instance(instance);
@@ -100,9 +98,7 @@ namespace Vital::Sandbox::API {
             }
             instance -> vm_owned.store(false);
             instance -> thread_vm -> resume(args);
-
-            int status = lua_status(raw_state);
-            if (status != LUA_YIELD) {
+            if (lua_status(raw_state) != LUA_YIELD) {
                 instance -> thread_vm = nullptr;
                 clean_instance(instance);
                 return false;
@@ -141,7 +137,6 @@ namespace Vital::Sandbox::API {
                 instance -> vm = vm;
                 Machine* thread_vm  = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
-
                 vm -> set_reference(instance -> reference(), 1);
                 vm -> pop(1);
                 vm -> create_object(base_name, instance.get());
