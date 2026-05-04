@@ -72,6 +72,20 @@ namespace Vital::Manager {
             #endif
             const Manifest* get_resource_unsafe(const std::string& name) const;
             std::vector<const Manifest*> get_all_resources_unsafe() const;
+
+
+            // Internal APIs //
+            struct Internal {
+                static bool start(std::string name);
+                static bool stop(std::string name);
+                #if !defined(Vital_SDK_Client)
+                static void scan();
+                static bool restart(std::string name);
+                static void start_all();
+                static void stop_all();
+                static void restart_all();
+                #endif
+            };
         public:
             // Instantiators //
             Resource() = default;

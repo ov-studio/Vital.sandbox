@@ -503,7 +503,6 @@ namespace Vital::Engine {
         };
     
         auto exec = [&](const std::vector<std::string>& tokens) {
-            //TODO: Execute all console commands on main thread
             const std::string& cmd = tokens[0];
             if (!check_args(cmd)) return true;
             if (cmd == "version") { print("sbox", fetch_version()); return true; }
@@ -516,12 +515,7 @@ namespace Vital::Engine {
             if (cmd == "restart") { Manager::Resource::get_singleton() -> restart(tokens[1]); return true; }
             if (cmd == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
             if (cmd == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
-            if (cmd == "restart_all") { 
-                Engine::Core::get_singleton() -> push_deferred([]() {
-                    Manager::Resource::get_singleton() -> restart_all();
-                });
-                return true; 
-            }
+            if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
             if (cmd == "shutdown") { shutdown(); return true; }
             #endif
             return false;
