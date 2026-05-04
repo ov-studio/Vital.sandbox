@@ -312,7 +312,7 @@ namespace Vital::Manager {
         for (const auto& name : running) {
             auto resource = Internal::get_resource(name);
             if (!resource) continue;
-            Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, resource), peer_id);
+            Engine::Network::get_singleton() -> send(Internal::build_packet("vital.resource:started", name, resource), peer_id);
         }
     }
     #endif
