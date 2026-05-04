@@ -62,9 +62,8 @@ namespace Vital::Sandbox::API {
                 Machine* tvm = instance->thread_vm;
                 instance->thread_vm = nullptr;
                 if (tvm) delete tvm;
-            } else {
-                instance->thread_vm = nullptr;
             }
+            else instance->thread_vm = nullptr;
 
             if (instance->vm) {
                 vm_module::release_userdata_ptr(instance->userdata);
@@ -90,7 +89,6 @@ namespace Vital::Sandbox::API {
 
             vm_state* raw_state = instance->thread_vm->get_state();
             if (!raw_state) return false;
-
             {
                 int pre_status = lua_status(raw_state);
                 if (pre_status != LUA_OK && pre_status != LUA_YIELD) {
@@ -100,7 +98,6 @@ namespace Vital::Sandbox::API {
                     return false;
                 }
             }
-
             instance->vm_owned.store(false);
             instance->thread_vm->resume(args);
 
@@ -110,7 +107,6 @@ namespace Vital::Sandbox::API {
                 clean_instance(instance);
                 return false;
             }
-
             instance->vm_owned.store(true);
             return true;
         }
@@ -118,56 +114,43 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm, base_name);
 
-            Promise::register_resume_dispatcher(
-                [](int thread_id, bool resolved,
-                   const std::vector<Promise::SerialValue>& values) {
+            Promise::register_resume_dispatcher([](int thread_id, bool resolved, const std::vector<Promise::SerialValue>& values) {
+                auto instance = Thread::fetch_instance(thread_id);
+                if (!instance || instance->destroyed) return;
+                if (!instance->vm_owned.load()) return;
+                if (!instance->thread_vm)       return;
 
-                    auto instance = Thread::fetch_instance(thread_id);
-                    if (!instance || instance->destroyed) return;
-
-                    if (!instance->vm_owned.load()) return;
-                    if (!instance->thread_vm)       return;
-
-                    vm_state* dst = instance->thread_vm->get_state();
-                    if (!dst) return;
-
-                    auto dst_vm = Machine::fetch_machine(dst);
-                    if (!dst_vm) return;
-
-                    dst_vm->push_bool(resolved);
-                    for (auto& v : values) v.push(dst);
-
-                    instance->awaiting = false;
-                    safe_resume(instance, 1 + static_cast<int>(values.size()));
-                }
-            );
+                vm_state* dst = instance->thread_vm->get_state();
+                if (!dst) return;
+                auto dst_vm = Machine::fetch_machine(dst);
+                if (!dst_vm) return;
+                dst_vm->push_bool(resolved);
+                for (auto& v : values) v.push(dst);
+                instance->awaiting = false;
+                safe_resume(instance, 1 + static_cast<int>(values.size()));
+            });
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
                 std::string env = vm->get_environment_id();
-                auto instance   = std::make_shared<Instance>();
-                instance->id    = next_id.fetch_add(1);
-                instance->env   = env;
-                instance->vm    = vm;
-
+                auto instance = std::make_shared<Instance>();
+                instance->id = next_id.fetch_add(1);
+                instance->env = env;
+                instance->vm = vm;
                 Machine* thread_vm  = vm->create_thread();
                 instance->thread_vm = thread_vm;
 
                 vm->set_reference(instance->reference(), 1);
                 vm->pop(1);
-
                 vm->create_object(base_name, instance.get());
                 instance->userdata = vm_module::get_userdata_ptr(vm, -1);
-
                 vm->set_reference(instance->self_reference(), -1);
-
                 {
                     std::lock_guard<std::mutex> lock(mutex);
                     buffer[instance->id] = instance;
                 }
-
                 vm->get_reference(instance->self_reference(), true);
                 return 1;
             });
@@ -213,8 +196,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self->destroyed || !vm->is_virtual()) { vm->push_value(false); return 1; }
-                return lua_yieldk(vm->get_state(), 0, 0,
-                    [](lua_State*, int, lua_KContext) -> int { return 0; });
+                return lua_yieldk(vm->get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
@@ -228,8 +210,7 @@ namespace Vital::Sandbox::API {
                 self->sleeping = true;
 
                 auto instance = fetch_instance(self->id);
-                auto weak     = std::weak_ptr<Instance>(instance);
-
+                auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
                     auto instance = weak.lock();
                     if (!instance || instance->destroyed) return;
@@ -237,9 +218,7 @@ namespace Vital::Sandbox::API {
                     if (!instance->vm_owned.load() || !instance->thread_vm) return;
                     safe_resume(instance, 0);
                 }, duration, 1);
-
-                return lua_yieldk(vm->get_state(), 0, 0,
-                    [](lua_State*, int, lua_KContext) -> int { return 0; });
+                return lua_yieldk(vm->get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
@@ -268,17 +247,14 @@ namespace Vital::Sandbox::API {
 
                 int base = vm->get_count();
                 lua_KContext ctx = (static_cast<lua_KContext>(base) << 16) | (static_cast<lua_KContext>(self->id)  & 0xFFFF);
-
-                return lua_yieldk(vm->get_state(), 0, ctx,
-                    [](lua_State* L, int, lua_KContext ctx) -> int {
-                        int base      = static_cast<int>((ctx >> 16) & 0xFFFF);
-                        int thread_id = static_cast<int>( ctx        & 0xFFFF);
-                        auto inst = Thread::fetch_instance(thread_id);
-                        if (inst) inst->awaiting = false;
-                        int n = lua_gettop(L) - base;
-                        return n > 0 ? n : 0;
-                    }
-                );
+                return lua_yieldk(vm->get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
+                    int base      = static_cast<int>((ctx >> 16) & 0xFFFF);
+                    int thread_id = static_cast<int>( ctx        & 0xFFFF);
+                    auto inst = Thread::fetch_instance(thread_id);
+                    if (inst) inst->awaiting = false;
+                    int n = lua_gettop(L) - base;
+                    return n > 0 ? n : 0;
+                });
             });
         }
 
