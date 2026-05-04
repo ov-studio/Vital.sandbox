@@ -688,7 +688,7 @@ namespace Vital::Manager {
         }
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
-            Internal::start(name);
+            start(name);
         }
         else {
             std::lock_guard<std::mutex> lock(mutex);
