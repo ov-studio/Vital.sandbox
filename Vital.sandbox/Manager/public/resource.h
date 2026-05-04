@@ -64,18 +64,15 @@ namespace Vital::Manager {
             #endif
 
 
-            // Facilitators //
-            bool is_loaded_unsafe(const std::string& name) const;
-            bool is_running_unsafe(const std::string& name) const;
-            #if defined(Vital_SDK_Client)
-            bool is_pending_unsafe(const std::string& name) const;
-            #endif
-            const Manifest* get_resource_unsafe(const std::string& name) const;
-            std::vector<const Manifest*> get_all_resources_unsafe() const;
-
-
             // Internal APIs //
             struct Internal {
+                static bool is_loaded(const std::string& name);
+                static bool is_running(const std::string& name);
+                #if defined(Vital_SDK_Client)
+                static bool is_pending(const std::string& name);
+                #endif
+                static const Manifest* get_resource(const std::string& name);
+                static std::vector<const Manifest*> get_all_resources();
                 static bool start(std::string name);
                 static bool stop(std::string name);
                 #if !defined(Vital_SDK_Client)

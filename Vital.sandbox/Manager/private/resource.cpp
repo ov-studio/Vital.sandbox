@@ -82,7 +82,7 @@ namespace Vital::Manager {
         const Manifest* resource;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            resource = get_resource_unsafe(name);
+            resource = Internal::get_resource(name);
         }
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
@@ -111,7 +111,7 @@ namespace Vital::Manager {
         const Manifest* resource;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            resource = get_resource_unsafe(name);
+            resource = Internal::get_resource(name);
         }
         vm -> create_environment(name);
         vm -> pop(1);
@@ -137,7 +137,7 @@ namespace Vital::Manager {
                 const Manifest* resource;
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    resource = get_resource_unsafe(name);
+                    resource = Internal::get_resource(name);
                 }
                 Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, resource));
                 Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
@@ -199,36 +199,6 @@ namespace Vital::Manager {
     #endif
 
 
-    // Facilitators //
-    bool Resource::is_loaded_unsafe(const std::string& name) const {
-        return std::any_of(resources.begin(), resources.end(), [&](const Manifest& r) { return r.ref == name; });
-    }
-
-    bool Resource::is_running_unsafe(const std::string& name) const {
-        return running.count(name) > 0;
-    }
-
-    #if defined(Vital_SDK_Client)
-    bool Resource::is_pending_unsafe(const std::string& name) const {
-        return resource_assets.count(name) > 0;
-    }
-    #endif
-
-    const Resource::Manifest* Resource::get_resource_unsafe(const std::string& name) const {
-        for (const auto& resource : resources) {
-            if (resource.ref == name) return &resource;
-        }
-        return nullptr;
-    }
-
-    std::vector<const Resource::Manifest*> Resource::get_all_resources_unsafe() const {
-        std::vector<const Manifest*> result;
-        result.reserve(resources.size());
-        for (const auto& resource : resources) result.push_back(&resource);
-        return result;
-    }
-
-
     // Managers //
     void Resource::log(const std::string& mode, const std::string& message) const {
         Tool::print(mode, fmt::format("Resource: {}", message));
@@ -274,7 +244,7 @@ namespace Vital::Manager {
                     bool already;
                     {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
-                        already = rm -> is_running_unsafe(name) || rm -> is_pending_unsafe(name);
+                        already = Internal::is_running(name) || Internal::is_pending(name);
                     }
                     if (!already) rm -> load(name, scripts, files);
                 }
@@ -301,7 +271,7 @@ namespace Vital::Manager {
         Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         std::lock_guard<std::mutex> lock(mutex);
         for (const auto& name : running) {
-            auto resource = get_resource_unsafe(name);
+            auto resource = Internal::get_resource(name);
             if (!resource) continue;
             Engine::Network::get_singleton() -> send(build_packet("vital.resource:started", name, resource), peer_id);
         }
@@ -324,18 +294,18 @@ namespace Vital::Manager {
 
     bool Resource::is_loaded(const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
-        return is_loaded_unsafe(name);
+        return Internal::is_loaded(name);
     }
 
     bool Resource::is_running(const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
-        return is_running_unsafe(name);
+        return Internal::is_running(name);
     }
 
     #if defined(Vital_SDK_Client)
     bool Resource::is_pending(const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
-        return is_pending_unsafe(name);
+        return Internal::is_pending(name);
     }
     #endif
 
@@ -343,12 +313,12 @@ namespace Vital::Manager {
     // Getters //
     std::vector<const Resource::Manifest*> Resource::get_all_resources() const {
         std::lock_guard<std::mutex> lock(mutex);
-        return get_all_resources_unsafe();
+        return Internal::get_all_resources();
     }
 
     const Resource::Manifest* Resource::get_resource(const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
-        return get_resource_unsafe(name);
+        return Internal::get_resource(name);
     }
 
     std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
@@ -364,7 +334,7 @@ namespace Vital::Manager {
     std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
         std::lock_guard<std::mutex> lock(mutex);
         std::vector<Script> result;
-        auto resource = get_resource_unsafe(name);
+        auto resource = Internal::get_resource(name);
         if (!resource) return result;
         for (const auto& script : resource -> scripts) {
             if (type.empty() || script.type == type) result.push_back(script);
@@ -374,23 +344,56 @@ namespace Vital::Manager {
 
 
     // Internal APIs //
+    bool Resource::Internal::is_loaded(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        return std::any_of(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& r) { return r.ref == name; });
+    }
+
+    bool Resource::Internal::is_running(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        return rm -> running.count(name) > 0;
+    }
+
+    #if defined(Vital_SDK_Client)
+    bool Resource::Internal::is_pending(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        return rm -> resource_assets.count(name) > 0;
+    }
+    #endif
+
+    const Resource::Manifest* Resource::Internal::get_resource(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        for (const auto& resource : rm -> resources) {
+            if (resource.ref == name) return &resource;
+        }
+        return nullptr;
+    }
+
+    std::vector<const Resource::Manifest*> Resource::Internal::get_all_resources() {
+        auto rm = Resource::get_singleton();
+        std::vector<const Manifest*> result;
+        result.reserve(rm -> resources.size());
+        for (const auto& resource : rm -> resources) result.push_back(&resource);
+        return result;
+    }
+
     bool Resource::Internal::start(std::string name) {
         auto rm = Resource::get_singleton();
         auto am = Manager::Asset::get_singleton();
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             #if !defined(Vital_SDK_Client)
-            if (!rm -> is_loaded_unsafe(name)) { rm -> log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
+            if (!Internal::is_loaded(name)) { rm -> log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
             #endif
-            if (rm -> is_running_unsafe(name)) { rm -> log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
+            if (Internal::is_running(name)) { rm -> log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
             #if defined(Vital_SDK_Client)
-            if (rm -> is_pending_unsafe(name)) { rm -> log("error", fmt::format("cannot start `{}` — already pending", name)); return false; }
+            if (Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot start `{}` — already pending", name)); return false; }
             #endif
         }
         #if !defined(Vital_SDK_Client)
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            auto resource = rm -> get_resource_unsafe(name);
+            auto resource = Internal::get_resource(name);
             std::vector<std::string> asset_paths;
             for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
             for (const auto& script : resource -> scripts) {
@@ -412,17 +415,17 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             #if defined(Vital_SDK_Client)
-                if (!rm -> is_running_unsafe(name) && !rm -> is_pending_unsafe(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
-                if (rm -> is_pending_unsafe(name)) {
+                if (!Internal::is_running(name) && !Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
+                if (Internal::is_pending(name)) {
                     rm -> resource_assets.erase(name);
                     am -> cancel_group(name);
                     rm -> log("sbox", fmt::format("resource `{}` download cancelled", name));
                 }
             #else
-                if (!rm -> is_running_unsafe(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
+                if (!Internal::is_running(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running", name)); return false; }
                 am -> unregister_group(name);
             #endif
-            was_running = rm -> is_running_unsafe(name);
+            was_running = Internal::is_running(name);
             if (was_running) rm -> running.erase(name);
             #if defined(Vital_SDK_Client)
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
@@ -447,7 +450,7 @@ namespace Vital::Manager {
         auto rm = Resource::get_singleton();
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            if (!rm -> is_running_unsafe(name)) { rm -> log("error", fmt::format("cannot restart `{}` — not running", name)); return false; }
+            if (!Internal::is_running(name)) { rm -> log("error", fmt::format("cannot restart `{}` — not running", name)); return false; }
         }
 
         const std::string base = Resource::get_resource_base(name);
@@ -519,7 +522,7 @@ namespace Vital::Manager {
         std::vector<const Manifest*> all;
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            all = rm -> get_all_resources_unsafe();
+            all = Internal::get_all_resources();
         }
         for (auto resource : all) if (start(resource -> ref)) count++;
         rm -> log("sbox", fmt::format("all resources started — {} resource(s) started", count));
@@ -612,7 +615,7 @@ namespace Vital::Manager {
         for (const auto& resource : rm -> resources) report += fmt::format("> `{}`\n", resource.ref);
         rm -> log("sbox", report);
         std::vector<std::string> stale;
-        for (const auto& name : rm -> running) if (!rm -> is_loaded_unsafe(name)) stale.push_back(name);
+        for (const auto& name : rm -> running) if (!Internal::is_loaded(name)) stale.push_back(name);
         for (const auto& name : stale) rm -> log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
         if (!stale.empty()) {
             Engine::Core::get_singleton() -> push_deferred([stale]() {
@@ -646,7 +649,7 @@ namespace Vital::Manager {
     bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
         {
             std::lock_guard<std::mutex> lock(mutex);
-            if (is_running_unsafe(name) || is_pending_unsafe(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
+            if (Internal::is_running(name) || Internal::is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
             resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
             Manifest manifest;
             manifest.ref = name;
@@ -660,7 +663,7 @@ namespace Vital::Manager {
         std::unordered_set<std::string> asset_paths;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            auto resource = get_resource_unsafe(name);
+            auto resource = Internal::get_resource(name);
             for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
             for (const auto& script : resource -> scripts) {
                 if (is_type(script.type)) asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
@@ -674,7 +677,7 @@ namespace Vital::Manager {
         bool all_cached;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            all_cached = !is_pending_unsafe(name);
+            all_cached = !Internal::is_pending(name);
         }
         if (all_cached) {
             log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
