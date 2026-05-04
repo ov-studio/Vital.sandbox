@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
         };
 
         struct Instance {
-            int  id {};
+            int id {};
             std::string env;
             std::atomic<bool> destroyed { false };
             State state { State::Pending };
