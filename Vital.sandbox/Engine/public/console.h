@@ -33,7 +33,7 @@ namespace Vital::Engine {
             #else
             std::mutex stdout_mutex;
             std::thread stdin_thread;
-            std::atomic<bool> stdin_running{false};
+             stdin_running { false };
             std::string stdin_buffer;
             std::vector<std::string> stdin_history;
             int stdin_history_index = -1;
