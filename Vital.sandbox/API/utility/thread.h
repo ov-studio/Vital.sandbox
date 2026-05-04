@@ -46,68 +46,68 @@ namespace Vital::Sandbox::API {
         static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);
             auto it = buffer.find(id);
-            return it != buffer.end() ? it->second : nullptr;
+            return it != buffer.end() ? it -> second : nullptr;
         }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                if (buffer.find(instance->id) == buffer.end()) return;
-                buffer.erase(instance->id);
+                if (buffer.find(instance -> id) == buffer.end()) return;
+                buffer.erase(instance -> id);
             }
-            instance->destroyed = true;
+            instance -> destroyed = true;
 
-            if (instance->vm_owned.exchange(false)) {
-                Machine* tvm = instance->thread_vm;
-                instance->thread_vm = nullptr;
+            if (instance -> vm_owned.exchange(false)) {
+                Machine* tvm = instance -> thread_vm;
+                instance -> thread_vm = nullptr;
                 if (tvm) delete tvm;
             }
-            else instance->thread_vm = nullptr;
+            else instance -> thread_vm = nullptr;
 
-            if (instance->vm) {
-                vm_module::release_userdata_ptr(instance->userdata);
-                instance->vm->del_reference(instance->self_reference());
-                instance->vm->del_reference(instance->reference());
-                instance->vm = nullptr;
+            if (instance -> vm) {
+                vm_module::release_userdata_ptr(instance -> userdata);
+                instance -> vm -> del_reference(instance -> self_reference());
+                instance -> vm -> del_reference(instance -> reference());
+                instance -> vm = nullptr;
             }
         }
 
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
-            if (!instance || instance->destroyed) return false;
-            if (!instance->vm_owned.load()) return false;
-            if (!instance->thread_vm)       return false;
+            if (!instance || instance -> destroyed) return false;
+            if (!instance -> vm_owned.load()) return false;
+            if (!instance -> thread_vm)       return false;
 
-            if (!instance->vm) {
-                Machine* tvm = instance->thread_vm;
-                instance->thread_vm = nullptr;
-                instance->vm_owned.store(false);
+            if (!instance -> vm) {
+                Machine* tvm = instance -> thread_vm;
+                instance -> thread_vm = nullptr;
+                instance -> vm_owned.store(false);
                 if (tvm) delete tvm;
                 clean_instance(instance);
                 return false;
             }
 
-            vm_state* raw_state = instance->thread_vm->get_state();
+            vm_state* raw_state = instance -> thread_vm -> get_state();
             if (!raw_state) return false;
             {
                 int pre_status = lua_status(raw_state);
                 if (pre_status != LUA_OK && pre_status != LUA_YIELD) {
-                    instance->thread_vm = nullptr;
-                    instance->vm_owned.store(false);
+                    instance -> thread_vm = nullptr;
+                    instance -> vm_owned.store(false);
                     clean_instance(instance);
                     return false;
                 }
             }
-            instance->vm_owned.store(false);
-            instance->thread_vm->resume(args);
+            instance -> vm_owned.store(false);
+            instance -> thread_vm -> resume(args);
 
             int status = lua_status(raw_state);
             if (status != LUA_YIELD) {
-                instance->thread_vm = nullptr;
+                instance -> thread_vm = nullptr;
                 clean_instance(instance);
                 return false;
             }
-            instance->vm_owned.store(true);
+            instance -> vm_owned.store(true);
             return true;
         }
 
@@ -116,143 +116,143 @@ namespace Vital::Sandbox::API {
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, const std::vector<Promise::SerialValue>& values) {
                 auto instance = Thread::fetch_instance(thread_id);
-                if (!instance || instance->destroyed) return;
-                if (!instance->vm_owned.load()) return;
-                if (!instance->thread_vm)       return;
+                if (!instance || instance -> destroyed) return;
+                if (!instance -> vm_owned.load()) return;
+                if (!instance -> thread_vm)       return;
 
-                vm_state* dst = instance->thread_vm->get_state();
+                vm_state* dst = instance -> thread_vm -> get_state();
                 if (!dst) return;
                 auto dst_vm = Machine::fetch_machine(dst);
                 if (!dst_vm) return;
-                dst_vm->push_bool(resolved);
+                dst_vm -> push_bool(resolved);
                 for (auto& v : values) v.push(dst);
-                instance->awaiting = false;
+                instance -> awaiting = false;
                 safe_resume(instance, 1 + static_cast<int>(values.size()));
             });
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "create", [](auto vm, auto& id)  ->  int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                std::string env = vm->get_environment_id();
+                std::string env = vm -> get_environment_id();
                 auto instance = std::make_shared<Instance>();
-                instance->id = next_id.fetch_add(1);
-                instance->env = env;
-                instance->vm = vm;
-                Machine* thread_vm  = vm->create_thread();
-                instance->thread_vm = thread_vm;
+                instance -> id = next_id.fetch_add(1);
+                instance -> env = env;
+                instance -> vm = vm;
+                Machine* thread_vm  = vm -> create_thread();
+                instance -> thread_vm = thread_vm;
 
-                vm->set_reference(instance->reference(), 1);
-                vm->pop(1);
-                vm->create_object(base_name, instance.get());
-                instance->userdata = vm_module::get_userdata_ptr(vm, -1);
-                vm->set_reference(instance->self_reference(), -1);
+                vm -> set_reference(instance -> reference(), 1);
+                vm -> pop(1);
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                vm -> set_reference(instance -> self_reference(), -1);
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    buffer[instance->id] = instance;
+                    buffer[instance -> id] = instance;
                 }
-                vm->get_reference(instance->self_reference(), true);
+                vm -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self->destroyed || !self->thread_vm) { vm->push_value(false); return 1; }
+            vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id)  ->  int {
+                if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
 
-                auto instance = fetch_instance(self->id);
-                if (!instance) { vm->push_value(false); return 1; }
+                auto instance = fetch_instance(self -> id);
+                if (!instance) { vm -> push_value(false); return 1; }
 
-                self->vm->get_reference(self->reference(),      true);
-                self->vm->move(self->thread_vm, 1);
+                self -> vm -> get_reference(self -> reference(),      true);
+                self -> vm -> move(self -> thread_vm, 1);
 
-                self->vm->get_reference(self->self_reference(), true);
-                self->vm->move(self->thread_vm, 1);
+                self -> vm -> get_reference(self -> self_reference(), true);
+                self -> vm -> move(self -> thread_vm, 1);
 
                 safe_resume(instance, 1);
-                vm->push_value(true);
+                vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self->destroyed) { vm->push_value(false); return 1; }
-                auto instance = fetch_instance(self->id);
+            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id)  ->  int {
+                if (!self || self -> destroyed) { vm -> push_value(false); return 1; }
+                auto instance = fetch_instance(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
-                vm->push_value(true);
+                vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self && !self->destroyed);
+            vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id)  ->  int {
+                vm -> push_value(self && !self -> destroyed);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self->destroyed || !self->thread_vm) { vm->push_value(false); return 1; }
-                vm->push_value(self->thread_vm->get_state() == vm->get_state());
+            vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id)  ->  int {
+                if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
+                vm -> push_value(self -> thread_vm -> get_state() == vm -> get_state());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
-                if (!self || self->destroyed || !vm->is_virtual()) { vm->push_value(false); return 1; }
-                return lua_yieldk(vm->get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
+            vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id)  ->  int {
+                if (!self || self -> destroyed || !vm -> is_virtual()) { vm -> push_value(false); return 1; }
+                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext)  ->  int { return 0; });
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id)  ->  int {
                 vm_args(vm, id, "(duration)")
                     .require(2, &Machine::is_number)
-                    .validate(2, [](auto vm, int index) { return vm->get_int(index) >= 0; }, "expected >= 0");
+                    .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
-                if (!self || self->destroyed || self->sleeping) { vm->push_value(false); return 1; }
+                if (!self || self -> destroyed || self -> sleeping) { vm -> push_value(false); return 1; }
 
-                int duration   = vm->get_int(2);
-                self->sleeping = true;
+                int duration   = vm -> get_int(2);
+                self -> sleeping = true;
 
-                auto instance = fetch_instance(self->id);
+                auto instance = fetch_instance(self -> id);
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
                     auto instance = weak.lock();
-                    if (!instance || instance->destroyed) return;
-                    instance->sleeping = false;
-                    if (!instance->vm_owned.load() || !instance->thread_vm) return;
+                    if (!instance || instance -> destroyed) return;
+                    instance -> sleeping = false;
+                    if (!instance -> vm_owned.load() || !instance -> thread_vm) return;
                     safe_resume(instance, 0);
                 }, duration, 1);
-                return lua_yieldk(vm->get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
+                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext)  ->  int { return 0; });
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id)  ->  int {
                 vm_args(vm, id, "(promise)")
                     .require(2, [](Machine* vm, int index) {
                         return vm_module::is_userdata(vm, Promise::base_name, index);
                     });
 
-                if (!self || self->destroyed || self->awaiting) { vm->push_value(false); return 1; }
-                if (!vm->is_virtual()) { vm->push_value(false); return 1; }
+                if (!self || self -> destroyed || self -> awaiting) { vm -> push_value(false); return 1; }
+                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
 
-                auto ud = static_cast<Promise::Instance**>(vm->get_userdata(2));
-                if (!ud || !*ud) { vm->push_value(false); return 1; }
-                auto promise_inst = Promise::fetch_instance((*ud)->id);
-                if (!promise_inst) { vm->push_value(false); return 1; }
+                auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
+                if (!ud || !*ud) { vm -> push_value(false); return 1; }
+                auto promise_inst = Promise::fetch_instance((*ud) -> id);
+                if (!promise_inst) { vm -> push_value(false); return 1; }
 
-                if (promise_inst->state != Promise::State::Pending) {
-                    vm_state* dst = vm->get_state();
-                    vm->push_bool(promise_inst->resolved);
-                    for (auto& v : promise_inst->serial_values) v.push(dst);
-                    return 1 + static_cast<int>(promise_inst->serial_values.size());
+                if (promise_inst -> state != Promise::State::Pending) {
+                    vm_state* dst = vm -> get_state();
+                    vm -> push_bool(promise_inst -> resolved);
+                    for (auto& v : promise_inst -> serial_values) v.push(dst);
+                    return 1 + static_cast<int>(promise_inst -> serial_values.size());
                 }
 
-                self->awaiting = true;
-                promise_inst->waiting.push_back({ self->id });
+                self -> awaiting = true;
+                promise_inst -> waiting.push_back({ self -> id });
 
                 struct AwaitCtx { int base; int thread_id; };
-                auto* actx = new AwaitCtx { vm->get_count(), self->id };
+                auto* actx = new AwaitCtx { vm -> get_count(), self -> id };
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
-                return lua_yieldk(vm->get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
+                return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx)  ->  int {
                     auto* actx = reinterpret_cast<AwaitCtx*>(ctx);
-                    auto inst = Thread::fetch_instance(actx->thread_id);
-                    if (inst) inst->awaiting = false;
-                    int n = lua_gettop(L) - actx->base;
+                    auto inst = Thread::fetch_instance(actx -> thread_id);
+                    if (inst) inst -> awaiting = false;
+                    int n = lua_gettop(L) - actx -> base;
                     delete actx;
                     return n > 0 ? n : 0;
                 });
@@ -264,9 +264,9 @@ namespace Vital::Sandbox::API {
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 for (auto& [id, instance] : buffer)
-                    if (instance->env == env) to_clean.push_back(instance);
+                    if (instance -> env == env) to_clean.push_back(instance);
             }
-            for (auto& instance : to_clean) instance->destroyed = true;
+            for (auto& instance : to_clean) instance -> destroyed = true;
             for (auto& instance : to_clean) clean_instance(instance);
         }
     };
