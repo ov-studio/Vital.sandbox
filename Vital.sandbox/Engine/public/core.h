@@ -33,7 +33,6 @@ namespace Vital::Engine {
             std::vector<std::function<void()>> deferred_queue;
 
             static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("free_singleton"), &Core::free_singleton);
                 godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred_queue"), &Core::flush_deferred_queue);
             };
         public:
@@ -50,7 +49,7 @@ namespace Vital::Engine {
 
             // Utils //
             static Core* get_singleton();
-            void free_singleton();
+            static void free_singleton();
 
 
             // Managers //

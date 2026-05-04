@@ -84,7 +84,8 @@ namespace Vital::Engine {
     }
 
     void Core::free_singleton() {
-        get_scene_tree() -> quit(0);
+        if (!singleton) return;
+        singleton -> get_scene_tree() -> quit(0);
     }
 
 

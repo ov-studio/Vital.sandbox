@@ -599,7 +599,7 @@ namespace Vital::Engine {
         print("sbox", "Server shutting down...");
         std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         stdin_running = false;
-        Core::get_singleton() -> call_deferred("free_singleton");
+        Core::get_singleton() -> push_deferred([]() { Core:: free_singleton(); });
     }
 
     #else
