@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance -> destroyed) return false;
             if (!instance -> vm_owned.load()) return false;
-            if (!instance -> thread_vm)       return false;
+            if (!instance -> thread_vm) return false;
 
             if (!instance -> vm) {
                 Machine* tvm = instance -> thread_vm;
@@ -159,16 +159,13 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id)  ->  int {
                 if (!self || self -> destroyed || !self -> thread_vm) { vm -> push_value(false); return 1; }
-
                 auto instance = fetch_instance(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
 
                 self -> vm -> get_reference(self -> reference(),      true);
                 self -> vm -> move(self -> thread_vm, 1);
-
                 self -> vm -> get_reference(self -> self_reference(), true);
                 self -> vm -> move(self -> thread_vm, 1);
-
                 safe_resume(instance, 1);
                 vm -> push_value(true);
                 return 1;
@@ -208,7 +205,6 @@ namespace Vital::Sandbox::API {
 
                 int duration   = vm -> get_int(2);
                 self -> sleeping = true;
-
                 auto instance = fetch_instance(self -> id);
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
@@ -234,14 +230,12 @@ namespace Vital::Sandbox::API {
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise_inst = Promise::fetch_instance((*ud) -> id);
                 if (!promise_inst) { vm -> push_value(false); return 1; }
-
                 if (promise_inst -> state != Promise::State::Pending) {
                     vm_state* dst = vm -> get_state();
                     vm -> push_bool(promise_inst -> resolved);
                     for (auto& v : promise_inst -> serial_values) v.push(dst);
                     return 1 + static_cast<int>(promise_inst -> serial_values.size());
                 }
-
                 self -> awaiting = true;
                 promise_inst -> waiting.push_back({ self -> id });
 
@@ -263,8 +257,7 @@ namespace Vital::Sandbox::API {
             std::vector<std::shared_ptr<Instance>> to_clean;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                for (auto& [id, instance] : buffer)
-                    if (instance -> env == env) to_clean.push_back(instance);
+                for (auto& [id, instance] : buffer) if (instance -> env == env) to_clean.push_back(instance);
             }
             for (auto& instance : to_clean) instance -> destroyed = true;
             for (auto& instance : to_clean) clean_instance(instance);
