@@ -132,18 +132,13 @@ namespace Vital::Sandbox::API {
 
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
-
-            // Serialise immediately while the vm stack is intact.
             instance -> serial_values.clear();
             instance -> serial_values.reserve(args_count);
             lua_State* src = vm -> get_state();
             for (int i = 0; i < args_count; ++i) instance -> serial_values.push_back(SerialValue::from(src, args_start + i));
 
-            // Snapshot and clear waiting list atomically so new await() calls
-            // on an already-settled promise hit the fast-path.
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
-
             bool resolved = instance -> resolved;
             std::vector<SerialValue> values = instance -> serial_values;
             std::vector<int> thread_ids;
@@ -151,9 +146,6 @@ namespace Vital::Sandbox::API {
             for (auto& wt : waiting) {
                 if (wt.thread_instance_id >= 0) thread_ids.push_back(wt.thread_instance_id);
             }
-        
-            // Deferred: runs on main thread next frame.
-            // No raw pointers — only plain integers and serialised values.
             if (!Promise::resume_dispatcher) return;
             for (int tid : thread_ids) Promise::resume_dispatcher(tid, resolved, values);
         }
