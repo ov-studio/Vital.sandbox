@@ -27,19 +27,18 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "thread";
 
         struct Instance {
-            int  id {};
+            int id {};
             std::string env;
             std::atomic<bool> destroyed { false };
-            std::atomic<bool> sleeping  { false };
-            std::atomic<bool> awaiting  { false };
-            std::atomic<bool> vm_owned  { true  };
-            Machine* vm        = nullptr;
+            std::atomic<bool> sleeping { false };
+            std::atomic<bool> awaiting { false };
+            std::atomic<bool> vm_owned { true };
+            Machine* vm = nullptr;
             Machine* thread_vm = nullptr;
-            void**   userdata  = nullptr;
-            std::string reference()      const { return fmt::format("{}:{}", base_name, id); }
+            void** userdata = nullptr;
+            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
             std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
         };
-
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };

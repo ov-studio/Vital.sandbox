@@ -29,12 +29,12 @@ namespace Vital::Sandbox::API {
 
         // Plain C++ value — safe to copy into deferred lambdas with no lua_State* dependency.
         struct SerialValue {
-            int         type   { LUA_TNIL };
-            bool        b      {};
-            bool        is_int {};
-            lua_Integer i      {};
-            lua_Number  n      {};
-            std::string s      {};
+            int type { LUA_TNIL };
+            bool b {};
+            bool is_int {};
+            lua_Integer i {};
+            lua_Number n {};
+            std::string s {};
 
             void push(lua_State* L) const {
                 switch (type) {

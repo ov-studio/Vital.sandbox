@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
         struct Instance {
             int id;
             std::string env;
-            std::atomic<bool> destroyed{false};
+            std::atomic<bool> destroyed {false};
             Machine* vm = nullptr;
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("{}:{}:{}", base_name, env, id); }
