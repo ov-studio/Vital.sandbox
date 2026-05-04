@@ -245,14 +245,15 @@ namespace Vital::Sandbox::API {
                 self->awaiting = true;
                 promise_inst->waiting.push_back({ self->id });
 
-                int base = vm->get_count();
-                lua_KContext ctx = (static_cast<lua_KContext>(base) << 16) | (static_cast<lua_KContext>(self->id)  & 0xFFFF);
+                struct AwaitCtx { int base; int thread_id; };
+                auto* actx = new AwaitCtx { vm->get_count(), self->id };
+                lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
                 return lua_yieldk(vm->get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
-                    int base      = static_cast<int>((ctx >> 16) & 0xFFFF);
-                    int thread_id = static_cast<int>( ctx        & 0xFFFF);
-                    auto inst = Thread::fetch_instance(thread_id);
+                    auto* actx = reinterpret_cast<AwaitCtx*>(ctx);
+                    auto inst = Thread::fetch_instance(actx->thread_id);
                     if (inst) inst->awaiting = false;
-                    int n = lua_gettop(L) - base;
+                    int n = lua_gettop(L) - actx->base;
+                    delete actx;
                     return n > 0 ? n : 0;
                 });
             });
