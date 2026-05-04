@@ -41,11 +41,11 @@ namespace Vital::Manager {
 
 
     // Helpers //
-    std::string Resource::chunk_name(const std::string& resource, const std::string& src) const {
+    std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
         return fmt::format("@{}/{}", resource, src);
     }
 
-    Tool::Stack Resource::pack_manifest(const Manifest& manifest) const {
+    Tool::Stack Resource::Internal::pack_manifest(const Manifest& manifest) {
         Tool::Stack out;
         Tool::Stack scripts_stack;
         for (const auto& s : manifest.scripts) {
@@ -61,7 +61,7 @@ namespace Vital::Manager {
         return out;
     }
 
-    void Resource::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const {
+    void Resource::Internal::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) {
         if (const auto* sv = args.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());
@@ -77,69 +77,73 @@ namespace Vital::Manager {
         }
     }
 
-    bool Resource::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) const {
+    bool Resource::Internal::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+        auto rm = Resource::get_singleton();
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         const Manifest* resource;
         {
-            std::lock_guard<std::mutex> lock(mutex);
+            std::lock_guard<std::mutex> lock(rm -> mutex);
             resource = Internal::get_resource(name);
         }
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
             #if defined(Vital_SDK_Client)
-            if (!is_type(script.type)) continue;
+            if (!Resource::is_type(script.type)) continue;
             #endif
             std::string source;
-            try { source = Tool::File::read_text(get_resource_base(name), script.src); }
+            try { source = Tool::File::read_text(Resource::get_resource_base(name), script.src); }
             catch (...) { errors.push_back(fmt::format("`{}` failed to read", script.src)); continue; }
-            auto err = vm -> compile_string(source, chunk_name(resource -> ref, script.src));
+            auto err = vm -> compile_string(source, Internal::chunk_name(resource -> ref, script.src));
             if (!err.empty()) { errors.push_back(fmt::format("`{}` failed to compile ({})", script.src, err)); continue; }
-            if (is_type(script.type)) sources.emplace_back(script.src, std::move(source));
+            if (Resource::is_type(script.type)) sources.emplace_back(script.src, std::move(source));
         }
         if (!errors.empty()) {
             std::string report = fmt::format("resource `{}` failed to start\n", name);
             report += fmt::format("> Errors ({}):\n", errors.size());
             for (const auto& err : errors) report += fmt::format("> {}\n", err);
-            log("error", report);
+            rm -> log("error", report);
             return false;
         }
         return true;
     }
 
-    void Resource::execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+    void Resource::Internal::execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+        auto rm = Resource::get_singleton();
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         const Manifest* resource;
         {
-            std::lock_guard<std::mutex> lock(mutex);
+            std::lock_guard<std::mutex> lock(rm -> mutex);
             resource = Internal::get_resource(name);
         }
         vm -> create_environment(name);
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
             vm -> get_reference(name, true);
-            vm -> load_string(source, chunk_name(resource -> ref, src), true, true, vm -> get_count());
+            vm -> load_string(source, Internal::chunk_name(resource -> ref, src), true, true, vm -> get_count());
             vm -> pop(1);
         }
     }
 
-    void Resource::execute_resource(std::string name) {
+    void Resource::Internal::execute_resource(std::string name) {
+        auto rm = Resource::get_singleton();
         std::vector<std::pair<std::string, std::string>> sources;
-        if (!validate_scripts(name, sources)) return;
+        if (!Internal::validate_scripts(name, sources)) return;
 
         {
-            std::lock_guard<std::mutex> lock(mutex);
-            running.insert(name);
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            rm -> running.insert(name);
         }
-        log("sbox", fmt::format("resource `{}` started", name));
-        execute_scripts(name, sources);
+        rm -> log("sbox", fmt::format("resource `{}` started", name));
+        Internal::execute_scripts(name, sources);
         #if !defined(Vital_SDK_Client)
-            Engine::Core::get_singleton() -> push_deferred([this, name]() {
+            Engine::Core::get_singleton() -> push_deferred([name]() {
                 const Manifest* resource;
                 {
-                    std::lock_guard<std::mutex> lock(mutex);
+                    auto rm = Resource::get_singleton();
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
                     resource = Internal::get_resource(name);
                 }
-                Engine::Network::get_singleton() -> broadcast(build_packet("vital.resource:started", name, resource));
+                Engine::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:started", name, resource));
                 Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
             });
         #else
@@ -148,7 +152,7 @@ namespace Vital::Manager {
     }
 
     #if !defined(Vital_SDK_Client)
-    bool Resource::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
+    bool Resource::Internal::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name = manifest.get_str("name", resource.ref);
         resource.author = manifest.get_str("author", "");
         resource.version = manifest.get_str("version", "");
@@ -162,7 +166,7 @@ namespace Vital::Manager {
             if (!node.is_map() || !Tool::YAML::has(node, "src") || !Tool::YAML::has(node, "type")) { errors.push_back("script entry missing `src` or `type`"); continue; }
             const std::string src = Tool::YAML::get_str(node, "src");
             const std::string type = Tool::YAML::get_str(node, "type");
-            if (!Types.count(type)) { errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type)); continue; }
+            if (!Resource::Types.count(type)) { errors.push_back(fmt::format("script `{}` has invalid type `{}`", src, type)); continue; }
             auto expanded = Tool::File::glob(base, src);
             if (expanded.empty()) { errors.push_back(fmt::format("script pattern `{}` matched no files", src)); continue; }
             for (const auto& s : expanded) {
@@ -185,18 +189,53 @@ namespace Vital::Manager {
         return errors.empty();
     }
 
-    Tool::Stack Resource::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) const {
+    Tool::Stack Resource::Internal::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) {
         Tool::Stack packet;
         packet.object["event"] = Tool::StackValue(event);
         packet.object["name"] = Tool::StackValue(name);
         if (manifest) {
-            auto packed = pack_manifest(*manifest);
+            auto packed = Internal::pack_manifest(*manifest);
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
         }
         return packet;
     }
     #endif
+
+
+    // Facilitators //
+    bool Resource::Internal::is_loaded(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        return std::any_of(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& r) { return r.ref == name; });
+    }
+
+    bool Resource::Internal::is_running(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        return rm -> running.count(name) > 0;
+    }
+
+    #if defined(Vital_SDK_Client)
+    bool Resource::Internal::is_pending(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        return rm -> resource_assets.count(name) > 0;
+    }
+    #endif
+
+    const Resource::Manifest* Resource::Internal::get_resource(const std::string& name) {
+        auto rm = Resource::get_singleton();
+        for (const auto& resource : rm -> resources) {
+            if (resource.ref == name) return &resource;
+        }
+        return nullptr;
+    }
+
+    std::vector<const Resource::Manifest*> Resource::Internal::get_all_resources() {
+        auto rm = Resource::get_singleton();
+        std::vector<const Manifest*> result;
+        result.reserve(rm -> resources.size());
+        for (const auto& resource : rm -> resources) result.push_back(&resource);
+        return result;
+    }
 
 
     // Managers //
@@ -239,7 +278,7 @@ namespace Vital::Manager {
                     const std::string name = args.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
-                    unpack_manifest(args, scripts, files);
+                    Internal::unpack_manifest(args, scripts, files);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     bool already;
                     {
@@ -344,39 +383,6 @@ namespace Vital::Manager {
 
 
     // Internal APIs //
-    bool Resource::Internal::is_loaded(const std::string& name) {
-        auto rm = Resource::get_singleton();
-        return std::any_of(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& r) { return r.ref == name; });
-    }
-
-    bool Resource::Internal::is_running(const std::string& name) {
-        auto rm = Resource::get_singleton();
-        return rm -> running.count(name) > 0;
-    }
-
-    #if defined(Vital_SDK_Client)
-    bool Resource::Internal::is_pending(const std::string& name) {
-        auto rm = Resource::get_singleton();
-        return rm -> resource_assets.count(name) > 0;
-    }
-    #endif
-
-    const Resource::Manifest* Resource::Internal::get_resource(const std::string& name) {
-        auto rm = Resource::get_singleton();
-        for (const auto& resource : rm -> resources) {
-            if (resource.ref == name) return &resource;
-        }
-        return nullptr;
-    }
-
-    std::vector<const Resource::Manifest*> Resource::Internal::get_all_resources() {
-        auto rm = Resource::get_singleton();
-        std::vector<const Manifest*> result;
-        result.reserve(rm -> resources.size());
-        for (const auto& resource : rm -> resources) result.push_back(&resource);
-        return result;
-    }
-
     bool Resource::Internal::start(std::string name) {
         auto rm = Resource::get_singleton();
         auto am = Manager::Asset::get_singleton();
@@ -403,7 +409,7 @@ namespace Vital::Manager {
             am -> broadcast_manifest(-1, true);
         }
         #endif
-        rm -> execute_resource(name);
+        rm -> Internal::execute_resource(name);
         return true;
     }
 
@@ -436,7 +442,7 @@ namespace Vital::Manager {
 
         #if !defined(Vital_SDK_Client)
             Engine::Core::get_singleton() -> push_deferred([rm, name]() {
-                Engine::Network::get_singleton() -> broadcast(rm -> build_packet("vital.resource:stopped", name));
+                Engine::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:stopped", name));
                 Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
             });
         #else
@@ -475,7 +481,7 @@ namespace Vital::Manager {
                 const auto old_script_hashes = resource.script_hashes;
                 const auto old_file_hashes = resource.file_hashes;
                 std::vector<std::string> errors;
-                if (!rm -> parse_manifest(resource, manifest, base, errors)) {
+                if (!Internal::parse_manifest(resource, manifest, base, errors)) {
                     if (!errors.empty()) {
                         std::string report = fmt::format("resource `{}` restart aborted\n", name);
                         report += fmt::format("> Errors ({}):\n", errors.size());
@@ -598,7 +604,7 @@ namespace Vital::Manager {
             Manifest resource;
             resource.ref = name;
             std::vector<std::string> errors;
-            if (!rm -> parse_manifest(resource, manifest, Resource::get_resource_base(name), errors)) {
+            if (!Internal::parse_manifest(resource, manifest, Resource::get_resource_base(name), errors)) {
                 if (!errors.empty()) {
                     std::string report = fmt::format("resource `{}` skipped:\n", name);
                     report += fmt::format("> Errors ({}):\n", errors.size());

@@ -52,20 +52,18 @@ namespace Vital::Manager {
 
 
             // Helpers //
-            std::string chunk_name(const std::string& resource, const std::string& src) const;
-            Tool::Stack pack_manifest(const Manifest& manifest) const;
-            void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) const;
-            bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) const;
-            void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
-            void execute_resource(std::string name);
-            #if !defined(Vital_SDK_Client)
-            bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
-            Tool::Stack build_packet(const std::string& type, const std::string& name, const Manifest* manifest = nullptr) const;
-            #endif
-
-
-            // Internal APIs //
             struct Internal {
+                static std::string chunk_name(const std::string& resource, const std::string& src);
+                static Tool::Stack pack_manifest(const Manifest& manifest);
+                static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files);
+                static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
+                static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
+                static void execute_resource(std::string name);
+                #if !defined(Vital_SDK_Client)
+                static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+                static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
+                #endif
+
                 static bool is_loaded(const std::string& name);
                 static bool is_running(const std::string& name);
                 #if defined(Vital_SDK_Client)
@@ -73,6 +71,8 @@ namespace Vital::Manager {
                 #endif
                 static const Manifest* get_resource(const std::string& name);
                 static std::vector<const Manifest*> get_all_resources();
+
+                // APIs //
                 static bool start(std::string name);
                 static bool stop(std::string name);
                 #if !defined(Vital_SDK_Client)
