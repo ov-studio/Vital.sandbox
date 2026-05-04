@@ -142,7 +142,6 @@ namespace Vital::Sandbox::API {
                 }
             );
 
-            // thread.create(exec) -> thread userdata
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
@@ -175,7 +174,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            // thread:resume()
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self->destroyed || !self->thread_vm) { vm->push_value(false); return 1; }
 
@@ -193,7 +191,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // thread:destroy()
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self->destroyed) { vm->push_value(false); return 1; }
                 auto instance = fetch_instance(self->id);
@@ -203,27 +200,23 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // thread:is_instance()
             vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id) -> int {
                 vm->push_value(self && !self->destroyed);
                 return 1;
             });
 
-            // thread:get_thread() -> bool
             vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self->destroyed || !self->thread_vm) { vm->push_value(false); return 1; }
                 vm->push_value(self->thread_vm->get_state() == vm->get_state());
                 return 1;
             });
 
-            // thread:pause()
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (!self || self->destroyed || !vm->is_virtual()) { vm->push_value(false); return 1; }
                 return lua_yieldk(vm->get_state(), 0, 0,
                     [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
-            // thread:sleep(duration)
             vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(duration)")
                     .require(2, &Machine::is_number)
@@ -249,7 +242,6 @@ namespace Vital::Sandbox::API {
                     [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
-            // thread:await(promise) -> resolved_bool, value1, value2, ...
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
                     .require(2, [](Machine* vm, int index) {
@@ -275,8 +267,7 @@ namespace Vital::Sandbox::API {
                 promise_inst->waiting.push_back({ self->id });
 
                 int base = vm->get_count();
-                lua_KContext ctx = (static_cast<lua_KContext>(base)      << 16)
-                                 | (static_cast<lua_KContext>(self->id)  & 0xFFFF);
+                lua_KContext ctx = (static_cast<lua_KContext>(base) << 16) | (static_cast<lua_KContext>(self->id)  & 0xFFFF);
 
                 return lua_yieldk(vm->get_state(), 0, ctx,
                     [](lua_State* L, int, lua_KContext ctx) -> int {
