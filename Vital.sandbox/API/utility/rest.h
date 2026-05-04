@@ -60,6 +60,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, url, headers, timeout](Tool::Thread*) {
                     auto inst = Promise::fetch_instance(promise_id);
                     if (!inst || inst -> destroyed) return;
+                    // TODO: SKIP SERIALIZATION COMPLETELY
                     // We need a temporary scratch vm_state* to push values through settle().
                     // settle() serialises immediately, so we create a transient Machine just for that.
                     Machine scratch;
@@ -111,6 +112,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, url, body, headers, timeout](Tool::Thread*) {
                     auto inst = Promise::fetch_instance(promise_id);
                     if (!inst || inst -> destroyed) return;
+                    // TODO: SKIP SERIALIZATION COMPLETELY
                     Machine scratch;
                     try {
                         scratch.push_value(Tool::Rest::post(url, body, headers, timeout));
