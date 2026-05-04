@@ -157,7 +157,7 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
 
-                self -> vm -> get_reference(self -> reference(),      true);
+                self -> vm -> get_reference(self -> reference(), true);
                 self -> vm -> move(self -> thread_vm, 1);
                 self -> vm -> get_reference(self -> self_reference(), true);
                 self -> vm -> move(self -> thread_vm, 1);
@@ -198,7 +198,7 @@ namespace Vital::Sandbox::API {
 
                 if (!self || self -> destroyed || self -> sleeping) { vm -> push_value(false); return 1; }
 
-                int duration   = vm -> get_int(2);
+                int duration = vm -> get_int(2);
                 self -> sleeping = true;
                 auto instance = fetch_instance(self -> id);
                 auto weak = std::weak_ptr<Instance>(instance);
