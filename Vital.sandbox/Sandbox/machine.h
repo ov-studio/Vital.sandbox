@@ -71,7 +71,7 @@ namespace Vital::Sandbox {
                 machines.emplace(state, this);
                 for (auto& value : whitelist) {
                     luaL_requiref(state, value.name, value.func, 1);
-                    pop();
+                    pop(1);
                 }
                 for (auto& value : blacklist) {
                     push_nil();
@@ -144,7 +144,7 @@ namespace Vital::Sandbox {
                 if (get_length(index) == 0) return false;
                 get_table_field(1, index);
                 bool result = is_vector2(-1);
-                pop();
+                pop(1);
                 return result;
             }
             bool is_vector3(int index = 1) { return is_table(index) && get_length(index) >= 3; }
@@ -153,7 +153,7 @@ namespace Vital::Sandbox {
                 if (get_length(index) == 0) return false;
                 get_table_field(1, index);
                 bool result = is_vector3(-1);
-                pop();
+                pop(1);
                 return result;
             }
 
@@ -177,7 +177,7 @@ namespace Vital::Sandbox {
             int get_length(int index = 1) {
                 lua_len(state, index);
                 int result = get_int(-1);
-                pop();
+                pop(1);
                 return result;
             }
             int get_reference(const std::string& name, bool push_to_stack = false) {
@@ -224,7 +224,7 @@ namespace Vital::Sandbox {
                 for (int i = 1; i <= get_length(index); ++i) {
                     get_table_field(i, index);
                     value.push_back(get_vector2(-1));
-                    pop();
+                    pop(1);
                 }
                 return value;
             }
@@ -241,7 +241,7 @@ namespace Vital::Sandbox {
                 for (int i = 1; i <= get_length(index); ++i) {
                     get_table_field(i, index);
                     value.push_back(get_vector3(-1));
-                    pop();
+                    pop(1);
                 }
                 return value;
             }
@@ -316,7 +316,7 @@ namespace Vital::Sandbox {
             void create_namespace(const std::string& nspace) {
                 get_global(nspace);
                 if (!is_table(-1)) {
-                    pop();
+                    pop(1);
                     create_table();
                     push_global(nspace);
                     get_global(nspace);
@@ -343,7 +343,7 @@ namespace Vital::Sandbox {
                 set_table_field("__index", -2);
                 set_metatable(-2);
                 push(-1);
-                lua_pushstring(state, id.c_str());
+                push_string(id);
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 set_reference(id, -1);
             }
@@ -359,14 +359,14 @@ namespace Vital::Sandbox {
                     const char* upname = lua_getupvalue(state, -1, 1);
                     lua_remove(state, -2);
                     if (!upname) continue;
-                    if (!lua_istable(state, -1)) { lua_pop(state, 1); continue; }
+                    if (!is_table(-1)) { pop(1); continue; }
                     lua_rawget(state, LUA_REGISTRYINDEX);
-                    if (lua_isstring(state, -1)) {
-                        std::string result = lua_tostring(state, -1);
-                        lua_pop(state, 1);
+                    if (is_string(-1)) {
+                        std::string result = get_string(-1);
+                        pop(1);
                         return result;
                     }
-                    lua_pop(state, 1);
+                    pop(1);
                 }
                 return "";
             }
@@ -374,7 +374,7 @@ namespace Vital::Sandbox {
             void clear_environment_id(const std::string& id) {
                 if (!is_reference(id)) return;
                 get_reference(id, true);
-                lua_pushnil(state);
+                push_nil();
                 lua_rawset(state, LUA_REGISTRYINDEX);
                 del_reference(id);
                 lua_gc(state, LUA_GCCOLLECT, 0);
@@ -400,14 +400,14 @@ namespace Vital::Sandbox {
                 const std::string source = fetch_source();
                 const std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
                 API::log(type, err);
-                lua_pushstring(state, err.c_str());
+                push_string(err);
                 lua_error(state);
             }
             
             void log(const vm_error& e) {
                 const std::string source = fetch_source();
                 API::log(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
-                lua_pushstring(state, fmt::format("{}: {}", source, e.partial).c_str());
+                push_string(fmt::format("{}: {}", source, e.partial));
                 lua_error(state);
             }
 
@@ -438,14 +438,14 @@ namespace Vital::Sandbox {
                 for (std::size_t i = 1; i < scope.size(); ++i) {
                     get_table_field(scope[i], -1);
                     if (!is_table(-1)) {
-                        pop();
+                        pop(1);
                         create_table();
                         push(-1);
                         set_table_field(scope[i], -3);
                     }
                 }
-                lua_pushlightuserdata(state, heap_exec);
-                lua_pushlightuserdata(state, heap_id);
+                push_userdata(heap_exec);
+                push_userdata(heap_id);
                 lua_pushcclosure(state, [](vm_state* state) -> int {
                     auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
@@ -488,7 +488,7 @@ namespace Vital::Sandbox {
                 if (result != LUA_OK && result != LUA_YIELD) {
                     if (get_count() > 0) {
                         API::log(std::string(Tool::Log::error::label), get_string(-1));
-                        pop();
+                        pop(1);
                     }
                 }
                 if (result != LUA_YIELD) delete this;
@@ -502,7 +502,7 @@ namespace Vital::Sandbox {
             std::string to_string(int index = 1) {
                 size_t length;
                 const char* value = luaL_tolstring(state, index, &length);
-                pop();
+                pop(1);
                 return std::string(value, length);
             }
 
@@ -510,7 +510,7 @@ namespace Vital::Sandbox {
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
                     API::log(std::string(Tool::Log::error::label), get_string(-1));
-                    pop();
+                    pop(1);
                 }
                 return result;
             }
@@ -520,10 +520,10 @@ namespace Vital::Sandbox {
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
                     std::string err = get_string(-1);
-                    pop();
+                    pop(1);
                     return err;
                 }
-                pop();
+                pop(1);
                 return "";
             }
         
@@ -532,12 +532,12 @@ namespace Vital::Sandbox {
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
                     API::log(std::string(Tool::Log::error::label), get_string(-1));
-                    pop();
+                    pop(1);
                     return 0;
                 }
                 if (use_env) {
                     push(env_index);
-                    if (!lua_setupvalue(state, -2, 1)) pop();
+                    if (!lua_setupvalue(state, -2, 1)) pop(1);
                 }
                 if (auto_load && !pcall(0)) return 0;
                 return 1;
