@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Thread::fetch_instance(thread_id);
                 if (!instance || instance -> destroyed) return;
                 if (!instance -> vm_owned.load()) return;
-                if (!instance -> thread_vm)       return;
+                if (!instance -> thread_vm) return;
 
                 vm_state* dst = instance -> thread_vm -> get_state();
                 if (!dst) return;
@@ -234,11 +234,11 @@ namespace Vital::Sandbox::API {
                 self -> awaiting = true;
                 promise_inst -> waiting.push_back({ self -> id });
 
-                struct AwaitCtx { int base; int thread_id; };
-                auto* actx = new AwaitCtx { vm -> get_count(), self -> id };
+                struct AwaitCTX { int base; int thread_id; };
+                auto* actx = new AwaitCTX { vm -> get_count(), self -> id };
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
                 return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx)  ->  int {
-                    auto* actx = reinterpret_cast<AwaitCtx*>(ctx);
+                    auto* actx = reinterpret_cast<AwaitCTX*>(ctx);
                     auto inst = Thread::fetch_instance(actx -> thread_id);
                     if (inst) inst -> awaiting = false;
                     int n = lua_gettop(L) - actx -> base;
