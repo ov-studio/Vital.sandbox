@@ -127,6 +127,7 @@ namespace Vital::Sandbox::API {
             }
         }
 
+        // TODO: Get stack instead of vm to save cost creating unnecessary machines...
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!instance || instance -> destroyed || instance -> state != State::Pending || !vm) return;
 
