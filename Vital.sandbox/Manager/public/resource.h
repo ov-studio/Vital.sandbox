@@ -50,9 +50,8 @@ namespace Vital::Manager {
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
             #endif
 
-
-            // Helpers //
             struct Internal {
+                // Helpers //
                 static std::string chunk_name(const std::string& resource, const std::string& src);
                 static Tool::Stack pack_manifest(const Manifest& manifest);
                 static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files);
@@ -64,6 +63,8 @@ namespace Vital::Manager {
                 static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
                 #endif
 
+
+                // Checkers //
                 static bool is_loaded(const std::string& name);
                 static bool is_running(const std::string& name);
                 #if defined(Vital_SDK_Client)
@@ -71,6 +72,7 @@ namespace Vital::Manager {
                 #endif
                 static const Manifest* get_resource(const std::string& name);
                 static std::vector<const Manifest*> get_all_resources();
+
 
                 // APIs //
                 static bool start(std::string name);

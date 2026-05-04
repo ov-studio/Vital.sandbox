@@ -24,22 +24,6 @@
 ///////////////////////////////
 
 namespace Vital::Manager {
-    // Utils //
-    Resource* Resource::get_singleton() {
-        if (!singleton) {
-            singleton = new Resource();
-            singleton -> ready();
-        }
-        return singleton;
-    }
-
-    void Resource::free_singleton() {
-        if (!singleton) return;
-        delete singleton;
-        singleton = nullptr;
-    }
-
-
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
         return fmt::format("@{}/{}", resource, src);
@@ -203,7 +187,7 @@ namespace Vital::Manager {
     #endif
 
 
-    // Facilitators //
+    // Checkers //
     bool Resource::Internal::is_loaded(const std::string& name) {
         auto rm = Resource::get_singleton();
         return std::any_of(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& r) { return r.ref == name; });
@@ -238,151 +222,7 @@ namespace Vital::Manager {
     }
 
 
-    // Managers //
-    void Resource::log(const std::string& mode, const std::string& message) const {
-        Tool::print(mode, fmt::format("Resource: {}", message));
-    }
-
-    void Resource::ready() {
-        static bool initialized = false;
-        if (initialized) return;
-        initialized = true;
-        #if defined(Vital_SDK_Client)
-            Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
-                if (!args.object.count("path")) return;
-                const std::string path = args.object.at("path").as<std::string>();
-                auto rm = Resource::get_singleton();
-                std::string ready_name;
-                {
-                    std::lock_guard<std::mutex> lock(rm -> mutex);
-                    for (auto& [name, remaining] : rm -> resource_assets) {
-                        if (!remaining.count(path)) continue;
-                        remaining.erase(path);
-                        if (remaining.empty()) ready_name = name;
-                        break;
-                    }
-                    if (!ready_name.empty()) rm -> resource_assets.erase(ready_name);
-                }
-                if (!ready_name.empty()) {
-                    log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", ready_name));
-                    Internal::start(ready_name);
-                }
-            });
-
-            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
-                if (!args.object.count("event")) return;
-                const std::string event = args.object.at("event").as<std::string>();
-                if (event == "vital.resource:started") {
-                    if (!args.object.count("name")) return;
-                    auto rm = Resource::get_singleton();
-                    const std::string name = args.object.at("name").as<std::string>();
-                    std::vector<Script> scripts;
-                    std::vector<std::string> files;
-                    Internal::unpack_manifest(args, scripts, files);
-                    log("sbox", fmt::format("client received resource start: `{}`", name));
-                    bool already;
-                    {
-                        std::lock_guard<std::mutex> lock(rm -> mutex);
-                        already = Internal::is_running(name) || Internal::is_pending(name);
-                    }
-                    if (!already) rm -> load(name, scripts, files);
-                }
-                else if (event == "vital.resource:stopped") {
-                    if (!args.object.count("name")) return;
-                    auto rm = Resource::get_singleton();
-                    const std::string name = args.object.at("name").as<std::string>();
-                    log("sbox", fmt::format("client received resource stop: `{}`", name));
-                    Internal::stop(name);
-                }
-            });
-        #else
-            Engine::Core::get_singleton() -> push_deferred([]() { Internal::scan(); });
-            Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
-                if (args.array.empty()) return;
-                const int peer_id = args.array[0].as<int32_t>();
-                Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
-            });
-        #endif
-    }
-
-    #if !defined(Vital_SDK_Client)
-    void Resource::sync(int peer_id) const {
-        Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
-        std::lock_guard<std::mutex> lock(mutex);
-        for (const auto& name : running) {
-            auto resource = Internal::get_resource(name);
-            if (!resource) continue;
-            Engine::Network::get_singleton() -> send(Internal::build_packet("vital.resource:started", name, resource), peer_id);
-        }
-    }
-    #endif
-
-
-    // Checkers //
-    bool Resource::is_name(const std::string& name) {
-        if (name.empty() || !Tool::File::sanitize(name)) return false;
-        for (const char c : name) {
-            if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_')) return false;
-        }
-        return true;
-    }
-
-    bool Resource::is_type(const std::string& type) {
-        return (type == "shared") || (type == Tool::get_platform());
-    }
-
-    bool Resource::is_loaded(const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::is_loaded(name);
-    }
-
-    bool Resource::is_running(const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::is_running(name);
-    }
-
-    #if defined(Vital_SDK_Client)
-    bool Resource::is_pending(const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::is_pending(name);
-    }
-    #endif
-
-
-    // Getters //
-    std::vector<const Resource::Manifest*> Resource::get_all_resources() const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::get_all_resources();
-    }
-
-    const Resource::Manifest* Resource::get_resource(const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::get_resource(name);
-    }
-
-    std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
-        return vm -> get_environment_id();
-    }
-
-    std::string Resource::get_resource_base(const std::string& name, bool require_running) {
-        if (!is_name(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid resource name");
-        if (require_running && !get_singleton() -> is_running(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: resource `{}` not running", name));
-        return Tool::get_directory("resources", name);
-    }
-
-    std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        std::vector<Script> result;
-        auto resource = Internal::get_resource(name);
-        if (!resource) return result;
-        for (const auto& script : resource -> scripts) {
-            if (type.empty() || script.type == type) result.push_back(script);
-        }
-        return result;
-    }
-
-
-    // Internal APIs //
+    // APIs //
     bool Resource::Internal::start(std::string name) {
         auto rm = Resource::get_singleton();
         auto am = Manager::Asset::get_singleton();
@@ -452,6 +292,62 @@ namespace Vital::Manager {
     }
 
     #if !defined(Vital_SDK_Client)
+    void Resource::Internal::scan() {
+        auto rm = Resource::get_singleton();
+        std::lock_guard<std::mutex> lock(rm -> mutex);
+        rm -> log("sbox", "rescanning resources...");
+        rm -> resources.clear();
+        std::vector<std::string> contents;
+        try { contents = Tool::File::contents(Tool::get_directory(), "resources", true); }
+        catch (...) { rm -> log("error", "resource scan skipped — `resources/` directory not found"); return; }
+
+        std::unordered_map<std::string, int> resource_count;
+        for (const auto& path : contents) resource_count[path.substr(path.find_last_of("/\\") + 1)]++;
+        auto try_read = [](const std::string& base, const std::string& file, std::string& out) -> bool {
+            try { out = Tool::File::read_text(base, file); return true; }
+            catch (...) { return false; }
+        };
+
+        for (const auto& path : contents) {
+            const std::string name = path.substr(path.find_last_of("/\\") + 1);
+            if (!Resource::is_name(name)) { rm -> log("error", fmt::format("invalid resource name `{}` — skipping", name)); continue; }
+            if (resource_count[name] > 1) { rm -> log("error", fmt::format("duplicate resource found — skipping `{}`", name)); continue; }
+            if (!Tool::File::exists(Resource::get_resource_base(name), "manifest.yaml")) continue;
+
+            std::string content;
+            if (!try_read(Resource::get_resource_base(name), "manifest.yaml", content)) { rm -> log("error", fmt::format("failed to read manifest for `{}` — skipping", name)); continue; }
+            Tool::YAML manifest;
+            try { manifest.parse(content); }
+            catch (const std::exception& e) { rm -> log("error", fmt::format("malformed yaml in manifest for `{}` — skipping\n> {}", name, e.what())); continue; }
+            Manifest resource;
+            resource.ref = name;
+            std::vector<std::string> errors;
+            if (!Internal::parse_manifest(resource, manifest, Resource::get_resource_base(name), errors)) {
+                if (!errors.empty()) {
+                    std::string report = fmt::format("resource `{}` skipped:\n", name);
+                    report += fmt::format("> Errors ({}):\n", errors.size());
+                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                    rm -> log("error", report);
+                }
+                else rm -> log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping", name));
+                continue;
+            }
+            rm -> resources.push_back(std::move(resource));
+        }
+
+        std::string report = fmt::format("scan complete — {} resource(s) loaded\n", rm -> resources.size());
+        for (const auto& resource : rm -> resources) report += fmt::format("> `{}`\n", resource.ref);
+        rm -> log("sbox", report);
+        std::vector<std::string> stale;
+        for (const auto& name : rm -> running) if (!Internal::is_loaded(name)) stale.push_back(name);
+        for (const auto& name : stale) rm -> log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
+        if (!stale.empty()) {
+            Engine::Core::get_singleton() -> push_deferred([stale]() {
+                for (const auto& name : stale) Internal::stop(name);
+            });
+        }
+    }
+
     bool Resource::Internal::restart(std::string name) {
         auto rm = Resource::get_singleton();
         {
@@ -560,6 +456,167 @@ namespace Vital::Manager {
         rm -> log("sbox", fmt::format("all resources restarted — {} resource(s) restarted", count));
     }
     #endif
+}
+
+namespace Vital::Manager {
+    // Utils //
+    Resource* Resource::get_singleton() {
+        if (!singleton) {
+            singleton = new Resource();
+            singleton -> ready();
+        }
+        return singleton;
+    }
+
+    void Resource::free_singleton() {
+        if (!singleton) return;
+        delete singleton;
+        singleton = nullptr;
+    }
+
+
+    // Managers //
+    void Resource::log(const std::string& mode, const std::string& message) const {
+        Tool::print(mode, fmt::format("Resource: {}", message));
+    }
+
+    void Resource::ready() {
+        static bool initialized = false;
+        if (initialized) return;
+        initialized = true;
+        #if defined(Vital_SDK_Client)
+            Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
+                if (!args.object.count("path")) return;
+                const std::string path = args.object.at("path").as<std::string>();
+                auto rm = Resource::get_singleton();
+                std::string ready_name;
+                {
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
+                    for (auto& [name, remaining] : rm -> resource_assets) {
+                        if (!remaining.count(path)) continue;
+                        remaining.erase(path);
+                        if (remaining.empty()) ready_name = name;
+                        break;
+                    }
+                    if (!ready_name.empty()) rm -> resource_assets.erase(ready_name);
+                }
+                if (!ready_name.empty()) {
+                    log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", ready_name));
+                    Internal::start(ready_name);
+                }
+            });
+
+            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
+                if (!args.object.count("event")) return;
+                const std::string event = args.object.at("event").as<std::string>();
+                if (event == "vital.resource:started") {
+                    if (!args.object.count("name")) return;
+                    auto rm = Resource::get_singleton();
+                    const std::string name = args.object.at("name").as<std::string>();
+                    std::vector<Script> scripts;
+                    std::vector<std::string> files;
+                    Internal::unpack_manifest(args, scripts, files);
+                    log("sbox", fmt::format("client received resource start: `{}`", name));
+                    bool already;
+                    {
+                        std::lock_guard<std::mutex> lock(rm -> mutex);
+                        already = Internal::is_running(name) || Internal::is_pending(name);
+                    }
+                    if (!already) rm -> load(name, scripts, files);
+                }
+                else if (event == "vital.resource:stopped") {
+                    if (!args.object.count("name")) return;
+                    auto rm = Resource::get_singleton();
+                    const std::string name = args.object.at("name").as<std::string>();
+                    log("sbox", fmt::format("client received resource stop: `{}`", name));
+                    Internal::stop(name);
+                }
+            });
+        #else
+            scan();
+            Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
+                if (args.array.empty()) return;
+                const int peer_id = args.array[0].as<int32_t>();
+                Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
+            });
+        #endif
+    }
+
+    #if !defined(Vital_SDK_Client)
+    void Resource::sync(int peer_id) const {
+        Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
+        std::lock_guard<std::mutex> lock(mutex);
+        for (const auto& name : running) {
+            auto resource = Internal::get_resource(name);
+            if (!resource) continue;
+            Engine::Network::get_singleton() -> send(Internal::build_packet("vital.resource:started", name, resource), peer_id);
+        }
+    }
+    #endif
+
+
+    // Checkers //
+    bool Resource::is_name(const std::string& name) {
+        if (name.empty() || !Tool::File::sanitize(name)) return false;
+        for (const char c : name) {
+            if (!std::isalnum(static_cast<unsigned char>(c)) && (c != '_')) return false;
+        }
+        return true;
+    }
+
+    bool Resource::is_type(const std::string& type) {
+        return (type == "shared") || (type == Tool::get_platform());
+    }
+
+    bool Resource::is_loaded(const std::string& name) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return Internal::is_loaded(name);
+    }
+
+    bool Resource::is_running(const std::string& name) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return Internal::is_running(name);
+    }
+
+    #if defined(Vital_SDK_Client)
+    bool Resource::is_pending(const std::string& name) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return Internal::is_pending(name);
+    }
+    #endif
+
+
+    // Getters //
+    std::vector<const Resource::Manifest*> Resource::get_all_resources() const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return Internal::get_all_resources();
+    }
+
+    const Resource::Manifest* Resource::get_resource(const std::string& name) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return Internal::get_resource(name);
+    }
+
+    std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
+        return vm -> get_environment_id();
+    }
+
+    std::string Resource::get_resource_base(const std::string& name, bool require_running) {
+        if (!is_name(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid resource name");
+        if (require_running && !get_singleton() -> is_running(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: resource `{}` not running", name));
+        return Tool::get_directory("resources", name);
+    }
+
+    std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        std::vector<Script> result;
+        auto resource = Internal::get_resource(name);
+        if (!resource) return result;
+        for (const auto& script : resource -> scripts) {
+            if (type.empty() || script.type == type) result.push_back(script);
+        }
+        return result;
+    }
 
 
     // APIs //
@@ -574,62 +631,6 @@ namespace Vital::Manager {
     }
 
     #if !defined(Vital_SDK_Client)
-    void Resource::Internal::scan() {
-        auto rm = Resource::get_singleton();
-        std::lock_guard<std::mutex> lock(rm -> mutex);
-        rm -> log("sbox", "rescanning resources...");
-        rm -> resources.clear();
-        std::vector<std::string> contents;
-        try { contents = Tool::File::contents(Tool::get_directory(), "resources", true); }
-        catch (...) { rm -> log("error", "resource scan skipped — `resources/` directory not found"); return; }
-
-        std::unordered_map<std::string, int> resource_count;
-        for (const auto& path : contents) resource_count[path.substr(path.find_last_of("/\\") + 1)]++;
-        auto try_read = [](const std::string& base, const std::string& file, std::string& out) -> bool {
-            try { out = Tool::File::read_text(base, file); return true; }
-            catch (...) { return false; }
-        };
-
-        for (const auto& path : contents) {
-            const std::string name = path.substr(path.find_last_of("/\\") + 1);
-            if (!Resource::is_name(name)) { rm -> log("error", fmt::format("invalid resource name `{}` — skipping", name)); continue; }
-            if (resource_count[name] > 1) { rm -> log("error", fmt::format("duplicate resource found — skipping `{}`", name)); continue; }
-            if (!Tool::File::exists(Resource::get_resource_base(name), "manifest.yaml")) continue;
-
-            std::string content;
-            if (!try_read(Resource::get_resource_base(name), "manifest.yaml", content)) { rm -> log("error", fmt::format("failed to read manifest for `{}` — skipping", name)); continue; }
-            Tool::YAML manifest;
-            try { manifest.parse(content); }
-            catch (const std::exception& e) { rm -> log("error", fmt::format("malformed yaml in manifest for `{}` — skipping\n> {}", name, e.what())); continue; }
-            Manifest resource;
-            resource.ref = name;
-            std::vector<std::string> errors;
-            if (!Internal::parse_manifest(resource, manifest, Resource::get_resource_base(name), errors)) {
-                if (!errors.empty()) {
-                    std::string report = fmt::format("resource `{}` skipped:\n", name);
-                    report += fmt::format("> Errors ({}):\n", errors.size());
-                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
-                    rm -> log("error", report);
-                }
-                else rm -> log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping", name));
-                continue;
-            }
-            rm -> resources.push_back(std::move(resource));
-        }
-
-        std::string report = fmt::format("scan complete — {} resource(s) loaded\n", rm -> resources.size());
-        for (const auto& resource : rm -> resources) report += fmt::format("> `{}`\n", resource.ref);
-        rm -> log("sbox", report);
-        std::vector<std::string> stale;
-        for (const auto& name : rm -> running) if (!Internal::is_loaded(name)) stale.push_back(name);
-        for (const auto& name : stale) rm -> log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
-        if (!stale.empty()) {
-            Engine::Core::get_singleton() -> push_deferred([stale]() {
-                for (const auto& name : stale) Internal::stop(name);
-            });
-        }
-    }
-
     void Resource::scan() {
         Engine::Core::get_singleton() -> push_deferred([]() { Internal::scan(); });
     }
