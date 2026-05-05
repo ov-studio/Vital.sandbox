@@ -60,13 +60,9 @@ namespace Vital::Sandbox::API {
             resume_dispatcher = std::move(fn);
         }
 
-        // Push all settled values onto dst's lua_State* directly via lua_rawgeti.
-        // We cannot use instance -> vm -> get_reference() here because that pushes onto
-        // instance -> vm's state — which may differ from dst's coroutine state.
-        // Instead we read the raw ref int and rawgeti onto dst's state explicitly.
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
             if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
-            lua_State* L = dst -> get_state();
+            auto L = dst -> get_state();
             for (int i = 1; i <= instance -> value_count; ++i) {
                 int ref = instance -> vm -> get_reference(instance -> value_reference(i));
                 lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
