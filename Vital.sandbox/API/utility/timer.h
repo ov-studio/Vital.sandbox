@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> destroyed { false };
             Machine* vm = nullptr;
             void** userdata = nullptr;
-            std::string reference() const { return fmt::format("{}:{}:{}", base_name, env, id); }
+            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -51,9 +51,13 @@ namespace Vital::Sandbox::API {
                 if (buffer.find(instance -> id) == buffer.end()) return;
                 buffer.erase(instance -> id);
             }
+
             instance -> destroyed = true;
-            vm_module::release_userdata_ptr(instance -> userdata);
-            instance -> vm -> del_reference(instance -> reference());
+            if (instance -> vm) {
+                vm_module::release_userdata_ptr(instance -> userdata);
+                instance -> vm -> del_reference(instance -> reference());
+                instance -> vm = nullptr;
+            }
         }
 
         static void bind(Machine* vm) {

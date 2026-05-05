@@ -56,8 +56,8 @@ namespace Vital::Sandbox::API {
                 if (buffer.find(instance -> id) == buffer.end()) return;
                 buffer.erase(instance -> id);
             }
-            instance -> destroyed = true;
 
+            instance -> destroyed = true;
             if (instance -> vm_owned.exchange(false)) {
                 Machine* tvm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;
@@ -66,8 +66,8 @@ namespace Vital::Sandbox::API {
             else instance -> thread_vm = nullptr;
             if (instance -> vm) {
                 vm_module::release_userdata_ptr(instance -> userdata);
-                instance -> vm -> del_reference(instance -> self_reference());
                 instance -> vm -> del_reference(instance -> reference());
+                instance -> vm -> del_reference(instance -> self_reference());
                 instance -> vm = nullptr;
             }
         }

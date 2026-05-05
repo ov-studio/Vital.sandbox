@@ -67,6 +67,7 @@ namespace Vital::Sandbox::API {
                 if (buffer.find(instance -> id) == buffer.end()) return;
                 buffer.erase(instance -> id);
             }
+
             instance -> destroyed = true;
             if (instance -> vm) {
                 for (int i = 1; i <= instance -> value_count; ++i) instance -> vm -> del_reference(instance -> value_reference(i));
@@ -88,7 +89,6 @@ namespace Vital::Sandbox::API {
         
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!instance || instance -> destroyed || instance -> state != State::Pending || !vm) return;
-
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
             instance -> value_count = args_count;
