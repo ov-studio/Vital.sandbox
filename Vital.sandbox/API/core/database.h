@@ -89,7 +89,7 @@ namespace Vital::Sandbox::API {
                 }) -> detach();
                 return 1;
             });
-            
+
             vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(actions)")
                     .require(2, &Machine::is_table);
