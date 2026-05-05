@@ -276,6 +276,24 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "database";
         using base_class = Tool::Database;
 
+        struct Instance : vm_instance<Instance> {
+            using Owner = Database;
+            base_class* db = nullptr;
+        };
+        inline static std::mutex mutex;
+        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
+        inline static std::atomic<int> next_id { 1 };
+
+        static void clean_instance(std::shared_ptr<Instance> instance) {
+            if (!Instance::erase(instance)) return;
+            instance -> destroyed = true;
+            if (instance -> db) {
+                instance -> db -> destroy();
+                instance -> db = nullptr;
+            }
+            Instance::release(instance);
+        }
+
         static base_class::Column read_schema_definition(Machine* vm, int index) {
             base_class::Column definition;
             vm -> get_table_field("type", index); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
@@ -351,6 +369,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
 
+                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
                 auto state = vm -> get_state();
                 auto table = vm -> get_string(2);
                 base_class::TableSchema columns;
@@ -366,11 +385,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
+                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
                 auto promise_id = Promise::make(vm) -> id;
-                auto db = self;
+                auto db = self -> db;
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
@@ -392,8 +412,9 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(2, &Machine::is_string);
 
+                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
                 auto name = vm -> get_string(2);
-                auto query = self -> table(name);
+                auto query = self -> db -> table(name);
                 vm -> create_object(Database_Query::base_name, query);
                 return 1;
             });
