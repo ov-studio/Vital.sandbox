@@ -69,7 +69,7 @@ namespace Vital::Sandbox {
             Machine* vm;
             std::string syntax;
             std::vector<std::string> arguments;
-        
+
             inline vm_args(Machine* vm, const std::string& syntax) : vm_args(vm, syntax, "") {}
             inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), syntax(id + args) {
                 auto start = syntax.find('(');
@@ -83,19 +83,19 @@ namespace Vital::Sandbox {
                     if (!token.empty()) arguments.push_back(token);
                 }
             }
-        
+
             template<typename F>
             inline vm_args& require(int index, F&& check) {
                 if ((vm -> get_count() < index) || !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
                 return *this;
             }
-        
+
             template<typename F>
             inline vm_args& optional(int index, F&& check) {
                 if ((vm -> get_count() >= index) && !vm -> is_nil(index) && !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
                 return *this;
             }
-        
+
             template<typename F>
             inline vm_args& validate(int index, F&& check, const std::string& reason = "out of range") {
                 if (!std::invoke(std::forward<F>(check), vm, index)) throw_error(index, reason);
@@ -110,6 +110,103 @@ namespace Vital::Sandbox {
                 }, fmt::format("out of range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
             }
     };
+
+
+    ///////////////////////////////
+    // Vital: Userdata Utilities //
+    ///////////////////////////////
+
+    inline void release_userdata_ptr(void**& userdata) {
+        if (!userdata) return;
+        *userdata = nullptr;
+        userdata  = nullptr;
+    }
+
+
+    ////////////////////////
+    // Vital: vm_instance //
+    ////////////////////////
+
+    // Derived must define:
+    //   using Owner = <outer API struct>;  — holds mutex, buffer, next_id, base_name
+
+    template<typename Derived>
+    struct vm_instance {
+        int id {};
+        std::string env;
+        std::atomic<bool> destroyed { false };
+        Machine* vm = nullptr;
+        void** userdata = nullptr;
+        private:
+            std::vector<std::string> refs;
+        public:
+            std::string reference() const { return fmt::format("{}:{}", Derived::Owner::base_name, id); }
+            std::string self_reference() const { return fmt::format("{}:{}:self", Derived::Owner::base_name, id); }
+
+            void track_ref(const std::string& key) {
+                refs.push_back(key);
+            }
+
+            void set_ref(const std::string& key, int index) {
+                vm -> set_reference(key, index);
+                refs.push_back(key);
+            }
+
+            void release_refs() {
+                if (!vm) return;
+                for (auto& key : refs) vm -> del_reference(key);
+                refs.clear();
+            }
+
+            static std::shared_ptr<Derived> find(int id) {
+                std::lock_guard<std::mutex> lock(Derived::Owner::mutex);
+                auto it = Derived::Owner::buffer.find(id);
+                return it != Derived::Owner::buffer.end() ? it -> second : nullptr;
+            }
+
+            static std::shared_ptr<Derived> init(Machine* vm) {
+                auto instance = std::make_shared<Derived>();
+                instance -> id = Derived::Owner::next_id.fetch_add(1);
+                instance -> env = vm -> get_environment_id();
+                instance -> vm = vm;
+                return instance;
+            }
+
+            static bool store(std::shared_ptr<Derived> instance) {
+                if (!instance) return false;
+                std::lock_guard<std::mutex> lock(Derived::Owner::mutex);
+                Derived::Owner::buffer[instance -> id] = instance;
+                return true;
+            }
+
+            static std::shared_ptr<Derived> make(Machine* vm) {
+                auto instance = Derived::init(vm);
+                Derived::store(instance);
+                return instance;
+            }
+
+            static bool erase(std::shared_ptr<Derived> instance) {
+                if (!instance) return false;
+                std::lock_guard<std::mutex> lock(Derived::Owner::mutex);
+                auto it = Derived::Owner::buffer.find(instance -> id);
+                if (it == Derived::Owner::buffer.end()) return false;
+                Derived::Owner::buffer.erase(it);
+                return true;
+            }
+
+            static bool release(std::shared_ptr<Derived> instance) {
+                if (!instance) return false;
+                release_userdata_ptr(instance -> userdata);
+                instance -> release_refs();
+                instance -> vm = nullptr;
+                return true;
+            }
+    };
+
+
+    ///////////////////////
+    // Vital: vm_module  //
+    ///////////////////////
 
     struct vm_module {
         static void bind(Machine* vm) {}
@@ -141,7 +238,7 @@ namespace Vital::Sandbox {
             vm -> set_table_field("__gc", -2);
             vm -> pop(1);
         }
-    
+
         template<typename T>
         static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*, const std::string&)> exec) {
             // TODO: These needs to be freed when changing server freeing core // Anisa
@@ -164,7 +261,7 @@ namespace Vital::Sandbox {
             }, 3);
             lua_setfield(vm -> get_state(), -2, name.c_str());
         }
-    
+
         template<typename T>
         static void bind_natives(Machine* vm, const std::string& type_name) {
             bind_method<T>(vm, type_name, "is_type", [type_name](auto vm, auto self, auto& id) -> int {
@@ -174,19 +271,19 @@ namespace Vital::Sandbox {
                 vm -> push_value(type_name == vm -> get_string(2));
                 return 1;
             });
-    
+
             bind_method<T>(vm, type_name, "get_type", [type_name](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(type_name.empty() ? false : type_name);
                 return 1;
             });
         }
-    
+
         template<typename T = void>
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
             auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             return ud && *ud;
         }
-    
+
         template<typename T = void>
         static std::string get_userdata_type(Machine* vm, int index = 1) {
             auto state = vm -> get_state();
@@ -208,12 +305,6 @@ namespace Vital::Sandbox {
             release_userdata_ptr(ud);
         }
 
-        static void release_userdata_ptr(void**& userdata) {
-            if (!userdata) return;
-            *userdata = nullptr;
-            userdata = nullptr;
-        }
-
         template<typename TInstance>
         static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
             std::vector<std::shared_ptr<TInstance>> to_clean;
@@ -226,59 +317,6 @@ namespace Vital::Sandbox {
                 }
             }
             for (auto& instance : to_clean) clean(instance);
-        }
-
-        template<typename TInstance>
-        static std::shared_ptr<TInstance> find_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, int id) {
-            std::lock_guard<std::mutex> lock(mutex);
-            auto it = buffer.find(id);
-            return it != buffer.end() ? it -> second : nullptr;
-        }
-
-        template<typename TInstance>
-        static std::shared_ptr<TInstance> init_instance(std::atomic<int>& next_id, Machine* vm) {
-            auto instance = std::make_shared<TInstance>();
-            instance -> id = next_id.fetch_add(1);
-            instance -> env = vm -> get_environment_id();
-            instance -> vm = vm;
-            return instance;
-        }
-
-        template<typename TInstance>
-        static bool store_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::shared_ptr<TInstance> instance) {
-            if (!instance) return false;
-            std::lock_guard<std::mutex> lock(mutex);
-            buffer[instance -> id] = instance;
-            return true;
-        }
-
-        template<typename TInstance>
-        static std::shared_ptr<TInstance> make_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::atomic<int>& next_id, Machine* vm) {
-            auto instance = init_instance<TInstance>(next_id, vm);
-            store_instance(mutex, buffer, instance);
-            return instance;
-        }
-
-        template<typename TInstance>
-        static bool erase_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::shared_ptr<TInstance> instance) {
-            if (!instance) return false;
-            std::lock_guard<std::mutex> lock(mutex);
-            auto it = buffer.find(instance -> id);
-            if (it == buffer.end()) return false;
-            buffer.erase(it);
-            return true;
-        }
-
-        template<typename TInstance>
-        static bool release_instance(std::shared_ptr<TInstance> instance) {
-            if (!instance) return false;
-            release_userdata_ptr(instance -> userdata);
-            if (instance -> vm) {
-                instance -> vm -> del_reference(instance -> reference());
-                instance -> vm -> del_reference(instance -> self_reference());
-                instance -> vm = nullptr;
-            }
-            return true;
         }
     };
 
