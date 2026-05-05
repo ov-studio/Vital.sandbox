@@ -31,23 +31,17 @@ namespace Vital::Sandbox::API {
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id{1};
-
-        static std::shared_ptr<Instance> fetch_instance(int id) {
-            return vm_module::find_instance<Instance>(mutex, buffer, id);
-        }
+        inline static std::atomic<int> next_id { 1 };
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!vm_module::erase_instance<Instance>(mutex, buffer, instance)) return;
             if (!Instance::erase(instance)) return;
             instance -> destroyed = true;
-            vm_module::release_instance<Instance>(instance);
             Instance::release(instance);
         }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Timer>(vm, base_name);
-        
+
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec, interval, executions)")
                     .require(1, &Machine::is_function)
@@ -55,14 +49,13 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0")
                     .validate(3, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
-                    
+
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
-                auto instance = vm_module::init_instance<Instance>(next_id, vm);
-                vm -> push(1);
-                vm -> set_reference(instance -> reference(), -1);
+                auto instance = Instance::init(vm);
+                instance -> set_ref(instance -> reference(), 1);
                 vm -> pop(1);
-                vm_module::store_instance(mutex, buffer, instance);
+                Instance::store(instance);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
 
@@ -86,7 +79,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (self -> destroyed) { vm -> push_value(false); return 1; }
                 self -> destroyed = true;
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
