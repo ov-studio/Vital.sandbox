@@ -58,11 +58,10 @@ namespace Vital::Sandbox::API {
             }
             else instance -> thread_vm = nullptr;
             if (instance -> vm) {
-                vm_module::release_userdata_ptr(instance -> userdata);
                 instance -> vm -> del_reference(instance -> reference());
                 instance -> vm -> del_reference(instance -> self_reference());
-                instance -> vm = nullptr;
             }
+            vm_module::release_instance<Instance>(instance);
         }
 
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {

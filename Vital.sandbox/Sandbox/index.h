@@ -244,6 +244,14 @@ namespace Vital::Sandbox {
             buffer.erase(it);
             return true;
         }
+
+        template<typename TInstance>
+        static bool release_instance(std::shared_ptr<TInstance> instance) {
+            if (!instance) return false;
+            release_userdata_ptr(instance -> userdata);
+            instance -> vm = nullptr;
+            return true;
+        }
     };
 
     namespace API {

@@ -44,13 +44,9 @@ namespace Vital::Sandbox::API {
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!vm_module::erase_instance<Instance>(mutex, buffer, instance)) return;
-
             instance -> destroyed = true;
-            if (instance -> vm) {
-                vm_module::release_userdata_ptr(instance -> userdata);
-                instance -> vm -> del_reference(instance -> reference());
-                instance -> vm = nullptr;
-            }
+            if (instance -> vm) instance -> vm -> del_reference(instance -> reference());
+            vm_module::release_instance<Instance>(instance);
         }
 
         static void bind(Machine* vm) {
