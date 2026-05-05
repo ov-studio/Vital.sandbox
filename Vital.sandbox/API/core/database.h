@@ -315,22 +315,34 @@ namespace Vital::Sandbox::API {
                 auto password = vm -> get_string(3);
                 auto database = vm -> get_string(4);
                 auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
-                auto object = base_class::create(host, user, password, database, port);
-                vm -> create_object(base_name, object);
+
+                auto instance  = Instance::init(vm);
+                instance -> db = base_class::create(host, user, password, database, port);
+                Instance::store(instance);
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                self -> destroy();
+            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                if (self -> destroyed) { vm -> push_value(false); return 1; }
+                auto instance = Instance::find(self -> id);
+                if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_connected", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_connected());
+            vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(!self -> destroyed);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "is_connected", [](auto vm, auto self, auto& id) -> int {
+                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
+                vm -> push_value(self -> db -> is_connected());
                 return 1;
             });
 
@@ -345,11 +357,11 @@ namespace Vital::Sandbox::API {
                 vm -> push_nil();
                 while (lua_next(state, 3)) {
                     if (!vm -> is_string(-2) || !vm -> is_table(-1)) { vm -> pop(1); continue; }
-                    auto column  = vm -> get_string(-2);
+                    auto column = vm -> get_string(-2);
                     columns[column] = read_schema_definition(vm, vm -> get_count());
                     vm -> pop(1);
                 }
-                self -> define(table, columns);
+                self -> db -> define(table, columns);
                 vm -> push_value(true);
                 return 1;
             });
