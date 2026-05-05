@@ -56,23 +56,22 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self, auto& id) -> int {
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 auto db = self -> db;
                 auto table = self -> table;
                 self -> destroy();
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance -> destroyed) return;
-                    Machine* vm = instance -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
                     try {
                         db -> drop(table);
                         vm -> push_value(true);
-                        Promise::settle(instance, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     } catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(instance, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -80,23 +79,22 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self, auto& id) -> int {
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 auto db = self -> db;
                 auto table = self -> table;
                 self -> destroy();
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance -> destroyed) return;
-                    Machine* vm = instance -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
                     try {
                         db -> truncate(table);
                         vm -> push_value(true);
-                        Promise::settle(instance, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     } catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(instance, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -138,24 +136,23 @@ namespace Vital::Sandbox::API {
                 vm -> pop(1);
                 if (actions.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: no actions specified");
 
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 auto db = self -> db;
                 auto table = self -> table;
                 self -> destroy();
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
-                    auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance -> destroyed) return;
-                    Machine* vm = instance -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
                     try {
                         db -> alter(table, actions);
                         vm -> push_value(true);
-                        Promise::settle(instance, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(instance, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -168,12 +165,11 @@ namespace Vital::Sandbox::API {
 
                 if (vm -> is_number(2)) self -> limit = vm -> get_int(2);
 
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, self](Tool::Thread*) {
-                    auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance -> destroyed) { self -> destroy(); return; }
-                    Machine* vm = instance -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) { self -> destroy(); return; }
+                    Machine* vm = promise -> vm;
                     try {
                         auto rows = self -> db -> fetch(self);
                         self -> destroy();
@@ -186,12 +182,12 @@ namespace Vital::Sandbox::API {
                             }
                             vm -> set_table_field(index++, -2);
                         }
-                        Promise::settle(instance, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(instance, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -200,22 +196,21 @@ namespace Vital::Sandbox::API {
 
             // execute — async: resolves with bool result
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, self](Tool::Thread*) {
-                    auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance -> destroyed) { self -> destroy(); return; }
-                    Machine* vm = instance -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) { self -> destroy(); return; }
+                    Machine* vm = promise -> vm;
                     try {
                         bool result = self -> db -> execute(self);
                         self -> destroy();
                         vm -> push_value(result);
-                        Promise::settle(instance, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(instance, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -360,22 +355,21 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 auto db = self;
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
-                    auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance -> destroyed) return;
-                    Machine* vm = instance -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
                     try {
                         db -> sync();
                         vm -> push_value(true);
-                        Promise::settle(instance, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(instance, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
