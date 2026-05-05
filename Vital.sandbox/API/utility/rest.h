@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
 
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, headers, timeout](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
 
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, body, headers, timeout](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {

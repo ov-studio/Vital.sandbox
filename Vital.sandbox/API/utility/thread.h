@@ -26,29 +26,19 @@ namespace Vital::Sandbox::API {
     struct Thread : vm_module {
         inline static const std::string base_name = "thread";
 
-        struct Instance {
-            int id {};
-            std::string env;
-            std::atomic<bool> destroyed { false };
+        struct Instance : vm_instance<Instance> {
+            using Owner = Thread;
             std::atomic<bool> sleeping { false };
             std::atomic<bool> awaiting { false };
             std::atomic<bool> vm_owned { true };
-            Machine* vm = nullptr;
             Machine* thread_vm = nullptr;
-            void** userdata = nullptr;
-            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
-            std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
 
-        static std::shared_ptr<Instance> fetch_instance(int id) {
-            return vm_module::find_instance<Instance>(mutex, buffer, id);
-        }
-
         static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!vm_module::erase_instance<Instance>(mutex, buffer, instance)) return;
+            if (!Instance::erase(instance)) return;
 
             instance -> destroyed = true;
             if (instance -> vm_owned.exchange(false)) {
@@ -57,7 +47,7 @@ namespace Vital::Sandbox::API {
                 if (tvm) delete tvm;
             }
             else instance -> thread_vm = nullptr;
-            vm_module::release_instance<Instance>(instance);
+            Instance::release(instance);
         }
 
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
@@ -99,7 +89,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Thread>(vm, base_name);
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
-                auto instance = Thread::fetch_instance(thread_id);
+                auto instance = Instance::find(thread_id);
                 if (!instance || instance -> destroyed) return;
                 if (!instance -> vm_owned.load()) return;
                 if (!instance -> thread_vm) return;
@@ -114,15 +104,15 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                auto instance = vm_module::init_instance<Instance>(next_id, vm);
+                auto instance  = Instance::init(vm);
                 auto thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
-                vm -> set_reference(instance -> reference(), 1);
+                instance -> set_ref(instance -> reference(), 1);
                 vm -> pop(1);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                vm -> set_reference(instance -> self_reference(), -1);
-                vm_module::store_instance(mutex, buffer, instance);
+                instance -> set_ref(instance -> self_reference(), -1);
+                Instance::store(instance);
                 vm -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
@@ -133,7 +123,7 @@ namespace Vital::Sandbox::API {
                 if (self -> destroyed || !self -> thread_vm || self -> sleeping || self -> awaiting) {
                     vm -> push_value(false); return 1;
                 }
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
 
                 self -> vm -> get_reference(self -> reference(), true);
@@ -147,7 +137,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (self -> destroyed) { vm -> push_value(false); return 1; }
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
@@ -179,7 +169,7 @@ namespace Vital::Sandbox::API {
 
                 int duration = vm -> get_int(2);
                 self -> sleeping = true;
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
                     auto instance = weak.lock();
@@ -202,23 +192,22 @@ namespace Vital::Sandbox::API {
 
                 auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
-                auto promise_inst = Promise::fetch_instance((*ud) -> id);
-                if (!promise_inst) { vm -> push_value(false); return 1; }
+                auto promise = Promise::Instance::find((*ud) -> id);
+                if (!promise) { vm -> push_value(false); return 1; }
 
-                if (promise_inst -> state != Promise::State::Pending) {
-                    vm -> push_bool(promise_inst -> resolved);
-                    int n = Promise::push_values(promise_inst, vm);
-                    return 1 + n;
+                if (promise -> state != Promise::State::Pending) {
+                    vm -> push_bool(promise -> resolved);
+                    return 1 + Promise::push_values(promise, vm);
                 }
                 self -> awaiting = true;
-                promise_inst -> waiting.push_back(self -> id);
+                promise -> waiting.push_back(self -> id);
 
                 struct AwaitCTX { int base; int thread_id; };
                 auto actx = new AwaitCTX { vm -> get_count(), self -> id };
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
                 return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
                     auto actx = reinterpret_cast<AwaitCTX*>(ctx);
-                    auto instance = Thread::fetch_instance(actx -> thread_id);
+                    auto instance = Instance::find(actx -> thread_id);
                     if (instance) instance -> awaiting = false;
                     int n = lua_gettop(L) - actx -> base;
                     delete actx;
