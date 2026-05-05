@@ -62,17 +62,11 @@ namespace Vital::Sandbox::API {
                     
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
-                auto instance = std::make_shared<Instance>();
-                instance -> id = next_id.fetch_add(1);
-                instance -> env = vm -> get_environment_id();
-                instance -> vm = vm;
+                auto instance = vm_module::init_instance<Instance>(next_id, vm);
                 vm -> push(1);
                 vm -> set_reference(instance -> reference(), -1);
                 vm -> pop(1);
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    buffer[instance -> id] = instance;
-                }
+                vm_module::store_instance(mutex, buffer, instance);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
 
