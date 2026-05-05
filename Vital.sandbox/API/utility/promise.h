@@ -124,6 +124,23 @@ namespace Vital::Sandbox::API {
             for (int tid : thread_ids) Promise::resume_dispatcher(tid, resolved_flag, instance);
         }
 
+        // Creates and registers a promise, pushes it onto vm's stack.
+        // Used internally by Rest, Database, and any other async API.
+        static std::shared_ptr<Instance> make(Machine* vm) {
+            std::string env = vm->get_environment_id();
+            auto instance = std::make_shared<Instance>();
+            instance->id  = next_id.fetch_add(1);
+            instance->env = env;
+            instance->vm  = vm;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                buffer[instance->id] = instance;
+            }
+            vm->create_object(base_name, instance.get());
+            instance->userdata = vm_module::get_userdata_ptr(vm, -1);
+            return instance;
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Promise>(vm, base_name);
 

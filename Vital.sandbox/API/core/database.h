@@ -15,6 +15,7 @@
 #pragma once
 #if !defined(Vital_SDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/API/utility/promise.h>
 
 
 ///////////////////////////
@@ -28,16 +29,16 @@ namespace Vital::Sandbox::API {
 
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
             std::unordered_map<std::string, std::string> result;
-            auto state = vm -> get_state();
-            vm -> push_nil();
+            auto state = vm->get_state();
+            vm->push_nil();
             while (lua_next(state, index)) {
-                if (vm -> is_string(-2)) {
-                    std::string key = vm -> get_string(-2);
+                if (vm->is_string(-2)) {
+                    std::string key = vm->get_string(-2);
                     std::string value;
-                    if (vm -> is_string(-1) || vm -> is_number(-1)) value = vm -> get_string(-1);
+                    if (vm->is_string(-1) || vm->is_number(-1)) value = vm->get_string(-1);
                     result[key] = value;
                 }
-                vm -> pop(1);
+                vm->pop(1);
             }
             return result;
         }
@@ -47,102 +48,194 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            // destroy — synchronous, no I/O
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                self -> destroy();
+                self->destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_value(true);
+                vm->push_value(true);
                 return 1;
             });
 
+            // drop — async: resolves true on success, rejects with error string
             vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self, auto& id) -> int {
-                self -> db -> drop(self -> table);
-                self -> destroy();
-                vm -> push_value(true);
+                auto instance = Promise::make(vm);
+                int promise_id = instance->id;
+                auto db = self->db;
+                auto table = self->table;
+                self->destroy();
+                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
+                    auto inst = Promise::fetch_instance(promise_id);
+                    if (!inst || inst->destroyed) return;
+                    Machine* vm = inst->vm;
+                    try {
+                        db->drop(table);
+                        vm->push_value(true);
+                        Promise::settle(inst, Promise::State::Resolved, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm->push_value(std::string(error.what()));
+                        Promise::settle(inst, Promise::State::Rejected, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    }
+                })->detach();
                 return 1;
             });
 
+            // truncate — async
             vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self, auto& id) -> int {
-                self -> db -> truncate(self -> table);
-                self -> destroy();
-                vm -> push_value(true);
+                auto instance = Promise::make(vm);
+                int promise_id = instance->id;
+                auto db = self->db;
+                auto table = self->table;
+                self->destroy();
+                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
+                    auto inst = Promise::fetch_instance(promise_id);
+                    if (!inst || inst->destroyed) return;
+                    Machine* vm = inst->vm;
+                    try {
+                        db->truncate(table);
+                        vm->push_value(true);
+                        Promise::settle(inst, Promise::State::Resolved, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm->push_value(std::string(error.what()));
+                        Promise::settle(inst, Promise::State::Rejected, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    }
+                })->detach();
                 return 1;
             });
 
+            // alter — async; schema actions are plain C++ structs, safe to capture
             vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(actions)")
                     .require(2, &Machine::is_table);
 
                 int index = 2;
                 Tool::Database::SchemaActions actions;
-                vm -> get_table_field("add", index);
-                if (vm -> is_table(-1)) {
-                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Add);
+                vm->get_table_field("add", index);
+                if (vm->is_table(-1)) {
+                    auto steps = Database::read_schema_actions(vm, vm->get_count(), Tool::Database::SchemaAction::Type::Add);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
-                vm -> pop(1);
-                vm -> get_table_field("modify", index);
-                if (vm -> is_table(-1)) {
-                    auto steps = Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Modify);
+                vm->pop(1);
+                vm->get_table_field("modify", index);
+                if (vm->is_table(-1)) {
+                    auto steps = Database::read_schema_actions(vm, vm->get_count(), Tool::Database::SchemaAction::Type::Modify);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
-                vm -> pop(1);
-                vm -> get_table_field("drop", index);
-                if (vm -> is_table(-1)) {
-                    auto step_index = vm -> get_count();
-                    for (int i = 1; i <= vm -> get_length(step_index); i++) {
-                        vm -> get_table_field(i, step_index);
-                        if (vm -> is_string(-1)) {
+                vm->pop(1);
+                vm->get_table_field("drop", index);
+                if (vm->is_table(-1)) {
+                    auto step_index = vm->get_count();
+                    for (int i = 1; i <= vm->get_length(step_index); i++) {
+                        vm->get_table_field(i, step_index);
+                        if (vm->is_string(-1)) {
                             Tool::Database::SchemaAction step;
-                            step.type = Tool::Database::SchemaAction::Type::Drop;
-                            step.column = vm -> get_string(-1);
+                            step.type   = Tool::Database::SchemaAction::Type::Drop;
+                            step.column = vm->get_string(-1);
                             actions.push_back(step);
                         }
-                        vm -> pop(1);
+                        vm->pop(1);
                     }
                 }
-                vm -> pop(1);
+                vm->pop(1);
                 if (actions.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: no actions specified");
-                self -> db -> alter(self -> table, actions);
-                self -> destroy();
-                vm -> push_value(true);
+
+                auto instance = Promise::make(vm);
+                int promise_id = instance->id;
+                auto db = self->db;
+                auto table = self->table;
+                self->destroy();
+                Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
+                    auto inst = Promise::fetch_instance(promise_id);
+                    if (!inst || inst->destroyed) return;
+                    Machine* vm = inst->vm;
+                    try {
+                        db->alter(table, actions);
+                        vm->push_value(true);
+                        Promise::settle(inst, Promise::State::Resolved, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm->push_value(std::string(error.what()));
+                        Promise::settle(inst, Promise::State::Rejected, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    }
+                })->detach();
                 return 1;
             });
 
+            // fetch — async: resolves with a table of rows
             vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(limit = 0)")
                     .optional(2, &Machine::is_number);
 
-                if (vm -> is_number(2)) self -> limit = vm -> get_int(2);
-                int index = 1;
-                auto rows = self -> db -> fetch(self);
-                vm -> create_table();
-                for (const auto& row : rows) {
-                    vm -> create_table();
-                    for (const auto& [column, cell] : row) {
-                        vm -> table_set_value(column, cell);
+                if (vm->is_number(2)) self->limit = vm->get_int(2);
+
+                auto instance = Promise::make(vm);
+                int promise_id = instance->id;
+                // Transfer ownership of the query builder to the thread
+                auto query = std::shared_ptr<base_class>(self, [](base_class* q) { q->destroy(); });
+                Tool::Thread::create([promise_id, query](Tool::Thread*) {
+                    auto inst = Promise::fetch_instance(promise_id);
+                    if (!inst || inst->destroyed) return;
+                    Machine* vm = inst->vm;
+                    try {
+                        auto rows = query->db->fetch(query.get());
+                        int index = 1;
+                        vm->create_table();
+                        for (const auto& row : rows) {
+                            vm->create_table();
+                            for (const auto& [column, cell] : row) {
+                                vm->table_set_value(column, cell);
+                            }
+                            vm->set_table_field(index++, -2);
+                        }
+                        Promise::settle(inst, Promise::State::Resolved, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm->push_value(std::string(error.what()));
+                        Promise::settle(inst, Promise::State::Rejected, vm, vm->get_count(), 1);
+                        vm->pop(1);
                     }
-                    vm -> set_table_field(index++, -2);
-                }
-                self -> destroy();
+                })->detach();
                 return 1;
             });
 
+            // execute — async: resolves with bool result
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> db -> execute(self));
-                self -> destroy();
+                auto instance = Promise::make(vm);
+                int promise_id = instance->id;
+                auto query = std::shared_ptr<base_class>(self, [](base_class* q) { q->destroy(); });
+                Tool::Thread::create([promise_id, query](Tool::Thread*) {
+                    auto inst = Promise::fetch_instance(promise_id);
+                    if (!inst || inst->destroyed) return;
+                    Machine* vm = inst->vm;
+                    try {
+                        bool result = query->db->execute(query.get());
+                        vm->push_value(result);
+                        Promise::settle(inst, Promise::State::Resolved, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm->push_value(std::string(error.what()));
+                        Promise::settle(inst, Promise::State::Rejected, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    }
+                })->detach();
                 return 1;
             });
 
+            // Query builder methods — synchronous, return self for chaining
             vm_module::bind_method<base_class>(vm, base_name, "select", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(...)")
                     .require(2, &Machine::is_string);
 
-                int count = vm -> get_count();
+                int count = vm->get_count();
                 for (int i = 2; i <= count; i++) {
-                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
-                    self -> select.push_back(vm -> get_string(i));
+                    if (!vm->is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
+                    self->select.push_back(vm->get_string(i));
                 }
-                vm -> create_object(base_name, self);
+                vm->create_object(base_name, self);
                 return 1;
             });
 
@@ -151,11 +244,11 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
-                auto column = vm -> get_string(2);
-                auto op = vm -> get_string(3);
-                auto value = vm -> get_string(4);
-                self -> where.emplace_back(column, op, value);
-                vm -> create_object(base_name, self);
+                auto column = vm->get_string(2);
+                auto op     = vm->get_string(3);
+                auto value  = vm->get_string(4);
+                self->where.emplace_back(column, op, value);
+                vm->create_object(base_name, self);
                 return 1;
             });
 
@@ -163,15 +256,15 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(data)")
                     .require(2, &Machine::is_table);
 
-                self -> data = read_table(vm, 2);
-                self -> query_type = "insert";
-                vm -> create_object(base_name, self);
+                self->data       = read_table(vm, 2);
+                self->query_type = "insert";
+                vm->create_object(base_name, self);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "delete", [](auto vm, auto self, auto& id) -> int {
-                self -> query_type = "delete";
-                vm -> create_object(base_name, self);
+                self->query_type = "delete";
+                vm->create_object(base_name, self);
                 return 1;
             });
 
@@ -179,9 +272,9 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(data)")
                     .require(2, &Machine::is_table);
 
-                self -> data = read_table(vm, 2);
-                self -> query_type = "update";
-                vm -> create_object(base_name, self);
+                self->data       = read_table(vm, 2);
+                self->query_type = "update";
+                vm->create_object(base_name, self);
                 return 1;
             });
         }
@@ -193,26 +286,23 @@ namespace Vital::Sandbox::API {
 
         static base_class::Column read_schema_definition(Machine* vm, int index) {
             base_class::Column definition;
-            vm -> get_table_field("type", index); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
-            vm -> get_table_field("primary", index); definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.primary;
-            vm -> get_table_field("autoincrement", index); definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.autoincrement;
-            vm -> get_table_field("nullable", index); definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.nullable;
-            vm -> pop(4);
+            vm->get_table_field("type", index);          definition.type          = vm->is_string(-1) ? vm->get_string(-1) : definition.type;
+            vm->get_table_field("primary", index);       definition.primary       = vm->is_bool(-1)   ? vm->get_bool(-1)   : definition.primary;
+            vm->get_table_field("autoincrement", index); definition.autoincrement = vm->is_bool(-1)   ? vm->get_bool(-1)   : definition.autoincrement;
+            vm->get_table_field("nullable", index);      definition.nullable      = vm->is_bool(-1)   ? vm->get_bool(-1)   : definition.nullable;
+            vm->pop(4);
             return definition;
         }
 
         static base_class::SchemaActions read_schema_actions(Machine* vm, int index, base_class::SchemaAction::Type action) {
             base_class::SchemaActions actions;
-            auto state = vm -> get_state();
-            vm -> push_nil();
+            auto state = vm->get_state();
+            vm->push_nil();
             while (lua_next(state, index)) {
-                if (!vm -> is_string(-2) || !vm -> is_table(-1)) {
-                    vm -> pop(1);
-                    continue;
-                }
-                auto column = vm -> get_string(-2);
-                actions.push_back({action, column, read_schema_definition(vm, vm -> get_count())});
-                vm -> pop(1);
+                if (!vm->is_string(-2) || !vm->is_table(-1)) { vm->pop(1); continue; }
+                auto column = vm->get_string(-2);
+                actions.push_back({action, column, read_schema_definition(vm, vm->get_count())});
+                vm->pop(1);
             }
             return actions;
         }
@@ -228,66 +318,82 @@ namespace Vital::Sandbox::API {
                     .require(4, &Machine::is_string)
                     .optional(5, &Machine::is_number);
 
-                auto host = vm -> get_string(1);
-                auto user = vm -> get_string(2);
-                auto password = vm -> get_string(3);
-                auto database = vm -> get_string(4);
-                auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
-                auto object = base_class::create(host, user, password, database, port);
-                vm -> create_object(base_name, object);
+                auto host     = vm->get_string(1);
+                auto user     = vm->get_string(2);
+                auto password = vm->get_string(3);
+                auto database = vm->get_string(4);
+                auto port     = vm->is_number(5) ? static_cast<unsigned int>(vm->get_int(5)) : 3306u;
+                auto object   = base_class::create(host, user, password, database, port);
+                vm->create_object(base_name, object);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
             vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                self -> destroy();
+                self->destroy();
                 vm_module::release_userdata(vm, 1);
-                vm -> push_value(true);
+                vm->push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<base_class>(vm, base_name, "is_connected", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_connected());
+                vm->push_value(self->is_connected());
                 return 1;
             });
 
+            // define — synchronous, just registers schema in memory
             vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(table, schema)")
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
 
-                auto state = vm -> get_state();
-                auto table = vm -> get_string(2);
+                auto state = vm->get_state();
+                auto table = vm->get_string(2);
                 base_class::TableSchema columns;
-                vm -> push_nil();
+                vm->push_nil();
                 while (lua_next(state, 3)) {
-                    if (!vm -> is_string(-2) || !vm -> is_table(-1)) {
-                        vm -> pop(1);
-                        continue;
-                    }
-                    auto column = vm -> get_string(-2);
-                    columns[column] = read_schema_definition(vm, vm -> get_count());
-                    vm -> pop(1);
+                    if (!vm->is_string(-2) || !vm->is_table(-1)) { vm->pop(1); continue; }
+                    auto column  = vm->get_string(-2);
+                    columns[column] = read_schema_definition(vm, vm->get_count());
+                    vm->pop(1);
                 }
-                self -> define(table, columns);
-                vm -> push_value(true);
+                self->define(table, columns);
+                vm->push_value(true);
                 return 1;
             });
 
+            // sync — async: hits the DB to create/alter tables
             vm_module::bind_method<base_class>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
-                self -> sync();
-                vm -> push_value(true);
+                auto instance = Promise::make(vm);
+                int promise_id = instance->id;
+                auto db = self;
+                Tool::Thread::create([promise_id, db](Tool::Thread*) {
+                    auto inst = Promise::fetch_instance(promise_id);
+                    if (!inst || inst->destroyed) return;
+                    Machine* vm = inst->vm;
+                    try {
+                        db->sync();
+                        vm->push_value(true);
+                        Promise::settle(inst, Promise::State::Resolved, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm->push_value(std::string(error.what()));
+                        Promise::settle(inst, Promise::State::Rejected, vm, vm->get_count(), 1);
+                        vm->pop(1);
+                    }
+                })->detach();
                 return 1;
             });
 
+            // table — synchronous, just builds a query object
             vm_module::bind_method<base_class>(vm, base_name, "table", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(2, &Machine::is_string);
 
-                auto name = vm -> get_string(2);
-                auto query = self -> table(name);
-                vm -> create_object(DatabaseQuery::base_name, query);
+                auto name  = vm->get_string(2);
+                auto query = self->table(name);
+                vm->create_object(DatabaseQuery::base_name, query);
                 return 1;
             });
         }
