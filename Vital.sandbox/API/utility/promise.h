@@ -87,7 +87,6 @@ namespace Vital::Sandbox::API {
             instance -> resolved = (result_state == State::Resolved);
             instance -> value_count = args_count;
             for (int i = 0; i < args_count; ++i) vm -> set_reference(instance -> value_reference(i + 1), args_start + i);
-
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
             bool resolved_flag = instance -> resolved;
@@ -114,9 +113,9 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 auto instance = std::make_shared<Instance>();
-                instance -> id  = next_id.fetch_add(1);
+                instance -> id = next_id.fetch_add(1);
                 instance -> env = vm -> get_environment_id();
-                instance -> vm  = vm;
+                instance -> vm = vm;
                 {
                     std::lock_guard<std::mutex> lock(mutex);
                     buffer[instance -> id] = instance;
