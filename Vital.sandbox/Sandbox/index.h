@@ -213,6 +213,20 @@ namespace Vital::Sandbox {
             *userdata = nullptr;
             userdata = nullptr;
         }
+
+        template<typename TInstance>
+        static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
+            std::vector<std::shared_ptr<TInstance>> to_clean;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                for (auto& [id, instance] : buffer) {
+                    if (instance -> env != env) continue;
+                    if (pre_mark) instance -> destroyed = true;
+                    to_clean.push_back(instance);
+                }
+            }
+            for (auto& instance : to_clean) clean(instance);
+        }
     };
 
     namespace API {
