@@ -62,6 +62,7 @@ namespace Vital::Sandbox::API {
                 if (buffer.find(instance -> id) == buffer.end()) return;
                 buffer.erase(instance -> id);
             }
+            instance -> destroyed = true;
             if (instance -> vm) {
                 for (int i = 1; i <= instance -> value_count; ++i) instance -> vm -> del_reference(instance -> value_reference(i));
                 vm_module::release_userdata_ptr(instance -> userdata);
@@ -155,6 +156,7 @@ namespace Vital::Sandbox::API {
                 if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
                 auto instance = fetch_instance(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
+                
                 settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
                 vm -> push_value(true);
                 return 1;

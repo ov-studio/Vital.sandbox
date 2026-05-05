@@ -51,6 +51,7 @@ namespace Vital::Sandbox::API {
                 if (buffer.find(instance -> id) == buffer.end()) return;
                 buffer.erase(instance -> id);
             }
+            instance -> destroyed = true;
             vm_module::release_userdata_ptr(instance -> userdata);
             instance -> vm -> del_reference(instance -> reference());
         }
@@ -118,10 +119,7 @@ namespace Vital::Sandbox::API {
                     if (instance -> env == env) to_clean.push_back(instance);
                 }
             }
-            for (auto& instance : to_clean) {
-                instance -> destroyed = true;
-                clean_instance(instance);
-            }
+            for (auto& instance : to_clean) clean_instance(instance);
         }
     };
 }
