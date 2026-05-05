@@ -25,7 +25,12 @@ namespace Vital::Sandbox::API {
     struct Promise : vm_module {
         inline static const std::string base_name = "promise";
 
-        enum class State { Pending, Resolved, Rejected };
+        enum class State {
+            Pending,
+            Resolved,
+            Rejected
+        };
+
         struct Instance {
             int id {};
             std::string env;
@@ -156,7 +161,6 @@ namespace Vital::Sandbox::API {
                 if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
                 auto instance = fetch_instance(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
-                
                 settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
                 vm -> push_value(true);
                 return 1;
