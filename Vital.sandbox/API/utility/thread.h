@@ -126,10 +126,9 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                std::string env = vm -> get_environment_id();
                 auto instance = std::make_shared<Instance>();
                 instance -> id  = next_id.fetch_add(1);
-                instance -> env = env;
+                instance -> env = vm -> get_environment_id();
                 instance -> vm  = vm;
                 Machine* thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;

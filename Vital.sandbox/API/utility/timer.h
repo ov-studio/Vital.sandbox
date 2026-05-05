@@ -68,10 +68,9 @@ namespace Vital::Sandbox::API {
                     
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
-                std::string env = vm -> get_environment_id();
                 auto instance = std::make_shared<Instance>();
                 instance -> id = next_id.fetch_add(1);
-                instance -> env = env;
+                instance -> env = vm -> get_environment_id();
                 instance -> vm = vm;
                 vm -> push(1);
                 vm -> set_reference(instance -> reference(), -1);
