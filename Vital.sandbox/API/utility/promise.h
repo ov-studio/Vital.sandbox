@@ -61,59 +61,59 @@ namespace Vital::Sandbox::API {
         }
 
         // Push all settled values onto dst's lua_State* directly via lua_rawgeti.
-        // We cannot use instance->vm->get_reference() here because that pushes onto
-        // instance->vm's state — which may differ from dst's coroutine state.
+        // We cannot use instance -> vm -> get_reference() here because that pushes onto
+        // instance -> vm's state — which may differ from dst's coroutine state.
         // Instead we read the raw ref int and rawgeti onto dst's state explicitly.
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
-            if (!instance || !instance->vm || instance->value_count == 0) return 0;
-            lua_State* L = dst->get_state();
-            for (int i = 1; i <= instance->value_count; ++i) {
-                int ref = instance->vm->get_reference(instance->value_reference(i));
+            if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
+            lua_State* L = dst -> get_state();
+            for (int i = 1; i <= instance -> value_count; ++i) {
+                int ref = instance -> vm -> get_reference(instance -> value_reference(i));
                 lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
             }
-            return instance->value_count;
+            return instance -> value_count;
         }
 
         static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);
             auto it = buffer.find(id);
-            return it != buffer.end() ? it->second : nullptr;
+            return it != buffer.end() ? it -> second : nullptr;
         }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                if (buffer.find(instance->id) == buffer.end()) return;
-                buffer.erase(instance->id);
+                if (buffer.find(instance -> id) == buffer.end()) return;
+                buffer.erase(instance -> id);
             }
-            if (instance->vm) {
-                for (int i = 1; i <= instance->value_count; ++i)
-                    instance->vm->del_reference(instance->value_reference(i));
-                vm_module::release_userdata_ptr(instance->userdata);
-                instance->vm->del_reference(instance->reference());
-                instance->vm = nullptr;
+            if (instance -> vm) {
+                for (int i = 1; i <= instance -> value_count; ++i)
+                    instance -> vm -> del_reference(instance -> value_reference(i));
+                vm_module::release_userdata_ptr(instance -> userdata);
+                instance -> vm -> del_reference(instance -> reference());
+                instance -> vm = nullptr;
             }
         }
 
-        // settle() stores each value as a named registry ref on instance->vm.
+        // settle() stores each value as a named registry ref on instance -> vm.
         // The registry is global to the lua_State, so refs are valid for any
         // coroutine (thread_vm) sharing the same main state.
         // args_start: absolute 1-based stack index of first value on vm's stack.
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
-            if (!instance || instance->destroyed || instance->state != State::Pending || !vm) return;
+            if (!instance || instance -> destroyed || instance -> state != State::Pending || !vm) return;
 
-            instance->state       = result_state;
-            instance->resolved    = (result_state == State::Resolved);
-            instance->value_count = args_count;
+            instance -> state       = result_state;
+            instance -> resolved    = (result_state == State::Resolved);
+            instance -> value_count = args_count;
 
             for (int i = 0; i < args_count; ++i)
-                vm->set_reference(instance->value_reference(i + 1), args_start + i);
+                vm -> set_reference(instance -> value_reference(i + 1), args_start + i);
 
-            auto waiting = instance->waiting;
-            instance->waiting.clear();
+            auto waiting = instance -> waiting;
+            instance -> waiting.clear();
 
-            bool resolved_flag = instance->resolved;
+            bool resolved_flag = instance -> resolved;
             std::vector<int> thread_ids;
             thread_ids.reserve(waiting.size());
             for (auto& wt : waiting) {
@@ -127,17 +127,17 @@ namespace Vital::Sandbox::API {
         // Creates and registers a promise, pushes it onto vm's stack.
         // Used internally by Rest, Database, and any other async API.
         static std::shared_ptr<Instance> make(Machine* vm) {
-            std::string env = vm->get_environment_id();
+            std::string env = vm -> get_environment_id();
             auto instance = std::make_shared<Instance>();
-            instance->id  = next_id.fetch_add(1);
-            instance->env = env;
-            instance->vm  = vm;
+            instance -> id  = next_id.fetch_add(1);
+            instance -> env = env;
+            instance -> vm  = vm;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                buffer[instance->id] = instance;
+                buffer[instance -> id] = instance;
             }
-            vm->create_object(base_name, instance.get());
-            instance->userdata = vm_module::get_userdata_ptr(vm, -1);
+            vm -> create_object(base_name, instance.get());
+            instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
             return instance;
         }
 
@@ -145,52 +145,52 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Promise>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                std::string env = vm->get_environment_id();
+                std::string env = vm -> get_environment_id();
                 auto instance = std::make_shared<Instance>();
-                instance->id  = next_id.fetch_add(1);
-                instance->env = env;
-                instance->vm  = vm;
+                instance -> id  = next_id.fetch_add(1);
+                instance -> env = env;
+                instance -> vm  = vm;
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    buffer[instance->id] = instance;
+                    buffer[instance -> id] = instance;
                 }
-                vm->create_object(base_name, instance.get());
-                instance->userdata = vm_module::get_userdata_ptr(vm, -1);
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                if (self->destroyed) { vm->push_value(false); return 1; }
-                self->destroyed = true;
-                auto instance = fetch_instance(self->id);
+                if (self -> destroyed) { vm -> push_value(false); return 1; }
+                self -> destroyed = true;
+                auto instance = fetch_instance(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
-                vm->push_value(true);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_pending", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(!self->destroyed && self->state == State::Pending);
+                vm -> push_value(!self -> destroyed && self -> state == State::Pending);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
-                if (self->destroyed || self->state != State::Pending) { vm->push_value(false); return 1; }
-                auto instance = fetch_instance(self->id);
-                if (!instance) { vm->push_value(false); return 1; }
-                settle(instance, State::Resolved, vm, 2, vm->get_count() - 1);
-                vm->push_value(true);
+                if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
+                auto instance = fetch_instance(self -> id);
+                if (!instance) { vm -> push_value(false); return 1; }
+                settle(instance, State::Resolved, vm, 2, vm -> get_count() - 1);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
-                if (self->destroyed || self->state != State::Pending) { vm->push_value(false); return 1; }
-                auto instance = fetch_instance(self->id);
-                if (!instance) { vm->push_value(false); return 1; }
-                settle(instance, State::Rejected, vm, 2, vm->get_count() - 1);
-                vm->push_value(true);
+                if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
+                auto instance = fetch_instance(self -> id);
+                if (!instance) { vm -> push_value(false); return 1; }
+                settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
+                vm -> push_value(true);
                 return 1;
             });
         }
@@ -200,12 +200,12 @@ namespace Vital::Sandbox::API {
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 for (auto& [id, instance] : buffer) {
-                    if (instance->env == env) to_clean.push_back(instance);
+                    if (instance -> env == env) to_clean.push_back(instance);
                 }
             }
             for (auto& instance : to_clean) {
-                instance->destroyed = true;
-                instance->waiting.clear();
+                instance -> destroyed = true;
+                instance -> waiting.clear();
             }
             for (auto& instance : to_clean) clean_instance(instance);
         }
