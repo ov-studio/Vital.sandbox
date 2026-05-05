@@ -44,9 +44,7 @@ namespace Vital::Sandbox::API {
         inline static std::atomic<int> next_id { 1 };
 
         static std::shared_ptr<Instance> fetch_instance(int id) {
-            std::lock_guard<std::mutex> lock(mutex);
-            auto it = buffer.find(id);
-            return it != buffer.end() ? it -> second : nullptr;
+            return vm_module::find_instance<Instance>(mutex, buffer, id);
         }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {

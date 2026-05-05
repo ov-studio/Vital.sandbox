@@ -229,6 +229,13 @@ namespace Vital::Sandbox {
         }
 
         template<typename TInstance>
+        static std::shared_ptr<TInstance> find_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, int id) {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto it = buffer.find(id);
+            return it != buffer.end() ? it -> second : nullptr;
+        }
+    
+        template<typename TInstance>
         static bool erase_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::shared_ptr<TInstance> instance) {
             if (!instance) return false;
             std::lock_guard<std::mutex> lock(mutex);
