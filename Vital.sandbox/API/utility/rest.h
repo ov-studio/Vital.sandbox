@@ -42,20 +42,19 @@ namespace Vital::Sandbox::API {
                 }
                 if (vm -> is_number(3)) timeout = vm -> get_int(3);
 
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                int promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, headers, timeout](Tool::Thread*) {
-                    auto inst = Promise::fetch_instance(promise_id);
-                    if (!inst || inst -> destroyed) return;
-                    Machine* vm = inst -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
                     try {
                         vm -> push_value(Tool::Rest::get(url, headers, timeout));
-                        Promise::settle(inst, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(inst, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -80,20 +79,19 @@ namespace Vital::Sandbox::API {
                 }
                 if (vm -> is_number(4)) timeout = vm -> get_int(4);
 
-                auto instance = Promise::make(vm);
-                int promise_id = instance -> id;
+                int promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, body, headers, timeout](Tool::Thread*) {
-                    auto inst = Promise::fetch_instance(promise_id);
-                    if (!inst || inst -> destroyed) return;
-                    Machine* vm = inst -> vm;
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
                     try {
                         vm -> push_value(Tool::Rest::post(url, body, headers, timeout));
-                        Promise::settle(inst, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(inst, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
