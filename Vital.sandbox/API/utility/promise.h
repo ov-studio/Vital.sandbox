@@ -49,10 +49,9 @@ namespace Vital::Sandbox::API {
                 return fmt::format("{}:{}:v:{}", base_name, id, i);
             }
         };
-
+        inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
-        inline static std::mutex mutex;
 
         using ResumeDispatcher = std::function<void(int thread_id, bool resolved, std::shared_ptr<Instance> promise)>;
         inline static ResumeDispatcher resume_dispatcher;
@@ -84,8 +83,7 @@ namespace Vital::Sandbox::API {
                 buffer.erase(instance -> id);
             }
             if (instance -> vm) {
-                for (int i = 1; i <= instance -> value_count; ++i)
-                    instance -> vm -> del_reference(instance -> value_reference(i));
+                for (int i = 1; i <= instance -> value_count; ++i) instance -> vm -> del_reference(instance -> value_reference(i));
                 vm_module::release_userdata_ptr(instance -> userdata);
                 instance -> vm -> del_reference(instance -> reference());
                 instance -> vm = nullptr;

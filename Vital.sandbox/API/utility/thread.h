@@ -110,21 +110,17 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm, base_name);
 
-            Promise::register_resume_dispatcher(
-                [](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
-                    auto instance = Thread::fetch_instance(thread_id);
-                    if (!instance || instance -> destroyed)  return;
-                    if (!instance -> vm_owned.load())        return;
-                    if (!instance -> thread_vm)              return;
+            Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
+                auto instance = Thread::fetch_instance(thread_id);
+                if (!instance || instance -> destroyed) return;
+                if (!instance -> vm_owned.load()) return;
+                if (!instance -> thread_vm) return;
 
-                    // thread_vm shares the same lua_State — push directly onto it.
-                    instance -> thread_vm -> push_bool(resolved);
-                    int value_count = Promise::push_values(promise, instance -> thread_vm);
-
-                    instance -> awaiting = false;
-                    safe_resume(instance, 1 + value_count);
-                }
-            );
+                instance -> thread_vm -> push_bool(resolved);
+                int value_count = Promise::push_values(promise, instance -> thread_vm);
+                instance -> awaiting = false;
+                safe_resume(instance, 1 + value_count);
+            });
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
