@@ -93,14 +93,7 @@ namespace Vital::Sandbox::API {
         }
 
         static std::shared_ptr<Instance> make(Machine* vm) {
-            auto instance = std::make_shared<Instance>();
-            instance -> id = next_id.fetch_add(1);
-            instance -> env = vm -> get_environment_id();
-            instance -> vm = vm;
-            {
-                std::lock_guard<std::mutex> lock(mutex);
-                buffer[instance -> id] = instance;
-            }
+            auto instance = vm_module::make_instance<Instance>(mutex, buffer, next_id, vm);
             vm -> create_object(base_name, instance.get());
             instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
             return instance;
@@ -110,14 +103,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Promise>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                auto instance = std::make_shared<Instance>();
-                instance -> id = next_id.fetch_add(1);
-                instance -> env = vm -> get_environment_id();
-                instance -> vm = vm;
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    buffer[instance -> id] = instance;
-                }
+                auto instance = vm_module::make_instance<Instance>(mutex, buffer, next_id, vm);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
