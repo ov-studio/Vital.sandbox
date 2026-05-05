@@ -99,8 +99,6 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed) { vm -> push_value(false); return 1; }
-                self -> destroyed = true;
                 auto instance = Instance::find(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
@@ -109,12 +107,12 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_pending", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(!self -> destroyed && self -> state == State::Pending);
+                vm -> push_value(self -> state == State::Pending);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
+                if (self -> state != State::Pending) { vm -> push_value(false); return 1; }
                 auto instance = Instance::find(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
                 settle(instance, State::Resolved, vm, 2, vm -> get_count() - 1);
@@ -123,7 +121,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
+                if (self -> state != State::Pending) { vm -> push_value(false); return 1; }
                 auto instance = Instance::find(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
                 settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);

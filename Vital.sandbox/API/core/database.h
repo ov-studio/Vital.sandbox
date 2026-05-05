@@ -345,7 +345,6 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed) { vm -> push_value(false); return 1; }
                 auto instance = Instance::find(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
@@ -353,13 +352,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_instance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(!self -> destroyed);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "is_connected", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
+                if (!self -> db) { vm -> push_value(false); return 1; }
                 vm -> push_value(self -> db -> is_connected());
                 return 1;
             });
@@ -369,7 +363,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
 
-                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
+                if (!self -> db) { vm -> push_value(false); return 1; }
                 auto state = vm -> get_state();
                 auto table = vm -> get_string(2);
                 base_class::TableSchema columns;
@@ -386,7 +380,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
+                if (!self -> db) { vm -> push_value(false); return 1; }
                 auto promise_id = Promise::make(vm) -> id;
                 auto db = self -> db;
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
@@ -412,7 +406,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(2, &Machine::is_string);
 
-                if (self -> destroyed || !self -> db) { vm -> push_value(false); return 1; }
+                if (!self -> db) { vm -> push_value(false); return 1; }
                 auto name = vm -> get_string(2);
                 auto query = self -> db -> table(name);
                 vm -> create_object(Database_Query::base_name, query);

@@ -77,8 +77,6 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                if (self -> destroyed) { vm -> push_value(false); return 1; }
-                self -> destroyed = true;
                 auto instance = Instance::find(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
