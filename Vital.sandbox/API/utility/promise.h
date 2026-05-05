@@ -62,10 +62,10 @@ namespace Vital::Sandbox::API {
 
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
             if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
-            auto L = dst -> get_state();
+            auto state = dst -> get_state();
             for (int i = 1; i <= instance -> value_count; ++i) {
                 int ref = instance -> vm -> get_reference(instance -> value_reference(i));
-                lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+                lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
             }
             return instance -> value_count;
         }
