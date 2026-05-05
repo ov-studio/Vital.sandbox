@@ -200,11 +200,11 @@ namespace Vital::Sandbox::API {
                 auto instance = fetch_instance(self -> id);
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
-                    auto inst = weak.lock();
-                    if (!inst || inst -> destroyed) return;
-                    inst -> sleeping = false;
-                    if (!inst -> vm_owned.load() || !inst -> thread_vm) return;
-                    safe_resume(inst, 0);
+                    auto instance = weak.lock();
+                    if (!instance || instance -> destroyed) return;
+                    instance -> sleeping = false;
+                    if (!instance -> vm_owned.load() || !instance -> thread_vm) return;
+                    safe_resume(instance, 0);
                 }, duration, 1);
                 return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
@@ -236,8 +236,8 @@ namespace Vital::Sandbox::API {
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
                 return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
                     auto actx = reinterpret_cast<AwaitCTX*>(ctx);
-                    auto inst = Thread::fetch_instance(actx -> thread_id);
-                    if (inst) inst -> awaiting = false;
+                    auto instance = Thread::fetch_instance(actx -> thread_id);
+                    if (instance) instance -> awaiting = false;
                     int n = lua_gettop(L) - actx -> base;
                     delete actx;
                     return n > 0 ? n : 0;
