@@ -114,10 +114,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                auto instance = std::make_shared<Instance>();
-                instance -> id  = next_id.fetch_add(1);
-                instance -> env = vm -> get_environment_id();
-                instance -> vm  = vm;
+                auto instance = vm_module::init_instance<Instance>(next_id, vm);
                 Machine* thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
                 vm -> set_reference(instance -> reference(), 1);
@@ -125,10 +122,7 @@ namespace Vital::Sandbox::API {
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 vm -> set_reference(instance -> self_reference(), -1);
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    buffer[instance -> id] = instance;
-                }
+                vm_module::store_instance(mutex, buffer, instance);
                 vm -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
