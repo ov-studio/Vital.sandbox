@@ -234,7 +234,24 @@ namespace Vital::Sandbox {
             auto it = buffer.find(id);
             return it != buffer.end() ? it -> second : nullptr;
         }
-    
+
+        template<typename TInstance>
+        static std::shared_ptr<TInstance> init_instance(std::atomic<int>& next_id, Machine* vm) {
+            auto instance = std::make_shared<TInstance>();
+            instance -> id = next_id.fetch_add(1);
+            instance -> env = vm -> get_environment_id();
+            instance -> vm = vm;
+            return instance;
+        }
+
+        template<typename TInstance>
+        static std::shared_ptr<TInstance> make_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::atomic<int>& next_id, Machine* vm) {
+            auto instance = init_instance<TInstance>(next_id, vm);
+            std::lock_guard<std::mutex> lock(mutex);
+            buffer[instance -> id] = instance;
+            return instance;
+        }
+
         template<typename TInstance>
         static bool erase_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::shared_ptr<TInstance> instance) {
             if (!instance) return false;
