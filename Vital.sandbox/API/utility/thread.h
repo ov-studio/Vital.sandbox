@@ -30,13 +30,13 @@ namespace Vital::Sandbox::API {
             int id {};
             std::string env;
             std::atomic<bool> destroyed { false };
-            std::atomic<bool> sleeping  { false };
-            std::atomic<bool> awaiting  { false };
-            std::atomic<bool> vm_owned  { true  };
-            Machine* vm        = nullptr;
+            std::atomic<bool> sleeping { false };
+            std::atomic<bool> awaiting { false };
+            std::atomic<bool> vm_owned { true  };
+            Machine* vm = nullptr;
             Machine* thread_vm = nullptr;
-            void**   userdata  = nullptr;
-            std::string reference()      const { return fmt::format("{}:{}", base_name, id); }
+            void** userdata = nullptr;
+            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
             std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
         };
         inline static std::mutex mutex;
@@ -62,9 +62,8 @@ namespace Vital::Sandbox::API {
                 Machine* tvm = instance->thread_vm;
                 instance->thread_vm = nullptr;
                 if (tvm) delete tvm;
-            } else {
-                instance->thread_vm = nullptr;
             }
+            else instance->thread_vm = nullptr;
 
             if (instance->vm) {
                 vm_module::release_userdata_ptr(instance->userdata);
@@ -75,9 +74,9 @@ namespace Vital::Sandbox::API {
         }
 
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
-            if (!instance || instance->destroyed)      return false;
-            if (!instance->vm_owned.load())            return false;
-            if (!instance->thread_vm)                  return false;
+            if (!instance || instance->destroyed) return false;
+            if (!instance->vm_owned.load()) return false;
+            if (!instance->thread_vm) return false;
             if (!instance->vm) {
                 Machine* tvm = instance->thread_vm;
                 instance->thread_vm = nullptr;
@@ -192,8 +191,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (self->destroyed || !vm->is_virtual()) { vm->push_value(false); return 1; }
-                return lua_yieldk(vm->get_state(), 0, 0,
-                    [](lua_State*, int, lua_KContext) -> int { return 0; });
+                return lua_yieldk(vm->get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
@@ -214,8 +212,7 @@ namespace Vital::Sandbox::API {
                     if (!inst->vm_owned.load() || !inst->thread_vm) return;
                     safe_resume(inst, 0);
                 }, duration, 1);
-                return lua_yieldk(vm->get_state(), 0, 0,
-                    [](lua_State*, int, lua_KContext) -> int { return 0; });
+                return lua_yieldk(vm->get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
@@ -245,15 +242,14 @@ namespace Vital::Sandbox::API {
                 struct AwaitCTX { int base; int thread_id; };
                 auto* actx = new AwaitCTX { vm->get_count(), self->id };
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
-                return lua_yieldk(vm->get_state(), 0, ctx,
-                    [](lua_State* L, int, lua_KContext ctx) -> int {
-                        auto* actx = reinterpret_cast<AwaitCTX*>(ctx);
-                        auto inst = Thread::fetch_instance(actx->thread_id);
-                        if (inst) inst->awaiting = false;
-                        int n = lua_gettop(L) - actx->base;
-                        delete actx;
-                        return n > 0 ? n : 0;
-                    });
+                return lua_yieldk(vm->get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
+                    auto* actx = reinterpret_cast<AwaitCTX*>(ctx);
+                    auto inst = Thread::fetch_instance(actx->thread_id);
+                    if (inst) inst->awaiting = false;
+                    int n = lua_gettop(L) - actx->base;
+                    delete actx;
+                    return n > 0 ? n : 0;
+                });
             });
         }
 
