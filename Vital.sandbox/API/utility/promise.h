@@ -90,30 +90,22 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        // settle() stores each value as a named registry ref on instance -> vm.
-        // The registry is global to the lua_State, so refs are valid for any
-        // coroutine (thread_vm) sharing the same main state.
-        // args_start: absolute 1-based stack index of first value on vm's stack.
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!instance || instance -> destroyed || instance -> state != State::Pending || !vm) return;
 
-            instance -> state       = result_state;
-            instance -> resolved    = (result_state == State::Resolved);
+            instance -> state = result_state;
+            instance -> resolved = (result_state == State::Resolved);
             instance -> value_count = args_count;
-
-            for (int i = 0; i < args_count; ++i)
-                vm -> set_reference(instance -> value_reference(i + 1), args_start + i);
+            for (int i = 0; i < args_count; ++i) vm -> set_reference(instance -> value_reference(i + 1), args_start + i);
 
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
-
             bool resolved_flag = instance -> resolved;
             std::vector<int> thread_ids;
             thread_ids.reserve(waiting.size());
             for (auto& wt : waiting) {
                 if (wt.thread_instance_id >= 0) thread_ids.push_back(wt.thread_instance_id);
             }
-
             if (!Promise::resume_dispatcher) return;
             for (int tid : thread_ids) Promise::resume_dispatcher(tid, resolved_flag, instance);
         }
