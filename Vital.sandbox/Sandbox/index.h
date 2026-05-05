@@ -245,10 +245,17 @@ namespace Vital::Sandbox {
         }
 
         template<typename TInstance>
-        static std::shared_ptr<TInstance> make_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::atomic<int>& next_id, Machine* vm) {
-            auto instance = init_instance<TInstance>(next_id, vm);
+        static bool store_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::shared_ptr<TInstance> instance) {
+            if (!instance) return false;
             std::lock_guard<std::mutex> lock(mutex);
             buffer[instance -> id] = instance;
+            return true;
+        }
+
+        template<typename TInstance>
+        static std::shared_ptr<TInstance> make_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::atomic<int>& next_id, Machine* vm) {
+            auto instance = init_instance<TInstance>(next_id, vm);
+            store_instance(mutex, buffer, instance);
             return instance;
         }
 
