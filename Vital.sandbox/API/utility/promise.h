@@ -49,22 +49,12 @@ namespace Vital::Sandbox::API {
             resume_dispatcher = std::move(fn);
         }
 
-        static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
-            if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
-            auto state = dst -> get_state();
-            for (int i = 1; i <= instance -> value_count; ++i) {
-                int ref = instance -> vm -> get_reference(instance -> value_reference(i));
-                lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
-            }
-            return instance -> value_count;
-        }
-
         static std::shared_ptr<Instance> fetch_instance(int id) {
             std::lock_guard<std::mutex> lock(mutex);
             auto it = buffer.find(id);
             return it != buffer.end() ? it -> second : nullptr;
         }
-
+    
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!instance) return;
             {
@@ -80,6 +70,16 @@ namespace Vital::Sandbox::API {
             }
         }
 
+        static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
+            if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
+            auto state = dst -> get_state();
+            for (int i = 1; i <= instance -> value_count; ++i) {
+                int ref = instance -> vm -> get_reference(instance -> value_reference(i));
+                lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
+            }
+            return instance -> value_count;
+        }
+        
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!instance || instance -> destroyed || instance -> state != State::Pending || !vm) return;
 
