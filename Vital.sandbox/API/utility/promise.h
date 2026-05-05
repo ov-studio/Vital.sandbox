@@ -42,6 +42,7 @@ namespace Vital::Sandbox::API {
             bool resolved = false;
             int value_count = 0;
             std::string reference() const { return fmt::format("{}:{}", base_name, id); }
+            std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
             std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
         };
         inline static std::mutex mutex;
@@ -64,7 +65,6 @@ namespace Vital::Sandbox::API {
             instance -> waiting.clear();
             if (instance -> vm) {
                 for (int i = 1; i <= instance -> value_count; ++i) instance -> vm -> del_reference(instance -> value_reference(i));
-                instance -> vm -> del_reference(instance -> reference());
             }
             vm_module::release_instance<Instance>(instance);
         }

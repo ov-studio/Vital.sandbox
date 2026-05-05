@@ -249,7 +249,11 @@ namespace Vital::Sandbox {
         static bool release_instance(std::shared_ptr<TInstance> instance) {
             if (!instance) return false;
             release_userdata_ptr(instance -> userdata);
-            instance -> vm = nullptr;
+            if (instance -> vm) {
+                instance -> vm -> del_reference(instance -> reference());
+                instance -> vm -> del_reference(instance -> self_reference());
+                instance -> vm = nullptr;
+            }
             return true;
         }
     };

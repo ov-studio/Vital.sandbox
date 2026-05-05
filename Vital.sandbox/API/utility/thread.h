@@ -57,10 +57,6 @@ namespace Vital::Sandbox::API {
                 if (tvm) delete tvm;
             }
             else instance -> thread_vm = nullptr;
-            if (instance -> vm) {
-                instance -> vm -> del_reference(instance -> reference());
-                instance -> vm -> del_reference(instance -> self_reference());
-            }
             vm_module::release_instance<Instance>(instance);
         }
 
