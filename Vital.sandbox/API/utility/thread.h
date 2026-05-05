@@ -229,7 +229,7 @@ namespace Vital::Sandbox::API {
                     return 1 + n;
                 }
                 self -> awaiting = true;
-                promise_inst -> waiting.push_back({ self -> id });
+                promise_inst -> waiting.push_back(self -> id);
 
                 struct AwaitCTX { int base; int thread_id; };
                 auto actx = new AwaitCTX { vm -> get_count(), self -> id };

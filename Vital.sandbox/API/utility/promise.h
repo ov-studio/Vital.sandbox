@@ -26,11 +26,6 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "promise";
 
         enum class State { Pending, Resolved, Rejected };
-
-        struct WaitingThread {
-            int thread_instance_id = -1;
-        };
-
         struct Instance {
             int id {};
             std::string env;
@@ -38,16 +33,11 @@ namespace Vital::Sandbox::API {
             State state { State::Pending };
             Machine* vm = nullptr;
             void** userdata = nullptr;
-            std::vector<WaitingThread> waiting;
+            std::vector<int> waiting;
             bool resolved = false;
             int value_count = 0;
-
-            std::string reference() const {
-                return fmt::format("{}:{}", base_name, id);
-            }
-            std::string value_reference(int i) const {
-                return fmt::format("{}:{}:v:{}", base_name, id, i);
-            }
+            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
+            std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -101,13 +91,8 @@ namespace Vital::Sandbox::API {
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
             bool resolved_flag = instance -> resolved;
-            std::vector<int> thread_ids;
-            thread_ids.reserve(waiting.size());
-            for (auto& wt : waiting) {
-                if (wt.thread_instance_id >= 0) thread_ids.push_back(wt.thread_instance_id);
-            }
             if (!Promise::resume_dispatcher) return;
-            for (int tid : thread_ids) Promise::resume_dispatcher(tid, resolved_flag, instance);
+            for (int tid : waiting) Promise::resume_dispatcher(tid, resolved_flag, instance);
         }
 
         static std::shared_ptr<Instance> make(Machine* vm) {
