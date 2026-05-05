@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
 
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, self](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) { self -> destroy(); return; }
                     Machine* vm = promise -> vm;
                     try {
@@ -130,7 +130,7 @@ namespace Vital::Sandbox::API {
                 auto table = self -> table;
                 self -> destroy();
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
@@ -154,7 +154,7 @@ namespace Vital::Sandbox::API {
                 auto table = self -> table;
                 self -> destroy();
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
@@ -162,7 +162,8 @@ namespace Vital::Sandbox::API {
                         vm -> push_value(true);
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
-                    } catch (const std::runtime_error& error) {
+                    }
+                    catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
@@ -177,7 +178,7 @@ namespace Vital::Sandbox::API {
                 auto table = self -> table;
                 self -> destroy();
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
@@ -185,7 +186,8 @@ namespace Vital::Sandbox::API {
                         vm -> push_value(true);
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
-                    } catch (const std::runtime_error& error) {
+                    }
+                    catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
@@ -197,7 +199,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, self](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
+                    auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) { self -> destroy(); return; }
                     Machine* vm = promise -> vm;
                     try {
@@ -332,7 +334,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "define", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "define", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(table, schema)")
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
@@ -374,7 +376,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "table", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "table", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(2, &Machine::is_string);
 
