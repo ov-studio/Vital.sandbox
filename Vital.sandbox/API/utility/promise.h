@@ -31,18 +31,12 @@ namespace Vital::Sandbox::API {
             Rejected
         };
 
-        struct Instance {
-            int id {};
-            std::string env;
-            std::atomic<bool> destroyed { false };
+        struct Instance : vm_instance<Instance> {
+            using Owner = Promise;
             State state { State::Pending };
-            Machine* vm = nullptr;
-            void** userdata = nullptr;
             std::vector<int> waiting;
             bool resolved = false;
             int value_count = 0;
-            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
-            std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
             std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
         };
         inline static std::mutex mutex;
@@ -55,18 +49,11 @@ namespace Vital::Sandbox::API {
             resume_dispatcher = std::move(fn);
         }
 
-        static std::shared_ptr<Instance> fetch_instance(int id) {
-            return vm_module::find_instance<Instance>(mutex, buffer, id);
-        }
-    
         static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!vm_module::erase_instance<Instance>(mutex, buffer, instance)) return;
+            if (!Instance::erase(instance)) return;
             instance -> destroyed = true;
             instance -> waiting.clear();
-            if (instance -> vm) {
-                for (int i = 1; i <= instance -> value_count; ++i) instance -> vm -> del_reference(instance -> value_reference(i));
-            }
-            vm_module::release_instance<Instance>(instance);
+            Instance::release(instance);
         }
 
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
@@ -78,13 +65,13 @@ namespace Vital::Sandbox::API {
             }
             return instance -> value_count;
         }
-        
+
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!instance || instance -> destroyed || instance -> state != State::Pending || !vm) return;
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
             instance -> value_count = args_count;
-            for (int i = 0; i < args_count; ++i) vm -> set_reference(instance -> value_reference(i + 1), args_start + i);
+            for (int i = 0; i < args_count; ++i) instance -> set_ref(instance -> value_reference(i + 1), args_start + i);
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
             bool resolved_flag = instance -> resolved;
@@ -93,7 +80,7 @@ namespace Vital::Sandbox::API {
         }
 
         static std::shared_ptr<Instance> make(Machine* vm) {
-            auto instance = vm_module::make_instance<Instance>(mutex, buffer, next_id, vm);
+            auto instance = Instance::make(vm);
             vm -> create_object(base_name, instance.get());
             instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
             return instance;
@@ -103,7 +90,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Promise>(vm, base_name);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                auto instance = vm_module::make_instance<Instance>(mutex, buffer, next_id, vm);
+                auto instance = Instance::make(vm);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
@@ -114,7 +101,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                 if (self -> destroyed) { vm -> push_value(false); return 1; }
                 self -> destroyed = true;
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 if (instance) clean_instance(instance);
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
@@ -128,7 +115,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
                 if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
                 settle(instance, State::Resolved, vm, 2, vm -> get_count() - 1);
                 vm -> push_value(true);
@@ -137,7 +124,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
                 if (self -> destroyed || self -> state != State::Pending) { vm -> push_value(false); return 1; }
-                auto instance = fetch_instance(self -> id);
+                auto instance = Instance::find(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
                 settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
                 vm -> push_value(true);
