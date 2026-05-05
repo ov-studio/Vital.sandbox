@@ -50,12 +50,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!instance) return;
-            {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (buffer.find(instance -> id) == buffer.end()) return;
-                buffer.erase(instance -> id);
-            }
+            if (!vm_module::erase_instance<Instance>(mutex, buffer, instance)) return;
 
             instance -> destroyed = true;
             if (instance -> vm_owned.exchange(false)) {

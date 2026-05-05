@@ -227,6 +227,16 @@ namespace Vital::Sandbox {
             }
             for (auto& instance : to_clean) clean(instance);
         }
+
+        template<typename TInstance>
+        static bool erase_instance(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, std::shared_ptr<TInstance> instance) {
+            if (!instance) return false;
+            std::lock_guard<std::mutex> lock(mutex);
+            auto it = buffer.find(instance -> id);
+            if (it == buffer.end()) return false;
+            buffer.erase(it);
+            return true;
+        }
     };
 
     namespace API {
