@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
                 }
                 if (vm -> is_number(3)) timeout = vm -> get_int(3);
 
-                int promise_id = Promise::make(vm) -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, headers, timeout](Tool::Thread*) {
                     auto promise = Promise::fetch_instance(promise_id);
                     if (!promise || promise -> destroyed) return;
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
                 }
                 if (vm -> is_number(4)) timeout = vm -> get_int(4);
 
-                int promise_id = Promise::make(vm) -> id;
+                auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, body, headers, timeout](Tool::Thread*) {
                     auto promise = Promise::fetch_instance(promise_id);
                     if (!promise || promise -> destroyed) return;
