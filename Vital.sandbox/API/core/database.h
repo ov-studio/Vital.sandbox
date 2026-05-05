@@ -23,7 +23,7 @@
 ///////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct DatabaseQuery : vm_module {
+    struct Database_Query : vm_module {
         inline static const std::string base_name = "db_query";
         using base_class = Tool::Database::QueryBuilder;
 
@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            vm_module::register_type<DatabaseQuery>(vm, base_name);
+            vm_module::register_type<Database_Query>(vm, base_name);
         }
 
         static void methods(Machine* vm) {
@@ -382,7 +382,7 @@ namespace Vital::Sandbox::API {
 
                 auto name = vm -> get_string(2);
                 auto query = self -> table(name);
-                vm -> create_object(DatabaseQuery::base_name, query);
+                vm -> create_object(Database_Query::base_name, query);
                 return 1;
             });
         }
@@ -390,7 +390,7 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct DatabaseQuery : vm_module {};
+    struct Database_Query : vm_module {};
     struct Database : vm_module {};
 }
 #endif

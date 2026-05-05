@@ -50,7 +50,7 @@ namespace Vital::Sandbox {
     vm_apis Machine::internal_apis = {
         // TODO: Improve, move under 'API' namespace??
         vm_module::make_api<API::Engine>(),
-        vm_module::make_api<API::DatabaseQuery>(),
+        vm_module::make_api<API::Database_Query>(),
         vm_module::make_api<API::Database>(),
         vm_module::make_api<API::Discord>(),
         vm_module::make_api<API::Network>(),
