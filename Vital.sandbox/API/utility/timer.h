@@ -26,14 +26,8 @@ namespace Vital::Sandbox::API {
     struct Timer : vm_module {
         inline static const std::string base_name = "timer";
 
-        struct Instance {
-            int id;
-            std::string env;
-            std::atomic<bool> destroyed { false };
-            Machine* vm = nullptr;
-            void** userdata = nullptr;
-            std::string reference() const { return fmt::format("{}:{}", base_name, id); }
-            std::string self_reference() const { return fmt::format("{}:{}:self", base_name, id); }
+        struct Instance : vm_instance<Instance> {
+            using Owner = Timer;
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -45,8 +39,10 @@ namespace Vital::Sandbox::API {
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!vm_module::erase_instance<Instance>(mutex, buffer, instance)) return;
+            if (!Instance::erase(instance)) return;
             instance -> destroyed = true;
             vm_module::release_instance<Instance>(instance);
+            Instance::release(instance);
         }
 
         static void bind(Machine* vm) {
