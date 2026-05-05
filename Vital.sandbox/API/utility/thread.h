@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
 
             instance -> destroyed = true;
             if (instance -> vm_owned.exchange(false)) {
-                Machine* tvm = instance -> thread_vm;
+                auto tvm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;
                 if (tvm) delete tvm;
             }
@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
             if (!instance -> vm_owned.load()) return false;
             if (!instance -> thread_vm) return false;
             if (!instance -> vm) {
-                Machine* tvm = instance -> thread_vm;
+                auto tvm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;
                 instance -> vm_owned.store(false);
                 if (tvm) delete tvm;
@@ -115,7 +115,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_function);
 
                 auto instance = vm_module::init_instance<Instance>(next_id, vm);
-                Machine* thread_vm = vm -> create_thread();
+                auto thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
                 vm -> set_reference(instance -> reference(), 1);
                 vm -> pop(1);
