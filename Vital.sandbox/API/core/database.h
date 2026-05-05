@@ -386,6 +386,10 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         }
+
+        static void clean(const std::string& env) {
+            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+        }
     };
 }
 #else
