@@ -55,21 +55,33 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(limit = 0)")
+                    .optional(2, &Machine::is_number);
+
+                if (vm -> is_number(2)) self -> limit = vm -> get_int(2);
+
                 auto promise_id = Promise::make(vm) -> id;
-                auto db = self -> db;
-                auto table = self -> table;
-                self -> destroy();
-                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
+                Tool::Thread::create([promise_id, self](Tool::Thread*) {
                     auto promise = Promise::fetch_instance(promise_id);
-                    if (!promise || promise -> destroyed) return;
+                    if (!promise || promise -> destroyed) { self -> destroy(); return; }
                     Machine* vm = promise -> vm;
                     try {
-                        db -> drop(table);
-                        vm -> push_value(true);
+                        auto rows = self -> db -> fetch(self);
+                        self -> destroy();
+                        int index = 1;
+                        vm -> create_table();
+                        for (const auto& row : rows) {
+                            vm -> create_table();
+                            for (const auto& [column, cell] : row) {
+                                vm -> table_set_value(column, cell);
+                            }
+                            vm -> set_table_field(index++, -2);
+                        }
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
-                    } catch (const std::runtime_error& error) {
+                    }
+                    catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
@@ -77,30 +89,7 @@ namespace Vital::Sandbox::API {
                 }) -> detach();
                 return 1;
             });
-
-            vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self, auto& id) -> int {
-                auto promise_id = Promise::make(vm) -> id;
-                auto db = self -> db;
-                auto table = self -> table;
-                self -> destroy();
-                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
-                    auto promise = Promise::fetch_instance(promise_id);
-                    if (!promise || promise -> destroyed) return;
-                    Machine* vm = promise -> vm;
-                    try {
-                        db -> truncate(table);
-                        vm -> push_value(true);
-                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        vm -> pop(1);
-                    } catch (const std::runtime_error& error) {
-                        vm -> push_value(std::string(error.what()));
-                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        vm -> pop(1);
-                    }
-                }) -> detach();
-                return 1;
-            });
-
+            
             vm_module::bind_method<base_class>(vm, base_name, "alter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(actions)")
                     .require(2, &Machine::is_table);
@@ -159,33 +148,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "fetch", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(limit = 0)")
-                    .optional(2, &Machine::is_number);
-
-                if (vm -> is_number(2)) self -> limit = vm -> get_int(2);
-
+            vm_module::bind_method<base_class>(vm, base_name, "drop", [](auto vm, auto self, auto& id) -> int {
                 auto promise_id = Promise::make(vm) -> id;
-                Tool::Thread::create([promise_id, self](Tool::Thread*) {
+                auto db = self -> db;
+                auto table = self -> table;
+                self -> destroy();
+                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::fetch_instance(promise_id);
-                    if (!promise || promise -> destroyed) { self -> destroy(); return; }
+                    if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
-                        auto rows = self -> db -> fetch(self);
-                        self -> destroy();
-                        int index = 1;
-                        vm -> create_table();
-                        for (const auto& row : rows) {
-                            vm -> create_table();
-                            for (const auto& [column, cell] : row) {
-                                vm -> table_set_value(column, cell);
-                            }
-                            vm -> set_table_field(index++, -2);
-                        }
+                        db -> drop(table);
+                        vm -> push_value(true);
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
-                    }
-                    catch (const std::runtime_error& error) {
+                    } catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
@@ -194,7 +171,29 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // execute — async: resolves with bool result
+            vm_module::bind_method<base_class>(vm, base_name, "truncate", [](auto vm, auto self, auto& id) -> int {
+                auto promise_id = Promise::make(vm) -> id;
+                auto db = self -> db;
+                auto table = self -> table;
+                self -> destroy();
+                Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
+                    auto promise = Promise::fetch_instance(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    Machine* vm = promise -> vm;
+                    try {
+                        db -> truncate(table);
+                        vm -> push_value(true);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        vm -> pop(1);
+                    } catch (const std::runtime_error& error) {
+                        vm -> push_value(std::string(error.what()));
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        vm -> pop(1);
+                    }
+                }) -> detach();
+                return 1;
+            });
+
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, self](Tool::Thread*) {
@@ -217,7 +216,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Query builder methods — synchronous, return self for chaining
             vm_module::bind_method<base_class>(vm, base_name, "select", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(...)")
                     .require(2, &Machine::is_string);

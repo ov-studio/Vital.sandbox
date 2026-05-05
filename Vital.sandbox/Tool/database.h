@@ -203,45 +203,6 @@ namespace Vital::Tool {
                 return query;
             }
 
-            void drop(const std::string& table) {
-                assert_session_and_table(table);
-                *session << fmt::format("DROP TABLE IF EXISTS `{}`", table);
-                schema.erase(table);
-            }
-
-            void truncate(const std::string& table) {
-                assert_session_and_table(table);
-                *session << fmt::format("TRUNCATE TABLE `{}`", table);
-            }
-
-            void alter(const std::string& table, const SchemaActions& actions) {
-                assert_session_and_table(table);
-                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: no actions specified");
-
-                std::string sql = fmt::format("ALTER TABLE `{}` ", table);
-                bool first = true;
-                for (const auto& action : actions) {
-                    assert_identifier(action.column);
-                    if (!first) sql += ", ";
-                    first = false;
-                    switch (action.type) {
-                        case SchemaAction::Type::Add: sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
-                        case SchemaAction::Type::Drop: sql += fmt::format("DROP COLUMN `{}`", action.column); break;
-                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
-                    }
-                }
-                *session << sql;
-
-                auto& table_schema = schema[table];
-                for (const auto& action : actions) {
-                    switch (action.type) {
-                        case SchemaAction::Type::Add:
-                        case SchemaAction::Type::Modify: table_schema[action.column] = action.definition; break;
-                        case SchemaAction::Type::Drop: table_schema.erase(action.column); break;
-                    }
-                }
-            }
-
             Rows fetch(QueryBuilder* query) {
                 assert_session_and_table(query -> table);
                 std::string columns;
@@ -292,6 +253,45 @@ namespace Vital::Tool {
                 return rows;
             }
 
+            void alter(const std::string& table, const SchemaActions& actions) {
+                assert_session_and_table(table);
+                if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: no actions specified");
+
+                std::string sql = fmt::format("ALTER TABLE `{}` ", table);
+                bool first = true;
+                for (const auto& action : actions) {
+                    assert_identifier(action.column);
+                    if (!first) sql += ", ";
+                    first = false;
+                    switch (action.type) {
+                        case SchemaAction::Type::Add: sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
+                        case SchemaAction::Type::Drop: sql += fmt::format("DROP COLUMN `{}`", action.column); break;
+                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
+                    }
+                }
+                *session << sql;
+
+                auto& table_schema = schema[table];
+                for (const auto& action : actions) {
+                    switch (action.type) {
+                        case SchemaAction::Type::Add:
+                        case SchemaAction::Type::Modify: table_schema[action.column] = action.definition; break;
+                        case SchemaAction::Type::Drop: table_schema.erase(action.column); break;
+                    }
+                }
+            }
+
+            void drop(const std::string& table) {
+                assert_session_and_table(table);
+                *session << fmt::format("DROP TABLE IF EXISTS `{}`", table);
+                schema.erase(table);
+            }
+
+            void truncate(const std::string& table) {
+                assert_session_and_table(table);
+                *session << fmt::format("TRUNCATE TABLE `{}`", table);
+            }
+            
             bool execute(QueryBuilder* query) {
                 assert_session_and_table(query -> table);
                 std::string sql;
