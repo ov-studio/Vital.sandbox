@@ -246,17 +246,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            std::vector<std::shared_ptr<Instance>> to_clean;
-            {
-                std::lock_guard<std::mutex> lock(mutex);
-                for (auto& [id, instance] : buffer) {
-                    if (instance -> env == env) to_clean.push_back(instance);
-                }
-            }
-            for (auto& instance : to_clean) {
-                instance -> destroyed = true;
-                clean_instance(instance);
-            }
+            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance, true);
         }
     };
 }
