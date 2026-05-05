@@ -174,14 +174,13 @@ namespace Vital::Sandbox::API {
 
                 auto instance = Promise::make(vm);
                 int promise_id = instance->id;
-                // Transfer ownership of the query builder to the thread
-                auto query = std::shared_ptr<base_class>(self, [](base_class* q) { q->destroy(); });
-                Tool::Thread::create([promise_id, query](Tool::Thread*) {
+                Tool::Thread::create([promise_id, self](Tool::Thread*) {
                     auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance->destroyed) return;
+                    if (!instance || instance->destroyed) { self->destroy(); return; }
                     Machine* vm = instance->vm;
                     try {
-                        auto rows = query->db->fetch(query.get());
+                        auto rows = self->db->fetch(self);
+                        self->destroy();
                         int index = 1;
                         vm->create_table();
                         for (const auto& row : rows) {
@@ -206,13 +205,13 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<base_class>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto instance = Promise::make(vm);
                 int promise_id = instance->id;
-                auto query = std::shared_ptr<base_class>(self, [](base_class* q) { q->destroy(); });
-                Tool::Thread::create([promise_id, query](Tool::Thread*) {
+                Tool::Thread::create([promise_id, self](Tool::Thread*) {
                     auto instance = Promise::fetch_instance(promise_id);
-                    if (!instance || instance->destroyed) return;
+                    if (!instance || instance->destroyed) { self->destroy(); return; }
                     Machine* vm = instance->vm;
                     try {
-                        bool result = query->db->execute(query.get());
+                        bool result = self->db->execute(self);
+                        self->destroy();
                         vm->push_value(result);
                         Promise::settle(instance, Promise::State::Resolved, vm, vm->get_count(), 1);
                         vm->pop(1);
