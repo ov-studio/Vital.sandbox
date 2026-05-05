@@ -265,8 +265,10 @@ namespace Vital::Sandbox::API {
                     if (instance->env == env) to_clean.push_back(instance);
                 }
             }
-            for (auto& instance : to_clean) instance->destroyed = true;
-            for (auto& instance : to_clean) clean_instance(instance);
+            for (auto& instance : to_clean) {
+                instance -> destroyed = true;
+                clean_instance(instance);
+            }
         }
     };
 }
