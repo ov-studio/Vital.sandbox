@@ -298,7 +298,7 @@ namespace Vital::Sandbox {
             static int destroy(Machine* vm) {
                 auto ud = vm_module::get_userdata_ptr(vm, 1);
                 if (ud && *ud) {
-                    auto instance = Derived::find((*ud) -> id);
+                    auto instance = Derived::find(static_cast<Derived*>(*ud) -> id);
                     if (instance) Derived::Owner::clean_instance(instance);
                 }
                 vm_module::release_userdata(vm, 1);
