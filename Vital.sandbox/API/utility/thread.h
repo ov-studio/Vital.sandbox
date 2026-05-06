@@ -49,9 +49,7 @@ namespace Vital::Sandbox::API {
         }
 
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
-            if (!instance || instance -> destroyed) return false;
-            if (!instance -> vm_owned.load()) return false;
-            if (!instance -> thread_vm) return false;
+            if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
             if (!instance -> vm) {
                 auto tvm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;
@@ -88,10 +86,7 @@ namespace Vital::Sandbox::API {
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
                 auto instance = Instance::find(thread_id);
-                if (!instance || instance -> destroyed) return;
-                if (!instance -> vm_owned.load()) return;
-                if (!instance -> thread_vm) return;
-                
+                if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;                
                 instance -> thread_vm -> push_bool(resolved);
                 int value_count = Promise::push_values(promise, instance -> thread_vm);
                 instance -> awaiting = false;
@@ -118,15 +113,17 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> thread_vm || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
-                auto instance = Instance::find(self -> id);
-                if (!instance) { vm -> push_value(false); return 1; }
-                self -> vm -> get_reference(self -> reference(), true);
-                self -> vm -> move(self -> thread_vm, 1);
-                self -> vm -> get_reference(self -> self_reference(), true);
-                self -> vm -> move(self -> thread_vm, 1);
-                safe_resume(instance, 1);
-                vm -> push_value(true);
+                if (!self -> thread_vm || self -> sleeping || self -> awaiting) vm -> push_value(false);
+                else {
+                    auto instance = Instance::find(self -> id);
+                    if (!instance) { vm -> push_value(false); return 1; }
+                    self -> vm -> get_reference(self -> reference(), true);
+                    self -> vm -> move(self -> thread_vm, 1);
+                    self -> vm -> get_reference(self -> self_reference(), true);
+                    self -> vm -> move(self -> thread_vm, 1);
+                    safe_resume(instance, 1);
+                    vm -> push_value(true);
+                }
                 return 1;
             });
 
@@ -134,9 +131,10 @@ namespace Vital::Sandbox::API {
                 return Instance::destroy(vm);
             });
 
+            // TODO: SHOULD RETRIEVE RUNNING THREAD INSTEAD call it running
             vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> thread_vm) { vm -> push_value(false); return 1; }
-                vm -> push_value(self -> thread_vm -> get_state() == vm -> get_state());
+                if (!self -> thread_vm) vm -> push_value(false);
+                else vm -> push_value(self -> thread_vm -> get_state() == vm -> get_state());
                 return 1;
             });
 
