@@ -254,6 +254,9 @@ namespace Vital::Sandbox {
                     auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                     auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
                     if (!ud || !*ud) throw_destroyed();
+                    auto self = static_cast<T*>(*ud);
+                    if (self -> destroyed) throw_destroyed();
+                    return (*fn)(vm, self, *id);
                 });
             }, 3);
             lua_setfield(vm -> get_state(), -2, name.c_str());
