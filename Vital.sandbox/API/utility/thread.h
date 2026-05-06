@@ -172,21 +172,20 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
                     .require(2, [](Machine* vm, int index) { return vm_module::is_userdata(vm, Promise::base_name, index); });
-
+            
                 if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
-                // TODO: BETTER HELPER???
-                auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
-                if (!ud || !*ud) { vm -> push_value(false); return 1; }
-                auto promise = Promise::Instance::find((*ud) -> id);
+                auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
+                if (!promise) { vm -> push_value(false); return 1; }
+                auto promise = Promise::Instance::find(promise -> id);
                 if (!promise || promise -> destroyed) { vm -> push_value(false); return 1; }
-
+            
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + Promise::push_values(promise, vm);
                 }
                 self -> awaiting = true;
                 promise -> waiting.push_back(self -> id);
-
+            
                 struct AwaitCTX { int base; int thread_id; };
                 auto actx = new AwaitCTX { vm -> get_count(), self -> id };
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);

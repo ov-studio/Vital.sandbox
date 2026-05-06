@@ -203,6 +203,12 @@ namespace Vital::Sandbox {
             return name ? name : "";
         }
 
+        template<typename T>
+        static T* get_userdata_object(Machine* vm, int index = 1) {
+            auto ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
+            return (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
+        }
+
         template<typename T = void>
         static void** get_userdata_ptr(Machine* vm, int index = 1) {
             return static_cast<void**>(lua_touserdata(vm -> get_state(), index));
