@@ -107,20 +107,18 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
-                auto instance = Instance::find(self -> id);
-                if (!instance || self -> state != State::Pending) vm -> push_value(false);
+                if (self -> state != State::Pending) vm -> push_value(false);
                 else {
-                    settle(instance, State::Resolved, vm, 2, vm -> get_count() - 1);
+                    settle(self, State::Resolved, vm, 2, vm -> get_count() - 1);
                     vm -> push_value(true);
                 }
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
-                auto instance = Instance::find(self -> id);
-                if (!instance || self -> state != State::Pending) vm -> push_value(false);
+                if (self -> state != State::Pending) vm -> push_value(false);
                 else {
-                    settle(instance, State::Rejected, vm, 2, vm -> get_count() - 1);
+                    settle(self, State::Rejected, vm, 2, vm -> get_count() - 1);
                     vm -> push_value(true);
                 }
                 return 1;
