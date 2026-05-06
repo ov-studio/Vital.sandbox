@@ -138,6 +138,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // TODO: FROM HERE EDIT CONDTNL BLOCKS
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (!vm -> is_virtual()) { 
                     vm -> push_value(false); 
@@ -185,6 +186,7 @@ namespace Vital::Sandbox::API {
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise = Promise::Instance::find((*ud) -> id);
                 if (!promise) { vm -> push_value(false); return 1; }
+
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + Promise::push_values(promise, vm);
