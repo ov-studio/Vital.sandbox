@@ -79,7 +79,6 @@ namespace Vital::Sandbox::API {
                     .optional(2, &Machine::is_number);
 
                 if (vm -> is_number(2)) self -> query -> limit = vm -> get_int(2);
-
                 auto instance_id = self -> id;
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
@@ -87,6 +86,7 @@ namespace Vital::Sandbox::API {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) { if (instance) clean_instance(instance); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
+
                     Machine* vm = promise -> vm;
                     try {
                         auto rows = instance -> query -> db -> fetch(instance -> query);
@@ -156,6 +156,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
+                    
                     Machine* vm = promise -> vm;
                     try {
                         db -> alter(table, actions);
