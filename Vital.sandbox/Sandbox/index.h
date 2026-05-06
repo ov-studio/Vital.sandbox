@@ -181,6 +181,10 @@ namespace Vital::Sandbox {
                 vm -> push_value(type_name.empty() ? false : type_name);
                 return 1;
             });
+
+            bind_method<TInstance>(vm, type_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                return TInstance::destroy(vm);
+            });
         }
 
         template<typename T = void>

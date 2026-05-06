@@ -125,10 +125,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                return Instance::destroy(vm);
-            });
-
             // TODO: SHOULD RETRIEVE RUNNING THREAD INSTEAD call it running
             vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id) -> int {
                 if (!self -> thread_vm) vm -> push_value(false);
