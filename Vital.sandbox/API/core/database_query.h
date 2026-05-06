@@ -147,8 +147,7 @@ namespace Vital::Sandbox::API {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                auto instance = Instance::find(instance_id);
-                if (instance) clean_instance(instance);
+                clean_instance(Instance::find(instance_id));
 
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -174,8 +173,7 @@ namespace Vital::Sandbox::API {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                auto instance = Instance::find(instance_id);
-                if (instance) clean_instance(instance);
+                clean_instance(Instance::find(instance_id));
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -201,8 +199,7 @@ namespace Vital::Sandbox::API {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                auto instance = Instance::find(instance_id);
-                if (instance) clean_instance(instance);
+                clean_instance(Instance::find(instance_id));
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -226,7 +223,6 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto instance_id = self -> id;
                 auto promise_id = Promise::make(vm) -> id;
-                
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     auto promise = Promise::Instance::find(promise_id);
