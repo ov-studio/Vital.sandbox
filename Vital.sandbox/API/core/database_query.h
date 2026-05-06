@@ -95,6 +95,7 @@ namespace Vital::Sandbox::API {
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
+                        clean_instance(instance);
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
@@ -138,11 +139,10 @@ namespace Vital::Sandbox::API {
                 vm -> pop(1);
                 if (actions.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: no actions specified");
 
-                auto instance_id = self -> id;
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                clean_instance(Instance::find(instance_id));
+                clean_instance(self);
 
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -164,11 +164,10 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "drop", [](auto vm, auto self, auto& id) -> int {
-                auto instance_id = self -> id;
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                clean_instance(Instance::find(instance_id));
+                clean_instance(self);
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -190,11 +189,10 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "truncate", [](auto vm, auto self, auto& id) -> int {
-                auto instance_id = self -> id;
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                clean_instance(Instance::find(instance_id));
+                clean_instance(self);
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -227,12 +225,13 @@ namespace Vital::Sandbox::API {
                     auto vm = promise -> vm;
                     try {
                         bool result = instance -> query -> db -> execute(instance -> query);
-                        clean_instance(instance); // TODO: WBT REJECT??
+                        clean_instance(instance);
                         vm -> push_value(result);
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
+                        clean_instance(instance);
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
