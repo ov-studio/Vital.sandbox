@@ -148,13 +148,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // TODO: SHOULD RETRIEVE RUNNING THREAD INSTEAD call it running
-            vm_module::bind_method<Instance>(vm, base_name, "get_thread", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> thread_vm) vm -> push_value(false);
-                else vm -> push_value(self -> thread_vm -> get_state() == vm -> get_state());
-                return 1;
-            });
-
             // TODO: FROM HERE EDIT CONDTNL BLOCKS
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
