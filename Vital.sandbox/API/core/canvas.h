@@ -127,7 +127,7 @@ namespace Vital::Sandbox::API {
                             || vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, "rendertarget", index)
                             || vm_module::is_userdata<Vital::Engine::Texture>(vm, "svg", index);
                     });
-
+            
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
                 auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
