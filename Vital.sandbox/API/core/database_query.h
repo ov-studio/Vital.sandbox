@@ -37,7 +37,6 @@ namespace Vital::Sandbox::API {
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
-            instance -> destroyed = true;
             if (instance -> query) {
                 instance -> query -> destroy();
                 instance -> query = nullptr;

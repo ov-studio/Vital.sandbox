@@ -39,7 +39,6 @@ namespace Vital::Sandbox::API {
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
-            instance -> destroyed = true;
             if (instance -> vm_owned.exchange(false)) {
                 auto tvm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;

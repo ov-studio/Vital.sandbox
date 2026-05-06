@@ -312,6 +312,7 @@ namespace Vital::Sandbox {
                 auto it = Derived::Owner::buffer.find(instance -> id);
                 if (it == Derived::Owner::buffer.end()) return false;
                 Derived::Owner::buffer.erase(it);
+                instance -> destroyed = true;
                 return true;
             }
 
