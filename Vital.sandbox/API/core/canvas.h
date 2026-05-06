@@ -152,7 +152,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
+            
             API::bind(vm, {base_name}, "draw_text", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(text, start_at, end_at, font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot)")
                     .require(1, &Machine::is_string)
@@ -160,11 +160,11 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_vector2)
                     .require(4, [](Machine* vm, int index) { return vm_module::is_userdata<Vital::Engine::Font>(vm, "font", index); })
                     .require(5, &Machine::is_number);
-
+            
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);
-                auto font = static_cast<Vital::Engine::Font*>(vm -> get_userdata(4));
+                auto font = vm_module::get_userdata_object<Vital::Engine::Font>(vm, 4);
                 auto font_size = vm -> get_int(5);
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
