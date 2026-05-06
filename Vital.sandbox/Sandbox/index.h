@@ -206,18 +206,16 @@ namespace Vital::Sandbox {
         }
 
         template<typename T>
-        static std::shared_ptr<T> get_userdata_object(Machine* vm, int index = 1) {
-            auto ud = get_userdata_ptr(vm, index);
-            auto raw = (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
-            if (!raw) return nullptr;
-            return T::find(raw -> id);
+        static T* get_userdata_object(Machine* vm, int index = 1) {
+            auto ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
+            return (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
         }
 
         template<typename T = void>
         static void** get_userdata_ptr(Machine* vm, int index = 1) {
             return static_cast<void**>(lua_touserdata(vm -> get_state(), index));
         }
-    
+
         template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
             auto ud = get_userdata_ptr(vm, index);
@@ -230,7 +228,7 @@ namespace Vital::Sandbox {
             *userdata = nullptr;
             userdata  = nullptr;
         }
-    
+
         template<typename TInstance>
         static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
             std::vector<std::shared_ptr<TInstance>> to_clean;

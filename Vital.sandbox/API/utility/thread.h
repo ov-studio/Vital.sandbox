@@ -171,10 +171,13 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
-                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata(vm, Promise::base_name, index); });
+                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, Promise::base_name, index); });
 
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
-                auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
+                auto promise_rw = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise_rw) { vm -> push_value(false); return 1; }
+                auto promise = Promise::Instance::find(promise_rw -> id); // TODO: NMEEDED?
+                if (!promise || promise -> destroyed) { vm -> push_value(false); return 1; }
+            
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + Promise::push_values(promise, vm);
