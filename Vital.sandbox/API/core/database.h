@@ -132,11 +132,9 @@ namespace Vital::Sandbox::API {
                 else {
                     auto db = self -> db;
                     auto promise_id = Promise::make(vm) -> id;
-                    
                     Tool::Thread::create([promise_id, db](Tool::Thread*) {
                         auto promise = Promise::Instance::find(promise_id);
                         if (!promise || promise -> destroyed) return;
-
                         auto vm = promise -> vm;
                         try {
                             db -> sync();
