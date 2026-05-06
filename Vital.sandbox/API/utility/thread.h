@@ -182,7 +182,7 @@ namespace Vital::Sandbox::API {
                 auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise = Promise::Instance::find((*ud) -> id);
-                if (!promise) { vm -> push_value(false); return 1; }
+                if (!promise || promise -> destroyed) { vm -> push_value(false); return 1; }
 
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
@@ -196,8 +196,8 @@ namespace Vital::Sandbox::API {
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
                 return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
                     auto actx = reinterpret_cast<AwaitCTX*>(ctx);
-                    auto instance = Instance::find(actx -> thread_id);
-                    if (instance) instance -> awaiting = false;
+                    auto self = Instance::find(actx -> thread_id);
+                    if (self) self -> awaiting = false;
                     int n = lua_gettop(L) - actx -> base;
                     delete actx;
                     return n > 0 ? n : 0;
