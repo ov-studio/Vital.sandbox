@@ -99,8 +99,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_connected", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> db) vm -> push_value(false);
-                else vm -> push_value(self -> db -> is_connected());
+                vm -> push_value(self -> db -> is_connected());
                 return 1;
             });
 
@@ -109,46 +108,40 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
 
-                if (!self -> db) vm -> push_value(false);
-                else {
-                    auto state = vm -> get_state();
-                    auto table = vm -> get_string(2);
-                    base_class::TableSchema columns;
-                    vm -> push_nil();
-                    while (lua_next(state, 3)) {
-                        if (!vm -> is_string(-2) || !vm -> is_table(-1)) { vm -> pop(1); continue; }
-                        auto column = vm -> get_string(-2);
-                        columns[column] = read_schema_definition(vm, vm -> get_count());
-                        vm -> pop(1);
-                    }
-                    self -> db -> define(table, columns);
-                    vm -> push_value(true);
+                auto state = vm -> get_state();
+                auto table = vm -> get_string(2);
+                base_class::TableSchema columns;
+                vm -> push_nil();
+                while (lua_next(state, 3)) {
+                    if (!vm -> is_string(-2) || !vm -> is_table(-1)) { vm -> pop(1); continue; }
+                    auto column = vm -> get_string(-2);
+                    columns[column] = read_schema_definition(vm, vm -> get_count());
+                    vm -> pop(1);
                 }
+                self -> db -> define(table, columns);
+                vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> db) vm -> push_value(false);
-                else {
-                    auto db = self -> db;
-                    auto promise_id = Promise::make(vm) -> id;
-                    Tool::Thread::create([promise_id, db](Tool::Thread*) {
-                        auto promise = Promise::Instance::find(promise_id);
-                        if (!promise || promise -> destroyed) return;
-                        auto vm = promise -> vm;
-                        try {
-                            db -> sync();
-                            vm -> push_value(true);
-                            Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
-                        }
-                        catch (const std::runtime_error& error) {
-                            vm -> push_value(std::string(error.what()));
-                            Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
-                        }
-                    }) -> detach();
-                }
+                auto db = self -> db;
+                auto promise_id = Promise::make(vm) -> id;
+                Tool::Thread::create([promise_id, db](Tool::Thread*) {
+                    auto promise = Promise::Instance::find(promise_id);
+                    if (!promise || promise -> destroyed) return;
+                    auto vm = promise -> vm;
+                    try {
+                        db -> sync();
+                        vm -> push_value(true);
+                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        vm -> pop(1);
+                    }
+                    catch (const std::runtime_error& error) {
+                        vm -> push_value(std::string(error.what()));
+                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        vm -> pop(1);
+                    }
+                }) -> detach();
                 return 1;
             });
 
@@ -156,16 +149,13 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(2, &Machine::is_string);
 
-                if (!self -> db) vm -> push_value(false);
-                else {
-                    auto name = vm -> get_string(2);
-                    auto instance = Database_Query::Instance::init(vm);
-                    instance -> query = self -> db -> table(name);
-                    Database_Query::Instance::store(instance);
-                    vm -> create_object(Database_Query::base_name, instance.get());
-                    instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                    instance -> set_ref(instance -> self_reference(), -1);
-                }
+                auto name = vm -> get_string(2);
+                auto instance = Database_Query::Instance::init(vm);
+                instance -> query = self -> db -> table(name);
+                Database_Query::Instance::store(instance);
+                vm -> create_object(Database_Query::base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                instance -> set_ref(instance -> self_reference(), -1);
                 return 1;
             });
         }
