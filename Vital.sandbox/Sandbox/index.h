@@ -111,6 +111,11 @@ namespace Vital::Sandbox {
             }
     };
 
+    template<typename T, typename = void>
+    struct has_destroyed : std::false_type {};
+    template<typename T>
+    struct has_destroyed<T, std::void_t<decltype(std::declval<T>().destroyed)>> : std::true_type {};
+
     struct vm_module {
         static void bind(Machine* vm) {}
         static void methods(Machine* vm) {}
@@ -161,7 +166,9 @@ namespace Vital::Sandbox {
                     auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
                     if (!ud || !*ud) throw_destroyed();
                     auto self = static_cast<T*>(*ud);
-                    if (self -> destroyed) throw_destroyed();
+                    if constexpr (has_destroyed<T>::value) {
+                        if (self -> destroyed) throw_destroyed();
+                    }
                     return (*fn)(vm, self, *id);
                 });
             }, 3);
@@ -217,7 +224,7 @@ namespace Vital::Sandbox {
             *userdata = nullptr;
             userdata  = nullptr;
         }
-
+        
         template<typename TInstance>
         static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
             std::vector<std::shared_ptr<TInstance>> to_clean;
