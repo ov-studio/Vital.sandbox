@@ -111,12 +111,6 @@ namespace Vital::Sandbox {
             }
     };
 
-    // TODO: Remove this check when all lua modules are adapted to `vm_instance`
-    template<typename T, typename = void>
-    struct has_destroyed : std::false_type {};
-    template<typename T>
-    struct has_destroyed<T, std::void_t<decltype(std::declval<T>().destroyed)>> : std::true_type {};
-
     struct vm_module {
         static void bind(Machine* vm) {}
         static void methods(Machine* vm) {}
@@ -149,16 +143,16 @@ namespace Vital::Sandbox {
         }
 
         template<typename T>
-        static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, T*, const std::string&)> exec) {
+        static void bind_method(Machine* vm, const std::string& type_name, const std::string& name, std::function<int(Machine*, std::shared_ptr<T>, const std::string&)> exec) {
             // TODO: These needs to be freed when changing server freeing core // Anisa
-            auto heap_exec = new std::function<int(Machine*, T*, const std::string&)>(std::move(exec));
+            auto heap_exec = new std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>(std::move(exec));
             auto heap_type = new std::string(type_name);
             auto heap_id = new std::string(type_name + ":" + name);
             lua_pushlightuserdata(vm -> get_state(), heap_exec);
             lua_pushlightuserdata(vm -> get_state(), heap_type);
             lua_pushlightuserdata(vm -> get_state(), heap_id);
             lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
-                auto fn = static_cast<std::function<int(Machine*, T*, const std::string&)>*>(lua_touserdata(state, lua_upvalueindex(1)));
+                auto fn = static_cast<std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>*>(lua_touserdata(state, lua_upvalueindex(1)));
                 auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
                 auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
                 auto vm = Machine::fetch_machine(state);
@@ -166,10 +160,10 @@ namespace Vital::Sandbox {
                     auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                     auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
                     if (!ud || !*ud) throw_destroyed();
-                    auto self = static_cast<T*>(*ud);
-                    if constexpr (has_destroyed<T>::value) { // TODO: Remove this check when all lua modules are adapted to `vm_instance`
-                        if (self -> destroyed) throw_destroyed();
-                    }
+                    auto raw = static_cast<T*>(*ud);
+                    if (raw -> destroyed) throw_destroyed();
+                    auto self = T::find(raw -> id);
+                    if (!self) throw_destroyed();
                     return (*fn)(vm, self, *id);
                 });
             }, 3);
@@ -225,7 +219,7 @@ namespace Vital::Sandbox {
             *userdata = nullptr;
             userdata  = nullptr;
         }
-        
+
         template<typename TInstance>
         static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
             std::vector<std::shared_ptr<TInstance>> to_clean;
