@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/crypto.h>
-#include <Vital.sandbox/Tool/rest.h>
+#include <Vital.sandbox/Tool/http.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -166,7 +166,7 @@ namespace Vital::Manager::Kit {
     inline std::tuple<std::string, std::string, std::string> fetch_release() {
         std::tuple<std::string, std::string, std::string> result;
         std::string response;
-        try { response = Tool::Rest::get(std::string(Internal::toolkit_src)); }
+        try { response = Tool::HTTP::get(std::string(Internal::toolkit_src)); }
         catch (...) {}
         if (!response.empty()) {
             rapidjson::Document doc;
@@ -192,7 +192,7 @@ namespace Vital::Manager::Kit {
         rapidjson::Document doc;
         if (checksum_url.empty()) return doc;
         std::string data;
-        try { data = Tool::Rest::get(checksum_url); }
+        try { data = Tool::HTTP::get(checksum_url); }
         catch (...) {}
         if (!data.empty()) {
             checksum_hash = Tool::Crypto::hash("SHA256", data);

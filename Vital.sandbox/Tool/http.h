@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Tool: rest.h
+     Script: Tool: http.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Rest Tools
+     Desc: HTTP Tools
  ----------------------------------------------------------------*/
 
 
@@ -18,10 +18,10 @@
 
 
 ////////////////////////
-// Vital: Tool: Rest //
+// Vital: Tool: HTTP //
 ////////////////////////
 
-namespace Vital::Tool::Rest {
+namespace Vital::Tool::HTTP {
     using rest_headers = std::vector<std::string>;
 
     inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int timeout = 30, bool follow_redirects = true) {

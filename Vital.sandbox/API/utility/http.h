@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: utility: rest.h
+     Script: API: utility: http.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Rest APIs
+     Desc: HTTP APIs
 ----------------------------------------------------------------*/
 
 
@@ -18,12 +18,12 @@
 
 
 ///////////////////////
-// Vital: API: Rest //
+// Vital: API: HTTP //
 ///////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Rest : public vm_module {
-        inline static const std::string base_name = "rest";
+    struct HTTP : public vm_module {
+        inline static const std::string base_name = "http";
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "get", [](auto vm, auto& id) -> int {
@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto url = vm -> get_string(1);
-                Tool::Rest::rest_headers headers = {};
+                Tool::HTTP::rest_headers headers = {};
                 int timeout = 60;
                 if (vm -> is_table(2)) {
                     for (int i = 1; i <= vm -> get_length(2); i++) {
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
-                        vm -> push_value(Tool::Rest::get(url, headers, timeout));
+                        vm -> push_value(Tool::HTTP::get(url, headers, timeout));
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
 
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
-                Tool::Rest::rest_headers headers = {};
+                Tool::HTTP::rest_headers headers = {};
                 int timeout = 60;
                 if (vm -> is_table(3)) {
                     for (int i = 1; i <= vm -> get_length(3); i++) {
@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                     if (!promise || promise -> destroyed) return;
                     Machine* vm = promise -> vm;
                     try {
-                        vm -> push_value(Tool::Rest::post(url, body, headers, timeout));
+                        vm -> push_value(Tool::HTTP::post(url, body, headers, timeout));
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }

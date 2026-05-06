@@ -29,7 +29,7 @@ namespace Vital::Manager::Kit {
 
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
-        try { data = Tool::Rest::get(url, {}, 120); }
+        try { data = Tool::HTTP::get(url, {}, 120); }
         catch (const std::exception& e) { log(fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
         if (data.empty()) return false;
         std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());

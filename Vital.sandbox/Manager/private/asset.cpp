@@ -375,7 +375,7 @@ namespace Vital::Manager {
 
         dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             std::string response_body;
-            try { response_body = Tool::Rest::get(base_url + "/asset?path=" + path, {}, 60, true, &dl->cancelled); }
+            try { response_body = Tool::HTTP::get(base_url + "/asset?path=" + path, {}, 60, true, &dl->cancelled); }
             catch (const std::exception& e) {
                 Tool::print("error", fmt::format("Asset: download failed — {}\n│ reason: {}", path, e.what()));
                 _on_download_failed(path);
