@@ -82,7 +82,6 @@ namespace Vital::Sandbox::API {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) { if (instance) clean_instance(instance); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
-                    
                     auto vm = promise -> vm;
                     try {
                         auto rows = instance -> query -> db -> fetch(instance -> query);
