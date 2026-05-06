@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     auto promise = Promise::Instance::find(promise_id);
-                    if (!promise || promise -> destroyed) { if (instance) clean_instance(instance); return; }
+                    if (!promise || promise -> destroyed) { clean_instance(instance); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
                     auto vm = promise -> vm;
                     try {
