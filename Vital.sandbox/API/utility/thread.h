@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> thread_vm || self -> sleeping || self -> awaiting) vm -> push_value(false);
+                if (self -> sleeping || self -> awaiting) vm -> push_value(false);
                 else {
                     self -> vm -> get_reference(self -> reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
