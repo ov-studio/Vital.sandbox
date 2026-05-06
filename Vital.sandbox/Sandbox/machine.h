@@ -62,12 +62,12 @@ namespace Vital::Sandbox {
         private:
             bool virtualized = false;
             vm_state* state = nullptr;
+            Machine* parent = nullptr;
+            std::unordered_set<Machine*> children = {};
             vm_refs reference = {};
             vm_apis external_apis = {};
-
         public:
-            Machine(vm_apis apis = {}) : external_apis(std::move(apis)) {
-                state = luaL_newstate();
+            Machine(vm_apis apis = {}) : state(luaL_newstate()), external_apis(std::move(apis)) {
                 machines.emplace(state, this);
                 for (auto& value : whitelist) {
                     luaL_requiref(state, value.name, value.func, 1);
@@ -84,15 +84,26 @@ namespace Vital::Sandbox {
                 hook("inject");
             }
 
-            Machine(vm_state* thread) {
-                state = thread;
-                virtualized = true;
+            Machine(vm_state* thread, Machine* parent) : state(thread), virtualized(true), parent(parent) {
                 machines.emplace(state, this);
             }
 
             ~Machine() {
                 if (!state) return;
-                if (!virtualized) lua_close(state);
+                if (!virtualized) {
+                    for (auto* child : children) {
+                        child -> parent = nullptr;
+                        machines.erase(child -> state);
+                        child -> state = nullptr;
+                        delete child;
+                    }
+                    children.clear();
+                    lua_close(state);
+                }
+                else if (parent) {
+                    parent -> children.erase(this);
+                    parent = nullptr;
+                }
                 machines.erase(state);
                 state = nullptr;
             }
@@ -331,7 +342,9 @@ namespace Vital::Sandbox {
                 *userdata = value;
             }
             Machine* create_thread() {
-                return new Machine(lua_newthread(state));
+                auto* thread = new Machine(lua_newthread(state), this);
+                children.emplace(thread);
+                return thread;
             }
 
 
