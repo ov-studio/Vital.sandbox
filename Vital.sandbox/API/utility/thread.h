@@ -39,7 +39,6 @@ namespace Vital::Sandbox::API {
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
-
             instance -> destroyed = true;
             if (instance -> vm_owned.exchange(false)) {
                 auto tvm = instance -> thread_vm;
@@ -90,10 +89,7 @@ namespace Vital::Sandbox::API {
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
                 auto instance = Instance::find(thread_id);
-                if (!instance || instance -> destroyed) return;
-                if (!instance -> vm_owned.load()) return;
-                if (!instance -> thread_vm) return;
-
+                if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
                 instance -> thread_vm -> push_bool(resolved);
                 int value_count = Promise::push_values(promise, instance -> thread_vm);
                 instance -> awaiting = false;
@@ -120,12 +116,9 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
-                if (!self -> thread_vm || self -> sleeping || self -> awaiting) {
-                    vm -> push_value(false); return 1;
-                }
+                if (!self -> thread_vm || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
                 auto instance = Instance::find(self -> id);
                 if (!instance) { vm -> push_value(false); return 1; }
-
                 self -> vm -> get_reference(self -> reference(), true);
                 self -> vm -> move(self -> thread_vm, 1);
                 self -> vm -> get_reference(self -> self_reference(), true);
@@ -160,7 +153,6 @@ namespace Vital::Sandbox::API {
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
                 if (self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
-
                 int duration = vm -> get_int(2);
                 self -> sleeping = true;
                 auto instance = Instance::find(self -> id);
@@ -183,12 +175,10 @@ namespace Vital::Sandbox::API {
 
                 if (self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
                 if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
-
                 auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise = Promise::Instance::find((*ud) -> id);
                 if (!promise) { vm -> push_value(false); return 1; }
-
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + Promise::push_values(promise, vm);
