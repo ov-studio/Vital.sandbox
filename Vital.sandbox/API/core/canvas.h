@@ -133,22 +133,10 @@ namespace Vital::Sandbox::API {
                 auto rotation = vm -> is_number(4) ? vm -> get_float(4) : 0.0f;
                 auto pivot = vm -> is_vector2(5) ? vm -> get_vector2(5) : godot::Vector2{0.0f, 0.0f};
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
-                if (vm -> is_string(3)) {
-                    auto path = vm -> get_string(3);
-                    base_class::get_singleton() -> draw_image(position, size, path, rotation, pivot, color);
-                }
-                else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "texture", 3)) {
-                    auto texture = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
-                    base_class::get_singleton() -> draw_image(position, size, texture, rotation, pivot, color);
-                }
-                else if (vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, "rendertarget", 3)) {
-                    auto rt = static_cast<Vital::Engine::Rendertarget*>(vm -> get_userdata(3));
-                    base_class::get_singleton() -> draw_image(position, size, rt, rotation, pivot, color);
-                }
-                else {
-                    auto svg = static_cast<Vital::Engine::Texture*>(vm -> get_userdata(3));
-                    base_class::get_singleton() -> draw_image(position, size, svg, rotation, pivot, color);
-                }
+                if (vm -> is_string(3)) base_class::get_singleton() -> draw_image(position, size, vm -> get_string(3), rotation, pivot, color);
+                else if (vm_module::is_userdata<Vital::Engine::Texture>(vm, "texture", 3)) base_class::get_singleton() -> draw_image(position, size, vm_module::get_userdata_object<Vital::Engine::Texture>(vm, 3), rotation, pivot, color);
+                else if (vm_module::is_userdata<Vital::Engine::Rendertarget>(vm, "rendertarget", 3)) base_class::get_singleton() -> draw_image(position, size, vm_module::get_userdata_object<Vital::Engine::Rendertarget>(vm, 3), rotation, pivot, color);
+                else base_class::get_singleton() -> draw_image(position, size, vm_module::get_userdata_object<Vital::Engine::Texture>(vm, 3), rotation, pivot, color);
                 vm -> push_value(true);
                 return 1;
             });
