@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/API/core/engine.h>
 #include <Vital.sandbox/API/core/database.h>
+#include <Vital.sandbox/API/core/database_query.h>
 #include <Vital.sandbox/API/core/discord.h>
 #include <Vital.sandbox/API/core/network.h>
 #include <Vital.sandbox/API/core/canvas.h>
@@ -50,8 +51,8 @@ namespace Vital::Sandbox {
     vm_apis Machine::internal_apis = {
         // TODO: Improve, move under 'API' namespace??
         vm_module::make_api<API::Engine>(),
-        vm_module::make_api<API::Database_Query>(),
         vm_module::make_api<API::Database>(),
+        vm_module::make_api<API::Database_Query>(),
         vm_module::make_api<API::Discord>(),
         vm_module::make_api<API::Network>(),
         vm_module::make_api<API::Timer>(),
