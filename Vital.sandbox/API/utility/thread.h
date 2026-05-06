@@ -171,9 +171,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
-                    .require(2, [](Machine* vm, int index) {
-                        return vm_module::is_userdata(vm, Promise::base_name, index);
-                    });
+                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata(vm, Promise::base_name, index); });
 
                 if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
                 // TODO: BETTER HELPER???
