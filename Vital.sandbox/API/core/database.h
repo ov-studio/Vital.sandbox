@@ -130,8 +130,8 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
                 if (!self -> db) vm -> push_value(false);
                 else {
-                    auto promise_id = Promise::make(vm) -> id;
                     auto db = self -> db;
+                    auto promise_id = Promise::make(vm) -> id;
                     Tool::Thread::create([promise_id, db](Tool::Thread*) {
                         auto promise = Promise::Instance::find(promise_id);
                         if (!promise || promise -> destroyed) return;
