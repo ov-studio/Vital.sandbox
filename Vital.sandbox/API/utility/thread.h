@@ -115,13 +115,11 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (!self -> thread_vm || self -> sleeping || self -> awaiting) vm -> push_value(false);
                 else {
-                    auto instance = Instance::find(self -> id);
-                    if (!instance) { vm -> push_value(false); return 1; }
                     self -> vm -> get_reference(self -> reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
                     self -> vm -> get_reference(self -> self_reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
-                    safe_resume(instance, 1);
+                    safe_resume(self, 1);
                     vm -> push_value(true);
                 }
                 return 1;
@@ -159,14 +157,13 @@ namespace Vital::Sandbox::API {
 
                 int duration = vm -> get_int(2);
                 self -> sleeping = true;
-                auto instance = Instance::find(self -> id);
-                auto weak = std::weak_ptr<Instance>(instance);
+                auto weak = std::weak_ptr<Instance>(self);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
-                    auto instance = weak.lock();
-                    if (!instance || instance -> destroyed) return;
-                    instance -> sleeping = false;
-                    if (!instance -> vm_owned.load() || !instance -> thread_vm) return;
-                    safe_resume(instance, 0);
+                    auto self = weak.lock();
+                    if (!self || self -> destroyed) return;
+                    self -> sleeping = false;
+                    if (!self -> vm_owned.load() || !self -> thread_vm) return;
+                    safe_resume(self, 0);
                 }, duration, 1);
                 return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
