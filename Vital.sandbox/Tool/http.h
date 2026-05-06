@@ -22,7 +22,7 @@
 ////////////////////////
 
 namespace Vital::Tool::HTTP {
-    using rest_headers = std::vector<std::string>;
+    using http_headers = std::vector<std::string>;
 
     inline httplib::Client make_client(const std::string& url, std::string& out_path, int connect_timeout = 10, int timeout = 30, bool follow_redirects = true) {
         size_t protocol_end = url.find("://");
@@ -50,7 +50,7 @@ namespace Vital::Tool::HTTP {
         return cli;
     }
 
-    inline httplib::Headers make_headers(const rest_headers& headers, std::string* out_content_type = nullptr) {
+    inline httplib::Headers make_headers(const http_headers& headers, std::string* out_content_type = nullptr) {
         httplib::Headers result;
         result.insert({ "User-Agent", "Vital.sandbox/" + Vital::Build.to_string() });
         for (const auto& h : headers) {
@@ -66,7 +66,7 @@ namespace Vital::Tool::HTTP {
         return result;
     }
 
-    inline std::string get(const std::string& url, const rest_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr) {
+    inline std::string get(const std::string& url, const http_headers& headers = {}, int timeout = 60, bool follow_redirects = true, const std::atomic<bool>* cancelled = nullptr) {
         std::string path;
         auto cli = make_client(url, path, 10, timeout, follow_redirects);
         auto httplib_headers = make_headers(headers);
@@ -84,7 +84,7 @@ namespace Vital::Tool::HTTP {
         return buffer;
     }
 
-    inline std::string post(const std::string& url, const std::string& body, const rest_headers& headers = {}, int timeout = 60) {
+    inline std::string post(const std::string& url, const std::string& body, const http_headers& headers = {}, int timeout = 60) {
         std::string path;
         auto cli = make_client(url, path, 10, timeout, false);
         std::string content_type = "application/json";

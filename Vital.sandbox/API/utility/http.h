@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto url = vm -> get_string(1);
-                Tool::HTTP::rest_headers headers = {};
+                Tool::HTTP::http_headers headers = {};
                 int timeout = 60;
                 if (vm -> is_table(2)) {
                     for (int i = 1; i <= vm -> get_length(2); i++) {
@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
 
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
-                Tool::HTTP::rest_headers headers = {};
+                Tool::HTTP::http_headers headers = {};
                 int timeout = 60;
                 if (vm -> is_table(3)) {
                     for (int i = 1; i <= vm -> get_length(3); i++) {
