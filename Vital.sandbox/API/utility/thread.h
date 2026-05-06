@@ -89,7 +89,10 @@ namespace Vital::Sandbox::API {
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
                 auto instance = Instance::find(thread_id);
-                if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
+                if (!instance || instance -> destroyed) return;
+                if (!instance -> vm_owned.load()) return;
+                if (!instance -> thread_vm) return;
+                
                 instance -> thread_vm -> push_bool(resolved);
                 int value_count = Promise::push_values(promise, instance -> thread_vm);
                 instance -> awaiting = false;
