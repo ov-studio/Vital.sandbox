@@ -139,7 +139,10 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
-                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
+                if (!vm -> is_virtual()) { 
+                    vm -> push_value(false); 
+                    return 1;
+                }
                 return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
@@ -148,7 +151,11 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
-                if (self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
+                if (self -> sleeping || self -> awaiting) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+
                 int duration = vm -> get_int(2);
                 self -> sleeping = true;
                 auto instance = Instance::find(self -> id);
@@ -169,8 +176,11 @@ namespace Vital::Sandbox::API {
                         return vm_module::is_userdata(vm, Promise::base_name, index);
                     });
 
-                if (self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
-                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+
                 auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise = Promise::Instance::find((*ud) -> id);
