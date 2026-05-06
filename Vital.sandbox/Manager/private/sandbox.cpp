@@ -23,7 +23,6 @@
 // Vital: Manager: Sandbox //
 /////////////////////////////
 
-// TODO: Scope under Manager namespace
 namespace Vital::Manager {
     // Instantiators //
     Sandbox::Sandbox() {
@@ -94,5 +93,4 @@ namespace Vital::Manager {
     Vital::Sandbox::Machine* Sandbox::get_vm() {
         return vm;
     }
-
 }
