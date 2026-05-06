@@ -231,7 +231,7 @@ namespace Vital::Sandbox::API {
                     auto vm = promise -> vm;
                     try {
                         bool result = instance -> query -> db -> execute(instance -> query);
-                        clean_instance(instance);
+                        clean_instance(instance); // TODO: WBT REJECT??
                         vm -> push_value(result);
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
