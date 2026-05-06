@@ -251,12 +251,11 @@ namespace Vital::Sandbox::API {
                 self -> data = read_table(vm, 2);
                 self -> query_type = "insert";
                 vm -> create_object(base_name, self);
+                self -> query -> data = read_table(vm, 2);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "delete", [](auto vm, auto self, auto& id) -> int {
-                self -> query_type = "delete";
-                vm -> create_object(base_name, self);
+            vm_module::bind_method<Instance>(vm, base_name, "delete", [](auto vm, auto self, auto& id) -> int {
                 return 1;
             });
 
@@ -264,12 +263,11 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(data)")
                     .require(2, &Machine::is_table);
 
-                self -> data = read_table(vm, 2);
-                self -> query_type = "update";
-                vm -> create_object(base_name, self);
+                self -> query -> data = read_table(vm, 2);
                 return 1;
             });
         }
+
     };
 
     struct Database : vm_module {
@@ -410,6 +408,7 @@ namespace Vital::Sandbox::API {
                 auto name = vm -> get_string(2);
                 auto query = self -> db -> table(name);
                 vm -> create_object(Database_Query::base_name, query);
+                auto instance = Database_Query::Instance::init(vm);
                 return 1;
             });
         }

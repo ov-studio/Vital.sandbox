@@ -42,7 +42,7 @@ namespace Vital::Tool {
                 Column definition;
             };
 
-            struct QueryBuilder {
+            struct Query {
                 Database* db;
                 std::string table;
                 std::string query_type;
@@ -195,15 +195,15 @@ namespace Vital::Tool {
                 }
             }
 
-            QueryBuilder* table(const std::string& name) {
+            Query* table(const std::string& name) {
                 assert_table(name);
-                auto query = new QueryBuilder();
+                auto query = new Query();
                 query -> db = this;
                 query -> table = name;
                 return query;
             }
 
-            Rows fetch(QueryBuilder* query) {
+            Rows fetch(Query* query) {
                 assert_session_and_table(query -> table);
                 std::string columns;
                 if (query -> select.empty()) columns = "*";
@@ -292,7 +292,7 @@ namespace Vital::Tool {
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
             
-            bool execute(QueryBuilder* query) {
+            bool execute(Query* query) {
                 assert_session_and_table(query -> table);
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
