@@ -127,9 +127,6 @@ namespace Vital::Sandbox {
     // Vital: vm_instance //
     ////////////////////////
 
-    // Derived must define:
-    //   using Owner = <outer API struct>;  — holds mutex, buffer, next_id, base_name
-
     template<typename Derived>
     struct vm_instance {
         int id {};
@@ -255,8 +252,8 @@ namespace Vital::Sandbox {
                 auto vm = Machine::fetch_machine(state);
                 return vm -> execute([&]() -> int {
                     auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
-                    if (!ud || !*ud) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type));
-                    return (*fn)(vm, static_cast<T*>(*ud), *id);
+                    auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
+                    if (!ud || !*ud) throw_destroyed();
                 });
             }, 3);
             lua_setfield(vm -> get_state(), -2, name.c_str());
