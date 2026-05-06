@@ -173,11 +173,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(promise)")
                     .require(2, [](Machine* vm, int index) { return vm_module::is_userdata(vm, Promise::base_name, index); });
 
-                auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2); // TODO: IS IT SHARED PTR OR RAW ? 
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) { vm -> push_value(false); return 1; }
-                auto promise = Promise::Instance::find(promise -> id); // TODO: NMEEDED?
-                if (!promise || promise -> destroyed) { vm -> push_value(false); return 1; }
-            
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
+                auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + Promise::push_values(promise, vm);
