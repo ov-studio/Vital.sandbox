@@ -111,6 +111,7 @@ namespace Vital::Sandbox {
             }
     };
 
+    // TODO: Remove this check when all lua modules are adapted to `vm_instance`
     template<typename T, typename = void>
     struct has_destroyed : std::false_type {};
     template<typename T>
@@ -166,7 +167,7 @@ namespace Vital::Sandbox {
                     auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
                     if (!ud || !*ud) throw_destroyed();
                     auto self = static_cast<T*>(*ud);
-                    if constexpr (has_destroyed<T>::value) {
+                    if constexpr (has_destroyed<T>::value) { // TODO: Remove this check when all lua modules are adapted to `vm_instance`
                         if (self -> destroyed) throw_destroyed();
                     }
                     return (*fn)(vm, self, *id);
