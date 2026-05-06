@@ -153,7 +153,6 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
-                    
                     Machine* vm = promise -> vm;
                     try {
                         db -> alter(table, actions);
@@ -204,7 +203,7 @@ namespace Vital::Sandbox::API {
                 auto promise_id = Promise::make(vm) -> id;
                 auto instance = Instance::find(instance_id);
                 if (instance) clean_instance(instance);
-                
+
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise || promise -> destroyed) return;
