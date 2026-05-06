@@ -138,10 +138,7 @@ namespace Vital::Sandbox::API {
 
             // TODO: FROM HERE EDIT CONDTNL BLOCKS
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
-                if (!vm -> is_virtual()) { 
-                    vm -> push_value(false); 
-                    return 1;
-                }
+                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
                 return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
             });
 
