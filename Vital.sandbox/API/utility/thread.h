@@ -150,13 +150,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
-                if (self -> sleeping || self -> awaiting) {
-                    vm -> push_value(false);
-                    return 1;
-                }
-
-                int duration = vm -> get_int(2);
+                if (self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
                 self -> sleeping = true;
+                int duration = vm -> get_int(2);
                 auto weak = std::weak_ptr<Instance>(self);
                 Tool::Timer::create([weak](Tool::Timer*, int) {
                     auto self = weak.lock();
