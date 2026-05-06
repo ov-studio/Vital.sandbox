@@ -167,11 +167,8 @@ namespace Vital::Sandbox::API {
                         return vm_module::is_userdata(vm, Promise::base_name, index);
                     });
 
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) {
-                    vm -> push_value(false);
-                    return 1;
-                }
-
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
+                // TODO: BETTER HELPER???
                 auto ud = static_cast<Promise::Instance**>(vm -> get_userdata(2));
                 if (!ud || !*ud) { vm -> push_value(false); return 1; }
                 auto promise = Promise::Instance::find((*ud) -> id);
