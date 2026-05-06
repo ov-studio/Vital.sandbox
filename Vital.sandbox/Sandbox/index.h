@@ -187,10 +187,12 @@ namespace Vital::Sandbox {
             });
         }
 
-        template<typename T = void>
+        template<typename T>
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
             auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
-            return ud && *ud;
+            if (!ud || !*ud) return false;
+            auto instance = T::find(static_cast<T*>(*ud) -> id);
+            return instance && !instance -> destroyed;
         }
 
         template<typename T = void>
@@ -204,16 +206,18 @@ namespace Vital::Sandbox {
         }
 
         template<typename T>
-        static T* get_userdata_object(Machine* vm, int index = 1) {
-            auto ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
-            return (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
+        static std::shared_ptr<T> get_userdata_object(Machine* vm, int index = 1) {
+            auto ud = get_userdata_ptr(vm, index);
+            auto raw = (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
+            if (!raw) return nullptr;
+            return T::find(raw -> id);
         }
 
         template<typename T = void>
         static void** get_userdata_ptr(Machine* vm, int index = 1) {
             return static_cast<void**>(lua_touserdata(vm -> get_state(), index));
         }
-
+    
         template<typename T = void>
         static void release_userdata(Machine* vm, int index = 1) {
             auto ud = get_userdata_ptr(vm, index);
@@ -226,7 +230,7 @@ namespace Vital::Sandbox {
             *userdata = nullptr;
             userdata  = nullptr;
         }
-
+    
         template<typename TInstance>
         static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
             std::vector<std::shared_ptr<TInstance>> to_clean;
