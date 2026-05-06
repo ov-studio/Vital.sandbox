@@ -109,6 +109,29 @@ namespace Vital::Sandbox::API {
                 vm -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
+
+            API::bind(vm, {base_name}, "current", [](auto vm, auto& id) -> int {
+                if (!vm -> is_virtual()) vm -> push_value(false);
+                else {
+                    std::shared_ptr<Instance> found;
+                    {
+                        std::lock_guard<std::mutex> lock(Thread::mutex);
+                        for (auto& [id, instance] : Thread::buffer) {
+                            if (instance -> destroyed || !instance -> thread_vm) continue;
+                            if (instance -> thread_vm -> get_state() == vm -> get_state()) {
+                                found = instance;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) vm -> push_value(false);
+                    else {
+                        found -> vm -> get_reference(found -> self_reference(), true);
+                        vm -> move(found -> vm, 1);
+                    }
+                }
+                return 1;
+            });
         }
 
         static void methods(Machine* vm) {
