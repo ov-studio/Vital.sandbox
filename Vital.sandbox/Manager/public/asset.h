@@ -43,7 +43,7 @@ namespace Vital::Manager {
                 std::string path;
                 std::unordered_set<std::string> groups;
                 std::thread thread;
-                 cancelled { false } ;
+                std::atomic<bool> cancelled { false };
             };
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::string server_http_ip;

@@ -27,9 +27,9 @@ namespace Vital::Engine {
             inline static Core* singleton = nullptr;
             inline static godot::WorldEnvironment* environment = nullptr;
             std::thread kit_thread;
+            std::mutex deferred_mutex;
             std::atomic<bool> kit_ready { false };
             std::atomic<bool> kit_abort { false };
-            std::mutex deferred_mutex;
             std::vector<std::function<void()>> deferred_queue;
 
             static void _bind_methods() {
