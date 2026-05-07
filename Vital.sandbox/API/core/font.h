@@ -62,10 +62,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                return Instance::destroy(vm);
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "set_antialiasing", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(2, &Machine::is_bool);

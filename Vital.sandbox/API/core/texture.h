@@ -61,12 +61,6 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                return Instance::destroy(vm);
-            });
-        }
-
         static void clean(const std::string& env) {
             vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
         }
@@ -124,10 +118,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                return Instance::destroy(vm);
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(raw)")
                     .require(2, &Machine::is_string);

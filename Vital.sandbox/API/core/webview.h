@@ -74,10 +74,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                return Instance::destroy(vm);
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "is_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_visible());
                 return 1;

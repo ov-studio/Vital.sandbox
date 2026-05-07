@@ -98,10 +98,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                return Instance::destroy(vm);
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> rendertarget -> get_size());
                 return 1;
