@@ -16,6 +16,8 @@
 #if defined(Vital_SDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
+#include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/rendertarget.h>
 
 
 /////////////////////////
