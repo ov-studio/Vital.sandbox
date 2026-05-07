@@ -250,11 +250,6 @@ namespace Vital::Sandbox {
 
     template<typename Derived>
     struct vm_instance {
-        int id {};
-        std::string env;
-        std::atomic<bool> destroyed { false };
-        Machine* vm = nullptr;
-        void** userdata = nullptr;
         private:
             std::vector<std::string> refs;
         public:
