@@ -27,8 +27,28 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "webview";
         using base_class = Vital::Engine::Webview;
 
-        static std::string handler_key(void* ptr) {
-            return "webview_message_handler_" + std::to_string(reinterpret_cast<uintptr_t>(ptr));
+        struct Instance : vm_instance<Instance> {
+            using Owner = Webview;
+            base_class* webview = nullptr;
+        };
+        inline static std::mutex mutex;
+        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
+        inline static std::atomic<int> next_id { 1 };
+
+        static void clean_instance(std::shared_ptr<Instance> instance) {
+            if (!Instance::erase(instance)) return;
+            if (instance -> webview) {
+                auto key = handler_key(instance -> id);
+                if (instance -> vm && instance -> vm -> is_reference(key)) instance -> vm -> del_reference(key);
+                instance -> webview -> destroy();
+                instance -> webview = nullptr;
+            }
+            Instance::release(instance);
+        }
+
+        // TODO: USE SET  REF?? TO AUTO DELETE
+        static std::string handler_key(int id) {
+            return "webview_message_handler_" + std::to_string(id);
         }
 
         static void bind(Machine* vm) {
@@ -44,114 +64,113 @@ namespace Vital::Sandbox::API {
                     vm -> get_table_field("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> pop(5);
                 }
-                auto object = base_class::create(options);
-                vm -> create_object(base_name, object);
+                auto instance = Instance::init(vm);
+                instance -> webview = base_class::create(options);
+                Instance::store(instance);
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<base_class>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                auto key = handler_key(self);
-                if (vm -> is_reference(key)) vm -> del_reference(key);
-                self -> destroy();
-                vm_module::release_userdata(vm, 1);
-                vm -> push_value(true);
+            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                return Instance::destroy(vm);
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "is_visible", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_visible());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_visible", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_visible());
+            vm_module::bind_method<Instance>(vm, base_name, "is_fullscreen", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_fullscreen());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_fullscreen", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_fullscreen());
+            vm_module::bind_method<Instance>(vm, base_name, "is_transparent", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_transparent());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_transparent", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_transparent());
+            vm_module::bind_method<Instance>(vm, base_name, "is_incognito", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_incognito());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_incognito", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_incognito());
+            vm_module::bind_method<Instance>(vm, base_name, "is_autoplay", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_autoplay());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_autoplay", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_autoplay());
+            vm_module::bind_method<Instance>(vm, base_name, "is_zoomable", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_zoomable());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_zoomable", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_zoomable());
+            vm_module::bind_method<Instance>(vm, base_name, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_devtools_visible());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> is_devtools_visible());
+            vm_module::bind_method<Instance>(vm, base_name, "get_position", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> get_position());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> get_position());
+            vm_module::bind_method<Instance>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> get_size());
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> get_size());
-                return 1;
-            });
-
-            vm_module::bind_method<base_class>(vm, base_name, "set_visible", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "set_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(2, &Machine::is_bool);
 
-                auto state = vm -> get_bool(2);
-                self -> set_visible(state);
+                self -> webview -> set_visible(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(2, &Machine::is_bool);
 
-                auto state = vm -> get_bool(2);
-                self -> set_devtools_visible(state);
+                self -> webview -> set_devtools_visible(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)")
                     .require(2, &Machine::is_vector2);
 
-                auto position = vm -> get_vector2(2);
-                self -> set_position(position);
+                self -> webview -> set_position(vm -> get_vector2(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_size", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "set_size", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(size)")
                     .require(2, &Machine::is_vector2);
 
-                auto size = vm -> get_vector2(2);
-                self -> set_size(size);
+                self -> webview -> set_size(vm -> get_vector2(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(handler)")
                     .require(2, &Machine::is_function);
-                    
-                auto key = handler_key(self);
+
+                auto key = handler_key(self -> id);
                 vm -> set_reference(key, 2);
-                self -> set_message_handler([vm, key](godot::String message) {
+                self -> track_ref(key);
+                auto instance_id = self -> id;
+                self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
+                    auto instance = Instance::find(instance_id);
+                    if (!instance) return;
+                    auto key = handler_key(instance_id);
                     vm -> get_reference(key, true);
                     vm -> push_value(Tool::to_std_string(message));
                     vm -> pcall(1, 0);
@@ -160,79 +179,78 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "load_url", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "load_url", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(url)")
                     .require(2, &Machine::is_string);
 
-                auto url = vm -> get_string(2);
-                self -> load_url(url);
+                self -> webview -> load_url(vm -> get_string(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "load_html", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "load_html", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(html)")
                     .require(2, &Machine::is_string);
 
-                auto html = vm -> get_string(2);
-                self -> load_html(html);
+                self -> webview -> load_html(vm -> get_string(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "clear_history", [](auto vm, auto self, auto& id) -> int {
-                self -> clear_history();
+            vm_module::bind_method<Instance>(vm, base_name, "clear_history", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> clear_history();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "focus", [](auto vm, auto self, auto& id) -> int {
-                self -> focus();
+            vm_module::bind_method<Instance>(vm, base_name, "focus", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> focus();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "reload", [](auto vm, auto self, auto& id) -> int {
-                self -> reload();
+            vm_module::bind_method<Instance>(vm, base_name, "reload", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> reload();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "zoom", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "zoom", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(2, &Machine::is_number);
 
-                auto value = vm -> get_float(2);
-                self -> zoom(value);
+                self -> webview -> zoom(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
-                self -> update();
+            vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> update();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "eval", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "eval", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(2, &Machine::is_string);
 
-                auto input = vm -> get_string(2);
-                self -> eval(input);
+                self -> webview -> eval(vm -> get_string(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<base_class>(vm, base_name, "emit", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, base_name, "emit", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(2, &Machine::is_string);
 
-                auto input = vm -> get_string(2);
-                self -> emit(input);
+                self -> webview -> emit(vm -> get_string(2));
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void clean(const std::string& env) {
+            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
         }
     };
 }
