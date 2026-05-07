@@ -30,6 +30,7 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Webview;
             base_class* webview = nullptr;
+            std::string handler_reference() const { return fmt::format("{}:{}:handler", Owner::base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -42,10 +43,6 @@ namespace Vital::Sandbox::API {
                 instance -> webview = nullptr;
             }
             Instance::release(instance);
-        }
-
-        static std::string handler_key(int id) {
-            return "webview_message_handler_" + std::to_string(id);
         }
 
         static void bind(Machine* vm) {
@@ -160,13 +157,12 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(handler)")
                     .require(2, &Machine::is_function);
 
-                auto key = handler_key(self -> id);
-                self -> set_ref(key, 2);
+                self -> set_ref(self -> handler_reference(), 2);
                 auto instance_id = self -> id;
                 self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) return;
-                    vm -> get_reference(handler_key(instance_id), true);
+                    vm -> get_reference(instance -> handler_reference(), true);
                     vm -> push_value(Tool::to_std_string(message));
                     vm -> pcall(1, 0);
                 });
