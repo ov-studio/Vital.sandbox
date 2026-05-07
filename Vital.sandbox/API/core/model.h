@@ -52,11 +52,6 @@ namespace Vital::Sandbox::API {
             return nullptr;
         }
 
-        static void push_instance(Machine* vm, std::shared_ptr<Instance> instance) {
-            instance -> vm -> get_reference(instance -> self_reference(), true);
-            instance -> vm -> move(vm, 1);
-        }
-
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 
@@ -118,8 +113,8 @@ namespace Vital::Sandbox::API {
 
                 auto ptr = base_class::get_synced(vm -> get_string(1));
                 auto instance = find_by_ptr(ptr);
-                if (!instance) { vm -> push_nil(); return 1; }
-                push_instance(vm, instance);
+                if (!instance) vm -> push_value(false);
+                else instance -> vm -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
             #endif
