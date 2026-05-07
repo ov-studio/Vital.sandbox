@@ -25,7 +25,7 @@
 //#include <Vital.sandbox/API/core/model.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
-//#include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/texture.h>
 //#include <Vital.sandbox/API/core/rendertarget.h>
 #include <Vital.sandbox/API/utility/timer.h>
 #include <Vital.sandbox/API/utility/promise.h>
@@ -67,8 +67,8 @@ namespace Vital::Sandbox {
         //vm_module::make_api<API::Model>(),
         vm_module::make_api<API::Webview>(),
         vm_module::make_api<API::Font>(),
-        //vm_module::make_api<API::Texture>(),
-        //vm_module::make_api<API::SVG>(),
+        vm_module::make_api<API::Texture>(),
+        vm_module::make_api<API::SVG>(),
         //vm_module::make_api<API::Rendertarget>(),
         vm_module::make_api<API::SSAO>(),
         vm_module::make_api<API::SSR>(),
