@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
-                    if (!promise || promise -> destroyed) return;
+                    if (!promise) return;
                     auto vm = promise -> vm;
                     try {
                         db -> sync();

@@ -161,7 +161,7 @@ namespace Vital::Sandbox {
                     auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
                     if (!ud || !*ud) throw_destroyed();
                     auto self = T::find_unlocked(static_cast<T*>(*ud) -> id);
-                    if (!self || self -> destroyed) throw_destroyed();
+                    if (!self) throw_destroyed();
                     return (*fn)(vm, self, *id);
                 });
             }, 3);
