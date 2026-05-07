@@ -258,6 +258,11 @@ namespace Vital::Sandbox {
         private:
             std::vector<std::string> refs;
         public:
+            int id {};
+            std::string env;
+            std::atomic<bool> destroyed { false };
+            Machine* vm = nullptr;
+            void** userdata = nullptr;
             std::string reference() const { return fmt::format("{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("{}:{}:self", Derived::Owner::base_name, id); }
 
