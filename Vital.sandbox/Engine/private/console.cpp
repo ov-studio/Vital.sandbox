@@ -597,9 +597,13 @@ namespace Vital::Engine {
     #if !defined(Vital_SDK_Client)
     void Console::shutdown() {
         print("sbox", "Server shutting down...");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-        stdin_running = false;
-        Core::get_singleton() -> push_deferred([]() { Core:: free_singleton(); });
+        Manager::Resource::get_singleton() -> stop_all();
+        Core::get_singleton() -> push_deferred([this]() {
+            stdin_running = false;
+            print("sbox", "Server shut down successfully!");
+            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+            Core:: free_singleton();
+        });
     }
 
     #else
