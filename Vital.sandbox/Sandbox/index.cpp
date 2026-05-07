@@ -22,7 +22,7 @@
 #include <Vital.sandbox/API/core/network.h>
 //#include <Vital.sandbox/API/core/canvas.h>
 // TOOD: Adapt to latest updates and re-add them
-//#include <Vital.sandbox/API/core/model.h>
+#include <Vital.sandbox/API/core/model.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
 #include <Vital.sandbox/API/core/texture.h>
@@ -64,7 +64,7 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Shrinker>(),
         //vm_module::make_api<API::Canvas>(),
         // TOOD: Adapt to latest updates and re-add them
-        //vm_module::make_api<API::Model>(),
+        vm_module::make_api<API::Model>(),
         vm_module::make_api<API::Webview>(),
         vm_module::make_api<API::Font>(),
         vm_module::make_api<API::Texture>(),
