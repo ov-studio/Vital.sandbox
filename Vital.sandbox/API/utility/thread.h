@@ -143,8 +143,16 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
-                if (!vm -> is_virtual()) { vm -> push_value(false); return 1; }
-                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
+                if (!vm -> is_virtual()) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+                else {
+                    return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* L, int, lua_KContext) -> int {
+                        lua_pushboolean(L, true);
+                        return 1;
+                    });
+                }
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
@@ -152,18 +160,27 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
-                if (self -> sleeping || self -> awaiting) { vm -> push_value(false); return 1; }
-                self -> sleeping = true;
-                int duration = vm -> get_int(2);
-                auto weak = std::weak_ptr<Instance>(self);
-                Tool::Timer::create([weak](Tool::Timer*, int) {
-                    auto self = weak.lock();
-                    if (!self || self -> destroyed) return;
-                    self -> sleeping = false;
-                    if (!self -> vm_owned.load() || !self -> thread_vm) return;
-                    safe_resume(self, 0);
-                }, duration, 1);
-                return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State*, int, lua_KContext) -> int { return 0; });
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { 
+                    vm -> push_value(false);
+                    return 1;
+                }
+                else {
+                    self -> sleeping = true;
+                    int duration = vm -> get_int(2);
+                    auto weak = std::weak_ptr<Instance>(self);
+                    Tool::Timer::create([weak](Tool::Timer*, int) {
+                        auto self = weak.lock();
+                        if (!self || self -> destroyed) return;
+                        self -> sleeping = false;
+                        if (!self -> vm_owned.load() || !self -> thread_vm) return;
+                        safe_resume(self, 0);
+                    }, duration, 1);
+
+                    return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* L, int, lua_KContext) -> int {
+                        lua_pushboolean(L, true);
+                        return 1;
+                    });
+                }
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
@@ -171,26 +188,30 @@ namespace Vital::Sandbox::API {
                     .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, Promise::base_name, index); });
 
                 auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) { vm -> push_value(false); return 1; }
-            
-                if (promise -> state != Promise::State::Pending) {
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) {
+                    vm -> push_value(false);
+                    return 1;
+                }
+                else if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + Promise::push_values(promise, vm);
                 }
-                self -> awaiting = true;
-                promise -> waiting.push_back(self -> id);
-            
-                struct AwaitCTX { int base; int thread_id; };
-                auto actx = new AwaitCTX { vm -> get_count(), self -> id };
-                lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
-                return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
-                    auto actx = reinterpret_cast<AwaitCTX*>(ctx);
-                    auto self = Instance::find_unlocked(actx -> thread_id);
-                    if (self) self -> awaiting = false;
-                    int n = lua_gettop(L) - actx -> base;
-                    delete actx;
-                    return n > 0 ? n : 0;
-                });
+                else {
+                    self -> awaiting = true;
+                    promise -> waiting.push_back(self -> id);
+                    struct AwaitCTX { int base; int thread_id; };
+                    auto actx = new AwaitCTX { vm -> get_count(), self -> id };
+                    lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
+
+                    return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
+                        auto actx = reinterpret_cast<AwaitCTX*>(ctx);
+                        auto self = Instance::find_unlocked(actx -> thread_id);
+                        if (self) self -> awaiting = false;
+                        int n = lua_gettop(L) - actx -> base;
+                        delete actx;
+                        return n > 0 ? n : 0;
+                    });
+                }
             });
         }
 
