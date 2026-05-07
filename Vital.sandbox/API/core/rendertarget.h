@@ -90,10 +90,7 @@ namespace Vital::Sandbox::API {
                 auto ptr = base_class::get_active();
                 auto instance = find_by_ptr(ptr);
                 if (!instance) vm -> push_value(false);
-                else {
-                    instance -> vm -> get_reference(instance -> self_reference(), true);
-                    instance -> vm -> move(vm, 1);
-                }
+                else instance -> vm -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
         }
