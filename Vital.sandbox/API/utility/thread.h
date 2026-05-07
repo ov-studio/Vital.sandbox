@@ -148,8 +148,8 @@ namespace Vital::Sandbox::API {
                     return 1;
                 }
                 else {
-                    return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* L, int, lua_KContext) -> int {
-                        lua_pushboolean(L, true);
+                    return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* state, int, lua_KContext) -> int {
+                        lua_pushboolean(state, true);
                         return 1;
                     });
                 }
@@ -176,8 +176,8 @@ namespace Vital::Sandbox::API {
                         safe_resume(self, 0);
                     }, duration, 1);
 
-                    return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* L, int, lua_KContext) -> int {
-                        lua_pushboolean(L, true);
+                    return lua_yieldk(vm -> get_state(), 0, 0, [](lua_State* state, int, lua_KContext) -> int {
+                        lua_pushboolean(state, true);
                         return 1;
                     });
                 }
@@ -203,11 +203,11 @@ namespace Vital::Sandbox::API {
                     auto actx = new AwaitCTX { vm -> get_count(), self -> id };
                     lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
 
-                    return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
+                    return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* state, int, lua_KContext ctx) -> int {
                         auto actx = reinterpret_cast<AwaitCTX*>(ctx);
                         auto self = Instance::find_unlocked(actx -> thread_id);
                         if (self) self -> awaiting = false;
-                        int n = lua_gettop(L) - actx -> base;
+                        int n = lua_gettop(state) - actx -> base;
                         delete actx;
                         return n > 0 ? n : 0;
                     });
