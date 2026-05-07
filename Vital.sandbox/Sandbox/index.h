@@ -160,7 +160,7 @@ namespace Vital::Sandbox {
                     auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                     auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
                     if (!ud || !*ud) throw_destroyed();
-                    auto self = T::find(static_cast<T*>(*ud) -> id);
+                    auto self = T::find_unlocked(static_cast<T*>(*ud) -> id);
                     if (!self || self -> destroyed) throw_destroyed();
                     return (*fn)(vm, self, *id);
                 });
@@ -191,7 +191,7 @@ namespace Vital::Sandbox {
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
             auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             if (!ud || !*ud) return false;
-            auto instance = T::find(static_cast<T*>(*ud) -> id);
+            auto instance = T::find_unlocked(static_cast<T*>(*ud) -> id);
             return instance && !instance -> destroyed;
         }
 
@@ -206,9 +206,13 @@ namespace Vital::Sandbox {
         }
 
         template<typename T>
-        static T* get_userdata_object(Machine* vm, int index = 1) {
-            auto ud = static_cast<void**>(lua_touserdata(vm -> get_state(), index));
-            return (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
+        static std::shared_ptr<T> get_userdata_object(Machine* vm, int index = 1) {
+            auto ud = get_userdata_ptr(vm, index);
+            auto raw = (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
+            if (!raw) return nullptr;
+            auto instance = T::find_unlocked(static_cast<T*>(*ud) -> id);
+            if (!instance || instance -> destroyed) return nullptr;
+            return instance;
         }
 
         template<typename T = void>
@@ -274,8 +278,13 @@ namespace Vital::Sandbox {
 
             static std::shared_ptr<Derived> find(int id) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::mutex);
+                return find_unlocked(id);
+            }
+            
+            static std::shared_ptr<Derived> find_unlocked(int id) {
                 auto it = Derived::Owner::buffer.find(id);
-                return it != Derived::Owner::buffer.end() ? it -> second : nullptr;
+                if (it == Derived::Owner::buffer.end() || it -> second -> destroyed) return nullptr;
+                return it -> second;
             }
 
             static std::shared_ptr<Derived> init(Machine* vm) {
@@ -302,7 +311,7 @@ namespace Vital::Sandbox {
             static int destroy(Machine* vm) {
                 auto ud = vm_module::get_userdata_ptr(vm, 1);
                 if (ud && *ud) {
-                    auto instance = Derived::find(static_cast<Derived*>(*ud) -> id);
+                    auto instance = Derived::find_unlocked(static_cast<Derived*>(*ud) -> id);
                     if (instance) Derived::Owner::clean_instance(instance);
                 }
                 vm_module::release_userdata(vm, 1);

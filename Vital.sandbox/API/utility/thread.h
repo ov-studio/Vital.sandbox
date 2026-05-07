@@ -173,10 +173,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(promise)")
                     .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, Promise::base_name, index); });
 
-                auto promise_rw = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise_rw) { vm -> push_value(false); return 1; }
-                auto promise = Promise::Instance::find(promise_rw -> id); // TODO: NMEEDED?
-                if (!promise || promise -> destroyed) { vm -> push_value(false); return 1; }
+                auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) { vm -> push_value(false); return 1; }
             
                 if (promise -> state != Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
@@ -190,7 +188,7 @@ namespace Vital::Sandbox::API {
                 lua_KContext ctx = reinterpret_cast<lua_KContext>(actx);
                 return lua_yieldk(vm -> get_state(), 0, ctx, [](lua_State* L, int, lua_KContext ctx) -> int {
                     auto actx = reinterpret_cast<AwaitCTX*>(ctx);
-                    auto self = Instance::find(actx -> thread_id);
+                    auto self = Instance::find_unlocked(actx -> thread_id);
                     if (self) self -> awaiting = false;
                     int n = lua_gettop(L) - actx -> base;
                     delete actx;
