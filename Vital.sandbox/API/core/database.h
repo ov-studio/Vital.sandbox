@@ -89,6 +89,7 @@ namespace Vital::Sandbox::API {
                 Instance::store(instance);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                instance -> set_ref(instance -> self_reference(), -1);
                 return 1;
             });
         }
