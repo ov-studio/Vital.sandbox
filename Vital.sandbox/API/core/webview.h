@@ -38,15 +38,12 @@ namespace Vital::Sandbox::API {
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
             if (instance -> webview) {
-                auto key = handler_key(instance -> id);
-                if (instance -> vm && instance -> vm -> is_reference(key)) instance -> vm -> del_reference(key);
                 instance -> webview -> destroy();
                 instance -> webview = nullptr;
             }
             Instance::release(instance);
         }
 
-        // TODO: USE SET  REF?? TO AUTO DELETE
         static std::string handler_key(int id) {
             return "webview_message_handler_" + std::to_string(id);
         }
@@ -74,6 +71,10 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                return Instance::destroy(vm);
+            });
+
             vm_module::bind_method<Instance>(vm, base_name, "is_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_visible());
                 return 1;
@@ -160,14 +161,12 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto key = handler_key(self -> id);
-                vm -> set_reference(key, 2);
-                self -> track_ref(key);
+                self -> set_ref(key, 2);
                 auto instance_id = self -> id;
                 self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) return;
-                    auto key = handler_key(instance_id);
-                    vm -> get_reference(key, true);
+                    vm -> get_reference(handler_key(instance_id), true);
                     vm -> push_value(Tool::to_std_string(message));
                     vm -> pcall(1, 0);
                 });
