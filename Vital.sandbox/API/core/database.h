@@ -163,7 +163,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct Database_Query : vm_module {};
     struct Database : vm_module {};
 }
 #endif
