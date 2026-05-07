@@ -123,15 +123,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)")
-                    .require(2, &Machine::is_bool);
-
-                self -> webview -> set_devtools_visible(vm -> get_bool(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)")
                     .require(2, &Machine::is_vector2);
@@ -150,6 +141,15 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, base_name, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)")
+                    .require(2, &Machine::is_bool);
+
+                self -> webview -> set_devtools_visible(vm -> get_bool(2));
+                vm -> push_value(true);
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, base_name, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(handler)")
                     .require(2, &Machine::is_function);

@@ -61,9 +61,9 @@ namespace Vital::Engine {
 
             // Setters //
             void set_visible(bool state);
-            void set_devtools_visible(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
+            void set_devtools_visible(bool state);
             void set_message_handler(std::function<void(godot::String)> handler);
 
 

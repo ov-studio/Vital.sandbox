@@ -99,17 +99,17 @@ namespace Vital::Engine {
         webview -> call("focus_parent");
     }
 
-    void Webview::set_devtools_visible(bool state) {
-        if (state) webview -> call_deferred("open_devtools");
-        else webview -> call_deferred("close_devtools");
-    }
-
     void Webview::set_position(const godot::Vector2& position) {
         webview -> set_position(position);
     }
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
+    }
+
+    void Webview::set_devtools_visible(bool state) {
+        if (state) webview -> call_deferred("open_devtools");
+        else webview -> call_deferred("close_devtools");
     }
 
     void Webview::set_message_handler(std::function<void(godot::String)> handler) {
