@@ -25,6 +25,7 @@
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
 #include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
 #include <Vital.sandbox/API/utility/timer.h>
 #include <Vital.sandbox/API/utility/promise.h>
