@@ -38,7 +38,7 @@ namespace Vital::Engine {
         }
         Model* object = memnew(Model);
         object -> set_model_name(name);
-        godot::Node* instance = it->second->instantiate();
+        godot::Node* instance = it -> second -> instantiate();
         if (!instance) {
             memdelete(object);
             return nullptr;
@@ -64,9 +64,9 @@ namespace Vital::Engine {
         auto separator = path.find('/');
         std::string segment = (separator == std::string::npos) ? path : path.substr(0, separator);
         std::string remainder = (separator == std::string::npos) ? "" : path.substr(separator + 1);
-        for (int i = 0; i < node->get_child_count(); i++) {
-            godot::Node* child = node->get_child(i);
-            std::string child_name = Tool::to_std_string(child->get_name());
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            godot::Node* child = node -> get_child(i);
+            std::string child_name = Tool::to_std_string(child -> get_name());
             if (!child_name.empty() && child_name[0] == '@') {
                 auto result = find_mesh_node(child, path);
                 if (result) return result;
@@ -88,8 +88,8 @@ namespace Vital::Engine {
     int Model::find_material_index(godot::MeshInstance3D* mesh, const std::string& material) {
         godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
         if (!array_mesh) return -1;
-        for (int i = 0; i < array_mesh->get_surface_count(); i++) {
-            if (Tool::to_std_string(array_mesh->surface_get_name(i)) == material) return i;
+        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
+            if (Tool::to_std_string(array_mesh -> surface_get_name(i)) == material) return i;
         }
         return -1;
     }
@@ -98,8 +98,8 @@ namespace Vital::Engine {
         if (!node || skeleton) return skeleton;
         auto result = godot::Object::cast_to<godot::Skeleton3D>(node);
         if (result) { skeleton = result; return skeleton; }
-        for (int i = 0; i < node->get_child_count(); i++) {
-            auto result = find_skeleton(node->get_child(i));
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            auto result = find_skeleton(node -> get_child(i));
             if (result) break;
         }
         return skeleton;
@@ -109,8 +109,8 @@ namespace Vital::Engine {
         if (!node || anim_player) return anim_player;
         auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
         if (result) { anim_player = result; return anim_player; }
-        for (int i = 0; i < node->get_child_count(); i++) {
-            auto result = find_animation_player(node->get_child(i));
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            auto result = find_animation_player(node -> get_child(i));
             if (result) break;
         }
         return anim_player;
@@ -118,9 +118,9 @@ namespace Vital::Engine {
 
     void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
         if (!node) return;
-        for (int i = 0; i < node->get_child_count(); i++) {
-            godot::Node* child = node->get_child(i);
-            std::string child_name = Tool::to_std_string(child->get_name());
+        for (int i = 0; i < node -> get_child_count(); i++) {
+            godot::Node* child = node -> get_child(i);
+            std::string child_name = Tool::to_std_string(child -> get_name());
             bool is_generated = !child_name.empty() && child_name[0] == '@';
             std::string child_path = (current_path.empty() || is_generated) ? (is_generated ? "" : child_name) : current_path + "/" + child_name;
             if (!is_generated && godot::Object::cast_to<godot::MeshInstance3D>(child)) out.push_back(child_path);
@@ -132,16 +132,16 @@ namespace Vital::Engine {
         if (net_sync) return;
 
         auto config = memnew(godot::SceneReplicationConfig);
-        config->add_property(godot::NodePath(".:position"));
-        config->property_set_replication_mode(godot::NodePath(".:position"), godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS);
-        config->add_property(godot::NodePath(".:rotation"));
-        config->property_set_replication_mode(godot::NodePath(".:rotation"), godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS);
+        config -> add_property(godot::NodePath(".:position"));
+        config -> property_set_replication_mode(godot::NodePath(".:position"), godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS);
+        config -> add_property(godot::NodePath(".:rotation"));
+        config -> property_set_replication_mode(godot::NodePath(".:rotation"), godot::SceneReplicationConfig::REPLICATION_MODE_ALWAYS);
 
         net_sync = memnew(godot::MultiplayerSynchronizer);
-        net_sync->set_name("NetSync");
-        net_sync->set_replication_config(config);
-        net_sync->set_root_path(godot::NodePath(".."));
-        net_sync->set_multiplayer_authority(authority_peer);
+        net_sync -> set_name("NetSync");
+        net_sync -> set_replication_config(config);
+        net_sync -> set_root_path(godot::NodePath(".."));
+        net_sync -> set_multiplayer_authority(authority_peer);
         add_child(net_sync);
     }
 
@@ -184,34 +184,34 @@ namespace Vital::Engine {
     //---------------------------//
 
     void Model::setup_spawner() {
-        if (net_spawner && net_spawner->is_inside_tree()) return;
+        if (net_spawner && net_spawner -> is_inside_tree()) return;
         if (net_spawner) teardown_spawner();
         auto core = Core::get_singleton();
         if (!core) return;
 
         net_spawner_delegate = memnew(ModelSpawnerDelegate);
-        net_spawner_delegate->set_name("ModelSpawnerDelegate");
-        core->add_child(net_spawner_delegate);
+        net_spawner_delegate -> set_name("ModelSpawnerDelegate");
+        core -> add_child(net_spawner_delegate);
 
         net_spawner = memnew(godot::MultiplayerSpawner);
-        net_spawner->set_name("ModelSpawner");
-        net_spawner->set_spawn_function(godot::Callable(net_spawner_delegate, "spawn"));
-        core->add_child(net_spawner);
-        net_spawner->set_multiplayer_authority(1);
-        net_spawner->set_spawn_path(godot::NodePath(".."));
+        net_spawner -> set_name("ModelSpawner");
+        net_spawner -> set_spawn_function(godot::Callable(net_spawner_delegate, "spawn"));
+        core -> add_child(net_spawner);
+        net_spawner -> set_multiplayer_authority(1);
+        net_spawner -> set_spawn_path(godot::NodePath(".."));
 
-        godot::UtilityFunctions::print("ModelSpawner: watching path -> ", net_spawner->get_spawn_path());
-        godot::UtilityFunctions::print("ModelSpawner: authority -> ", net_spawner->get_multiplayer_authority());
+        godot::UtilityFunctions::print("ModelSpawner: watching path -> ", net_spawner -> get_spawn_path());
+        godot::UtilityFunctions::print("ModelSpawner: authority -> ", net_spawner -> get_multiplayer_authority());
     }
 
     void Model::teardown_spawner() {
         cache_synced.clear();
         if (net_spawner_delegate) {
-            net_spawner_delegate->queue_free();
+            net_spawner_delegate -> queue_free();
             net_spawner_delegate = nullptr;
         }
         if (net_spawner) {
-            net_spawner->queue_free();
+            net_spawner -> queue_free();
             net_spawner = nullptr;
         }
     }
@@ -219,9 +219,9 @@ namespace Vital::Engine {
     void Model::cleanup_spawned() {
         auto core = Core::get_singleton();
         if (!core) return;
-        for (int i = core->get_child_count() - 1; i >= 0; i--) {
-            godot::Node* child = core->get_child(i);
-            if (godot::Object::cast_to<Model>(child)) child->queue_free();
+        for (int i = core -> get_child_count() - 1; i >= 0; i--) {
+            godot::Node* child = core -> get_child(i);
+            if (godot::Object::cast_to<Model>(child)) child -> queue_free();
         }
         cache_synced.clear();
     }
@@ -234,7 +234,7 @@ namespace Vital::Engine {
         Manager::Asset::get_singleton() -> clear();
         cleanup_spawned();
         if (net_spawner) {
-            net_spawner->set_multiplayer_authority(1);
+            net_spawner -> set_multiplayer_authority(1);
             godot::UtilityFunctions::print("ModelSpawner: refreshed for new session");
         }
     }
@@ -252,11 +252,11 @@ namespace Vital::Engine {
             case Format::GLB:
                 godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
                 godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-                if (document->append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
-                godot::Node* root = document->generate_scene(state);
+                if (document -> append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
+                godot::Node* root = document -> generate_scene(state);
                 if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate scene");
                 scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-                scene->pack(root);
+                scene -> pack(root);
                 memdelete(root);
                 break;
         }
@@ -278,7 +278,7 @@ namespace Vital::Engine {
         if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
         Model* object = memnew(Model);
         object -> set_model_name(name);
-        godot::Node* instance = it->second->instantiate();
+        godot::Node* instance = it -> second -> instantiate();
         if (!instance) {
             memdelete(object);
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to instantiate model '{}'", name));
@@ -300,7 +300,7 @@ namespace Vital::Engine {
             godot::UtilityFunctions::print("ModelSpawner: spawn_synced — spawner not ready");
             return nullptr;
         }
-        godot::Node* spawned = net_spawner->spawn(Tool::to_godot_string(name));
+        godot::Node* spawned = net_spawner -> spawn(Tool::to_godot_string(name));
         if (!spawned) {
             godot::UtilityFunctions::print("ModelSpawner: spawn() returned null");
             return nullptr;
@@ -318,17 +318,17 @@ namespace Vital::Engine {
 
     Model* Model::get_synced(const std::string& name) {
         auto it = cache_synced.find(name);
-        return it != cache_synced.end() ? it->second : nullptr;
+        return it != cache_synced.end() ? it -> second : nullptr;
     }
 
     void Model::destroy() {
         for (auto it = cache_synced.begin(); it != cache_synced.end(); ++it) {
-            if (it->second == this) {
+            if (it -> second == this) {
                 cache_synced.erase(it);
                 break;
             }
         }
-        this->queue_free();
+        this -> queue_free();
     }
 
 
@@ -367,7 +367,7 @@ namespace Vital::Engine {
     }
 
     bool Model::is_animation_playing() {
-        return anim_player && anim_player->is_playing();
+        return anim_player && anim_player -> is_playing();
     }
 
 
@@ -391,7 +391,7 @@ namespace Vital::Engine {
     #if !defined(Vital_SDK_Client)
     void Model::set_sync_authority(int peer_id) {
         if (!net_sync) return;
-        net_sync->set_multiplayer_authority(peer_id);
+        net_sync -> set_multiplayer_authority(peer_id);
     }
     #endif
 
@@ -501,7 +501,7 @@ namespace Vital::Engine {
 
     void Model::set_animation_speed(float speed) {
         auto anim_player = assert_animation_player();
-        anim_player->set_speed_scale(speed);
+        anim_player -> set_speed_scale(speed);
     }
 
 
@@ -561,8 +561,8 @@ namespace Vital::Engine {
     std::vector<std::string> Model::get_bones() {
         std::vector<std::string> bones;
         if (skeleton) {
-            for (int i = 0; i < skeleton->get_bone_count(); i++) {
-                bones.push_back(Tool::to_std_string(skeleton->get_bone_name(i)));
+            for (int i = 0; i < skeleton -> get_bone_count(); i++) {
+                bones.push_back(Tool::to_std_string(skeleton -> get_bone_name(i)));
             }
         }
         return bones;
@@ -571,7 +571,7 @@ namespace Vital::Engine {
     std::vector<std::string> Model::get_animations() {
         std::vector<std::string> animations;
         if (anim_player) {
-            auto animation_list = anim_player->get_animation_list();
+            auto animation_list = anim_player -> get_animation_list();
             for (int i = 0; i < animation_list.size(); i++) {
                 animations.push_back(Tool::to_std_string(animation_list[i]));
             }
@@ -595,48 +595,48 @@ namespace Vital::Engine {
 
     std::string Model::get_current_animation() {
         auto anim_player = assert_animation_player();
-        return Tool::to_std_string(anim_player->get_current_animation());
+        return Tool::to_std_string(anim_player -> get_current_animation());
     }
 
     float Model::get_animation_speed() {
         auto anim_player = assert_animation_player();
-        return anim_player->get_speed_scale();
+        return anim_player -> get_speed_scale();
     }
 
     int Model::get_sync_authority() const {
         if (!net_sync) return 0;
-        return net_sync->get_multiplayer_authority();
+        return net_sync -> get_multiplayer_authority();
     }
 
 
     // APIs //
     bool Model::play_animation(const std::string& name, bool loop, float speed) {
         if (!anim_player) return false;
-        if (!anim_player->has_animation(Tool::to_godot_string(name))) {
+        if (!anim_player -> has_animation(Tool::to_godot_string(name))) {
             godot::UtilityFunctions::push_warning("Animation '", Tool::to_godot_string(name), "' not found in model '", Tool::to_godot_string(model_name), "'");
             return false;
         }
-        godot::Ref<godot::Animation> animation = anim_player->get_animation(Tool::to_godot_string(name));
-        if (animation.is_valid()) animation->set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
-        anim_player->set_speed_scale(speed);
-        anim_player->play(Tool::to_godot_string(name));
+        godot::Ref<godot::Animation> animation = anim_player -> get_animation(Tool::to_godot_string(name));
+        if (animation.is_valid()) animation -> set_loop_mode(loop ? godot::Animation::LOOP_LINEAR : godot::Animation::LOOP_NONE);
+        anim_player -> set_speed_scale(speed);
+        anim_player -> play(Tool::to_godot_string(name));
         return true;
     }
 
     void Model::stop_animation() {
         if (!anim_player) return;
-        anim_player->stop();
+        anim_player -> stop();
     }
 
     void Model::pause_animation() {
         if (!anim_player) return;
-        anim_player->pause();
+        anim_player -> pause();
     }
 
     void Model::resume_animation() {
         if (!anim_player) return;
-        auto current = anim_player->get_current_animation();
+        auto current = anim_player -> get_current_animation();
         if (current.is_empty()) return;
-        anim_player->play(current);
+        anim_player -> play(current);
     }
 }
