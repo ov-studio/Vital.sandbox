@@ -106,21 +106,6 @@ namespace Vital::Engine {
             bool is_animation_playing();
 
 
-            // Setters //
-            void set_model_name(const std::string& name);
-            void set_position(godot::Vector3 position);
-            void set_rotation(godot::Vector3 rotation);
-            #if !defined(Vital_SDK_Client)
-            void set_sync_authority(int peer_id);
-            #endif
-            bool set_component_visible(const std::string& component, bool state);
-            bool set_material_visible(const std::string& component, const std::string& material, bool state);
-            bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
-            bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
-            bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
-            void set_animation_speed(float speed);
-
-
             // Getters //
             static Format get_format(const godot::PackedByteArray& buffer);
             static Models get_loaded_models();
@@ -137,6 +122,21 @@ namespace Vital::Engine {
             std::string get_current_animation();
             float get_animation_speed();
             int get_sync_authority() const;
+
+
+            // Setters //
+            void set_model_name(const std::string& name);
+            void set_position(godot::Vector3 position);
+            void set_rotation(godot::Vector3 rotation);
+            #if !defined(Vital_SDK_Client)
+            void set_sync_authority(int peer_id);
+            #endif
+            bool set_component_visible(const std::string& component, bool state);
+            bool set_material_visible(const std::string& component, const std::string& material, bool state);
+            bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
+            bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
+            bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
+            void set_animation_speed(float speed);
 
 
             // APIs //

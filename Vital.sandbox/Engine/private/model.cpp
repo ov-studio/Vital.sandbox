@@ -371,6 +371,110 @@ namespace Vital::Engine {
     }
 
 
+    // Getters //
+    Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
+        const uint8_t* ptr = buffer.ptr();
+        const int size = buffer.size();
+        if (size >= 4 &&
+            ptr[0] == 0x67 && ptr[1] == 0x6C &&
+            ptr[2] == 0x54 && ptr[3] == 0x46) return Format::GLB;
+        return Format::UNKNOWN;
+    }
+
+    Model::Models Model::get_loaded_models() {
+        return cache_loaded;
+    }
+
+    std::string Model::get_model_name() {
+        return model_name;
+    }
+
+    godot::Vector3 Model::get_position() {
+        return get_global_position();
+    }
+
+    godot::Vector3 Model::get_rotation() {
+        return get_rotation_degrees();
+    }
+
+    std::vector<std::string> Model::get_components() {
+        std::vector<std::string> components;
+        collect_mesh_nodes(this, components, "");
+        return components;
+    }
+
+    std::vector<std::string> Model::get_materials(const std::string& component) {
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(assert_component(component) -> get_mesh().ptr());
+        std::vector<std::string> materials;
+        if (!array_mesh) return materials;
+        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
+            materials.push_back(Tool::to_std_string(array_mesh -> surface_get_name(i)));
+        }
+        return materials;
+    }
+
+    std::vector<std::string> Model::get_blendshapes(const std::string& component) {
+        auto mesh = assert_component(component);
+        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
+        std::vector<std::string> blendshapes;
+        if (!array_mesh) return blendshapes;
+        for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
+            blendshapes.push_back(Tool::to_std_string(array_mesh -> get_blend_shape_name(i)));
+        }
+        return blendshapes;
+    }
+
+    std::vector<std::string> Model::get_bones() {
+        std::vector<std::string> bones;
+        if (skeleton) {
+            for (int i = 0; i < skeleton -> get_bone_count(); i++) {
+                bones.push_back(Tool::to_std_string(skeleton -> get_bone_name(i)));
+            }
+        }
+        return bones;
+    }
+
+    std::vector<std::string> Model::get_animations() {
+        std::vector<std::string> animations;
+        if (anim_player) {
+            auto animation_list = anim_player -> get_animation_list();
+            for (int i = 0; i < animation_list.size(); i++) {
+                animations.push_back(Tool::to_std_string(animation_list[i]));
+            }
+        }
+        return animations;
+    }
+
+    float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
+        auto mesh = assert_component(component);
+        int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
+        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
+        return mesh -> get_blend_shape_value(index);
+    }
+
+    godot::Vector3 Model::get_bone_position(const std::string& bone) {
+        auto skeleton = assert_skeleton();
+        int index = skeleton -> find_bone(Tool::to_godot_string(bone));
+        if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
+        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
+    }
+
+    std::string Model::get_current_animation() {
+        auto anim_player = assert_animation_player();
+        return Tool::to_std_string(anim_player -> get_current_animation());
+    }
+
+    float Model::get_animation_speed() {
+        auto anim_player = assert_animation_player();
+        return anim_player -> get_speed_scale();
+    }
+
+    int Model::get_sync_authority() const {
+        if (!net_sync) return 0;
+        return net_sync -> get_multiplayer_authority();
+    }
+
+
     // Setters //
     void Model::set_model_name(const std::string& name) {
         model_name = name;
@@ -502,110 +606,6 @@ namespace Vital::Engine {
     void Model::set_animation_speed(float speed) {
         auto anim_player = assert_animation_player();
         anim_player -> set_speed_scale(speed);
-    }
-
-
-    // Getters //
-    Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
-        const uint8_t* ptr = buffer.ptr();
-        const int size = buffer.size();
-        if (size >= 4 &&
-            ptr[0] == 0x67 && ptr[1] == 0x6C &&
-            ptr[2] == 0x54 && ptr[3] == 0x46) return Format::GLB;
-        return Format::UNKNOWN;
-    }
-
-    Model::Models Model::get_loaded_models() {
-        return cache_loaded;
-    }
-
-    std::string Model::get_model_name() {
-        return model_name;
-    }
-
-    godot::Vector3 Model::get_position() {
-        return get_global_position();
-    }
-
-    godot::Vector3 Model::get_rotation() {
-        return get_rotation_degrees();
-    }
-
-    std::vector<std::string> Model::get_components() {
-        std::vector<std::string> components;
-        collect_mesh_nodes(this, components, "");
-        return components;
-    }
-
-    std::vector<std::string> Model::get_materials(const std::string& component) {
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(assert_component(component) -> get_mesh().ptr());
-        std::vector<std::string> materials;
-        if (!array_mesh) return materials;
-        for (int i = 0; i < array_mesh -> get_surface_count(); i++) {
-            materials.push_back(Tool::to_std_string(array_mesh -> surface_get_name(i)));
-        }
-        return materials;
-    }
-
-    std::vector<std::string> Model::get_blendshapes(const std::string& component) {
-        auto mesh = assert_component(component);
-        godot::ArrayMesh* array_mesh = godot::Object::cast_to<godot::ArrayMesh>(mesh -> get_mesh().ptr());
-        std::vector<std::string> blendshapes;
-        if (!array_mesh) return blendshapes;
-        for (int i = 0; i < mesh -> get_blend_shape_count(); i++) {
-            blendshapes.push_back(Tool::to_std_string(array_mesh -> get_blend_shape_name(i)));
-        }
-        return blendshapes;
-    }
-
-    std::vector<std::string> Model::get_bones() {
-        std::vector<std::string> bones;
-        if (skeleton) {
-            for (int i = 0; i < skeleton -> get_bone_count(); i++) {
-                bones.push_back(Tool::to_std_string(skeleton -> get_bone_name(i)));
-            }
-        }
-        return bones;
-    }
-
-    std::vector<std::string> Model::get_animations() {
-        std::vector<std::string> animations;
-        if (anim_player) {
-            auto animation_list = anim_player -> get_animation_list();
-            for (int i = 0; i < animation_list.size(); i++) {
-                animations.push_back(Tool::to_std_string(animation_list[i]));
-            }
-        }
-        return animations;
-    }
-
-    float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
-        auto mesh = assert_component(component);
-        int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
-        return mesh -> get_blend_shape_value(index);
-    }
-
-    godot::Vector3 Model::get_bone_position(const std::string& bone) {
-        auto skeleton = assert_skeleton();
-        int index = skeleton -> find_bone(Tool::to_godot_string(bone));
-        if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
-        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
-    }
-
-    std::string Model::get_current_animation() {
-        auto anim_player = assert_animation_player();
-        return Tool::to_std_string(anim_player -> get_current_animation());
-    }
-
-    float Model::get_animation_speed() {
-        auto anim_player = assert_animation_player();
-        return anim_player -> get_speed_scale();
-    }
-
-    int Model::get_sync_authority() const {
-        if (!net_sync) return 0;
-        return net_sync -> get_multiplayer_authority();
     }
 
 
