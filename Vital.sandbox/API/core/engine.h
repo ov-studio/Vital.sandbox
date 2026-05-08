@@ -26,37 +26,6 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "engine";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "get_tick", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::get_tick());
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_version", [](auto vm, auto& id) -> int {
-                vm -> push_value(Build.to_string());
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_platform", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::get_platform());
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_timestamp", [](auto vm, auto& id) -> int {
-                auto timestamp = Tool::get_timestamp();
-                vm -> create_table();
-                for (auto& [key, value] : timestamp.object) {
-                    vm -> table_set_value(key, value);
-                }
-                return 1;
-            });
-
-            #if defined(Vital_SDK_Client)
-            API::bind(vm, {base_name}, "get_serial", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::Inspect::fingerprint());
-                return 1;
-            });
-            #endif
-
             API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(type, ...)")
                     .require(1, &Machine::is_string);
@@ -107,6 +76,37 @@ namespace Vital::Sandbox::API {
                 if (results == 0) vm -> push_value(false);
                 return results == 0 ? 1 : results;
             });
+
+            API::bind(vm, {base_name}, "get_tick", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::get_tick());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_version", [](auto vm, auto& id) -> int {
+                vm -> push_value(Build.to_string());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_platform", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::get_platform());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_timestamp", [](auto vm, auto& id) -> int {
+                auto timestamp = Tool::get_timestamp();
+                vm -> create_table();
+                for (auto& [key, value] : timestamp.object) {
+                    vm -> table_set_value(key, value);
+                }
+                return 1;
+            });
+
+            #if defined(Vital_SDK_Client)
+            API::bind(vm, {base_name}, "get_serial", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::Inspect::fingerprint());
+                return 1;
+            });
+            #endif
         }
 
         static void inject(Machine* vm) {
