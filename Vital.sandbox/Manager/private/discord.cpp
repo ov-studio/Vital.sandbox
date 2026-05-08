@@ -68,13 +68,13 @@ namespace Vital::Manager {
         client_activity.SetType(discordpp::ActivityTypes::Playing);
         client_activity.SetState(activity.state);
         client_activity.SetDetails(activity.details);
-        if (!activity.largeimage_key.empty()) {
-            client_assets.SetLargeImage(activity.largeimage_key);
-            client_assets.SetLargeText(activity.largeimage_text);
+        if (!activity.small_image_key.empty()) {
+            client_assets.SetSmallImage(activity.small_image_key);
+            client_assets.SetSmallText(activity.small_image_text);
         }
-        if (!activity.smallimage_key.empty()) {
-            client_assets.SetSmallImage(activity.smallimage_key);
-            client_assets.SetSmallText(activity.smallimage_text);
+        if (!activity.large_image_key.empty()) {
+            client_assets.SetLargeImage(activity.large_image_key);
+            client_assets.SetLargeText(activity.large_image_text);
         }
         client_activity.SetAssets(client_assets);
         if (activity.timestamp_start > 0) client_timestamps.SetStart(activity.timestamp_start);
@@ -184,16 +184,16 @@ namespace Vital::Manager {
         return true;
     }
 
-    bool Discord::set_smallimage(const std::string& key, const std::string& text) {
-        activity.smallimage_key = key;
-        activity.smallimage_text = text;
+    bool Discord::set_small_image(const std::string& key, const std::string& text) {
+        activity.small_image_key = key;
+        activity.small_image_text = text;
         update();
         return true;
     }
 
-    bool Discord::set_largeimage(const std::string& key, const std::string& text) {
-        activity.largeimage_key = key;
-        activity.largeimage_text = text;
+    bool Discord::set_large_image(const std::string& key, const std::string& text) {
+        activity.large_image_key = key;
+        activity.large_image_text = text;
         update();
         return true;
     }
