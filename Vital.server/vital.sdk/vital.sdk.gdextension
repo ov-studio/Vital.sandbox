@@ -1,5 +1,5 @@
 [configuration]
-entry_symbol = "vital_sandbox_init"
+entry_symbol = "vsdk_entrypoint"
 compatibility_minimum = "4.1"
 
 
