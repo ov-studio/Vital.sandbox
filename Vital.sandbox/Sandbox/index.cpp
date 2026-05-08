@@ -16,11 +16,11 @@
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/API/core/engine.h>
+#include <Vital.sandbox/API/core/canvas.h>
 #include <Vital.sandbox/API/core/database.h>
 #include <Vital.sandbox/API/core/database_query.h>
 #include <Vital.sandbox/API/core/discord.h>
 #include <Vital.sandbox/API/core/network.h>
-#include <Vital.sandbox/API/core/canvas.h>
 #include <Vital.sandbox/API/core/model.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
@@ -50,11 +50,21 @@
 
 namespace Vital::Sandbox {
     vm_apis Machine::internal_apis = {
+        // Core //
         vm_module::make_api<API::Engine>(),
+        vm_module::make_api<API::Canvas>(),
         vm_module::make_api<API::Database>(),
         vm_module::make_api<API::Database_Query>(),
         vm_module::make_api<API::Discord>(),
         vm_module::make_api<API::Network>(),
+        vm_module::make_api<API::Model>(),
+        vm_module::make_api<API::Webview>(),
+        vm_module::make_api<API::Font>(),
+        vm_module::make_api<API::Texture>(),
+        vm_module::make_api<API::SVG>(),
+        vm_module::make_api<API::Rendertarget>(),
+
+        // Utility //
         vm_module::make_api<API::Timer>(),
         vm_module::make_api<API::Promise>(),
         vm_module::make_api<API::Thread>(),
@@ -62,13 +72,8 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::HTTP>(),
         vm_module::make_api<API::Crypto>(),
         vm_module::make_api<API::Shrinker>(),
-        vm_module::make_api<API::Canvas>(),
-        vm_module::make_api<API::Model>(),
-        vm_module::make_api<API::Webview>(),
-        vm_module::make_api<API::Font>(),
-        vm_module::make_api<API::Texture>(),
-        vm_module::make_api<API::SVG>(),
-        vm_module::make_api<API::Rendertarget>(),
+
+        // GFX //
         vm_module::make_api<API::SSAO>(),
         vm_module::make_api<API::SSR>(),
         vm_module::make_api<API::SSIL>(),
