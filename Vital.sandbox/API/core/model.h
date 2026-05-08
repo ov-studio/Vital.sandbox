@@ -168,97 +168,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)")
-                    .require(2, &Machine::is_vector3);
-
-                self -> model -> set_position(vm -> get_vector3(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(rotation)")
-                    .require(2, &Machine::is_vector3);
-
-                self -> model -> set_rotation(vm -> get_vector3(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, state)")
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_bool);
-
-                self -> model -> set_component_visible(vm -> get_string(2), vm -> get_bool(3));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_material_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, state)")
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_bool);
-
-                vm -> push_value(self -> model -> set_material_visible(vm -> get_string(2), vm -> get_string(3), vm -> get_bool(4)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_material_feature", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, feature, state)")
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_number)
-                    .require(5, &Machine::is_bool);
-
-                vm -> push_value(self -> model -> set_material_feature(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_material_flag", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, flag, state)")
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_number)
-                    .require(5, &Machine::is_bool);
-
-                vm -> push_value(self -> model -> set_material_flag(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_blendshape_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, blendshape, value)")
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_string)
-                    .require(4, &Machine::is_number);
-
-                self -> model -> set_blendshape_value(vm -> get_string(2), vm -> get_string(3), vm -> get_float(4));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "set_animation_speed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(speed)")
-                    .require(2, &Machine::is_number);
-
-                self -> model -> set_animation_speed(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            #if !defined(Vital_SDK_Client)
-            vm_module::bind_method<Instance>(vm, base_name, "set_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)")
-                    .require(2, &Machine::is_number);
-
-                self -> model -> set_sync_authority(vm -> get_int(2));
-                vm -> push_value(true);
-                return 1;
-            });
-            #endif
-
             vm_module::bind_method<Instance>(vm, base_name, "get_model_name", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> model -> get_model_name());
                 return 1;
@@ -361,6 +270,97 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> model -> get_sync_authority());
                 return 1;
             });
+            
+            vm_module::bind_method<Instance>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)")
+                    .require(2, &Machine::is_vector3);
+
+                self -> model -> set_position(vm -> get_vector3(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(rotation)")
+                    .require(2, &Machine::is_vector3);
+
+                self -> model -> set_rotation(vm -> get_vector3(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, state)")
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_bool);
+
+                self -> model -> set_component_visible(vm -> get_string(2), vm -> get_bool(3));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_material_visible", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, material, state)")
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string)
+                    .require(4, &Machine::is_bool);
+
+                vm -> push_value(self -> model -> set_material_visible(vm -> get_string(2), vm -> get_string(3), vm -> get_bool(4)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_material_feature", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, material, feature, state)")
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string)
+                    .require(4, &Machine::is_number)
+                    .require(5, &Machine::is_bool);
+
+                vm -> push_value(self -> model -> set_material_feature(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_material_flag", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, material, flag, state)")
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string)
+                    .require(4, &Machine::is_number)
+                    .require(5, &Machine::is_bool);
+
+                vm -> push_value(self -> model -> set_material_flag(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_blendshape_value", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(component, blendshape, value)")
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string)
+                    .require(4, &Machine::is_number);
+
+                self -> model -> set_blendshape_value(vm -> get_string(2), vm -> get_string(3), vm -> get_float(4));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "set_animation_speed", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(speed)")
+                    .require(2, &Machine::is_number);
+
+                self -> model -> set_animation_speed(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            #if !defined(Vital_SDK_Client)
+            vm_module::bind_method<Instance>(vm, base_name, "set_sync_authority", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(peer_id)")
+                    .require(2, &Machine::is_number);
+
+                self -> model -> set_sync_authority(vm -> get_int(2));
+                vm -> push_value(true);
+                return 1;
+            });
+            #endif
 
             vm_module::bind_method<Instance>(vm, base_name, "play_animation", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, loop = true, speed = 1.0)")
