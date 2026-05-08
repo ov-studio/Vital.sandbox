@@ -59,17 +59,17 @@ namespace Vital::Engine {
             bool is_devtools_visible();
 
 
+            // Getters //
+            godot::Vector2 get_position();
+            godot::Vector2 get_size();
+
+
             // Setters //
             void set_visible(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
             void set_devtools_visible(bool state);
             void set_message_handler(std::function<void(godot::String)> handler);
-
-
-            // Getters //
-            godot::Vector2 get_position();
-            godot::Vector2 get_size();
 
 
             // APIs //

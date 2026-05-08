@@ -93,6 +93,16 @@ namespace Vital::Engine {
     }
 
 
+    // Getters //
+    godot::Vector2 Webview::get_position() {
+        return webview -> get_position();
+    }
+
+    godot::Vector2 Webview::get_size() {
+        return webview -> get_size();
+    }
+
+
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
@@ -114,16 +124,6 @@ namespace Vital::Engine {
 
     void Webview::set_message_handler(std::function<void(godot::String)> handler) {
         message_handler = std::move(handler);
-    }
-
-
-    // Getters //
-    godot::Vector2 Webview::get_position() {
-        return webview -> get_position();
-    }
-
-    godot::Vector2 Webview::get_size() {
-        return webview -> get_size();
     }
 
 
