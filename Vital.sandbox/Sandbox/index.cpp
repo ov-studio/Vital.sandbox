@@ -34,14 +34,14 @@
 #include <Vital.sandbox/API/utility/http.h>
 #include <Vital.sandbox/API/utility/crypto.h>
 #include <Vital.sandbox/API/utility/shrinker.h>
+#include <Vital.sandbox/API/gfx/adjustment.h>
+#include <Vital.sandbox/API/gfx/emissive.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
 #include <Vital.sandbox/API/gfx/ssao.h>
 #include <Vital.sandbox/API/gfx/ssil.h>
 #include <Vital.sandbox/API/gfx/sdfgi.h>
 #include <Vital.sandbox/API/gfx/fog.h>
 #include <Vital.sandbox/API/gfx/volumetric_fog.h>
-#include <Vital.sandbox/API/gfx/emissive.h>
-#include <Vital.sandbox/API/gfx/adjustment.h>
 
 
 /////////////////////
@@ -74,14 +74,14 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Shrinker>(),
 
         // GFX //
+        vm_module::make_api<API::Adjustment>(),
+        vm_module::make_api<API::Emissive>(),
         vm_module::make_api<API::SSAO>(),
         vm_module::make_api<API::SSR>(),
         vm_module::make_api<API::SSIL>(),
         vm_module::make_api<API::SDFGI>(),
         vm_module::make_api<API::Fog>(),
-        vm_module::make_api<API::Volumetric_Fog>(),
-        vm_module::make_api<API::Emissive>(),
-        vm_module::make_api<API::Adjustment>()
+        vm_module::make_api<API::Volumetric_Fog>()
     };
 
     namespace API {
