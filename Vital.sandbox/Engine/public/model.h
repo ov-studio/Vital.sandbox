@@ -49,7 +49,7 @@ namespace Vital::Engine {
             std::string model_name;
             int pending_authority = 1;
             godot::Skeleton3D* skeleton = nullptr;
-            godot::AnimationPlayer* animation_player = nullptr;
+            godot::AnimationPlayer* anim_player = nullptr;
             godot::MultiplayerSynchronizer* net_sync = nullptr;
             inline static godot::MultiplayerSpawner* net_spawner = nullptr;
             inline static ModelSpawnerDelegate* net_spawner_delegate = nullptr;
