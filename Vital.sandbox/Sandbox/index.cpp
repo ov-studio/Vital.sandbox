@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Engine/public/console.h>
+
 #include <Vital.sandbox/API/core/engine.h>
 #include <Vital.sandbox/API/core/canvas.h>
 #include <Vital.sandbox/API/core/database.h>
@@ -27,6 +28,7 @@
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
+
 #include <Vital.sandbox/API/utility/timer.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/utility/thread.h>
@@ -34,6 +36,7 @@
 #include <Vital.sandbox/API/utility/http.h>
 #include <Vital.sandbox/API/utility/crypto.h>
 #include <Vital.sandbox/API/utility/shrinker.h>
+
 #include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/emissive.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
