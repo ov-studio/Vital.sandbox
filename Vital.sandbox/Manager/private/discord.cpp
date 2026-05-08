@@ -184,16 +184,16 @@ namespace Vital::Manager {
         return true;
     }
 
-    bool Discord::set_largeimage(const std::string& key, const std::string& text) {
-        activity.largeimage_key = key;
-        activity.largeimage_text = text;
+    bool Discord::set_smallimage(const std::string& key, const std::string& text) {
+        activity.smallimage_key = key;
+        activity.smallimage_text = text;
         update();
         return true;
     }
 
-    bool Discord::set_smallimage(const std::string& key, const std::string& text) {
-        activity.smallimage_key = key;
-        activity.smallimage_text = text;
+    bool Discord::set_largeimage(const std::string& key, const std::string& text) {
+        activity.largeimage_key = key;
+        activity.largeimage_text = text;
         update();
         return true;
     }

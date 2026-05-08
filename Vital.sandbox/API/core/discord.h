@@ -75,18 +75,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "set_largeimage", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(key, text = \"N/A\")")
-                    .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_string);
-
-                auto key = vm -> get_string(1);
-                std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
-                if (!text.empty()) vm -> push_value(Manager::Discord::get_singleton() -> set_largeimage(key, text));
-                else vm -> push_value(Manager::Discord::get_singleton() -> set_largeimage(key));
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_smallimage", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, text = \"N/A\")")
                     .require(1, &Machine::is_string)
@@ -96,6 +84,18 @@ namespace Vital::Sandbox::API {
                 std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
                 if (!text.empty()) vm -> push_value(Manager::Discord::get_singleton() -> set_smallimage(key, text));
                 else vm -> push_value(Manager::Discord::get_singleton() -> set_smallimage(key));
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "set_largeimage", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(key, text = \"N/A\")")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_string);
+
+                auto key = vm -> get_string(1);
+                std::string text = vm -> is_string(2) ? vm -> get_string(2) : "";
+                if (!text.empty()) vm -> push_value(Manager::Discord::get_singleton() -> set_largeimage(key, text));
+                else vm -> push_value(Manager::Discord::get_singleton() -> set_largeimage(key));
                 return 1;
             });
 
