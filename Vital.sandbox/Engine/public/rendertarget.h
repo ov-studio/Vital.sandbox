@@ -50,15 +50,15 @@ namespace Vital::Engine {
             bool is_active();
 
 
-            // Setters //
-            static void set_active(Rendertarget* rt = nullptr, bool clear = false, bool instant = false);
-
-
             // Getters //
             godot::Vector2 get_size();
             godot::SubViewport* get_viewport();
             godot::Ref<godot::ViewportTexture> get_texture();
             static Rendertarget* get_active();
+
+
+            // Setters //
+            static void set_active(Rendertarget* rt = nullptr, bool clear = false, bool instant = false);
     };
 }
 #endif

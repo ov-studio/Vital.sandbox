@@ -82,14 +82,6 @@ namespace Vital::Engine {
     }
 
 
-    // Setters //
-    void Rendertarget::set_active(Rendertarget* rt, bool clear, bool instant) {
-        active = rt;
-        if (!rt) return;
-        rt -> clear(clear, instant);
-    }
-
-
     // Getters //
     godot::Vector2 Rendertarget::get_size() {
         return viewport -> get_size();
@@ -105,6 +97,14 @@ namespace Vital::Engine {
 
     Rendertarget* Rendertarget::get_active() {
         return active;
+    }
+
+
+    // Setters //
+    void Rendertarget::set_active(Rendertarget* rt, bool clear, bool instant) {
+        active = rt;
+        if (!rt) return;
+        rt -> clear(clear, instant);
     }
 }
 #endif
