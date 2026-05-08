@@ -55,6 +55,14 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 
+            API::bind(vm, {base_name}, "is_loaded", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name)")
+                    .require(1, &Machine::is_string);
+
+                vm -> push_value(base_class::is_model_loaded(vm -> get_string(1)));
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "load", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, path)")
                     .require(1, &Machine::is_string)
@@ -110,14 +118,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             #endif
-
-            API::bind(vm, {base_name}, "is_loaded", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name)")
-                    .require(1, &Machine::is_string);
-
-                vm -> push_value(base_class::is_model_loaded(vm -> get_string(1)));
-                return 1;
-            });
         }
 
         static void methods(Machine* vm) {
