@@ -110,7 +110,9 @@ namespace Vital::Engine {
             void set_model_name(const std::string& name);
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
+            #if !defined(Vital_SDK_Client)
             void set_sync_authority(int peer_id);
+            #endif
             bool set_component_visible(const std::string& component, bool state);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);

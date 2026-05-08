@@ -388,10 +388,12 @@ namespace Vital::Engine {
         });
     }
 
+    #if !defined(Vital_SDK_Client)
     void Model::set_sync_authority(int peer_id) {
         if (!net_sync) return;
         net_sync->set_multiplayer_authority(peer_id);
     }
+    #endif
 
     bool Model::set_component_visible(const std::string& component, bool state) {
         auto exec = [&](const std::string& name) {
