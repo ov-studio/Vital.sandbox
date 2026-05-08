@@ -337,6 +337,10 @@ namespace Vital::Engine {
         return cache_loaded.find(name) != cache_loaded.end();
     }
 
+    bool Model::is_synced() const {
+        return net_sync != nullptr;
+    }
+
     bool Model::is_component_visible(const std::string& component) {
         return assert_component(component) -> is_visible();
     }
@@ -366,10 +370,6 @@ namespace Vital::Engine {
         return animation_player && animation_player->is_playing();
     }
 
-    bool Model::is_synced() const {
-        return net_sync != nullptr;
-    }
-
 
     // Setters //
     void Model::set_model_name(const std::string& name) {
@@ -386,6 +386,11 @@ namespace Vital::Engine {
         Core::get_singleton() -> push_deferred([this, rotation]() {
             set_rotation_degrees(rotation);
         });
+    }
+
+    void Model::set_sync_authority(int peer_id) {
+        if (!net_sync) return;
+        net_sync->set_multiplayer_authority(peer_id);
     }
 
     bool Model::set_component_visible(const std::string& component, bool state) {
@@ -495,11 +500,6 @@ namespace Vital::Engine {
     void Model::set_animation_speed(float speed) {
         auto animation_player = assert_animation_player();
         animation_player->set_speed_scale(speed);
-    }
-
-    void Model::set_sync_authority(int peer_id) {
-        if (!net_sync) return;
-        net_sync->set_multiplayer_authority(peer_id);
     }
 
 

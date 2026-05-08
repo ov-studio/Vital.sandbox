@@ -98,25 +98,25 @@ namespace Vital::Engine {
 
             // Checkers //
             static bool is_model_loaded(const std::string& name);
+            bool is_synced() const;
             bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
             bool is_material_feature(const std::string& component, const std::string& material, int feature);
             bool is_material_flag(const std::string& component, const std::string& material, int flag);
             bool is_animation_playing();
-            bool is_synced() const;
 
 
             // Setters //
             void set_model_name(const std::string& name);
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
+            void set_sync_authority(int peer_id);
             bool set_component_visible(const std::string& component, bool state);
             bool set_material_visible(const std::string& component, const std::string& material, bool state);
             bool set_material_feature(const std::string& component, const std::string& material, int feature, bool state);
             bool set_material_flag(const std::string& component, const std::string& material, int flag, bool state);
             bool set_blendshape_value(const std::string& component, const std::string& blend_shape, float value);
             void set_animation_speed(float speed);
-            void set_sync_authority(int peer_id);
 
 
             // Getters //
