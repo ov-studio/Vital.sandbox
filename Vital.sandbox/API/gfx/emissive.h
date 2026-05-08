@@ -32,6 +32,65 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, {base_name}, "is_normalized", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> is_glow_normalized());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_level_intensity", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(idx)")
+                    .require(1, &Machine::is_number);
+
+                auto idx = vm -> get_int(1);
+                vm -> push_value(base_class::get_environment() -> get_glow_level(idx));
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_intensity", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_intensity());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_strength", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_strength());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_mix", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_mix());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_bloom", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_bloom());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_blend_mode", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_blend_mode());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_hdr_bleed_threshold", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_hdr_bleed_threshold());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_hdr_bleed_scale", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_hdr_bleed_scale());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_hdr_luminance_cap", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_hdr_luminance_cap());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_map_strength", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_glow_map_strength());
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
@@ -51,20 +110,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(2);
                 base_class::get_environment() -> set_glow_level(idx, value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_level_intensity", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(idx)")
-                    .require(1, &Machine::is_number);
-
-                auto idx = vm -> get_int(1);
-                vm -> push_value(base_class::get_environment() -> get_glow_level(idx));
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "is_normalized", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> is_glow_normalized());
                 return 1;
             });
 
@@ -88,11 +133,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_intensity", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_intensity());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_strength", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -100,11 +140,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_strength(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_strength", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_strength());
                 return 1;
             });
 
@@ -118,11 +153,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_mix", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_mix());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_bloom", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -130,11 +160,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_bloom(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_bloom", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_bloom());
                 return 1;
             });
 
@@ -149,11 +174,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_blend_mode", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_blend_mode());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_hdr_bleed_threshold", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -161,11 +181,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_hdr_bleed_threshold(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_hdr_bleed_threshold", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_hdr_bleed_threshold());
                 return 1;
             });
 
@@ -179,11 +194,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_hdr_bleed_scale", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_hdr_bleed_scale());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_hdr_luminance_cap", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -194,11 +204,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_hdr_luminance_cap", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_hdr_luminance_cap());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_map_strength", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -206,11 +211,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_map_strength(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_map_strength", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_glow_map_strength());
                 return 1;
             });
         }
