@@ -57,6 +57,21 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
+            API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(type, ...)")
+                    .require(1, &Machine::is_string);
+
+                std::string type = vm -> get_string(1);
+                std::ostringstream buffer;
+                for (int i = 2; i <= vm -> get_count(); ++i) {
+                    if (i != 2) buffer << " ";
+                    buffer << vm -> to_string(i);
+                }
+                Tool::print(type, buffer.str());
+                vm -> push_value(true);
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "compile_string", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input, chunk_name = \"\")")
                     .require(1, &Machine::is_string)
@@ -91,21 +106,6 @@ namespace Vital::Sandbox::API {
                 int results = vm -> load_string(input, chunk_name, auto_load, use_env, 5);
                 if (results == 0) vm -> push_value(false);
                 return results == 0 ? 1 : results;
-            });
-
-            API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(type, ...)")
-                    .require(1, &Machine::is_string);
-
-                std::string type = vm -> get_string(1);
-                std::ostringstream buffer;
-                for (int i = 2; i <= vm -> get_count(); ++i) {
-                    if (i != 2) buffer << " ";
-                    buffer << vm -> to_string(i);
-                }
-                Tool::print(type, buffer.str());
-                vm -> push_value(true);
-                return 1;
             });
         }
 
