@@ -34,6 +34,27 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, {base_name}, "get_brightness", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_adjustment_brightness());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_contrast", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_adjustment_contrast());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_saturation", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_adjustment_saturation());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_lut", [](auto vm, auto& id) -> int {
+                if (vm -> is_reference(lut_reference)) vm -> get_reference(lut_reference, true);
+                else vm -> push_value(false);
+                return 1;
+            });
+        
             API::bind(vm, {base_name}, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
@@ -54,11 +75,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_brightness", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_adjustment_brightness());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_contrast", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -69,11 +85,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_contrast", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_adjustment_contrast());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_saturation", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -81,11 +92,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_adjustment_saturation(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_saturation", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_adjustment_saturation());
                 return 1;
             });
 
@@ -140,12 +146,6 @@ namespace Vital::Sandbox::API {
                 vm -> set_reference(lut_reference, -1);
                 vm -> pop(1);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_lut", [](auto vm, auto& id) -> int {
-                if (vm -> is_reference(lut_reference)) vm -> get_reference(lut_reference, true);
-                else vm -> push_value(false);
                 return 1;
             });
 
