@@ -72,6 +72,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, {base_name}, "get_active", [](auto vm, auto& id) -> int {
+                auto ptr = base_class::get_active();
+                auto instance = find_by_ptr(ptr);
+                if (!instance) vm -> push_value(false);
+                else instance -> vm -> get_reference(instance -> self_reference(), true);
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "set_active", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
                     .optional(1, [](Machine* vm, int index) { return vm_module::is_userdata<Instance>(vm, base_name, index); })
@@ -85,24 +93,16 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            API::bind(vm, {base_name}, "get_active", [](auto vm, auto& id) -> int {
-                auto ptr = base_class::get_active();
-                auto instance = find_by_ptr(ptr);
-                if (!instance) vm -> push_value(false);
-                else instance -> vm -> get_reference(instance -> self_reference(), true);
-                return 1;
-            });
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> rendertarget -> get_size());
+            vm_module::bind_method<Instance>(vm, base_name, "is_active", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> rendertarget -> is_active());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_active", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> rendertarget -> is_active());
+            vm_module::bind_method<Instance>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> rendertarget -> get_size());
                 return 1;
             });
 
