@@ -123,6 +123,20 @@ namespace Vital::Manager {
     }
 
 
+    // Getters //
+    uint64_t Discord::get_userid() const {
+        if (!is_connected()) return 0;
+        auto user = client -> GetCurrentUser();
+        return user.Id();
+    }
+
+    std::string Discord::get_username() const {
+        if (!is_connected()) return "";
+        auto user = client -> GetCurrentUser();
+        return user.Username();
+    }
+
+
     // Setters //
     bool Discord::set_application_id(uint64_t id, bool authenticate, bool force_reauth) {
         application_id = id;
@@ -155,11 +169,6 @@ namespace Vital::Manager {
         }
         log("info", "authorization ~ awaiting");
         authorize(token_directory, token_file, force_reauth);
-        return true;
-    }
-
-    bool Discord::reset_application() {
-        set_application_id(default_application_id);
         return true;
     }
 
@@ -197,18 +206,9 @@ namespace Vital::Manager {
         return true;
     }
 
-
-    // Getters //
-    uint64_t Discord::get_userid() const {
-        if (!is_connected()) return 0;
-        auto user = client -> GetCurrentUser();
-        return user.Id();
-    }
-
-    std::string Discord::get_username() const {
-        if (!is_connected()) return "";
-        auto user = client -> GetCurrentUser();
-        return user.Username();
+    bool Discord::reset_application() {
+        set_application_id(default_application_id);
+        return true;
     }
 }
 #endif

@@ -65,6 +65,11 @@ namespace Vital::Manager {
             bool is_connected() const;
 
 
+            // Getters //
+            uint64_t get_userid() const;
+            std::string get_username() const;
+
+
             // Setters //
             bool set_application_id(uint64_t id, bool authenticate = false, bool force_reauth = false);
             bool reset_application();
@@ -73,11 +78,6 @@ namespace Vital::Manager {
             bool set_largeimage(const std::string& key, const std::string& text = "N/A");
             bool set_smallimage(const std::string& key, const std::string& text = "N/A");
             bool set_timestamps(int64_t start_at, int64_t end_at = 0);
-
-
-            // Getters //
-            uint64_t get_userid() const;
-            std::string get_username() const;
     };
 }
 #endif

@@ -32,6 +32,18 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, {base_name}, "get_userid", [](auto vm, auto& id) -> int {
+                if (!Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
+                else vm -> push_value(std::to_string(Manager::Discord::get_singleton() -> get_userid()));
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_username", [](auto vm, auto& id) -> int {
+                if (!Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
+                else vm -> push_value(Manager::Discord::get_singleton() -> get_username());
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "set_application_id", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id, authenticate = false, force_reauth = false)")
                     .require(1, &Machine::is_string)
@@ -42,11 +54,6 @@ namespace Vital::Sandbox::API {
                 bool authenticate = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 bool force_reauth = vm -> is_bool(3) ? vm -> get_bool(3) : false;
                 vm -> push_value(Manager::Discord::get_singleton() -> set_application_id(app_id, authenticate, force_reauth));
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "reset_application", [](auto vm, auto& id) -> int {
-                vm -> push_value(Manager::Discord::get_singleton() -> reset_application());
                 return 1;
             });
 
@@ -103,17 +110,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_userid", [](auto vm, auto& id) -> int {
-                if (!Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
-                else vm -> push_value(std::to_string(Manager::Discord::get_singleton() -> get_userid()));
+            API::bind(vm, {base_name}, "reset_application", [](auto vm, auto& id) -> int {
+                vm -> push_value(Manager::Discord::get_singleton() -> reset_application());
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_username", [](auto vm, auto& id) -> int {
-                if (!Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
-                else vm -> push_value(Manager::Discord::get_singleton() -> get_username());
-                return 1;
-            });
         }
     };
 }
