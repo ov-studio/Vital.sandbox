@@ -32,6 +32,56 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, {base_name}, "is_using_occlusion", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> is_sdfgi_using_occlusion());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "is_reading_sky_light", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> is_sdfgi_reading_sky_light());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_cascades", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_cascades());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_min_cell_size", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_min_cell_size());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_max_distance", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_max_distance());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_y_scale", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_y_scale());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_bounce_feedback", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_bounce_feedback());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_energy", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_energy());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_normal_bias", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_normal_bias());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_probe_bias", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sdfgi_probe_bias());
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
@@ -52,11 +102,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_cascades", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_cascades());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_min_cell_size", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -64,11 +109,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_sdfgi_min_cell_size(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_min_cell_size", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_min_cell_size());
                 return 1;
             });
 
@@ -82,11 +122,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_max_distance", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_max_distance());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_y_scale", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number)
@@ -95,16 +130,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_int(1);
                 base_class::get_environment() -> set_sdfgi_y_scale(static_cast<godot::Environment::SDFGIYScale>(value));
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_y_scale", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_y_scale());
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "is_using_occlusion", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> is_sdfgi_using_occlusion());
                 return 1;
             });
 
@@ -128,16 +153,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_bounce_feedback", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_bounce_feedback());
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "is_reading_sky_light", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> is_sdfgi_reading_sky_light());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_read_sky_light", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
@@ -158,11 +173,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_energy", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_energy());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_normal_bias", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -173,11 +183,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_normal_bias", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_normal_bias());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_probe_bias", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -185,11 +190,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_sdfgi_probe_bias(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_probe_bias", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sdfgi_probe_bias());
                 return 1;
             });
         }
