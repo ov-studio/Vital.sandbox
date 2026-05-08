@@ -32,6 +32,26 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, {base_name}, "get_radius", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssil_radius());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_intensity", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssil_intensity());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_sharpness", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssil_sharpness());
+                return 1;
+            });
+
+            API::bind(vm, {base_name}, "get_normal_rejection", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ssil_normal_rejection());
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
@@ -52,11 +72,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_radius", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_radius());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_intensity", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -64,11 +79,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_intensity(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_intensity", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_intensity());
                 return 1;
             });
 
@@ -82,11 +92,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_sharpness", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_sharpness());
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "set_normal_rejection", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -94,11 +99,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_ssil_normal_rejection(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, {base_name}, "get_normal_rejection", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ssil_normal_rejection());
                 return 1;
             });
         }
