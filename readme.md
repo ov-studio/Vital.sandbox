@@ -19,8 +19,6 @@
 **Vital.sandbox** is an open-source, high-performance sandbox built on Godot and powered by C++17 and Lua.
 <br/>Full control over rendering, networking, threading, and assets - one seamless workflow
 
-From indie ideas to large scale multiplayer worlds, build without compromise.
-
 ## Getting Started
 
 - **Releases**: Grab the latest stable build from [Releases](https://github.com/ov-studio/Vital.sandbox/releases).
