@@ -65,6 +65,58 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, base_name, "select", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(...)")
+                    .require(2, &Machine::is_string);
+
+                int count = vm -> get_count();
+                for (int i = 2; i <= count; i++) {
+                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
+                    self -> query -> select.push_back(vm -> get_string(i));
+                }
+                vm -> get_reference(self -> self_reference(), true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "where", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(column, op, value)")
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_string);
+
+                auto column = vm -> get_string(2);
+                auto op = vm -> get_string(3);
+                auto value = vm -> get_string(4);
+                self -> query -> where.emplace_back(column, op, value);
+                vm -> get_reference(self -> self_reference(), true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "insert", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(data)")
+                    .require(2, &Machine::is_table);
+
+                self -> query -> data = read_table(vm, 2);
+                self -> query -> query_type = "insert";
+                vm -> get_reference(self -> self_reference(), true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "delete", [](auto vm, auto self, auto& id) -> int {
+                self -> query -> query_type = "delete";
+                vm -> get_reference(self -> self_reference(), true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(data)")
+                    .require(2, &Machine::is_table);
+
+                self -> query -> data = read_table(vm, 2);
+                self -> query -> query_type = "update";
+                vm -> get_reference(self -> self_reference(), true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, base_name, "fetch", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(limit = 0)")
                     .optional(2, &Machine::is_number);
@@ -237,58 +289,6 @@ namespace Vital::Sandbox::API {
                         vm -> pop(1);
                     }
                 }) -> detach();
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "select", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(...)")
-                    .require(2, &Machine::is_string);
-
-                int count = vm -> get_count();
-                for (int i = 2; i <= count; i++) {
-                    if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
-                    self -> query -> select.push_back(vm -> get_string(i));
-                }
-                vm -> get_reference(self -> self_reference(), true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "where", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(column, op, value)")
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_string);
-
-                auto column = vm -> get_string(2);
-                auto op = vm -> get_string(3);
-                auto value = vm -> get_string(4);
-                self -> query -> where.emplace_back(column, op, value);
-                vm -> get_reference(self -> self_reference(), true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "insert", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(data)")
-                    .require(2, &Machine::is_table);
-
-                self -> query -> data = read_table(vm, 2);
-                self -> query -> query_type = "insert";
-                vm -> get_reference(self -> self_reference(), true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "delete", [](auto vm, auto self, auto& id) -> int {
-                self -> query -> query_type = "delete";
-                vm -> get_reference(self -> self_reference(), true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(data)")
-                    .require(2, &Machine::is_table);
-
-                self -> query -> data = read_table(vm, 2);
-                self -> query -> query_type = "update";
-                vm -> get_reference(self -> self_reference(), true);
                 return 1;
             });
         }
