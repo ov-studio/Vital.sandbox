@@ -99,7 +99,6 @@ namespace Vital::Engine {
             // State
             bool is_active() const;
             bool is_connecting() const;
-            static bool is_server();
             int get_peer_id() const;
 
             #if defined(Vital_SDK_Client)

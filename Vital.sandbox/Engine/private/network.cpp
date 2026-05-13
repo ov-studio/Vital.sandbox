@@ -306,10 +306,6 @@ namespace Vital::Engine {
 
     #else
     bool Network::host(int port, int max_peers) {
-        if (!is_server()) {
-            Tool::print("sbox", "Network: host() called on non-server");
-            return false;
-        }
         if (is_active()) {
             Tool::print("sbox", "Network: already hosting");
             return false;
