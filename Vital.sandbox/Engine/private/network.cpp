@@ -221,6 +221,7 @@ namespace Vital::Engine {
             Tool::print("sbox", "Network: already connected/connecting");
             return false;
         }
+        this->max_peers = max_peers; // store it
         create_node();
         peer.instantiate();
         if (peer -> create_client(godot::String(ip.c_str()), port) != godot::OK) {
@@ -310,6 +311,7 @@ namespace Vital::Engine {
             Tool::print("sbox", "Network: already hosting");
             return false;
         }
+        this -> max_peers = max_peers;
         create_node();
         peer.instantiate();
         godot::Error err = peer -> create_server(port, max_peers);
@@ -362,6 +364,10 @@ namespace Vital::Engine {
 
     int Network::get_peer_count() const {
         return static_cast<int>(connected_peers.size());
+    }
+
+    int Network::get_max_peers() const {
+        return max_peers;
     }
     #endif
 

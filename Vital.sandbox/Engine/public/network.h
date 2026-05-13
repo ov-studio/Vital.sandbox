@@ -71,6 +71,7 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
+            int max_peers = 0;
             #endif
 
             static godot::SceneTree* get_scene_tree();
@@ -117,6 +118,7 @@ namespace Vital::Engine {
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
+            int get_max_peers() const;
             #endif
 
             // Shared — Stack-based send/receive API (RPC transport is internal)
