@@ -101,7 +101,6 @@ namespace Vital::Engine {
             bool is_connecting() const;
             static bool is_server();
             int get_peer_id() const;
-            void print_status() const;
 
             #if defined(Vital_SDK_Client)
             bool connect_to_server(const std::string& ip, int port, bool enable_reconnect = false);

@@ -183,6 +183,7 @@ namespace Vital::Engine {
         return peer.is_valid() && peer -> get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTING;
     }
 
+    // TODO: SHOULD BE REMOVED
     bool Network::is_server() {
         return Tool::get_platform() == "server";
     }
@@ -192,16 +193,6 @@ namespace Vital::Engine {
         if (!tree) return 0;
         auto mp = tree -> get_multiplayer();
         return mp.is_valid() ? mp -> get_unique_id() : 0;
-    }
-
-    void Network::print_status() const {
-        Tool::print("sbox", "=== Network Status ===");
-        Tool::print("sbox", "Role   : ", is_server() ? "SERVER" : "CLIENT");
-        Tool::print("sbox", "Active : ", is_active());
-        Tool::print("sbox", "PeerID : ", get_peer_id());
-        #if !defined(Vital_SDK_Client)
-        Tool::print("sbox", "Clients: ", (int)connected_peers.size());
-        #endif
     }
 
 
