@@ -198,14 +198,10 @@ namespace Vital::Engine {
         auto tree = get_scene_tree();
         if (!tree) return;
         auto mp = tree -> get_multiplayer();
-
-        // Inject sender_id into the object map before converting to Stack
         int32_t sender = mp.is_valid() ? mp -> get_remote_sender_id() : 0;
         godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
         obj["sender_id"] = (int64_t)sender;
         data["object"] = obj;
-
-        // Convert to Stack and emit into the event system
         Tool::Event::emit("vital.network:packet", Tool::Stack::from_dict(data));
     }
 
