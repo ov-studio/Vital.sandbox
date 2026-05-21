@@ -27,7 +27,6 @@ namespace Vital::Manager {
     // TODO: Improve
     class NetworkNode : public godot::Node {
         GDCLASS(NetworkNode, godot::Node)
-
         public:
             static void _bind_methods();
             void _receive(godot::Dictionary data);
