@@ -208,7 +208,7 @@ namespace Vital::Manager {
         });
 
         http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
-            const Vital::Engine::SrvConfig& cfg = Engine::Network::get_singleton()->get_server_config();
+            const Vital::Engine::SrvConfig& cfg = Engine::Network::get_singleton() -> get_server_config();
             rapidjson::Document document;
             document.SetObject();
             auto& alloc = document.GetAllocator();
