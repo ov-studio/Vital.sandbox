@@ -124,8 +124,8 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_vector2)
                     .require(3, [](Machine* vm, int index) {
                         return vm -> is_string(index)
-                            || vm_module::is_userdata<API::Texture::Instance>(vm, Vital::Engine::Texture::base_name, index)
-                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, Vital::Engine::Rendertarget::base_name, index)
+                            || vm_module::is_userdata<API::Texture::Instance>(vm, API::Texture::base_name, index)
+                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, API::Rendertarget::base_name, index)
                             || vm_module::is_userdata<API::SVG::Instance>(vm, SVG::base_name, index);
                     });
 
@@ -137,11 +137,11 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_string(3)) {
                     base_class::get_singleton() -> draw_image(position, size, vm -> get_string(3), rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<API::Texture::Instance>(vm, Vital::Engine::Texture::base_name, 3)) {
+                else if (vm_module::is_userdata<API::Texture::Instance>(vm, API::Texture::base_name, 3)) {
                     auto instance = vm_module::get_userdata_object<API::Texture::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, Vital::Engine::Rendertarget::base_name, 3)) {
+                else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, API::Rendertarget::base_name, 3)) {
                     auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> rendertarget, rotation, pivot, color);
                 }
@@ -158,7 +158,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_vector2)
-                    .require(4, [](Machine* vm, int index) { return vm_module::is_userdata<API::Font::Instance>(vm, Vital::Engine::Font::base_name, index); })
+                    .require(4, [](Machine* vm, int index) { return vm_module::is_userdata<API::Font::Instance>(vm, API::Font::base_name, index); })
                     .require(5, &Machine::is_number);
 
                 auto text = vm -> get_string(1);
