@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: cfg_server.h
+     Script: Manager: cfg_server.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 28/03/2026
@@ -8,18 +8,18 @@
 ----------------------------------------------------------------*/
 
 
-//############
+//////////////
 // Imports //
-//############
+//////////////
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
 
-////////////////////////////////
-// Vital: Engine: cfg_server //
-////////////////////////////////
+/////////////////////////////////
+// Vital: Manager: cfg_server //
+/////////////////////////////////
 
 namespace Vital::Engine {
     class cfg_server {
