@@ -29,7 +29,7 @@ namespace Vital::Engine {
             inline static Rendertarget* active = nullptr;
             static void _bind_methods() {}
         private:
-            std::vector<Canvas::Command> queue;
+            std::vector<Engine::Canvas::Command> queue;
             bool instant = false;
         public:
             // Instantiators //
@@ -42,7 +42,7 @@ namespace Vital::Engine {
             // Managers //
             static Rendertarget* create(godot::Vector2 size, bool transparent = false);
             void destroy();
-            void push(Canvas::Command command);
+            void push(Engine::Canvas::Command command);
             void clear(bool clear, bool instant);
         
 

@@ -67,7 +67,7 @@ namespace Vital::Manager {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            const cfg_server* server_config = nullptr;
+            const Engine::cfg_server* server_config = nullptr;
             std::string server_ip;
             #endif
 

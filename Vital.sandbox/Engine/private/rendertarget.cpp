@@ -54,7 +54,7 @@ namespace Vital::Engine {
         rt -> viewport -> set_transparent_background(transparent);
         rt -> viewport -> set_update_mode(godot::SubViewport::UPDATE_ALWAYS);
         rt -> viewport -> add_child(rt);
-        Canvas::get_singleton() -> add_child(rt -> viewport);
+        Engine::Canvas::get_singleton() -> add_child(rt -> viewport);
         return rt;
     }
 
@@ -69,7 +69,7 @@ namespace Vital::Engine {
         if (instant) _update();
     }
 
-    void Rendertarget::push(Canvas::Command command) {
+    void Rendertarget::push(Engine::Canvas::Command command) {
         queue.push_back(command);
         queue_redraw();
         if (instant) _update();
