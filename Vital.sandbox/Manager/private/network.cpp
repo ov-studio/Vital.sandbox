@@ -350,10 +350,6 @@ namespace Vital::Manager {
         return send(stack, 1);
     }
 
-    void Network::emit(Tool::Stack& arguments, int peerID) { 
-        get_singleton() -> send(arguments, peerID);
-    }
-
     void Network::poll(double delta) {
         #if defined(Vital_SDK_Client)
         if (auto_reconnect && !is_active() && !is_connecting()) {

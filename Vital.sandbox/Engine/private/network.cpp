@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Manager/public/network.h>
 
 
 /////////////////////////////

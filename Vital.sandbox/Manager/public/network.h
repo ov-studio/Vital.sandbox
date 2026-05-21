@@ -95,6 +95,5 @@ namespace Vital::Manager {
             bool broadcast(const Tool::Stack& stack);
             bool send_to_server(const Tool::Stack& stack);
             void poll(double delta = 0.0);
-            static void emit(Tool::Stack& arguments, int peerID = 0);
     };
 }
