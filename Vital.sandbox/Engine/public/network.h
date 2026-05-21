@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/srvconfig.h>
 
 
 /////////////////////////////
@@ -22,17 +23,6 @@
 
 namespace Vital::Engine {
     // TODO: Improve
-
-    struct ServerInfo {
-        std::string name        = "Vital Sandbox Server";
-        std::string version     = "1.0.0";
-        std::string description = "";
-        std::string ip          = "";
-        int         port        = 0;
-        int         max_peers   = 32;
-        std::string discord     = "";
-        std::string website     = "";
-    };
 
     class NetworkNode : public godot::Node {
         GDCLASS(NetworkNode, godot::Node)
@@ -75,7 +65,7 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            ServerInfo server_info;
+            SrvConfig server_config;
             #endif
 
             static godot::SceneTree* get_scene_tree();
@@ -113,13 +103,13 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(const ServerInfo& info);
+            bool host(const SrvConfig& config);
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
-            const ServerInfo& get_server_info() const;
+            const SrvConfig& get_server_config() const;
             #endif
 
             // Shared

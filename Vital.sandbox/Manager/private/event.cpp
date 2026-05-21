@@ -151,19 +151,8 @@ void initialize_vital_events() {
 
             #if !defined(Vital_SDK_Client)
             load_server_config();
-
-            Vital::Engine::ServerInfo info;
-            info.port        = g_server_config.is_loaded() ? g_server_config.get_network_port()       : 7777;
-            info.max_peers   = g_server_config.is_loaded() ? g_server_config.get_max_clients()        : 32;
-            info.name        = g_server_config.is_loaded() ? g_server_config.get_server_name()        : "Vital Sandbox Server";
-            info.version     = g_server_config.is_loaded() ? g_server_config.get_server_version()     : "1.0.0";
-            info.description = g_server_config.is_loaded() ? g_server_config.get_server_description() : "";
-            info.discord     = g_server_config.is_loaded() ? g_server_config.get_discord_invite()     : "";
-            info.website     = g_server_config.is_loaded() ? g_server_config.get_website()     : "";
-            net->host(info);
-
-            int http_port = g_server_config.is_loaded() ? g_server_config.get_http_port() : 7778;
-            Vital::Manager::Asset::get_singleton() -> set_http_port(http_port);
+            net->host(g_server_config);
+            Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
             Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
 
