@@ -312,7 +312,7 @@ namespace Vital::Manager {
         }
         catch (...) { }
         Vital::Tool::print("sbox", fmt::format(
-            "Server is live!\n"
+            "Network: Server is live!\n"
             "> IP — `{}`\n"
             "> Port — `{}`",
             get_server_ip(),
