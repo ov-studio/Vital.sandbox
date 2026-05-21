@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #if !defined(Vital_SDK_Client)
-#include <Vital.sandbox/Config/cfg_server.h>
+#include <Vital.sandbox/Config/Server.h>
 #endif
 
 
@@ -67,7 +67,7 @@ namespace Vital::Manager {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            const Config::cfg_server* server_config = nullptr;
+            const Config::Server* server_config = nullptr;
             std::string server_ip;
             #endif
 
@@ -106,13 +106,13 @@ namespace Vital::Manager {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(Config::cfg_server& config);
+            bool host(Config::Server& config);
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
-            const Config::cfg_server& get_server_config() const;
+            const Config::Server& get_server_config() const;
             std::string get_server_ip() const;
             #endif
 

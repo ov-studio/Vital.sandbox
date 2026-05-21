@@ -287,7 +287,7 @@ namespace Vital::Manager {
     std::string Network::get_server_ip() const { return reconnect_ip; }
 
     #else
-    bool Network::host(Config::cfg_server& config) {
+    bool Network::host(Config::Server& config) {
         if (is_active()) {
             Tool::print("sbox", "Network: already hosting");
             return false;
@@ -359,7 +359,7 @@ namespace Vital::Manager {
         return static_cast<int>(connected_peers.size());
     }
 
-    const Config::cfg_server& Network::get_server_config() const { 
+    const Config::Server& Network::get_server_config() const { 
         return *server_config;
     }
 

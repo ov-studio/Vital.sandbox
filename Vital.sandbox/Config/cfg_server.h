@@ -22,7 +22,7 @@
 ////////////////////////////
 
 namespace Vital::Config {
-    class cfg_server {
+    class Server {
         private:
             Tool::YAML yaml;
             bool loaded = false;
@@ -42,8 +42,8 @@ namespace Vital::Config {
                 return Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
             }
         public:
-            cfg_server() = default;
-            ~cfg_server() = default;
+            Server() = default;
+            ~Server() = default;
 
             bool load() {
                 const std::string config_path = "config.yaml";
@@ -54,7 +54,7 @@ namespace Vital::Config {
                         yaml.parse(content);
                     }
                     catch (const std::exception& e) {
-                        Tool::print("error", "cfg_server: Malformed YAML — ", e.what());
+                        Tool::print("error", "Server: Malformed YAML — ", e.what());
                         return false;
                     }
                     loaded = true;
@@ -73,7 +73,7 @@ namespace Vital::Config {
                     oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value);
                 };
                 std::ostringstream oss;
-                oss << (loaded ? "cfg_server: Loaded successfully\n" : "cfg_server: Using defaults\n");
+                oss << (loaded ? "Server: Loaded successfully\n" : "Server: Using defaults\n");
                 oss << "• Server:\n";
                 append_field(oss, "Name", get_server_name());
                 append_field(oss, "Version", get_server_version());
