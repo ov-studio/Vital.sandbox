@@ -48,21 +48,21 @@ namespace Vital::Engine {
 
             bool load() {
                 const std::string config_path = "config.yaml";
-                if (!Tool::File::exists(Tool::get_directory(), config_path)) {
-                    Tool::print("warn", "cfg_server: File not found - '", config_path.c_str(), "'");
-                    return false;
-                }
-                const std::string content = Tool::File::read_text(Tool::get_directory(), config_path);
-                try {
-                    yaml.parse(content);
-                }
-                catch (const std::exception& e) {
-                    Tool::print("error", "cfg_server: Malformed YAML — ", e.what());
-                    return false;
-                }
-                loaded = true;
-                Tool::print("sbox", fetch_info());
-                return true;
+                bool result = [&]() -> bool {
+                    if (!Tool::File::exists(Tool::get_directory(), config_path)) return false;
+                    const std::string content = Tool::File::read_text(Tool::get_directory(), config_path);
+                    try {
+                        yaml.parse(content);
+                    }
+                    catch (const std::exception& e) {
+                        Tool::print("error", "cfg_server: Malformed YAML — ", e.what());
+                        return false;
+                    }
+                    loaded = true;
+                    return true;
+                }();
+                Tool::print(loaded ? "sbox" : "warn", fetch_info());
+                return result;
             }
 
             bool is_loaded() const {
