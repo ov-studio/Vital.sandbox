@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
 #if !defined(Vital_SDK_Client)
-#include <Vital.sandbox/Config/Server.h>
+#include <Vital.sandbox/Config/server.h>
 #endif
 
 

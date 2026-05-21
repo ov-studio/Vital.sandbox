@@ -22,7 +22,7 @@
 /////////////
 
 #if !defined(Vital_SDK_Client)
-#include <Vital.sandbox/Config/Server.h>
+#include <Vital.sandbox/Config/server.h>
 static Vital::Config::Server g_server_config;
 #endif
 
