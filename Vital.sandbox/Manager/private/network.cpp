@@ -310,21 +310,10 @@ namespace Vital::Manager {
         Tool::Event::emit("vital.network:peer:leave", args);
     }
 
-    const std::unordered_set<int>& Network::get_connected_peers() const { 
-        return connected_peers; 
-    }
-
-    int Network::get_peer_count() const { 
-        return static_cast<int>(connected_peers.size());
-    }
-
-    const Config::Server& Network::get_server_config() const { 
-        return *server_config;
-    }
-
-    std::string Network::get_server_ip() const { 
-        return server_ip;
-    }
+    const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
+    int Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
+    const Config::Server& Network::get_server_config() const { return *server_config;}
+    std::string Network::get_server_ip() const { return server_ip; }
     #endif
 
 
@@ -342,7 +331,7 @@ namespace Vital::Manager {
         return true;
     }
 
-    bool Network::broadcast(const Tool::Stack& stack)      { return send(stack, 0); }
+    bool Network::broadcast(const Tool::Stack& stack) { return send(stack, 0); }
     bool Network::send_to_server(const Tool::Stack& stack) { return send(stack, 1); }
     void Network::emit(Tool::Stack& arguments, int peerID) { get_singleton() -> send(arguments, peerID); }
 
@@ -356,8 +345,7 @@ namespace Vital::Manager {
         if (auto_reconnect && !is_active() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);
-                if (reconnect_timer <= 0.0f)
-                    connect_to_server(reconnect_ip, reconnect_port, true);
+                if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, true);
             }
             return;
         }
