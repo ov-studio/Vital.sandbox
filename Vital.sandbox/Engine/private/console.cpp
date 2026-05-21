@@ -425,19 +425,6 @@ namespace Vital::Engine {
     std::string Console::fetch_info() {
         auto nm = Engine::Network::get_singleton();
         auto rm = Manager::Resource::get_singleton();
-        const auto loaded = rm->get_all_resources();
-        const int running = static_cast<int>(
-            std::count_if(loaded.begin(), loaded.end(), [&](const Manager::Resource::Manifest* r) {
-                return rm->is_running(r->ref);
-            })
-        );
-    
-        const int peer_count = nm -> get_peer_count();
-        const int max_peers = nm -> get_max_peers();
-        //const std::string server_ip = Manager::Kit::fetch_json_value("config/server", "ip").as<std::string>();
-        //const std::string server_name = Manager::Kit::fetch_json_value("config/server", "name").as<std::string>();
-        //const std::string website = Manager::Kit::fetch_json_value("config/server", "website").as<std::string>();
-        //const std::string discord = Manager::Kit::fetch_json_value("config/server", "discord").as<std::string>();
         return fmt::format(
             "— Server —\n"
             "> IP: `{}`\n"
@@ -452,8 +439,8 @@ namespace Vital::Engine {
             "",
             "",
             "",
-            peer_count, max_peers,
-            loaded.size(), running
+            nm -> get_peer_count(), nm -> get_max_peers(),
+            rm -> get_resource_count(Manager::Resource::Count::Loaded), rm -> get_resource_count(Manager::Resource::Count::Running)
         );
     }
     #endif
