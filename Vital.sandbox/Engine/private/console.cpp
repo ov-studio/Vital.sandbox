@@ -447,10 +447,11 @@ namespace Vital::Engine {
             "\n"
             "— Stats —\n"
             "> Players: `{}/{}`\n"
-            "> Resources:\n"
-            ">   Loaded: `{}`\n"
-            ">   Running: `{}`\n",
-            "", "", "", "",
+            "> Resources: `{}/{}`\n"
+            "", 
+            "", 
+            "", 
+            "",
             peer_count, max_peers,
             loaded.size(), running
         );
