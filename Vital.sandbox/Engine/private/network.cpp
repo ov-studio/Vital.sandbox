@@ -181,7 +181,7 @@ namespace Vital::Engine {
     bool Network::is_connecting() const {
         return peer.is_valid() && peer -> get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTING;
     }
-    
+
     int Network::get_peer_id() const {
         auto tree = get_scene_tree();
         if (!tree) return 0;
