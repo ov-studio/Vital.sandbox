@@ -45,7 +45,7 @@ void load_server_config() {
         info.max_peers = g_server_config.get_max_clients();
         info.discord = g_server_config.get_discord_invite();
     }
-    Vital::Manager::Asset::get_singleton() -> set_server_info(info);
+    Vital::Manager::Network::get_singleton() -> set_server_info(info);
 }
 #endif
 
