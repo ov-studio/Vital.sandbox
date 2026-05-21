@@ -434,7 +434,7 @@ namespace Vital::Engine {
         append_field("Name", cfg.get_server_name());
         append_field("Version", cfg.get_server_version());
         append_field("Website", cfg.get_website());
-        append_field("Discord", cfg.get_discord_invite());
+        append_field("Discord", cfg.get_discord());
         oss << "• Network:\n";
         append_field("IP", nm -> get_server_ip());
         append_field("Port", std::to_string(cfg.get_network_port()));

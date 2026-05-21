@@ -78,7 +78,7 @@ namespace Vital::Config {
                 append_field(oss, "Name", get_server_name());
                 append_field(oss, "Version", get_server_version());
                 append_field(oss, "Website", get_website());
-                append_field(oss, "Discord", get_discord_invite());
+                append_field(oss, "Discord", get_discord());
                 oss << "• Network:\n";
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
@@ -114,7 +114,7 @@ namespace Vital::Config {
 
 
             // Social //
-            std::string get_discord_invite() const { return get_str("social", "discord_invite", ""); }
+            std::string get_discord() const { return get_str("social", "discord_invite", ""); }
             std::string get_website() const { return get_str("social", "website", ""); }
     };
 }
