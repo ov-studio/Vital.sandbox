@@ -74,6 +74,7 @@ namespace Vital::Manager {
                 #endif
                 static const Manifest* get_resource(const std::string& name);
                 static std::vector<const Manifest*> get_all_resources();
+                static std::vector<const Manifest*> get_resources(Count type);
 
 
                 // APIs //
