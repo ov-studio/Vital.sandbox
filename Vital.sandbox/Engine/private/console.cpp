@@ -448,9 +448,9 @@ namespace Vital::Engine {
             "— Stats —\n"
             "> Players: `{}/{}`\n"
             "> Resources: `{}/{}`\n"
-            "", 
-            "", 
-            "", 
+            "",
+            "",
+            "",
             "",
             peer_count, max_peers,
             loaded.size(), running
