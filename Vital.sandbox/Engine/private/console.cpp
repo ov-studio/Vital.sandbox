@@ -28,13 +28,13 @@ namespace Vital::Engine {
     // Instantiators //
     Console::Console() {
         #if defined(Vital_SDK_Client)
-            Webview::Options options;
+            Engine::Webview::Options options;
             options.fullscreen = true;
             options.transparent = true;
             options.incognito = true;
             options.autoplay = false;
             options.zoomable = false;
-            webview = Webview::create(options);
+            webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
             webview -> set_message_handler([this](godot::String message) {
                 on_message(message);

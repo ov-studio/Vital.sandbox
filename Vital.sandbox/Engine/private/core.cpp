@@ -96,7 +96,7 @@ namespace Vital::Engine {
 
     void Core::teardown() {
         Manager::Asset::free_singleton();
-        Model::teardown_spawner();
+        Engine::Model::teardown_spawner();
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif

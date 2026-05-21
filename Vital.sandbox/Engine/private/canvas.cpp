@@ -38,7 +38,7 @@ namespace Vital::Engine {
 
     void Canvas::_process(double) {
         queue_redraw();
-        Texture::flush();
+        Engine::Texture::flush();
     }
 
     void Canvas::_draw() {
@@ -189,7 +189,7 @@ namespace Vital::Engine {
     };
 
     void Canvas::push(Command command) {
-        auto rt = Rendertarget::get_active();
+        auto rt = Engine::Rendertarget::get_active();
         if (rt) return rt -> push(command);
         queue.push_back(command);
     }
@@ -379,8 +379,8 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         try {
-            auto texture = Texture::get_from_reference(path);
-            if (!texture) texture = Texture::create_texture_2d(path, path);
+            auto texture = Engine::Texture::get_from_reference(path);
+            if (!texture) texture = Engine::Texture::create_texture_2d(path, path);
             draw_image(position, size, texture, rotation, pivot, color);
         }
         catch(...) { std::rethrow_exception(std::current_exception()); }
