@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/network.h>
 #include <Vital.sandbox/Manager/public/resource.h>
 
 
@@ -420,6 +421,42 @@ namespace Vital::Engine {
         return oss.str();
     }
 
+    #if !defined(Vital_SDK_Client)
+    std::string Console::fetch_info() {
+        auto nm = Engine::Network::get_singleton();
+        auto rm = Manager::Resource::get_singleton();
+        const auto loaded = rm->get_all_resources();
+        const int running = static_cast<int>(
+            std::count_if(loaded.begin(), loaded.end(), [&](const Manager::Resource::Manifest* r) {
+                return rm->is_running(r->ref);
+            })
+        );
+    
+        const int peer_count = nm -> get_peer_count();
+        const int max_peers  = nm -> get_max_peers();
+        //const std::string server_ip = Manager::Kit::fetch_json_value("config/server", "ip").as<std::string>();
+        //const std::string server_name = Manager::Kit::fetch_json_value("config/server", "name").as<std::string>();
+        //const std::string website = Manager::Kit::fetch_json_value("config/server", "website").as<std::string>();
+        //const std::string discord = Manager::Kit::fetch_json_value("config/server", "discord").as<std::string>();
+        return fmt::format(
+            "— Server —\n"
+            "> IP: `{}`\n"
+            "> Name: `{}`\n"
+            "> Website: `{}`\n"
+            "> Discord: `{}`\n"
+            "\n"
+            "— Stats —\n"
+            "> Players: `{}/{}`\n"
+            "> Resources:\n"
+            ">   Loaded: `{}`\n"
+            ">   Running: `{}`\n",
+            "", "", "", "",
+            peer_count, max_peers,
+            loaded.size(), running
+        );
+    }
+    #endif
+
 
     // Utils //
     Console* Console::get_singleton() {
@@ -509,6 +546,7 @@ namespace Vital::Engine {
             if (cmd == "help") { print("sbox", fetch_help()); return true; }
             if (cmd == "clear") { clear(); return true; }
             #if !defined(Vital_SDK_Client)
+            if (cmd == "info") { print("sbox", fetch_info()); return true; }
             if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
             if (cmd == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
             if (cmd == "stop") { Manager::Resource::get_singleton() -> stop(tokens[1]); return true; }

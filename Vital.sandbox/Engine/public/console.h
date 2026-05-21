@@ -62,6 +62,7 @@ namespace Vital::Engine {
             static Tool::Stack fetch_mode_color(const std::string& mode);
             static std::string fetch_version();
             static std::string fetch_help();
+            static std::string fetch_info();
         public:
             // Instantiators //
             Console();
