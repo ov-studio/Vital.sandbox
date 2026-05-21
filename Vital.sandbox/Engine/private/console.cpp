@@ -427,25 +427,20 @@ namespace Vital::Engine {
         auto rm = Manager::Resource::get_singleton();
         const auto& cfg = nm -> get_server_config();
         std::ostringstream oss;
-        auto append_field = [&](const std::string& label, const std::string& value) {
-            oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value);
-        };
-        auto append_ratio = [&](const std::string& label, auto current, auto max) {
-            oss << fmt::format("> {} — `{}/{}`\n", label, current, max);
-        };
+        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value); };
+        auto append_ratio = [&](const std::string& label, auto current, auto max) { oss << fmt::format("> {} — `{}/{}`\n", label, current, max); };
         oss << "Server Info:\n";
         oss << "• Server:\n";
-        append_field("Name",    cfg.get_server_name());
+        append_field("Name", cfg.get_server_name());
         append_field("Version", cfg.get_server_version());
         append_field("Website", cfg.get_website());
         append_field("Discord", cfg.get_discord_invite());
         oss << "• Network:\n";
-        append_field("Port",      std::to_string(cfg.get_network_port()));
+        append_field("Port", std::to_string(cfg.get_network_port()));
         append_field("HTTP Port", std::to_string(cfg.get_http_port()));
         oss << "• Stats:\n";
-        append_ratio("Players",   nm -> get_peer_count(), cfg.get_max_clients());
-        append_ratio("Resources", rm -> get_resource_count(Manager::Resource::Count::Running),
-                                  rm -> get_resource_count(Manager::Resource::Count::Loaded));
+        append_ratio("Players", nm -> get_peer_count(), cfg.get_max_clients());
+        append_ratio("Resources", rm -> get_resource_count(Manager::Resource::State::Running), rm -> get_resource_count(Manager::Resource::State::Loaded));
         return oss.str();
     }
     #endif

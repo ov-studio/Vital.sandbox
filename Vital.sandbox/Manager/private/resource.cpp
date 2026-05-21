@@ -221,15 +221,15 @@ namespace Vital::Manager {
         return result;
     }
 
-    std::vector<const Resource::Manifest*> Resource::Internal::get_resources(Count type) {
+    std::vector<const Resource::Manifest*> Resource::Internal::get_resources(State type) {
         auto rm = Resource::get_singleton();
         std::vector<const Manifest*> result;
         switch (type) {
-            case Count::Loaded:
+            case State::Loaded:
                 result.reserve(rm -> resources.size());
                 for (const auto& r : rm -> resources) result.push_back(&r);
                 break;
-            case Count::Running:
+            case State::Running:
                 result.reserve(rm -> running.size());
                 for (const auto& name : rm -> running) result.push_back(get_resource(name));
                 break;
@@ -634,12 +634,12 @@ namespace Vital::Manager {
         return result;
     }
 
-    std::vector<const Resource::Manifest*> Resource::get_resources(Count type) const {
+    std::vector<const Resource::Manifest*> Resource::get_resources(State type) const {
         std::lock_guard<std::mutex> lock(mutex);
         return Internal::get_resources(type);
     }
 
-    int Resource::get_resource_count(Count type) const {
+    int Resource::get_resource_count(State type) const {
         std::lock_guard<std::mutex> lock(mutex);
         return static_cast<int>(Internal::get_resources(type).size());
     }

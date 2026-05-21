@@ -25,7 +25,10 @@ namespace Vital::Manager {
         public:
             inline static const std::unordered_set<std::string> Types = {"shared", "server", "client"};
 
-            enum class Count { Loaded, Running };
+            enum class State {
+                Loaded,
+                Running
+            };
     
             struct Script {
                 std::string src;
@@ -74,7 +77,7 @@ namespace Vital::Manager {
                 #endif
                 static const Manifest* get_resource(const std::string& name);
                 static std::vector<const Manifest*> get_all_resources();
-                static std::vector<const Manifest*> get_resources(Count type);
+                static std::vector<const Manifest*> get_resources(State type);
 
 
                 // APIs //
@@ -123,8 +126,8 @@ namespace Vital::Manager {
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
             static std::string get_resource_base(const std::string& name, bool require_running = false);
             std::vector<Script> get_resource_scripts(const std::string& name, const std::string& type = "") const;
-            std::vector<const Manifest*> get_resources(Count type) const;
-            int get_resource_count(Count type) const;
+            std::vector<const Manifest*> get_resources(State type) const;
+            int get_resource_count(State type) const;
 
 
             // APIs //
