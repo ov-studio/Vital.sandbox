@@ -75,12 +75,12 @@ namespace Vital::Engine {
                 };
                 std::ostringstream oss;
                 oss << (loaded ? "cfg_server: Loaded successfully\n" : "cfg_server: Using defaults\n");
-                oss << "# Server:\n";
-                append_field(oss, "Name",    get_server_name());
+                oss << "• Server:\n";
+                append_field(oss, "Name", get_server_name());
                 append_field(oss, "Version", get_server_version());
                 append_field(oss, "Website", get_website());
                 append_field(oss, "Discord", get_discord_invite());
-                oss << "# Network:\n";
+                oss << "• Network:\n";
                 append_field(oss, "Port", std::to_string(get_network_port()));
                 append_field(oss, "HTTP Port", std::to_string(get_http_port()));
                 append_field(oss, "Max Peers", std::to_string(get_max_clients()));
