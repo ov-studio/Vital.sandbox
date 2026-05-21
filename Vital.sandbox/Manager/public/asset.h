@@ -53,7 +53,6 @@ namespace Vital::Manager {
             std::unordered_map<std::string, AssetEntry> registered_assets;
             std::unordered_map<std::string, int> spawn_queue;
             static std::string hash_file(const std::string& path);
-
         public:
             Asset() = default;
             ~Asset() = default;
