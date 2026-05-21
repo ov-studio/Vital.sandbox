@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Manager: cfg_server.h
+     Script: Config: server.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 28/03/2026
@@ -17,11 +17,11 @@
 #include <Vital.sandbox/Engine/public/console.h>
 
 
-/////////////////////////////////
-// Vital: Manager: cfg_server //
-/////////////////////////////////
+////////////////////////////
+// Vital: Config: Server //
+////////////////////////////
 
-namespace Vital::Manager {
+namespace Vital::Config {
     class cfg_server {
         private:
             Tool::YAML yaml;
@@ -41,7 +41,6 @@ namespace Vital::Manager {
                 if (!loaded || !yaml.has(section)) return fallback;
                 return Tool::YAML::get_bool(yaml.get_root()[section], key, fallback);
             }
-
         public:
             cfg_server() = default;
             ~cfg_server() = default;
