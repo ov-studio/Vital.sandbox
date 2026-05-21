@@ -22,15 +22,6 @@
 
 // TODO: Improve
 namespace Vital::Manager {
-    struct ServerInfo {
-        std::string name = "Vital Sandbox Server";
-        std::string version = "1.0.0";
-        std::string description = "";
-        int max_peers = 32;
-        std::string discord = "";
-        std::string website = "";
-    };
-
     class Asset {
         private:
             struct AssetEntry {
@@ -80,8 +71,6 @@ namespace Vital::Manager {
             #if !defined(Vital_SDK_Client)
             void set_http_port(int port);
             int  get_http_port() const;
-            void set_server_info(const ServerInfo& info);
-            const ServerInfo& get_server_info() const;
             #endif
 
 

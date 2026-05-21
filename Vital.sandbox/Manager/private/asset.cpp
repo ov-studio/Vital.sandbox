@@ -93,15 +93,6 @@ namespace Vital::Manager {
     #if !defined(Vital_SDK_Client)
     void Asset::set_http_port(int port) { http_port = port; }
     int  Asset::get_http_port() const   { return http_port; }
-
-    void Asset::set_server_info(const ServerInfo& info) {
-        server_info = info;
-        Tool::print("sbox", "Asset: server info set: '", info.name, "' v", info.version);
-    }
-
-    const ServerInfo& Asset::get_server_info() const {
-        return server_info;
-    }
     #endif
 
 
