@@ -14,7 +14,6 @@
 
 #pragma once
 #if defined(Vital_SDK_Client)
-#include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
 
 
