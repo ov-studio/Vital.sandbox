@@ -425,15 +425,17 @@ namespace Vital::Engine {
     std::string Console::fetch_info() {
         auto nm = Engine::Network::get_singleton();
         auto rm = Manager::Resource::get_singleton();
+        const auto& info = nm -> get_server_info();
         std::ostringstream oss;
-        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value); };
+        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value); };
         auto append_ratio = [&](const std::string& label, auto current, auto max) { oss << fmt::format("> {} — `{}/{}`\n", label, current, max); };
         oss << "Server Info:\n";
         oss << "• Server:\n";
-        append_field("IP", "");
-        append_field("Name", "");
-        append_field("Website", "");
-        append_field("Discord", "");
+        append_field("IP", info.ip.empty() ? "0.0.0.0" : info.ip);
+        append_field("Port", std::to_string(info.port));
+        append_field("Name", info.name);
+        append_field("Website", info.website);
+        append_field("Discord", info.discord);
         oss << "• Stats:\n";
         append_ratio("Players", nm -> get_peer_count(), nm -> get_max_peers());
         append_ratio("Resources", rm -> get_resource_count(Manager::Resource::Count::Running), rm -> get_resource_count(Manager::Resource::Count::Loaded));
