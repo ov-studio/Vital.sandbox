@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/network.h>
 #if !defined(Vital_SDK_Client)
 #include <Vital.sandbox/Config/server.h>
 #endif
