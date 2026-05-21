@@ -21,10 +21,7 @@
 // Vital: Manager: Network //
 //////////////////////////////
 
-namespace Vital::Manager {
-    // TODO: Improve
-
-    // TODO: NetworkNode needed???
+namespace Vital::Engine {
     //--------------------//
     //    NetworkNode     //
     //--------------------//
@@ -52,7 +49,7 @@ namespace Vital::Manager {
     }
 
     void NetworkNode::_receive(godot::Dictionary data) {
-        Network::get_singleton() -> _on_packet_received(data);
+        Manager::Network::get_singleton() -> _on_packet_received(data);
     }
 
     #if defined(Vital_SDK_Client)
@@ -63,7 +60,10 @@ namespace Vital::Manager {
     void NetworkNode::_on_peer_connected(int id)    { if (on_peer_connected)    on_peer_connected(id);    }
     void NetworkNode::_on_peer_disconnected(int id) { if (on_peer_disconnected) on_peer_disconnected(id); }
     #endif
+}
 
+namespace Vital::Manager {
+    // TODO: Improve
 
     //--------------------//
     //   Network: Init    //
@@ -104,7 +104,7 @@ namespace Vital::Manager {
 
     void Network::create_node() {
         if (node) return;
-        node = memnew(NetworkNode);
+        node = memnew(Engine::NetworkNode);
         node -> set_name("VitalNetwork");
         Engine::Core::get_scene_root() -> add_child(node);
         node -> setup_rpc();

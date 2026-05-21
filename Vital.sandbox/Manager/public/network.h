@@ -23,8 +23,7 @@
 // Vital: Manager: Network //
 //////////////////////////////
 
-namespace Vital::Manager {
-    // TODO: Improve
+namespace Vital::Engine {
     class NetworkNode : public godot::Node {
         GDCLASS(NetworkNode, godot::Node)
         public:
@@ -46,12 +45,15 @@ namespace Vital::Manager {
             void _on_peer_disconnected(int id);
             #endif
     };
+}
 
+namespace Vital::Manager {
+    // TODO: Improve
     class Network {
         private:
             inline static Network* singleton = nullptr;
             godot::Ref<godot::ENetMultiplayerPeer> peer;
-            NetworkNode* node = nullptr;
+            Engine::NetworkNode* node = nullptr;
 
             #if defined(Vital_SDK_Client)
             bool auto_reconnect = false;
