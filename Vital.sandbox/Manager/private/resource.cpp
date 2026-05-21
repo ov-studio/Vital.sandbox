@@ -618,6 +618,15 @@ namespace Vital::Manager {
         return result;
     }
 
+    int Resource::get_resource_count(Count type) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        switch (type) {
+            case Count::Loaded:  return static_cast<int>(resources.size());
+            case Count::Running: return static_cast<int>(running.size());
+            default: return 0;
+        }
+    }
+
 
     // APIs //
     bool Resource::start(std::string name) {
