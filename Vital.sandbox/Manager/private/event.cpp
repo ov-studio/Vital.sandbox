@@ -28,17 +28,17 @@ static Vital::Engine::cfg_server g_server_config;
 
 void shutdown() {
     #if !defined(Vital_SDK_Client)
-    Vital::Engine::Network::get_singleton() -> close();
+    Vital::Manager::Network::get_singleton() -> close();
     #endif
     #if defined(Vital_SDK_Client)
-    Vital::Engine::Network::get_singleton() -> disconnect_from_server();
+    Vital::Manager::Network::get_singleton() -> disconnect_from_server();
     #endif
-    Vital::Engine::Network::free_singleton();
+    Vital::Manager::Network::free_singleton();
     Vital::Manager::Asset::free_singleton();
 }
 
 void setup() {
-    auto* nm = Vital::Engine::Network::get_singleton();
+    auto* nm = Vital::Manager::Network::get_singleton();
 
     #if defined(Vital_SDK_Client)nm -> 
     Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
@@ -114,7 +114,7 @@ void initialize_vital_events() {
 
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack&) {
-        auto* nm = Vital::Engine::Network::get_singleton();
+        auto* nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
         Vital::Engine::Model::on_connected();
         Vital::Manager::Asset::get_singleton() -> clear();
@@ -134,7 +134,7 @@ void initialize_vital_events() {
         static bool network_initialized = false;
         if (!network_initialized) {
             network_initialized = true;
-            auto* nm = Vital::Engine::Network::get_singleton();
+            auto* nm = Vital::Manager::Network::get_singleton();
             #if defined(Vital_SDK_Client)
                 nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
@@ -148,6 +148,6 @@ void initialize_vital_events() {
         #if defined(Vital_SDK_Client)
         Vital::Manager::Discord::get_singleton() -> process();
         #endif
-        Vital::Engine::Network::get_singleton() -> poll(arguments.array[0].as<double>());
+        Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
 }

@@ -24,6 +24,7 @@
 namespace Vital::Manager {
     // TODO: Improve
 
+    // TODO: NetworkNode needed???
     //--------------------//
     //    NetworkNode     //
     //--------------------//

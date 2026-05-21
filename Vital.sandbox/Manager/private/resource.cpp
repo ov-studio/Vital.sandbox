@@ -127,7 +127,7 @@ namespace Vital::Manager {
                     std::lock_guard<std::mutex> lock(rm -> mutex);
                     resource = Internal::get_resource(name);
                 }
-                Engine::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:started", name, resource));
+                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:started", name, resource));
                 Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
             });
         #else
@@ -298,7 +298,7 @@ namespace Vital::Manager {
 
         #if !defined(Vital_SDK_Client)
             Engine::Core::get_singleton() -> push_deferred([rm, name]() {
-                Engine::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:stopped", name));
+                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:stopped", name));
                 Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
             });
         #else
@@ -565,7 +565,7 @@ namespace Vital::Manager {
         for (const auto& name : running) {
             auto resource = Internal::get_resource(name);
             if (!resource) continue;
-            Engine::Network::get_singleton() -> send(Internal::build_packet("vital.resource:started", name, resource), peer_id);
+            Manager::Network::get_singleton() -> send(Internal::build_packet("vital.resource:started", name, resource), peer_id);
         }
     }
     #endif

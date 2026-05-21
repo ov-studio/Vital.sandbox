@@ -423,7 +423,7 @@ namespace Vital::Engine {
 
     #if !defined(Vital_SDK_Client)
     std::string Console::fetch_info() {
-        auto nm = Engine::Network::get_singleton();
+        auto nm = Manager::Network::get_singleton();
         auto rm = Manager::Resource::get_singleton();
         const auto& cfg = nm -> get_server_config();
         std::ostringstream oss;
