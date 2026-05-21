@@ -23,6 +23,17 @@
 namespace Vital::Engine {
     // TODO: Improve
 
+    struct ServerInfo {
+        std::string name        = "Vital Sandbox Server";
+        std::string version     = "1.0.0";
+        std::string description = "";
+        std::string ip          = "";
+        int         port        = 0;
+        int         max_peers   = 32;
+        std::string discord     = "";
+        std::string website     = "";
+    };
+
     // NetworkNode — lives in the SceneTree so Godot RPC can route packets.
     // _receive() is the single RPC entry point for all incoming packets.
     class NetworkNode : public godot::Node {
@@ -71,11 +82,11 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            int max_peers = 0;
+            int        max_peers    = 0;
+            ServerInfo server_info;
             #endif
 
             static godot::SceneTree* get_scene_tree();
-
             void create_node();
             void destroy_node();
 
@@ -84,7 +95,6 @@ namespace Vital::Engine {
             #else
             void wire_server_signals();
             #endif
-
             void unwire_signals();
 
         public:
@@ -119,9 +129,13 @@ namespace Vital::Engine {
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
             int get_max_peers() const;
+
+            // ServerInfo
+            void set_server_info(const ServerInfo& info);
+            const ServerInfo& get_server_info() const;
             #endif
 
-            // Shared — Stack-based send/receive API (RPC transport is internal)
+            // Shared
             bool send(const Tool::Stack& stack, int peerID = 0);
             bool broadcast(const Tool::Stack& stack);
             bool send_to_server(const Tool::Stack& stack);
