@@ -433,7 +433,7 @@ namespace Vital::Engine {
         );
     
         const int peer_count = nm -> get_peer_count();
-        const int max_peers  = nm -> get_max_peers();
+        const int max_peers = nm -> get_max_peers();
         //const std::string server_ip = Manager::Kit::fetch_json_value("config/server", "ip").as<std::string>();
         //const std::string server_name = Manager::Kit::fetch_json_value("config/server", "name").as<std::string>();
         //const std::string website = Manager::Kit::fetch_json_value("config/server", "website").as<std::string>();
