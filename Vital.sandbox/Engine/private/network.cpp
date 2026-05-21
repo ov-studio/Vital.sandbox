@@ -157,8 +157,7 @@ namespace Vital::Engine {
         if (!mp.is_valid()) return;
         auto try_disconnect = [&](const char* signal, const char* method) {
             godot::Callable cb(node, method);
-            if (mp -> is_connected(signal, cb))
-                mp -> disconnect(signal, cb);
+            if (mp -> is_connected(signal, cb)) mp -> disconnect(signal, cb);
         };
         #if defined(Vital_SDK_Client)
         try_disconnect("connected_to_server", "_on_connected_to_server");
