@@ -34,19 +34,12 @@ namespace Vital::Engine {
         std::string website     = "";
     };
 
-    // NetworkNode — lives in the SceneTree so Godot RPC can route packets.
-    // _receive() is the single RPC entry point for all incoming packets.
     class NetworkNode : public godot::Node {
         GDCLASS(NetworkNode, godot::Node)
 
         public:
             static void _bind_methods();
-
-            // Called by Godot's RPC system when a packet arrives
             void _receive(godot::Dictionary data);
-
-            // Called once after being added to the scene tree
-            // to register RPC config (requires a valid node path)
             void setup_rpc();
 
             #if defined(Vital_SDK_Client)
@@ -82,7 +75,7 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            int        max_peers    = 0;
+            int        max_peers          = 0;
             ServerInfo server_info;
             #endif
 
@@ -104,7 +97,6 @@ namespace Vital::Engine {
             static Network* get_singleton();
             static void free_singleton();
 
-            // Called by NetworkNode::_receive when an RPC packet arrives
             void _on_packet_received(godot::Dictionary data);
 
             // State
@@ -122,16 +114,13 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(int port, int max_peers = 32);
+            bool host(const ServerInfo& info);
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
             int get_max_peers() const;
-
-            // ServerInfo
-            void set_server_info(const ServerInfo& info);
             const ServerInfo& get_server_info() const;
             #endif
 

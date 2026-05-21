@@ -29,24 +29,13 @@ static Vital::Engine::SrvConfig g_server_config;
 #if !defined(Vital_SDK_Client)
 void load_server_config() {
     bool loaded = g_server_config.load();
-    if (!loaded) Vital::Tool::print("sbox", "SrvConfig: No config.yaml found, using default values");
+    if (!loaded) Vital::Tool::print("sbox", "SrvConfig: No config.yaml found, using defaults");
     else {
-        Vital::Tool::print("sbox", "SrvConfig: Server name: '", g_server_config.get_server_name(), "'");
+        Vital::Tool::print("sbox", "SrvConfig: '", g_server_config.get_server_name(), "'");
         Vital::Tool::print("sbox", "SrvConfig: Network port: ", g_server_config.get_network_port());
         Vital::Tool::print("sbox", "SrvConfig: HTTP port: ", g_server_config.get_http_port());
         Vital::Tool::print("sbox", "SrvConfig: Max peers: ", g_server_config.get_max_clients());
     }
-
-    // TODO: MOVE UNDER NETWORK?
-    Vital::Engine::ServerInfo info;
-    if (g_server_config.is_loaded()) {
-        info.name = g_server_config.get_server_name();
-        info.version = g_server_config.get_server_version();
-        info.description = g_server_config.get_server_description();
-        info.max_peers = g_server_config.get_max_clients();
-        info.discord = g_server_config.get_discord_invite();
-    }
-    Vital::Engine::Network::get_singleton() -> set_server_info(info);
 }
 #endif
 
@@ -68,39 +57,29 @@ void setup() {
     Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Connecting...");
     });
-
     Vital::Tool::Event::bind("vital.network:connect:failed", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
-
     Vital::Tool::Event::bind("vital.network:reconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Retrying...");
     });
-
     Vital::Tool::Event::bind("vital.network:reconnect:failed", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Gave up reconnecting");
     });
-
     Vital::Tool::Event::bind("vital.network:disconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Disconnected cleanly");
     });
-
     net->set_reconnect_config(5, 3.0f);
     #else
     Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Server is live");
     });
-
     Vital::Tool::Event::bind("vital.network:peer:join", [](Vital::Tool::Stack& args) {
-        int32_t id = args.array[0].as<int32_t>();
-        Vital::Tool::print("sbox", "Player joined: ", id);
+        Vital::Tool::print("sbox", "Player joined: ", args.array[0].as<int32_t>());
     });
-
     Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
-        int32_t id = args.array[0].as<int32_t>();
-        Vital::Tool::print("sbox", "Player left: ", id);
+        Vital::Tool::print("sbox", "Player left: ", args.array[0].as<int32_t>());
     });
-
     Vital::Tool::Event::bind("vital.network:close", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Server closed");
     });
@@ -142,7 +121,6 @@ void initialize_vital_events() {
     // Network //
     #if !defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
-        int32_t id = args.array[0].as<int32_t>();
         Vital::Engine::Model::clear_synced();
     });
     #endif
@@ -170,18 +148,25 @@ void initialize_vital_events() {
         if (!network_initialized) {
             network_initialized = true;
             auto* net = Vital::Engine::Network::get_singleton();
+
             #if !defined(Vital_SDK_Client)
             load_server_config();
-            int server_port = g_server_config.is_loaded() ? g_server_config.get_network_port() : 7777;
-            int max_peers = g_server_config.is_loaded() ? g_server_config.get_max_clients() : 32;
-            Vital::Tool::print("sbox", "Starting server on port ", server_port, " (max ", max_peers, " clients)");
-            net->host(server_port, max_peers);
+
+            Vital::Engine::ServerInfo info;
+            info.port        = g_server_config.is_loaded() ? g_server_config.get_network_port()       : 7777;
+            info.max_peers   = g_server_config.is_loaded() ? g_server_config.get_max_clients()        : 32;
+            info.name        = g_server_config.is_loaded() ? g_server_config.get_server_name()        : "Vital Sandbox Server";
+            info.version     = g_server_config.is_loaded() ? g_server_config.get_server_version()     : "1.0.0";
+            info.description = g_server_config.is_loaded() ? g_server_config.get_server_description() : "";
+            info.discord     = g_server_config.is_loaded() ? g_server_config.get_discord_invite()     : "";
+            info.website     = g_server_config.is_loaded() ? g_server_config.get_server_website()     : "";
+            net->host(info);
 
             int http_port = g_server_config.is_loaded() ? g_server_config.get_http_port() : 7778;
-            Vital::Tool::print("sbox", "Starting HTTP server on port ", http_port);
             Vital::Manager::Asset::get_singleton() -> set_http_port(http_port);
             Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
+
             #if defined(Vital_SDK_Client)
             net->connect_to_server("127.0.0.1", 7777, true);
             #endif
