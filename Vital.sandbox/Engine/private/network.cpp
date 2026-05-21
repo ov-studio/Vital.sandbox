@@ -357,12 +357,14 @@ namespace Vital::Engine {
         return connected_peers;
     }
 
-    int Network::get_peer_count() const {
-        return static_cast<int>(connected_peers.size());
+    void Network::set_server_info(const ServerInfo& info) {
+        server_info          = info;
+        server_info.max_peers = max_peers; // keep in sync with what host() set
+        Tool::print("sbox", "Network: server info set: '", info.name.c_str(), "' v", info.version.c_str());
     }
 
-    int Network::get_max_peers() const {
-        return max_peers;
+    const ServerInfo& Network::get_server_info() const {
+        return server_info;
     }
     #endif
 
