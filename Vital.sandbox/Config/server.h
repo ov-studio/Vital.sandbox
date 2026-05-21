@@ -73,7 +73,7 @@ namespace Vital::Config {
                     oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value);
                 };
                 std::ostringstream oss;
-                oss << fmt::format("Config: {}\n", loaded ? "Server config loaded successfully" : "Failed to load config (using defaults)");
+                oss << fmt::format("Config: {}\n", loaded ? "Server config loaded successfully" : "Failed to load server config (using defaults)");
                 oss << "• Server:\n";
                 append_field(oss, "Name", get_server_name());
                 append_field(oss, "Version", get_server_version());
