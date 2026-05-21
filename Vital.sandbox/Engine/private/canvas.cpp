@@ -51,7 +51,7 @@ namespace Vital::Engine {
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             singleton = memnew(Canvas);
-            Core::get_singleton() -> add_child(singleton);
+            Engine::Core::get_singleton() -> add_child(singleton);
         }
         return singleton;
     }
@@ -197,7 +197,7 @@ namespace Vital::Engine {
 
     // Getters //
     godot::Vector2 Canvas::get_resolution() {
-        return Core::get_display_server() -> window_get_size();
+        return Engine::Core::get_display_server() -> window_get_size();
     }
 
 

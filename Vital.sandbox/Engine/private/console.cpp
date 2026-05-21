@@ -625,11 +625,11 @@ namespace Vital::Engine {
     void Console::shutdown() {
         print("sbox", "Server shutting down...");
         Manager::Resource::get_singleton() -> stop_all();
-        Core::get_singleton() -> push_deferred([this]() {
+        Engine::Core::get_singleton() -> push_deferred([this]() {
             stdin_running = false;
             print("sbox", "Server shut down successfully!");
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-            Core:: free_singleton();
+            Engine::Core:: free_singleton();
         });
     }
 
@@ -646,7 +646,7 @@ namespace Vital::Engine {
         const auto bind = Manager::Kit::fetch_json_value("config/console", "bind");
         if (keycode != godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()))) return false;
         Engine::Console::get_singleton() -> toggle();
-        Core::get_singleton() -> get_viewport() -> set_input_as_handled();
+        Engine::Core::get_singleton() -> get_viewport() -> set_input_as_handled();
         return true;
     }
 

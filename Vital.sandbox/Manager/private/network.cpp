@@ -106,7 +106,7 @@ namespace Vital::Manager {
         if (node) return;
         node = memnew(NetworkNode);
         node -> set_name("VitalNetwork");
-        Core::get_scene_root() -> add_child(node);
+        Engine::Core::get_scene_root() -> add_child(node);
         node -> setup_rpc();
 
         #if defined(Vital_SDK_Client)

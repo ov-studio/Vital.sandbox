@@ -217,7 +217,7 @@ namespace Vital::Engine {
     }
 
     void Model::cleanup_spawned() {
-        auto core = Core::get_singleton();
+        auto core = Engine::Core::get_singleton();
         if (!core) return;
         for (int i = core -> get_child_count() - 1; i >= 0; i--) {
             godot::Node* child = core -> get_child(i);
@@ -284,13 +284,13 @@ namespace Vital::Engine {
             throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to instantiate model '{}'", name));
         }
         object -> add_child(instance);
-        Core::get_singleton() -> add_child(object);
+        Engine::Core::get_singleton() -> add_child(object);
         return object;
     }
 
     void Model::create_synced(const std::string& name, int authority_peer) {
         if (cache_loaded.find(name) == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
-        Core::get_singleton() -> push_deferred([name, authority_peer]() {
+        Engine::Core::get_singleton() -> push_deferred([name, authority_peer]() {
             spawn_synced(name, authority_peer);
         });
     }
@@ -481,13 +481,13 @@ namespace Vital::Engine {
     }
 
     void Model::set_position(godot::Vector3 position) {
-        Core::get_singleton() -> push_deferred([this, position]() {
+        Engine::Core::get_singleton() -> push_deferred([this, position]() {
             set_global_position(position);
         });
     }
 
     void Model::set_rotation(godot::Vector3 rotation) {
-        Core::get_singleton() -> push_deferred([this, rotation]() {
+        Engine::Core::get_singleton() -> push_deferred([this, rotation]() {
             set_rotation_degrees(rotation);
         });
     }

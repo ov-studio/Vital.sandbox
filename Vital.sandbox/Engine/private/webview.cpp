@@ -33,7 +33,7 @@ namespace Vital::Engine {
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
-        Core::get_singleton() -> push_deferred([this]() {
+        Engine::Core::get_singleton() -> push_deferred([this]() {
             Canvas::get_singleton() -> add_child(webview);
             webview -> connect("ipc_message", godot::Callable(this, "on_message"));
             load_url("https://github.com/ov-studio/Vital.sandbox");

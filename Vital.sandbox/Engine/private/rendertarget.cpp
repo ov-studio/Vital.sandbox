@@ -32,8 +32,8 @@ namespace Vital::Engine {
     }
 
     void Rendertarget::_update() {
-        auto rs = Core::get_rendering_server();
-        auto viewport_main = Core::get_scene_root() -> get_viewport_rid();
+        auto rs = Engine::Core::get_rendering_server();
+        auto viewport_main = Engine::Core::get_scene_root() -> get_viewport_rid();
         rs -> viewport_set_active(viewport_main, false);
         rs -> force_draw();
         rs -> viewport_set_active(viewport_main, true);
