@@ -396,7 +396,6 @@ namespace Vital::Engine {
     
     std::string Console::fetch_help() {
         std::ostringstream oss;
-        oss << "Available Commands:\n";
         auto append_section = [&](const std::string& section, const std::string& label) {
             auto& help = Manager::Kit::fetch_json("config/help");
             if (help.HasParseError() || !help.HasMember(section.c_str())) return;
@@ -411,6 +410,7 @@ namespace Vital::Engine {
                 oss << fmt::format("> {} — {}\n", full_cmd, desc);
             }
         };
+        oss << "Available Commands:\n";
         append_section("shared", "General");
         #if !defined(Vital_SDK_Client)
         append_section("server", "Server");
@@ -425,23 +425,19 @@ namespace Vital::Engine {
     std::string Console::fetch_info() {
         auto nm = Engine::Network::get_singleton();
         auto rm = Manager::Resource::get_singleton();
-        return fmt::format(
-            "— Server —\n"
-            "> IP: `{}`\n"
-            "> Name: `{}`\n"
-            "> Website: `{}`\n"
-            "> Discord: `{}`\n"
-            "\n"
-            "— Stats —\n"
-            "> Players: `{}/{}`\n"
-            "> Resources: `{}/{}`\n",
-            "",
-            "",
-            "",
-            "",
-            nm -> get_peer_count(), nm -> get_max_peers(),
-            rm -> get_resource_count(Manager::Resource::Count::Running), rm -> get_resource_count(Manager::Resource::Count::Loaded)
-        );
+        std::ostringstream oss;
+        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value); };
+        auto append_ratio = [&](const std::string& label, auto current, auto max) { oss << fmt::format("> {} — `{}/{}`\n", label, current, max); };
+        oss << "Server Info:\n";
+        oss << "• Server:\n";
+        append_field("IP", "");
+        append_field("Name", "");
+        append_field("Website", "");
+        append_field("Discord", "");
+        oss << "• Stats:\n";
+        append_ratio("Players", nm -> get_peer_count(), nm -> get_max_peers());
+        append_ratio("Resources", rm -> get_resource_count(Manager::Resource::Count::Running), rm -> get_resource_count(Manager::Resource::Count::Loaded));
+        return oss.str();
     }
     #endif
 
