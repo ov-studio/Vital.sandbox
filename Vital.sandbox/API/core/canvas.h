@@ -124,9 +124,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_vector2)
                     .require(3, [](Machine* vm, int index) {
                         return vm -> is_string(index)
-                            || vm_module::is_userdata<Engine::Texture::Instance>(vm, Engine::Texture::base_name, index)
-                            || vm_module::is_userdata<Engine::Rendertarget::Instance>(vm, Engine::Rendertarget::base_name, index)
-                            || vm_module::is_userdata<SVG::Instance>(vm, SVG::base_name, index);
+                            || vm_module::is_userdata<API::Texture::Instance>(vm, Vital::Engine::Texture::base_name, index)
+                            || vm_module::is_userdata<API::Rendertarget::Instance>(vm, Vital::Engine::Rendertarget::base_name, index)
+                            || vm_module::is_userdata<API::SVG::Instance>(vm, SVG::base_name, index);
                     });
 
                 auto position = vm -> get_vector2(1);
@@ -137,16 +137,16 @@ namespace Vital::Sandbox::API {
                 if (vm -> is_string(3)) {
                     base_class::get_singleton() -> draw_image(position, size, vm -> get_string(3), rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<Engine::Texture::Instance>(vm, Engine::Texture::base_name, 3)) {
-                    auto instance = vm_module::get_userdata_object<Engine::Texture::Instance>(vm, 3);
+                else if (vm_module::is_userdata<API::Texture::Instance>(vm, Vital::Engine::Texture::base_name, 3)) {
+                    auto instance = vm_module::get_userdata_object<API::Texture::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
                 }
-                else if (vm_module::is_userdata<Engine::Rendertarget::Instance>(vm, Engine::Rendertarget::base_name, 3)) {
-                    auto instance = vm_module::get_userdata_object<Engine::Rendertarget::Instance>(vm, 3);
+                else if (vm_module::is_userdata<API::Rendertarget::Instance>(vm, Vital::Engine::Rendertarget::base_name, 3)) {
+                    auto instance = vm_module::get_userdata_object<API::Rendertarget::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> rendertarget, rotation, pivot, color);
                 }
                 else {
-                    auto instance = vm_module::get_userdata_object<SVG::Instance>(vm, 3);
+                    auto instance = vm_module::get_userdata_object<API::SVG::Instance>(vm, 3);
                     base_class::get_singleton() -> draw_image(position, size, instance -> texture, rotation, pivot, color);
                 }
                 vm -> push_value(true);
@@ -158,13 +158,13 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_vector2)
-                    .require(4, [](Machine* vm, int index) { return vm_module::is_userdata<Engine::Font::Instance>(vm, Engine::Font::base_name, index); })
+                    .require(4, [](Machine* vm, int index) { return vm_module::is_userdata<API::Font::Instance>(vm, Vital::Engine::Font::base_name, index); })
                     .require(5, &Machine::is_number);
 
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
                 auto end_at = vm -> get_vector2(3);
-                auto font_instance = vm_module::get_userdata_object<Engine::Font::Instance>(vm, 4);
+                auto font_instance = vm_module::get_userdata_object<API::Font::Instance>(vm, 4);
                 auto font_size = vm -> get_int(5);
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
