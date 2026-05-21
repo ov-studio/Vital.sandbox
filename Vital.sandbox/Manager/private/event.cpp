@@ -149,12 +149,12 @@ void initialize_vital_events() {
             network_initialized = true;
             auto* net = Vital::Engine::Network::get_singleton();
             #if defined(Vital_SDK_Client)
-            net->connect_to_server("127.0.0.1", 7777, true);
+                net->connect_to_server("127.0.0.1", 7777, true);
             #else
-            load_server_config();
-            net->host(g_server_config);
-            Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
-            Vital::Manager::Asset::get_singleton() -> start_http_server();
+                load_server_config();
+                net->host(g_server_config);
+                Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
+                Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif
         }
 
