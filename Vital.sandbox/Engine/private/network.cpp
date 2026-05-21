@@ -352,9 +352,9 @@ namespace Vital::Engine {
         Tool::Event::emit("vital.network:peer:leave", args);
     }
 
-    const std::unordered_set<int>& Network::get_connected_peers() const {
-        return connected_peers;
-    }
+    const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
+    int Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
+    int Network::get_max_peers()  const { return max_peers; }
 
     void Network::set_server_info(const ServerInfo& info) {
         server_info          = info;
