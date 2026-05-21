@@ -381,17 +381,9 @@ namespace Vital::Engine {
         return true;
     }
 
-    bool Network::broadcast(const Tool::Stack& stack) {
-        return send(stack, 0);
-    }
-
-    bool Network::send_to_server(const Tool::Stack& stack) {
-        return send(stack, 1);
-    }
-
-    void Network::emit(Tool::Stack& arguments, int peerID) {
-        get_singleton() -> send(arguments, peerID);
-    }
+    bool Network::broadcast(const Tool::Stack& stack)      { return send(stack, 0); }
+    bool Network::send_to_server(const Tool::Stack& stack) { return send(stack, 1); }
+    void Network::emit(Tool::Stack& arguments, int peerID) { get_singleton() -> send(arguments, peerID); }
 
 
     //--------//
