@@ -14,7 +14,9 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
-#include <Vital.sandbox/Engine/public/srvconfig.h>
+#if !defined(Vital_SDK_Client)
+#include <Vital.sandbox/Engine/public/cfg_server.h>
+#endif
 
 
 /////////////////////////////
@@ -65,7 +67,7 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            const SrvConfig* server_config = nullptr;
+            const cfg_server* server_config = nullptr;
             #endif
 
             static godot::SceneTree* get_scene_tree();
@@ -103,13 +105,13 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(SrvConfig& config);  // takes by non-const ref, stores pointer
+            bool host(cfg_server& config);  // takes by non-const ref, stores pointer
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
-            const SrvConfig& get_server_config() const;  // same signature, impl changes
+            const cfg_server& get_server_config() const;  // same signature, impl changes
             #endif
 
             // Shared

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: srvconfig.h
+     Script: Engine: cfg_server.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 28/03/2026
@@ -17,12 +17,12 @@
 #include <Vital.sandbox/Engine/public/console.h>
 
 
-//////////////////////////////////
-// Vital: Engine: ServerConfig //
-//////////////////////////////////
+////////////////////////////////
+// Vital: Engine: cfg_server //
+////////////////////////////////
 
 namespace Vital::Engine {
-    class SrvConfig {
+    class cfg_server {
         private:
             Tool::YAML yaml;
             bool loaded = false;
@@ -43,13 +43,13 @@ namespace Vital::Engine {
             }
 
         public:
-            SrvConfig() = default;
-            ~SrvConfig() = default;
+            cfg_server() = default;
+            ~cfg_server() = default;
 
             bool load() {
                 const std::string config_path = "config.yaml";
                 if (!Tool::File::exists(Tool::get_directory(), config_path)) {
-                    Tool::print("warn", "SrvConfig: File not found - '", config_path.c_str(), "'");
+                    Tool::print("warn", "cfg_server: File not found - '", config_path.c_str(), "'");
                     return false;
                 }
                 const std::string content = Tool::File::read_text(Tool::get_directory(), config_path);
@@ -57,11 +57,11 @@ namespace Vital::Engine {
                     yaml.parse(content);
                 }
                 catch (const std::exception& e) {
-                    Tool::print("error", "SrvConfig: Malformed YAML — ", e.what());
+                    Tool::print("error", "cfg_server: Malformed YAML — ", e.what());
                     return false;
                 }
                 loaded = true;
-                Tool::print("sbox", "SrvConfig: Loaded from '", config_path.c_str(), "'");
+                Tool::print("sbox", "cfg_server: Loaded from '", config_path.c_str(), "'");
                 return true;
             }
 

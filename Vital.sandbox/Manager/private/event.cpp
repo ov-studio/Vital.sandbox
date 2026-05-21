@@ -22,19 +22,19 @@
 /////////////
 
 #if !defined(Vital_SDK_Client)
-#include <Engine/public/srvconfig.h>
-static Vital::Engine::SrvConfig g_server_config;
+#include <Engine/public/cfg_server.h>
+static Vital::Engine::cfg_server g_server_config;
 #endif
 
 #if !defined(Vital_SDK_Client)
 void load_server_config() {
     bool loaded = g_server_config.load();
-    if (!loaded) Vital::Tool::print("sbox", "SrvConfig: No config.yaml found, using defaults");
+    if (!loaded) Vital::Tool::print("sbox", "cfg_server: No config.yaml found, using defaults");
     else {
-        Vital::Tool::print("sbox", "SrvConfig: '", g_server_config.get_server_name(), "'");
-        Vital::Tool::print("sbox", "SrvConfig: Network port: ", g_server_config.get_network_port());
-        Vital::Tool::print("sbox", "SrvConfig: HTTP port: ", g_server_config.get_http_port());
-        Vital::Tool::print("sbox", "SrvConfig: Max peers: ", g_server_config.get_max_clients());
+        Vital::Tool::print("sbox", "cfg_server: '", g_server_config.get_server_name(), "'");
+        Vital::Tool::print("sbox", "cfg_server: Network port: ", g_server_config.get_network_port());
+        Vital::Tool::print("sbox", "cfg_server: HTTP port: ", g_server_config.get_http_port());
+        Vital::Tool::print("sbox", "cfg_server: Max peers: ", g_server_config.get_max_clients());
     }
 }
 #endif

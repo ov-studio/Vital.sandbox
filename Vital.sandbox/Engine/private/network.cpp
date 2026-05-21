@@ -287,7 +287,7 @@ namespace Vital::Engine {
     std::string Network::get_server_ip() const { return reconnect_ip; }
 
     #else
-    bool Network::host(SrvConfig& config) {
+    bool Network::host(cfg_server& config) {
         if (is_active()) {
             Tool::print("sbox", "Network: already hosting");
             return false;
@@ -342,7 +342,7 @@ namespace Vital::Engine {
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
     int Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
-    const SrvConfig& Network::get_server_config() const { return *server_config; }
+    const cfg_server& Network::get_server_config() const { return *server_config; }
     #endif
 
 
