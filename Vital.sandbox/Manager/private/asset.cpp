@@ -208,22 +208,25 @@ namespace Vital::Manager {
         });
 
         http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
+            const auto& info = Engine::Network::get_singleton() -> get_server_info();
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
-            document.AddMember("name",           rapidjson::Value(server_info.name.c_str(), alloc),        alloc);
-            document.AddMember("version",         rapidjson::Value(server_info.version.c_str(), alloc),     alloc);
-            document.AddMember("description",     rapidjson::Value(server_info.description.c_str(), alloc), alloc);
-            document.AddMember("http_port",       http_port,                                                alloc);
-            document.AddMember("max_peers",     server_info.max_peers,                                  alloc);
-            document.AddMember("discord_invite",  rapidjson::Value(server_info.discord.c_str(), alloc),     alloc);
-            document.AddMember("website",         rapidjson::Value(server_info.website.c_str(), alloc),     alloc);
+            document.AddMember("name",           rapidjson::Value(info.name.c_str(),        alloc), alloc);
+            document.AddMember("version",        rapidjson::Value(info.version.c_str(),     alloc), alloc);
+            document.AddMember("description",    rapidjson::Value(info.description.c_str(), alloc), alloc);
+            document.AddMember("ip",             rapidjson::Value(info.ip.c_str(),           alloc), alloc);
+            document.AddMember("port",           info.port,                                          alloc);
+            document.AddMember("http_port",      http_port,                                          alloc);
+            document.AddMember("max_peers",      info.max_peers,                                     alloc);
+            document.AddMember("discord_invite", rapidjson::Value(info.discord.c_str(),     alloc), alloc);
+            document.AddMember("website",        rapidjson::Value(info.website.c_str(),     alloc), alloc);
             document.Accept(writer);
             res.set_content(buffer.GetString(), "application/json");
         });
-
+        
         http_running = true;
         http_thread = std::thread([this]() {
             Tool::print("sbox", "Asset: HTTP server starting on port ", http_port);
