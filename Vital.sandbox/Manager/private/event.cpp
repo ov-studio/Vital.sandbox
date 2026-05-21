@@ -37,7 +37,8 @@ void load_server_config() {
         Vital::Tool::print("sbox", "SrvConfig: Max peers: ", g_server_config.get_max_clients());
     }
 
-    Vital::Manager::ServerInfo info;
+    // TODO: MOVE UNDER NETWORK?
+    Vital::Engine::ServerInfo info;
     if (g_server_config.is_loaded()) {
         info.name = g_server_config.get_server_name();
         info.version = g_server_config.get_server_version();
