@@ -23,6 +23,30 @@
 // Vital: Manager: Network //
 //////////////////////////////
 
+namespace Vital::Engine {
+    class Network : public godot::Node {
+        GDCLASS(Network, godot::Node)
+        public:
+            static void _bind_methods();
+            void _receive(godot::Dictionary data);
+            void setup_rpc();
+
+            #if defined(Vital_SDK_Client)
+            std::function<void()> on_connected_to_server;
+            std::function<void()> on_connection_failed;
+            std::function<void()> on_server_disconnected;
+            void _on_connected_to_server();
+            void _on_connection_failed();
+            void _on_server_disconnected();
+            #else
+            std::function<void(int)> on_peer_connected;
+            std::function<void(int)> on_peer_disconnected;
+            void _on_peer_connected(int id);
+            void _on_peer_disconnected(int id);
+            #endif
+    };
+}
+
 namespace Vital::Manager {
     // TODO: Improve
     class Network {

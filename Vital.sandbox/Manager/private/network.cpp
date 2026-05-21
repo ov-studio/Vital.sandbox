@@ -23,23 +23,23 @@
 
 namespace Vital::Engine {
     //--------------------//
-    //    NetworkNode     //
+    //    Network     //
     //--------------------//
 
-    void NetworkNode::_bind_methods() {
-        godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &NetworkNode::_receive);
-        godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &NetworkNode::setup_rpc);
+    void Network::_bind_methods() {
+        godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
+        godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &Network::setup_rpc);
         #if defined(Vital_SDK_Client)
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &NetworkNode::_on_connected_to_server);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &NetworkNode::_on_connection_failed);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &NetworkNode::_on_server_disconnected);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &Network::_on_server_disconnected);
         #else
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &NetworkNode::_on_peer_connected);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &NetworkNode::_on_peer_disconnected);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &Network::_on_peer_connected);
+        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &Network::_on_peer_disconnected);
         #endif
     }
 
-    void NetworkNode::setup_rpc() {
+    void Network::setup_rpc() {
         godot::Dictionary cfg;
         cfg["rpc_mode"]      = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;
         cfg["transfer_mode"] = (int)godot::MultiplayerPeer::TRANSFER_MODE_RELIABLE;
@@ -48,17 +48,17 @@ namespace Vital::Engine {
         rpc_config("_receive", cfg);
     }
 
-    void NetworkNode::_receive(godot::Dictionary data) {
+    void Network::_receive(godot::Dictionary data) {
         Manager::Network::get_singleton() -> _on_packet_received(data);
     }
 
     #if defined(Vital_SDK_Client)
-    void NetworkNode::_on_connected_to_server() { if (on_connected_to_server) on_connected_to_server(); }
-    void NetworkNode::_on_connection_failed()    { if (on_connection_failed)   on_connection_failed();   }
-    void NetworkNode::_on_server_disconnected()  { if (on_server_disconnected) on_server_disconnected(); }
+    void Network::_on_connected_to_server() { if (on_connected_to_server) on_connected_to_server(); }
+    void Network::_on_connection_failed()    { if (on_connection_failed)   on_connection_failed();   }
+    void Network::_on_server_disconnected()  { if (on_server_disconnected) on_server_disconnected(); }
     #else
-    void NetworkNode::_on_peer_connected(int id)    { if (on_peer_connected)    on_peer_connected(id);    }
-    void NetworkNode::_on_peer_disconnected(int id) { if (on_peer_disconnected) on_peer_disconnected(id); }
+    void Network::_on_peer_connected(int id)    { if (on_peer_connected)    on_peer_connected(id);    }
+    void Network::_on_peer_disconnected(int id) { if (on_peer_disconnected) on_peer_disconnected(id); }
     #endif
 }
 
@@ -104,7 +104,7 @@ namespace Vital::Manager {
 
     void Network::create_node() {
         if (node) return;
-        node = memnew(Engine::NetworkNode);
+        node = memnew(Engine::Network);
         node -> set_name("VitalNetwork");
         Engine::Core::get_scene_root() -> add_child(node);
         node -> setup_rpc();
