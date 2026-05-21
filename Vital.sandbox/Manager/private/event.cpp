@@ -38,9 +38,9 @@ void shutdown() {
 }
 
 void setup() {
-    auto* net = Vital::Engine::Network::get_singleton();
+    auto* nm = Vital::Engine::Network::get_singleton();
 
-    #if defined(Vital_SDK_Client)
+    #if defined(Vital_SDK_Client)nm -> 
     Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Connecting...");
     });
@@ -56,10 +56,10 @@ void setup() {
     Vital::Tool::Event::bind("vital.network:disconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Disconnected cleanly");
     });
-    net->set_reconnect_config(5, 3.0f);
+    nm -> set_reconnect_config(5, 3.0f);
     #else
     Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack&) {
-        Vital::Tool::print("sbox", "Server is live");
+
     });
     Vital::Tool::Event::bind("vital.network:peer:join", [](Vital::Tool::Stack& args) {
         Vital::Tool::print("sbox", "Player joined: ", args.array[0].as<int32_t>());
@@ -114,11 +114,11 @@ void initialize_vital_events() {
 
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack&) {
-        auto* net = Vital::Engine::Network::get_singleton();
-        Vital::Tool::print("sbox", "Connected! My ID: ", net->get_peer_id());
+        auto* nm = Vital::Engine::Network::get_singleton();
+        Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
         Vital::Engine::Model::on_connected();
         Vital::Manager::Asset::get_singleton() -> clear();
-        Vital::Manager::Asset::get_singleton() -> set_server_http_ip(net->get_server_ip());
+        Vital::Manager::Asset::get_singleton() -> set_server_http_ip(nm -> get_server_ip());
     });
 
     Vital::Tool::Event::bind("vital.network:server:disconnect", [](Vital::Tool::Stack&) {
@@ -134,12 +134,12 @@ void initialize_vital_events() {
         static bool network_initialized = false;
         if (!network_initialized) {
             network_initialized = true;
-            auto* net = Vital::Engine::Network::get_singleton();
+            auto* nm = Vital::Engine::Network::get_singleton();
             #if defined(Vital_SDK_Client)
-                net->connect_to_server("127.0.0.1", 7777, true);
+                nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
                 g_server_config.load();
-                net->host(g_server_config);
+                nm -> host(g_server_config);
                 Vital::Manager::Asset::get_singleton() -> set_http_port(g_server_config.get_http_port());
                 Vital::Manager::Asset::get_singleton() -> start_http_server();
             #endif

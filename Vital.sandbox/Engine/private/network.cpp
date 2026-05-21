@@ -311,7 +311,13 @@ namespace Vital::Engine {
             if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
         }
         catch (...) { }
-        Tool::print("sbox", "Network: hosting on port ", config.get_network_port());
+        Vital::Tool::print("sbox", fmt::format(
+            "Server is live!\n"
+            "> IP — `{}`\n"
+            "> Port — `{}`",
+            get_server_ip(),
+            get_server_config().get_network_port()
+        ));
         Tool::Event::emit("vital.network:host", {});
         return true;
     }
@@ -373,7 +379,7 @@ namespace Vital::Engine {
         if (!is_active()) return false;
         #endif
         if (peerID == 0) node -> rpc("_receive", stack.to_dict());
-        else             node -> rpc_id(peerID, "_receive", stack.to_dict());
+        else node -> rpc_id(peerID, "_receive", stack.to_dict());
         return true;
     }
 
