@@ -22,8 +22,8 @@
 /////////////
 
 #if !defined(Vital_SDK_Client)
-#include <Engine/public/cfg_server.h>
-static Vital::Engine::cfg_server g_server_config;
+#include <Manager/public/cfg_server.h>
+static Vital::Manager::cfg_server g_server_config;
 #endif
 
 void shutdown() {

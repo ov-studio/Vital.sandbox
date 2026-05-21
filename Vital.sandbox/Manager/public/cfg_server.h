@@ -21,7 +21,7 @@
 // Vital: Manager: cfg_server //
 /////////////////////////////////
 
-namespace Vital::Engine {
+namespace Vital::Manager {
     class cfg_server {
         private:
             Tool::YAML yaml;
