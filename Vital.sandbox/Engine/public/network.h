@@ -105,13 +105,13 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(cfg_server& config);  // takes by non-const ref, stores pointer
+            bool host(cfg_server& config);
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
-            const cfg_server& get_server_config() const;  // same signature, impl changes
+            const cfg_server& get_server_config() const;
             #endif
 
             // Shared
