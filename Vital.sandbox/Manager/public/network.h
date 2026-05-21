@@ -25,7 +25,6 @@
 
 namespace Vital::Manager {
     // TODO: Improve
-
     class NetworkNode : public godot::Node {
         GDCLASS(NetworkNode, godot::Node)
 
@@ -48,7 +47,6 @@ namespace Vital::Manager {
             void _on_peer_disconnected(int id);
             #endif
     };
-
 
     class Network {
         private:
@@ -81,7 +79,6 @@ namespace Vital::Manager {
             void wire_server_signals();
             #endif
             void unwire_signals();
-
         public:
             Network() = default;
             ~Network() = default;
