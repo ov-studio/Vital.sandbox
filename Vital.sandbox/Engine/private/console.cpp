@@ -434,13 +434,13 @@ namespace Vital::Engine {
             "\n"
             "— Stats —\n"
             "> Players: `{}/{}`\n"
-            "> Resources: `{}/{}`\n"
+            "> Resources: `{}/{}`\n",
             "",
             "",
             "",
             "",
             nm -> get_peer_count(), nm -> get_max_peers(),
-            rm -> get_resource_count(Manager::Resource::Count::Loaded), rm -> get_resource_count(Manager::Resource::Count::Running)
+            rm -> get_resource_count(Manager::Resource::Count::Running), rm -> get_resource_count(Manager::Resource::Count::Loaded)
         );
     }
     #endif
