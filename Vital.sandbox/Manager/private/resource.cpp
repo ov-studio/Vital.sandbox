@@ -618,13 +618,24 @@ namespace Vital::Manager {
         return result;
     }
 
-    int Resource::get_resource_count(Count type) const {
+    std::vector<const Resource::Manifest*> Resource::get_resources(Count type) const {
         std::lock_guard<std::mutex> lock(mutex);
+        std::vector<const Manifest*> result;
         switch (type) {
-            case Count::Loaded:  return static_cast<int>(resources.size());
-            case Count::Running: return static_cast<int>(running.size());
-            default: return 0;
+            case Count::Loaded:
+                result.reserve(resources.size());
+                for (const auto& r : resources) result.push_back(&r);
+                break;
+            case Count::Running:
+                result.reserve(running.size());
+                for (const auto& name : running) result.push_back(Internal::get_resource(name));
+                break;
         }
+        return result;
+    }
+
+    int Resource::get_resource_count(Count type) const {
+        return static_cast<int>(get_resources(type).size());
     }
 
 

@@ -122,6 +122,7 @@ namespace Vital::Manager {
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
             static std::string get_resource_base(const std::string& name, bool require_running = false);
             std::vector<Script> get_resource_scripts(const std::string& name, const std::string& type = "") const;
+            std::vector<const Manifest*> get_resources(Count type) const;
             int get_resource_count(Count type) const;
 
 
