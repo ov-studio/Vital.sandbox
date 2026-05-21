@@ -293,7 +293,6 @@ namespace Vital::Engine {
             return false;
         }
         server_info       = info;
-        this -> max_peers = info.max_peers;
         create_node();
         peer.instantiate();
         godot::Error err = peer -> create_server(info.port, info.max_peers);
@@ -342,7 +341,6 @@ namespace Vital::Engine {
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
     int Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
-    int Network::get_max_peers()  const { return max_peers; }
     const ServerInfo& Network::get_server_info() const { return server_info; }
     #endif
 

@@ -437,7 +437,7 @@ namespace Vital::Engine {
         append_field("Website", info.website);
         append_field("Discord", info.discord);
         oss << "• Stats:\n";
-        append_ratio("Players", nm -> get_peer_count(), nm -> get_max_peers());
+        append_ratio("Players", nm -> get_peer_count(), info.max_peers);
         append_ratio("Resources", rm -> get_resource_count(Manager::Resource::Count::Running), rm -> get_resource_count(Manager::Resource::Count::Loaded));
         return oss.str();
     }

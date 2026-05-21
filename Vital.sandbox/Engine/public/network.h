@@ -75,7 +75,6 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            int        max_peers          = 0;
             ServerInfo server_info;
             #endif
 
@@ -120,7 +119,6 @@ namespace Vital::Engine {
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
-            int get_max_peers() const;
             const ServerInfo& get_server_info() const;
             #endif
 
