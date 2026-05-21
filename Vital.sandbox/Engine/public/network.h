@@ -65,7 +65,7 @@ namespace Vital::Engine {
             float reconnect_timer = 0.0f;
             #else
             std::unordered_set<int> connected_peers;
-            SrvConfig server_config;
+            const SrvConfig* server_config = nullptr;
             #endif
 
             static godot::SceneTree* get_scene_tree();
@@ -103,13 +103,13 @@ namespace Vital::Engine {
             void _schedule_reconnect();
             std::string get_server_ip() const;
             #else
-            bool host(const SrvConfig& config);
+            bool host(SrvConfig& config);  // takes by non-const ref, stores pointer
             bool close();
             void _on_peer_connected(int id);
             void _on_peer_disconnected(int id);
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
-            const SrvConfig& get_server_config() const;
+            const SrvConfig& get_server_config() const;  // same signature, impl changes
             #endif
 
             // Shared

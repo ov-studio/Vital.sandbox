@@ -287,22 +287,23 @@ namespace Vital::Engine {
     std::string Network::get_server_ip() const { return reconnect_ip; }
 
     #else
-    bool Network::host(const SrvConfig& config) {
+    bool Network::host(SrvConfig& config) {
         if (is_active()) {
             Tool::print("sbox", "Network: already hosting");
             return false;
         }
-        server_config = config;
+        server_config = &config;
         create_node();
         peer.instantiate();
         godot::Error err = peer -> create_server(config.get_network_port(), config.get_max_clients());
         if (err != godot::OK) {
             Tool::print("sbox", "Network: failed to host on port ", config.get_network_port(), " (err=", (int)err, ")");
             peer.unref();
+            server_config = nullptr;
             return false;
         }
         auto tree = get_scene_tree();
-        if (!tree) { peer.unref(); return false; }
+        if (!tree) { peer.unref(); server_config = nullptr; return false; }
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_server_signals();
         Tool::print("sbox", "Network: hosting on port ", config.get_network_port());
@@ -341,7 +342,7 @@ namespace Vital::Engine {
 
     const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
     int Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
-    const SrvConfig& Network::get_server_config() const { return server_config; }
+    const SrvConfig& Network::get_server_config() const { return *server_config; }
     #endif
 
 

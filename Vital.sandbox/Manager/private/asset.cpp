@@ -208,21 +208,29 @@ namespace Vital::Manager {
         });
 
         http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
-            const auto& info = Engine::Network::get_singleton() -> get_server_info();
+            const Vital::Engine::SrvConfig& cfg = Engine::Network::get_singleton()->get_server_config();
+
+            const std::string name           = cfg.get_server_name();
+            const std::string version        = cfg.get_server_version();
+            const std::string description    = cfg.get_server_description();
+            const std::string discord_invite = cfg.get_discord_invite();
+            const std::string website        = cfg.get_website();
+
             rapidjson::Document document;
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.SetObject();
             auto& alloc = document.GetAllocator();
-            document.AddMember("name",           rapidjson::Value(info.name.c_str(),        alloc), alloc);
-            document.AddMember("version",        rapidjson::Value(info.version.c_str(),     alloc), alloc);
-            document.AddMember("description",    rapidjson::Value(info.description.c_str(), alloc), alloc);
-            document.AddMember("ip",             rapidjson::Value(info.ip.c_str(),           alloc), alloc);
-            document.AddMember("port",           info.port,                                          alloc);
-            document.AddMember("http_port",      http_port,                                          alloc);
-            document.AddMember("max_peers",      info.max_peers,                                     alloc);
-            document.AddMember("discord_invite", rapidjson::Value(info.discord.c_str(),     alloc), alloc);
-            document.AddMember("website",        rapidjson::Value(info.website.c_str(),     alloc), alloc);
+
+            document.AddMember(rapidjson::StringRef("name"),           rapidjson::Value(name.c_str(),           alloc), alloc);
+            document.AddMember(rapidjson::StringRef("version"),        rapidjson::Value(version.c_str(),        alloc), alloc);
+            document.AddMember(rapidjson::StringRef("description"),    rapidjson::Value(description.c_str(),    alloc), alloc);
+            document.AddMember(rapidjson::StringRef("port"),           rapidjson::Value(cfg.get_network_port()),        alloc);
+            document.AddMember(rapidjson::StringRef("http_port"),      rapidjson::Value(cfg.get_http_port()),           alloc);
+            document.AddMember(rapidjson::StringRef("max_peers"),      rapidjson::Value(cfg.get_max_clients()),         alloc);
+            document.AddMember(rapidjson::StringRef("discord_invite"), rapidjson::Value(discord_invite.c_str(), alloc), alloc);
+            document.AddMember(rapidjson::StringRef("website"),        rapidjson::Value(website.c_str(),        alloc), alloc);
+
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.Accept(writer);
             res.set_content(buffer.GetString(), "application/json");
         });
