@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: network.cpp
+     Script: Manager: network.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Network Utilities
+     Desc: Network Manager
 ----------------------------------------------------------------*/
 
 
@@ -13,16 +13,15 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Engine/public/core.h>
-#include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
 
-/////////////////////////////
-// Vital: Engine: Network //
-/////////////////////////////
+//////////////////////////////
+// Vital: Manager: Network //
+//////////////////////////////
 
-namespace Vital::Engine {
+namespace Vital::Manager {
     // TODO: Improve
 
     //--------------------//

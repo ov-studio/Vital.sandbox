@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: network.h
+     Script: Manager: network.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Network Utilities
+     Desc: Network Manager
 ----------------------------------------------------------------*/
 
 
@@ -19,11 +19,11 @@
 #endif
 
 
-/////////////////////////////
-// Vital: Engine: Network //
-/////////////////////////////
+//////////////////////////////
+// Vital: Manager: Network //
+//////////////////////////////
 
-namespace Vital::Engine {
+namespace Vital::Manager {
     // TODO: Improve
 
     class NetworkNode : public godot::Node {
