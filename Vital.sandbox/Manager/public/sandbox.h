@@ -14,16 +14,12 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/canvas.h>
 
 
 /////////////////////////////
 // Vital: Manager: Sandbox //
 /////////////////////////////
-
-// TODO: Scope under Manager namespace
-namespace Vital::Engine {
-	class Canvas;
-}
 
 namespace Vital::Manager {
 	class Sandbox;

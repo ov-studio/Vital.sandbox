@@ -40,7 +40,7 @@ void shutdown() {
 void setup() {
     auto* nm = Vital::Manager::Network::get_singleton();
 
-    #if defined(Vital_SDK_Client)nm -> 
+    #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Connecting...");
     });
