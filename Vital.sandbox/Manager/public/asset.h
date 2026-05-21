@@ -45,7 +45,6 @@ namespace Vital::Manager {
             std::thread http_thread;
             int http_port = 7778;
             bool http_running = false;
-            ServerInfo server_info;
             std::unordered_set<int> pending_manifest_peers;
             #endif
 
