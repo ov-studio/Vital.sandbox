@@ -436,6 +436,7 @@ namespace Vital::Engine {
         append_field("Website", cfg.get_website());
         append_field("Discord", cfg.get_discord_invite());
         oss << "• Network:\n";
+        append_field("IP", nm -> get_server_ip());
         append_field("Port", std::to_string(cfg.get_network_port()));
         append_field("HTTP Port", std::to_string(cfg.get_http_port()));
         oss << "• Stats:\n";

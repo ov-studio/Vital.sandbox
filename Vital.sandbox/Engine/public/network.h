@@ -68,6 +68,7 @@ namespace Vital::Engine {
             #else
             std::unordered_set<int> connected_peers;
             const cfg_server* server_config = nullptr;
+            std::string server_ip;
             #endif
 
             static godot::SceneTree* get_scene_tree();
@@ -112,6 +113,7 @@ namespace Vital::Engine {
             const std::unordered_set<int>& get_connected_peers() const;
             int get_peer_count() const;
             const cfg_server& get_server_config() const;
+            std::string get_server_ip() const;
             #endif
 
             // Shared

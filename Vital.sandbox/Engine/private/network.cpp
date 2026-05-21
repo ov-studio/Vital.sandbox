@@ -306,6 +306,11 @@ namespace Vital::Engine {
         if (!tree) { peer.unref(); server_config = nullptr; return false; }
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_server_signals();
+        try {
+            server_ip = Tool::HTTP::get("https://api.ipify.org", {}, 10);
+            if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
+        }
+        catch (...) { }
         Tool::print("sbox", "Network: hosting on port ", config.get_network_port());
         Tool::Event::emit("vital.network:host", {});
         return true;
@@ -340,9 +345,21 @@ namespace Vital::Engine {
         Tool::Event::emit("vital.network:peer:leave", args);
     }
 
-    const std::unordered_set<int>& Network::get_connected_peers() const { return connected_peers; }
-    int Network::get_peer_count() const { return static_cast<int>(connected_peers.size()); }
-    const cfg_server& Network::get_server_config() const { return *server_config; }
+    const std::unordered_set<int>& Network::get_connected_peers() const { 
+        return connected_peers; 
+    }
+
+    int Network::get_peer_count() const { 
+        return static_cast<int>(connected_peers.size());
+    }
+
+    const cfg_server& Network::get_server_config() const { 
+        return *server_config;
+    }
+
+    std::string Network::get_server_ip() const { 
+        return server_ip;
+    }
     #endif
 
 
