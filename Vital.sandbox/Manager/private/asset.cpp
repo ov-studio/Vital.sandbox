@@ -252,7 +252,7 @@ namespace Vital::Manager {
 
     void Asset::broadcast_manifest(int peer_id, bool deferred) {
         auto nm = Manager::Network::get_singleton();
-        const std::unordered_set<int> all_peers = (peer_id == -1) ? nm->get_connected_peers() : std::unordered_set<int>{ peer_id };
+        const std::unordered_set<int> all_peers = (peer_id == -1) ? nm -> get_connected_peers() : std::unordered_set<int>{ peer_id };
     
         if (deferred) {
             for (int pid : all_peers) {
@@ -279,7 +279,7 @@ namespace Vital::Manager {
                 msg.object["asset_group_" + std::to_string(i)] = Tool::StackValue(entry.group);
                 i++;
             }
-            nm->send(msg, pid);
+            nm -> send(msg, pid);
             Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), pid));
         }
     }
