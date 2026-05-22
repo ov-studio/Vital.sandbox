@@ -54,6 +54,10 @@ namespace Vital::Manager {
         signal("vital.sandbox:ready");
     }
 
+    void Sandbox::drain() {
+        Vital::Sandbox::Machine::drain();
+    }
+
     void Sandbox::process(double delta) {
         signal("vital.sandbox:process", Tool::StackValue(delta));
     }
