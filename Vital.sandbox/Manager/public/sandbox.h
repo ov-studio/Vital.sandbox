@@ -55,17 +55,16 @@ namespace Vital::Manager {
 				Tool::Stack stack;
 				stack.array.reserve(sizeof...(Args));
 				(stack.array.emplace_back(std::forward<Args>(args)), ...);
-				Tool::Event::emit(name, stack);
-				if (!vm || !vm -> is_reference(signal_reference)) return;
-				vm -> get_reference(signal_reference, true);
-				vm -> push_value(name);
-				for (auto& value : stack.array) {
-					vm -> push_value(value);
-				}
-				vm -> pcall(sizeof...(Args) + 1, 0);
+				Engine::Core::get_singleton() -> execute([this, name, stack = std::move(stack)]() {
+					Tool::Event::emit(name, stack);
+					if (!vm || !vm -> is_reference(signal_reference)) return;
+					vm -> get_reference(signal_reference, true);
+					vm -> push_value(name);
+					for (const auto& value : stack.array) vm -> push_value(value);
+					vm -> pcall(static_cast<int>(stack.array.size()) + 1, 0);
+				});
 			}
 
-	
 			// Getters //
 			Vital::Sandbox::Machine* get_vm();
 	};	
