@@ -63,7 +63,7 @@ namespace Vital::Engine {
 
     void Core::_process(double delta) {
         if (!is_ready()) return;
-        Sandbox::Machine::drain();
+        Sandbox::Machine::drain(); // TODO: MOVE UNDER MANAGER SANBDX SINGLETON...
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (!deferred_queue.empty()) call_deferred("flush_deferred_queue");

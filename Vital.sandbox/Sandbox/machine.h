@@ -26,10 +26,10 @@ namespace Vital::Sandbox {
     class Machine : public Mixin<Machine> {
         protected:
             static vm_apis internal_apis;
+            inline static std::mutex mutex;
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
-            inline static std::mutex pending_mutex;
-            inline static std::vector<std::function<void()>> pending_work;
+            inline static std::vector<std::function<void()>> work_queue;
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -119,16 +119,18 @@ namespace Vital::Sandbox {
                 return it != machines.end() ? it -> second : nullptr;
             }
 
+            // TODO: RENAME IT SOMETHING ELSE ...
             static void enqueue(std::function<void()> fn) {
-                std::lock_guard<std::mutex> lock(pending_mutex);
-                pending_work.push_back(std::move(fn));
+                std::lock_guard<std::mutex> lock(mutex);
+                work_queue.push_back(std::move(fn));
             }
 
+            // TODO: RENAME IT SOMETHING ELSE ...
             static void drain() {
                 std::vector<std::function<void()>> work;
                 {
-                    std::lock_guard<std::mutex> lock(pending_mutex);
-                    std::swap(work, pending_work);
+                    std::lock_guard<std::mutex> lock(mutex);
+                    std::swap(work, work_queue);
                 }
                 for (auto& fn : work) fn();
             }
