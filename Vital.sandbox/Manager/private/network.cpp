@@ -67,13 +67,12 @@ namespace Vital::Manager {
         node -> set_name("VitalNetwork");
         Engine::Core::get_scene_root() -> add_child(node);
         node -> setup_rpc();
-
         #if defined(Vital_SDK_Client)
         node -> on_connected_to_server = [this]() { _on_connected_to_server(); };
-        node -> on_connection_failed   = [this]() { _on_connection_failed();   };
+        node -> on_connection_failed = [this]() { _on_connection_failed(); };
         node -> on_server_disconnected = [this]() { _on_server_disconnected(); };
         #else
-        node -> on_peer_connected    = [this](int id) { _on_peer_connected(id);    };
+        node -> on_peer_connected = [this](int id) { _on_peer_connected(id); };
         node -> on_peer_disconnected = [this](int id) { _on_peer_disconnected(id); };
         #endif
     }
@@ -175,12 +174,12 @@ namespace Vital::Manager {
         if (!tree) { peer.unref(); return false; }
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
         wire_client_signals();
-        auto_reconnect     = enable_reconnect;
-        reconnect_ip       = ip;
-        reconnect_port     = port;
+        auto_reconnect = enable_reconnect;
+        reconnect_ip = ip;
+        reconnect_port = port;
         reconnect_attempts = 0;
-        reconnect_timer    = 0.0f;
-        pending_handshake  = false;
+        reconnect_timer = 0.0f;
+        pending_handshake = false;
         Tool::print("sbox", "Network: connecting to ", ip.c_str(), ":", port);
         Tool::Event::emit("vital.network:connect", {});
         return true;
