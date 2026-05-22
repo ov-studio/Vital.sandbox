@@ -38,7 +38,7 @@ void shutdown() {
 }
 
 void setup() {
-    auto* nm = Vital::Manager::Network::get_singleton();
+    auto nm = Vital::Manager::Network::get_singleton();
 
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
@@ -114,7 +114,7 @@ void initialize_vital_events() {
 
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack&) {
-        auto* nm = Vital::Manager::Network::get_singleton();
+        auto nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
         Vital::Engine::Model::on_connected();
         Vital::Manager::Asset::get_singleton() -> clear();
@@ -134,7 +134,7 @@ void initialize_vital_events() {
         static bool network_initialized = false;
         if (!network_initialized) {
             network_initialized = true;
-            auto* nm = Vital::Manager::Network::get_singleton();
+            auto nm = Vital::Manager::Network::get_singleton();
             #if defined(Vital_SDK_Client)
                 nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
