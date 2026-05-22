@@ -23,6 +23,8 @@
 ////////////
 
 namespace Vital::Tool {
+    inline static std::thread::id main_thread_id;
+
     static std::string indent(int level) {
         #if defined(Vital_SDK_Client)
         return std::string(level*4, ' ');
@@ -37,6 +39,19 @@ namespace Vital::Tool {
 
     inline std::string to_std_string(const godot::String& input) {
         return std::string(input.utf8().get_data());
+    }
+
+    inline bool is_main_thread() {
+        return std::this_thread::get_id() == Tool::main_thread_id;
+    }
+
+    inline bool is_runtime() { 
+        if (godot::Engine::get_singleton() -> is_editor_hint()) return false;
+        godot::PackedStringArray args = godot::OS::get_singleton() -> get_cmdline_args();
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i] == "--headless" || args[i] == "--export-release" || args[i] == "--export-debug") return false;
+        }
+        return true;
     }
 
     inline uint64_t get_tick() {
@@ -68,15 +83,6 @@ namespace Vital::Tool {
         std::string base = Tool::to_std_string(godot::OS::get_singleton() -> get_executable_path().get_base_dir());
         ((base += "/" + std::string(std::forward<Args>(args))), ...);
         return base;
-    }
-
-    inline bool is_runtime() { 
-        if (godot::Engine::get_singleton() -> is_editor_hint()) return false;
-        godot::PackedStringArray args = godot::OS::get_singleton() -> get_cmdline_args();
-        for (int i = 0; i < args.size(); i++) {
-            if (args[i] == "--headless" || args[i] == "--export-release" || args[i] == "--export-debug") return false;
-        }
-        return true;
     }
 
     inline bool contains_wildcard(const std::string& input) {

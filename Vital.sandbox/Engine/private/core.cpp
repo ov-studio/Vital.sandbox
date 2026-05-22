@@ -104,6 +104,11 @@ namespace Vital::Engine {
         Tool::Event::emit("vital.core:teardown");
     }
 
+    void Core::execute(std::function<void()> exec) {
+        if (Tool::is_main_thread()) exec();
+        else enqueue(std::move(exec));
+    }
+
     void Core::enqueue(std::function<void()> exec) {
         std::lock_guard<std::mutex> lock(mutex);
         work_queue.push_back(std::move(exec));
