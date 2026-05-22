@@ -33,7 +33,7 @@ namespace Vital::Engine {
             std::vector<std::function<void()>> deferred_queue;
 
             static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("flush_deferred"), &Core::flush_deferred);
+                godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);
             };
         public:
             // Instantiators //
@@ -55,7 +55,7 @@ namespace Vital::Engine {
             // Managers //
             bool is_ready();
             void push_deferred(std::function<void()> exec);
-            void flush_deferred();
+            void drain();
             void teardown();
 
 
