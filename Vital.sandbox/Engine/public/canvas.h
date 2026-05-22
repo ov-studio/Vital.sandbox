@@ -117,7 +117,7 @@ namespace Vital::Engine {
             void _draw() override;
 
 
-            // Utils //
+            // Singleton //
             static Canvas* get_singleton();
             static void free_singleton();
 

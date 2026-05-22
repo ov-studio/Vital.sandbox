@@ -97,7 +97,7 @@ namespace Vital::Manager {
             ~Resource() = default;
 
 
-            // Utils //
+            // Singleton //
             static Resource* get_singleton();
             static void free_singleton();
 

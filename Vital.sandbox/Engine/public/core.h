@@ -47,7 +47,7 @@ namespace Vital::Engine {
             #endif
 
 
-            // Utils //
+            // Singleton //
             static Core* get_singleton();
             static void free_singleton();
 

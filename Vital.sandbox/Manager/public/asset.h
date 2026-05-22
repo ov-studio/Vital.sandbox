@@ -57,6 +57,8 @@ namespace Vital::Manager {
             Asset() = default;
             ~Asset() = default;
 
+
+            // Singleton //
             static Asset* get_singleton();
             static void free_singleton();
 

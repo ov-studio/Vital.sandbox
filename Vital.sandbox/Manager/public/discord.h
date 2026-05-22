@@ -49,7 +49,7 @@ namespace Vital::Manager {
             ~Discord();
 
 
-            // Utils //
+            // Singleton //
             static Discord* get_singleton();
             static void free_singleton();
 

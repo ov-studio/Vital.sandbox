@@ -69,7 +69,7 @@ namespace Vital::Engine {
             ~Console();
 
 
-            // Utils //
+            // Singleton //
             static Console* get_singleton();
             static void free_singleton();
 
