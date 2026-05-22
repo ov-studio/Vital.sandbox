@@ -47,14 +47,9 @@ namespace Vital::Manager {
             #endif
 
             static godot::SceneTree* get_scene_tree();
-            void create_node();
-            void destroy_node();
-
-            #if defined(Vital_SDK_Client)
-            void wire_client_signals();
-            #else
-            void wire_server_signals();
-            #endif
+            void create();
+            void destroy();
+            void wire_signals();
             void unwire_signals();
         public:
             Network() = default;

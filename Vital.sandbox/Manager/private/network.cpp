@@ -47,7 +47,7 @@ namespace Vital::Manager {
         singleton -> close();
         #endif
         singleton -> unwire_signals();
-        singleton -> destroy_node();
+        singleton -> destroy();
         if (singleton -> peer.is_valid()) {
             singleton -> peer -> close();
             singleton -> peer.unref();
@@ -61,7 +61,7 @@ namespace Vital::Manager {
     //    Node Helpers    //
     //--------------------//
 
-    void Network::create_node() {
+    void Network::create() {
         if (node) return;
         node = memnew(Engine::Network);
         node -> set_name("VitalNetwork");
@@ -77,30 +77,25 @@ namespace Vital::Manager {
         #endif
     }
 
-    void Network::destroy_node() {
+    void Network::destroy() {
         if (!node) return;
         node -> queue_free();
         node = nullptr;
     }
 
-    #if defined(Vital_SDK_Client)
-    void Network::wire_client_signals() {
-        if (!node) { Tool::print("sbox", "wire_client_signals: no node"); return; }
-        auto mp = get_scene_tree() -> get_multiplayer();
-        if (!mp.is_valid()) { Tool::print("sbox", "wire_client_signals: mp invalid"); return; }
-        mp -> connect("connected_to_server", godot::Callable(node, "_on_connected_to_server"));
-        mp -> connect("connection_failed",   godot::Callable(node, "_on_connection_failed"));
-        mp -> connect("server_disconnected", godot::Callable(node, "_on_server_disconnected"));
-    }
-    #else
-    void Network::wire_server_signals() {
+    void Network::wire_signals() {
         if (!node) return;
         auto mp = get_scene_tree() -> get_multiplayer();
         if (!mp.is_valid()) return;
-        mp -> connect("peer_connected",    godot::Callable(node, "_on_peer_connected"));
-        mp -> connect("peer_disconnected", godot::Callable(node, "_on_peer_disconnected"));
+        #if defined(Vital_SDK_Client)
+            mp -> connect("connected_to_server", godot::Callable(node, "_on_connected_to_server"));
+            mp -> connect("connection_failed", godot::Callable(node, "_on_connection_failed"));
+            mp -> connect("server_disconnected", godot::Callable(node, "_on_server_disconnected"));
+        #else
+            mp -> connect("peer_connected", godot::Callable(node, "_on_peer_connected"));
+            mp -> connect("peer_disconnected", godot::Callable(node, "_on_peer_disconnected"));
+        #endif
     }
-    #endif
 
     void Network::unwire_signals() {
         auto tree = get_scene_tree();
@@ -112,12 +107,12 @@ namespace Vital::Manager {
             if (mp -> is_connected(signal, cb)) mp -> disconnect(signal, cb);
         };
         #if defined(Vital_SDK_Client)
-        try_disconnect("connected_to_server", "_on_connected_to_server");
-        try_disconnect("connection_failed",   "_on_connection_failed");
-        try_disconnect("server_disconnected", "_on_server_disconnected");
+            try_disconnect("connected_to_server", "_on_connected_to_server");
+            try_disconnect("connection_failed", "_on_connection_failed");
+            try_disconnect("server_disconnected", "_on_server_disconnected");
         #else
-        try_disconnect("peer_connected",    "_on_peer_connected");
-        try_disconnect("peer_disconnected", "_on_peer_disconnected");
+            try_disconnect("peer_connected", "_on_peer_connected");
+            try_disconnect("peer_disconnected", "_on_peer_disconnected");
         #endif
     }
 
@@ -163,7 +158,7 @@ namespace Vital::Manager {
             Tool::print("sbox", "Network: already connected/connecting");
             return false;
         }
-        create_node();
+        create();
         peer.instantiate();
         if (peer -> create_client(godot::String(ip.c_str()), port) != godot::OK) {
             Tool::print("sbox", "Network: failed to connect to ", ip.c_str(), ":", port);
@@ -173,7 +168,7 @@ namespace Vital::Manager {
         auto tree = get_scene_tree();
         if (!tree) { peer.unref(); return false; }
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
-        wire_client_signals();
+        wire_signals();
         auto_reconnect = enable_reconnect;
         reconnect_ip = ip;
         reconnect_port = port;
@@ -242,7 +237,9 @@ namespace Vital::Manager {
         Tool::Event::emit("vital.network:reconnect", {});
     }
 
-    std::string Network::get_server_ip() const { return reconnect_ip; }
+    std::string Network::get_server_ip() const { 
+        return reconnect_ip;
+    }
 
     #else
     bool Network::host(Config::Server& config) {
@@ -251,7 +248,7 @@ namespace Vital::Manager {
             return false;
         }
         server_config = &config;
-        create_node();
+        create();
         peer.instantiate();
         godot::Error err = peer -> create_server(config.get_network_port(), config.get_max_clients());
         if (err != godot::OK) {
@@ -263,7 +260,7 @@ namespace Vital::Manager {
         auto tree = get_scene_tree();
         if (!tree) { peer.unref(); server_config = nullptr; return false; }
         tree -> get_multiplayer() -> set_multiplayer_peer(peer);
-        wire_server_signals();
+        wire_signals();
         try {
             server_ip = Tool::HTTP::get("https://api.ipify.org", {}, 10);
             if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
