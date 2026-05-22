@@ -43,7 +43,7 @@ namespace Vital::Engine {
                     Tool::Event::emit("vital.core:ready");
                     set_process(true);
                 });
-                call_deferred("flush_deferred");
+                call_deferred("drain");
             }
         });
     }
@@ -66,7 +66,7 @@ namespace Vital::Engine {
         Sandbox::Machine::drain(); // TODO: MOVE UNDER MANAGER SANBDX SINGLETON...
         {
             std::lock_guard<std::mutex> lock(mutex);
-            if (!deferred_queue.empty()) call_deferred("flush_deferred");
+            if (!deferred_queue.empty()) call_deferred("drain");
         }
         Manager::Sandbox::get_singleton() -> process(delta);
     }
@@ -109,7 +109,7 @@ namespace Vital::Engine {
         deferred_queue.push_back(std::move(exec));
     }
 
-    void Core::flush_deferred() {
+    void Core::drain() {
         std::vector<std::function<void()>> local;
         {
             std::lock_guard<std::mutex> lock(mutex);
