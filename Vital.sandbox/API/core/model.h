@@ -75,9 +75,10 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
-
+            
+                auto name = vm -> get_string(1);
                 auto instance = Instance::init(vm);
-                instance -> model = base_class::create(vm -> get_string(1));
+                instance -> model = base_class::create(name);
                 Instance::store(instance);
                 vm -> create_object(base_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
@@ -85,8 +86,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            #if defined(Vital_SDK_Client)
-            #else
+            #if !defined(Vital_SDK_Client)
             API::bind(vm, {base_name}, "create_synced", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, authority = 1)")
                     .require(1, &Machine::is_string)
