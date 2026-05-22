@@ -34,6 +34,7 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
+
             void push_value(const Tool::StackValue& value) {
                 std::visit([this](auto&& v) {
                     using T = std::decay_t<decltype(v)>;
@@ -63,6 +64,7 @@ namespace Vital::Sandbox {
                 self() -> set_table_field(self() -> get_length(-2) + 1, -2);
                 if (!nspace.empty()) self() -> pop(1);
             }
+
             template<typename T>
             void table_push_value(T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
@@ -70,6 +72,7 @@ namespace Vital::Sandbox {
                 self() -> set_table_field(self() -> get_length(-2) + 1, -2);
                 if (!nspace.empty()) self() -> pop(1);
             }
+
             void table_push_table(const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
@@ -87,6 +90,7 @@ namespace Vital::Sandbox {
                 self() -> set_table_field(index, -2);
                 if (!nspace.empty()) self() -> pop(1);
             }
+
             template<typename T>
             void table_set_value(const std::string& index, T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
@@ -94,6 +98,7 @@ namespace Vital::Sandbox {
                 self() -> set_table_field(index, -2);
                 if (!nspace.empty()) self() -> pop(1);
             }
+
             void table_set_table(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
