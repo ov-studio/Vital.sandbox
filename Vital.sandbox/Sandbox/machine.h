@@ -69,6 +69,7 @@ namespace Vital::Sandbox {
             vm_refs reference = {};
             vm_apis external_apis = {};
         public:
+            // Instantiators //
             Machine(vm_apis apis = {}) : state(luaL_newstate()), external_apis(std::move(apis)) {
                 machines.emplace(state, this);
                 for (auto& value : whitelist) {
@@ -111,7 +112,7 @@ namespace Vital::Sandbox {
             }
 
             
-            // APIs //
+            // Managers //
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
             static const vm_machines fetch_machines() { return machines; }
             
