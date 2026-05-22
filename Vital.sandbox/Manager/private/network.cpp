@@ -68,12 +68,12 @@ namespace Vital::Manager {
         Engine::Core::get_scene_root() -> add_child(node);
         node -> setup_rpc();
         #if defined(Vital_SDK_Client)
-        node -> on_connected_to_server = [this]() { _on_connected_to_server(); };
-        node -> on_connection_failed = [this]() { _on_connection_failed(); };
-        node -> on_server_disconnected = [this]() { _on_server_disconnected(); };
+            node -> on_connected_to_server = [this]() { _on_connected_to_server(); };
+            node -> on_connection_failed = [this]() { _on_connection_failed(); };
+            node -> on_server_disconnected = [this]() { _on_server_disconnected(); };
         #else
-        node -> on_peer_connected = [this](int id) { _on_peer_connected(id); };
-        node -> on_peer_disconnected = [this](int id) { _on_peer_disconnected(id); };
+            node -> on_peer_connected = [this](int id) { _on_peer_connected(id); };
+            node -> on_peer_disconnected = [this](int id) { _on_peer_disconnected(id); };
         #endif
     }
 
