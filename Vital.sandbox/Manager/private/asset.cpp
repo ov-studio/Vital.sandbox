@@ -258,7 +258,7 @@ namespace Vital::Manager {
             for (int pid : all_peers) {
                 if (pending_manifest_peers.count(pid)) continue;
                 pending_manifest_peers.insert(pid);
-                Engine::Core::get_singleton() -> push_deferred([this, pid]() {
+                Engine::Core::get_singleton() -> enqueue([this, pid]() {
                     pending_manifest_peers.erase(pid);
                     broadcast_manifest(pid);
                 });
@@ -406,7 +406,7 @@ namespace Vital::Manager {
 
             active_downloads.erase(path);
 
-            Engine::Core::get_singleton() -> push_deferred([path]() {
+            Engine::Core::get_singleton() -> enqueue([path]() {
                 Tool::Stack ready_args;
                 ready_args.object["path"] = Tool::StackValue(path);
                 ready_args.object["cached"] = Tool::StackValue(false);
@@ -423,7 +423,7 @@ namespace Vital::Manager {
 
     void Asset::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
-        Engine::Core::get_singleton() -> push_deferred([path]() {
+        Engine::Core::get_singleton() -> enqueue([path]() {
             Tool::print("error", fmt::format("Asset: download failed — {}", path));
         });
     }
@@ -474,7 +474,7 @@ namespace Vital::Manager {
         if (it == spawn_queue.end()) return;
         const int authority_peer = it->second;
         spawn_queue.erase(it);
-        Engine::Core::get_singleton() -> push_deferred([loaded_name, authority_peer]() {
+        Engine::Core::get_singleton() -> enqueue([loaded_name, authority_peer]() {
             Engine::Model::spawn_synced(loaded_name, authority_peer);
         });
     }

@@ -625,7 +625,7 @@ namespace Vital::Engine {
     void Console::shutdown() {
         print("sbox", "Server shutting down...");
         Manager::Resource::get_singleton() -> stop_all();
-        Engine::Core::get_singleton() -> push_deferred([this]() {
+        Engine::Core::get_singleton() -> enqueue([this]() {
             stdin_running = false;
             print("sbox", "Server shut down successfully!");
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));

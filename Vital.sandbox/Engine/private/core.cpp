@@ -36,7 +36,7 @@ namespace Vital::Engine {
         kit_thread = std::thread([this]() {
             Manager::Kit::ensure();
             if (!kit_abort.load()) {
-                push_deferred([this]() {
+                enqueue([this]() {
                     Tool::print("sbox", "Core: Vital.kit ready");
                     kit_ready.store(true);
                     Tool::Event::emit("vital.kit:ready");
@@ -104,7 +104,7 @@ namespace Vital::Engine {
         Tool::Event::emit("vital.core:teardown");
     }
 
-    void Core::push_deferred(std::function<void()> exec) {
+    void Core::enqueue(std::function<void()> exec) {
         std::lock_guard<std::mutex> lock(mutex);
         deferred_queue.push_back(std::move(exec));
     }
@@ -142,7 +142,7 @@ namespace Vital::Engine {
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
-            get_singleton() -> push_deferred([]() {
+            get_singleton() -> enqueue([]() {
                 get_singleton() -> add_child(environment);
             });
             godot::Ref<godot::Environment> env;

@@ -120,7 +120,7 @@ namespace Vital::Manager {
         rm -> log("sbox", fmt::format("resource `{}` started", name));
         Internal::execute_scripts(name, sources);
         #if !defined(Vital_SDK_Client)
-            Engine::Core::get_singleton() -> push_deferred([name]() {
+            Engine::Core::get_singleton() -> enqueue([name]() {
                 const Manifest* resource;
                 {
                     auto rm = Resource::get_singleton();
@@ -297,7 +297,7 @@ namespace Vital::Manager {
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
 
         #if !defined(Vital_SDK_Client)
-            Engine::Core::get_singleton() -> push_deferred([rm, name]() {
+            Engine::Core::get_singleton() -> enqueue([rm, name]() {
                 Manager::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:stopped", name));
                 Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
             });
@@ -358,7 +358,7 @@ namespace Vital::Manager {
         for (const auto& name : rm -> running) if (!Internal::is_loaded(name)) stale.push_back(name);
         for (const auto& name : stale) rm -> log("sbox", fmt::format("resource `{}` no longer exists — stopping", name));
         if (!stale.empty()) {
-            Engine::Core::get_singleton() -> push_deferred([stale]() {
+            Engine::Core::get_singleton() -> enqueue([stale]() {
                 for (const auto& name : stale) Internal::stop(name);
             });
         }
@@ -429,7 +429,7 @@ namespace Vital::Manager {
         }
         rm -> log("sbox", change_report);
         stop(name);
-        Engine::Core::get_singleton() -> push_deferred([name]() { Internal::start(name); });
+        Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
         return true;
     }
 
@@ -553,7 +553,7 @@ namespace Vital::Manager {
             Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
                 if (args.array.empty()) return;
                 const int peer_id = args.array[0].as<int32_t>();
-                Engine::Core::get_singleton() -> push_deferred([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
+                Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
         #endif
     }
@@ -647,35 +647,35 @@ namespace Vital::Manager {
 
     // APIs //
     bool Resource::start(std::string name) {
-        Engine::Core::get_singleton() -> push_deferred([name]() { Internal::start(name); });
+        Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
         return true;
     }
 
     bool Resource::stop(std::string name) {
-        Engine::Core::get_singleton() -> push_deferred([name]() { Internal::stop(name); });
+        Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });
         return true;
     }
 
     #if !defined(Vital_SDK_Client)
     void Resource::scan() {
-        Engine::Core::get_singleton() -> push_deferred([]() { Internal::scan(); });
+        Engine::Core::get_singleton() -> enqueue([]() { Internal::scan(); });
     }
 
     bool Resource::restart(std::string name) {
-        Engine::Core::get_singleton() -> push_deferred([name]() { Internal::restart(name); });
+        Engine::Core::get_singleton() -> enqueue([name]() { Internal::restart(name); });
         return true;
     }
 
     void Resource::start_all() {
-        Engine::Core::get_singleton() -> push_deferred([]() { Internal::start_all(); });
+        Engine::Core::get_singleton() -> enqueue([]() { Internal::start_all(); });
     }
 
     void Resource::stop_all() {
-        Engine::Core::get_singleton() -> push_deferred([]() { Internal::stop_all(); });
+        Engine::Core::get_singleton() -> enqueue([]() { Internal::stop_all(); });
     }
 
     void Resource::restart_all() {
-        Engine::Core::get_singleton() -> push_deferred([]() { Internal::restart_all(); });
+        Engine::Core::get_singleton() -> enqueue([]() { Internal::restart_all(); });
     }
 
     #else

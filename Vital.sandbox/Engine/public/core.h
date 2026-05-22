@@ -54,7 +54,7 @@ namespace Vital::Engine {
 
             // Managers //
             bool is_ready();
-            void push_deferred(std::function<void()> exec);
+            void enqueue(std::function<void()> exec);
             void drain();
             void teardown();
 
