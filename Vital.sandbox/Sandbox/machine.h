@@ -29,7 +29,7 @@ namespace Vital::Sandbox {
             inline static std::mutex mutex;
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
-            inline static std::vector<std::function<void()>> work_queue;
+            inline static std::vector<std::function<void()>> deferred_queue;
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -114,23 +114,22 @@ namespace Vital::Sandbox {
             // APIs //
             static Machine* to_machine(void* vm) { return static_cast<Machine*>(vm); }
             static const vm_machines fetch_machines() { return machines; }
+            
             static Machine* fetch_machine(vm_state* state) {
                 auto it = machines.find(state);
                 return it != machines.end() ? it -> second : nullptr;
             }
 
-            // TODO: RENAME IT SOMETHING ELSE ...
             static void enqueue(std::function<void()> fn) {
                 std::lock_guard<std::mutex> lock(mutex);
-                work_queue.push_back(std::move(fn));
+                deferred_queue.push_back(std::move(fn));
             }
 
-            // TODO: RENAME IT SOMETHING ELSE ...
             static void drain() {
                 std::vector<std::function<void()>> work;
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    std::swap(work, work_queue);
+                    std::swap(work, deferred_queue);
                 }
                 for (auto& fn : work) fn();
             }
@@ -147,6 +146,7 @@ namespace Vital::Sandbox {
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
             bool is_reference(const std::string& name) const { return reference.find(name) != reference.end(); }
+
             bool is_horizontal_alignment(int index = 1) {
                 if (is_string(index)) return horizontal_alignment.count(get_string(index)) > 0;
                 else if (is_number(index)) {
@@ -155,6 +155,7 @@ namespace Vital::Sandbox {
                 }
                 return false;
             }
+
             bool is_vertical_alignment(int index = 1) {
                 if (is_string(index)) return vertical_alignment.count(get_string(index)) > 0;
                 else if (is_number(index)) {
@@ -163,10 +164,12 @@ namespace Vital::Sandbox {
                 }
                 return false;
             }
+
             bool is_color(int index = 1) {
                 if (is_string(index)) return godot::Color::html_is_valid(Tool::to_godot_string(get_string(index)));
                 return is_table(index) && get_length(index) >= 4;
             }
+
             bool is_vector2(int index = 1) { return is_table(index) && get_length(index) >= 2; }
             bool is_vector2_array(int index = 1) {
                 if (!is_table(index)) return false;
@@ -176,6 +179,7 @@ namespace Vital::Sandbox {
                 pop(1);
                 return result;
             }
+
             bool is_vector3(int index = 1) { return is_table(index) && get_length(index) >= 3; }
             bool is_vector3_array(int index = 1) {
                 if (!is_table(index)) return false;
@@ -203,17 +207,20 @@ namespace Vital::Sandbox {
             bool get_metatable(const std::string& index) { return luaL_getmetatable(state, index.c_str()); }
             vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
             void* get_userdata(int index = 1) { return lua_touserdata(state, index); }
+
             int get_length(int index = 1) {
                 lua_len(state, index);
                 int result = get_int(-1);
                 pop(1);
                 return result;
             }
+
             int get_reference(const std::string& name, bool push_to_stack = false) {
                 if (!push_to_stack) return reference.at(name);
                 lua_rawgeti(state, LUA_REGISTRYINDEX, reference.at(name));
                 return 0;
             }
+
             godot::HorizontalAlignment get_horizontal_alignment(int index = 1) {
                 if (is_horizontal_alignment(index)) {
                     if (is_string(index)) return horizontal_alignment.find(get_string(index)) -> second;
@@ -221,6 +228,7 @@ namespace Vital::Sandbox {
                 }
                 return godot::HORIZONTAL_ALIGNMENT_LEFT;
             }
+
             godot::VerticalAlignment get_vertical_alignment(int index = 1) {
                 if (is_vertical_alignment(index)) {
                     if (is_string(index)) return vertical_alignment.find(get_string(index)) -> second;
@@ -228,6 +236,7 @@ namespace Vital::Sandbox {
                 }
                 return godot::VERTICAL_ALIGNMENT_TOP;
             }
+
             godot::Color get_color(int index = 1) {
                 if (is_string(index)) {
                     auto html = Tool::to_godot_string(get_string(index));
@@ -241,6 +250,7 @@ namespace Vital::Sandbox {
                 pop(4);
                 return value;
             }
+
             godot::Vector2 get_vector2(int index = 1) {
                 godot::Vector2 value = {0.0f, 0.0f};
                 get_table_field(1, index); value.x = get_float(-1);
@@ -248,6 +258,7 @@ namespace Vital::Sandbox {
                 pop(2);
                 return value;
             }
+
             godot::PackedVector2Array get_vector2_array(int index = 1) {
                 godot::PackedVector2Array value;
                 for (int i = 1; i <= get_length(index); ++i) {
@@ -257,6 +268,7 @@ namespace Vital::Sandbox {
                 }
                 return value;
             }
+
             godot::Vector3 get_vector3(int index = 1) {
                 godot::Vector3 value = {0.0f, 0.0f, 0.0f};
                 get_table_field(1, index); value.x = get_float(-1);
@@ -265,6 +277,7 @@ namespace Vital::Sandbox {
                 pop(3);
                 return value;
             }
+
             godot::PackedVector3Array get_vector3_array(int index = 1) {
                 godot::PackedVector3Array value;
                 for (int i = 1; i <= get_length(index); ++i) {
@@ -287,6 +300,7 @@ namespace Vital::Sandbox {
             void push_string(const std::string& value) { lua_pushstring(state, value.c_str()); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
+
             void push_horizontal_alignment(godot::HorizontalAlignment value) {
                 for (auto& it : horizontal_alignment) {
                     if (it.second == value) {
@@ -296,6 +310,7 @@ namespace Vital::Sandbox {
                 }
                 push_value("left");
             }
+
             void push_vertical_alignment(godot::VerticalAlignment value) {
                 for (auto& it : vertical_alignment) {
                     if (it.second == value) {
@@ -305,6 +320,7 @@ namespace Vital::Sandbox {
                 }
                 push_value("top");
             }
+
             void push_color(const godot::Color& value) {
                 create_table();
                 push_value(value.r); set_table_field(1, -2);
@@ -312,11 +328,13 @@ namespace Vital::Sandbox {
                 push_value(value.b); set_table_field(3, -2);
                 push_value(value.a); set_table_field(4, -2);
             }
+
             void push_vector2(const godot::Vector2& value) {
                 create_table();
                 push_value(value.x); set_table_field(1, -2);
                 push_value(value.y); set_table_field(2, -2);
             }
+
             void push_vector2_array(const godot::PackedVector2Array& value) {
                 create_table();
                 for (int i = 0; i < value.size(); ++i) {
@@ -324,12 +342,14 @@ namespace Vital::Sandbox {
                     set_table_field(i + 1, -2);
                 }
             }
+
             void push_vector3(const godot::Vector3& value) {
                 create_table();
                 push_value(value.x); set_table_field(1, -2);
                 push_value(value.y); set_table_field(2, -2);
                 push_value(value.z); set_table_field(3, -2);
             }
+
             void push_vector3_array(const godot::PackedVector3Array& value) {
                 create_table();
                 for (int i = 0; i < value.size(); ++i) {
@@ -342,6 +362,7 @@ namespace Vital::Sandbox {
             // Containers //
             void create_table() { lua_newtable(state); }
             void create_metatable(const std::string& value) { luaL_newmetatable(state, value.c_str()); }
+
             void create_namespace(const std::string& nspace) {
                 get_global(nspace);
                 if (!is_table(-1)) {
@@ -351,14 +372,17 @@ namespace Vital::Sandbox {
                     get_global(nspace);
                 }
             }
+
             void create_object(const std::string& index, void* value) {
                 create_userdata(value);
                 set_metatable(index);
             }
+
             void create_userdata(void* value) {
                 void** userdata = static_cast<void**>(lua_newuserdata(state, sizeof(void*)));
                 *userdata = value;
             }
+
             Machine* create_thread() {
                 auto* thread = new Machine(lua_newthread(state), this);
                 children.emplace(thread);
