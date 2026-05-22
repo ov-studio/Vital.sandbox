@@ -118,8 +118,8 @@ namespace Vital::Engine {
         }
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
         Texture2D payload;
-        auto texture = memnew(Texture({Type::Texture2D, payload}, reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
+        auto texture = memnew(Texture({Type::Texture2D, payload}, reference));
         return texture;
     }
 
@@ -132,8 +132,8 @@ namespace Vital::Engine {
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         SVG payload;
-        auto texture = memnew(Texture({Type::SVG, payload}, reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
+        auto texture = memnew(Texture({Type::SVG, payload}, reference));
         return texture;
     }
 
@@ -142,8 +142,8 @@ namespace Vital::Engine {
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         SVG payload;
-        auto texture = memnew(Texture({Type::SVG, payload}, reference));
         payload.texture = godot::ImageTexture::create_from_image(image);
+        auto texture = memnew(Texture({Type::SVG, payload}, reference));
         return texture;
     }
 
