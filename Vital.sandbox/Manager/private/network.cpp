@@ -182,7 +182,7 @@ namespace Vital::Manager {
 
     bool Network::disconnect_from_server() {
         if (!peer.is_valid()) return false;
-        auto_reconnect    = false;
+        auto_reconnect = false;
         pending_handshake = false;
         unwire_signals();
         peer -> close();
@@ -220,7 +220,7 @@ namespace Vital::Manager {
     }
 
     void Network::set_reconnect_config(int max_attempts, float delay_seconds) {
-        reconnect_max   = max_attempts;
+        reconnect_max = max_attempts;
         reconnect_delay = delay_seconds;
     }
 
