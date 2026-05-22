@@ -60,7 +60,7 @@ namespace Vital::Sandbox::API {
                 return false;
             }
 
-            vm_state* raw_state = instance -> thread_vm -> get_state();
+            auto raw_state = instance -> thread_vm -> get_state();
             if (!raw_state) return false;
             {
                 int status = lua_status(raw_state);
@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
                     return false;
                 }
             }
-            Machine* thread_vm = instance -> thread_vm;
+            auto thread_vm = instance -> thread_vm;
             instance -> thread_vm = nullptr;
             instance -> vm_owned.store(false);
             if (!thread_vm -> resume(args)) {
