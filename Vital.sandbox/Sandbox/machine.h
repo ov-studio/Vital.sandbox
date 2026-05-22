@@ -28,6 +28,8 @@ namespace Vital::Sandbox {
             static vm_apis internal_apis;
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
+            inline static std::mutex pending_mutex;
+            inline static std::vector<std::function<void()>> pending_work;
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -115,6 +117,20 @@ namespace Vital::Sandbox {
             static Machine* fetch_machine(vm_state* state) {
                 auto it = machines.find(state);
                 return it != machines.end() ? it -> second : nullptr;
+            }
+
+            static void enqueue(std::function<void()> fn) {
+                std::lock_guard<std::mutex> lock(pending_mutex);
+                pending_work.push_back(std::move(fn));
+            }
+
+            static void drain() {
+                std::vector<std::function<void()>> work;
+                {
+                    std::lock_guard<std::mutex> lock(pending_mutex);
+                    std::swap(work, pending_work);
+                }
+                for (auto& fn : work) fn();
             }
 
 
@@ -494,8 +510,8 @@ namespace Vital::Sandbox {
                 reference.erase(name);
             }
 
-            void resume(int count = 0) {
-                if (!is_virtual()) return;
+            bool resume(int count = 0) {
+                if (!is_virtual()) return false;
                 int ncount;
                 int result = lua_resume(state, nullptr, count, &ncount);
                 if (result != LUA_OK && result != LUA_YIELD) {
@@ -504,7 +520,8 @@ namespace Vital::Sandbox {
                         pop(1);
                     }
                 }
-                if (result != LUA_YIELD) delete this;
+                if (result != LUA_YIELD) { delete this; return false; }
+                return true;
             }
 
             void pause(int count = 0) {
