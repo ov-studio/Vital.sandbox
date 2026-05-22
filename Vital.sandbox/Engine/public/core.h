@@ -30,7 +30,7 @@ namespace Vital::Engine {
             std::thread kit_thread;
             std::atomic<bool> kit_ready { false };
             std::atomic<bool> kit_abort { false };
-            std::vector<std::function<void()>> deferred_queue;
+            std::vector<std::function<void()>> work_queue;
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);

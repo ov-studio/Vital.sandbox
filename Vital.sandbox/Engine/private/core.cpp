@@ -54,7 +54,7 @@ namespace Vital::Engine {
         if (kit_thread.joinable()) kit_thread.join();
         {
             std::lock_guard<std::mutex> lock(mutex);
-            deferred_queue.clear();
+            work_queue.clear();
         }
         if (!is_ready()) return;
         teardown();
@@ -66,7 +66,7 @@ namespace Vital::Engine {
         Sandbox::Machine::drain(); // TODO: MOVE UNDER MANAGER SANBDX SINGLETON...
         {
             std::lock_guard<std::mutex> lock(mutex);
-            if (!deferred_queue.empty()) call_deferred("drain");
+            if (!work_queue.empty()) call_deferred("drain");
         }
         Manager::Sandbox::get_singleton() -> process(delta);
     }
@@ -106,14 +106,14 @@ namespace Vital::Engine {
 
     void Core::enqueue(std::function<void()> exec) {
         std::lock_guard<std::mutex> lock(mutex);
-        deferred_queue.push_back(std::move(exec));
+        work_queue.push_back(std::move(exec));
     }
 
     void Core::drain() {
         std::vector<std::function<void()>> local;
         {
             std::lock_guard<std::mutex> lock(mutex);
-            local.swap(deferred_queue);
+            local.swap(work_queue);
         }
         for (auto& exec : local) exec();
     }

@@ -29,7 +29,7 @@ namespace Vital::Sandbox {
             inline static std::mutex mutex;
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
-            inline static std::vector<std::function<void()>> deferred_queue;
+            inline static std::vector<std::function<void()>> work_queue;
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -123,14 +123,14 @@ namespace Vital::Sandbox {
 
             static void enqueue(std::function<void()> fn) {
                 std::lock_guard<std::mutex> lock(mutex);
-                deferred_queue.push_back(std::move(fn));
+                work_queue.push_back(std::move(fn));
             }
 
             static void drain() {
                 std::vector<std::function<void()>> work;
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    std::swap(work, deferred_queue);
+                    std::swap(work, work_queue);
                 }
                 for (auto& fn : work) fn();
             }
