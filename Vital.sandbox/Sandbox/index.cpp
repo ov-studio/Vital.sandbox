@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
+#include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
 #include <Vital.sandbox/API/core/engine.h>
@@ -86,6 +87,52 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Fog>(),
         vm_module::make_api<API::Volumetric_Fog>()
     };
+
+    void Machine::assert_main_thread(const char* fn_name) {
+        if (Tool::is_main_thread()) return;
+        const std::string msg = fmt::format(
+            "Machine::{}() called off the main thread. "
+            "Wrap the call in Engine::Core::execute() or Sandbox::Machine::enqueue().", fn_name);
+        #if defined(Vital_SDK_Debug)
+            Tool::print("warn", msg);
+        #else
+            Tool::print("warn", msg);
+            assert(false && "Machine: main-thread violation — see log above");
+        #endif
+    }
+
+    void Machine::bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
+        Engine::Core::get_singleton() -> execute([this, scope, name, exec = std::move(exec)]() mutable {
+            assert_main_thread("bind");
+            auto heap_exec = new vm_bind(std::move(exec));
+            std::string id = scope[0];
+            for (std::size_t i = 1; i < scope.size(); ++i) id += "." + scope[i];
+            id += "." + name;
+            auto heap_id = new std::string(std::move(id));
+            create_namespace(scope[0]);
+            for (std::size_t i = 1; i < scope.size(); ++i) {
+                get_table_field(scope[i], -1);
+                if (!is_table(-1)) {
+                    pop(1);
+                    create_table();
+                    push(-1);
+                    set_table_field(scope[i], -3);
+                }
+            }
+            push_userdata(heap_exec);
+            push_userdata(heap_id);
+            lua_pushcclosure(state, [](vm_state* state) -> int {
+                auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
+                auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
+                auto vm = Machine::fetch_machine(state);
+                return vm -> execute([&]() -> int {
+                    return (*exec)(vm, *id);
+                });
+            }, 2);
+            set_table_field(name, -2);
+            pop(static_cast<int>(scope.size()));
+        });
+    }
 
     namespace API {
         void log(const std::string& type, const std::string& message) {
