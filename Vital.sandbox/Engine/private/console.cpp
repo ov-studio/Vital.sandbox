@@ -518,6 +518,14 @@ namespace Vital::Engine {
                 const auto& cmds = help[section.c_str()];
                 if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
                 const auto& entry = cmds[cmd.c_str()];
+                #if defined(Vital_SDK_Client)
+                if (entry.HasMember("require_connection") && entry["require_connection"].IsBool() && entry["require_connection"].GetBool()) {
+                    if (!Manager::Network::get_singleton() -> is_active()) {
+                        print("warn", fmt::format("Command `{}` requires an active server connection", command));
+                        return false;
+                    }
+                }
+                #endif
                 std::string syntax = entry.HasMember("syntax") && entry["syntax"].IsString() ? entry["syntax"].GetString() : "";
                 int required = 0;
                 for (char c : syntax) if (c == '<') required++;
