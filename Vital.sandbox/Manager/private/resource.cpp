@@ -62,6 +62,7 @@ namespace Vital::Manager {
     }
 
     bool Resource::Internal::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+        Tool::assert_main_thread("Resource::Internal::validate_scripts");
         auto rm = Resource::get_singleton();
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         const Manifest* resource;
@@ -92,6 +93,7 @@ namespace Vital::Manager {
     }
 
     void Resource::Internal::execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
+        Tool::assert_main_thread("Resource::Internal::execute_scripts");
         auto rm = Resource::get_singleton();
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         const Manifest* resource;
@@ -109,6 +111,7 @@ namespace Vital::Manager {
     }
 
     void Resource::Internal::execute_resource(std::string name) {
+        Tool::assert_main_thread("Resource::Internal::execute_resource");
         auto rm = Resource::get_singleton();
         std::vector<std::pair<std::string, std::string>> sources;
         if (!Internal::validate_scripts(name, sources)) return;
@@ -614,6 +617,7 @@ namespace Vital::Manager {
     }
 
     std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
+        Tool::assert_main_thread("Resource::get_resource_from_vm");
         return vm -> get_environment_id();
     }
 
