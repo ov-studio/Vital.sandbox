@@ -64,7 +64,7 @@ namespace Vital::Manager {
             void _on_packet_received(godot::Dictionary data);
 
             // State
-            bool is_active() const;
+            bool is_connected() const;
             bool is_connecting() const;
             int get_peer_id() const;
 

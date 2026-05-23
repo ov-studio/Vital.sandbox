@@ -121,7 +121,7 @@ namespace Vital::Manager {
     //     State      //
     //----------------//
 
-    bool Network::is_active() const {
+    bool Network::is_connected() const {
         return peer.is_valid() && peer -> get_connection_status() == godot::MultiplayerPeer::CONNECTION_CONNECTED;
     }
 
@@ -154,7 +154,7 @@ namespace Vital::Manager {
 
     #if defined(Vital_SDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
-        if (is_active() || is_connecting()) {
+        if (is_connected() || is_connecting()) {
             Tool::print("sbox", "Network: already connected/connecting");
             return false;
         }
@@ -243,7 +243,7 @@ namespace Vital::Manager {
 
     #else
     bool Network::host(Config::Server& config) {
-        if (is_active()) {
+        if (is_connected()) {
             Tool::print("sbox", "Network: already hosting");
             return false;
         }
@@ -331,7 +331,7 @@ namespace Vital::Manager {
     bool Network::send(const Tool::Stack& stack, int peerID) {
         if (!node || !peer.is_valid()) return false;
         #if defined(Vital_SDK_Client)
-        if (!is_active()) return false;
+        if (!is_connected()) return false;
         #endif
         if (peerID == 0) node -> rpc("_receive", stack.to_dict());
         else node -> rpc_id(peerID, "_receive", stack.to_dict());
@@ -348,14 +348,14 @@ namespace Vital::Manager {
 
     void Network::poll(double delta) {
         #if defined(Vital_SDK_Client)
-        if (auto_reconnect && !is_active() && !is_connecting()) {
+        if (auto_reconnect && !is_connected() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);
                 if (reconnect_timer <= 0.0f) connect_to_server(reconnect_ip, reconnect_port, true);
             }
             return;
         }
-        if (pending_handshake && is_active()) {
+        if (pending_handshake && is_connected()) {
             pending_handshake = false;
             Tool::print("sbox", "Network: sending handshake, peer_id=", get_peer_id());
             Tool::Stack msg;
