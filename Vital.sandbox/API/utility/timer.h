@@ -36,6 +36,13 @@ namespace Vital::Sandbox::API {
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
+            Tool::Timer* t = nullptr;
+            {
+                std::lock_guard<std::mutex> lock(mutex);
+                t = instance -> timer;
+                instance -> timer = nullptr;
+            }
+            if (t && Tool::Timer::valid(t)) t -> stop();
             Instance::release(instance);
         }
 
@@ -61,13 +68,9 @@ namespace Vital::Sandbox::API {
                 instance -> set_ref(instance -> self_reference(), -1);
 
                 auto weak = std::weak_ptr<Instance>(instance);
-                Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
-                    auto captured_weak = weak;
                 auto timer = Tool::Timer::create([weak, executions](Tool::Timer*, int count) {
                     int captured_count = count;
                     bool captured_stop = (executions > 0) && (count >= executions);
-                    Machine::enqueue([captured_weak, captured_count, captured_stop, self]() {
-                        auto instance = captured_weak.lock();
                     Machine::enqueue([weak, captured_count, captured_stop]() {
                         auto instance = weak.lock();
                         if (!instance || instance -> destroyed) return;
@@ -75,13 +78,16 @@ namespace Vital::Sandbox::API {
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> pcall(1, 0);
                         if (captured_stop) {
-                            instance -> destroyed = true;
-                            clean_instance(instance);
                             std::lock_guard<std::mutex> lock(mutex);
                             instance -> timer = nullptr;
                         }
                     });
                 }, interval, executions);
+
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    instance -> timer = timer;
+                }
                 return 1;
             });
         }
