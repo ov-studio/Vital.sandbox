@@ -23,7 +23,7 @@
 ////////////
 
 namespace Vital::Tool {
-    inline static std::thread::id main_thread_id;
+    inline std::thread::id main_thread_id;
 
     static std::string indent(int level) {
         #if defined(Vital_SDK_Client)
