@@ -28,6 +28,7 @@ namespace Vital::Sandbox::API {
 
         struct Instance : vm_instance<Instance> {
             using Owner = Timer;
+            Tool::Timer* timer = nullptr;
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
@@ -62,17 +63,22 @@ namespace Vital::Sandbox::API {
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
                     auto captured_weak = weak;
+                auto timer = Tool::Timer::create([weak, executions](Tool::Timer*, int count) {
                     int captured_count = count;
                     bool captured_stop = (executions > 0) && (count >= executions);
                     Machine::enqueue([captured_weak, captured_count, captured_stop, self]() {
                         auto instance = captured_weak.lock();
-                        if (!instance || instance -> destroyed) { self -> stop(); return; }
+                    Machine::enqueue([weak, captured_count, captured_stop]() {
+                        auto instance = weak.lock();
+                        if (!instance || instance -> destroyed) return;
                         instance -> vm -> get_reference(instance -> reference(), true);
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> pcall(1, 0);
                         if (captured_stop) {
                             instance -> destroyed = true;
                             clean_instance(instance);
+                            std::lock_guard<std::mutex> lock(mutex);
+                            instance -> timer = nullptr;
                         }
                     });
                 }, interval, executions);
