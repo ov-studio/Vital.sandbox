@@ -243,6 +243,7 @@ namespace Vital::Manager {
 
     // APIs //
     bool Resource::Internal::start(std::string name) {
+        Tool::assert_main_thread("Resource::Internal::start");
         auto rm = Resource::get_singleton();
         auto am = Manager::Asset::get_singleton();
         {
@@ -268,11 +269,12 @@ namespace Vital::Manager {
             am -> broadcast_manifest(-1, true);
         }
         #endif
-        rm -> Internal::execute_resource(name);
+        Internal::execute_resource(name);
         return true;
     }
 
     bool Resource::Internal::stop(std::string name) {
+        Tool::assert_main_thread("Resource::Internal::stop");
         auto rm = Resource::get_singleton();
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         auto am = Manager::Asset::get_singleton();
@@ -312,6 +314,7 @@ namespace Vital::Manager {
 
     #if !defined(Vital_SDK_Client)
     void Resource::Internal::scan() {
+        Tool::assert_main_thread("Resource::Internal::scan");
         auto rm = Resource::get_singleton();
         std::lock_guard<std::mutex> lock(rm -> mutex);
         rm -> log("sbox", "rescanning resources...");
@@ -368,6 +371,7 @@ namespace Vital::Manager {
     }
 
     bool Resource::Internal::restart(std::string name) {
+        Tool::assert_main_thread("Resource::Internal::restart");
         auto rm = Resource::get_singleton();
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
@@ -437,6 +441,7 @@ namespace Vital::Manager {
     }
 
     void Resource::Internal::start_all() {
+        Tool::assert_main_thread("Resource::Internal::start_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "starting all resources...");
         int count = 0;
@@ -450,6 +455,7 @@ namespace Vital::Manager {
     }
 
     void Resource::Internal::stop_all() {
+        Tool::assert_main_thread("Resource::Internal::stop_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "stopping all resources...");
         int count = 0;
@@ -463,6 +469,7 @@ namespace Vital::Manager {
     }
 
     void Resource::Internal::restart_all() {
+        Tool::assert_main_thread("Resource::Internal::restart_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "restarting all resources...");
         int count = 0;
