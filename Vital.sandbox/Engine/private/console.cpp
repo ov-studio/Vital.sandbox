@@ -521,7 +521,7 @@ namespace Vital::Engine {
                 #if defined(Vital_SDK_Client)
                 if (entry.HasMember("require_connection") && entry["require_connection"].IsBool() && entry["require_connection"].GetBool()) {
                     if (!Manager::Network::get_singleton() -> is_active()) {
-                        print("warn", fmt::format("Command `{}` requires an active server connection", command));
+                        print("warn", fmt::format("Command `{}` requires an active server connection", cmd));
                         return false;
                     }
                 }
