@@ -61,15 +61,20 @@ namespace Vital::Sandbox::API {
 
                 auto weak = std::weak_ptr<Instance>(instance);
                 Tool::Timer::create([weak, executions](Tool::Timer* self, int count) {
-                    auto instance = weak.lock();
-                    if (!instance || instance -> destroyed) return self -> stop();
-                    instance -> vm -> get_reference(instance -> reference(), true);
-                    instance -> vm -> push_value(count);
-                    instance -> vm -> pcall(1, 0);
-                    if ((executions > 0) && (count >= executions)) {
-                        instance -> destroyed = true;
-                        clean_instance(instance);
-                    }
+                    auto captured_weak = weak;
+                    int captured_count = count;
+                    bool captured_stop = (executions > 0) && (count >= executions);
+                    Machine::enqueue([captured_weak, captured_count, captured_stop, self]() {
+                        auto instance = captured_weak.lock();
+                        if (!instance || instance -> destroyed) { self -> stop(); return; }
+                        instance -> vm -> get_reference(instance -> reference(), true);
+                        instance -> vm -> push_value(captured_count);
+                        instance -> vm -> pcall(1, 0);
+                        if (captured_stop) {
+                            instance -> destroyed = true;
+                            clean_instance(instance);
+                        }
+                    });
                 }, interval, executions);
                 return 1;
             });
