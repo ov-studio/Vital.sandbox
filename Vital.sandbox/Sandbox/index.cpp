@@ -93,12 +93,8 @@ namespace Vital::Sandbox {
         const std::string msg = fmt::format(
             "Machine::{}() called off the main thread. "
             "Wrap the call in Engine::Core::execute() or Sandbox::Machine::enqueue().", fn_name);
-        #if defined(Vital_SDK_Debug)
-            Tool::print("warn", msg);
-        #else
-            Tool::print("warn", msg);
-            assert(false && "Machine: main-thread violation — see log above");
-        #endif
+        Tool::print("warn", msg);
+        throw std::runtime_error(msg);
     }
 
     void Machine::bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
