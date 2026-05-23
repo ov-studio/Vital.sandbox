@@ -30,7 +30,6 @@ namespace Vital::Sandbox {
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
             inline static std::vector<std::function<void()>> work_queue;
-            static void assert_main_thread(const char* fn_name);
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -72,7 +71,7 @@ namespace Vital::Sandbox {
         public:
             // Instantiators //
             Machine(vm_apis apis = {}) : state(luaL_newstate()), external_apis(std::move(apis)) {
-                assert_main_thread("Machine");
+                Tool::assert_main_thread("Machine::Machine");
                 machines.emplace(state, this);
                 for (auto& value : whitelist) {
                     luaL_requiref(state, value.name, value.func, 1);
@@ -90,12 +89,12 @@ namespace Vital::Sandbox {
             }
 
             Machine(vm_state* thread, Machine* parent) : state(thread), virtualized(true), parent(parent) {
-                assert_main_thread("Machine(thread)");
+                Tool::assert_main_thread("Machine::Machine(thread)");
                 machines.emplace(state, this);
             }
 
             ~Machine() {
-                assert_main_thread("~Machine");
+                Tool::assert_main_thread("Machine::~Machine");
                 if (!state) return;
                 if (!virtualized) {
                     for (auto* child : children) {
@@ -389,7 +388,7 @@ namespace Vital::Sandbox {
             }
 
             Machine* create_thread() {
-                assert_main_thread("create_thread");
+                Tool::assert_main_thread("Machine::create_thread");
                 auto* thread = new Machine(lua_newthread(state), this);
                 children.emplace(thread);
                 return thread;
@@ -398,7 +397,7 @@ namespace Vital::Sandbox {
 
             // Environment //
             void create_environment(const std::string& id) {
-                assert_main_thread("create_environment");
+                Tool::assert_main_thread("Machine::create_environment");
                 create_table();
                 create_table();
                 lua_pushglobaltable(state);
@@ -415,7 +414,7 @@ namespace Vital::Sandbox {
             }
     
             std::string get_environment_id(int level = 0) {
-                assert_main_thread("get_environment_id");
+                Tool::assert_main_thread("Machine::get_environment_id");
                 lua_Debug debug;
                 for (int index = level; lua_getstack(state, index, &debug); ++index) {
                     lua_getinfo(state, "f", &debug);
@@ -435,7 +434,7 @@ namespace Vital::Sandbox {
             }
 
             void clear_environment_id(const std::string& id) {
-                assert_main_thread("clear_environment_id");
+                Tool::assert_main_thread("Machine::clear_environment_id");
                 if (!is_reference(id)) return;
                 get_reference(id, true);
                 push_nil();
@@ -488,7 +487,7 @@ namespace Vital::Sandbox {
             }
 
             void hook(const std::string& mode) {
-                assert_main_thread("hook");
+                Tool::assert_main_thread("Machine::hook");
                 for (auto& i : internal_apis) { mode == "bind" ? i.bind(this) : i.inject(this); }
                 for (auto& i : external_apis) { mode == "bind" ? i.bind(this) : i.inject(this); }
             }
@@ -507,21 +506,21 @@ namespace Vital::Sandbox {
             void set_metatable(const std::string& index) { luaL_setmetatable(state, index.c_str()); }
 
             void set_reference(const std::string& name, int index = 1) {
-                assert_main_thread("set_reference");
+                Tool::assert_main_thread("Machine::set_reference");
                 del_reference(name);
                 push(index);
                 reference.emplace(name, luaL_ref(state, LUA_REGISTRYINDEX));
             }
 
             void del_reference(const std::string& name) {
-                assert_main_thread("del_reference");
+                Tool::assert_main_thread("Machine::del_reference");
                 if (!is_reference(name)) return;
                 luaL_unref(state, LUA_REGISTRYINDEX, get_reference(name));
                 reference.erase(name);
             }
 
             bool resume(int count = 0) {
-                assert_main_thread("resume");
+                Tool::assert_main_thread("Machine::resume");
                 if (!is_virtual()) return false;
                 int ncount;
                 int result = lua_resume(state, nullptr, count, &ncount);
@@ -536,7 +535,7 @@ namespace Vital::Sandbox {
             }
 
             void pause(int count = 0) {
-                assert_main_thread("pause");
+                Tool::assert_main_thread("Machine::pause");
                 if (!is_virtual()) return;
                 lua_yield(state, count);
             }
@@ -549,7 +548,7 @@ namespace Vital::Sandbox {
             }
 
             bool pcall(int arguments, int returns = LUA_MULTRET) {
-                assert_main_thread("pcall");
+                Tool::assert_main_thread("Machine::pcall");
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
                     API::log(std::string(Tool::Log::error::label), get_string(-1));
@@ -559,7 +558,7 @@ namespace Vital::Sandbox {
             }
         
             std::string compile_string(const std::string& raw, const std::string& chunk_name = "") {
-                assert_main_thread("compile_string");
+                Tool::assert_main_thread("Machine::compile_string");
                 if (raw.empty()) return "empty source";
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
@@ -572,7 +571,7 @@ namespace Vital::Sandbox {
             }
         
             int load_string(const std::string& raw, const std::string& chunk_name = "", bool auto_load = true, bool use_env = false, int env_index = 1) {
-                assert_main_thread("load_string");
+                Tool::assert_main_thread("Machine::load_string");
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {

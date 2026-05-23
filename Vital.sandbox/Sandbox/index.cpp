@@ -88,14 +88,9 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Volumetric_Fog>()
     };
 
-    void Machine::assert_main_thread(const char* fn_name) {
-        if (Tool::is_main_thread()) return;
-        throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `Machine::{}()` called off the main thread.", fn_name));
-    }
-
     void Machine::bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
         Engine::Core::get_singleton() -> execute([this, scope, name, exec = std::move(exec)]() mutable {
-            assert_main_thread("bind");
+            Tool::assert_main_thread("Machine::bind");
             auto heap_exec = new vm_bind(std::move(exec));
             std::string id = scope[0];
             for (std::size_t i = 1; i < scope.size(); ++i) id += "." + scope[i];
