@@ -106,12 +106,6 @@ void initialize_vital_events() {
 
 
     // Network //
-    #if !defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
-        Vital::Engine::Model::clear_synced();
-    });
-    #endif
-
     #if defined(Vital_SDK_Client)
     Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack&) {
         auto nm = Vital::Manager::Network::get_singleton();

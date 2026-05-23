@@ -205,7 +205,6 @@ namespace Vital::Engine {
     }
 
     void Model::teardown_spawner() {
-        cache_synced.clear();
         if (net_spawner_delegate) {
             net_spawner_delegate -> queue_free();
             net_spawner_delegate = nullptr;
@@ -223,11 +222,6 @@ namespace Vital::Engine {
             godot::Node* child = core -> get_child(i);
             if (godot::Object::cast_to<Model>(child)) child -> queue_free();
         }
-        cache_synced.clear();
-    }
-
-    void Model::clear_synced() {
-        cache_synced.clear();
     }
 
     void Model::on_connected() {
@@ -269,65 +263,37 @@ namespace Vital::Engine {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
         cache_loaded.erase(it);
-        cache_synced.erase(name);
         return true;
     }
 
-    Model* Model::create(const std::string& name) {
+    Model* Model::create(const std::string& name, int authority_peer) {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
-        Model* object = memnew(Model);
-        object -> set_model_name(name);
-        godot::Node* instance = it -> second -> instantiate();
-        if (!instance) {
-            memdelete(object);
-            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to instantiate model '{}'", name));
-        }
-        object -> add_child(instance);
-        Engine::Core::get_singleton() -> add_child(object);
-        return object;
-    }
 
-    void Model::create_synced(const std::string& name, int authority_peer) {
-        if (cache_loaded.find(name) == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
-        Engine::Core::get_singleton() -> enqueue([name, authority_peer]() {
-            spawn_synced(name, authority_peer);
-        });
-    }
-
-    Model* Model::spawn_synced(const std::string& name, int authority_peer) {
-        if (!net_spawner) {
-            godot::UtilityFunctions::print("ModelSpawner: spawn_synced — spawner not ready");
-            return nullptr;
-        }
-        godot::Node* spawned = net_spawner -> spawn(Tool::to_godot_string(name));
-        if (!spawned) {
-            godot::UtilityFunctions::print("ModelSpawner: spawn() returned null");
-            return nullptr;
-        }
-        Model* object = godot::Object::cast_to<Model>(spawned);
-        if (!object) {
-            godot::UtilityFunctions::print("ModelSpawner: spawned node is not a Model");
-            return nullptr;
-        }
-        object -> pending_authority = authority_peer;
-        cache_synced[name] = object;
-        godot::UtilityFunctions::print("ModelSpawner: spawned -> ", Tool::to_godot_string(name));
-        return object;
-    }
-
-    Model* Model::get_synced(const std::string& name) {
-        auto it = cache_synced.find(name);
-        return it != cache_synced.end() ? it -> second : nullptr;
+        #if defined(Vital_SDK_Client)
+            Model* object = memnew(Model);
+            object -> set_model_name(name);
+            godot::Node* instance = it -> second -> instantiate();
+            if (!instance) {
+                memdelete(object);
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to instantiate model '{}'", name));
+            }
+            object -> add_child(instance);
+            Engine::Core::get_singleton() -> add_child(object);
+            return object;
+        #else
+            if (!net_spawner) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: spawner not ready — cannot create synced model '{}'", name));
+            godot::Node* spawned = net_spawner -> spawn(Tool::to_godot_string(name));
+            if (!spawned) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: spawner returned null for model '{}'", name));
+            Model* object = godot::Object::cast_to<Model>(spawned);
+            if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: spawned node is not a Model for '{}'", name));
+            object -> pending_authority = authority_peer;
+            godot::UtilityFunctions::print("ModelSpawner: spawned -> ", Tool::to_godot_string(name));
+            return object;
+        #endif
     }
 
     void Model::destroy() {
-        for (auto it = cache_synced.begin(); it != cache_synced.end(); ++it) {
-            if (it -> second == this) {
-                cache_synced.erase(it);
-                break;
-            }
-        }
         this -> queue_free();
     }
 

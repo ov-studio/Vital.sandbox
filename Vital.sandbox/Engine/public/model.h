@@ -42,7 +42,6 @@ namespace Vital::Engine {
             };
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
-            using SyncedMap = std::unordered_map<std::string, Model*>;
         protected:
             static void _bind_methods() {};
         private:
@@ -54,7 +53,6 @@ namespace Vital::Engine {
             inline static godot::MultiplayerSpawner* net_spawner = nullptr;
             inline static ModelSpawnerDelegate* net_spawner_delegate = nullptr;
             inline static Models cache_loaded;
-            inline static SyncedMap cache_synced;
 
 
             // Helpers //
@@ -84,14 +82,10 @@ namespace Vital::Engine {
             static bool load(const std::string& name, const std::string& path);
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
-            static Model* create(const std::string& name);
-            static void create_synced(const std::string& name, int authority_peer = 1);
-            static Model* spawn_synced(const std::string& name, int authority_peer);
-            static Model* get_synced(const std::string& name);
+            static Model* create(const std::string& name, int authority_peer = 1);
             static void setup_spawner();
             static void teardown_spawner();
             static void cleanup_spawned();
-            static void clear_synced();
             static void on_connected();
             void destroy();
 

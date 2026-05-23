@@ -475,7 +475,7 @@ namespace Vital::Manager {
         const int authority_peer = it->second;
         spawn_queue.erase(it);
         Engine::Core::get_singleton() -> enqueue([loaded_name, authority_peer]() {
-            Engine::Model::spawn_synced(loaded_name, authority_peer);
+            Engine::Model::create(loaded_name, authority_peer);
         });
     }
 }

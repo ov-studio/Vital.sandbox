@@ -43,15 +43,6 @@ namespace Vital::Sandbox::API {
             Instance::release(instance);
         }
 
-        static std::shared_ptr<Instance> find_by_ptr(base_class* ptr) {
-            if (!ptr) return nullptr;
-            std::lock_guard<std::mutex> lock(mutex);
-            for (auto& [id, instance] : buffer) {
-                if (!instance -> destroyed && instance -> model == ptr) return instance;
-            }
-            return nullptr;
-        }
-
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 
@@ -72,33 +63,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name)")
-                    .require(1, &Machine::is_string);
-            
-                auto name = vm -> get_string(1);
-                auto instance = Instance::init(vm);
-                instance -> model = base_class::create(name);
-                Instance::store(instance);
-                vm -> create_object(base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance -> set_ref(instance -> self_reference(), -1);
-                return 1;
-            });
-
-            #if !defined(Vital_SDK_Client)
-            API::bind(vm, {base_name}, "create_synced", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, authority = 1)")
-                    .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_number);
-
-                auto name = vm -> get_string(1);
-                int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
-                base_class::create_synced(name, authority);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::bind(vm, {base_name}, "is_loaded", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
@@ -107,17 +71,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "get_synced", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name)")
-                    .require(1, &Machine::is_string);
+            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, authority = 1)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_number);
 
-                auto ptr = base_class::get_synced(vm -> get_string(1));
-                auto instance = find_by_ptr(ptr);
-                if (!instance) vm -> push_value(false);
-                else instance -> vm -> get_reference(instance -> self_reference(), true);
+                auto name = vm -> get_string(1);
+                int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
+                auto instance = Instance::init(vm);
+                instance -> model = base_class::create(name, authority);
+                Instance::store(instance);
+                vm -> create_object(base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                instance -> set_ref(instance -> self_reference(), -1);
                 return 1;
             });
-            #endif
         }
 
         static void methods(Machine* vm) {
@@ -270,7 +238,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> model -> get_sync_authority());
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)")
                     .require(2, &Machine::is_vector3);
