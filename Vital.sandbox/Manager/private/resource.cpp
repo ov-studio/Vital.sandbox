@@ -17,12 +17,14 @@
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/model.h>
 
 
 ///////////////////////////////
 // Vital: Manager: Resource //
 ///////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
@@ -42,10 +44,13 @@ namespace Vital::Manager {
         Tool::Stack files_stack;
         for (const auto& f : manifest.files) files_stack.array.push_back(Tool::StackValue(f));
         out.object["files"] = Tool::StackValue(std::move(files_stack));
+        Tool::Stack models_stack;
+        for (const auto& f : manifest.models) models_stack.array.push_back(Tool::StackValue(f));
+        out.object["models"] = Tool::StackValue(std::move(models_stack));
         return out;
     }
 
-    void Resource::Internal::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files) {
+    void Resource::Internal::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models) {
         if (const auto* sv = args.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());
@@ -58,6 +63,11 @@ namespace Vital::Manager {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             files.reserve(nested.array.size());
             for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
+        }
+        if (const auto* sv = args.get("models")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            models.reserve(nested.array.size());
+            for (const auto& entry : nested.array) models.push_back(entry.as<std::string>());
         }
     }
 
@@ -110,6 +120,66 @@ namespace Vital::Manager {
         }
     }
 
+    void Resource::Internal::load_models(const std::string& name) {
+        Tool::assert_main_thread("Resource::Internal::load_models");
+        auto rm = Resource::get_singleton();
+        const Manifest* resource;
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            resource = Internal::get_resource(name);
+        }
+        if (!resource) return;
+        // Both server and client auto-detect model files from the files list.
+        // Server does it authoritatively from disk before broadcasting the packet,
+        // but the client receives 0 models in the packet because the server populates
+        // manifest.models during load_models (after the packet is enqueued and the
+        // resource pointer is snapshotted). We therefore always re-derive models from
+        // the files list on both sides so the client never relies on the packet value.
+        // TODO: Should check and populate models instantly instead of re-deriving on client again?
+        {
+            std::vector<std::string> validated;
+            for (const auto& file : resource -> files) {
+                if (!Engine::Model::is_supported_extension(file)) continue;
+                const std::string local_path = fmt::format("resources/{}/{}", name, file);
+                if (!Engine::Model::is_supported_format(local_path)) continue;
+                validated.push_back(file);
+            }
+            // Merge with any explicitly listed models from the manifest, deduplicating.
+            {
+                std::lock_guard<std::mutex> lock(rm -> mutex);
+                for (auto& r : rm -> resources) {
+                    if (r.ref != name) continue;
+                    for (const auto& f : r.models) {
+                        if (std::find(validated.begin(), validated.end(), f) == validated.end())
+                            validated.push_back(f);
+                    }
+                    r.models = validated;
+                    resource = &r;
+                    break;
+                }
+            }
+        }
+        if (resource -> models.empty()) return;
+        std::vector<std::string> loaded;
+        for (const auto& file : resource -> models) {
+            const std::string model_name = fmt::format(":{}/{}", name, file);
+            if (Engine::Model::is_model_loaded(model_name)) continue;
+            const std::string local_path = fmt::format("resources/{}/{}", name, file);
+            try {
+                Engine::Model::load(model_name, local_path);
+                loaded.push_back(model_name);
+            }
+            catch (...) {
+                rm -> log("error", fmt::format("resource `{}` failed to load model `{}`", name, file));
+            }
+        }
+        if (!loaded.empty()) {
+            std::string report = fmt::format("resource `{}` registered {} model asset(s):\n", name, loaded.size());
+            for (const auto& n : loaded) report += fmt::format("> `{}`\n", n);
+            rm -> log("sbox", report);
+        }
+    }
+
     void Resource::Internal::execute_resource(std::string name) {
         Tool::assert_main_thread("Resource::Internal::execute_resource");
         auto rm = Resource::get_singleton();
@@ -121,6 +191,8 @@ namespace Vital::Manager {
             rm -> running.insert(name);
         }
         rm -> log("sbox", fmt::format("resource `{}` started", name));
+
+        Internal::load_models(name);
         Internal::execute_scripts(name, sources);
         #if !defined(Vital_SDK_Client)
             Engine::Core::get_singleton() -> enqueue([name]() {
@@ -145,6 +217,7 @@ namespace Vital::Manager {
         resource.version = manifest.get_str("version", "");
         resource.scripts.clear();
         resource.files.clear();
+        resource.models.clear();
         resource.script_hashes.clear();
         resource.file_hashes.clear();
         if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
@@ -184,6 +257,7 @@ namespace Vital::Manager {
             auto packed = Internal::pack_manifest(*manifest);
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
+            packet.object["models"] = std::move(packed.object["models"]);
         }
         return packet;
     }
@@ -298,7 +372,10 @@ namespace Vital::Manager {
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
             #endif
         }
-        if (was_running) vm -> clear_environment_id(name);
+        if (was_running) {
+            vm -> clear_environment_id(name);
+            Engine::Model::unload_resource_models(name);
+        }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
 
         #if !defined(Vital_SDK_Client)
@@ -541,14 +618,15 @@ namespace Vital::Manager {
                     const std::string name = args.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
-                    Internal::unpack_manifest(args, scripts, files);
+                    std::vector<std::string> models;
+                    Internal::unpack_manifest(args, scripts, files, models);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     bool already;
                     {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
                         already = Internal::is_running(name) || Internal::is_pending(name);
                     }
-                    if (!already) rm -> load(name, scripts, files);
+                    if (!already) rm -> load(name, scripts, files, models);
                 }
                 else if (event == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
@@ -690,7 +768,7 @@ namespace Vital::Manager {
     }
 
     #else
-    bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files) {
+    bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models) {
         {
             std::lock_guard<std::mutex> lock(mutex);
             if (Internal::is_running(name) || Internal::is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
@@ -700,9 +778,10 @@ namespace Vital::Manager {
             manifest.name = name;
             manifest.scripts = scripts;
             manifest.files = files;
+            manifest.models = models;
             resources.push_back(std::move(manifest));
         }
-        log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s)", name, scripts.size(), files.size()));
+        log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
 
         std::unordered_set<std::string> asset_paths;
         {

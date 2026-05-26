@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/model.h>
+#include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 
 
@@ -31,30 +32,61 @@ namespace Vital::Engine {
     godot::Object* ModelSpawnerDelegate::spawn(godot::Variant data) {
         godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn called with -> ", data);
         std::string name = Tool::to_std_string(data.operator godot::String());
+
         auto it = Model::cache_loaded.find(name);
-        if (it == Model::cache_loaded.end()) {
-            godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — not in cache: ", data);
-            return nullptr;
+        if (it != Model::cache_loaded.end()) {
+            // Asset already in cache — normal instant path
+            Model* object = memnew(Model);
+            object->set_model_name(name);
+            godot::Node* instance = it->second->instantiate();
+            if (!instance) {
+                memdelete(object);
+                return nullptr;
+            }
+            object->add_child(instance);
+            godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
+            return object;
         }
-        Model* object = memnew(Model);
-        object -> set_model_name(name);
-        godot::Node* instance = it -> second -> instantiate();
-        if (!instance) {
-            memdelete(object);
-            return nullptr;
-        }
-        object -> add_child(instance);
-        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
-        return object;
+
+        #if defined(Vital_SDK_Client)
+        // Asset not yet loaded — return an invisible placeholder.
+        // It will be hydrated automatically as soon as load_from_buffer is called
+        // for this name (triggered by the vital.model:load packet from server),
+        // because load_from_buffer calls Asset::flush_spawn_queue after caching.
+        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
+        Model* placeholder = memnew(Model);
+        placeholder->set_model_name(name);
+        placeholder->is_placeholder = true;
+        placeholder->set_visible(false);
+        // setup_sync so Godot's replication interface finds the NetSync child it expects.
+        placeholder->setup_sync(1);
+        Manager::Asset::get_singleton()->queue_spawn(name, placeholder);
+        return placeholder;
+        #else
+        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — not in cache (server): ", data);
+        return nullptr;
+        #endif
     }
 
 
     // Instantiators //
     void Model::_ready() {
         godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
+        // Placeholders already have net_sync set up in spawn(); skip full _ready setup.
+        // hydrate() will add the mesh child and make the node visible when ready.
+        if (is_placeholder) return;
         find_skeleton(this);
         find_animation_player(this);
         setup_sync(pending_authority);
+    }
+
+    void Model::_notification(int what) {
+        if (what == NOTIFICATION_PREDELETE) {
+            // Fire the API-layer callback so Lua-side Instance pointers are nulled
+            // before the node memory is released. This covers both explicit destroy()
+            // calls and automatic Godot multiplayer despawn on clients.
+            if (on_destroyed_callback) on_destroyed_callback(this);
+        }
     }
 
 
@@ -242,20 +274,32 @@ namespace Vital::Engine {
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' is already loaded", name));
         godot::Ref<godot::PackedScene> scene;
-        switch (get_format(buffer)) {
-            case Format::GLB:
-                godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
-                godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-                if (document -> append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
-                godot::Node* root = document -> generate_scene(state);
-                if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate scene");
-                scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-                scene -> pack(root);
-                memdelete(root);
-                break;
+        // Detect format from the first 4 magic bytes of the buffer — never reads the full file
+        const uint8_t* ptr = buffer.ptr();
+        const int size = buffer.size();
+        if (size >= 4 &&
+            ptr[0] == 0x67 && ptr[1] == 0x6C &&
+            ptr[2] == 0x54 && ptr[3] == 0x46) {
+            // GLB
+            godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
+            godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
+            if (document -> append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
+            godot::Node* root = document -> generate_scene(state);
+            if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate scene");
+            scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
+            scene -> pack(root);
+            memdelete(root);
         }
-        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: no scene detected");
+        if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: unsupported or invalid model format");
         cache_loaded[name] = scene;
+
+        #if defined(Vital_SDK_Client)
+        // If a placeholder was queued for this name (server spawned before client
+        // had the asset loaded), hydrate it now. Works regardless of when load is
+        // called — resource start or any time later via the model:load packet.
+        Manager::Asset::get_singleton() -> flush_spawn_queue(name);
+        #endif
+
         return true;
     }
 
@@ -294,13 +338,134 @@ namespace Vital::Engine {
     }
 
     void Model::destroy() {
-        this -> queue_free();
+        this->queue_free();
+    }
+
+    #if defined(Vital_SDK_Client)
+    void Model::hydrate(int authority_peer) {
+        if (!is_placeholder) return;
+
+        auto it = cache_loaded.find(model_name);
+        if (it == cache_loaded.end()) {
+            godot::UtilityFunctions::push_warning("Model::hydrate — model not in cache: ", Tool::to_godot_string(model_name));
+            return;
+        }
+
+        godot::Node* instance = it->second->instantiate();
+        if (!instance) {
+            godot::UtilityFunctions::push_warning("Model::hydrate — failed to instantiate: ", Tool::to_godot_string(model_name));
+            return;
+        }
+
+        is_placeholder = false;
+        pending_authority = authority_peer;
+        add_child(instance);
+
+        // net_sync already exists from spawn() — no need to call setup_sync again.
+        find_skeleton(this);
+        find_animation_player(this);
+
+        set_visible(true);
+        godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
+    }
+    #endif
+
+    // Resource-scoped model loading.
+    // Model name format: ":resource_name/relative_file_path"
+    // e.g. ":my_resource/assets/chibi.glb"
+    // Only loads files with a supported extension + valid magic bytes (4 bytes read max).
+    // Prints registered model assets to console on load.
+    void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
+        std::vector<std::string> loaded;
+        for (const auto& file : files) {
+            if (!is_supported_extension(file)) continue;
+            const std::string model_name = fmt::format(":{}/{}", resource_name, file);
+            if (is_model_loaded(model_name)) continue;
+            const std::string local_path = fmt::format("resources/{}/{}", resource_name, file);
+            if (!is_supported_format(local_path)) continue;
+            try {
+                load(model_name, local_path);
+                loaded.push_back(model_name);
+            }
+            catch (...) {
+                Tool::print("error", fmt::format("Model: failed to load `{}` for resource `{}`", file, resource_name));
+            }
+        }
+        if (!loaded.empty()) {
+            std::string report = fmt::format("Model: resource `{}` registered {} model asset(s):\n", resource_name, loaded.size());
+            for (const auto& name : loaded) report += fmt::format("> `{}`\n", name);
+            Tool::print("sbox", report);
+        }
+    }
+
+    void Model::unload_resource_models(const std::string& resource_name) {
+        const std::string prefix = fmt::format(":{}/", resource_name);
+        std::vector<std::string> to_unload;
+        for (const auto& [name, _] : cache_loaded) {
+            if (name.rfind(prefix, 0) == 0) to_unload.push_back(name);
+        }
+        for (const auto& name : to_unload) {
+            try { unload(name); }
+            catch (...) {}
+        }
+        if (!to_unload.empty()) {
+            Tool::print("sbox", fmt::format("Model: resource `{}` unloaded {} model asset(s)", resource_name, to_unload.size()));
+        }
     }
 
 
     // Checkers //
     bool Model::is_model_loaded(const std::string& name) {
         return cache_loaded.find(name) != cache_loaded.end();
+    }
+
+    // Fast extension check — no file I/O.
+    bool Model::is_supported_extension(const std::string& path) {
+        // Lowercase the extension only
+        const size_t dot = path.rfind('.');
+        if (dot == std::string::npos) return false;
+        std::string ext = path.substr(dot + 1);
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        return ext == "glb";
+    }
+
+    // Reads only 4 magic bytes from disk to verify the file format.
+    // Never loads the full file — safe for large assets.
+    bool Model::is_supported_format(const std::string& path) {
+        if (!is_supported_extension(path)) return false;
+        try {
+            const std::string full_path = Tool::get_directory() + "/" + path;
+            auto file = godot::FileAccess::open(Tool::to_godot_string(full_path), godot::FileAccess::READ);
+            if (!file.is_valid()) return false;
+            if (file -> get_length() < 4) return false;
+            uint8_t magic[4];
+            magic[0] = file -> get_8();
+            magic[1] = file -> get_8();
+            magic[2] = file -> get_8();
+            magic[3] = file -> get_8();
+            // GLB magic: "glTF"
+            return magic[0] == 0x67 && magic[1] == 0x6C && magic[2] == 0x54 && magic[3] == 0x46;
+        }
+        catch (...) { return false; }
+    }
+
+    // get_format reads only 4 magic bytes from the buffer passed to load_from_buffer.
+    // For path-based format detection use is_supported_format.
+    Model::Format Model::get_format(const std::string& path) {
+        if (!is_supported_extension(path)) return Format::UNKNOWN;
+        try {
+            const std::string full_path = Tool::get_directory() + "/" + path;
+            auto file = godot::FileAccess::open(Tool::to_godot_string(full_path), godot::FileAccess::READ);
+            if (!file.is_valid() || file -> get_length() < 4) return Format::UNKNOWN;
+            uint8_t magic[4];
+            magic[0] = file -> get_8();
+            magic[1] = file -> get_8();
+            magic[2] = file -> get_8();
+            magic[3] = file -> get_8();
+            if (magic[0] == 0x67 && magic[1] == 0x6C && magic[2] == 0x54 && magic[3] == 0x46) return Format::GLB;
+        }
+        catch (...) {}
+        return Format::UNKNOWN;
     }
 
     bool Model::is_synced() const {
@@ -338,15 +503,6 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Model::Format Model::get_format(const godot::PackedByteArray& buffer) {
-        const uint8_t* ptr = buffer.ptr();
-        const int size = buffer.size();
-        if (size >= 4 &&
-            ptr[0] == 0x67 && ptr[1] == 0x6C &&
-            ptr[2] == 0x54 && ptr[3] == 0x46) return Format::GLB;
-        return Format::UNKNOWN;
-    }
-
     Model::Models Model::get_loaded_models() {
         return cache_loaded;
     }

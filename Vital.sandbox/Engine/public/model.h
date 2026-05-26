@@ -42,11 +42,17 @@ namespace Vital::Engine {
             };
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
+
+            // Callback registered by the API layer so it can null out stale Lua
+            // instance pointers when a Model node is freed (e.g. server-side destroy
+            // replicated to clients via MultiplayerSpawner despawn).
+            inline static std::function<void(Model*)> on_destroyed_callback;
         protected:
             static void _bind_methods() {};
         private:
             std::string model_name;
             int pending_authority = 1;
+            bool is_placeholder = false;
             godot::Skeleton3D* skeleton = nullptr;
             godot::AnimationPlayer* anim_player = nullptr;
             godot::MultiplayerSynchronizer* net_sync = nullptr;
@@ -76,6 +82,7 @@ namespace Vital::Engine {
             Model() = default;
             ~Model() override = default;
             void _ready() override;
+            void _notification(int what);
 
 
             // Managers //
@@ -89,9 +96,23 @@ namespace Vital::Engine {
             static void on_connected();
             void destroy();
 
+            #if defined(Vital_SDK_Client)
+            // Hydrates a placeholder node once the model asset has been loaded into cache.
+            // Called automatically from load_from_buffer when a queued spawn exists.
+            void hydrate(int authority_peer);
+            #endif
+
+            // Resource-scoped auto-load: loads all supported model files from a resource.
+            // Model names are scoped as ":resource_name/relative_path" to avoid conflicts.
+            // Called automatically by Resource::Internal::execute_resource on both sides.
+            static void load_resource_models(const std::string& resource_name, const std::vector<std::string>& files);
+            static void unload_resource_models(const std::string& resource_name);
+
 
             // Checkers //
             static bool is_model_loaded(const std::string& name);
+            static bool is_supported_extension(const std::string& path);
+            static bool is_supported_format(const std::string& path);
             bool is_synced() const;
             bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
@@ -101,7 +122,7 @@ namespace Vital::Engine {
 
 
             // Getters //
-            static Format get_format(const godot::PackedByteArray& buffer);
+            static Format get_format(const std::string& path);
             static Models get_loaded_models();
             std::string get_model_name();
             godot::Vector3 get_position();

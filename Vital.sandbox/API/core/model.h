@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/model.h>
+#include <Vital.sandbox/API/utility/promise.h>
 
 
 ////////////////////////
@@ -22,6 +23,7 @@
 ////////////////////////
 
 namespace Vital::Sandbox::API {
+    // TODO: improve
     struct Model : vm_module {
         inline static const std::string base_name = "model";
         using base_class = Vital::Engine::Model;
@@ -29,10 +31,23 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Model;
             base_class* model = nullptr;
+
+            // Called by the engine-side Model node just before it is freed
+            // (either via destroy() or via Godot's multiplayer despawn).
+            // Nulls the pointer so any subsequent Lua call fails gracefully
+            // rather than crashing on a dangling pointer.
+            void on_model_destroyed() {
+                model = nullptr;
+            }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
+
+        // Tracks which resource loaded which model name so we can auto-unload on resource stop.
+        // model_name → resource_env_name
+        inline static std::mutex scope_mutex;
+        inline static std::unordered_map<std::string, std::string> model_scope;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
@@ -43,15 +58,46 @@ namespace Vital::Sandbox::API {
             Instance::release(instance);
         }
 
+        // Called from Engine::Model::_notification(NOTIFICATION_PREDELETE).
+        // Finds every Instance whose model pointer matches and nulls it out,
+        // so Lua scripts holding a stale reference get a clean "not valid" error
+        // instead of a crash.
+        static void on_model_node_destroyed(base_class* dying) {
+            std::lock_guard<std::mutex> lock(mutex);
+            for (auto& [id, instance] : buffer) {
+                if (instance->model == dying) {
+                    instance->on_model_destroyed();
+                }
+            }
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
+
+            // Wire the engine-side destruction callback once, so every Model node
+            // that is freed (via destroy() or multiplayer despawn) nulls out any
+            // Lua Instance pointers that reference it.
+            base_class::on_destroyed_callback = [](base_class* dying) {
+                on_model_node_destroyed(dying);
+            };
 
             API::bind(vm, {base_name}, "load", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, path)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
 
-                vm -> push_value(base_class::load(vm -> get_string(1), vm -> get_string(2)));
+                const std::string name = vm->get_string(1);
+                const std::string path = vm->get_string(2);
+                const std::string resource = Manager::Resource::get_resource_from_vm(vm);
+
+                Tool::print("warn", resource);
+                
+                bool result = base_class::load(name, path);
+                if (result) {
+                    std::lock_guard<std::mutex> lock(scope_mutex);
+                    model_scope[name] = resource;
+                }
+                vm->push_value(result);
                 return 1;
             });
 
@@ -59,7 +105,13 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(base_class::unload(vm -> get_string(1)));
+                const std::string name = vm->get_string(1);
+                bool result = base_class::unload(name);
+                if (result) {
+                    std::lock_guard<std::mutex> lock(scope_mutex);
+                    model_scope.erase(name);
+                }
+                vm->push_value(result);
                 return 1;
             });
 
@@ -67,7 +119,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(base_class::is_model_loaded(vm -> get_string(1)));
+                vm->push_value(base_class::is_model_loaded(vm->get_string(1)));
                 return 1;
             });
 
@@ -76,21 +128,29 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_number);
 
-                auto name = vm -> get_string(1);
-                int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
+                auto name = vm->get_string(1);
+                int authority = vm->is_number(2) ? vm->get_int(2) : 1;
                 auto instance = Instance::init(vm);
-                instance -> model = base_class::create(name, authority);
+                instance->model = base_class::create(name, authority);
                 Instance::store(instance);
-                vm -> create_object(base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance -> set_ref(instance -> self_reference(), -1);
+                vm->create_object(base_name, instance.get());
+                instance->userdata = vm_module::get_userdata_ptr(vm, -1);
+                instance->set_ref(instance->self_reference(), -1);
                 return 1;
             });
         }
 
         static void methods(Machine* vm) {
+            // is_valid lets Lua check if the underlying node is still alive
+            // before calling any other method on a stored reference.
+            vm_module::bind_method<Instance>(vm, base_name, "is_valid", [](auto vm, auto self, auto& id) -> int {
+                vm->push_value(self->model != nullptr);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, base_name, "is_synced", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> is_synced());
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->is_synced());
                 return 1;
             });
 
@@ -98,7 +158,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> model -> is_component_visible(vm -> get_string(2)));
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->is_component_visible(vm->get_string(2)));
                 return 1;
             });
 
@@ -107,7 +168,8 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
-                vm -> push_value(self -> model -> is_material_visible(vm -> get_string(2), vm -> get_string(3)));
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->is_material_visible(vm->get_string(2), vm->get_string(3)));
                 return 1;
             });
 
@@ -117,7 +179,8 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                vm -> push_value(self -> model -> is_material_feature(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4)));
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->is_material_feature(vm->get_string(2), vm->get_string(3), vm->get_int(4)));
                 return 1;
             });
 
@@ -127,36 +190,42 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                vm -> push_value(self -> model -> is_material_flag(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4)));
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->is_material_flag(vm->get_string(2), vm->get_string(3), vm->get_int(4)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_animation_playing", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> is_animation_playing());
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->is_animation_playing());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_model_name", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_model_name());
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->get_model_name());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_position());
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->get_position());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> get_rotation());
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                vm->push_value(self->model->get_rotation());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_components", [](auto vm, auto self, auto& id) -> int {
-                auto list = self -> model -> get_components();
-                vm -> create_table();
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                auto list = self->model->get_components();
+                vm->create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_value(list[i]);
-                    vm -> set_table_field(i + 1, -2);
+                    vm->push_value(list[i]);
+                    vm->set_table_field(i + 1, -2);
                 }
                 return 1;
             });
@@ -165,11 +234,12 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                auto list = self -> model -> get_materials(vm -> get_string(2));
-                vm -> create_table();
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                auto list = self->model->get_materials(vm->get_string(2));
+                vm->create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm -> push_value(list[i]);
-                    vm -> set_table_field(i + 1, -2);
+                    vm->push_value(list[i]);
+                    vm->set_table_field(i + 1, -2);
                 }
                 return 1;
             });
@@ -178,6 +248,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self -> model -> get_blendshapes(vm -> get_string(2));
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -188,6 +259,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_bones", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self -> model -> get_bones();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -198,6 +270,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_animations", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self -> model -> get_animations();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -212,6 +285,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_blendshape_value(vm -> get_string(2), vm -> get_string(3)));
                 return 1;
             });
@@ -220,21 +294,25 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(bone)")
                     .require(2, &Machine::is_string);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_bone_position(vm -> get_string(2)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_current_animation", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_current_animation());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_animation_speed", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_animation_speed());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_sync_authority());
                 return 1;
             });
@@ -243,6 +321,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position)")
                     .require(2, &Machine::is_vector3);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_position(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
@@ -252,6 +331,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(rotation)")
                     .require(2, &Machine::is_vector3);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_rotation(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
@@ -262,6 +342,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_component_visible(vm -> get_string(2), vm -> get_bool(3));
                 vm -> push_value(true);
                 return 1;
@@ -273,6 +354,7 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_bool);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> set_material_visible(vm -> get_string(2), vm -> get_string(3), vm -> get_bool(4)));
                 return 1;
             });
@@ -284,6 +366,7 @@ namespace Vital::Sandbox::API {
                     .require(4, &Machine::is_number)
                     .require(5, &Machine::is_bool);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> set_material_feature(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
                 return 1;
             });
@@ -295,6 +378,7 @@ namespace Vital::Sandbox::API {
                     .require(4, &Machine::is_number)
                     .require(5, &Machine::is_bool);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> set_material_flag(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
                 return 1;
             });
@@ -305,6 +389,7 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_blendshape_value(vm -> get_string(2), vm -> get_string(3), vm -> get_float(4));
                 vm -> push_value(true);
                 return 1;
@@ -314,6 +399,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(speed)")
                     .require(2, &Machine::is_number);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_animation_speed(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
@@ -324,6 +410,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(peer_id)")
                     .require(2, &Machine::is_number);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_sync_authority(vm -> get_int(2));
                 vm -> push_value(true);
                 return 1;
@@ -336,6 +423,7 @@ namespace Vital::Sandbox::API {
                     .optional(3, &Machine::is_bool)
                     .optional(4, &Machine::is_number);
 
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto loop = vm -> is_bool(3) ? vm -> get_bool(3) : true;
                 auto speed = vm -> is_number(4) ? vm -> get_float(4) : 1.0f;
                 vm -> push_value(self -> model -> play_animation(vm -> get_string(2), loop, speed));
@@ -343,18 +431,21 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "stop_animation", [](auto vm, auto self, auto& id) -> int {
-                self -> model -> stop_animation();
-                vm -> push_value(true);
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
+                self->model->stop_animation();
+                vm->push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "pause_animation", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> pause_animation();
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "resume_animation", [](auto vm, auto self, auto& id) -> int {
+                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> resume_animation();
                 vm -> push_value(true);
                 return 1;
@@ -362,7 +453,22 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
+            // Destroy all live model instances belonging to this resource env
             vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+
+            // Unload all model assets that were loaded by this resource env
+            {
+                std::lock_guard<std::mutex> lock(scope_mutex);
+                std::vector<std::string> to_unload;
+                for (const auto& [model_name, resource_env] : model_scope) {
+                    if (resource_env == env) to_unload.push_back(model_name);
+                }
+                for (const auto& model_name : to_unload) {
+                    model_scope.erase(model_name);
+                    try { base_class::unload(model_name); }
+                    catch (...) {}
+                }
+            }
         }
     };
 }

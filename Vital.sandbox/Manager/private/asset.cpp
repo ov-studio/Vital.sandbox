@@ -464,6 +464,35 @@ namespace Vital::Manager {
     //    Shared      //
     //----------------//
 
+    #if defined(Vital_SDK_Client)
+    void Asset::queue_spawn(const std::string& name, void* placeholder, int authority_peer) {
+        spawn_queue[name] = { placeholder, authority_peer };
+        Tool::print("sbox", "Asset: queued placeholder spawn -> ", name.c_str());
+    }
+
+    void Asset::flush_spawn_queue(const std::string& loaded_name) {
+        auto it = spawn_queue.find(loaded_name);
+        if (it == spawn_queue.end()) return;
+        void* raw = it->second.placeholder;
+        int authority_peer = it->second.authority_peer;
+        spawn_queue.erase(it);
+
+        Engine::Core::get_singleton()->enqueue([loaded_name, raw, authority_peer]() {
+            Engine::Model* placeholder = static_cast<Engine::Model*>(raw);
+            if (!godot::ObjectDB::get_instance(placeholder->get_instance_id())) {
+                // Placeholder was freed before hydration (e.g. disconnect) — nothing to do
+                Tool::print("sbox", fmt::format("Asset: placeholder for '{}' no longer valid — skipping hydration", loaded_name));
+                return;
+            }
+            placeholder->hydrate(authority_peer);
+            Tool::print("sbox", fmt::format("Asset: flushed spawn queue for '{}'", loaded_name));
+        });
+    }
+
+    #else
+    // Server-side queue_spawn / flush_spawn_queue are kept for API symmetry but
+    // models on the server are always loaded before create() is called, so these
+    // should rarely be needed. They are no-ops by default.
     void Asset::queue_spawn(const std::string& name, int authority_peer) {
         spawn_queue[name] = authority_peer;
         Tool::print("sbox", "Asset: queued spawn -> ", name.c_str());
@@ -478,4 +507,5 @@ namespace Vital::Manager {
             Engine::Model::create(loaded_name, authority_peer);
         });
     }
+    #endif
 }

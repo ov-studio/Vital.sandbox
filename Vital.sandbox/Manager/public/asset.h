@@ -37,11 +37,22 @@ namespace Vital::Manager {
                 std::thread thread;
                 std::atomic<bool> cancelled { false };
             };
+
+            // Placeholder node waiting to be hydrated keyed by model name.
+            // Stored as void* to avoid a circular include with model.h;
+            // asset.cpp casts it back to Engine::Model* where needed.
+            struct PendingSpawn {
+                void* placeholder = nullptr; // Engine::Model*
+                int authority_peer = 1;
+            };
+
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
+            std::unordered_map<std::string, PendingSpawn> spawn_queue;
             std::string server_http_ip;
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void _on_download_failed(const std::string& path);
             #else
+            std::unordered_map<std::string, int> spawn_queue; // unused on server, kept for symmetry
             std::unique_ptr<httplib::Server> http_server;
             std::thread http_thread;
             int http_port = 7778;
@@ -51,7 +62,6 @@ namespace Vital::Manager {
 
             inline static Asset* singleton = nullptr;
             std::unordered_map<std::string, AssetEntry> registered_assets;
-            std::unordered_map<std::string, int> spawn_queue;
             static std::string hash_file(const std::string& path);
         public:
             Asset() = default;
@@ -104,7 +114,14 @@ namespace Vital::Manager {
 
 
             // Shared //
+            // Queues a placeholder Model* (client) or authority peer (server) for a named model.
+            // On client: placeholder is an Engine::Model* cast to void* to avoid circular include.
+            #if defined(Vital_SDK_Client)
+            void queue_spawn(const std::string& name, void* placeholder, int authority_peer = 1);
+            void flush_spawn_queue(const std::string& loaded_name);
+            #else
             void queue_spawn(const std::string& name, int authority_peer);
             void flush_spawn_queue(const std::string& loaded_name);
+            #endif
     };
 }

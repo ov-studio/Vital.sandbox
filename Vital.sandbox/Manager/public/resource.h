@@ -20,6 +20,7 @@
 // Vital: Manager: Resource //
 ///////////////////////////////
 
+// TODO: Improve
 namespace Vital::Manager {
     class Resource {
         public:
@@ -29,7 +30,7 @@ namespace Vital::Manager {
                 Loaded,
                 Running
             };
-    
+
             struct Script {
                 std::string src;
                 std::string type;
@@ -42,6 +43,7 @@ namespace Vital::Manager {
                 std::string version;
                 std::vector<Script> scripts;
                 std::vector<std::string> files;
+                std::vector<std::string> models;
                 std::unordered_map<std::string, std::string> script_hashes;
                 std::unordered_map<std::string, std::string> file_hashes;
             };
@@ -59,9 +61,10 @@ namespace Vital::Manager {
                 // Helpers //
                 static std::string chunk_name(const std::string& resource, const std::string& src);
                 static Tool::Stack pack_manifest(const Manifest& manifest);
-                static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files);
+                static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models);
                 static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
+                static void load_models(const std::string& name);
                 static void execute_resource(std::string name);
                 #if !defined(Vital_SDK_Client)
                 static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
@@ -140,13 +143,7 @@ namespace Vital::Manager {
             void stop_all();
             void restart_all();
             #else
-            bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files);
+            bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
             #endif
-
-
-            // Shared //
-            // TODO: To be removed/moved into model.cpp later
-            void queue_spawn(const std::string& name, int authority_peer);
-            void flush_spawn_queue(const std::string& loaded_name);
     };
 }
