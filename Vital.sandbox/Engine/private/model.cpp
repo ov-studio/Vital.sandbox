@@ -35,7 +35,6 @@ namespace Vital::Engine {
 
         auto it = Model::cache_loaded.find(name);
         if (it != Model::cache_loaded.end()) {
-            // Asset already in cache — normal instant path
             Model* object = memnew(Model);
             object -> set_model_name(name);
             godot::Node* instance = it -> second -> instantiate();
@@ -49,10 +48,6 @@ namespace Vital::Engine {
         }
 
         #if defined(Vital_SDK_Client)
-        // Asset not yet loaded — return an invisible placeholder.
-        // It will be hydrated automatically as soon as load_from_buffer is called
-        // for this name (triggered by the vital.model:load packet from server),
-        // because load_from_buffer calls Asset::flush_spawn_queue after caching.
         godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
         Model* placeholder = memnew(Model);
         placeholder -> set_model_name(name);
