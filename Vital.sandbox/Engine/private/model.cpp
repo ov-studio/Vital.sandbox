@@ -292,14 +292,9 @@ namespace Vital::Engine {
         }
         if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: unsupported or invalid model format");
         cache_loaded[name] = scene;
-
         #if defined(Vital_SDK_Client)
-        // If a placeholder was queued for this name (server spawned before client
-        // had the asset loaded), hydrate it now. Works regardless of when load is
-        // called — resource start or any time later via the model:load packet.
         Manager::Asset::get_singleton() -> flush_spawn_queue(name);
         #endif
-
         return true;
     }
 
