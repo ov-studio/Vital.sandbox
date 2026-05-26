@@ -33,20 +33,20 @@ namespace Vital::Manager {
 
     Tool::Stack Resource::Internal::pack_manifest(const Manifest& manifest) {
         Tool::Stack out;
-        Tool::Stack scripts_stack;
+        Tool::Stack scripts;
+        Tool::Stack files;
+        Tool::Stack models;
         for (const auto& s : manifest.scripts) {
             Tool::Stack entry;
             entry.object["src"] = Tool::StackValue(s.src);
             entry.object["type"] = Tool::StackValue(s.type);
-            scripts_stack.array.push_back(Tool::StackValue(std::move(entry)));
+            scripts.array.push_back(Tool::StackValue(std::move(entry)));
         }
-        out.object["scripts"] = Tool::StackValue(std::move(scripts_stack));
-        Tool::Stack files_stack;
-        for (const auto& f : manifest.files) files_stack.array.push_back(Tool::StackValue(f));
-        out.object["files"] = Tool::StackValue(std::move(files_stack));
-        Tool::Stack models_stack;
-        for (const auto& f : manifest.models) models_stack.array.push_back(Tool::StackValue(f));
-        out.object["models"] = Tool::StackValue(std::move(models_stack));
+        out.object["scripts"] = Tool::StackValue(std::move(scripts));
+        for (const auto& f : manifest.files) files.array.push_back(Tool::StackValue(f));
+        out.object["files"] = Tool::StackValue(std::move(files));
+        for (const auto& f : manifest.models) models.array.push_back(Tool::StackValue(f));
+        out.object["models"] = Tool::StackValue(std::move(models));
         return out;
     }
 
