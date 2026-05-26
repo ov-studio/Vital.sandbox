@@ -58,7 +58,6 @@ namespace Vital::Engine {
         placeholder -> set_model_name(name);
         placeholder -> is_placeholder = true;
         placeholder -> set_visible(false);
-        // setup_sync so Godot's replication interface finds the NetSync child it expects.
         placeholder -> setup_sync(1);
         Manager::Asset::get_singleton() -> queue_spawn(name, placeholder);
         return placeholder;
@@ -341,7 +340,6 @@ namespace Vital::Engine {
         // net_sync already exists from spawn() — no need to call setup_sync again.
         find_node(this, skeleton);
         find_node(this, anim_player);
-
         set_visible(true);
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
     }
