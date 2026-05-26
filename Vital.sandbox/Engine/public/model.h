@@ -62,11 +62,6 @@ namespace Vital::Engine {
 
 
             // Helpers //
-            godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
-            int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
-            void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
-            void setup_sync(int authority_peer);
-
             template<typename T>
             T* find_node(godot::Node* node, T*& cache) {
                 if (!node || cache) return cache;
@@ -104,6 +99,11 @@ namespace Vital::Engine {
                 }
                 return exec(pattern);
             }
+
+            godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
+            int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
+            void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
+            void setup_sync(int authority_peer);
 
 
             // Asserts //
