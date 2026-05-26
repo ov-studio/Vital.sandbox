@@ -129,13 +129,7 @@ namespace Vital::Manager {
             resource = Internal::get_resource(name);
         }
         if (!resource) return;
-        // Both server and client auto-detect model files from the files list.
-        // Server does it authoritatively from disk before broadcasting the packet,
-        // but the client receives 0 models in the packet because the server populates
-        // manifest.models during load_models (after the packet is enqueued and the
-        // resource pointer is snapshotted). We therefore always re-derive models from
-        // the files list on both sides so the client never relies on the packet value.
-        // TODO: Should check and populate models instantly instead of re-deriving on client again?
+        #if !defined(Vital_SDK_Client)
         {
             std::vector<std::string> validated;
             for (const auto& file : resource -> files) {
@@ -144,21 +138,17 @@ namespace Vital::Manager {
                 if (!Engine::Model::is_supported_format(local_path)) continue;
                 validated.push_back(file);
             }
-            // Merge with any explicitly listed models from the manifest, deduplicating.
             {
                 std::lock_guard<std::mutex> lock(rm -> mutex);
                 for (auto& r : rm -> resources) {
                     if (r.ref != name) continue;
-                    for (const auto& f : r.models) {
-                        if (std::find(validated.begin(), validated.end(), f) == validated.end())
-                            validated.push_back(f);
-                    }
                     r.models = validated;
                     resource = &r;
                     break;
                 }
             }
         }
+        #endif
         if (resource -> models.empty()) return;
         std::vector<std::string> loaded;
         for (const auto& file : resource -> models) {
