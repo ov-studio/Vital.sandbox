@@ -168,16 +168,13 @@ namespace Vital::Engine {
         add_child(net_sync);
     }
 
-    // Retrieves or creates a StandardMaterial3D surface override at `index` on `mesh`,
-    // then invokes fn(mat) on it. Returns false if a non-standard material already
-    // occupies the slot — callers decide whether to throw.
     template<typename Fn>
     bool Model::apply_standard_material(godot::MeshInstance3D* mesh, int index, Fn&& fn) {
         if (index < 0) return false;
         godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
         godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
         if (!std_mat.is_valid()) {
-            if (mat.is_valid()) return false; // non-standard material in slot — skip
+            if (mat.is_valid()) return false;
             std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
             mesh -> set_surface_override_material(index, std_mat);
         }
