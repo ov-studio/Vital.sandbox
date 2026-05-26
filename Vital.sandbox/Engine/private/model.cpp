@@ -126,19 +126,6 @@ namespace Vital::Engine {
         return -1;
     }
 
-    template<typename T>
-    T* Model::find_node(godot::Node* node, T*& cache) {
-        if (!node || cache) return cache;
-        if (auto result = godot::Object::cast_to<T>(node)) {
-            cache = result;
-            return cache;
-        }
-        for (int i = 0; i < node -> get_child_count(); i++) {
-            if (find_node(node -> get_child(i), cache)) break;
-        }
-        return cache;
-    }
-
     void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
         if (!node) return;
         for (int i = 0; i < node -> get_child_count(); i++) {
@@ -166,34 +153,6 @@ namespace Vital::Engine {
         net_sync -> set_root_path(godot::NodePath(".."));
         net_sync -> set_multiplayer_authority(authority_peer);
         add_child(net_sync);
-    }
-
-    template<typename F>
-    bool Model::apply_standard_material(godot::MeshInstance3D* mesh, int index, F&& fn) {
-        if (index < 0) return false;
-        godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
-        if (!std_mat.is_valid()) {
-            if (mat.is_valid()) return false;
-            std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
-            mesh -> set_surface_override_material(index, std_mat);
-        }
-        fn(std_mat);
-        return true;
-    }
-
-    // Dispatches exec() over names matching pattern.
-    // When pattern contains a wildcard: iterates names() and calls exec(name) for each match.
-    // When pattern is exact: calls exec(pattern) directly and returns its result.
-    template<typename GetNames, typename Exec>
-    bool Model::apply_wildcard(const std::string& pattern, GetNames&& names, Exec&& exec) {
-        if (Tool::contains_wildcard(pattern)) {
-            for (const auto& name : names()) {
-                if (Tool::match_wildcard(pattern, name)) exec(name);
-            }
-            return true;
-        }
-        return exec(pattern);
     }
 
 

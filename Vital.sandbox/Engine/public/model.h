@@ -64,14 +64,46 @@ namespace Vital::Engine {
             // Helpers //
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
-            template<typename T>
-            T* find_node(godot::Node* node, T*& cache);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
             void setup_sync(int authority_peer);
+
+            template<typename T>
+            T* find_node(godot::Node* node, T*& cache) {
+                if (!node || cache) return cache;
+                if (auto result = godot::Object::cast_to<T>(node)) {
+                    cache = result;
+                    return cache;
+                }
+                for (int i = 0; i < node -> get_child_count(); i++) {
+                    if (find_node(node -> get_child(i), cache)) break;
+                }
+                return cache;
+            }
+
             template<typename F>
-            bool apply_standard_material(godot::MeshInstance3D* mesh, int index, F&& fn);
-            template<typename GetNames, typename Exec>
-            bool apply_wildcard(const std::string& pattern, GetNames&& names, Exec&& exec);
+            bool apply_standard_material(godot::MeshInstance3D* mesh, int index, F&& exec) {
+                if (index < 0) return false;
+                godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
+                godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
+                if (!std_mat.is_valid()) {
+                    if (mat.is_valid()) return false;
+                    std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
+                    mesh -> set_surface_override_material(index, std_mat);
+                }
+                exec(std_mat);
+                return true;
+            }
+        
+            template<typename C, typename F>
+            bool apply_wildcard(const std::string& pattern, C&& condition, F&& exec) {
+                if (Tool::contains_wildcard(pattern)) {
+                    for (const auto& name : condition()) {
+                        if (Tool::match_wildcard(pattern, name)) exec(name);
+                    }
+                    return true;
+                }
+                return exec(pattern);
+            }
 
 
             // Asserts //
