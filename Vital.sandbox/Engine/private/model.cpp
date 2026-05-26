@@ -48,17 +48,17 @@ namespace Vital::Engine {
         }
 
         #if defined(Vital_SDK_Client)
-        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
-        Model* placeholder = memnew(Model);
-        placeholder -> set_model_name(name);
-        placeholder -> is_placeholder = true;
-        placeholder -> set_visible(false);
-        placeholder -> setup_sync(1);
-        Manager::Asset::get_singleton() -> queue_spawn(name, placeholder);
-        return placeholder;
+            godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
+            Model* placeholder = memnew(Model);
+            placeholder -> set_model_name(name);
+            placeholder -> is_placeholder = true;
+            placeholder -> set_visible(false);
+            placeholder -> setup_sync(1);
+            Manager::Asset::get_singleton() -> queue_spawn(name, placeholder);
+            return placeholder;
         #else
-        godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — not in cache (server): ", data);
-        return nullptr;
+            godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — not in cache (server): ", data);
+            return nullptr;
         #endif
     }
 
