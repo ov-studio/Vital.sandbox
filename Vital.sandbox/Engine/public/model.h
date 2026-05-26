@@ -64,10 +64,22 @@ namespace Vital::Engine {
             // Helpers //
             godot::MeshInstance3D* find_mesh_node(godot::Node* node, const std::string& path);
             int find_material_index(godot::MeshInstance3D* mesh, const std::string& material);
-            godot::Skeleton3D* find_skeleton(godot::Node* node);
-            godot::AnimationPlayer* find_animation_player(godot::Node* node);
+            template<typename T>
+            T* find_node(godot::Node* node, T*& cache);
             void collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path);
             void setup_sync(int authority_peer);
+
+            // Shared helper: retrieves or creates a StandardMaterial3D override on a
+            // surface, then invokes fn(mat) on it. Returns false if a non-standard
+            // material already occupies the slot (caller decides whether to throw).
+            template<typename Fn>
+            bool apply_standard_material(godot::MeshInstance3D* mesh, int index, Fn&& fn);
+
+            // Shared wildcard dispatch: iterates names(), matches against pattern, and
+            // calls exec(name) for each match. When pattern has no wildcard, calls
+            // exec(pattern) directly and returns its result so callers can throw on miss.
+            template<typename GetNames, typename Exec>
+            bool apply_wildcard(const std::string& pattern, GetNames&& names, Exec&& exec);
 
 
             // Asserts //
@@ -97,14 +109,8 @@ namespace Vital::Engine {
             void destroy();
 
             #if defined(Vital_SDK_Client)
-            // Hydrates a placeholder node once the model asset has been loaded into cache.
-            // Called automatically from load_from_buffer when a queued spawn exists.
             void hydrate(int authority_peer);
             #endif
-
-            // Resource-scoped auto-load: loads all supported model files from a resource.
-            // Model names are scoped as ":resource_name/relative_path" to avoid conflicts.
-            // Called automatically by Resource::Internal::execute_resource on both sides.
             static void load_resource_models(const std::string& resource_name, const std::vector<std::string>& files);
             static void unload_resource_models(const std::string& resource_name);
 

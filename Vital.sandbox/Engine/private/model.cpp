@@ -37,13 +37,13 @@ namespace Vital::Engine {
         if (it != Model::cache_loaded.end()) {
             // Asset already in cache — normal instant path
             Model* object = memnew(Model);
-            object->set_model_name(name);
-            godot::Node* instance = it->second->instantiate();
+            object -> set_model_name(name);
+            godot::Node* instance = it -> second -> instantiate();
             if (!instance) {
                 memdelete(object);
                 return nullptr;
             }
-            object->add_child(instance);
+            object -> add_child(instance);
             godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
             return object;
         }
@@ -55,12 +55,12 @@ namespace Vital::Engine {
         // because load_from_buffer calls Asset::flush_spawn_queue after caching.
         godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
         Model* placeholder = memnew(Model);
-        placeholder->set_model_name(name);
-        placeholder->is_placeholder = true;
-        placeholder->set_visible(false);
+        placeholder -> set_model_name(name);
+        placeholder -> is_placeholder = true;
+        placeholder -> set_visible(false);
         // setup_sync so Godot's replication interface finds the NetSync child it expects.
-        placeholder->setup_sync(1);
-        Manager::Asset::get_singleton()->queue_spawn(name, placeholder);
+        placeholder -> setup_sync(1);
+        Manager::Asset::get_singleton() -> queue_spawn(name, placeholder);
         return placeholder;
         #else
         godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — not in cache (server): ", data);
@@ -75,8 +75,8 @@ namespace Vital::Engine {
         // Placeholders already have net_sync set up in spawn(); skip full _ready setup.
         // hydrate() will add the mesh child and make the node visible when ready.
         if (is_placeholder) return;
-        find_skeleton(this);
-        find_animation_player(this);
+        find_node(this, skeleton);
+        find_node(this, anim_player);
         setup_sync(pending_authority);
     }
 
@@ -126,13 +126,12 @@ namespace Vital::Engine {
         return -1;
     }
 
-    godot::Skeleton3D* Model::find_skeleton(godot::Node* node) {
-        if (!node || skeleton) return skeleton;
-        auto result = godot::Object::cast_to<godot::Skeleton3D>(node);
-        if (result) { skeleton = result; return skeleton; }
-        for (int i = 0; i < node -> get_child_count(); i++) {
-            auto result = find_skeleton(node -> get_child(i));
-            if (result) break;
+    template<typename T>
+    T* Model::find_node(godot::Node* node, T*& cache) {
+        if (!node || cache) return cache;
+        if (auto result = godot::Object::cast_to<T>(node)) {
+            cache = result;
+            return cache;
         }
         return skeleton;
     }
@@ -142,10 +141,9 @@ namespace Vital::Engine {
         auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
         if (result) { anim_player = result; return anim_player; }
         for (int i = 0; i < node -> get_child_count(); i++) {
-            auto result = find_animation_player(node -> get_child(i));
-            if (result) break;
+            if (find_node(node -> get_child(i), cache)) break;
         }
-        return anim_player;
+        return cache;
     }
 
     void Model::collect_mesh_nodes(godot::Node* node, std::vector<std::string>& out, const std::string& current_path) {
