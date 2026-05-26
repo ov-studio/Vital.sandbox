@@ -140,7 +140,7 @@ namespace Vital::Manager {
     void Asset::unregister_group(const std::string& group) {
         int count = 0;
         for (auto it = registered_assets.begin(); it != registered_assets.end(); ) {
-            if (it->second.group == group) { it = registered_assets.erase(it); count++; }
+            if (it -> second.group == group) { it = registered_assets.erase(it); count++; }
             else ++it;
         }
         Tool::print("sbox", fmt::format("Asset: unregistered group `{}` — {} asset(s) removed", group, count));
@@ -158,7 +158,7 @@ namespace Vital::Manager {
 
         http_server = std::make_unique<httplib::Server>();
 
-        http_server->Get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
+        http_server -> Get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
             if (!req.has_param("path")) { res.status = 400; res.set_content("Missing path", "text/plain"); return; }
             const std::string path = req.get_param_value("path");
             if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
@@ -192,7 +192,7 @@ namespace Vital::Manager {
             );
         });
 
-        http_server->Get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
+        http_server -> Get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
             std::string body = "{\"assets\":[";
             bool first = true;
             for (auto& [path, entry] : registered_assets) {
@@ -206,7 +206,7 @@ namespace Vital::Manager {
             res.set_content(body, "application/json");
         });
 
-        http_server->Get("/info", [this](const httplib::Request&, httplib::Response& res) {
+        http_server -> Get("/info", [this](const httplib::Request&, httplib::Response& res) {
             const auto& cfg = Manager::Network::get_singleton() -> get_server_config();
             rapidjson::Document document;
             document.SetObject();
@@ -228,7 +228,7 @@ namespace Vital::Manager {
         http_running = true;
         http_thread = std::thread([this]() {
             Tool::print("sbox", "Asset: HTTP server starting on port ", http_port);
-            http_server->listen("0.0.0.0", http_port);
+            http_server -> listen("0.0.0.0", http_port);
             Tool::print("sbox", "Asset: HTTP server stopped");
         });
 
@@ -240,7 +240,7 @@ namespace Vital::Manager {
     void Asset::stop_http_server() {
         if (!http_running) return;
         http_running = false;
-        if (http_server) http_server->stop();
+        if (http_server) http_server -> stop();
         if (http_thread.joinable()) http_thread.join();
         http_server.reset();
         Tool::print("sbox", "Asset: HTTP server stopped");
@@ -310,7 +310,7 @@ namespace Vital::Manager {
                 ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
             if (active_downloads.count(path)) {
-                active_downloads[path]->groups.insert(group);
+                active_downloads[path] -> groups.insert(group);
                 in_progress.push_back(path);
                 continue;
             }
@@ -358,23 +358,23 @@ namespace Vital::Manager {
 
     void Asset::download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group) {
         auto dl = std::make_shared<Download>();
-        dl->path = path;
-        dl->groups.insert(group);
+        dl -> path = path;
+        dl -> groups.insert(group);
         active_downloads[path] = dl;
 
         const std::string local_base = Tool::get_directory();
         const std::string local_path = local_base + "/" + path;
 
-        dl->thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
+        dl -> thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
             std::string response_body;
-            try { response_body = Tool::HTTP::get(base_url + "/asset?path=" + path, {}, 60, true, &dl->cancelled); }
+            try { response_body = Tool::HTTP::get(base_url + "/asset?path=" + path, {}, 60, true, &dl -> cancelled); }
             catch (const std::exception& e) {
                 Tool::print("error", fmt::format("Asset: download failed — {}\n│ reason: {}", path, e.what()));
                 _on_download_failed(path);
                 return;
             }
 
-            if (dl->cancelled.load()) {
+            if (dl -> cancelled.load()) {
                 try { std::filesystem::remove(local_path); } catch (...) {}
                 Tool::print("sbox", fmt::format("Asset: download cancelled — {}", path));
                 active_downloads.erase(path);
@@ -418,7 +418,7 @@ namespace Vital::Manager {
             });
         });
 
-        dl->thread.detach();
+        dl -> thread.detach();
     }
 
     void Asset::_on_download_failed(const std::string& path) {
@@ -431,9 +431,9 @@ namespace Vital::Manager {
     void Asset::cancel(const std::string& path, const std::string& group) {
         auto it = active_downloads.find(path);
         if (it == active_downloads.end()) return;
-        if (!group.empty()) it->second->groups.erase(group);
-        if (it->second->groups.empty()) {
-            it->second->cancelled.store(true);
+        if (!group.empty()) it -> second -> groups.erase(group);
+        if (it -> second -> groups.empty()) {
+            it -> second -> cancelled.store(true);
             Tool::print("sbox", fmt::format("Asset: cancelling — {}", path));
         }
     }
@@ -441,16 +441,16 @@ namespace Vital::Manager {
     void Asset::cancel_group(const std::string& group) {
         int flagged = 0;
         for (auto& [path, dl] : active_downloads) {
-            if (!dl->groups.count(group)) continue;
-            dl->groups.erase(group);
-            if (dl->groups.empty()) { dl->cancelled.store(true); flagged++; }
+            if (!dl -> groups.count(group)) continue;
+            dl -> groups.erase(group);
+            if (dl -> groups.empty()) { dl -> cancelled.store(true); flagged++; }
         }
         if (flagged > 0) Tool::print("sbox", fmt::format("Asset: cancelled group `{}` — {} download(s) stopped", group, flagged));
     }
 
     void Asset::cancel_all() {
         if (active_downloads.empty()) return;
-        for (auto& [path, dl] : active_downloads) dl->cancelled.store(true);
+        for (auto& [path, dl] : active_downloads) dl -> cancelled.store(true);
         Tool::print("sbox", fmt::format("Asset: cancelled all downloads — {} stopped", active_downloads.size()));
     }
 
@@ -473,18 +473,14 @@ namespace Vital::Manager {
     void Asset::flush_spawn_queue(const std::string& loaded_name) {
         auto it = spawn_queue.find(loaded_name);
         if (it == spawn_queue.end()) return;
-        void* raw = it->second.placeholder;
-        int authority_peer = it->second.authority_peer;
+        void* raw = it -> second.placeholder;
+        int authority_peer = it -> second.authority_peer;
         spawn_queue.erase(it);
 
-        Engine::Core::get_singleton()->enqueue([loaded_name, raw, authority_peer]() {
+        Engine::Core::get_singleton() -> enqueue([loaded_name, raw, authority_peer]() {
             Engine::Model* placeholder = static_cast<Engine::Model*>(raw);
-            if (!godot::ObjectDB::get_instance(placeholder->get_instance_id())) {
-                // Placeholder was freed before hydration (e.g. disconnect) — nothing to do
-                Tool::print("sbox", fmt::format("Asset: placeholder for '{}' no longer valid — skipping hydration", loaded_name));
-                return;
-            }
-            placeholder->hydrate(authority_peer);
+            if (!godot::ObjectDB::get_instance(placeholder -> get_instance_id())) return;
+            placeholder -> hydrate(authority_peer);
             Tool::print("sbox", fmt::format("Asset: flushed spawn queue for '{}'", loaded_name));
         });
     }
@@ -501,7 +497,7 @@ namespace Vital::Manager {
     void Asset::flush_spawn_queue(const std::string& loaded_name) {
         auto it = spawn_queue.find(loaded_name);
         if (it == spawn_queue.end()) return;
-        const int authority_peer = it->second;
+        const int authority_peer = it -> second;
         spawn_queue.erase(it);
         Engine::Core::get_singleton() -> enqueue([loaded_name, authority_peer]() {
             Engine::Model::create(loaded_name, authority_peer);
