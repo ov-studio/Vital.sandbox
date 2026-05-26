@@ -246,13 +246,7 @@ namespace Vital::Engine {
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' is already loaded", name));
 
-        const Format fmt_detected = [&]() -> Format {
-            const uint8_t* ptr = buffer.ptr();
-            if (buffer.size() >= 4 &&
-                ptr[0] == 0x67 && ptr[1] == 0x6C &&
-                ptr[2] == 0x54 && ptr[3] == 0x46) return Format::GLB;
-            return Format::UNKNOWN;
-        }();
+        const Format fmt_detected = get_format_from_bytes(buffer.ptr(), buffer.size());
 
         godot::Ref<godot::PackedScene> scene;
         if (fmt_detected == Format::GLB) {
@@ -395,13 +389,27 @@ namespace Vital::Engine {
         if (dot == std::string::npos) return false;
         std::string ext = path.substr(dot + 1);
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        return ext == "glb";
+        for (const auto& desc : format_registry) {
+            if (desc.extension == ext) return true;
+        }
+        return false;
     }
 
     // Reads only 4 magic bytes from disk to verify the file format.
     // Never loads the full file — safe for large assets.
     bool Model::is_supported_format(const std::string& path) {
         return get_format(path) != Format::UNKNOWN;
+    }
+
+    // Single format detection implementation — shared by both overloads.
+    // Matches magic bytes from the registry against the provided raw buffer.
+    Model::Format Model::get_format_from_bytes(const uint8_t* ptr, int size) {
+        for (const auto& desc : format_registry) {
+            const int magic_size = static_cast<int>(desc.magic_bytes.size());
+            if (size < magic_size) continue;
+            if (std::equal(desc.magic_bytes.begin(), desc.magic_bytes.end(), ptr)) return desc.format;
+        }
+        return Format::UNKNOWN;
     }
 
     // Reads only 4 magic bytes from disk. Returns the detected Format enum value.
@@ -411,9 +419,12 @@ namespace Vital::Engine {
         try {
             const std::string full_path = Tool::get_directory() + "/" + path;
             auto file = godot::FileAccess::open(Tool::to_godot_string(full_path), godot::FileAccess::READ);
-            if (!file.is_valid() || file -> get_length() < 4) return Format::UNKNOWN;
-            const uint8_t magic[4] = { file -> get_8(), file -> get_8(), file -> get_8(), file -> get_8() };
-            if (magic[0] == 0x67 && magic[1] == 0x6C && magic[2] == 0x54 && magic[3] == 0x46) return Format::GLB;
+            if (!file.is_valid()) return Format::UNKNOWN;
+            const int max_magic = 8; // enough for any current or near-future descriptor
+            if (file->get_length() < 4) return Format::UNKNOWN;
+            uint8_t buf[max_magic] = {};
+            for (int i = 0; i < max_magic && i < (int)file->get_length(); i++) buf[i] = file->get_8();
+            return get_format_from_bytes(buf, max_magic);
         }
         catch (...) {}
         return Format::UNKNOWN;

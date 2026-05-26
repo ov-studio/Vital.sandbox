@@ -36,9 +36,10 @@ namespace Vital::Engine {
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:
-            enum class Format {
-                GLB,
-                UNKNOWN
+            enum class Format { GLB, FBX, UNKNOWN };
+
+            inline static const std::vector<FormatDescriptor> format_registry = {
+                { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
@@ -153,6 +154,7 @@ namespace Vital::Engine {
 
             // Getters //
             static Format get_format(const std::string& path);
+            static Format get_format_from_bytes(const uint8_t* ptr, int size)
             static Models get_loaded_models();
             std::string get_model_name();
             godot::Vector3 get_position();
