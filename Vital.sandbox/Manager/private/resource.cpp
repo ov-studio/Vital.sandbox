@@ -24,7 +24,6 @@
 // Vital: Manager: Resource //
 ///////////////////////////////
 
-// TODO: Improve
 namespace Vital::Manager {
     // Helpers //
     std::string Resource::Internal::chunk_name(const std::string& resource, const std::string& src) {
