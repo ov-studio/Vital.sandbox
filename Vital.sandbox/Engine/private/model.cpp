@@ -168,8 +168,8 @@ namespace Vital::Engine {
         add_child(net_sync);
     }
 
-    template<typename Fn>
-    bool Model::apply_standard_material(godot::MeshInstance3D* mesh, int index, Fn&& fn) {
+    template<typename F>
+    bool Model::apply_standard_material(godot::MeshInstance3D* mesh, int index, F&& fn) {
         if (index < 0) return false;
         godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
         godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
