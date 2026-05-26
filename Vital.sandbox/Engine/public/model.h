@@ -36,7 +36,17 @@ namespace Vital::Engine {
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:
-            enum class Format { GLB, FBX, UNKNOWN };
+            enum class Format { 
+                GLB, 
+                FBX, 
+                UNKNOWN
+            };
+            
+            struct FormatDescriptor {
+                Format format;
+                std::string extension;
+                std::vector<uint8_t> magic_bytes;
+            };
 
             inline static const std::vector<FormatDescriptor> format_registry = {
                 { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
