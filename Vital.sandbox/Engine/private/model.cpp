@@ -133,13 +133,6 @@ namespace Vital::Engine {
             cache = result;
             return cache;
         }
-        return skeleton;
-    }
-
-    godot::AnimationPlayer* Model::find_animation_player(godot::Node* node) {
-        if (!node || anim_player) return anim_player;
-        auto result = godot::Object::cast_to<godot::AnimationPlayer>(node);
-        if (result) { anim_player = result; return anim_player; }
         for (int i = 0; i < node -> get_child_count(); i++) {
             if (find_node(node -> get_child(i), cache)) break;
         }
@@ -173,6 +166,37 @@ namespace Vital::Engine {
         net_sync -> set_root_path(godot::NodePath(".."));
         net_sync -> set_multiplayer_authority(authority_peer);
         add_child(net_sync);
+    }
+
+    // Retrieves or creates a StandardMaterial3D surface override at `index` on `mesh`,
+    // then invokes fn(mat) on it. Returns false if a non-standard material already
+    // occupies the slot — callers decide whether to throw.
+    template<typename Fn>
+    bool Model::apply_standard_material(godot::MeshInstance3D* mesh, int index, Fn&& fn) {
+        if (index < 0) return false;
+        godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
+        if (!std_mat.is_valid()) {
+            if (mat.is_valid()) return false; // non-standard material in slot — skip
+            std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
+            mesh -> set_surface_override_material(index, std_mat);
+        }
+        fn(std_mat);
+        return true;
+    }
+
+    // Dispatches exec() over names matching pattern.
+    // When pattern contains a wildcard: iterates names() and calls exec(name) for each match.
+    // When pattern is exact: calls exec(pattern) directly and returns its result.
+    template<typename GetNames, typename Exec>
+    bool Model::apply_wildcard(const std::string& pattern, GetNames&& names, Exec&& exec) {
+        if (Tool::contains_wildcard(pattern)) {
+            for (const auto& name : names()) {
+                if (Tool::match_wildcard(pattern, name)) exec(name);
+            }
+            return true;
+        }
+        return exec(pattern);
     }
 
 
@@ -271,14 +295,17 @@ namespace Vital::Engine {
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' is already loaded", name));
+
+        const Format fmt_detected = [&]() -> Format {
+            const uint8_t* ptr = buffer.ptr();
+            if (buffer.size() >= 4 &&
+                ptr[0] == 0x67 && ptr[1] == 0x6C &&
+                ptr[2] == 0x54 && ptr[3] == 0x46) return Format::GLB;
+            return Format::UNKNOWN;
+        }();
+
         godot::Ref<godot::PackedScene> scene;
-        // Detect format from the first 4 magic bytes of the buffer — never reads the full file
-        const uint8_t* ptr = buffer.ptr();
-        const int size = buffer.size();
-        if (size >= 4 &&
-            ptr[0] == 0x67 && ptr[1] == 0x6C &&
-            ptr[2] == 0x54 && ptr[3] == 0x46) {
-            // GLB
+        if (fmt_detected == Format::GLB) {
             godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
             godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
             if (document -> append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
@@ -288,6 +315,7 @@ namespace Vital::Engine {
             scene -> pack(root);
             memdelete(root);
         }
+
         if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: unsupported or invalid model format");
         cache_loaded[name] = scene;
         #if defined(Vital_SDK_Client)
@@ -331,7 +359,7 @@ namespace Vital::Engine {
     }
 
     void Model::destroy() {
-        this->queue_free();
+        this -> queue_free();
     }
 
     #if defined(Vital_SDK_Client)
@@ -344,7 +372,7 @@ namespace Vital::Engine {
             return;
         }
 
-        godot::Node* instance = it->second->instantiate();
+        godot::Node* instance = it -> second -> instantiate();
         if (!instance) {
             godot::UtilityFunctions::push_warning("Model::hydrate — failed to instantiate: ", Tool::to_godot_string(model_name));
             return;
@@ -355,8 +383,8 @@ namespace Vital::Engine {
         add_child(instance);
 
         // net_sync already exists from spawn() — no need to call setup_sync again.
-        find_skeleton(this);
-        find_animation_player(this);
+        find_node(this, skeleton);
+        find_node(this, anim_player);
 
         set_visible(true);
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
@@ -414,7 +442,6 @@ namespace Vital::Engine {
 
     // Fast extension check — no file I/O.
     bool Model::is_supported_extension(const std::string& path) {
-        // Lowercase the extension only
         const size_t dot = path.rfind('.');
         if (dot == std::string::npos) return false;
         std::string ext = path.substr(dot + 1);
@@ -425,36 +452,18 @@ namespace Vital::Engine {
     // Reads only 4 magic bytes from disk to verify the file format.
     // Never loads the full file — safe for large assets.
     bool Model::is_supported_format(const std::string& path) {
-        if (!is_supported_extension(path)) return false;
-        try {
-            const std::string full_path = Tool::get_directory() + "/" + path;
-            auto file = godot::FileAccess::open(Tool::to_godot_string(full_path), godot::FileAccess::READ);
-            if (!file.is_valid()) return false;
-            if (file -> get_length() < 4) return false;
-            uint8_t magic[4];
-            magic[0] = file -> get_8();
-            magic[1] = file -> get_8();
-            magic[2] = file -> get_8();
-            magic[3] = file -> get_8();
-            // GLB magic: "glTF"
-            return magic[0] == 0x67 && magic[1] == 0x6C && magic[2] == 0x54 && magic[3] == 0x46;
-        }
-        catch (...) { return false; }
+        return get_format(path) != Format::UNKNOWN;
     }
 
-    // get_format reads only 4 magic bytes from the buffer passed to load_from_buffer.
-    // For path-based format detection use is_supported_format.
+    // Reads only 4 magic bytes from disk. Returns the detected Format enum value.
+    // is_supported_format delegates here — single source of truth for magic-byte detection.
     Model::Format Model::get_format(const std::string& path) {
         if (!is_supported_extension(path)) return Format::UNKNOWN;
         try {
             const std::string full_path = Tool::get_directory() + "/" + path;
             auto file = godot::FileAccess::open(Tool::to_godot_string(full_path), godot::FileAccess::READ);
             if (!file.is_valid() || file -> get_length() < 4) return Format::UNKNOWN;
-            uint8_t magic[4];
-            magic[0] = file -> get_8();
-            magic[1] = file -> get_8();
-            magic[2] = file -> get_8();
-            magic[3] = file -> get_8();
+            const uint8_t magic[4] = { file -> get_8(), file -> get_8(), file -> get_8(), file -> get_8() };
             if (magic[0] == 0x67 && magic[1] == 0x6C && magic[2] == 0x54 && magic[3] == 0x46) return Format::GLB;
         }
         catch (...) {}
@@ -575,13 +584,11 @@ namespace Vital::Engine {
     }
 
     std::string Model::get_current_animation() {
-        auto anim_player = assert_animation_player();
-        return Tool::to_std_string(anim_player -> get_current_animation());
+        return Tool::to_std_string(assert_animation_player() -> get_current_animation());
     }
 
     float Model::get_animation_speed() {
-        auto anim_player = assert_animation_player();
-        return anim_player -> get_speed_scale();
+        return assert_animation_player() -> get_speed_scale();
     }
 
     int Model::get_sync_authority() const {
@@ -615,24 +622,21 @@ namespace Vital::Engine {
     #endif
 
     bool Model::set_component_visible(const std::string& component, bool state) {
-        auto exec = [&](const std::string& name) {
+        auto exec = [&](const std::string& name) -> bool {
             godot::MeshInstance3D* mesh = find_mesh_node(this, name);
             if (!mesh) return false;
             mesh -> set_visible(state);
             return true;
         };
-        if (Tool::contains_wildcard(component)) {
-            for (const auto& name : get_components()) {
-                if (Tool::match_wildcard(component, name)) exec(name);
-            }
-        }
-        else if (!exec(component)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
+        if (!apply_wildcard(component, [&]{ return get_components(); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: component '{}' not found in model '{}'", component, model_name));
         return true;
     }
 
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         auto mesh = assert_component(component);
-        auto exec = [&](int index) {
+        auto exec = [&](const std::string& name) -> bool {
+            int index = find_material_index(mesh, name);
             if (index < 0) return false;
             if (!state) {
                 godot::Ref<godot::StandardMaterial3D> invisible = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
@@ -644,83 +648,52 @@ namespace Vital::Engine {
             else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
             return true;
         };
-        if (Tool::contains_wildcard(material)) {
-            for (const auto& name : get_materials(component)) {
-                if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
-            }
-        }
-        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
+        if (!apply_wildcard(material, [&]{ return get_materials(component); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return true;
     }
 
     bool Model::set_material_feature(const std::string& component, const std::string& material, int feature, bool state) {
         assert_material_feature(feature);
         auto mesh = assert_component(component);
-        auto exec = [&](int index) {
-            if (index < 0) return false;
-            godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
-            godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
-            if (!std_mat.is_valid()) {
-                if (mat.is_valid()) return false;
-                std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
-                mesh -> set_surface_override_material(index, std_mat);
-            }
-            std_mat -> set_feature(static_cast<godot::BaseMaterial3D::Feature>(feature), state);
-            return true;
+        auto exec = [&](const std::string& name) -> bool {
+            return apply_standard_material(mesh, find_material_index(mesh, name), [&](godot::Ref<godot::StandardMaterial3D> mat) {
+                mat -> set_feature(static_cast<godot::BaseMaterial3D::Feature>(feature), state);
+            });
         };
-        if (Tool::contains_wildcard(material)) {
-            for (const auto& name : get_materials(component)) {
-                if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
-            }
-        }
-        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
+        if (!apply_wildcard(material, [&]{ return get_materials(component); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return true;
     }
 
     bool Model::set_material_flag(const std::string& component, const std::string& material, int flag, bool state) {
         assert_material_flag(flag);
         auto mesh = assert_component(component);
-        auto exec = [&](int index) {
-            if (index < 0) return false;
-            godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
-            godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
-            if (!std_mat.is_valid()) {
-                if (mat.is_valid()) return false;
-                std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
-                mesh -> set_surface_override_material(index, std_mat);
-            }
-            std_mat -> set_flag(static_cast<godot::BaseMaterial3D::Flags>(flag), state);
-            return true;
+        auto exec = [&](const std::string& name) -> bool {
+            return apply_standard_material(mesh, find_material_index(mesh, name), [&](godot::Ref<godot::StandardMaterial3D> mat) {
+                mat -> set_flag(static_cast<godot::BaseMaterial3D::Flags>(flag), state);
+            });
         };
-        if (Tool::contains_wildcard(material)) {
-            for (const auto& name : get_materials(component)) {
-                if (Tool::match_wildcard(material, name)) exec(find_material_index(mesh, name));
-            }
-        }
-        else if (!exec(find_material_index(mesh, material))) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
+        if (!apply_wildcard(material, [&]{ return get_materials(component); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
         return true;
     }
 
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
         auto mesh = assert_component(component);
-        auto exec = [&](const std::string& name) {
+        auto exec = [&](const std::string& name) -> bool {
             int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
             if (index < 0) return false;
             mesh -> set_blend_shape_value(index, value);
             return true;
         };
-        if (Tool::contains_wildcard(blend_shape)) {
-            for (const auto& name : get_blendshapes(component)) {
-                if (Tool::match_wildcard(blend_shape, name)) exec(name);
-            }
-        }
-        else if (!exec(blend_shape)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
+        if (!apply_wildcard(blend_shape, [&]{ return get_blendshapes(component); }, exec))
+            throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
         return true;
     }
 
     void Model::set_animation_speed(float speed) {
-        auto anim_player = assert_animation_player();
-        anim_player -> set_speed_scale(speed);
+        assert_animation_player() -> set_speed_scale(speed);
     }
 
 
