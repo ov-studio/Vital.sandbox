@@ -20,7 +20,6 @@
 // Vital: Manager: Resource //
 ///////////////////////////////
 
-// TODO: Improve
 namespace Vital::Manager {
     class Resource {
         public:
