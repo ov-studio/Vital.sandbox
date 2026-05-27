@@ -70,6 +70,9 @@ namespace Vital::Engine {
         find_node(this, skeleton);
         find_node(this, anim_player);
         setup_sync(pending_authority);
+        #if defined(Vital_SDK_Client)
+        if (on_spawned_callback) on_spawned_callback(this);
+        #endif
     }
 
     void Model::_notification(int what) {

@@ -47,9 +47,7 @@ namespace Vital::Engine {
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
 
-            // Callback registered by the API layer so it can null out stale Lua
-            // instance pointers when a Model node is freed (e.g. server-side destroy
-            // replicated to clients via MultiplayerSpawner despawn).
+            inline static std::function<void(Model*)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
         protected:
             static void _bind_methods() {};
