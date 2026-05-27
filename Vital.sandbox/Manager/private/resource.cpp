@@ -133,9 +133,9 @@ namespace Vital::Manager {
         {
             std::vector<std::string> validated;
             for (const auto& file : resource -> files) {
-                if (!Engine::Model::is_supported_extension(file)) continue;
+                if (!Tool::Format::is_supported_extension(Engine::Model::format_registry, file)) continue;
                 const std::string local_path = fmt::format("resources/{}/{}", name, file);
-                if (!Engine::Model::is_supported_format(local_path)) continue;
+                if (!Tool::Format::is_supported_format(Engine::Model::format_registry, Engine::Model::Format::UNKNOWN, local_path)) continue;
                 validated.push_back(file);
             }
             std::lock_guard<std::mutex> lock(rm -> mutex);
