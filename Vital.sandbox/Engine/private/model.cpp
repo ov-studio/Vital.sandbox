@@ -70,9 +70,6 @@ namespace Vital::Engine {
         find_node(this, skeleton);
         find_node(this, anim_player);
         setup_sync(pending_authority);
-        #if defined(Vital_SDK_Client)
-        if (on_spawned_callback) on_spawned_callback(this);
-        #endif
     }
 
     void Model::_notification(int what) {
@@ -329,6 +326,7 @@ namespace Vital::Engine {
         find_node(this, skeleton);
         find_node(this, anim_player);
         set_visible(true);
+        if (on_spawned_callback) on_spawned_callback(this);
         godot::UtilityFunctions::print("Model::hydrate — placeholder hydrated: ", Tool::to_godot_string(model_name));
     }
     #endif
