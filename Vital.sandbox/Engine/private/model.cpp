@@ -241,8 +241,7 @@ namespace Vital::Engine {
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' is already loaded", name));
 
-        const Format fmt_detected = get_format(buffer.ptr(), buffer.size());
-
+        const Format fmt_detected = get_format(buffer);
         godot::Ref<godot::PackedScene> scene;
         if (fmt_detected == Format::GLB) {
             godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
