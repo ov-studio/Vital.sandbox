@@ -77,8 +77,8 @@ namespace Vital::Sandbox::API {
             base_class::on_spawned_callback = [](base_class* spawned) {
                 {
                     std::lock_guard<std::mutex> lock(mutex);
-                    for (auto& [id, inst] : buffer) {
-                        if (inst->model == spawned) return;
+                    for (auto& [id, instance] : buffer) {
+                        if (instance -> model == spawned) return;
                     }
                 }
                 auto instance = Instance::init(nullptr);
