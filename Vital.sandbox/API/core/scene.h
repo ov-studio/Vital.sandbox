@@ -24,10 +24,10 @@
 // TODO: Improve
 namespace Vital::Sandbox::API {
     struct Scene : vm_module {
-        inline static const std::string base_name = "scene";
+        inline static const std::string base_name = "engine";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "getElementsByType", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_name}, "get_entities", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(type)")
                     .require(1, &Machine::is_string);
 
