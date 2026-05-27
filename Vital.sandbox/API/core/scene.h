@@ -38,11 +38,17 @@ namespace Vital::Sandbox::API {
                 if (type == "model") {
                     std::lock_guard<std::mutex> lock(Model::mutex);
                     for (auto& [instance_id, instance] : Model::buffer) {
-                        // Skip instances whose node has been destroyed
-                        if (!instance -> model) continue; // TODO: No need of this maybe?
-                        // TODO: Should push existing userdata instead of constructing new?
-                        // Push a new Lua object wrapping this instance onto the table
-                        vm -> create_object(Model::base_name, instance.get());
+                        if (!instance -> model) continue;
+                        if (instance -> userdata) {
+                            // already has a Lua object — push it via its stored ref
+                            vm -> get_reference(instance -> self_reference());
+                        }
+                        else {
+                            // server-spawned, no Lua object yet — create one and register it
+                            vm -> create_object(Model::base_name, instance.get());
+                            instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                            instance -> set_ref(instance->self_reference(), -1);
+                        }
                         vm -> set_table_field(++count, -2);
                     }
                 }
