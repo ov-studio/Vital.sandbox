@@ -241,7 +241,7 @@ namespace Vital::Engine {
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' is already loaded", name));
 
-        const Format fmt_detected = get_format(buffer);
+        const Format fmt_detected = Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer);
         godot::Ref<godot::PackedScene> scene;
         if (fmt_detected == Format::GLB) {
             godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
@@ -380,14 +380,6 @@ namespace Vital::Engine {
         return Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, path);
     }
 
-    Model::Format Model::get_format(const uint8_t* ptr, int size) {
-        return Tool::Format::get_format(format_registry, Format::UNKNOWN, ptr, size);
-    }
-
-    Model::Format Model::get_format(const std::string& path) {
-        return Tool::Format::get_format(format_registry, Format::UNKNOWN, path);
-    }
-    
     bool Model::is_synced() const {
         return net_sync != nullptr;
     }
