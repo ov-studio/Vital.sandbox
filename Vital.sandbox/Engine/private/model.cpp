@@ -234,16 +234,6 @@ namespace Vital::Engine {
 
 
     // Managers //
-    std::vector<std::string> Model::filter_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
-        std::vector<std::string> validated;
-        for (const auto& file : files) {
-            if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
-            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource_name, file))) continue;
-            validated.push_back(file);
-        }
-        return validated;
-    }
-
     bool Model::load(const std::string& name, const std::string& path) {
         return load_from_buffer(name, Tool::File::read_binary(Tool::get_directory(), path));
     }
@@ -340,6 +330,16 @@ namespace Vital::Engine {
     }
     #endif
 
+    std::vector<std::string> Model::filter_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
+        std::vector<std::string> validated;
+        for (const auto& file : files) {
+            if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource_name, file))) continue;
+            validated.push_back(file);
+        }
+        return validated;
+    }
+    
     void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
         std::vector<std::string> loaded;
         for (const auto& file : files) {
