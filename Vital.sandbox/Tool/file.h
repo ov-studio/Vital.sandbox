@@ -143,6 +143,19 @@ namespace Vital::Tool::File {
         return read_binary(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
+    inline godot::PackedByteArray read_magic(const godot::String& base, const godot::String& path, int count) {
+        try {
+            auto file = Internal::assert_file(base, path, godot::FileAccess::READ);
+            const int readable = static_cast<int>(std::min<uint64_t>(file -> get_length(), count));
+            return file -> get_buffer(readable);
+        }
+        catch (...) { return {}; }
+    }
+
+    inline godot::PackedByteArray read_magic(const std::string& base, const std::string& path, int count) {
+        return read_magic(Tool::to_godot_string(base), Tool::to_godot_string(path), count);
+    }
+
     inline bool write_text(const godot::String& base, const godot::String& path, const std::string& text) {
         auto file = Internal::assert_file(base, path, godot::FileAccess::WRITE);
         file -> store_string(Tool::to_godot_string(text));
