@@ -383,7 +383,7 @@ namespace Vital::Engine {
             if (!texture) texture = Engine::Texture::create_texture_2d(path, path);
             draw_image(position, size, texture, rotation, pivot, color);
         }
-        catch(...) { std::rethrow_exception(std::current_exception()); }
+        catch (...) { std::rethrow_exception(std::current_exception()); }
     }
 
     void Canvas::draw_image(
