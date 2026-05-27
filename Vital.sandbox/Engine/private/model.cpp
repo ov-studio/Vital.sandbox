@@ -234,7 +234,7 @@ namespace Vital::Engine {
 
 
     // Managers //
-    std::vector<std::string> Model::filter_model_files(const std::string& resource_name, const std::vector<std::string>& files) {
+    std::vector<std::string> Model::filter_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
         std::vector<std::string> validated;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
