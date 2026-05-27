@@ -333,11 +333,11 @@ namespace Vital::Engine {
     void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
         std::vector<std::string> loaded;
         for (const auto& file : files) {
-            if (!is_supported_extension(file)) continue;
+            if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
             const std::string model_name = fmt::format(":{}/{}", resource_name, file);
             if (is_model_loaded(model_name)) continue;
             const std::string local_path = fmt::format("resources/{}/{}", resource_name, file);
-            if (!is_supported_format(local_path)) continue;
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, local_path)) continue;
             try {
                 load(model_name, local_path);
                 loaded.push_back(model_name);
@@ -372,14 +372,6 @@ namespace Vital::Engine {
     // Checkers //
     bool Model::is_model_loaded(const std::string& name) {
         return cache_loaded.find(name) != cache_loaded.end();
-    }
-
-    bool Model::is_supported_extension(const std::string& path) {
-        return Tool::Format::is_supported_extension(format_registry, path);
-    }
-
-    bool Model::is_supported_format(const std::string& path) {
-        return Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, path);
     }
 
     bool Model::is_synced() const {

@@ -160,8 +160,6 @@ namespace Vital::Engine {
 
             // Checkers //
             static bool is_model_loaded(const std::string& name);
-            static bool is_supported_extension(const std::string& path);
-            static bool is_supported_format(const std::string& path);
             bool is_synced() const;
             bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
