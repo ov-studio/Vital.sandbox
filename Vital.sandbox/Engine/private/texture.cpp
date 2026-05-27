@@ -62,10 +62,6 @@ namespace Vital::Engine {
 
 
     // Getters //
-    Texture::Format Texture::get_format(const godot::PackedByteArray& buffer) {
-        return Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer.ptr(), buffer.size());
-    }
-
     Texture* Texture::get_from_reference(const std::string& reference) {
         auto it = reference_cache.find(reference);
         return it != reference_cache.end() ? it -> second : nullptr;
@@ -89,7 +85,7 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
-        switch (get_format(buffer)) {
+        switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
             case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
             case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;
             case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
