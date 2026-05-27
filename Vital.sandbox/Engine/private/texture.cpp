@@ -63,29 +63,7 @@ namespace Vital::Engine {
 
     // Getters //
     Texture::Format Texture::get_format(const godot::PackedByteArray& buffer) {
-        const uint8_t* ptr = buffer.ptr();
-        const int size = buffer.size();
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        if (
-            size >= 8 &&
-            ptr[0] == 0x89 && ptr[1] == 0x50 &&
-            ptr[2] == 0x4E && ptr[3] == 0x47 &&
-            ptr[4] == 0x0D && ptr[5] == 0x0A &&
-            ptr[6] == 0x1A && ptr[7] == 0x0A
-        ) return Format::PNG;
-        else if (
-            size >= 2 &&
-            ptr[0] == 0xFF && ptr[1] == 0xD8
-        ) return Format::JPG;
-        else if (
-            size >= 12 &&  
-            ptr[0] == 'R' && ptr[1] == 'I' &&
-            ptr[2] == 'F' && ptr[3] == 'F' &&
-            ptr[8] == 'W' && ptr[9] == 'E' &&
-            ptr[10] == 'B' && ptr[11] == 'P'
-        ) return Format::WEBP;
-        return Format::UNKNOWN;
+        return Tool::Format::get_format_from_bytes(format_registry, Format::UNKNOWN, buffer.ptr(), buffer.size());
     }
 
     Texture* Texture::get_from_reference(const std::string& reference) {
