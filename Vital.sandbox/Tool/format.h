@@ -60,6 +60,11 @@ namespace Vital::Tool::Format {
     }
 
     template<typename F>
+    inline F get_format_from_bytes(const std::vector<Descriptor<F>>& registry, F unknown, const godot::PackedByteArray& buffer) {
+        return get_format_from_bytes(registry, unknown, buffer.ptr(), buffer.size());
+    }
+
+    template<typename F>
     inline F get_format(const std::vector<Descriptor<F>>& registry, F unknown, const std::string& path) {
         if (!is_supported_extension(registry, path)) return unknown;
         const auto magic = Tool::File::read_magic(Tool::get_directory(), path, max_magic_size(registry));
