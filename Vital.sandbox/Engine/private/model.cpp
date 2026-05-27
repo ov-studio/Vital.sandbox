@@ -373,37 +373,22 @@ namespace Vital::Engine {
         return cache_loaded.find(name) != cache_loaded.end();
     }
 
-    // Fast extension check — no file I/O.
     bool Model::is_supported_extension(const std::string& path) {
-        const size_t dot = path.rfind('.');
-        if (dot == std::string::npos) return false;
-        std::string ext = path.substr(dot + 1);
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        for (const auto& desc : format_registry) {
-            if (desc.extension == ext) return true;
-        }
-        return false;
+        return Tool::Format::is_supported_extension(format_registry, path);
     }
 
     bool Model::is_supported_format(const std::string& path) {
-        return get_format(path) != Format::UNKNOWN;
+        return Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, path);
     }
 
     Model::Format Model::get_format_from_bytes(const uint8_t* ptr, int size) {
-        for (const auto& desc : format_registry) {
-            const int magic_size = static_cast<int>(desc.magic_bytes.size());
-            if (size < magic_size) continue;
-            if (std::equal(desc.magic_bytes.begin(), desc.magic_bytes.end(), ptr)) return desc.format;
-        }
-        return Format::UNKNOWN;
+        return Tool::Format::get_format_from_bytes(format_registry, Format::UNKNOWN, ptr, size);
     }
 
     Model::Format Model::get_format(const std::string& path) {
-        if (!is_supported_extension(path)) return Format::UNKNOWN;
-        const auto magic = Tool::File::read_magic(Tool::get_directory(), path, max_magic_size());
-        return get_format_from_bytes(magic.ptr(), magic.size());
+        return Tool::Format::get_format(format_registry, Format::UNKNOWN, path);
     }
-
+    
     bool Model::is_synced() const {
         return net_sync != nullptr;
     }

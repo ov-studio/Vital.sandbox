@@ -36,37 +36,14 @@ namespace Vital::Engine {
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:
-            // Format enum — add new entries here as formats are supported.
             enum class Format {
                 GLB,
-                // FBX,
                 UNKNOWN
             };
 
-            // Format descriptor — one entry per supported format.
-            // magic_bytes: leading bytes that identify the binary (up to 8).
-            // extension:   lowercase file extension without the dot.
-            struct FormatDescriptor {
-                Format format;
-                std::string extension;
-                std::vector<uint8_t> magic_bytes;
+            inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
+                { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
             };
-
-            // Format registry — single source of truth for extension and magic-byte detection.
-            // Adding a new format: append one entry here; everything else updates automatically.
-            inline static const std::vector<FormatDescriptor> format_registry = {
-                { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } },
-                // { Format::FBX, "fbx", { 0x4B, 0x61, 0x79, 0x64 } },
-            };
-
-            // Returns the byte count of the longest magic sequence in the registry.
-            // Used by get_format so no hardcoded read-size is ever needed.
-            inline static int max_magic_size() {
-                int max = 0;
-                for (const auto& desc : format_registry)
-                    max = std::max(max, static_cast<int>(desc.magic_bytes.size()));
-                return max;
-            }
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
 
