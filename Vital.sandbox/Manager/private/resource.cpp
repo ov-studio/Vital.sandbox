@@ -128,7 +128,7 @@ namespace Vital::Manager {
             resource = Internal::get_resource(name);
         }
         if (!resource) return;
-
+    
         #if !defined(Vital_SDK_Client)
         {
             std::vector<std::string> validated;
@@ -142,24 +142,9 @@ namespace Vital::Manager {
             const_cast<Manifest*>(resource) -> models = std::move(validated);
         }
         #endif
+    
         if (resource -> models.empty()) return;
-
-        std::vector<std::string> loaded;
-        for (const auto& file : resource -> models) {
-            const std::string model_name = fmt::format(":{}/{}", name, file);
-            if (Engine::Model::is_model_loaded(model_name)) continue;
-            const std::string local_path = fmt::format("resources/{}/{}", name, file);
-            try {
-                Engine::Model::load(model_name, local_path);
-                loaded.push_back(model_name);
-            }
-            catch (...) { rm -> log("error", fmt::format("resource `{}` failed to load model `{}`", name, file)); }
-        }
-        if (!loaded.empty()) {
-            std::string report = fmt::format("resource `{}` registered {} model asset(s):\n", name, loaded.size());
-            for (const auto& n : loaded) report += fmt::format("> `{}`\n", n);
-            rm -> log("sbox", report);
-        }
+        Engine::Model::load_resource_models(name, resource -> models);
     }
 
     void Resource::Internal::execute_resource(std::string name) {
