@@ -240,20 +240,22 @@ namespace Vital::Engine {
 
     bool Model::load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer) {
         if (is_model_loaded(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' is already loaded", name));
-
-        const Format fmt_detected = Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer);
+    
         godot::Ref<godot::PackedScene> scene;
-        if (fmt_detected == Format::GLB) {
-            godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
-            godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
-            if (document -> append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
-            godot::Node* root = document -> generate_scene(state);
-            if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate scene");
-            scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
-            scene -> pack(root);
-            memdelete(root);
+        switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
+            case Format::GLB: {
+                godot::Ref<godot::GLTFDocument> document = memnew(godot::GLTFDocument);
+                godot::Ref<godot::GLTFState> state = memnew(godot::GLTFState);
+                if (document -> append_from_buffer(buffer, "", state) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid model buffer");
+                godot::Node* root = document -> generate_scene(state);
+                if (!root) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to generate scene");
+                scene = godot::Ref<godot::PackedScene>(memnew(godot::PackedScene));
+                scene -> pack(root);
+                memdelete(root);
+                break;
+            }
         }
-
+    
         if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: unsupported or invalid model format");
         cache_loaded[name] = scene;
         #if defined(Vital_SDK_Client)
