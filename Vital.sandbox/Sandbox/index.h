@@ -240,6 +240,7 @@ namespace Vital::Sandbox {
             {
                 std::lock_guard<std::mutex> lock(mutex);
                 for (auto& [id, instance] : buffer) {
+                    if (instance -> env.empty()) continue;
                     if (instance -> env != env) continue;
                     if (pre_mark) instance -> destroyed = true;
                     to_clean.push_back(instance);
@@ -291,7 +292,7 @@ namespace Vital::Sandbox {
             static std::shared_ptr<Derived> init(Machine* vm) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::next_id.fetch_add(1);
-                instance -> env = vm -> get_environment_id();
+                instance -> env = vm ? vm -> get_environment_id() : "";
                 instance -> vm = vm;
                 return instance;
             }
