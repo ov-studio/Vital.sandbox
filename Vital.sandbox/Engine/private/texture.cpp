@@ -63,7 +63,7 @@ namespace Vital::Engine {
 
     // Getters //
     Texture::Format Texture::get_format(const godot::PackedByteArray& buffer) {
-        return Tool::Format::get_format_from_bytes(format_registry, Format::UNKNOWN, buffer.ptr(), buffer.size());
+        return Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer.ptr(), buffer.size());
     }
 
     Texture* Texture::get_from_reference(const std::string& reference) {

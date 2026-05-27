@@ -50,7 +50,7 @@ namespace Vital::Tool::Format {
     }
 
     template<typename F>
-    inline F get_format_from_bytes(const std::vector<Descriptor<F>>& registry, F unknown, const uint8_t* ptr, int size) {
+    inline F get_format(const std::vector<Descriptor<F>>& registry, F unknown, const uint8_t* ptr, int size) {
         for (const auto& desc : registry) {
             const int magic_size = static_cast<int>(desc.magic_bytes.size());
             if (size < magic_size) continue;
@@ -60,15 +60,15 @@ namespace Vital::Tool::Format {
     }
 
     template<typename F>
-    inline F get_format_from_bytes(const std::vector<Descriptor<F>>& registry, F unknown, const godot::PackedByteArray& buffer) {
-        return get_format_from_bytes(registry, unknown, buffer.ptr(), buffer.size());
+    inline F get_format(const std::vector<Descriptor<F>>& registry, F unknown, const godot::PackedByteArray& buffer) {
+        return get_format(registry, unknown, buffer.ptr(), buffer.size());
     }
 
     template<typename F>
     inline F get_format(const std::vector<Descriptor<F>>& registry, F unknown, const std::string& path) {
         if (!is_supported_extension(registry, path)) return unknown;
         const auto magic = Tool::File::read_magic(Tool::get_directory(), path, max_magic_size(registry));
-        return get_format_from_bytes(registry, unknown, magic.ptr(), magic.size());
+        return get_format(registry, unknown, magic.ptr(), magic.size());
     }
 
     template<typename F>
