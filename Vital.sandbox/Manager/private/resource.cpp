@@ -131,18 +131,10 @@ namespace Vital::Manager {
     
         #if !defined(Vital_SDK_Client)
         {
-            std::vector<std::string> validated;
-            for (const auto& file : resource -> files) {
-                if (!Tool::Format::is_supported_extension(Engine::Model::format_registry, file)) continue;
-                const std::string local_path = fmt::format("resources/{}/{}", name, file);
-                if (!Tool::Format::is_supported_format(Engine::Model::format_registry, Engine::Model::Format::UNKNOWN, local_path)) continue;
-                validated.push_back(file);
-            }
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            const_cast<Manifest*>(resource) -> models = std::move(validated);
+            const_cast<Manifest*>(resource) -> models = Engine::Model::filter_model_files(name, resource -> files);
         }
         #endif
-    
         if (resource -> models.empty()) return;
         Engine::Model::load_resource_models(name, resource -> models);
     }

@@ -135,6 +135,7 @@ namespace Vital::Engine {
 
 
             // Managers //
+            static std::vector<std::string> filter_model_files(const std::string& resource_name, const std::vector<std::string>& files);
             static bool load(const std::string& name, const std::string& path);
             static bool load_from_buffer(const std::string& name, const godot::PackedByteArray& buffer);
             static bool unload(const std::string& name);
