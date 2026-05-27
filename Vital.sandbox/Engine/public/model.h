@@ -36,21 +36,37 @@ namespace Vital::Engine {
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
         public:
-            enum class Format { 
-                GLB, 
-                FBX, 
+            // Format enum — add new entries here as formats are supported.
+            enum class Format {
+                GLB,
+                // FBX,
                 UNKNOWN
             };
-            
+
+            // Format descriptor — one entry per supported format.
+            // magic_bytes: leading bytes that identify the binary (up to 8).
+            // extension:   lowercase file extension without the dot.
             struct FormatDescriptor {
                 Format format;
                 std::string extension;
                 std::vector<uint8_t> magic_bytes;
             };
 
+            // Format registry — single source of truth for extension and magic-byte detection.
+            // Adding a new format: append one entry here; everything else updates automatically.
             inline static const std::vector<FormatDescriptor> format_registry = {
-                { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } }
+                { Format::GLB, "glb", { 0x67, 0x6C, 0x54, 0x46 } },
+                // { Format::FBX, "fbx", { 0x4B, 0x61, 0x79, 0x64 } },
             };
+
+            // Returns the byte count of the longest magic sequence in the registry.
+            // Used by get_format so no hardcoded read-size is ever needed.
+            inline static int max_magic_size() {
+                int max = 0;
+                for (const auto& desc : format_registry)
+                    max = std::max(max, static_cast<int>(desc.magic_bytes.size()));
+                return max;
+            }
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
 
@@ -73,6 +89,9 @@ namespace Vital::Engine {
 
 
             // Helpers //
+
+            // Unified recursive node finder. Walks the subtree and caches the first
+            // node of type T it encounters. Skips further recursion once cache is filled.
             template<typename T>
             T* find_node(godot::Node* node, T*& cache) {
                 if (!node || cache) return cache;
@@ -86,20 +105,26 @@ namespace Vital::Engine {
                 return cache;
             }
 
+            // Retrieves or creates a StandardMaterial3D surface override at `index` on
+            // `mesh`, then invokes exec(mat) on it. Returns false if a non-standard
+            // material already occupies the slot — callers decide whether to throw.
             template<typename F>
             bool apply_standard_material(godot::MeshInstance3D* mesh, int index, F&& exec) {
                 if (index < 0) return false;
                 godot::Ref<godot::Material> mat = mesh -> get_active_material(index);
                 godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mat.ptr());
                 if (!std_mat.is_valid()) {
-                    if (mat.is_valid()) return false;
+                    if (mat.is_valid()) return false; // non-standard material in slot — skip
                     std_mat = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
                     mesh -> set_surface_override_material(index, std_mat);
                 }
                 exec(std_mat);
                 return true;
             }
-        
+
+            // Dispatches exec() over names matching pattern.
+            // Wildcard path: iterates condition() and calls exec(name) for each match.
+            // Exact path:    calls exec(pattern) directly and returns its result.
             template<typename C, typename F>
             bool apply_wildcard(const std::string& pattern, C&& condition, F&& exec) {
                 if (Tool::contains_wildcard(pattern)) {
@@ -144,8 +169,14 @@ namespace Vital::Engine {
             void destroy();
 
             #if defined(Vital_SDK_Client)
+            // Hydrates a placeholder node once the model asset has been loaded into cache.
+            // Called automatically from load_from_buffer when a queued spawn exists.
             void hydrate(int authority_peer);
             #endif
+
+            // Resource-scoped auto-load: loads all supported model files from a resource.
+            // Model names are scoped as ":resource_name/relative_path" to avoid conflicts.
+            // Called automatically by Resource::Internal::execute_resource on both sides.
             static void load_resource_models(const std::string& resource_name, const std::vector<std::string>& files);
             static void unload_resource_models(const std::string& resource_name);
 

@@ -66,8 +66,6 @@ namespace Vital::Engine {
     // Instantiators //
     void Model::_ready() {
         godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
-        // Placeholders already have net_sync set up in spawn(); skip full _ready setup.
-        // hydrate() will add the mesh child and make the node visible when ready.
         if (is_placeholder) return;
         find_node(this, skeleton);
         find_node(this, anim_player);
@@ -76,9 +74,6 @@ namespace Vital::Engine {
 
     void Model::_notification(int what) {
         if (what == NOTIFICATION_PREDELETE) {
-            // Fire the API-layer callback so Lua-side Instance pointers are nulled
-            // before the node memory is released. This covers both explicit destroy()
-            // calls and automatic Godot multiplayer despawn on clients.
             if (on_destroyed_callback) on_destroyed_callback(this);
         }
     }
@@ -334,11 +329,6 @@ namespace Vital::Engine {
     }
     #endif
 
-    // Resource-scoped model loading.
-    // Model name format: ":resource_name/relative_file_path"
-    // e.g. ":my_resource/assets/chibi.glb"
-    // Only loads files with a supported extension + valid magic bytes (4 bytes read max).
-    // Prints registered model assets to console on load.
     void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
         std::vector<std::string> loaded;
         for (const auto& file : files) {
@@ -395,14 +385,10 @@ namespace Vital::Engine {
         return false;
     }
 
-    // Reads only 4 magic bytes from disk to verify the file format.
-    // Never loads the full file — safe for large assets.
     bool Model::is_supported_format(const std::string& path) {
         return get_format(path) != Format::UNKNOWN;
     }
 
-    // Single format detection implementation — shared by both overloads.
-    // Matches magic bytes from the registry against the provided raw buffer.
     Model::Format Model::get_format_from_bytes(const uint8_t* ptr, int size) {
         for (const auto& desc : format_registry) {
             const int magic_size = static_cast<int>(desc.magic_bytes.size());
@@ -412,22 +398,10 @@ namespace Vital::Engine {
         return Format::UNKNOWN;
     }
 
-    // Reads only 4 magic bytes from disk. Returns the detected Format enum value.
-    // is_supported_format delegates here — single source of truth for magic-byte detection.
     Model::Format Model::get_format(const std::string& path) {
         if (!is_supported_extension(path)) return Format::UNKNOWN;
-        try {
-            const std::string full_path = Tool::get_directory() + "/" + path;
-            auto file = godot::FileAccess::open(Tool::to_godot_string(full_path), godot::FileAccess::READ);
-            if (!file.is_valid()) return Format::UNKNOWN;
-            const int max_magic = 8; // enough for any current or near-future descriptor
-            if (file->get_length() < 4) return Format::UNKNOWN;
-            uint8_t buf[max_magic] = {};
-            for (int i = 0; i < max_magic && i < (int)file->get_length(); i++) buf[i] = file->get_8();
-            return get_format_from_bytes(buf, max_magic);
-        }
-        catch (...) {}
-        return Format::UNKNOWN;
+        const auto magic = Tool::File::read_magic(Tool::get_directory(), path, max_magic_size());
+        return get_format_from_bytes(magic.ptr(), magic.size());
     }
 
     bool Model::is_synced() const {
