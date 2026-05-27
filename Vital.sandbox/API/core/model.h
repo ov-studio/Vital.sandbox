@@ -65,8 +65,8 @@ namespace Vital::Sandbox::API {
         static void on_model_node_destroyed(base_class* dying) {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto& [id, instance] : buffer) {
-                if (instance->model == dying) {
-                    instance->on_model_destroyed();
+                if (instance -> model == dying) {
+                    instance -> on_model_destroyed();
                 }
             }
         }
