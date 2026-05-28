@@ -268,10 +268,6 @@ namespace Vital::Sandbox {
                 refs.push_back(ref);
             }
 
-            void track_ref(const std::string& ref) {
-                refs.push_back(ref);
-            }
-            
             void release_refs() {
                 if (!vm) return;
                 for (auto& ref : refs) vm -> del_reference(ref);
