@@ -309,6 +309,12 @@ namespace Vital::Sandbox {
                 return true;
             }
 
+            static void bind(Machine* vm, const std::string& type_name, std::shared_ptr<Derived> instance, int index = -1) {
+                vm -> create_object(type_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, index);
+                instance -> set_ref(instance -> self_reference(), index);
+            }
+        
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
                 Derived::store(instance);
