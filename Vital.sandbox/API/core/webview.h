@@ -30,7 +30,7 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Webview;
             base_class* webview = nullptr;
-            std::string handler_reference() const { return fmt::format("{}:{}:handler", Owner::base_name, id); }
+            std::string handler_reference() const { return fmt::format("vm_instance:{}:{}:handler", Owner::base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;

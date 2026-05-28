@@ -32,7 +32,7 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> awaiting { false };
             std::atomic<bool> vm_owned { true };
             Machine* thread_vm = nullptr;
-            std::string thread_reference() const { return fmt::format("{}:{}:thread", Owner::base_name, id); }
+            std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
