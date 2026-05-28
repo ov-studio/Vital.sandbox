@@ -79,11 +79,7 @@ namespace Vital::Sandbox::API {
         }
 
         static std::shared_ptr<Instance> make(Machine* vm) {
-            auto instance = Instance::make(vm);
-            vm -> create_object(base_name, instance.get());
-            instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-            instance -> set_ref(instance -> self_reference(), -1);
-            return instance;
+            return Instance::make(vm);
         }
 
         static void bind(Machine* vm) {
