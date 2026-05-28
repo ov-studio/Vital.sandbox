@@ -152,15 +152,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            // is_valid lets Lua check if the underlying node is still alive
-            // before calling any other method on a stored reference.
-            vm_module::bind_method<Instance>(vm, base_name, "is_valid", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->model != nullptr);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "is_synced", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->is_synced());
                 return 1;
             });
@@ -169,7 +161,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->is_component_visible(vm->get_string(2)));
                 return 1;
             });
@@ -179,7 +170,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->is_material_visible(vm->get_string(2), vm->get_string(3)));
                 return 1;
             });
@@ -190,7 +180,6 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->is_material_feature(vm->get_string(2), vm->get_string(3), vm->get_int(4)));
                 return 1;
             });
@@ -201,37 +190,31 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->is_material_flag(vm->get_string(2), vm->get_string(3), vm->get_int(4)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_animation_playing", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->is_animation_playing());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_model_name", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->get_model_name());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_position", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->get_position());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm->push_value(self->model->get_rotation());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_components", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self->model->get_components();
                 vm->create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -245,7 +228,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self->model->get_materials(vm->get_string(2));
                 vm->create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -259,7 +241,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self -> model -> get_blendshapes(vm -> get_string(2));
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -270,7 +251,6 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_bones", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self -> model -> get_bones();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -281,7 +261,6 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_animations", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto list = self -> model -> get_animations();
                 vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
@@ -296,7 +275,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_blendshape_value(vm -> get_string(2), vm -> get_string(3)));
                 return 1;
             });
@@ -305,25 +283,21 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(bone)")
                     .require(2, &Machine::is_string);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_bone_position(vm -> get_string(2)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_current_animation", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_current_animation());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_animation_speed", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_animation_speed());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> get_sync_authority());
                 return 1;
             });
@@ -332,7 +306,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position)")
                     .require(2, &Machine::is_vector3);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_position(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
@@ -342,7 +315,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(rotation)")
                     .require(2, &Machine::is_vector3);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_rotation(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
@@ -353,7 +325,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_component_visible(vm -> get_string(2), vm -> get_bool(3));
                 vm -> push_value(true);
                 return 1;
@@ -365,7 +336,6 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_bool);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> set_material_visible(vm -> get_string(2), vm -> get_string(3), vm -> get_bool(4)));
                 return 1;
             });
@@ -377,7 +347,6 @@ namespace Vital::Sandbox::API {
                     .require(4, &Machine::is_number)
                     .require(5, &Machine::is_bool);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> set_material_feature(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
                 return 1;
             });
@@ -389,7 +358,6 @@ namespace Vital::Sandbox::API {
                     .require(4, &Machine::is_number)
                     .require(5, &Machine::is_bool);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 vm -> push_value(self -> model -> set_material_flag(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4), vm -> get_bool(5)));
                 return 1;
             });
@@ -400,7 +368,6 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_blendshape_value(vm -> get_string(2), vm -> get_string(3), vm -> get_float(4));
                 vm -> push_value(true);
                 return 1;
@@ -410,7 +377,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(speed)")
                     .require(2, &Machine::is_number);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_animation_speed(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
@@ -421,7 +387,6 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(peer_id)")
                     .require(2, &Machine::is_number);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> set_sync_authority(vm -> get_int(2));
                 vm -> push_value(true);
                 return 1;
@@ -434,7 +399,6 @@ namespace Vital::Sandbox::API {
                     .optional(3, &Machine::is_bool)
                     .optional(4, &Machine::is_number);
 
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 auto loop = vm -> is_bool(3) ? vm -> get_bool(3) : true;
                 auto speed = vm -> is_number(4) ? vm -> get_float(4) : 1.0f;
                 vm -> push_value(self -> model -> play_animation(vm -> get_string(2), loop, speed));
@@ -442,21 +406,18 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "stop_animation", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self->model->stop_animation();
                 vm->push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "pause_animation", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> pause_animation();
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "resume_animation", [](auto vm, auto self, auto& id) -> int {
-                if (!self->model) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: model instance is no longer valid");
                 self -> model -> resume_animation();
                 vm -> push_value(true);
                 return 1;
