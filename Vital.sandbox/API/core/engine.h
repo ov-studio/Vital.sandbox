@@ -136,19 +136,14 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 int count = 0;
 
-                if (type == "model") collect_entities<Model>(vm, count);
-                #if !defined(Vital_SDK_Client)
                 else if (type == "database") collect_entities<Database>(vm, count);
                 else if (type == "database_query") collect_entities<Database_Query>(vm, count);
-                #endif
-                #if defined(Vital_SDK_Client)
+                else if (type == "model") collect_entities<Model>(vm, count);
                 else if (type == "webview") collect_entities<Webview>(vm, count);
                 else if (type == "font") collect_entities<Font>(vm, count);
                 else if (type == "texture") collect_entities<Texture>(vm, count);
                 else if (type == "svg") collect_entities<SVG>(vm, count);
                 else if (type == "rendertarget") collect_entities<RenderTarget>(vm, count);
-                #endif
-                else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: unknown entity type '{}'", type));
                 return 1;
             });
         }
