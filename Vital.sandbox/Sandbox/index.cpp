@@ -23,7 +23,6 @@
 #include <Vital.sandbox/API/core/database_query.h>
 #include <Vital.sandbox/API/core/discord.h>
 #include <Vital.sandbox/API/core/network.h>
-#include <Vital.sandbox/API/core/scene.h>
 #include <Vital.sandbox/API/core/model.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
@@ -62,7 +61,6 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::Database_Query>(),
         vm_module::make_api<API::Discord>(),
         vm_module::make_api<API::Network>(),
-        vm_module::make_api<API::Scene>(),
         vm_module::make_api<API::Model>(),
         vm_module::make_api<API::Webview>(),
         vm_module::make_api<API::Font>(),

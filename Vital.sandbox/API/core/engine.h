@@ -16,6 +16,15 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
+#include <Vital.sandbox/API/core/database.h>
+#include <Vital.sandbox/API/core/database_query.h>
+#include <Vital.sandbox/API/core/model.h>
+#include <Vital.sandbox/API/core/webview.h>
+#include <Vital.sandbox/API/core/font.h>
+#include <Vital.sandbox/API/core/texture.h>
+#include <Vital.sandbox/API/core/svg.h>
+#include <Vital.sandbox/API/core/rendertarget.h>
+
 
 /////////////////////////
 // Vital: API: Engine //
@@ -25,6 +34,17 @@ namespace Vital::Sandbox::API {
     struct Engine : vm_module {
         inline static const std::string base_name = "engine";
 
+        template<typename T>
+        static void collect_entities(Machine* vm, int& count) {
+            std::lock_guard<std::mutex> lock(T::mutex);
+            for (auto& [instance_id, instance] : T::buffer) {
+                if (!instance -> is_alive()) continue;
+                if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
+                else T::Instance::bind(vm, T::base_name, instance);
+                vm -> set_table_field(++count, -2);
+            }
+        }
+    
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(type, ...)")
@@ -107,6 +127,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             #endif
+
+            API::bind(vm, {base_name}, "get_entities", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(type)")
+                    .require(1, &Machine::is_string);
+
+                const std::string type = vm -> get_string(1);
+                vm -> create_table();
+                int count = 0;
+                if (type == "model") collect_entities<Model>(vm, count);
+                #if defined(Vital_SDK_Client)
+                else if (type == "webview") collect_entities<Webview>(vm, count);
+                #endif
+                else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: unknown entity type '{}'", type));
+                return 1;
+            });
         }
 
         static void inject(Machine* vm) {

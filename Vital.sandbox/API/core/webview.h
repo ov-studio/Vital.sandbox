@@ -30,15 +30,12 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Webview;
             base_class* webview = nullptr;
+            bool is_alive() const { return webview ? true : false; }
             std::string handler_reference() const { return fmt::format("vm_instance:{}:{}:handler", Owner::base_name, id); }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
-
-        bool is_alive() const {
-            return webview ? true : false;
-        }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;

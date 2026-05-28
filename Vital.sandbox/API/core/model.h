@@ -31,6 +31,7 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Model;
             base_class* model = nullptr;
+            bool is_alive() const { return model ? true : false; }
 
             // Called by the engine-side Model node just before it is freed
             // (either via destroy() or via Godot's multiplayer despawn).
@@ -62,10 +63,6 @@ namespace Vital::Sandbox::API {
                 if (instance -> remote) Instance::release(instance);
                 #endif
             }
-        }
-
-        bool is_alive() const {
-            return model ? true : false;
         }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {

@@ -31,14 +31,11 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Database;
             base_class* db = nullptr;
+            bool is_alive() const { return db ? true : false; }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
-
-        bool is_alive() const {
-            return db ? true : false;
-        }
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
