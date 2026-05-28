@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 vm -> create_table();
                 int count = 0;
 
-                else if (type == "database") collect_entities<Database>(vm, count);
+                if (type == "database") collect_entities<Database>(vm, count);
                 else if (type == "database_query") collect_entities<Database_Query>(vm, count);
                 else if (type == "model") collect_entities<Model>(vm, count);
                 else if (type == "webview") collect_entities<Webview>(vm, count);
