@@ -44,7 +44,7 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field(++count, -2);
                     }
                 }
-                else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: unknown element type '{}'", type));
+                else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: unknown entity type '{}'", type));
                 return 1;
             });
         }
