@@ -67,6 +67,9 @@ namespace Vital::Sandbox::API {
             for (auto& [id, instance] : buffer) {
                 if (instance -> model != dying) continue;
                 instance -> on_model_destroyed();
+                #if defined(Vital_SDK_Client)
+                if (instance -> remote) Instance::release(instance);
+                #endif
             }
         }
 
