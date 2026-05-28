@@ -40,11 +40,7 @@ namespace Vital::Sandbox::API {
                     for (auto& [instance_id, instance] : Model::buffer) {
                         if (!instance -> model) continue;
                         if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
-                        else {
-                            vm -> create_object(Model::base_name, instance.get());
-                            instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                            instance -> set_ref(instance -> self_reference(), -1);
-                        }
+                        else Model::Instance::bind(vm, Model::base_name, instance);
                         vm -> set_table_field(++count, -2);
                     }
                 }
