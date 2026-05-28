@@ -118,6 +118,10 @@ namespace Vital::Sandbox {
         static void inject(Machine* vm) {}
         static void clean(const std::string& env) {}
 
+        using entity_type = std::string;
+        using entity_collector = std::function<void(Machine*, int&)>;
+        inline static std::unordered_map<entity_type, entity_collector> entity_registry;
+    
         template<typename T>
         static vm_api make_api() {
             Machine::register_environment_cleaner([](const std::string& env) { T::clean(env); });
@@ -141,6 +145,16 @@ namespace Vital::Sandbox {
             }, 0);
             vm -> set_table_field("__gc", -2);
             vm -> pop(1);
+
+            entity_registry.emplace(T::base_name, [](Machine* vm, int& count) {
+                std::lock_guard<std::mutex> lock(T::mutex);
+                for (auto& [instance_id, instance] : T::buffer) {
+                    if (!instance -> is_alive()) continue;
+                    if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
+                    else T::Instance::bind(vm, T::base_name, instance);
+                    vm -> set_table_field(++count, -2);
+                }
+            });
         }
 
         template<typename T>

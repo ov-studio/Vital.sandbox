@@ -16,15 +16,6 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/console.h>
 
-#include <Vital.sandbox/API/core/database.h>
-#include <Vital.sandbox/API/core/database_query.h>
-#include <Vital.sandbox/API/core/model.h>
-#include <Vital.sandbox/API/core/webview.h>
-#include <Vital.sandbox/API/core/font.h>
-#include <Vital.sandbox/API/core/texture.h>
-#include <Vital.sandbox/API/core/svg.h>
-#include <Vital.sandbox/API/core/rendertarget.h>
-
 
 /////////////////////////
 // Vital: API: Engine //
@@ -135,15 +126,8 @@ namespace Vital::Sandbox::API {
                 const std::string type = vm -> get_string(1);
                 vm -> create_table();
                 int count = 0;
-
-                if (type == "database") collect_entities<Database>(vm, count);
-                else if (type == "database_query") collect_entities<Database_Query>(vm, count);
-                else if (type == "model") collect_entities<Model>(vm, count);
-                else if (type == "webview") collect_entities<Webview>(vm, count);
-                else if (type == "font") collect_entities<Font>(vm, count);
-                else if (type == "texture") collect_entities<Texture>(vm, count);
-                else if (type == "svg") collect_entities<SVG>(vm, count);
-                else if (type == "rendertarget") collect_entities<RenderTarget>(vm, count);
+                auto it = vm_module::entity_registry.find(type);
+                if (it != vm_module::entity_registry.end()) it -> second(vm, count);
                 return 1;
             });
         }
