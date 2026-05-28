@@ -25,17 +25,6 @@ namespace Vital::Sandbox::API {
     struct Engine : vm_module {
         inline static const std::string base_name = "engine";
 
-        template<typename T>
-        static void collect_entities(Machine* vm, int& count) {
-            std::lock_guard<std::mutex> lock(T::mutex);
-            for (auto& [instance_id, instance] : T::buffer) {
-                if (!instance -> is_alive()) continue;
-                if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
-                else T::Instance::bind(vm, T::base_name, instance);
-                vm -> set_table_field(++count, -2);
-            }
-        }
-    
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(type, ...)")
