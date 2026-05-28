@@ -55,9 +55,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(vm);
                 instance -> texture = base_class::create_texture_2d(path);
                 Instance::store(instance);
-                vm -> create_object(base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance -> set_ref(instance -> self_reference(), -1);
+                Instance::bind(vm, base_name, instance);
                 return 1;
             });
         }

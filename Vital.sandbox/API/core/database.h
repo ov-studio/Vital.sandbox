@@ -87,9 +87,7 @@ namespace Vital::Sandbox::API {
                 auto instance  = Instance::init(vm);
                 instance -> db = base_class::create(host, user, password, database, port);
                 Instance::store(instance);
-                vm -> create_object(base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance -> set_ref(instance -> self_reference(), -1);
+                Instance::bind(vm, base_name, instance);
                 return 1;
             });
         }
@@ -150,9 +148,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Database_Query::Instance::init(vm);
                 instance -> query = self -> db -> table(name);
                 Database_Query::Instance::store(instance);
-                vm -> create_object(Database_Query::base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance -> set_ref(instance -> self_reference(), -1);
+                Database_Query::Instance::bind(vm, Database_Query::base_name, instance);
                 return 1;
             });
         }
