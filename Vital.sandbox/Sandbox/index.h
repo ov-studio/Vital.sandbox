@@ -258,22 +258,23 @@ namespace Vital::Sandbox {
             int id {};
             std::string env;
             std::atomic<bool> destroyed { false };
+            bool server_entity = false;
             Machine* vm = nullptr;
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
-
+    
             void set_ref(const std::string& ref, int index) {
                 vm -> set_reference(ref, index);
                 refs.push_back(ref);
             }
-
+    
             void release_refs() {
                 if (!vm) return;
                 for (auto& ref : refs) vm -> del_reference(ref);
                 refs.clear();
             }
-
+    
             static std::shared_ptr<Derived> find(int id) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::mutex);
                 return find_unlocked(id);
@@ -284,10 +285,11 @@ namespace Vital::Sandbox {
                 if (it == Derived::Owner::buffer.end() || it -> second -> destroyed) return nullptr;
                 return it -> second;
             }
-
+    
             static std::shared_ptr<Derived> init(Machine* vm, bool server_entity = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::next_id.fetch_add(1);
+                instance -> server_entity = server_entity;
                 if (server_entity) instance -> vm = Manager::Sandbox::get_singleton() -> get_vm() -> get_root();
                 else {
                     instance -> env = vm -> get_environment_id();

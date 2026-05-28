@@ -52,7 +52,9 @@ namespace Vital::Sandbox::API {
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
             if (instance -> model) {
-                instance -> model -> destroy();
+                if (!instance -> server_entity) {
+                    instance -> model -> destroy();
+                }
                 instance -> model = nullptr;
             }
             Instance::release(instance);
@@ -67,11 +69,6 @@ namespace Vital::Sandbox::API {
             for (auto& [id, instance] : buffer) {
                 if (instance -> model != dying) continue;
                 instance -> on_model_destroyed();
-                // TODO: Restrict to client only? guard it
-                if (!instance -> vm && instance -> userdata) {
-                    Manager::Sandbox::get_singleton() -> get_vm() -> get_root() -> del_reference(instance -> self_reference());
-                    vm_module::release_userdata_ptr(instance -> userdata);
-                }
             }
         }
 
