@@ -116,7 +116,7 @@ namespace Vital::Sandbox {
         private:
             using entity_type = std::string;
             using entity_collector = std::function<void(Machine*, int&)>;
-            inline static std::unordered_map<entity_type, entity_collector> entity_registry;
+            inline static std::unordered_map<entity_type, entity_collector> entity_pool;
         public:
             static void bind(Machine* vm) {}
             static void methods(Machine* vm) {}
@@ -147,7 +147,7 @@ namespace Vital::Sandbox {
                 vm -> set_table_field("__gc", -2);
                 vm -> pop(1);
 
-                entity_registry.emplace(T::base_name, [](Machine* vm, int& count) {
+                entity_pool.emplace(T::base_name, [](Machine* vm, int& count) {
                     std::lock_guard<std::mutex> lock(T::mutex);
                     for (auto& [instance_id, instance] : T::buffer) {
                         if (!instance -> is_alive()) continue;
@@ -250,8 +250,8 @@ namespace Vital::Sandbox {
             }
 
             static void collect_entities(Machine* vm, const std::string& type, int& count) {
-                auto it = entity_registry.find(type);
-                if (it != entity_registry.end()) it -> second(vm, count);
+                auto it = entity_pool.find(type);
+                if (it != entity_pool.end()) it -> second(vm, count);
             }
     
             template<typename TInstance>
