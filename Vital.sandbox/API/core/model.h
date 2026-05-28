@@ -55,11 +55,6 @@ namespace Vital::Sandbox::API {
                 instance -> model -> destroy();
                 instance -> model = nullptr;
             }
-            // TODO: SERVER SIDE MODEL SHOULD NOT BE DESTROYABLE... clean_instance should not be called in such case? auto terminate?
-            if (!instance -> vm && instance -> userdata) {
-                Manager::Sandbox::get_singleton() -> get_vm() -> get_root() -> del_reference(instance -> self_reference());
-                vm_module::release_userdata_ptr(instance -> userdata);
-            }
             Instance::release(instance);
         }
 
