@@ -113,7 +113,7 @@ namespace Vital::Manager {
         vm -> create_environment(name);
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
-            vm -> get_reference(fmt::format("env:{}", name), true);
+            vm -> get_reference(vm -> get_environment_ref(name), true);
             vm -> load_string(source, Internal::chunk_name(resource -> ref, src), true, true, vm -> get_count());
             vm -> pop(1);
         }

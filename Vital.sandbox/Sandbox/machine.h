@@ -412,11 +412,16 @@ namespace Vital::Sandbox {
                 push(-1);
                 push_string(id);
                 lua_rawset(state, LUA_REGISTRYINDEX);
-                set_reference(fmt::format("env:{}", id), -1);
+                set_reference(get_environment_ref(id), -1);
             }
-    
+
             static void register_environment_cleaner(vm_env_cleaner exec) {
                 env_cleaners.push_back(std::move(exec));
+            }
+    
+            std::string get_environment_ref(const std::string& id) {
+                Tool::assert_main_thread("Machine::get_environment_ref");
+                return fmt::format("env:{}", id);
             }
     
             std::string get_environment_id(int level = 0) {
@@ -441,7 +446,7 @@ namespace Vital::Sandbox {
 
             void clear_environment_id(const std::string& id) {
                 Tool::assert_main_thread("Machine::clear_environment_id");
-                const std::string ref = fmt::format("env:{}", id);
+                const std::string ref = get_environment_ref(id);
                 if (!is_reference(ref)) return;
                 get_reference(ref, true);
                 push_nil();
