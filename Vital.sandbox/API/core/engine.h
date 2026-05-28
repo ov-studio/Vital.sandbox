@@ -126,8 +126,7 @@ namespace Vital::Sandbox::API {
                 const std::string type = vm -> get_string(1);
                 vm -> create_table();
                 int count = 0;
-                auto it = vm_module::entity_registry.find(type);
-                if (it != vm_module::entity_registry.end()) it -> second(vm, count);
+                vm_module::collect_entities(vm, type, count);
                 return 1;
             });
         }

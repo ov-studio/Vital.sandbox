@@ -331,6 +331,11 @@ namespace Vital::Sandbox {
                 return true;
             }
         
+            static void collect_entities(Machine* vm, const std::string& type, int& count) {
+                auto it = entity_registry.find(type);
+                if (it != entity_registry.end()) it->second(vm, count);
+            }
+            
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
                 Derived::store(instance);
