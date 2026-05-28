@@ -55,6 +55,11 @@ namespace Vital::Sandbox::API {
                 instance -> model -> destroy();
                 instance -> model = nullptr;
             }
+            // TODO: SERVER SIDE MODEL SHOULD NOT BE DESTROYABLE... clean_instance should not be called in such case? auto terminate?
+            if (!instance -> vm && instance -> userdata) {
+                Manager::Sandbox::get_singleton() -> get_vm() -> get_root() -> del_reference(instance -> self_reference());
+                vm_module::release_userdata_ptr(instance -> userdata);
+            }
             Instance::release(instance);
         }
 
@@ -65,8 +70,12 @@ namespace Vital::Sandbox::API {
         static void on_model_node_destroyed(base_class* dying) {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto& [id, instance] : buffer) {
-                if (instance -> model == dying) {
-                    instance -> on_model_destroyed();
+                if (instance -> model != dying) continue;
+                instance -> on_model_destroyed();
+                // TODO: Restrict to client only? guard it
+                if (!instance -> vm && instance -> userdata) {
+                    Manager::Sandbox::get_singleton() -> get_vm() -> get_root() -> del_reference(instance -> self_reference());
+                    vm_module::release_userdata_ptr(instance -> userdata);
                 }
             }
         }
@@ -85,7 +94,6 @@ namespace Vital::Sandbox::API {
                 instance -> model = spawned;
                 Instance::store(instance);
             };
-
 
             // Wire the engine-side destruction callback once, so every Model node
             // that is freed (via destroy() or multiplayer despawn) nulls out any
