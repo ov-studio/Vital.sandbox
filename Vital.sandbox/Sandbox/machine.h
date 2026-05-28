@@ -212,6 +212,12 @@ namespace Vital::Sandbox {
             vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
             void* get_userdata(int index = 1) { return lua_touserdata(state, index); }
 
+            Machine* get_root() {
+                Machine* root = this;
+                while (root -> virtualized && root -> parent) root = root -> parent;
+                return root;
+            }
+
             int get_length(int index = 1) {
                 lua_len(state, index);
                 int result = get_int(-1);
