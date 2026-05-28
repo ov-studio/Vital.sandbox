@@ -83,6 +83,7 @@ namespace Vital::Sandbox::API {
                         if (instance -> model == spawned) return;
                     }
                 }
+                // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES SO MAKE SURE Instance::init(nullptr, true) is only valid for server instance on client
                 auto instance = Instance::init(nullptr, true);
                 instance -> model = spawned;
                 Instance::store(instance);
