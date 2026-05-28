@@ -174,6 +174,7 @@ namespace Vital::Sandbox {
             bind_method<TInstance>(vm, type_name, "is_type", [type_name](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(type_name)")
                     .require(2, &Machine::is_string);
+                    
                 vm -> push_value(type_name == vm -> get_string(2));
                 return 1;
             });
@@ -184,6 +185,9 @@ namespace Vital::Sandbox {
             });
 
             bind_method<TInstance>(vm, type_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+                #if defined(Vital_SDK_Client)
+                if (self -> remote) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
+                #endif
                 return TInstance::destroy(vm);
             });
         }
@@ -258,9 +262,9 @@ namespace Vital::Sandbox {
             int id {};
             std::string env;
             std::atomic<bool> destroyed { false };
-            bool server_entity = false;
             Machine* vm = nullptr;
             void** userdata = nullptr;
+            bool remote = false;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
     
@@ -286,11 +290,11 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
     
-            static std::shared_ptr<Derived> init(Machine* vm, bool server_entity = false) {
+            static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::next_id.fetch_add(1);
-                instance -> server_entity = server_entity;
-                if (server_entity) instance -> vm = Manager::Sandbox::get_singleton() -> get_vm() -> get_root();
+                instance -> remote = remote;
+                if (remote) instance -> vm = Manager::Sandbox::get_singleton() -> get_vm() -> get_root();
                 else {
                     instance -> env = vm -> get_environment_id();
                     instance -> vm = vm -> get_root();
