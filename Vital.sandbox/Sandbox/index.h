@@ -248,6 +248,11 @@ namespace Vital::Sandbox {
             userdata  = nullptr;
         }
 
+        static void collect_entities(Machine* vm, const std::string& type, int& count) {
+            auto it = entity_registry.find(type);
+            if (it != entity_registry.end()) it -> second(vm, count);
+        }
+
         template<typename TInstance>
         static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
             std::vector<std::shared_ptr<TInstance>> to_clean;
@@ -330,12 +335,7 @@ namespace Vital::Sandbox {
                 instance -> set_ref(instance -> self_reference(), index);
                 return true;
             }
-        
-            static void collect_entities(Machine* vm, const std::string& type, int& count) {
-                auto it = entity_registry.find(type);
-                if (it != entity_registry.end()) it->second(vm, count);
-            }
-            
+
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
                 Derived::store(instance);
