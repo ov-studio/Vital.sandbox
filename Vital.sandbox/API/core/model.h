@@ -90,7 +90,7 @@ namespace Vital::Sandbox::API {
                         if (instance -> model == spawned) return;
                     }
                 }
-                auto instance = Instance::init(nullptr);
+                auto instance = Instance::init(nullptr, true);
                 instance -> model = spawned;
                 Instance::store(instance);
             };

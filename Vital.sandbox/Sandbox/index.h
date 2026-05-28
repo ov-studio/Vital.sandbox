@@ -285,11 +285,14 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
 
-            static std::shared_ptr<Derived> init(Machine* vm) {
+            static std::shared_ptr<Derived> init(Machine* vm, bool server_entity = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::next_id.fetch_add(1);
-                instance -> env = vm ? vm -> get_environment_id() : "";
-                instance -> vm = vm ? vm -> get_root() : nullptr;
+                if (server_entity) instance -> vm = Manager::Sandbox::get_singleton() -> get_vm() -> get_root();
+                else {
+                    instance -> env = vm -> get_environment_id();
+                    instance -> vm -> get_root();
+                }
                 return instance;
             }
 
