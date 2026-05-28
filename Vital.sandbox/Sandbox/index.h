@@ -291,7 +291,7 @@ namespace Vital::Sandbox {
                 if (server_entity) instance -> vm = Manager::Sandbox::get_singleton() -> get_vm() -> get_root();
                 else {
                     instance -> env = vm -> get_environment_id();
-                    instance -> vm -> get_root();
+                    instance -> vm = vm -> get_root();
                 }
                 return instance;
             }
