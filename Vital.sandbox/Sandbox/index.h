@@ -314,7 +314,7 @@ namespace Vital::Sandbox {
                 vm -> create_object(type_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, index);
                 instance -> set_ref(instance -> self_reference(), index);
-                return true
+                return true;
             }
         
             static std::shared_ptr<Derived> make(Machine* vm) {
