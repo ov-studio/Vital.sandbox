@@ -52,10 +52,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
-                auto instance = Instance::init(vm);
+                auto instance = Instance::make(vm);
                 instance -> texture = base_class::create_texture_2d(path);
-                Instance::store(instance);
-                Instance::bind(vm, base_name, instance);
                 return 1;
             });
         }

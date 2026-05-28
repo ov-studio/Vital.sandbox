@@ -141,15 +141,11 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name, authority = 1)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_number);
-
-                auto name = vm->get_string(1);
-                int authority = vm->is_number(2) ? vm->get_int(2) : 1;
-                auto instance = Instance::init(vm);
-                instance->model = base_class::create(name, authority);
-                Instance::store(instance);
-                vm->create_object(base_name, instance.get());
-                instance->userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance->set_ref(instance->self_reference(), -1);
+            
+                auto name = vm -> get_string(1);
+                int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
+                auto instance = Instance::make(vm);
+                instance -> model = base_class::create(name, authority);
                 return 1;
             });
         }
