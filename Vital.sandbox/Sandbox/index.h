@@ -196,8 +196,7 @@ namespace Vital::Sandbox {
         static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
             auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
             if (!ud || !*ud) return false;
-            auto instance = T::find_unlocked(static_cast<T*>(*ud) -> id);
-            return instance && !instance -> destroyed;
+            return T::find_unlocked(static_cast<T*>(*ud) -> id) != nullptr;
         }
 
         template<typename T = void>
@@ -213,11 +212,8 @@ namespace Vital::Sandbox {
         template<typename T>
         static std::shared_ptr<T> get_userdata_object(Machine* vm, int index = 1) {
             auto ud = get_userdata_ptr(vm, index);
-            auto raw = (ud && *ud) ? static_cast<T*>(*ud) : nullptr;
-            if (!raw) return nullptr;
-            auto instance = T::find_unlocked(static_cast<T*>(*ud) -> id);
-            if (!instance || instance -> destroyed) return nullptr;
-            return instance;
+            if (!ud || !*ud) return nullptr;
+            return T::find_unlocked(static_cast<T*>(*ud) -> id);
         }
 
         template<typename T = void>
@@ -268,6 +264,10 @@ namespace Vital::Sandbox {
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
     
+            bool is_alive() const {
+                return true;
+            }
+
             void set_ref(const std::string& ref, int index) {
                 vm -> set_reference(ref, index);
                 refs.push_back(ref);
@@ -286,10 +286,10 @@ namespace Vital::Sandbox {
             
             static std::shared_ptr<Derived> find_unlocked(int id) {
                 auto it = Derived::Owner::buffer.find(id);
-                if (it == Derived::Owner::buffer.end() || it -> second -> destroyed) return nullptr;
+                if (it == Derived::Owner::buffer.end() || it -> second -> destroyed || !it -> second -> is_alive()) return nullptr;
                 return it -> second;
             }
-    
+
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::next_id.fetch_add(1);
