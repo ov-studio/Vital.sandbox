@@ -263,15 +263,15 @@ namespace Vital::Sandbox {
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
 
-            void track_ref(const std::string& ref) {
-                refs.push_back(ref);
-            }
-
             void set_ref(const std::string& ref, int index) {
                 vm -> set_reference(ref, index);
                 refs.push_back(ref);
             }
 
+            void track_ref(const std::string& ref) {
+                refs.push_back(ref);
+            }
+            
             void release_refs() {
                 if (!vm) return;
                 for (auto& ref : refs) vm -> del_reference(ref);
