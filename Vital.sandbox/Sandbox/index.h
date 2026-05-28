@@ -289,7 +289,7 @@ namespace Vital::Sandbox {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::next_id.fetch_add(1);
                 instance -> env = vm ? vm -> get_environment_id() : "";
-                instance -> vm = vm;
+                instance -> vm = vm ? vm -> get_root() : nullptr;
                 return instance;
             }
 
