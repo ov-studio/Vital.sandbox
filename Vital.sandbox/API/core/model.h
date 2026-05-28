@@ -49,15 +49,6 @@ namespace Vital::Sandbox::API {
         inline static std::mutex scope_mutex;
         inline static std::unordered_map<std::string, std::string> model_scope;
 
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> model) {
-                instance -> model -> destroy();
-                instance -> model = nullptr;
-            }
-            Instance::release(instance);
-        }
-
         // Called from Engine::Model::_notification(NOTIFICATION_PREDELETE).
         // Finds every Instance whose model pointer matches and nulls it out,
         // so Lua scripts holding a stale reference get a clean "not valid" error
@@ -73,6 +64,19 @@ namespace Vital::Sandbox::API {
             }
         }
 
+        bool is_alive() const {
+            return model ? true : false;
+        }
+
+        static void clean_instance(std::shared_ptr<Instance> instance) {
+            if (!Instance::erase(instance)) return;
+            if (instance -> model) {
+                instance -> model -> destroy();
+                instance -> model = nullptr;
+            }
+            Instance::release(instance);
+        }
+        
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 

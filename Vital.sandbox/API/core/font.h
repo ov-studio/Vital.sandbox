@@ -35,6 +35,10 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
 
+        bool is_alive() const {
+            return font ? true : false;
+        }
+
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
             if (instance -> font) {

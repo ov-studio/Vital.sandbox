@@ -35,6 +35,10 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
 
+        bool is_alive() const {
+            return query ? true : false;
+        }
+
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
             if (instance -> query) {
@@ -130,6 +134,7 @@ namespace Vital::Sandbox::API {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise) { clean_instance(instance); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
+                    
                     auto vm = promise -> vm;
                     try {
                         auto rows = instance -> query -> db -> fetch(instance -> query);
@@ -199,6 +204,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise) return;
+
                     auto vm = promise -> vm;
                     try {
                         db -> alter(table, actions);
@@ -224,6 +230,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise) return;
+
                     auto vm = promise -> vm;
                     try {
                         db -> drop(table);
@@ -249,6 +256,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise) return;
+
                     auto vm = promise -> vm;
                     try {
                         db -> truncate(table);
@@ -274,6 +282,7 @@ namespace Vital::Sandbox::API {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise) { clean_instance(instance); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
+
                     auto vm = promise -> vm;
                     try {
                         bool result = instance -> query -> db -> execute(instance -> query);

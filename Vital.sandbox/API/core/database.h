@@ -36,6 +36,10 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
         inline static std::atomic<int> next_id { 1 };
 
+        bool is_alive() const {
+            return db ? true : false;
+        }
+
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
             if (instance -> db) {
@@ -122,6 +126,7 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
                     if (!promise) return;
+                    
                     auto vm = promise -> vm;
                     try {
                         db -> sync();
