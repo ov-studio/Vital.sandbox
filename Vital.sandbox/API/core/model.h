@@ -158,6 +158,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, base_name, "is_streamed_in", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> model -> is_streamed_in());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, base_name, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
