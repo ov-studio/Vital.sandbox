@@ -169,7 +169,26 @@ namespace Vital::Manager {
         #endif
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if defined(Vital_SDK_Client)
+    bool Resource::Internal::register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models) {
+        Tool::assert_main_thread("Resource::Internal::register_resource");
+        auto rm = Resource::get_singleton();
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            if (Internal::is_running(name) || Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot register resource `{}` — already running or pending", name)); return false; }
+            rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
+            Manifest manifest;
+            manifest.ref = name;
+            manifest.name = name;
+            manifest.scripts = scripts;
+            manifest.files = files;
+            manifest.models = models;
+            rm -> resources.push_back(std::move(manifest));
+        }
+        rm -> log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
+        return start(name);
+    }
+    #else
     bool Resource::Internal::parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors) {
         resource.name = manifest.get_str("name", resource.ref);
         resource.author = manifest.get_str("author", "");
@@ -300,6 +319,24 @@ namespace Vital::Manager {
             }
             am -> register_assets(asset_paths, name);
             am -> broadcast_manifest(-1, true);
+        }
+        #else
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            auto resource = Internal::get_resource(name);
+            std::unordered_set<std::string> asset_paths;
+            for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
+            for (const auto& script : resource -> scripts) {
+                if (is_type(script.type)) asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
+            }
+            for (const auto& path : asset_paths) {
+                if (Tool::File::exists(Tool::get_directory(), path)) rm -> log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
+                else rm -> resource_assets[name].insert(path);
+            }
+            if (Internal::is_pending(name)) {
+                rm -> log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, rm -> resource_assets[name].size()));
+                return true;
+            }
         }
         #endif
         Internal::execute_resource(name);
@@ -585,7 +622,7 @@ namespace Vital::Manager {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
                         already = Internal::is_running(name) || Internal::is_pending(name);
                     }
-                    if (!already) rm -> load(name, scripts, files, models);
+                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "vital.resource:stopped") {
                     if (!args.object.count("name")) return;
@@ -724,52 +761,6 @@ namespace Vital::Manager {
 
     void Resource::restart_all() {
         Engine::Core::get_singleton() -> enqueue([]() { Internal::restart_all(); });
-    }
-
-    #else
-    bool Resource::load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models) {
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (Internal::is_running(name) || Internal::is_pending(name)) { log("error", fmt::format("cannot load `{}` — already running or pending", name)); return false; }
-            resources.erase(std::remove_if(resources.begin(), resources.end(), [&](const Manifest& m) { return m.ref == name; }), resources.end());
-            Manifest manifest;
-            manifest.ref = name;
-            manifest.name = name;
-            manifest.scripts = scripts;
-            manifest.files = files;
-            manifest.models = models;
-            resources.push_back(std::move(manifest));
-        }
-        log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
-
-        std::unordered_set<std::string> asset_paths;
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            auto resource = Internal::get_resource(name);
-            for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
-            for (const auto& script : resource -> scripts) {
-                if (is_type(script.type)) asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
-            }
-            for (const auto& path : asset_paths) {
-                if (Tool::File::exists(Tool::get_directory(), path)) log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
-                else resource_assets[name].insert(path);
-            }
-        }
-
-        bool all_cached;
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            all_cached = !Internal::is_pending(name);
-        }
-        if (all_cached) {
-            log("sbox", fmt::format("resource `{}` all assets cached — executing immediately", name));
-            start(name);
-        }
-        else {
-            std::lock_guard<std::mutex> lock(mutex);
-            log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, resource_assets[name].size()));
-        }
-        return true;
     }
     #endif
 }

@@ -64,8 +64,11 @@ namespace Vital::Manager {
                 static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void load_models(const std::string& name);
+                static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
                 static void execute_resource(std::string name);
-                #if !defined(Vital_SDK_Client)
+                #if defined(Vital_SDK_Client)
+                static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
+                #else
                 static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
                 static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
                 #endif
@@ -141,8 +144,6 @@ namespace Vital::Manager {
             void start_all();
             void stop_all();
             void restart_all();
-            #else
-            bool load(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
             #endif
     };
 }
