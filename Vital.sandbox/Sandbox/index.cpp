@@ -122,7 +122,7 @@ namespace Vital::Sandbox {
     }
 
     namespace API {
-        void log(const std::string& type, const std::string& message) {
+        void log(const std::string& mode, const std::string& message) {
             Tool::print(type, message);
         }
     

@@ -382,7 +382,7 @@ namespace Vital::Sandbox {
     };
 
     namespace API {
-        extern void log(const std::string& type, const std::string& message);
+        extern void log(const std::string& mode, const std::string& message);
         extern void bind(Machine* vm, const std::vector<std::string>& scope, const std::string& name, vm_bind exec);
     }
 }
