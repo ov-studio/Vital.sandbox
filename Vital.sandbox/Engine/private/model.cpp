@@ -396,6 +396,15 @@ namespace Vital::Engine {
         return net_sync != nullptr;
     }
 
+    bool Model::is_streamed_in() const {
+        if (is_placeholder || !is_visible_in_tree()) return false;
+        auto viewport = get_viewport();
+        if (!viewport) return false;
+        auto camera = viewport -> get_camera_3d();
+        if (!camera) return false;
+        return camera -> is_position_in_frustum(get_global_position());
+    }
+    
     bool Model::is_component_visible(const std::string& component) {
         return assert_component(component) -> is_visible();
     }
