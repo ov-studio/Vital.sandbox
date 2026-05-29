@@ -32,14 +32,13 @@ namespace Vital::Sandbox::API {
             using Owner = Model;
             base_class* model = nullptr;
             bool is_alive() const { return model ? true : false; }
+            bool is_streamed() const { return model ? model -> is_streamed() : false; }
 
             // Called by the engine-side Model node just before it is freed
             // (either via destroy() or via Godot's multiplayer despawn).
             // Nulls the pointer so any subsequent Lua call fails gracefully
             // rather than crashing on a dangling pointer.
-            void on_model_destroyed() {
-                model = nullptr;
-            }
+            void on_model_destroyed() { model = nullptr; }
         };
         inline static std::mutex mutex;
         inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
