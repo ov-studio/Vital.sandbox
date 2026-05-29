@@ -27,16 +27,16 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "print", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(type, ...)")
+                vm_args(vm, id, "(mode, ...)")
                     .require(1, &Machine::is_string);
 
-                std::string type = vm -> get_string(1);
+                std::string mode = vm -> get_string(1);
                 std::ostringstream buffer;
                 for (int i = 2; i <= vm -> get_count(); ++i) {
                     if (i != 2) buffer << " ";
                     buffer << vm -> to_string(i);
                 }
-                Tool::print(type, buffer.str());
+                Tool::print(mode, buffer.str());
                 vm -> push_value(true);
                 return 1;
             });
