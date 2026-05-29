@@ -345,6 +345,7 @@ namespace Vital::Engine {
     void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
         auto rm = Vital::Manager::Resource::get_singleton();
         std::vector<std::string> loaded;
+        std::vector<std::string> failed;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
             const std::string model_name = fmt::format(":{}/{}", resource_name, file);
@@ -355,12 +356,17 @@ namespace Vital::Engine {
                 load(model_name, local_path);
                 loaded.push_back(model_name);
             }
-            catch (...) { rm -> log("error", fmt::format("resource `{}` failed to load model `{}`", resource_name, file)); }
+            catch (...) { failed.push_back(file); }
         }
         if (!loaded.empty()) {
             std::string report = fmt::format("resource `{}` registered {} model asset(s):\n", resource_name, loaded.size());
             for (const auto& name : loaded) report += fmt::format("> `{}`\n", name);
             rm -> log("sbox", report);
+        }
+        if (!failed.empty()) {
+            std::string report = fmt::format("resource `{}` failed to load {} model asset(s):\n", resource_name, failed.size());
+            for (const auto& name : failed) report += fmt::format("> `{}`\n", name);
+            rm -> log("error", report);
         }
     }
     
