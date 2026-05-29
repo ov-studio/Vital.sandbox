@@ -123,7 +123,7 @@ namespace Vital::Sandbox {
 
     namespace API {
         void log(const std::string& mode, const std::string& message) {
-            Tool::print(type, message);
+            Tool::print(mode, message);
         }
     
         void bind(Machine* vm, const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
