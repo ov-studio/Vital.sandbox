@@ -115,7 +115,7 @@ namespace Vital::Sandbox {
     struct vm_module {
         private:
             using entity_type = std::string;
-            using entity_collector = std::function<void(Machine*, int&)>;
+            using entity_collector = std::function<void(Machine*, int&, bool)>;
             inline static std::unordered_map<entity_type, entity_collector> entity_pool;
         public:
             static void bind(Machine* vm) {}
@@ -147,10 +147,13 @@ namespace Vital::Sandbox {
                 vm -> set_table_field("__gc", -2);
                 vm -> pop(1);
 
-                entity_pool.emplace(T::base_name, [](Machine* vm, int& count) {
+                entity_pool.emplace(T::base_name, [](Machine* vm, int& count, bool streamed) {
                     std::lock_guard<std::mutex> lock(T::mutex);
                     for (auto& [instance_id, instance] : T::buffer) {
                         if (!instance -> is_alive()) continue;
+                        #if defined(Vital_SDK_Client)
+                        if (instance -> is_streamed_in() != streamed) continue;
+                        #endif
                         if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
                         else T::Instance::bind(vm, T::base_name, instance);
                         vm -> set_table_field(++count, -2);
@@ -249,11 +252,11 @@ namespace Vital::Sandbox {
                 userdata  = nullptr;
             }
 
-            static void collect_entities(Machine* vm, const std::string& type, int& count) {
+            static void collect_entities(Machine* vm, const std::string& type, int& count, bool streamed = false) {
                 auto it = entity_pool.find(type);
-                if (it != entity_pool.end()) it -> second(vm, count);
+                if (it != entity_pool.end()) it -> second(vm, count, streamed);
             }
-    
+
             template<typename TInstance>
             static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
                 std::vector<std::shared_ptr<TInstance>> to_clean;
