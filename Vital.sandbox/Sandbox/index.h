@@ -291,6 +291,10 @@ namespace Vital::Sandbox {
                 return true;
             }
 
+            bool is_streamed() const {
+                return true;
+            }
+            
             void set_ref(const std::string& ref, int index) {
                 vm -> set_reference(ref, index);
                 refs.push_back(ref);
