@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Manager/public/asset.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 
 
 ///////////////////////////
@@ -342,6 +343,7 @@ namespace Vital::Engine {
     }
     
     void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
+        auto rm = Vital::Manager::Resource::get_singleton();
         std::vector<std::string> loaded;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
@@ -353,18 +355,17 @@ namespace Vital::Engine {
                 load(model_name, local_path);
                 loaded.push_back(model_name);
             }
-            catch (...) {
-                Tool::print("error", fmt::format("Model: failed to load `{}` for resource `{}`", file, resource_name));
-            }
+            catch (...) { rm -> log("error", fmt::format("resource `{}` failed to load model `{}`", resource_name, file)); }
         }
         if (!loaded.empty()) {
-            std::string report = fmt::format("Model: resource `{}` registered {} model asset(s):\n", resource_name, loaded.size());
+            std::string report = fmt::format("resource `{}` registered {} model asset(s):\n", resource_name, loaded.size());
             for (const auto& name : loaded) report += fmt::format("> `{}`\n", name);
-            Tool::print("sbox", report);
+            rm -> log("sbox", report);
         }
     }
-
+    
     void Model::unload_resource_models(const std::string& resource_name) {
+        auto rm = Vital::Manager::Resource::get_singleton();
         const std::string prefix = fmt::format(":{}/", resource_name);
         std::vector<std::string> to_unload;
         for (const auto& [name, _] : cache_loaded) {
@@ -375,7 +376,7 @@ namespace Vital::Engine {
             catch (...) {}
         }
         if (!to_unload.empty()) {
-            Tool::print("sbox", fmt::format("Model: resource `{}` unloaded {} model asset(s)", resource_name, to_unload.size()));
+            rm -> log("sbox", fmt::format("resource `{}` unloaded {} model asset(s)", resource_name, to_unload.size()));
         }
     }
 
