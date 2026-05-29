@@ -109,15 +109,15 @@ namespace Vital::Sandbox::API {
             #endif
 
             API::bind(vm, {base_name}, "get_entities", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(type, streamed = false)")
+                vm_args(vm, id, "(category, streamed = false)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_bool);
             
-                const std::string type = vm -> get_string(1);
+                const std::string category = vm -> get_string(1);
                 bool streamed = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 vm -> create_table();
                 int count = 0;
-                vm_module::collect_entities(vm, type, count, streamed);
+                vm_module::collect_entities(vm, category, count, streamed);
                 return 1;
             });
         }
