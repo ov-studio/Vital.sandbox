@@ -160,7 +160,7 @@ namespace Vital::Engine {
             // Checkers //
             static bool is_model_loaded(const std::string& name);
             bool is_synced() const;
-            bool is_streamed_in() const;
+            bool is_streamed() const;
             bool is_component_visible(const std::string& component);
             bool is_material_visible(const std::string& component, const std::string& material);
             bool is_material_feature(const std::string& component, const std::string& material, int feature);

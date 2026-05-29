@@ -396,7 +396,7 @@ namespace Vital::Engine {
         return net_sync != nullptr;
     }
 
-    bool Model::is_streamed_in() const {
+    bool Model::is_streamed() const {
         if (is_placeholder || !is_visible_in_tree()) return false;
         auto viewport = get_viewport();
         if (!viewport) return false;

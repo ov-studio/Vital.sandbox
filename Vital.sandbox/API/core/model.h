@@ -158,8 +158,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_streamed_in", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> is_streamed_in());
+            vm_module::bind_method<Instance>(vm, base_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> model -> is_streamed());
                 return 1;
             });
 

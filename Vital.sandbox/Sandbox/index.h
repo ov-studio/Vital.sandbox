@@ -152,7 +152,7 @@ namespace Vital::Sandbox {
                     for (auto& [instance_id, instance] : T::buffer) {
                         if (!instance -> is_alive()) continue;
                         #if defined(Vital_SDK_Client)
-                        if (instance -> is_streamed_in() != streamed) continue;
+                        if (instance -> is_streamed() != streamed) continue;
                         #endif
                         if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
                         else T::Instance::bind(vm, T::base_name, instance);
