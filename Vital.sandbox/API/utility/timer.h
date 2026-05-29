@@ -76,8 +76,13 @@ namespace Vital::Sandbox::API {
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> pcall(1, 0);
                         if (captured_stop) {
-                            std::lock_guard<std::mutex> lock(mutex);
-                            instance -> timer = nullptr;
+                            std::shared_ptr<Instance> to_clean;
+                            {
+                                std::lock_guard<std::mutex> lock(mutex);
+                                instance -> timer = nullptr;
+                                to_clean = instance;
+                            }
+                            clean_instance(to_clean);
                         }
                     });
                 }, interval, executions);
