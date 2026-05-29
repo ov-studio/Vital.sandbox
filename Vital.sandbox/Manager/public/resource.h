@@ -64,7 +64,6 @@ namespace Vital::Manager {
                 static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void load_models(const std::string& name);
-                static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
                 static void execute_resource(std::string name);
                 #if defined(Vital_SDK_Client)
                 static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
@@ -80,6 +79,9 @@ namespace Vital::Manager {
                 #if defined(Vital_SDK_Client)
                 static bool is_pending(const std::string& name);
                 #endif
+
+
+                // Getters //
                 static const Manifest* get_resource(const std::string& name);
                 static std::vector<const Manifest*> get_all_resources();
                 static std::vector<const Manifest*> get_resources(State type);

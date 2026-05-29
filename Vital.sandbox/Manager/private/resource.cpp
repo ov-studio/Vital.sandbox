@@ -260,6 +260,8 @@ namespace Vital::Manager {
     }
     #endif
 
+
+    // Getters //
     const Resource::Manifest* Resource::Internal::get_resource(const std::string& name) {
         auto rm = Resource::get_singleton();
         for (const auto& resource : rm -> resources) {
