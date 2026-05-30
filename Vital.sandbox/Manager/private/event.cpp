@@ -117,7 +117,8 @@ void initialize_vital_events() {
 
     Vital::Tool::Event::bind("vital.network:server:disconnect", [](Vital::Tool::Stack&) {
         Vital::Tool::print("sbox", "Lost connection to server");
-        Vital::Engine::Model::cleanup_spawned();
+        Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
+        Vital::Manager::Resource::get_singleton() -> stop_all();
         Vital::Manager::Asset::get_singleton() -> clear();
     });
     #endif
