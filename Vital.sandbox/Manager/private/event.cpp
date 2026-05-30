@@ -14,6 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/engine.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 
 // TODO: Improve / Remove later
 
