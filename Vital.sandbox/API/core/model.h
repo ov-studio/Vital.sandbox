@@ -55,11 +55,14 @@ namespace Vital::Sandbox::API {
         // instead of a crash.
         static void on_model_node_destroyed(base_class* dying) {
             std::lock_guard<std::mutex> lock(mutex);
-            for (auto& [id, instance] : buffer) {
-                if (instance -> model != dying) continue;
-                instance -> on_model_destroyed();
+            for (auto it = buffer.begin(); it != buffer.end();) {
+                auto& instance = it->second;
+                if (instance->model != dying) { ++it; continue; }
+                ++it;
+                instance->on_model_destroyed();
                 #if defined(Vital_SDK_Client)
-                if (instance -> remote) Instance::release(instance);
+                Instance::erase_unlocked(instance);
+                Instance::release(instance);
                 #endif
             }
         }
