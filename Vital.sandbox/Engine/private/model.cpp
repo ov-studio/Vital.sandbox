@@ -45,6 +45,7 @@ namespace Vital::Engine {
             }
             object -> add_child(instance);
             godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
+            if (Model::on_spawned_callback) Model::on_spawned_callback(object);
             return object;
         }
 
