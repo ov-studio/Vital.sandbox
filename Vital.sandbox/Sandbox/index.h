@@ -361,10 +361,15 @@ namespace Vital::Sandbox {
                 vm -> push_value(true);
                 return 1;
             }
-
+            
             static bool erase(std::shared_ptr<Derived> instance) {
                 if (!instance) return false;
                 std::lock_guard<std::mutex> lock(Derived::Owner::mutex);
+                return erase_unlocked(instance);
+            }
+
+            static bool erase_unlocked(std::shared_ptr<Derived> instance) {
+                if (!instance) return false;
                 auto it = Derived::Owner::buffer.find(instance -> id);
                 if (it == Derived::Owner::buffer.end()) return false;
                 Derived::Owner::buffer.erase(it);
