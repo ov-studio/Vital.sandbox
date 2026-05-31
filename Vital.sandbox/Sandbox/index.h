@@ -162,7 +162,7 @@ namespace Vital::Sandbox {
                         if (streamed && !instance -> is_streamed()) continue;
                         #endif
                         if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
-                        else T::Instance::bind(vm, T::base_name, instance);
+                        else instance -> bind(vm, T::base_name);
                         vm -> set_table_field(++count, -2);
                     }
                 });
@@ -307,6 +307,21 @@ namespace Vital::Sandbox {
                 refs.push_back(ref);
             }
 
+            bool store() {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
+                Derived::Owner::registry.buffer[instance -> id] = instance;
+                return true;
+            }
+            
+            bool bind(Machine* vm, const std::string& type_name, int index = -1) {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                vm -> create_object(type_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(vm, index);
+                instance -> set_ref(instance -> self_reference(), index);
+                return true;
+            }
+
             bool erase() {
                 auto instance = static_cast<Derived*>(this) -> shared_from_this();
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
@@ -361,26 +376,11 @@ namespace Vital::Sandbox {
                 }
                 return instance;
             }
-
-            static bool store(std::shared_ptr<Derived> instance) {
-                if (!instance) return false;
-                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
-                Derived::Owner::registry.buffer[instance -> id] = instance;
-                return true;
-            }
-
-            static bool bind(Machine* vm, const std::string& type_name, std::shared_ptr<Derived> instance, int index = -1) {
-                if (!instance) return false;
-                vm -> create_object(type_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, index);
-                instance -> set_ref(instance -> self_reference(), index);
-                return true;
-            }
-
+    
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
-                Derived::store(instance);
-                Derived::bind(vm, Derived::Owner::base_name, instance);
+                instance -> store();
+                instance -> bind(vm, Derived::Owner::base_name);
                 return instance;
             }
 

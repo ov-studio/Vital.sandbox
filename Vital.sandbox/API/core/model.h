@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
                 // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES SO MAKE SURE Instance::init(nullptr, true) is only valid for server instance on client
                 auto instance = Instance::init(nullptr, true);
                 instance -> model = spawned;
-                Instance::store(instance);
+                instance -> store();
             };
 
             // Wire the engine-side destruction callback once, so every Model node
