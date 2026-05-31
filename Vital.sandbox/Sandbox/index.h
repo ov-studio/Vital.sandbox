@@ -337,7 +337,7 @@ namespace Vital::Sandbox {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return find_unlocked(id);
             }
-            
+
             static std::shared_ptr<Derived> find_unlocked(int id) {
                 auto it = Derived::Owner::registry.buffer.find(id);
                 if (it == Derived::Owner::registry.buffer.end() || it -> second -> destroyed || !it -> second -> is_alive()) return nullptr;
@@ -349,7 +349,7 @@ namespace Vital::Sandbox {
                 Derived::Owner::registry.buffer[instance -> id] = instance;
                 return true;
             }
-            
+
             static bool bind(std::shared_ptr<Derived> instance, Machine* vm, const std::string& type_name, int index = -1) {
                 vm -> create_object(type_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, index);
@@ -361,7 +361,7 @@ namespace Vital::Sandbox {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return erase_unlocked(instance);
             }
-            
+
             static bool erase_unlocked(std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
@@ -370,6 +370,7 @@ namespace Vital::Sandbox {
                 return true;
             }
             
+
             static bool release(std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
