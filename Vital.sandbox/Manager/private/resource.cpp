@@ -387,6 +387,20 @@ namespace Vital::Manager {
         return true;
     }
 
+    void Resource::Internal::stop_all() {
+        Tool::assert_main_thread("Resource::Internal::stop_all");
+        auto rm = Resource::get_singleton();
+        rm -> log("sbox", "stopping all resources...");
+        int count = 0;
+        std::unordered_set<std::string> snapshot;
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            snapshot = rm -> running;
+        }
+        for (const auto& name : snapshot) if (stop(name)) count++;
+        rm -> log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
+    }
+
     #if !defined(Vital_SDK_Client)
     void Resource::Internal::scan() {
         Tool::assert_main_thread("Resource::Internal::scan");
@@ -527,20 +541,6 @@ namespace Vital::Manager {
         }
         for (auto resource : all) if (start(resource -> ref)) count++;
         rm -> log("sbox", fmt::format("all resources started — {} resource(s) started", count));
-    }
-
-    void Resource::Internal::stop_all() {
-        Tool::assert_main_thread("Resource::Internal::stop_all");
-        auto rm = Resource::get_singleton();
-        rm -> log("sbox", "stopping all resources...");
-        int count = 0;
-        std::unordered_set<std::string> snapshot;
-        {
-            std::lock_guard<std::mutex> lock(rm -> mutex);
-            snapshot = rm -> running;
-        }
-        for (const auto& name : snapshot) if (stop(name)) count++;
-        rm -> log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
     }
 
     void Resource::Internal::restart_all() {
@@ -743,6 +743,10 @@ namespace Vital::Manager {
         return true;
     }
 
+    void Resource::stop_all() {
+        Engine::Core::get_singleton() -> enqueue([]() { Internal::stop_all(); });
+    }
+
     #if !defined(Vital_SDK_Client)
     void Resource::scan() {
         Engine::Core::get_singleton() -> enqueue([]() { Internal::scan(); });
@@ -755,10 +759,6 @@ namespace Vital::Manager {
 
     void Resource::start_all() {
         Engine::Core::get_singleton() -> enqueue([]() { Internal::start_all(); });
-    }
-
-    void Resource::stop_all() {
-        Engine::Core::get_singleton() -> enqueue([]() { Internal::stop_all(); });
     }
 
     void Resource::restart_all() {

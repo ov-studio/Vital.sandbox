@@ -90,11 +90,11 @@ namespace Vital::Manager {
                 // APIs //
                 static bool start(std::string name);
                 static bool stop(std::string name);
+                static void stop_all();
                 #if !defined(Vital_SDK_Client)
                 static void scan();
                 static bool restart(std::string name);
                 static void start_all();
-                static void stop_all();
                 static void restart_all();
                 #endif
             };
@@ -140,11 +140,11 @@ namespace Vital::Manager {
             // APIs //
             bool start(std::string name);
             bool stop(std::string name);
+            void stop_all();
             #if !defined(Vital_SDK_Client)
             void scan();
             bool restart(std::string name);
             void start_all();
-            void stop_all();
             void restart_all();
             #endif
     };
