@@ -96,7 +96,7 @@ namespace Vital::Sandbox::API {
                         if (instance -> model == spawned) return;
                     }
                 }
-                // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES SO MAKE SURE Instance::init(nullptr, true) is only valid for server instance on client
+                // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES SO MAKE SURE, can make callback pass parameter from model.cpp whether it was remote  base_class::on_spawned_callback = [](base_class* spawned, bool remote) or not Instance::init(nullptr, true) is only valid for server instance on client
                 auto instance = Instance::init(nullptr, true);
                 instance -> model = spawned;
                 instance -> store();
