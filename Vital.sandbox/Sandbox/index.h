@@ -314,6 +314,7 @@ namespace Vital::Sandbox {
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
 
             bool is_alive() const { 
+                return true;
             }
 
             bool is_streamed() const { 
