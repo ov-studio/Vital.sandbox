@@ -43,6 +43,7 @@ namespace Vital::Engine {
                 memdelete(object);
                 return nullptr;
             }
+            object -> remote = true;
             object -> add_child(instance);
             godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — created: ", data);
             if (Model::on_spawned_callback) Model::on_spawned_callback(object);
@@ -53,7 +54,7 @@ namespace Vital::Engine {
             godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
             Model* placeholder = memnew(Model);
             placeholder -> set_model_name(name);
-            placeholder -> is_placeholder = true;
+            placeholder -> placeholder = true;
             placeholder -> set_visible(false);
             placeholder -> setup_sync(1);
             Manager::Asset::get_singleton() -> queue_spawn(name, placeholder);
@@ -68,7 +69,7 @@ namespace Vital::Engine {
     // Instantiators //
     void Model::_ready() {
         godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
-        if (is_placeholder) return;
+        if (placeholder) return;
         find_node(this, skeleton);
         find_node(this, anim_player);
         setup_sync(pending_authority);
@@ -306,7 +307,7 @@ namespace Vital::Engine {
 
     #if defined(Vital_SDK_Client)
     void Model::hydrate(int authority_peer) {
-        if (!is_placeholder) return;
+        if (!placeholder) return;
 
         auto it = cache_loaded.find(model_name);
         if (it == cache_loaded.end()) {
@@ -320,8 +321,9 @@ namespace Vital::Engine {
             return;
         }
 
-        is_placeholder = false;
+        placeholder = false;
         pending_authority = authority_peer;
+        remote = true;
         add_child(instance);
 
         // net_sync already exists from spawn() — no need to call setup_sync again.
@@ -393,12 +395,12 @@ namespace Vital::Engine {
         return cache_loaded.find(name) != cache_loaded.end();
     }
 
-    bool Model::is_synced() const {
-        return net_sync != nullptr;
-    }
+    bool Model::is_remote() const {
+        return remote;
+    }    
 
     bool Model::is_streamed() const {
-        if (is_placeholder || !is_visible_in_tree()) return false;
+        if (placeholder || !is_visible_in_tree()) return false;
         auto viewport = get_viewport();
         if (!viewport) return false;
         auto camera = viewport -> get_camera_3d();

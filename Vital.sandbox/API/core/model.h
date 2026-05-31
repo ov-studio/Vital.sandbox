@@ -155,8 +155,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "is_synced", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->model->is_synced());
+            vm_module::bind_method<Instance>(vm, base_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> model -> is_remote());
                 return 1;
             });
 
