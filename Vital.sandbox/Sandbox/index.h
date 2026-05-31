@@ -203,7 +203,19 @@ namespace Vital::Sandbox {
                     vm -> push_value(type_name == vm -> get_string(2));
                     return 1;
                 });
-            
+
+                #if defined(Vital_SDK_Client)
+                bind_method<TInstance>(vm, type_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> is_remote());
+                    return 1;
+                });
+
+                bind_method<TInstance>(vm, type_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> is_streamed());
+                    return 1;
+                });
+                #endif
+
                 bind_method<TInstance>(vm, type_name, "get_type", [type_name](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(type_name.empty() ? false : type_name);
                     return 1;
