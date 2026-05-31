@@ -318,11 +318,11 @@ namespace Vital::Sandbox {
             bool erase() {
                 return Derived::erase(static_cast<Derived*>(this) -> shared_from_this());
             }
-            
+
             bool erase_unlocked() {
                 return Derived::erase_unlocked(static_cast<Derived*>(this) -> shared_from_this());
             }
-            
+
             void clean() {
                 auto instance = static_cast<Derived*>(this) -> shared_from_this();
                 if (!Derived::erase(instance)) return;
