@@ -112,6 +112,13 @@ namespace Vital::Sandbox {
             }
     };
 
+    template<typename T>
+    struct vm_registry {
+        std::mutex mutex;
+        std::unordered_map<int, std::shared_ptr<T>> buffer;
+        std::atomic<int> next_id { 1 };
+    };
+
     struct vm_module {
         private:
             using entity_type = std::string;
@@ -258,11 +265,11 @@ namespace Vital::Sandbox {
             }
 
             template<typename TInstance>
-            static void collect_env(std::mutex& mutex, std::unordered_map<int, std::shared_ptr<TInstance>>& buffer, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
+            static void collect_env(vm_registry<TInstance>& registry, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
                 std::vector<std::shared_ptr<TInstance>> to_clean;
                 {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    for (auto& [id, instance] : buffer) {
+                    std::lock_guard<std::mutex> lock(registry.mutex);
+                    for (auto& [id, instance] : registry.buffer) {
                         if (instance -> env.empty()) continue;
                         if (instance -> env != env) continue;
                         if (pre_mark) instance -> destroyed = true;
@@ -271,13 +278,6 @@ namespace Vital::Sandbox {
                 }
                 for (auto& instance : to_clean) clean(instance);
             }
-    };
-
-    template<typename T>
-    struct vm_registry {
-        std::mutex mutex;
-        std::unordered_map<int, std::shared_ptr<T>> buffer;
-        std::atomic<int> next_id { 1 };
     };
 
     template<typename Derived>
@@ -390,6 +390,17 @@ namespace Vital::Sandbox {
                 instance -> release_refs();
                 instance -> vm = nullptr;
                 return true;
+            }
+
+            static void collect_env(const std::string& env, bool pre_mark = false) {
+                vm_module::collect_env(
+                    Derived::Owner::registry,
+                    env,
+                    std::function<void(std::shared_ptr<Derived>)>([](std::shared_ptr<Derived> instance) {
+                        Derived::Owner::clean_instance(instance);
+                    }),
+                    pre_mark
+                );
             }
     };
 
