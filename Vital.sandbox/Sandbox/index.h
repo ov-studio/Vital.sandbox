@@ -302,7 +302,6 @@ namespace Vital::Sandbox {
             std::atomic<bool> destroyed { false };
             Machine* vm = nullptr;
             void** userdata = nullptr;
-            bool remote = false;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
 
@@ -311,6 +310,11 @@ namespace Vital::Sandbox {
             }
 
             bool is_streamed() const { 
+                return true; 
+            }
+
+            bool is_remote() const { 
+                return env.empty(); 
             }
 
             void set_ref(const std::string& ref, int index) {
