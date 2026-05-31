@@ -147,7 +147,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm->push_value(base_class::is_model_loaded(vm->get_string(1)));
+                vm -> push_value(base_class::is_model_loaded(vm -> get_string(1)));
                 return 1;
             });
 
@@ -165,21 +165,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> is_remote());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, base_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> model -> is_streamed());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, base_name, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                vm->push_value(self->model->is_component_visible(vm->get_string(2)));
+                vm -> push_value(self -> model -> is_component_visible(vm -> get_string(2)));
                 return 1;
             });
 
@@ -188,7 +178,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
-                vm->push_value(self->model->is_material_visible(vm->get_string(2), vm->get_string(3)));
+                vm -> push_value(self -> model -> is_material_visible(vm -> get_string(2), vm -> get_string(3)));
                 return 1;
             });
 
@@ -198,7 +188,7 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                vm->push_value(self->model->is_material_feature(vm->get_string(2), vm->get_string(3), vm->get_int(4)));
+                vm -> push_value(self -> model -> is_material_feature(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4)));
                 return 1;
             });
 
@@ -208,36 +198,36 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
 
-                vm->push_value(self->model->is_material_flag(vm->get_string(2), vm->get_string(3), vm->get_int(4)));
+                vm -> push_value(self -> model -> is_material_flag(vm -> get_string(2), vm -> get_string(3), vm -> get_int(4)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "is_animation_playing", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->model->is_animation_playing());
+                vm -> push_value(self -> model -> is_animation_playing());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_model_name", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->model->get_model_name());
+                vm -> push_value(self -> model -> get_model_name());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->model->get_position());
+                vm -> push_value(self -> model -> get_position());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm->push_value(self->model->get_rotation());
+                vm -> push_value(self -> model -> get_rotation());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "get_components", [](auto vm, auto self, auto& id) -> int {
-                auto list = self->model->get_components();
-                vm->create_table();
+                auto list = self -> model -> get_components();
+                vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm->push_value(list[i]);
-                    vm->set_table_field(i + 1, -2);
+                    vm -> push_value(list[i]);
+                    vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
             });
@@ -246,11 +236,11 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(component)")
                     .require(2, &Machine::is_string);
 
-                auto list = self->model->get_materials(vm->get_string(2));
-                vm->create_table();
+                auto list = self -> model -> get_materials(vm -> get_string(2));
+                vm -> create_table();
                 for (int i = 0; i < (int)list.size(); i++) {
-                    vm->push_value(list[i]);
-                    vm->set_table_field(i + 1, -2);
+                    vm -> push_value(list[i]);
+                    vm -> set_table_field(i + 1, -2);
                 }
                 return 1;
             });
@@ -424,8 +414,8 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, base_name, "stop_animation", [](auto vm, auto self, auto& id) -> int {
-                self->model->stop_animation();
-                vm->push_value(true);
+                self -> model -> stop_animation();
+                vm -> push_value(true);
                 return 1;
             });
 
