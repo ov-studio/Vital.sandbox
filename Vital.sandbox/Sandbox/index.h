@@ -302,6 +302,11 @@ namespace Vital::Sandbox {
                 return true;
             }
 
+            void clean(std::shared_ptr<Derived> instance) {
+                if (!Derived::erase(instance)) return;
+                Derived::release(instance);
+            }
+
             void set_ref(const std::string& ref, int index) {
                 vm -> set_reference(ref, index);
                 refs.push_back(ref);
