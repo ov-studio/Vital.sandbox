@@ -25,6 +25,8 @@
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
         inline static const std::string base_name = "model";
+        inline static constexpr bool has_remote = true;
+        inline static constexpr bool has_streaming = true;
         using base_class = Vital::Engine::Model;
 
         struct Instance : vm_instance<Instance> {
