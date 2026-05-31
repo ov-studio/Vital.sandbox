@@ -125,11 +125,13 @@ namespace Vital::Sandbox {
             using entity_collector = std::function<void(Machine*, int&, bool)>;
             inline static std::unordered_map<entity_type, entity_collector> entity_pool;
         public:
+            inline static constexpr bool has_remote = false;
+            inline static constexpr bool has_streaming = false;
             static void bind(Machine* vm) {}
             static void methods(Machine* vm) {}
             static void inject(Machine* vm) {}
             static void clean(const std::string& env) {}
-        
+
             template<typename T>
             static vm_api make_api() {
                 Machine::register_environment_cleaner([](const std::string& env) { T::clean(env); });
@@ -205,15 +207,19 @@ namespace Vital::Sandbox {
                 });
 
                 #if defined(Vital_SDK_Client)
-                bind_method<TInstance>(vm, type_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> is_remote());
-                    return 1;
-                });
+                if constexpr (TOwner::has_remote) {
+                    bind_method<TInstance>(vm, type_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
+                        vm -> push_value(self -> is_remote());
+                        return 1;
+                    });
+                }
 
-                bind_method<TInstance>(vm, type_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> is_streamed());
-                    return 1;
-                });
+                if constexpr (TOwner::has_streaming) {
+                    bind_method<TInstance>(vm, type_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
+                        vm -> push_value(self -> is_streamed());
+                        return 1;
+                    });
+                }
                 #endif
 
                 bind_method<TInstance>(vm, type_name, "get_type", [type_name](auto vm, auto self, auto& id) -> int {
@@ -306,15 +312,14 @@ namespace Vital::Sandbox {
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
 
             bool is_alive() const { 
-                return true; 
             }
 
             bool is_streamed() const { 
-                return true; 
+                return true;
             }
 
             bool is_remote() const { 
-                return env.empty(); 
+                return env.empty();
             }
 
             void set_ref(const std::string& ref, int index) {
