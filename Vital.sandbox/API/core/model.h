@@ -23,7 +23,6 @@
 ////////////////////////
 
 namespace Vital::Sandbox::API {
-    // TODO: improve
     struct Model : vm_module {
         inline static const std::string base_name = "model";
         using base_class = Vital::Engine::Model;
@@ -40,9 +39,8 @@ namespace Vital::Sandbox::API {
             // rather than crashing on a dangling pointer.
             void on_model_destroyed() { model = nullptr; }
         };
-        inline static std::mutex mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id { 1 };
+
+        inline static vm_registry<Instance> registry;
 
         // Tracks which resource loaded which model name so we can auto-unload on resource stop.
         // model_name → resource_env_name
@@ -54,8 +52,8 @@ namespace Vital::Sandbox::API {
         // so Lua scripts holding a stale reference get a clean "not valid" error
         // instead of a crash.
         static void on_model_node_destroyed(base_class* dying) {
-            std::lock_guard<std::mutex> lock(mutex);
-            for (auto it = buffer.begin(); it != buffer.end();) {
+            std::lock_guard<std::mutex> lock(registry.mutex);
+            for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
                 auto& instance = it->second;
                 if (instance->model != dying) { ++it; continue; }
                 ++it;
@@ -81,8 +79,8 @@ namespace Vital::Sandbox::API {
 
             base_class::on_spawned_callback = [](base_class* spawned) {
                 {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    for (auto& [id, instance] : buffer) {
+                    std::lock_guard<std::mutex> lock(registry.mutex);
+                    for (auto& [id, instance] : registry.buffer) {
                         if (instance -> model == spawned) return;
                     }
                 }
@@ -433,10 +431,9 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            // Destroy all live model instances belonging to this resource env
-            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+            vm_module::collect_env<Instance>(registry.mutex, registry.buffer, env, clean_instance);
 
-            // Unload all model assets that were loaded by this resource env
+            // TODO: Unload all model assets that were loaded by this resource env
             {
                 std::lock_guard<std::mutex> lock(scope_mutex);
                 std::vector<std::string> to_unload;
