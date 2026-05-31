@@ -229,7 +229,9 @@ namespace Vital::Sandbox {
 
                 bind_method<TInstance>(vm, type_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                     #if defined(Vital_SDK_Client)
-                    if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
+                    if constexpr (TOwner::has_remote) {
+                        if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
+                    }
                     #endif
                     return TInstance::destroy(vm);
                 });
