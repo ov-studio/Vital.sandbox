@@ -114,8 +114,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
 
-                const std::string name = vm->get_string(1);
-                const std::string path = vm->get_string(2);
+                const std::string name = vm -> get_string(1);
+                const std::string path = vm -> get_string(2);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
 
                 Tool::print("warn", resource);
