@@ -119,13 +119,13 @@ namespace Vital::Sandbox::API {
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
 
                 Tool::print("warn", resource);
-                
+
                 bool result = base_class::load(name, path);
                 if (result) {
                     std::lock_guard<std::mutex> lock(scope_mutex);
                     model_scope[name] = resource;
                 }
-                vm->push_value(result);
+                vm -> push_value(result);
                 return 1;
             });
 
@@ -133,13 +133,13 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                const std::string name = vm->get_string(1);
+                const std::string name = vm -> get_string(1);
                 bool result = base_class::unload(name);
                 if (result) {
                     std::lock_guard<std::mutex> lock(scope_mutex);
                     model_scope.erase(name);
                 }
-                vm->push_value(result);
+                vm -> push_value(result);
                 return 1;
             });
 
@@ -155,7 +155,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name, authority = 1)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_number);
-            
+
                 auto name = vm -> get_string(1);
                 int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
                 auto instance = Instance::make(vm);
