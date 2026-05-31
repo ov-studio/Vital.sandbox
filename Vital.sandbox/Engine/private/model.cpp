@@ -400,12 +400,17 @@ namespace Vital::Engine {
     }    
 
     bool Model::is_streamed() const {
-        if (placeholder || !is_visible_in_tree()) return false;
-        auto viewport = get_viewport();
-        if (!viewport) return false;
-        auto camera = viewport -> get_camera_3d();
-        if (!camera) return false;
-        return camera -> is_position_in_frustum(get_global_position());
+        if (!is_visible_in_tree()) return false;
+        #if defined(Vital_SDK_Client)
+            if (placeholder) return false;
+            auto viewport = get_viewport();
+            if (!viewport) return false;
+            auto camera = viewport -> get_camera_3d();
+            if (!camera) return false;
+            return camera -> is_position_in_frustum(get_global_position());
+        #else
+            return true;
+        #endif
     }
     
     bool Model::is_component_visible(const std::string& component) {
