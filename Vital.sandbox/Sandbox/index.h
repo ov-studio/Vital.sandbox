@@ -305,9 +305,8 @@ namespace Vital::Sandbox {
             bool remote = false;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
-    
-            bool is_alive() const {
-                return true;
+
+            bool is_alive() const { 
                 return true; 
             }
 
