@@ -221,7 +221,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            Instance::collect_env(env, true);
+            Instance::collect_env(env);
         }
     };
 }

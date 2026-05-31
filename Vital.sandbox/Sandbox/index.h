@@ -265,14 +265,14 @@ namespace Vital::Sandbox {
             }
 
             template<typename TInstance>
-            static void collect_env(vm_registry<TInstance>& registry, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean, bool pre_mark = false) {
+            static void collect_env(vm_registry<TInstance>& registry, const std::string& env, std::function<void(std::shared_ptr<TInstance>)> clean) {
                 std::vector<std::shared_ptr<TInstance>> to_clean;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, instance] : registry.buffer) {
                         if (instance -> env.empty()) continue;
                         if (instance -> env != env) continue;
-                        if (pre_mark) instance -> destroyed = true;
+                        instance -> destroyed = true;
                         to_clean.push_back(instance);
                     }
                 }
@@ -392,15 +392,10 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static void collect_env(const std::string& env, bool pre_mark = false) {
-                vm_module::collect_env(
-                    Derived::Owner::registry,
-                    env,
-                    std::function<void(std::shared_ptr<Derived>)>([](std::shared_ptr<Derived> instance) {
-                        Derived::Owner::clean_instance(instance);
-                    }),
-                    pre_mark
-                );
+            static void collect_env(const std::string& env) {
+                vm_module::collect_env(Derived::Owner::registry, env, std::function<void(std::shared_ptr<Derived>)>([](std::shared_ptr<Derived> instance) {
+                    Derived::Owner::clean_instance(instance);
+                }));
             }
     };
 
