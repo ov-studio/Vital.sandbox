@@ -400,9 +400,8 @@ namespace Vital::Engine {
     }    
 
     bool Model::is_streamed() const {
-        if (!is_visible_in_tree()) return false;
+        if (placeholder || !is_visible_in_tree()) return false;
         #if defined(Vital_SDK_Client)
-            if (placeholder) return false;
             auto viewport = get_viewport();
             if (!viewport) return false;
             auto camera = viewport -> get_camera_3d();
