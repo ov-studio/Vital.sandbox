@@ -43,7 +43,7 @@ namespace Vital::Sandbox::API {
                 auto instance = shared_from_this();
                 if (!Instance::erase(instance)) return;
                 instance -> waiting.clear();
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

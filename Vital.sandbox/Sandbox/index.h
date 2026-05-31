@@ -302,21 +302,26 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            void clean() {
-                auto instance = static_cast<Derived*>(this) -> shared_from_this();
-                if (!Derived::erase(instance)) return;
-                Derived::release(instance);
-            }
-
             void set_ref(const std::string& ref, int index) {
                 vm -> set_reference(ref, index);
                 refs.push_back(ref);
             }
-    
-            void release_refs() {
-                if (!vm) return;
-                for (auto& ref : refs) vm -> del_reference(ref);
-                refs.clear();
+
+            void clean() {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                if (!Derived::erase(instance)) return;
+                instance -> release();
+            }
+
+            bool release() {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                vm_module::release_userdata_ptr(instance -> userdata);
+                if (vm) {
+                    for (auto& ref : refs) vm -> del_reference(ref);
+                    refs.clear();
+                }
+                instance -> vm = nullptr;
+                return true;
             }
     
             static std::shared_ptr<Derived> find(int id) {
@@ -387,14 +392,6 @@ namespace Vital::Sandbox {
                 if (it == Derived::Owner::registry.buffer.end()) return false;
                 Derived::Owner::registry.buffer.erase(it);
                 instance -> destroyed = true;
-                return true;
-            }
-
-            static bool release(std::shared_ptr<Derived> instance) {
-                if (!instance) return false;
-                vm_module::release_userdata_ptr(instance -> userdata);
-                instance -> release_refs();
-                instance -> vm = nullptr;
                 return true;
             }
 

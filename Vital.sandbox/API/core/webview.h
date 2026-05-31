@@ -43,7 +43,7 @@ namespace Vital::Sandbox::API {
                     instance -> webview -> destroy();
                     instance -> webview = nullptr;
                 }
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

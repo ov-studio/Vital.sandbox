@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
                     instance -> font -> destroy();
                     instance -> font = nullptr;
                 }
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

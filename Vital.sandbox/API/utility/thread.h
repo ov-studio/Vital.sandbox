@@ -43,7 +43,7 @@ namespace Vital::Sandbox::API {
                     if (thread_vm) delete thread_vm;
                 }
                 else instance -> thread_vm = nullptr;
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

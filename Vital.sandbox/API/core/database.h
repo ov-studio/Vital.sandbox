@@ -43,7 +43,7 @@ namespace Vital::Sandbox::API {
                     instance -> db -> destroy();
                     instance -> db = nullptr;
                 }
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

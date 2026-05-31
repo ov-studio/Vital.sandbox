@@ -42,7 +42,7 @@ namespace Vital::Sandbox::API {
                     instance -> texture -> destroy();
                     instance -> texture = nullptr;
                 }
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;

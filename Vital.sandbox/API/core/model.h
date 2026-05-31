@@ -46,7 +46,7 @@ namespace Vital::Sandbox::API {
                     instance -> model -> destroy();
                     instance -> model = nullptr;
                 }
-                Instance::release(instance);
+                instance -> release();
             }
 
             // Called by the engine-side Model node just before it is freed
@@ -77,7 +77,7 @@ namespace Vital::Sandbox::API {
                 instance->on_model_destroyed();
                 #if defined(Vital_SDK_Client)
                 Instance::erase_unlocked(instance);
-                Instance::release(instance);
+                instance -> release();
                 #endif
             }
         }

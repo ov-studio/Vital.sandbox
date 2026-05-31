@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
                     instance -> timer = nullptr;
                 }
                 if (t && Tool::Timer::valid(t)) t -> stop();
-                Instance::release(instance);
+                instance -> release();
             }
         };
         inline static vm_registry<Instance> registry;
