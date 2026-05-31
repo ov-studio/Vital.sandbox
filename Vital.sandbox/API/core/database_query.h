@@ -30,18 +30,22 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Database_Query;
             base_class* query = nullptr;
-            bool is_alive() const { return query ? true : false; }
+
+            bool is_alive() const { 
+                return query ? true : false; 
+            }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> query) {
+                    instance -> query -> destroy();
+                    instance -> query = nullptr;
+                }
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> query) {
-                instance -> query -> destroy();
-                instance -> query = nullptr;
-            }
-            Instance::release(instance);
-        }
 
         static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
             std::unordered_map<std::string, std::string> result;
@@ -127,13 +131,13 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     auto promise = Promise::Instance::find(promise_id);
-                    if (!promise) { clean_instance(instance); return; }
+                    if (!promise) { instance -> clean(); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
                     
                     auto vm = promise -> vm;
                     try {
                         auto rows = instance -> query -> db -> fetch(instance -> query);
-                        clean_instance(instance);
+                        instance -> clean();
                         int index = 1;
                         vm -> create_table();
                         for (const auto& row : rows) {
@@ -147,7 +151,7 @@ namespace Vital::Sandbox::API {
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
-                        clean_instance(instance);
+                        instance -> clean();
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
@@ -194,7 +198,7 @@ namespace Vital::Sandbox::API {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                clean_instance(self);
+                self -> clean();
 
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -220,7 +224,7 @@ namespace Vital::Sandbox::API {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                clean_instance(self);
+                self -> clean();
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -246,7 +250,7 @@ namespace Vital::Sandbox::API {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
-                clean_instance(self);
+                self -> clean();
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
                     auto promise = Promise::Instance::find(promise_id);
@@ -275,19 +279,19 @@ namespace Vital::Sandbox::API {
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     auto promise = Promise::Instance::find(promise_id);
-                    if (!promise) { clean_instance(instance); return; }
+                    if (!promise) { instance -> clean(); return; }
                     if (!instance) { Promise::settle(promise, Promise::State::Rejected, promise -> vm, 0, 0); return; }
 
                     auto vm = promise -> vm;
                     try {
                         bool result = instance -> query -> db -> execute(instance -> query);
-                        clean_instance(instance);
+                        instance -> clean();
                         vm -> push_value(result);
                         Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
-                        clean_instance(instance);
+                        instance -> clean();
                         vm -> push_value(std::string(error.what()));
                         Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);

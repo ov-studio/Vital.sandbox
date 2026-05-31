@@ -38,6 +38,13 @@ namespace Vital::Sandbox::API {
             bool resolved = false;
             int value_count = 0;
             std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                instance -> waiting.clear();
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
 
@@ -45,12 +52,6 @@ namespace Vital::Sandbox::API {
         inline static ResumeDispatcher resume_dispatcher;
         static void register_resume_dispatcher(ResumeDispatcher fn) {
             resume_dispatcher = std::move(fn);
-        }
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            instance -> waiting.clear();
-            Instance::release(instance);
         }
 
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
