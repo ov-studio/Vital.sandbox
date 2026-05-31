@@ -32,9 +32,8 @@ namespace Vital::Sandbox::API {
             base_class* texture = nullptr;
             bool is_alive() const { return texture ? true : false; }
         };
-        inline static std::mutex mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id { 1 };
+
+        inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
@@ -60,7 +59,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+            vm_module::collect_env<Instance>(registry.mutex, registry.buffer, env, clean_instance);
         }
     };
 }

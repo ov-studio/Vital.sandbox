@@ -34,9 +34,8 @@ namespace Vital::Sandbox::API {
             Machine* thread_vm = nullptr;
             std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
         };
-        inline static std::mutex mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id { 1 };
+
+        inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
@@ -116,8 +115,8 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "current", [](auto vm, auto& id) -> int {
                 std::shared_ptr<Instance> found;
                 {
-                    std::lock_guard<std::mutex> lock(Thread::mutex);
-                    for (auto& [id, instance] : Thread::buffer) {
+                    std::lock_guard<std::mutex> lock(Thread::registry.mutex);
+                    for (auto& [id, instance] : Thread::registry.buffer) {
                         if (instance -> destroyed || !instance -> thread_vm) continue;
                         if (instance -> thread_vm -> get_state() == vm -> get_state()) {
                             found = instance;
@@ -222,7 +221,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance, true);
+            vm_module::collect_env<Instance>(registry.mutex, registry.buffer, env, clean_instance, true);
         }
     };
 }

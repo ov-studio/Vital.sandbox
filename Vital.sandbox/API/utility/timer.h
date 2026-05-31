@@ -30,15 +30,14 @@ namespace Vital::Sandbox::API {
             using Owner = Timer;
             Tool::Timer* timer = nullptr;
         };
-        inline static std::mutex mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id { 1 };
+
+        inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
             Tool::Timer* t = nullptr;
             {
-                std::lock_guard<std::mutex> lock(mutex);
+                std::lock_guard<std::mutex> lock(registry.mutex);
                 t = instance -> timer;
                 instance -> timer = nullptr;
             }
@@ -78,7 +77,7 @@ namespace Vital::Sandbox::API {
                         if (captured_stop) {
                             std::shared_ptr<Instance> to_clean;
                             {
-                                std::lock_guard<std::mutex> lock(mutex);
+                                std::lock_guard<std::mutex> lock(registry.mutex);
                                 instance -> timer = nullptr;
                                 to_clean = instance;
                             }
@@ -88,7 +87,7 @@ namespace Vital::Sandbox::API {
                 }, interval, executions);
 
                 {
-                    std::lock_guard<std::mutex> lock(mutex);
+                    std::lock_guard<std::mutex> lock(registry.mutex);
                     instance -> timer = timer;
                 }
                 return 1;
@@ -96,7 +95,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+            vm_module::collect_env<Instance>(registry.mutex, registry.buffer, env, clean_instance);
         }
     };
 }

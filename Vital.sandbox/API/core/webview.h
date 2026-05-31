@@ -33,9 +33,8 @@ namespace Vital::Sandbox::API {
             bool is_alive() const { return webview ? true : false; }
             std::string handler_reference() const { return fmt::format("vm_instance:{}:{}:handler", Owner::base_name, id); }
         };
-        inline static std::mutex mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id { 1 };
+
+        inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
             if (!Instance::erase(instance)) return;
@@ -146,7 +145,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, base_name, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(handler)")
                     .require(2, &Machine::is_function);
@@ -235,7 +234,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+            vm_module::collect_env<Instance>(registry.mutex, registry.buffer, env, clean_instance);
         }
     };
 }

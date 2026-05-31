@@ -39,9 +39,8 @@ namespace Vital::Sandbox::API {
             int value_count = 0;
             std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
         };
-        inline static std::mutex mutex;
-        inline static std::unordered_map<int, std::shared_ptr<Instance>> buffer;
-        inline static std::atomic<int> next_id { 1 };
+
+        inline static vm_registry<Instance> registry;
 
         using ResumeDispatcher = std::function<void(int thread_id, bool resolved, std::shared_ptr<Instance> promise)>;
         inline static ResumeDispatcher resume_dispatcher;
@@ -117,7 +116,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            vm_module::collect_env<Instance>(mutex, buffer, env, clean_instance);
+            vm_module::collect_env<Instance>(registry.mutex, registry.buffer, env, clean_instance);
         }
     };
 }
