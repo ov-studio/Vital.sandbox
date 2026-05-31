@@ -57,8 +57,8 @@ namespace Vital::Sandbox::API {
             // (either via destroy() or via Godot's multiplayer despawn).
             // Nulls the pointer so any subsequent Lua call fails gracefully
             // rather than crashing on a dangling pointer.
-            void on_model_destroyed() { 
-                model = nullptr; 
+            void on_model_destroyed() {
+                model = nullptr;
             }
         };
         inline static vm_registry<Instance> registry;
@@ -75,17 +75,17 @@ namespace Vital::Sandbox::API {
         static void on_model_node_destroyed(base_class* dying) {
             std::lock_guard<std::mutex> lock(registry.mutex);
             for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
-                auto& instance = it->second;
-                if (instance->model != dying) { ++it; continue; }
+                auto& instance = it -> second;
+                if (instance -> model != dying) { ++it; continue; }
                 ++it;
-                instance->on_model_destroyed();
+                instance -> on_model_destroyed();
                 #if defined(Vital_SDK_Client)
                 Instance::erase_unlocked(instance);
                 Instance::release(instance);
                 #endif
             }
         }
-        
+
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 
