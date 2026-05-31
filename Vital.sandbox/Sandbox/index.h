@@ -328,7 +328,7 @@ namespace Vital::Sandbox {
                 if (!Derived::erase(instance)) return;
                 Derived::release(instance);
             }
-            
+
             bool release() {
                 return Derived::release(static_cast<Derived*>(this) -> shared_from_this());
             }
