@@ -307,9 +307,24 @@ namespace Vital::Sandbox {
                 refs.push_back(ref);
             }
 
+            bool erase() {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
+                return instance -> erase_unlocked();
+            }
+
+            bool erase_unlocked() {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                auto it = Derived::Owner::registry.buffer.find(instance -> id);
+                if (it == Derived::Owner::registry.buffer.end()) return false;
+                Derived::Owner::registry.buffer.erase(it);
+                instance -> destroyed = true;
+                return true;
+            }
+
             void clean() {
                 auto instance = static_cast<Derived*>(this) -> shared_from_this();
-                if (!Derived::erase(instance)) return;
+                if (!instance -> erase()) return;
                 instance -> release();
             }
 
@@ -378,21 +393,6 @@ namespace Vital::Sandbox {
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
-            }
-            
-            static bool erase(std::shared_ptr<Derived> instance) {
-                if (!instance) return false;
-                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
-                return erase_unlocked(instance);
-            }
-
-            static bool erase_unlocked(std::shared_ptr<Derived> instance) {
-                if (!instance) return false;
-                auto it = Derived::Owner::registry.buffer.find(instance -> id);
-                if (it == Derived::Owner::registry.buffer.end()) return false;
-                Derived::Owner::registry.buffer.erase(it);
-                instance -> destroyed = true;
-                return true;
             }
 
             static void collect_env(const std::string& env) {

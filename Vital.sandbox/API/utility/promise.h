@@ -41,7 +41,7 @@ namespace Vital::Sandbox::API {
 
             void clean() {
                 auto instance = shared_from_this();
-                if (!Instance::erase(instance)) return;
+                if (!instance -> erase()) return;
                 instance -> waiting.clear();
                 instance -> release();
             }

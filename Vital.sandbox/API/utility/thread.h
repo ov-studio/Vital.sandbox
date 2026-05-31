@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
 
             void clean() {
                 auto instance = shared_from_this();
-                if (!Instance::erase(instance)) return;
+                if (!instance -> erase()) return;
                 if (instance -> vm_owned.exchange(false)) {
                     auto thread_vm = instance -> thread_vm;
                     instance -> thread_vm = nullptr;

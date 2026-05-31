@@ -32,14 +32,14 @@ namespace Vital::Sandbox::API {
 
             void clean() {
                 auto instance = shared_from_this();
-                if (!Instance::erase(instance)) return;
-                Tool::Timer* t = nullptr;
+                if (!instance -> erase()) return;
+                Tool::Timer* __timer = nullptr;
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
-                    t = instance -> timer;
+                    __timer = instance -> timer;
                     instance -> timer = nullptr;
                 }
-                if (t && Tool::Timer::valid(t)) t -> stop();
+                if (__timer && Tool::Timer::valid(__timer)) __timer -> stop();
                 instance -> release();
             }
         };

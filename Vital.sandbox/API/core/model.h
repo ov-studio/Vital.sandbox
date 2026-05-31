@@ -41,7 +41,7 @@ namespace Vital::Sandbox::API {
 
             void clean() {
                 auto instance = shared_from_this();
-                if (!Instance::erase(instance)) return;
+                if (!instance -> erase()) return;
                 if (instance -> model) {
                     instance -> model -> destroy();
                     instance -> model = nullptr;
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
                 ++it;
                 instance->on_model_destroyed();
                 #if defined(Vital_SDK_Client)
-                Instance::erase_unlocked(instance);
+                instance -> erase_unlocked();
                 instance -> release();
                 #endif
             }

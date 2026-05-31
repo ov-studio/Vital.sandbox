@@ -37,7 +37,7 @@ namespace Vital::Sandbox::API {
 
             void clean() {
                 auto instance = shared_from_this();
-                if (!Instance::erase(instance)) return;
+                if (!instance -> erase()) return;
                 if (instance -> font) {
                     instance -> font -> destroy();
                     instance -> font = nullptr;
