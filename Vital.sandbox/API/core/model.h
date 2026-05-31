@@ -39,7 +39,6 @@ namespace Vital::Sandbox::API {
             // rather than crashing on a dangling pointer.
             void on_model_destroyed() { model = nullptr; }
         };
-
         inline static vm_registry<Instance> registry;
 
         // Tracks which resource loaded which model name so we can auto-unload on resource stop.

@@ -39,7 +39,6 @@ namespace Vital::Sandbox::API {
             int value_count = 0;
             std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
         };
-
         inline static vm_registry<Instance> registry;
 
         using ResumeDispatcher = std::function<void(int thread_id, bool resolved, std::shared_ptr<Instance> promise)>;

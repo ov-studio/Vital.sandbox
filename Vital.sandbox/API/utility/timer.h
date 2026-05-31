@@ -30,7 +30,6 @@ namespace Vital::Sandbox::API {
             using Owner = Timer;
             Tool::Timer* timer = nullptr;
         };
-
         inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {

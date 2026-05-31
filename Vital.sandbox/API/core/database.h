@@ -33,7 +33,6 @@ namespace Vital::Sandbox::API {
             base_class* db = nullptr;
             bool is_alive() const { return db ? true : false; }
         };
-
         inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {

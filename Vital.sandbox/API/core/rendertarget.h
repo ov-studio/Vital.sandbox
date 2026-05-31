@@ -32,7 +32,6 @@ namespace Vital::Sandbox::API {
             base_class* rendertarget = nullptr;
             bool is_alive() const { return rendertarget ? true : false; }
         };
-
         inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {

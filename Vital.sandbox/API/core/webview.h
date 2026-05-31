@@ -33,7 +33,6 @@ namespace Vital::Sandbox::API {
             bool is_alive() const { return webview ? true : false; }
             std::string handler_reference() const { return fmt::format("vm_instance:{}:{}:handler", Owner::base_name, id); }
         };
-
         inline static vm_registry<Instance> registry;
 
         static void clean_instance(std::shared_ptr<Instance> instance) {
