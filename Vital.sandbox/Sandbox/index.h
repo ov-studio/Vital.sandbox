@@ -384,7 +384,6 @@ namespace Vital::Sandbox {
                 instance -> destroyed = true;
                 return true;
             }
-            
 
             static bool release(std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
@@ -403,7 +402,7 @@ namespace Vital::Sandbox {
                 if (!remote) instance -> env = vm -> get_environment_id();
                 return instance;
             }
-    
+
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
                 Derived::store(instance);
