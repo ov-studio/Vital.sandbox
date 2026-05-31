@@ -76,8 +76,8 @@ namespace Vital::Sandbox::API {
                 ++it;
                 instance->on_model_destroyed();
                 #if defined(Vital_SDK_Client)
-                instance -> erase_unlocked();
-                instance -> release();
+                Instance::erase_unlocked(instance);
+                Instance::release(instance);
                 #endif
             }
         }
