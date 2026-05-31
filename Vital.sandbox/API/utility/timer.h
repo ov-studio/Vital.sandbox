@@ -29,20 +29,21 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Timer;
             Tool::Timer* timer = nullptr;
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                Tool::Timer* t = nullptr;
+                {
+                    std::lock_guard<std::mutex> lock(registry.mutex);
+                    t = instance -> timer;
+                    instance -> timer = nullptr;
+                }
+                if (t && Tool::Timer::valid(t)) t -> stop();
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            Tool::Timer* t = nullptr;
-            {
-                std::lock_guard<std::mutex> lock(registry.mutex);
-                t = instance -> timer;
-                instance -> timer = nullptr;
-            }
-            if (t && Tool::Timer::valid(t)) t -> stop();
-            Instance::release(instance);
-        }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Timer>(vm, base_name);
@@ -74,13 +75,11 @@ namespace Vital::Sandbox::API {
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> pcall(1, 0);
                         if (captured_stop) {
-                            std::shared_ptr<Instance> to_clean;
                             {
                                 std::lock_guard<std::mutex> lock(registry.mutex);
                                 instance -> timer = nullptr;
-                                to_clean = instance;
                             }
-                            clean_instance(to_clean);
+                            instance -> clean();
                         }
                     });
                 }, interval, executions);

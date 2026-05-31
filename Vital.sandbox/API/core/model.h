@@ -30,14 +30,32 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Model;
             base_class* model = nullptr;
-            bool is_alive() const { return model ? true : false; }
-            bool is_streamed() const { return model ? model -> is_streamed() : false; }
+
+            bool is_alive() const { 
+                return model ? true : false; 
+            }
+
+            bool is_streamed() const { 
+                return model ? model -> is_streamed() : false; 
+            }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> model) {
+                    instance -> model -> destroy();
+                    instance -> model = nullptr;
+                }
+                Instance::release(instance);
+            }
 
             // Called by the engine-side Model node just before it is freed
             // (either via destroy() or via Godot's multiplayer despawn).
             // Nulls the pointer so any subsequent Lua call fails gracefully
             // rather than crashing on a dangling pointer.
-            void on_model_destroyed() { model = nullptr; }
+            void on_model_destroyed() { 
+                model = nullptr; 
+            }
         };
         inline static vm_registry<Instance> registry;
 
@@ -62,15 +80,6 @@ namespace Vital::Sandbox::API {
                 Instance::release(instance);
                 #endif
             }
-        }
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> model) {
-                instance -> model -> destroy();
-                instance -> model = nullptr;
-            }
-            Instance::release(instance);
         }
         
         static void bind(Machine* vm) {

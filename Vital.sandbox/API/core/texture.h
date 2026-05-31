@@ -30,18 +30,22 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Texture;
             base_class* texture = nullptr;
-            bool is_alive() const { return texture ? true : false; }
+
+            bool is_alive() const { 
+                return texture ? true : false;
+            }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> texture) {
+                    instance -> texture -> destroy();
+                    instance -> texture = nullptr;
+                }
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> texture) {
-                instance -> texture -> destroy();
-                instance -> texture = nullptr;
-            }
-            Instance::release(instance);
-        }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Texture>(vm, base_name);

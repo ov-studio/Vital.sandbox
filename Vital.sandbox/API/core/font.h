@@ -30,18 +30,22 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Font;
             base_class* font = nullptr;
-            bool is_alive() const { return font ? true : false; }
+
+            bool is_alive() const { 
+                return font ? true : false;
+            }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> font) {
+                    instance -> font -> destroy();
+                    instance -> font = nullptr;
+                }
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> font) {
-                instance -> font -> destroy();
-                instance -> font = nullptr;
-            }
-            Instance::release(instance);
-        }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Font>(vm, base_name);

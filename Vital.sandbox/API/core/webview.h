@@ -30,19 +30,23 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Webview;
             base_class* webview = nullptr;
-            bool is_alive() const { return webview ? true : false; }
             std::string handler_reference() const { return fmt::format("vm_instance:{}:{}:handler", Owner::base_name, id); }
+
+            bool is_alive() const { 
+                return webview ? true : false; 
+            }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> webview) {
+                    instance -> webview -> destroy();
+                    instance -> webview = nullptr;
+                }
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> webview) {
-                instance -> webview -> destroy();
-                instance -> webview = nullptr;
-            }
-            Instance::release(instance);
-        }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Webview>(vm, base_name);

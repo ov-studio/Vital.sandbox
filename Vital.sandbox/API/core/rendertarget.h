@@ -30,18 +30,22 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Rendertarget;
             base_class* rendertarget = nullptr;
-            bool is_alive() const { return rendertarget ? true : false; }
+
+            bool is_alive() const { 
+                return rendertarget ? true : false;
+            }
+
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> rendertarget) {
+                    instance -> rendertarget -> destroy();
+                    instance -> rendertarget = nullptr;
+                }
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> rendertarget) {
-                instance -> rendertarget -> destroy();
-                instance -> rendertarget = nullptr;
-            }
-            Instance::release(instance);
-        }
 
         static std::shared_ptr<Instance> find_by_ptr(base_class* ptr) {
             if (!ptr) return nullptr;

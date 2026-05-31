@@ -281,7 +281,7 @@ namespace Vital::Sandbox {
     };
 
     template<typename Derived>
-    struct vm_instance {
+    struct vm_instance : std::enable_shared_from_this<Derived> {
         private:
             std::vector<std::string> refs;
         public:
@@ -302,7 +302,8 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            void clean(std::shared_ptr<Derived> instance) {
+            void clean() {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
                 if (!Derived::erase(instance)) return;
                 Derived::release(instance);
             }
@@ -367,7 +368,7 @@ namespace Vital::Sandbox {
                 auto ud = vm_module::get_userdata_ptr(vm, 1);
                 if (ud && *ud) {
                     auto instance = Derived::find_unlocked(static_cast<Derived*>(*ud) -> id);
-                    if (instance) Derived::Owner::clean_instance(instance);
+                    if (instance) instance -> clean();
                 }
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
@@ -399,7 +400,7 @@ namespace Vital::Sandbox {
 
             static void collect_env(const std::string& env) {
                 vm_module::collect_env(Derived::Owner::registry, env, std::function<void(std::shared_ptr<Derived>)>([](std::shared_ptr<Derived> instance) {
-                    Derived::Owner::clean_instance(instance);
+                    instance -> clean();
                 }));
             }
     };

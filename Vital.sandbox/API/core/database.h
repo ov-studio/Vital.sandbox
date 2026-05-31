@@ -31,18 +31,22 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Database;
             base_class* db = nullptr;
-            bool is_alive() const { return db ? true : false; }
+
+            bool is_alive() const { 
+                return db ? true : false;
+            }
+            
+            void clean() {
+                auto instance = shared_from_this();
+                if (!Instance::erase(instance)) return;
+                if (instance -> db) {
+                    instance -> db -> destroy();
+                    instance -> db = nullptr;
+                }
+                Instance::release(instance);
+            }
         };
         inline static vm_registry<Instance> registry;
-
-        static void clean_instance(std::shared_ptr<Instance> instance) {
-            if (!Instance::erase(instance)) return;
-            if (instance -> db) {
-                instance -> db -> destroy();
-                instance -> db = nullptr;
-            }
-            Instance::release(instance);
-        }
 
         static base_class::Column read_schema_definition(Machine* vm, int index) {
             base_class::Column definition;
