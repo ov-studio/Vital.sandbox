@@ -227,7 +227,12 @@ namespace Vital::Sandbox {
 
             int get_reference(const std::string& name, bool push_to_stack = false) {
                 if (!push_to_stack) return reference.at(name);
-                lua_rawgeti(state, LUA_REGISTRYINDEX, reference.at(name));
+                get_raw_reference(reference.at(name));
+                return 0;
+            }
+
+            int get_raw_reference(int ref) {
+                lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
                 return 0;
             }
 
@@ -528,8 +533,11 @@ namespace Vital::Sandbox {
             void del_reference(const std::string& name) {
                 Tool::assert_main_thread("Machine::del_reference");
                 if (!is_reference(name)) return;
-                luaL_unref(state, LUA_REGISTRYINDEX, get_reference(name));
                 reference.erase(name);
+            }
+
+            void del_raw_reference(int ref) { 
+                luaL_unref(state, LUA_REGISTRYINDEX, ref);
             }
 
             bool resume(int count = 0) {
