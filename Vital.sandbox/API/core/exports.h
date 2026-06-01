@@ -21,8 +21,6 @@
 // Vital: API: Exports //
 //////////////////////////
 
-// TODO: Improve
-
 namespace Vital::Sandbox::API {
     struct Exports : vm_module {
         inline static const std::string base_name = "exports";
