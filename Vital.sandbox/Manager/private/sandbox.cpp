@@ -112,17 +112,6 @@ namespace Vital::Manager {
         return true;
     }
 
-    bool Sandbox::export_remove(const std::string& resource, const std::string& fn_name) {
-        std::lock_guard<std::mutex> lock(exports_mutex);
-        auto rit = export_refs.find(resource);
-        if (rit == export_refs.end()) return false;
-        auto fit = rit -> second.find(fn_name);
-        if (fit == rit -> second.end()) return false;
-        vm -> del_raw_reference(fit -> second);
-        rit -> second.erase(fit);
-        return true;
-    }
-
     void Sandbox::export_clear(const std::string& resource) {
         std::lock_guard<std::mutex> lock(exports_mutex);
         auto it = export_refs.find(resource);
