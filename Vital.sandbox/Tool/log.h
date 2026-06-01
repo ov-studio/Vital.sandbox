@@ -46,10 +46,15 @@ namespace Vital::Tool::Log {
     using warn = Entry<Label_warn>;
     using error = Entry<Label_error>;
 
-    inline constexpr Command List[] = {
+    inline const std::unordered_set<std::string_view> runtime_levels = { 
+        "info", 
+        "warn", 
+        "error" 
+    };
+
+    inline constexpr Command error_list[] = {
         {"invalid-argument", "invalid argument {}"},
-        {"request-failed", "request failed {}"},
-        {"invalid-thread", "invalid thread context\n> Reason: no active thread context found"}
+        {"request-failed", "request failed {}"}
     };
 
     template <typename... Types>
@@ -58,8 +63,12 @@ namespace Vital::Tool::Log {
         return is_type_impl<sbox, info, warn, error>(label);
     }
 
+    inline bool is_runtime_level(std::string_view label) {
+        return runtime_levels.count(label) > 0;
+    }
+
     inline std::string_view resolve(std::string_view code) {
-        for (const auto& e : List) if (code == e.code) return e.message;
+        for (const auto& e : error_list) if (code == e.code) return e.message;
         return "unknown error";
     }
 
