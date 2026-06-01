@@ -511,6 +511,7 @@ namespace Vital::Sandbox {
             void push(int index = 1) { lua_pushvalue(state, index); }
             void pop(int count = 1) { lua_pop(state, count); }
             void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
+            void rotate(int index, int n) { lua_rotate(state, index, n); }
             void set_table(int index = 1) { lua_settable(state, index); }
             void set_table_field(int field, int index = 1) { lua_seti(state, index, field); }
             void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
