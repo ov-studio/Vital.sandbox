@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
                 if (resource.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: exports.register called outside a resource environment");
 
                 int ref = vm -> set_raw_reference(2);
-                Manager::Sandbox::get_singleton() -> export_add(resource, fn_name, ref);
+                Manager::Sandbox::get_singleton() -> export_register(resource, fn_name, ref);
                 vm -> push_value(true);
                 return 1;
             });
