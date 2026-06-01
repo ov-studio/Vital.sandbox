@@ -530,7 +530,7 @@ namespace Vital::Sandbox {
             }
 
             int set_raw_reference(int index = -1) {
-                push(state, index);
+                push(index);
                 return luaL_ref(state, LUA_REGISTRYINDEX);
             }
 
