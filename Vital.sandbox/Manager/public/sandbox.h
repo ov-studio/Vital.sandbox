@@ -37,8 +37,8 @@ namespace Vital::Manager {
             ~Sandbox();
 
 
-			// Singleton //
-			static Sandbox* get_singleton();
+            // Singleton //
+            static Sandbox* get_singleton();
             static void free_singleton();
 
 
