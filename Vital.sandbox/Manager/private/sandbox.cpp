@@ -121,14 +121,6 @@ namespace Vital::Manager {
         return true;
     }
 
-    void Sandbox::reset_exports(const std::string& resource) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto it = exports.find(resource);
-        if (it == exports.end()) return;
-        for (auto& [name, ref] : it -> second) vm -> del_raw_reference(ref);
-        exports.erase(it);
-    }
-
     std::vector<std::string> Sandbox::list_exports(const std::string& resource) const {
         std::lock_guard<std::mutex> lock(mutex);
         std::vector<std::string> result;
@@ -137,5 +129,13 @@ namespace Vital::Manager {
         result.reserve(it -> second.size());
         for (const auto& [name, _] : it -> second) result.push_back(name);
         return result;
+    }
+
+    void Sandbox::reset_exports(const std::string& resource) {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto it = exports.find(resource);
+        if (it == exports.end()) return;
+        for (auto& [name, ref] : it -> second) vm -> del_raw_reference(ref);
+        exports.erase(it);
     }
 }
