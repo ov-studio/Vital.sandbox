@@ -533,6 +533,7 @@ namespace Vital::Sandbox {
             void del_reference(const std::string& name) {
                 Tool::assert_main_thread("Machine::del_reference");
                 if (!is_reference(name)) return;
+                del_raw_reference(get_reference(name));
                 reference.erase(name);
             }
 
