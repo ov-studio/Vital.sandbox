@@ -335,25 +335,25 @@ namespace Vital::Engine {
     }
     #endif
 
-    std::vector<std::string> Model::filter_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
+    std::vector<std::string> Model::filter_resource_models(const std::string& resource, const std::vector<std::string>& files) {
         std::vector<std::string> validated;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
-            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource_name, file))) continue;
+            if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, fmt::format("resources/{}/{}", resource, file))) continue;
             validated.push_back(file);
         }
         return validated;
     }
     
-    void Model::load_resource_models(const std::string& resource_name, const std::vector<std::string>& files) {
+    void Model::load_resource_models(const std::string& resource, const std::vector<std::string>& files) {
         auto rm = Vital::Manager::Resource::get_singleton();
         std::vector<std::string> loaded;
         std::vector<std::string> failed;
         for (const auto& file : files) {
             if (!Tool::Format::is_supported_extension(format_registry, file)) continue;
-            const std::string model_name = fmt::format(":{}/{}", resource_name, file);
+            const std::string model_name = fmt::format(":{}/{}", resource, file);
             if (is_model_loaded(model_name)) continue;
-            const std::string local_path = fmt::format("resources/{}/{}", resource_name, file);
+            const std::string local_path = fmt::format("resources/{}/{}", resource, file);
             if (!Tool::Format::is_supported_format(format_registry, Format::UNKNOWN, local_path)) continue;
             try {
                 load(model_name, local_path);
@@ -362,20 +362,20 @@ namespace Vital::Engine {
             catch (...) { failed.push_back(file); }
         }
         if (!loaded.empty()) {
-            std::string report = fmt::format("resource `{}` registered {} model asset(s):\n", resource_name, loaded.size());
+            std::string report = fmt::format("resource `{}` registered {} model asset(s):\n", resource, loaded.size());
             for (const auto& name : loaded) report += fmt::format("> `{}`\n", name);
             rm -> log("sbox", report);
         }
         if (!failed.empty()) {
-            std::string report = fmt::format("resource `{}` failed to load {} model asset(s):\n", resource_name, failed.size());
+            std::string report = fmt::format("resource `{}` failed to load {} model asset(s):\n", resource, failed.size());
             for (const auto& name : failed) report += fmt::format("> `{}`\n", name);
             rm -> log("error", report);
         }
     }
     
-    void Model::unload_resource_models(const std::string& resource_name) {
+    void Model::unload_resource_models(const std::string& resource) {
         auto rm = Vital::Manager::Resource::get_singleton();
-        const std::string prefix = fmt::format(":{}/", resource_name);
+        const std::string prefix = fmt::format(":{}/", resource);
         std::vector<std::string> to_unload;
         for (const auto& [name, _] : cache_loaded) {
             if (name.rfind(prefix, 0) == 0) to_unload.push_back(name);
@@ -385,7 +385,7 @@ namespace Vital::Engine {
             catch (...) {}
         }
         if (!to_unload.empty()) {
-            rm -> log("sbox", fmt::format("resource `{}` unloaded {} model asset(s)", resource_name, to_unload.size()));
+            rm -> log("sbox", fmt::format("resource `{}` unloaded {} model asset(s)", resource, to_unload.size()));
         }
     }
 

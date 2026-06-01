@@ -151,11 +151,11 @@ namespace Vital::Engine {
             #endif
 
             // Resource-scoped auto-load: loads all supported model files from a resource.
-            // Model names are scoped as ":resource_name/relative_path" to avoid conflicts.
+            // Model names are scoped as ":resource/relative_path" to avoid conflicts.
             // Called automatically by Resource::Internal::execute_resource on both sides.
-            static std::vector<std::string> filter_resource_models(const std::string& resource_name, const std::vector<std::string>& files);
-            static void load_resource_models(const std::string& resource_name, const std::vector<std::string>& files);
-            static void unload_resource_models(const std::string& resource_name);
+            static std::vector<std::string> filter_resource_models(const std::string& resource, const std::vector<std::string>& files);
+            static void load_resource_models(const std::string& resource, const std::vector<std::string>& files);
+            static void unload_resource_models(const std::string& resource);
 
 
             // Checkers //
