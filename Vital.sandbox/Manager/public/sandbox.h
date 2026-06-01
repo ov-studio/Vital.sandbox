@@ -74,9 +74,9 @@ namespace Vital::Manager {
 
             // Exports //
 			// TODO: Improve
-            bool export_register(const std::string& resource, const std::string& fn_name, int lua_ref);
+            bool export_register(const std::string& resource, const std::string& name, int lua_ref);
             void export_clear(const std::string& resource);
             std::vector<std::string> export_list(const std::string& resource) const;
-            int export_get_ref(const std::string& resource, const std::string& fn_name) const;
+            int export_get_ref(const std::string& resource, const std::string& name) const;
     };
 }

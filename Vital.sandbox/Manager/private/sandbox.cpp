@@ -100,15 +100,15 @@ namespace Vital::Manager {
 
 
     // Exports //
-    bool Sandbox::export_register(const std::string& resource, const std::string& fn_name, int lua_ref) {
+    bool Sandbox::export_register(const std::string& resource, const std::string& name, int reference) {
         std::lock_guard<std::mutex> lock(mutex);
         auto& tbl = exports[resource];
-        auto it = tbl.find(fn_name);
+        auto it = tbl.find(name);
         if (it != tbl.end()) {
             vm -> del_raw_reference(it -> second);
             tbl.erase(it);
         }
-        tbl[fn_name] = lua_ref;
+        tbl[name] = reference;
         return true;
     }
 
@@ -130,11 +130,11 @@ namespace Vital::Manager {
         return result;
     }
 
-    int Sandbox::export_get_ref(const std::string& resource, const std::string& fn_name) const {
+    int Sandbox::export_get_ref(const std::string& resource, const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
         auto rit = exports.find(resource);
         if (rit == exports.end()) return LUA_NOREF;
-        auto fit = rit -> second.find(fn_name);
+        auto fit = rit -> second.find(name);
         if (fit == rit -> second.end()) return LUA_NOREF;
         return fit -> second;
     }
