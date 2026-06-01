@@ -18,7 +18,6 @@
 #include <Vital.sandbox/Engine/public/console.h>
 
 #include <Vital.sandbox/API/core/engine.h>
-#include <Vital.sandbox/API/core/exports.h>
 #include <Vital.sandbox/API/core/canvas.h>
 #include <Vital.sandbox/API/core/database.h>
 #include <Vital.sandbox/API/core/database_query.h>
@@ -38,6 +37,7 @@
 #include <Vital.sandbox/API/utility/http.h>
 #include <Vital.sandbox/API/utility/crypto.h>
 #include <Vital.sandbox/API/utility/shrinker.h>
+#include <Vital.sandbox/API/utility/exports.h>
 
 #include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/emissive.h>
@@ -57,7 +57,6 @@ namespace Vital::Sandbox {
     vm_apis Machine::internal_apis = {
         // Core //
         vm_module::make_api<API::Engine>(),
-        vm_module::make_api<API::Exports>(),
         vm_module::make_api<API::Canvas>(),
         vm_module::make_api<API::Database>(),
         vm_module::make_api<API::Database_Query>(),
@@ -78,6 +77,7 @@ namespace Vital::Sandbox {
         vm_module::make_api<API::HTTP>(),
         vm_module::make_api<API::Crypto>(),
         vm_module::make_api<API::Shrinker>(),
+        vm_module::make_api<API::Exports>(),
 
         // GFX //
         vm_module::make_api<API::Adjustment>(),
