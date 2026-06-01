@@ -38,7 +38,7 @@ namespace Vital::Sandbox::API {
                 if (resource.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: exports.register called outside a resource environment");
 
                 int ref = vm -> set_raw_reference(2);
-                Manager::Sandbox::get_singleton() -> export_register(resource, name, ref);
+                Manager::Sandbox::get_singleton() -> register_export(resource, name, ref);
                 vm -> push_value(true);
                 return 1;
             });
@@ -51,7 +51,7 @@ namespace Vital::Sandbox::API {
                 const std::string resource = vm -> get_string(1);
                 const std::string name = vm -> get_string(2);
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' is not running", resource));
-                int ref = Manager::Sandbox::get_singleton() -> export_get_ref(resource, name);
+                int ref = Manager::Sandbox::get_singleton() -> get_export_ref(resource, name);
                 if (ref == LUA_NOREF) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' has no export '{}'", resource, name));
 
                 int nargs = vm -> get_count() - 2;
@@ -69,7 +69,7 @@ namespace Vital::Sandbox::API {
                 const std::string resource = vm -> get_string(1);
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.list — resource '{}' is not running", resource));
 
-                const auto names = Manager::Sandbox::get_singleton() -> export_list(resource);
+                const auto names = Manager::Sandbox::get_singleton() -> list_exports(resource);
                 vm -> create_table();
                 for (int i = 0; i < static_cast<int>(names.size()); ++i) {
                     vm -> push_value(names[i]);

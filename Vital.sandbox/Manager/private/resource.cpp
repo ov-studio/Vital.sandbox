@@ -373,7 +373,7 @@ namespace Vital::Manager {
         if (was_running) {
             vm -> clear_environment_id(name);
             Engine::Model::unload_resource_models(name);
-            Manager::Sandbox::get_singleton() -> export_clear(name);
+            Manager::Sandbox::get_singleton() -> reset_exports(name);
         }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
 

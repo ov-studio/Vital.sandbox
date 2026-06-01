@@ -100,19 +100,28 @@ namespace Vital::Manager {
 
 
     // Exports //
-    bool Sandbox::export_register(const std::string& resource, const std::string& name, int reference) {
+    int Sandbox::get_export_ref(const std::string& resource, const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
-        auto& tbl = exports[resource];
-        auto it = tbl.find(name);
-        if (it != tbl.end()) {
+        auto rit = exports.find(resource);
+        if (rit == exports.end()) return LUA_NOREF;
+        auto fit = rit -> second.find(name);
+        if (fit == rit -> second.end()) return LUA_NOREF;
+        return fit -> second;
+    }
+    
+    bool Sandbox::register_export(const std::string& resource, const std::string& name, int reference) {
+        std::lock_guard<std::mutex> lock(mutex);
+        auto& map = exports[resource];
+        auto it = map.find(name);
+        if (it != map.end()) {
             vm -> del_raw_reference(it -> second);
-            tbl.erase(it);
+            map.erase(it);
         }
-        tbl[name] = reference;
+        map[name] = reference;
         return true;
     }
 
-    void Sandbox::export_clear(const std::string& resource) {
+    void Sandbox::reset_exports(const std::string& resource) {
         std::lock_guard<std::mutex> lock(mutex);
         auto it = exports.find(resource);
         if (it == exports.end()) return;
@@ -120,7 +129,7 @@ namespace Vital::Manager {
         exports.erase(it);
     }
 
-    std::vector<std::string> Sandbox::export_list(const std::string& resource) const {
+    std::vector<std::string> Sandbox::list_exports(const std::string& resource) const {
         std::lock_guard<std::mutex> lock(mutex);
         std::vector<std::string> result;
         auto it = exports.find(resource);
@@ -128,14 +137,5 @@ namespace Vital::Manager {
         result.reserve(it -> second.size());
         for (const auto& [name, _] : it -> second) result.push_back(name);
         return result;
-    }
-
-    int Sandbox::export_get_ref(const std::string& resource, const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto rit = exports.find(resource);
-        if (rit == exports.end()) return LUA_NOREF;
-        auto fit = rit -> second.find(name);
-        if (fit == rit -> second.end()) return LUA_NOREF;
-        return fit -> second;
     }
 }
