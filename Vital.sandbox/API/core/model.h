@@ -91,7 +91,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 
-            base_class::on_spawned_callback = [](base_class* spawned, bool is_remote) {
+            base_class::on_spawned_callback = [](base_class* spawned, bool remote) {
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, instance] : registry.buffer) {
@@ -99,7 +99,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES NEED SIGNAL FOR SERVER AND CLIENT BOTH
-                auto instance = Instance::init(nullptr, is_remote);
+                auto instance = Instance::init(nullptr, remote);
                 instance -> model = spawned;
                 instance -> store();
             };
