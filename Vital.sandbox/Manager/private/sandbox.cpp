@@ -97,4 +97,5 @@ namespace Vital::Manager {
     Vital::Sandbox::Machine* Sandbox::get_vm() {
         return vm;
     }
+
 }
