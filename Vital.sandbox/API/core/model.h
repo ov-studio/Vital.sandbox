@@ -91,15 +91,15 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm, base_name);
 
-            base_class::on_spawned_callback = [](base_class* spawned) {
+            base_class::on_spawned_callback = [](base_class* spawned, bool is_remote) {
                 {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     for (auto& [id, instance] : registry.buffer) {
                         if (instance -> model == spawned) return;
                     }
                 }
-                // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES SO MAKE SURE, can make callback pass parameter from model.cpp whether it was remote  base_class::on_spawned_callback = [](base_class* spawned, bool remote) or not Instance::init(nullptr, true) is only valid for server instance on client
-                auto instance = Instance::init(nullptr, true);
+                // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES NEED SIGNAL FOR SERVER AND CLIENT BOTH
+                auto instance = Instance::init(nullptr, is_remote);
                 instance -> model = spawned;
                 instance -> store();
             };

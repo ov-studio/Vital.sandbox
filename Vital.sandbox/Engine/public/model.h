@@ -47,7 +47,7 @@ namespace Vital::Engine {
 
             using Models = std::unordered_map<std::string, godot::Ref<godot::PackedScene>>;
 
-            inline static std::function<void(Model*)> on_spawned_callback;
+            inline static std::function<void(Model*, bool)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
         protected:
             static void _bind_methods() {};
