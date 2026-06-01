@@ -98,4 +98,55 @@ namespace Vital::Manager {
         return vm;
     }
 
+
+    // Exports //
+    bool Sandbox::export_add(const std::string& resource, const std::string& fn_name, int lua_ref) {
+        std::lock_guard<std::mutex> lock(exports_mutex);
+        auto& tbl = export_refs[resource];
+        auto it = tbl.find(fn_name);
+        if (it != tbl.end()) {
+            luaL_unref(vm -> get_state(), LUA_REGISTRYINDEX, it -> second);
+            tbl.erase(it);
+        }
+        tbl[fn_name] = lua_ref;
+        return true;
+    }
+
+    bool Sandbox::export_remove(const std::string& resource, const std::string& fn_name) {
+        std::lock_guard<std::mutex> lock(exports_mutex);
+        auto rit = export_refs.find(resource);
+        if (rit == export_refs.end()) return false;
+        auto fit = rit -> second.find(fn_name);
+        if (fit == rit -> second.end()) return false;
+        luaL_unref(vm -> get_state(), LUA_REGISTRYINDEX, fit -> second);
+        rit -> second.erase(fit);
+        return true;
+    }
+
+    void Sandbox::export_clear(const std::string& resource) {
+        std::lock_guard<std::mutex> lock(exports_mutex);
+        auto it = export_refs.find(resource);
+        if (it == export_refs.end()) return;
+        for (auto& [name, ref] : it -> second) luaL_unref(vm -> get_state(), LUA_REGISTRYINDEX, ref);
+        export_refs.erase(it);
+    }
+
+    std::vector<std::string> Sandbox::export_list(const std::string& resource) const {
+        std::lock_guard<std::mutex> lock(exports_mutex);
+        std::vector<std::string> result;
+        auto it = export_refs.find(resource);
+        if (it == export_refs.end()) return result;
+        result.reserve(it -> second.size());
+        for (const auto& [name, _] : it -> second) result.push_back(name);
+        return result;
+    }
+
+    int Sandbox::export_get_ref(const std::string& resource, const std::string& fn_name) const {
+        std::lock_guard<std::mutex> lock(exports_mutex);
+        auto rit = export_refs.find(resource);
+        if (rit == export_refs.end()) return LUA_NOREF;
+        auto fit = rit -> second.find(fn_name);
+        if (fit == rit -> second.end()) return LUA_NOREF;
+        return fit -> second;
+    }
 }
