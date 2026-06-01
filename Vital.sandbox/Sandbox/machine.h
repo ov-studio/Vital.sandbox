@@ -526,8 +526,12 @@ namespace Vital::Sandbox {
             void set_reference(const std::string& name, int index = 1) {
                 Tool::assert_main_thread("Machine::set_reference");
                 del_reference(name);
-                push(index);
-                reference.emplace(name, luaL_ref(state, LUA_REGISTRYINDEX));
+                reference.emplace(name, set_raw_reference(index));
+            }
+
+            int set_raw_reference(int index = -1) {
+                push(state, index);
+                return luaL_ref(state, LUA_REGISTRYINDEX);
             }
 
             void del_reference(const std::string& name) {

@@ -37,7 +37,7 @@ namespace Vital::Sandbox::API {
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
                 if (resource.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: exports.register called outside a resource environment");
 
-                int ref = vm -> push_reference(2);
+                int ref = vm -> set_raw_reference(2);
                 Manager::Sandbox::get_singleton() -> export_add(resource, fn_name, ref);
                 vm -> push_value(true);
                 return 1;
@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' is not running", resource));
                 int ref = Manager::Sandbox::get_singleton() -> export_get_ref(resource, fn_name);
                 if (ref == LUA_NOREF) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' has no export '{}'", resource, fn_name));
-                
+
                 int nargs = vm -> get_count() - 2;
                 vm -> get_raw_reference(ref);
                 if (nargs > 0) vm -> rotate(3, 1);
