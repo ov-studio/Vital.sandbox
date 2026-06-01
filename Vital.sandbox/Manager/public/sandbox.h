@@ -73,6 +73,7 @@ namespace Vital::Manager {
 
 
             // Exports //
+			// TODO: Improve
             bool export_add(const std::string& resource, const std::string& fn_name, int lua_ref);
             bool export_remove(const std::string& resource, const std::string& fn_name);
             void export_clear(const std::string& resource);

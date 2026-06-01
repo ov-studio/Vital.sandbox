@@ -100,6 +100,7 @@ namespace Vital::Manager {
 
 
     // Exports //
+    // TODO: Improve
     bool Sandbox::export_add(const std::string& resource, const std::string& fn_name, int lua_ref) {
         std::lock_guard<std::mutex> lock(exports_mutex);
         auto& tbl = export_refs[resource];

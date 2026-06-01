@@ -54,17 +54,8 @@ namespace Vital::Sandbox::API {
                 auto* L = vm -> get_state();
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' is not running", resource));
 
-                int ref = LUA_NOREF;
-                {
-                    auto* sbx = Manager::Sandbox::get_singleton();
-                    std::lock_guard<std::mutex> lock(sbx -> exports_mutex);
-                    auto rit = sbx -> export_refs.find(resource);
-                    if (rit == sbx -> export_refs.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' has no exports", resource));
-                    auto fit = rit -> second.find(fn_name);
-                    if (fit == rit -> second.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' has no export '{}'", resource, fn_name));
-                    ref = fit -> second;
-                }
-
+                int ref = Manager::Sandbox::get_singleton() -> export_get_ref(resource, fn_name);
+                if (ref == LUA_NOREF) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' has no export '{}'", resource, fn_name));
                 int nargs = lua_gettop(L) - 2;
                 lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
                 if (nargs > 0) lua_rotate(L, 3, 1);
