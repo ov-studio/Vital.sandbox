@@ -344,7 +344,7 @@ namespace Vital::Sandbox {
             void push_self(Machine* vm) override {
                 auto instance = Derived::find_unlocked(static_cast<Derived*>(this) -> id);
                 if (!instance || !instance -> userdata) vm -> push_nil();
-                else this -> vm -> get_reference(this -> self_reference(), true);
+                else instance -> get_ref(self_reference(), true);
             }
 
             bool store(Machine* vm, const std::string& type_name) {
