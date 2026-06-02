@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Tool/yaml.h>
@@ -28,6 +27,7 @@
 #include <Vital.sandbox/Tool/inspect.h>
 #include <Vital.sandbox/Tool/crypto.h>
 #include <Vital.sandbox/Tool/shrinker.h>
+#include <Vital.sandbox/Sandbox/machine.h>
 #include <Vital.sandbox/Vendor/lua/lua.hpp>
 
 
@@ -394,6 +394,7 @@ namespace Vital::Sandbox {
                 vm -> create_object(type_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 instance -> set_reference(instance -> self_reference(), -1);
+                Manager::Sandbox::get_singleton() -> signal("vital.entity:on_created", Tool::StackValue(instance));
                 return true;
             }
 
@@ -405,6 +406,7 @@ namespace Vital::Sandbox {
             static bool erase_unlocked(std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
+                Manager::Sandbox::get_singleton() -> signal("vital.entity:on_destroyed", Tool::StackValue(instance));
                 Derived::Owner::registry.buffer.erase(it);
                 instance -> destroyed = true;
                 return true;
