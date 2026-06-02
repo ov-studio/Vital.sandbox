@@ -146,4 +146,16 @@ void initialize_vital_events() {
         #endif
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
+
+
+
+    /*
+    // TODO: ADD TO THIS CONDITIONAL 'is_ptr' accessor check since casting to manually is unsafe imo
+    Vital::Tool::Event::bind("vital.entity:on_created", [](Vital::Tool::Stack& args) {
+        auto instance = args.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>();
+        if (instance && instance->is_alive()) {
+            // use instance normally
+        }
+    });
+    */
 }
