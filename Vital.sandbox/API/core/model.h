@@ -98,8 +98,7 @@ namespace Vital::Sandbox::API {
                 // TODO: THIS CAN BE CALLED ON SERVER TOO, WE WANNA SHARE BETWEEN CLIENT AND SERVER INSTANCES NEED SIGNAL FOR SERVER AND CLIENT BOTH
                 auto instance = Instance::init(nullptr, remote);
                 instance -> model = spawned;
-                instance -> store();
-                instance -> bind(vm, base_name);
+                instance -> store(vm, base_name);
                 Manager::Sandbox::get_singleton() -> signal("vital.entity:on_created", Tool::StackValue(instance));
             };
 

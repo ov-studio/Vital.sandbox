@@ -61,8 +61,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(vm);
                 instance -> set_ref(instance -> reference(), 1);
                 vm -> pop(1);
-                instance -> store();
-                instance -> bind(vm, base_name);
+                instance -> store(vm, base_name);
 
                 auto weak = std::weak_ptr<Instance>(instance);
                 auto timer = Tool::Timer::create([weak, executions](Tool::Timer*, int count) {
