@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
         static void inject(Machine* vm) {
             vm -> get_global(base_name);
             vm -> get_table_field("execute", -1);
-            vm -> set_reference(Manager::Sandbox::signal_reference, -1);
+            vm -> set_reference("vsdk", Manager::Sandbox::signal_reference, -1);
             vm -> pop(2);
             vm -> table_set_nil("execute", base_name);
         }
