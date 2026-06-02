@@ -310,7 +310,7 @@ namespace Vital::Sandbox {
     struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
         using std::enable_shared_from_this<Derived>::shared_from_this;
         private:
-            std::vector<std::string> refs;
+            std::vector<std::string> references;
         public:
             int id {};
             std::string env;
@@ -332,13 +332,17 @@ namespace Vital::Sandbox {
                 return env.empty();
             }
 
-            void set_ref(const std::string& ref, int index) {
-                vm -> set_reference("runtime", ref, index);
-                refs.push_back(ref);
+            void set_ref(const std::string& name, int index) {
+                vm -> set_reference("runtime", name, index);
+                references.push_back(name);
             }
 
-            void get_ref(const std::string& ref) {
-                vm -> get_reference("runtime", ref, true);
+            int get_ref(const std::string& name, bool push_to_stack = false) {
+                vm -> get_reference("runtime", name, push_to_stack);
+            }
+
+            int del_ref(const std::string& name) {
+                vm -> del_reference("runtime", name);
             }
 
             void push_self(Machine* vm) override {
@@ -407,8 +411,8 @@ namespace Vital::Sandbox {
             static bool release(std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
-                    for (auto& ref : instance -> refs) instance -> vm -> del_reference(ref);
-                    instance -> refs.clear();
+                    for (auto& name : instance -> references) instance -> del_ref(name);
+                    instance -> references.clear();
                 }
                 instance -> vm = nullptr;
                 return true;
