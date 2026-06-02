@@ -385,9 +385,7 @@ namespace Vital::Engine {
             try { unload(name); }
             catch (...) {}
         }
-        if (!to_unload.empty()) {
-            rm -> log("sbox", fmt::format("resource `{}` unloaded {} model asset(s)", resource, to_unload.size()));
-        }
+        if (!to_unload.empty()) rm -> log("sbox", fmt::format("resource `{}` unloaded {} model asset(s)", resource, to_unload.size()));
     }
 
 
