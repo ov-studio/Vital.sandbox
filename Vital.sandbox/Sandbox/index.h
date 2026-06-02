@@ -338,10 +338,10 @@ namespace Vital::Sandbox {
             }
 
             int get_reference(const std::string& name, bool push_to_stack = false) {
-                vm -> get_reference("runtime", name, push_to_stack);
+                return vm -> get_reference("runtime", name, push_to_stack);
             }
 
-            int del_reference(const std::string& name) {
+            void del_reference(const std::string& name) {
                 vm -> del_reference("runtime", name);
             }
 
