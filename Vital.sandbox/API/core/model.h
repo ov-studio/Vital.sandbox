@@ -66,26 +66,6 @@ namespace Vital::Sandbox::API {
         inline static std::mutex scope_mutex;
         inline static std::unordered_map<std::string, std::string> model_scope;
 
-        // Called from Engine::Model::_notification(NOTIFICATION_PREDELETE).
-        // Finds every Instance whose model pointer matches and nulls it out,
-        // so Lua scripts holding a stale reference get a clean "not valid" error
-        // instead of a crash.
-        static void on_model_node_destroyed(base_class* dying) {
-            std::lock_guard<std::mutex> lock(registry.mutex);
-            for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
-                auto& instance = it -> second;
-                if (instance -> model != dying) { ++it; continue; }
-                ++it;
-                Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
-                instance -> on_model_destroyed();
-                // TODO: NEED TO REMOVE GUARDS SHOULD BE ERAED ON CLIENT TOO SINCE IT WAS REPLICATED ALSO IT AUTOMATICALLY SIGNALKS DESTROY EVENT THEN ON LUA
-                #if defined(VSDK_Client)
-                Instance::erase_unlocked(instance);
-                Instance::release(instance);
-                #endif
-            }
-        }
-
         static void bind(Machine* vm) {
             vm_module::register_type<Model>(vm);
 
@@ -103,7 +83,16 @@ namespace Vital::Sandbox::API {
             };
 
             base_class::on_destroyed_callback = [](base_class* dying) {
-                on_model_node_destroyed(dying);
+                std::lock_guard<std::mutex> lock(registry.mutex);
+                for (auto it = registry.buffer.begin(); it != registry.buffer.end();) {
+                    auto& instance = it -> second;
+                    if (instance -> model != dying) { ++it; continue; }
+                    ++it;
+                    Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
+                    instance -> on_model_destroyed();
+                    Instance::erase_unlocked(instance);
+                    Instance::release(instance);
+                }
             };
 
             API::bind(vm, {base_name}, "load", [](auto vm, auto& id) -> int {
