@@ -74,7 +74,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(raw)")
                     .require(2, &Machine::is_string);
 

@@ -63,17 +63,17 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "get_antialiasing", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_antialiasing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> font -> get_antialiasing());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "get_oversampling", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_oversampling", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> font -> get_oversampling());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_antialiasing", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_antialiasing", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(2, &Machine::is_bool);
 
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_oversampling", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_oversampling", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(2, &Machine::is_number);
 

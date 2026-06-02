@@ -96,17 +96,17 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "is_active", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_active", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> rendertarget -> is_active());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> rendertarget -> get_size());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_active", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_active", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(clear = false, instant = false)")
                     .optional(2, &Machine::is_bool)
                     .optional(3, &Machine::is_bool);

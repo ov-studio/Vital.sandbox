@@ -91,12 +91,12 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "is_pending", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_pending", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> state == State::Pending);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "resolve", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "resolve", [](auto vm, auto self, auto& id) -> int {
                 if (self -> state != State::Pending) vm -> push_value(false);
                 else {
                     settle(self, State::Resolved, vm, 2, vm -> get_count() - 1);
@@ -105,7 +105,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "reject", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "reject", [](auto vm, auto self, auto& id) -> int {
                 if (self -> state != State::Pending) vm -> push_value(false);
                 else {
                     settle(self, State::Rejected, vm, 2, vm -> get_count() - 1);

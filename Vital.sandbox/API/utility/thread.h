@@ -130,7 +130,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (self -> sleeping || self -> awaiting) vm -> push_value(false);
                 else {
                     self -> get_reference(self -> reference(), true);
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "pause", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "pause", [](auto vm, auto self, auto& id) -> int {
                 if (!vm -> is_virtual()) {
                     vm -> push_value(false);
                     return 1;
@@ -156,7 +156,7 @@ namespace Vital::Sandbox::API {
                 }
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "sleep", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "sleep", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(duration)")
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
@@ -187,7 +187,7 @@ namespace Vital::Sandbox::API {
                 }
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "await", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
                     .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, Promise::base_name, index); });
 

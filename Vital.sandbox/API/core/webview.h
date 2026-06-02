@@ -69,52 +69,52 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "is_visible", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_visible());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_fullscreen", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_fullscreen", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_fullscreen());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_transparent", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_transparent", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_transparent());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_incognito", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_incognito", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_incognito());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_autoplay", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_autoplay", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_autoplay());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_zoomable", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_zoomable", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_zoomable());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_devtools_visible());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "get_position", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> get_position());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "get_size", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> get_size());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_visible", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(2, &Machine::is_bool);
 
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_position", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)")
                     .require(2, &Machine::is_vector2);
 
@@ -132,7 +132,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_size", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(size)")
                     .require(2, &Machine::is_vector2);
 
@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(2, &Machine::is_bool);
 
@@ -150,7 +150,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(handler)")
                     .require(2, &Machine::is_function);
 
@@ -167,7 +167,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "load_url", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "load_url", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(url)")
                     .require(2, &Machine::is_string);
 
@@ -176,7 +176,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "load_html", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "load_html", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(html)")
                     .require(2, &Machine::is_string);
 
@@ -185,25 +185,25 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "clear_history", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "clear_history", [](auto vm, auto self, auto& id) -> int {
                 self -> webview -> clear_history();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "focus", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "focus", [](auto vm, auto self, auto& id) -> int {
                 self -> webview -> focus();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "reload", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "reload", [](auto vm, auto self, auto& id) -> int {
                 self -> webview -> reload();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "zoom", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "zoom", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(2, &Machine::is_number);
 
@@ -212,13 +212,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 self -> webview -> update();
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "eval", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "eval", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(2, &Machine::is_string);
 
@@ -227,7 +227,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "emit", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "emit", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(2, &Machine::is_string);
 

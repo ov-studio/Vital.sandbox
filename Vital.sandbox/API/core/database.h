@@ -95,12 +95,12 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "is_connected", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_connected", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> db -> is_connected());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "define", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "define", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(table, schema)")
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
@@ -120,7 +120,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "sync", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "sync", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> db;
                 auto promise_id = Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "table", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "table", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(2, &Machine::is_string);
 

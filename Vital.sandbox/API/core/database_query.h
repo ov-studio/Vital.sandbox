@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, base_name, "select", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "select", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(...)")
                     .require(2, &Machine::is_string);
 
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "where", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "where", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(column, op, value)")
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
@@ -94,7 +94,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "insert", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "insert", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(data)")
                     .require(2, &Machine::is_table);
 
@@ -104,13 +104,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "delete", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "delete", [](auto vm, auto self, auto& id) -> int {
                 self -> query -> query_type = "delete";
                 self -> get_reference(self -> self_reference(), true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "update", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(data)")
                     .require(2, &Machine::is_table);
 
@@ -120,7 +120,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "fetch", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "fetch", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(limit = 0)")
                     .optional(2, &Machine::is_number);
 
@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "alter", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "alter", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(actions)")
                     .require(2, &Machine::is_table);
 
@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "drop", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "drop", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
@@ -246,7 +246,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "truncate", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "truncate", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
                 auto promise_id = Promise::make(vm) -> id;
@@ -272,7 +272,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, base_name, "execute", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto instance_id = self -> id;
                 auto promise_id = Promise::make(vm) -> id;
 
