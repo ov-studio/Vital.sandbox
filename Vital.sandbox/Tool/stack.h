@@ -33,8 +33,8 @@ namespace Vital::Tool {
             float,
             double,
             std::string,
-            std::shared_ptr<Stack>,
-            std::shared_ptr<void>
+            std::shared_ptr<void>,
+            std::shared_ptr<Stack>
         >;
         stack_value value{nullptr};
 
@@ -51,7 +51,7 @@ namespace Vital::Tool {
         StackValue(std::string v) : value(std::move(v)) {}
         StackValue(std::shared_ptr<Stack> v) : value(std::move(v)) {}
         template<typename T>
-        StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))) {}
+        explicit StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))) {}
         explicit StackValue(Stack v);
 
 
@@ -61,6 +61,7 @@ namespace Vital::Tool {
         template<typename T>
         const T& as() const { return std::get<T>(value); }
         template<typename T>
+        bool is_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
         std::shared_ptr<T> as_ptr() const { return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value)); }
 
 
@@ -156,6 +157,7 @@ namespace Vital::Tool {
                     else if constexpr (std::is_same_v<T, float>) return (double)val;
                     else if constexpr (std::is_same_v<T, double>) return val;
                     else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<void>>) return godot::Variant();
                     else if constexpr (std::is_same_v<T, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
                     return godot::Variant();
                 }, sv.value);
@@ -194,6 +196,10 @@ namespace Vital::Tool {
             if (!a && !b) return true;
             if (!a || !b) return false;
             return *a == *b;
+        }
+        if (std::holds_alternative<std::shared_ptr<void>>(value) &&
+            std::holds_alternative<std::shared_ptr<void>>(other.value)) {
+            return std::get<std::shared_ptr<void>>(value) == std::get<std::shared_ptr<void>>(other.value);
         }
         return value == other.value;
     }
