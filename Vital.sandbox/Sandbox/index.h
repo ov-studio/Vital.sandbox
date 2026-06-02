@@ -142,11 +142,11 @@ namespace Vital::Sandbox {
             }
 
             template<typename T>
-            static void register_type(Machine* vm, const std::string& type_name) {
-                vm -> create_metatable(type_name);
+            static void register_type(Machine* vm) {
+                vm -> create_metatable(T::base_name);
                 vm -> create_table();
                 T::methods(vm);
-                bind_natives<T, typename T::Instance>(vm, type_name);
+                bind_natives<T, typename T::Instance>(vm);
                 vm -> set_table_field("__index", -2);
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                     auto ud = static_cast<void**>(lua_touserdata(state, 1));
@@ -198,37 +198,37 @@ namespace Vital::Sandbox {
             }
 
             template<typename TOwner, typename TInstance>
-            static void bind_natives(Machine* vm, const std::string& type_name) {
-                bind_method<TInstance>(vm, type_name, "is_type", [type_name](auto vm, auto self, auto& id) -> int {
+            static void bind_natives(Machine* vm) {
+                bind_method<TInstance>(vm, TOwner::base_name, "is_type", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(type_name)")
                         .require(2, &Machine::is_string);
-                        
-                    vm -> push_value(type_name == vm -> get_string(2));
+
+                    vm -> push_value(std::string(TOwner::base_name) == vm -> get_string(2));
                     return 1;
                 });
-
+            
                 #if defined(VSDK_Client)
                 if constexpr (TOwner::has_remote) {
-                    bind_method<TInstance>(vm, type_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
+                    bind_method<TInstance>(vm, TOwner::base_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
                         vm -> push_value(self -> is_remote());
                         return 1;
                     });
                 }
-
+            
                 if constexpr (TOwner::has_streaming) {
-                    bind_method<TInstance>(vm, type_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
+                    bind_method<TInstance>(vm, TOwner::base_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
                         vm -> push_value(self -> is_streamed());
                         return 1;
                     });
                 }
                 #endif
-
-                bind_method<TInstance>(vm, type_name, "get_type", [type_name](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(type_name.empty() ? false : type_name);
+            
+                bind_method<TInstance>(vm, TOwner::base_name, "get_type", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(std::string(TOwner::base_name).empty() ? false : TOwner::base_name;
                     return 1;
                 });
-
-                bind_method<TInstance>(vm, type_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+            
+                bind_method<TInstance>(vm, TOwner::base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
                     #if defined(VSDK_Client)
                     if constexpr (TOwner::has_remote) {
                         if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
