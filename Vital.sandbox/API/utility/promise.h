@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
             if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
             auto state = dst -> get_state();
             for (int i = 1; i <= instance -> value_count; ++i) {
-                int ref = instance -> vm -> get_reference(instance -> value_reference(i));
+                int ref = instance -> get_ref(instance -> value_reference(i));
                 lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
             }
             return instance -> value_count;
