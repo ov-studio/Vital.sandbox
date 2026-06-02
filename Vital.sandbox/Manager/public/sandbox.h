@@ -22,7 +22,6 @@
 /////////////////////////////
 
 namespace Vital::Manager {
-    class Sandbox;
     class Sandbox : public godot::Node {
         public:
             inline static const std::string signal_reference = "network:execute";
