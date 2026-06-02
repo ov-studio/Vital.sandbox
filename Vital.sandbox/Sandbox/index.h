@@ -146,7 +146,7 @@ namespace Vital::Sandbox {
                 vm -> create_metatable(T::base_name);
                 vm -> create_table();
                 T::methods(vm);
-                bind_natives<T, typename T::Instance>(vm);
+                bind_natives<T>(vm);
                 vm -> set_table_field("__index", -2);
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                     auto ud = static_cast<void**>(lua_touserdata(state, 1));
@@ -197,8 +197,10 @@ namespace Vital::Sandbox {
                 lua_setfield(vm -> get_state(), -2, name.c_str());
             }
 
-            template<typename TOwner, typename TInstance>
+            template<typename TInstance>
             static void bind_natives(Machine* vm) {
+                using TOwner = typename TInstance::Owner;
+
                 bind_method<TInstance>(vm, "is_type", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(type_name)")
                         .require(2, &Machine::is_string);
