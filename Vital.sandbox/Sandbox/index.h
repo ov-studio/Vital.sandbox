@@ -301,8 +301,17 @@ namespace Vital::Sandbox {
             }
     };
 
+    // TODO: Improve, anchor needed?
+    struct vm_instance_anchor {
+        virtual ~vm_instance_anchor() = default;
+        virtual void push_associated_lua(Machine* vm) = 0;
+    };
+
+    // TODO: Improve - push_associated_lua
     template<typename Derived>
-    struct vm_instance : std::enable_shared_from_this<Derived> {
+    struct vm_instance : public vm_instance_anchor, public std::enable_shared_from_this<Derived> {
+        // Bring shared_from_this explicitly into dependent scope to fix C3861 errors globally
+        using std::enable_shared_from_this<Derived>::shared_from_this;
         private:
             std::vector<std::string> refs;
         public:
@@ -313,6 +322,15 @@ namespace Vital::Sandbox {
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
+
+            void push_associated_lua(Machine* vm) override {
+                auto self_derived = static_cast<Derived*>(this);
+                if (!self_derived -> is_alive()) {
+                    vm -> push_nil();
+                    return;
+                }
+                if (this -> userdata) this -> vm -> get_reference(this -> self_reference(), true);
+            }
 
             bool is_alive() const { 
                 return true;
