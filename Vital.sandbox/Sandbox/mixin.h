@@ -41,7 +41,7 @@ namespace Vital::Sandbox {
                     if constexpr (std::is_same_v<T, std::nullptr_t>)
                         self() -> push_nil();
                     else if constexpr (std::is_same_v<T, std::shared_ptr<void>>) {
-                        if (!v) { self() -> push_nil();
+                        if (!v) self() -> push_nil();
                         else {
                             // TODO: VERIFY and Improve vm_instance_anchor
                             // Upcast the type-erased void pointer to our unified anchor interface
