@@ -61,11 +61,11 @@ namespace Vital::Manager {
             if (initialized) return;
             initialized = true;
 
-            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
-                if (!args.object.count("event")) return;
-                const std::string event = args.object.at("event").as<std::string>();
+            Tool::Event::bind("vital.network:packet", [this](Tool::Stack arguments) {
+                if (!arguments.object.count("event")) return;
+                const std::string event = arguments.object.at("event").as<std::string>();
                 if (event != "asset:manifest") return;
-                receive_manifest(args);
+                receive_manifest(arguments);
             });
 
             Tool::print("sbox", "Asset: initialized");
@@ -292,9 +292,9 @@ namespace Vital::Manager {
 
     #if defined(Vital_SDK_Client)
 
-    void Asset::receive_manifest(const Tool::Stack& args) {
-        int count = args.object.at("asset_count").as<int32_t>();
-        int http_port = args.object.count("http_port") ? args.object.at("http_port").as<int32_t>() : 7778;
+    void Asset::receive_manifest(const Tool::Stack& arguments) {
+        int count = arguments.object.at("asset_count").as<int32_t>();
+        int http_port = arguments.object.count("http_port") ? arguments.object.at("http_port").as<int32_t>() : 7778;
 
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url = "http://" + server_ip + ":" + std::to_string(http_port);
@@ -304,10 +304,9 @@ namespace Vital::Manager {
         std::vector<std::string> in_progress;
 
         for (int i = 0; i < count; i++) {
-            std::string path = args.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
-            std::string hash = args.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
-            std::string group = args.object.count("asset_group_" + std::to_string(i))
-                ? args.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
+            std::string path = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
+            std::string hash = arguments.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
+            std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
             if (active_downloads.count(path)) {
                 active_downloads[path] -> groups.insert(group);

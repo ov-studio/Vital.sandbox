@@ -42,33 +42,33 @@ void setup() {
     auto nm = Vital::Manager::Network::get_singleton();
 
     #if defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Connecting...");
     });
-    Vital::Tool::Event::bind("vital.network:connect:failed", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connect:failed", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Failed to connect");
     });
-    Vital::Tool::Event::bind("vital.network:reconnect", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:reconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Retrying...");
     });
-    Vital::Tool::Event::bind("vital.network:reconnect:failed", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:reconnect:failed", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Gave up reconnecting");
     });
-    Vital::Tool::Event::bind("vital.network:disconnect", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Disconnected cleanly");
     });
     nm -> set_reconnect_config(5, 3.0f);
     #else
-    Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:host", [](Vital::Tool::Stack) {
 
     });
-    Vital::Tool::Event::bind("vital.network:peer:join", [](Vital::Tool::Stack& args) {
-        Vital::Tool::print("sbox", "Player joined: ", args.array[0].as<int32_t>());
+    Vital::Tool::Event::bind("vital.network:peer:join", [](Vital::Tool::Stack arguments) {
+        Vital::Tool::print("sbox", "Player joined: ", arguments.array[0].as<int32_t>());
     });
-    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack& args) {
-        Vital::Tool::print("sbox", "Player left: ", args.array[0].as<int32_t>());
+    Vital::Tool::Event::bind("vital.network:peer:leave", [](Vital::Tool::Stack arguments) {
+        Vital::Tool::print("sbox", "Player left: ", arguments.array[0].as<int32_t>());
     });
-    Vital::Tool::Event::bind("vital.network:close", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:close", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Server closed");
     });
     #endif
@@ -108,7 +108,7 @@ void initialize_vital_events() {
 
     // Network //
     #if defined(Vital_SDK_Client)
-    Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:connect:success", [](Vital::Tool::Stack) {
         auto nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
         Vital::Engine::Model::on_connected();
@@ -116,7 +116,7 @@ void initialize_vital_events() {
         Vital::Manager::Asset::get_singleton() -> set_server_http_ip(nm -> get_server_ip());
     });
 
-    Vital::Tool::Event::bind("vital.network:server:disconnect", [](Vital::Tool::Stack&) {
+    Vital::Tool::Event::bind("vital.network:server:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Lost connection to server");
         Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
         Vital::Manager::Resource::get_singleton() -> stop_all();
@@ -151,8 +151,8 @@ void initialize_vital_events() {
 
     /*
     // TODO: ADD TO THIS CONDITIONAL 'is_ptr' accessor check since casting to manually is unsafe imo
-    Vital::Tool::Event::bind("vital.entity:on_created", [](Vital::Tool::Stack& args) {
-        auto instance = args.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>();
+    Vital::Tool::Event::bind("vital.entity:on_created", [](Vital::Tool::Stack arguments) {
+        auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>();
         if (instance && instance->is_alive()) {
             // use instance normally
         }

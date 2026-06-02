@@ -49,8 +49,8 @@ namespace Vital::Manager {
         return out;
     }
 
-    void Resource::Internal::unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models) {
-        if (const auto* sv = args.get("scripts")) {
+    void Resource::Internal::unpack_manifest(const Tool::Stack& arguments, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models) {
+        if (const auto* sv = arguments.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());
             for (const auto& entry : nested.array) {
@@ -58,12 +58,12 @@ namespace Vital::Manager {
                 scripts.push_back({ s.object.at("src").as<std::string>(), s.object.at("type").as<std::string>() });
             }
         }
-        if (const auto* sv = args.get("files")) {
+        if (const auto* sv = arguments.get("files")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             files.reserve(nested.array.size());
             for (const auto& entry : nested.array) files.push_back(entry.as<std::string>());
         }
-        if (const auto* sv = args.get("models")) {
+        if (const auto* sv = arguments.get("models")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             models.reserve(nested.array.size());
             for (const auto& entry : nested.array) models.push_back(entry.as<std::string>());
@@ -587,9 +587,9 @@ namespace Vital::Manager {
         if (initialized) return;
         initialized = true;
         #if defined(Vital_SDK_Client)
-            Tool::Event::bind("asset:file_ready", [this](Tool::Stack args) {
-                if (!args.object.count("path")) return;
-                const std::string path = args.object.at("path").as<std::string>();
+            Tool::Event::bind("asset:file_ready", [this](Tool::Stack arguments) {
+                if (!arguments.object.count("path")) return;
+                const std::string path = arguments.object.at("path").as<std::string>();
                 auto rm = Resource::get_singleton();
                 std::string ready_name;
                 {
@@ -608,17 +608,17 @@ namespace Vital::Manager {
                 }
             });
 
-            Tool::Event::bind("vital.network:packet", [this](Tool::Stack args) {
-                if (!args.object.count("event")) return;
-                const std::string event = args.object.at("event").as<std::string>();
+            Tool::Event::bind("vital.network:packet", [this](Tool::Stack arguments) {
+                if (!arguments.object.count("event")) return;
+                const std::string event = arguments.object.at("event").as<std::string>();
                 if (event == "vital.resource:started") {
-                    if (!args.object.count("name")) return;
+                    if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
-                    const std::string name = args.object.at("name").as<std::string>();
+                    const std::string name = arguments.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
                     std::vector<std::string> models;
-                    Internal::unpack_manifest(args, scripts, files, models);
+                    Internal::unpack_manifest(arguments, scripts, files, models);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     bool already;
                     {
@@ -628,18 +628,18 @@ namespace Vital::Manager {
                     if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "vital.resource:stopped") {
-                    if (!args.object.count("name")) return;
+                    if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
-                    const std::string name = args.object.at("name").as<std::string>();
+                    const std::string name = arguments.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Internal::stop(name);
                 }
             });
         #else
             scan();
-            Tool::Event::bind("vital.network:peer:join", [](Tool::Stack args) {
-                if (args.array.empty()) return;
-                const int peer_id = args.array[0].as<int32_t>();
+            Tool::Event::bind("vital.network:peer:join", [](Tool::Stack arguments) {
+                if (arguments.array.empty()) return;
+                const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
         #endif
