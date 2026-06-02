@@ -161,11 +161,11 @@ namespace Vital::Manager {
                     std::lock_guard<std::mutex> lock(rm -> mutex);
                     resource = Internal::get_resource(name);
                 }
-                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:started", name, resource));
-                Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:started", name, resource));
+                Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
             });
         #else
-            Manager::Sandbox::get_singleton() -> signal("vital.resource:started", Tool::StackValue(name));
+            Manager::Sandbox::get_singleton() -> signal("resource:started", Tool::StackValue(name));
         #endif
     }
 
@@ -379,11 +379,11 @@ namespace Vital::Manager {
 
         #if !defined(Vital_SDK_Client)
             Engine::Core::get_singleton() -> enqueue([rm, name]() {
-                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("vital.resource:stopped", name));
-                Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
+                Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:stopped", name));
+                Manager::Sandbox::get_singleton() -> signal("resource:stopped", Tool::StackValue(name));
             });
         #else
-            if (was_running) Manager::Sandbox::get_singleton() -> signal("vital.resource:stopped", Tool::StackValue(name));
+            if (was_running) Manager::Sandbox::get_singleton() -> signal("resource:stopped", Tool::StackValue(name));
         #endif
         return true;
     }
@@ -608,10 +608,10 @@ namespace Vital::Manager {
                 }
             });
 
-            Tool::Event::bind("vital.network:packet", [this](Tool::Stack arguments) {
+            Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("event")) return;
                 const std::string event = arguments.object.at("event").as<std::string>();
-                if (event == "vital.resource:started") {
+                if (event == "resource:started") {
                     if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
                     const std::string name = arguments.object.at("name").as<std::string>();
@@ -627,7 +627,7 @@ namespace Vital::Manager {
                     }
                     if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
-                else if (event == "vital.resource:stopped") {
+                else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
                     const std::string name = arguments.object.at("name").as<std::string>();
@@ -637,7 +637,7 @@ namespace Vital::Manager {
             });
         #else
             scan();
-            Tool::Event::bind("vital.network:peer:join", [](Tool::Stack arguments) {
+            Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
                 const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
@@ -652,7 +652,7 @@ namespace Vital::Manager {
         for (const auto& name : running) {
             auto resource = Internal::get_resource(name);
             if (!resource) continue;
-            Manager::Network::get_singleton() -> send(Internal::build_packet("vital.resource:started", name, resource), peer_id);
+            Manager::Network::get_singleton() -> send(Internal::build_packet("resource:started", name, resource), peer_id);
         }
     }
     #endif

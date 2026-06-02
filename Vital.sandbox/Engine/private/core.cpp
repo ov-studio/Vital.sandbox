@@ -39,8 +39,8 @@ namespace Vital::Engine {
                 enqueue([this]() {
                     Tool::print("sbox", "Core: Vital.kit ready");
                     kit_ready.store(true);
-                    Tool::Event::emit("vital.kit:ready");
-                    Tool::Event::emit("vital.core:ready");
+                    Tool::Event::emit("kit:ready");
+                    Tool::Event::emit("core:ready");
                     set_process(true);
                 });
                 call_deferred("drain");
@@ -58,7 +58,7 @@ namespace Vital::Engine {
         }
         if (!is_ready()) return;
         teardown();
-        Tool::Event::emit("vital.core:free");
+        Tool::Event::emit("core:free");
     }
 
     void Core::_process(double delta) {
@@ -101,7 +101,7 @@ namespace Vital::Engine {
         #if defined(Vital_SDK_Client)
         free_environment();
         #endif
-        Tool::Event::emit("vital.core:teardown");
+        Tool::Event::emit("core:teardown");
     }
 
     void Core::execute(std::function<void()> exec) {

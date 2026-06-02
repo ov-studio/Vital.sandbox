@@ -40,7 +40,7 @@ namespace Vital::Engine {
                 on_message(message);
             });
 
-            Tool::Event::bind("vital.kit:ready", [this](Tool::Stack arguments) {
+            Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
                 webview -> load_html(Manager::Kit::fetch_module("console"));
             });
         #else
@@ -560,7 +560,7 @@ namespace Vital::Engine {
         Tool::Stack arguments;
         arguments.array.reserve(tokens.size() - 1);
         for (std::size_t i = 1; i < tokens.size(); ++i) arguments.array.emplace_back(tokens[i]);
-        Manager::Sandbox::get_singleton() -> signal("vital.sandbox:console_input",
+        Manager::Sandbox::get_singleton() -> signal("sandbox:console_input",
             Tool::StackValue(tokens[0]),
             Tool::StackValue(std::move(arguments))
         );

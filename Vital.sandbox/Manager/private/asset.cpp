@@ -61,7 +61,7 @@ namespace Vital::Manager {
             if (initialized) return;
             initialized = true;
 
-            Tool::Event::bind("vital.network:packet", [this](Tool::Stack arguments) {
+            Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("event")) return;
                 const std::string event = arguments.object.at("event").as<std::string>();
                 if (event != "asset:manifest") return;
