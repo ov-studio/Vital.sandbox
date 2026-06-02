@@ -43,13 +43,8 @@ namespace Vital::Sandbox {
                     else if constexpr (std::is_same_v<T, std::shared_ptr<void>>) {
                         if (!v) self() -> push_nil();
                         else {
-                            // TODO: VERIFY and Improve vm_instance_anchor
-                            // Upcast the type-erased void pointer to our unified anchor interface
-                            auto anchor_ptr = std::static_pointer_cast<Vital::Sandbox::vm_instance_anchor>(v);
-                            if (anchor_ptr) {
-                                // Automatically dispatches to the correct derived class (webview, model, font, etc.)
-                                anchor_ptr -> push_associated_lua(self());
-                            }
+                            auto base_ptr = std::static_pointer_cast<Vital::Sandbox::vm_instance_base>(v);
+                            if (base_ptr) base_ptr -> push_associated_lua(self());
                             else self() -> push_nil();
                         }
                     }

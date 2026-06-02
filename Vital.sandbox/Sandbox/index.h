@@ -301,16 +301,13 @@ namespace Vital::Sandbox {
             }
     };
 
-    // TODO: Improve, anchor needed?
-    struct vm_instance_anchor {
-        virtual ~vm_instance_anchor() = default;
+    struct vm_instance_base {
+        virtual ~vm_instance_base() = default;
         virtual void push_associated_lua(Machine* vm) = 0;
     };
-
-    // TODO: Improve - push_associated_lua
+    
     template<typename Derived>
-    struct vm_instance : public vm_instance_anchor, public std::enable_shared_from_this<Derived> {
-        // TODO: Bring shared_from_this explicitly into dependent scope to fix C3861 errors globally
+    struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
         using std::enable_shared_from_this<Derived>::shared_from_this;
         private:
             std::vector<std::string> refs;
