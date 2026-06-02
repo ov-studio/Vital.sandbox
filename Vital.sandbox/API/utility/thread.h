@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (!found) vm -> push_value(false);
-                else found -> vm -> get_reference(found -> self_reference(), true);
+                else found -> get_ref(found -> self_reference(), true);
                 return 1;
             });
         }
@@ -133,9 +133,9 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (self -> sleeping || self -> awaiting) vm -> push_value(false);
                 else {
-                    self -> vm -> get_reference(self -> reference(), true);
+                    self -> get_ref(self -> reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
-                    self -> vm -> get_reference(self -> self_reference(), true);
+                    self -> get_ref(self -> self_reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
                     safe_resume(self, 1);
                     vm -> push_value(true);
