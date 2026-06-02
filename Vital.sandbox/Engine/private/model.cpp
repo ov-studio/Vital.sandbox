@@ -297,6 +297,7 @@ namespace Vital::Engine {
             if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: spawned node is not a Model for '{}'", name));
             object -> pending_authority = authority_peer;
             godot::UtilityFunctions::print("ModelSpawner: spawned -> ", Tool::to_godot_string(name));
+            if (on_spawned_callback) on_spawned_callback(object, false);
             return object;
         #endif
     }
