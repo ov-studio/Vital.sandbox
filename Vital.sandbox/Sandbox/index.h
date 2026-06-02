@@ -386,15 +386,15 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
 
-            static bool store(std::shared_ptr<Derived> instance, Machine* vm) {
+            static bool store(std::shared_ptr<Derived> instance) {
                 {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                     Derived::Owner::registry.buffer[instance -> id] = instance;
                 }
-                vm -> create_object(Derived::Owner::base_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                instance -> vm -> create_object(Derived::Owner::base_name, instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(instance -> vm, -1);
                 instance -> set_reference(instance -> self_reference(), -1);
-                Manager::Sandbox::get_singleton()->signal("entity:created", Tool::StackValue(instance));
+                Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
                 return true;
             }
 
@@ -432,7 +432,7 @@ namespace Vital::Sandbox {
 
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
-                Derived::store(instance, vm);
+                Derived::store(instance);
                 return instance;
             }
 
