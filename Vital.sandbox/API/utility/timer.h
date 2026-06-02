@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                     Machine::enqueue([weak, captured_count, captured_stop]() {
                         auto instance = weak.lock();
                         if (!instance || instance -> destroyed) return;
-                        instance -> vm -> get_reference(instance -> reference(), true);
+                        instance -> get_ref(instance -> reference(), true);
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> pcall(1, 0);
                         if (captured_stop) {
