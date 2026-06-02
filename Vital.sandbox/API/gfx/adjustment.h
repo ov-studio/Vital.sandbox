@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "get_lut", [](auto vm, auto& id) -> int {
-                if (vm -> is_reference(lut_reference)) vm -> get_reference(lut_reference, true);
+                if (vm -> is_reference("vsdk", lut_reference)) vm -> get_reference("vsdk", lut_reference, true);
                 else vm -> push_value(false);
                 return 1;
             });
@@ -99,6 +99,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
+                // TODO: Should use resource relative paths
                 auto path = vm -> get_string(1);
                 auto lut_texture = Vital::Engine::Texture::get_from_reference(path);
                 if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);
