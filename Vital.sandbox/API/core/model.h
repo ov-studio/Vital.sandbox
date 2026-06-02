@@ -78,6 +78,7 @@ namespace Vital::Sandbox::API {
                 ++it;
                 Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
                 instance -> on_model_destroyed();
+                // TODO: NEED TO REMOVE GUARDS SHOULD BE ERAED ON CLIENT TOO SINCE IT WAS REPLICATED ALSO IT AUTOMATICALLY SIGNALKS DESTROY EVENT THEN ON LUA
                 #if defined(VSDK_Client)
                 Instance::erase_unlocked(instance);
                 Instance::release(instance);
@@ -154,9 +155,9 @@ namespace Vital::Sandbox::API {
 
                 auto name = vm -> get_string(1);
                 int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
-                auto instance = Instance::make(vm);
+                auto instance = Instance::init(vm);
                 instance -> model = base_class::create(name, authority);
-                Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
+                instance -> store();
                 return 1;
             });
         }

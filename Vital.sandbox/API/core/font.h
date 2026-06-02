@@ -55,8 +55,9 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
-                auto instance = Instance::make(vm);
+                auto instance = Instance::init(vm);
                 instance -> font = base_class::create(path);
+                instance -> store();
                 return 1;
             });
         }
