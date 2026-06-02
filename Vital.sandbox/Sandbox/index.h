@@ -199,7 +199,7 @@ namespace Vital::Sandbox {
 
             template<typename TOwner, typename TInstance>
             static void bind_natives(Machine* vm) {
-                bind_method<TInstance>(vm, TOwner::base_name, "is_type", [](auto vm, auto self, auto& id) -> int {
+                bind_method<TInstance>(vm, "is_type", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(type_name)")
                         .require(2, &Machine::is_string);
 
