@@ -151,25 +151,21 @@ void initialize_vital_events() {
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
 
-    Vital::Tool::Event::bind("vital.entity:on_created", [](Vital::Tool::Stack arguments) {
-        if (arguments.array.empty()) return;
-        auto& val = arguments.array[0];
-
-        // Each as_ptr returns nullptr if wrong type — no crash, no extra check needed
-        if (auto instance = val.as_ptr<Vital::Sandbox::API::Model::Instance>()) {
+    Vital::Tool::Event::bind("vital.entity:on_created", [](Vital::Tool::Stack arguments) {        
+        if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
             if (instance -> is_alive()) {
                 // Model::Instance
                 Vital::Tool::print("sbox", "created a model");
             }
         }
         #if defined(Vital_SDK_Client)
-        else if (auto instance = val.as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
+        else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
             if (instance -> is_alive()) {
                 // Webview::Instance
                 Vital::Tool::print("sbox", "created a webview");
             }
         }
-        else if (auto instance = val.as_ptr<Vital::Sandbox::API::Font::Instance>()) {
+        else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Font::Instance>()) {
             if (instance -> is_alive()) {
                 // Font::Instance
                 Vital::Tool::print("sbox", "created a font");
