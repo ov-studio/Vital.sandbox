@@ -189,7 +189,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
-                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, Promise::base_name, index); });
+                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, index); });
 
                 auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
                 if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) {
