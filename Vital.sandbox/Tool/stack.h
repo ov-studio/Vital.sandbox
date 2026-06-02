@@ -198,18 +198,17 @@ namespace Vital::Tool {
 
     inline StackValue::StackValue(Stack v) : value(std::make_shared<Stack>(std::move(v))) {}
     inline bool StackValue::operator==(const StackValue& other) const {
-        if (std::holds_alternative<std::shared_ptr<Stack>>(value) &&
-            std::holds_alternative<std::shared_ptr<Stack>>(other.value)) {
-            const auto& a = std::get<std::shared_ptr<Stack>>(value);
-            const auto& b = std::get<std::shared_ptr<Stack>>(other.value);
-            if (!a && !b) return true;
-            if (!a || !b) return false;
-            return *a == *b;
-        }
-        if (std::holds_alternative<std::shared_ptr<void>>(value) &&
-            std::holds_alternative<std::shared_ptr<void>>(other.value)) {
-            return std::get<std::shared_ptr<void>>(value) == std::get<std::shared_ptr<void>>(other.value);
-        }
-        return value == other.value;
+        if (value.index() != other.value.index()) return false;
+        return std::visit([&](auto&& lhs) -> bool {
+            using T = std::decay_t<decltype(lhs)>;
+            const auto& rhs = std::get<T>(other.value);
+            if constexpr (std::is_same_v<T, std::shared_ptr<Stack>>) {
+                if (!lhs && !rhs) return true;
+                if (!lhs || !rhs) return false;
+                return *lhs == *rhs;
+            }
+            else if constexpr (std::is_same_v<T, std::shared_ptr<void>>) return lhs == rhs;
+            else return lhs == rhs;
+        }, value);
     }
 }
