@@ -1,4 +1,3 @@
-```cpp
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: stack.h
@@ -214,4 +213,3 @@ namespace Vital::Tool {
         return value == other.value;
     }
 }
-```
