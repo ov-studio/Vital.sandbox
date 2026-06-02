@@ -68,6 +68,12 @@ namespace Vital::Sandbox {
             std::unordered_set<Machine*> children = {};
             vm_refs reference = {};
             vm_apis external_apis = {};
+
+
+            // Helpers //
+            std::string make_reference(const std::string& scope, const std::string& name) { 
+                return fmt::format("{}:{}", scope, name);
+            }
         public:
             // Instantiators //
             Machine(vm_apis apis = {}) : state(luaL_newstate()), external_apis(std::move(apis)) {
@@ -422,11 +428,6 @@ namespace Vital::Sandbox {
 
             static void register_environment_cleaner(vm_env_cleaner exec) {
                 env_cleaners.push_back(std::move(exec));
-            }
-    
-            std::string get_environment_ref(const std::string& id) {
-                Tool::assert_main_thread("Machine::get_environment_ref");
-                return fmt::format("env:{}", id);
             }
     
             std::string get_environment_id(int level = 0) {
