@@ -100,9 +100,6 @@ namespace Vital::Sandbox::API {
                 instance -> store();
             };
 
-            // Wire the engine-side destruction callback once, so every Model node
-            // that is freed (via destroy() or multiplayer despawn) nulls out any
-            // Lua Instance pointers that reference it.
             base_class::on_destroyed_callback = [](base_class* dying) {
                 on_model_node_destroyed(dying);
             };
