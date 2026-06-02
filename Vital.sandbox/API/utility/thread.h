@@ -107,7 +107,7 @@ namespace Vital::Sandbox::API {
                 instance -> set_ref(instance -> reference(), 1);
                 vm -> pop(2);
                 instance -> store(vm, base_name);
-                instance -> get_ref(instance -> self_reference());
+                instance -> get_ref(instance -> self_reference(), true);
                 return 1;
             });
 
