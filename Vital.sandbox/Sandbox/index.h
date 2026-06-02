@@ -303,9 +303,9 @@ namespace Vital::Sandbox {
 
     struct vm_instance_base {
         virtual ~vm_instance_base() = default;
-        virtual void push_associated_lua(Machine* vm) = 0;
+        virtual void push_self(Machine* vm) = 0;
     };
-    
+
     template<typename Derived>
     struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
         using std::enable_shared_from_this<Derived>::shared_from_this;
@@ -319,15 +319,6 @@ namespace Vital::Sandbox {
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
-
-            void push_associated_lua(Machine* vm) override {
-                auto self_derived = static_cast<Derived*>(this);
-                if (!self_derived -> is_alive()) {
-                    vm -> push_nil();
-                    return;
-                }
-                if (this -> userdata) this -> vm -> get_reference(this -> self_reference(), true);
-            }
 
             bool is_alive() const { 
                 return true;
@@ -444,6 +435,15 @@ namespace Vital::Sandbox {
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
+            }
+
+            void push_self(Machine* vm) override {
+                auto self_derived = static_cast<Derived*>(this);
+                if (!self_derived -> is_alive()) {
+                    vm -> push_nil();
+                    return;
+                }
+                if (this -> userdata) this -> vm -> get_reference(this -> self_reference(), true);
             }
 
             static void collect_env(const std::string& env) {

@@ -44,7 +44,7 @@ namespace Vital::Sandbox {
                         if (!v) self() -> push_nil();
                         else {
                             auto base_ptr = std::static_pointer_cast<Vital::Sandbox::vm_instance_base>(v);
-                            if (base_ptr) base_ptr -> push_associated_lua(self());
+                            if (base_ptr) base_ptr -> push_self(self());
                             else self() -> push_nil();
                         }
                     }
