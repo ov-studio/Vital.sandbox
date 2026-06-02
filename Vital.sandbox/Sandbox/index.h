@@ -146,7 +146,7 @@ namespace Vital::Sandbox {
                 vm -> create_metatable(T::base_name);
                 vm -> create_table();
                 T::methods(vm);
-                bind_natives<T>(vm);
+                bind_natives<typename T::Instance>(vm);
                 vm -> set_table_field("__index", -2);
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
                     auto ud = static_cast<void**>(lua_touserdata(state, 1));
@@ -241,8 +241,8 @@ namespace Vital::Sandbox {
             }
 
             template<typename T>
-            static bool is_userdata(Machine* vm, const std::string& type_name, int index = 1) {
-                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, type_name.c_str()));
+            static bool is_userdata(Machine* vm, int index = 1) {
+                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, T::Owner::base_name.c_str()));
                 if (!ud || !*ud) return false;
                 return T::find_unlocked(static_cast<T*>(*ud) -> id) != nullptr;
             }
