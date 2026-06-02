@@ -420,8 +420,7 @@ namespace Vital::Sandbox {
 
             static std::shared_ptr<Derived> make(Machine* vm) {
                 auto instance = Derived::init(vm);
-                Derived::store(instance);
-                Derived::bind(instance, vm, Derived::Owner::base_name);
+                Derived::store(instance, vm, Derived::Owner::base_name);
                 return instance;
             }
 
