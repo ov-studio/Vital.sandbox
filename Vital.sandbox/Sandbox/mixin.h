@@ -49,6 +49,7 @@ namespace Vital::Sandbox {
                             if (anchor_ptr) {
                                 // Automatically dispatches to the correct derived class (webview, model, font, etc.)
                                 anchor_ptr -> push_associated_lua(self());
+                            }
                             else self() -> push_nil();
                         }
                     }
