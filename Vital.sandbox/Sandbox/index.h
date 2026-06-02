@@ -337,6 +337,12 @@ namespace Vital::Sandbox {
                 refs.push_back(ref);
             }
 
+            void push_self(Machine* vm) override {
+                auto instance = Derived::find_unlocked(static_cast<Derived*>(this) -> id);
+                if (!instance || !instance -> userdata) vm -> push_nil();
+                else this -> vm -> get_reference(this -> self_reference(), true);
+            }
+            
             bool store() {
                 return Derived::store(static_cast<Derived*>(this) -> shared_from_this());
             }
@@ -435,15 +441,6 @@ namespace Vital::Sandbox {
                 vm_module::release_userdata(vm, 1);
                 vm -> push_value(true);
                 return 1;
-            }
-
-            void push_self(Machine* vm) override {
-                auto self_derived = static_cast<Derived*>(this);
-                if (!self_derived -> is_alive()) {
-                    vm -> push_nil();
-                    return;
-                }
-                if (this -> userdata) this -> vm -> get_reference(this -> self_reference(), true);
             }
 
             static void collect_env(const std::string& env) {
