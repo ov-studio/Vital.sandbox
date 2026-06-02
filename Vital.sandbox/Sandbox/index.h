@@ -312,6 +312,11 @@ namespace Vital::Sandbox {
         private:
             std::vector<std::string> references;
         public:
+            enum class Event {
+                Created,
+                Destroyed
+            };
+
             int id {};
             std::string env;
             std::atomic<bool> destroyed { false };
@@ -353,6 +358,18 @@ namespace Vital::Sandbox {
                 else instance -> get_reference(self_reference(), true);
             }
 
+            void notify(Event event) {
+                auto instance = static_cast<Derived*>(this) -> shared_from_this();
+                switch (event) {
+                    case Event::Created:
+                        Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
+                        break;
+                    case Event::Destroyed:
+                        Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
+                        break;
+                }
+            }
+        
             bool store(Machine* vm, const std::string& type_name) {
                 return Derived::store(static_cast<Derived*>(this) -> shared_from_this(), vm, type_name);
             }
@@ -406,7 +423,7 @@ namespace Vital::Sandbox {
             static bool erase_unlocked(std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
-                Manager::Sandbox::get_singleton() -> signal("vital.entity:on_destroyed", Tool::StackValue(instance));
+                instance -> notify(Event::Destroyed);
                 Derived::Owner::registry.buffer.erase(it);
                 instance -> destroyed = true;
                 return true;
