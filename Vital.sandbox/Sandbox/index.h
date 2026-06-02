@@ -353,8 +353,8 @@ namespace Vital::Sandbox {
                 else instance -> get_reference(self_reference(), true);
             }
         
-            bool store(Machine* vm, const std::string& type_name) {
-                return Derived::store(static_cast<Derived*>(this) -> shared_from_this(), vm, type_name);
+            bool store(Machine* vm) {
+                return Derived::store(static_cast<Derived*>(this) -> shared_from_this(), vm);
             }
 
             bool erase() {
