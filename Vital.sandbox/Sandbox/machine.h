@@ -423,7 +423,7 @@ namespace Vital::Sandbox {
                 push(-1);
                 push_string(id);
                 lua_rawset(state, LUA_REGISTRYINDEX);
-                set_reference("env", get_environment_ref(id), -1);
+                set_reference("env", id, -1);
             }
 
             static void register_environment_cleaner(vm_env_cleaner exec) {
