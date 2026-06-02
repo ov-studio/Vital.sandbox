@@ -337,6 +337,10 @@ namespace Vital::Sandbox {
                 refs.push_back(ref);
             }
 
+            void get_ref(const std::string& ref) {
+                vm -> get_reference("runtime", ref, true);
+            }
+
             void push_self(Machine* vm) override {
                 auto instance = Derived::find_unlocked(static_cast<Derived*>(this) -> id);
                 if (!instance || !instance -> userdata) vm -> push_nil();
