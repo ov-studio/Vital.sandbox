@@ -334,7 +334,7 @@ namespace Vital::Sandbox {
 
             void set_reference(const std::string& name, int index) {
                 vm -> set_reference("runtime", name, index);
-                references.push_back(name);
+                if (std::find(references.begin(), references.end(), name) == references.end()) references.push_back(name);
             }
 
             int get_reference(const std::string& name, bool push_to_stack = false) {
@@ -343,6 +343,8 @@ namespace Vital::Sandbox {
 
             void del_reference(const std::string& name) {
                 vm -> del_reference("runtime", name);
+                auto it = std::find(references.begin(), references.end(), name);
+                if (it != references.end()) references.erase(it);
             }
 
             void push_self(Machine* vm) override {
@@ -411,8 +413,8 @@ namespace Vital::Sandbox {
             static bool release(std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
-                    for (auto& name : instance -> references) instance -> del_reference(name);
-                    instance -> references.clear();
+                    auto snapshot = instance -> references;
+                    for (auto& name : snapshot) instance -> del_reference(name);
                 }
                 instance -> vm = nullptr;
                 return true;
