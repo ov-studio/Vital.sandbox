@@ -17,6 +17,10 @@
 #include <Vital.sandbox/Manager/public/resource.h>
 
 // TODO: Improve / Remove later
+#include <Vital.sandbox/API/core/model.h>
+#include <Vital.sandbox/API/core/webview.h>
+#include <Vital.sandbox/API/core/font.h>
+
 
 /////////////
 // Events //
@@ -147,15 +151,30 @@ void initialize_vital_events() {
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
     });
 
-
-
-    /*
-    // TODO: ADD TO THIS CONDITIONAL 'is_ptr' accessor check since casting to manually is unsafe imo
     Vital::Tool::Event::bind("vital.entity:on_created", [](Vital::Tool::Stack arguments) {
-        auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>();
-        if (instance && instance->is_alive()) {
-            // use instance normally
+        if (arguments.array.empty()) return;
+        auto& val = arguments.array[0];
+
+        // Each as_ptr returns nullptr if wrong type — no crash, no extra check needed
+        if (auto instance = val.as_ptr<Vital::Sandbox::API::Model::Instance>()) {
+            if (instance -> is_alive()) {
+                // Model::Instance
+                Vital::Tool::print("sbox", "created a model");
+            }
         }
+        #if defined(Vital_SDK_Client)
+        else if (auto instance = val.as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
+            if (instance -> is_alive()) {
+                // Webview::Instance
+                Vital::Tool::print("sbox", "created a webview");
+            }
+        }
+        else if (auto instance = val.as_ptr<Vital::Sandbox::API::Font::Instance>()) {
+            if (instance -> is_alive()) {
+                // Font::Instance
+                Vital::Tool::print("sbox", "created a font");
+            }
+        }
+        #endif
     });
-    */
 }
