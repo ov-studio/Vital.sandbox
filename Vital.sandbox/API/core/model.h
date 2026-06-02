@@ -55,10 +55,6 @@ namespace Vital::Sandbox::API {
                 instance -> release();
             }
 
-            // Called by the engine-side Model node just before it is freed
-            // (either via destroy() or via Godot's multiplayer despawn).
-            // Nulls the pointer so any subsequent Lua call fails gracefully
-            // rather than crashing on a dangling pointer.
             void on_model_destroyed() {
                 model = nullptr;
             }
