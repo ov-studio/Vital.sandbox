@@ -99,7 +99,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(nullptr, remote);
                 instance -> model = spawned;
                 instance -> store();
-                // TODO: NO NEED TO DO BIND? instance -> bind(vm, base_name);
+                instance -> bind(vm, base_name);
                 Manager::Sandbox::get_singleton() -> signal("vital.entity:on_created", Tool::StackValue(instance));
             };
 
