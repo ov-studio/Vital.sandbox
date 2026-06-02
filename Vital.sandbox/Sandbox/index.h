@@ -367,12 +367,6 @@ namespace Vital::Sandbox {
                 return Derived::erase_unlocked(static_cast<Derived*>(this) -> shared_from_this());
             }
 
-            void clean() {
-                auto instance = static_cast<Derived*>(this) -> shared_from_this();
-                if (!Derived::erase(instance)) return;
-                Derived::release(instance);
-            }
-
             bool release() {
                 return Derived::release(static_cast<Derived*>(this) -> shared_from_this());
             }
