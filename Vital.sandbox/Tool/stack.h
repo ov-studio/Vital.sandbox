@@ -34,6 +34,7 @@ namespace Vital::Tool {
             double,
             std::string,
             std::shared_ptr<Stack>
+            std::shared_ptr<void>
         >;
         stack_value value{nullptr};
 
@@ -49,14 +50,18 @@ namespace Vital::Tool {
         StackValue(const char* v) : value(std::string(v)) {}
         StackValue(std::string v) : value(std::move(v)) {}
         StackValue(std::shared_ptr<Stack> v) : value(std::move(v)) {}
+        template<typename T>
+        StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))) {}
         explicit StackValue(Stack v);
 
 
         // Accessors //
         template<typename T>
+        bool is() const { return std::holds_alternative<T>(value); }
+        template<typename T>
         const T& as() const { return std::get<T>(value); }
         template<typename T>
-        bool is() const { return std::holds_alternative<T>(value); }
+        std::shared_ptr<T> as_ptr() const { return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value)); }
 
 
         // Equality //
