@@ -61,8 +61,9 @@ namespace Vital::Sandbox::API {
                     vm -> get_table_field("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> pop(5);
                 }
-                auto instance = Instance::make(vm);
+                auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
+                instance -> store();
                 return 1;
             });
         }

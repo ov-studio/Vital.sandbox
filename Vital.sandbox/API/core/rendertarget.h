@@ -66,8 +66,9 @@ namespace Vital::Sandbox::API {
 
                 auto size = vm -> get_vector2(1);
                 auto transparent = vm -> is_bool(2) ? vm -> get_bool(2) : false;
-                auto instance = Instance::make(vm);
+                auto instance = Instance::init(vm);
                 instance -> rendertarget = base_class::create(size, transparent);
+                instance -> store();
                 return 1;
             });
 
