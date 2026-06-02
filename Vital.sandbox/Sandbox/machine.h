@@ -149,7 +149,7 @@ namespace Vital::Sandbox {
             bool is_thread(int index = 1) { return lua_isthread(state, index); }
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
-            bool is_reference(const std::string& name) const { return reference.find(name) != reference.end(); }
+            bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(name) != reference.end(); }
 
             bool is_horizontal_alignment(int index = 1) {
                 if (is_string(index)) return horizontal_alignment.count(get_string(index)) > 0;
@@ -225,7 +225,7 @@ namespace Vital::Sandbox {
                 return result;
             }
 
-            int get_reference(const std::string& name, bool push_to_stack = false) {
+            int get_reference(const std::string& scope, const std::string& name, bool push_to_stack = false) {
                 if (!push_to_stack) return reference.at(name);
                 get_raw_reference(reference.at(name));
                 return 0;
@@ -417,7 +417,7 @@ namespace Vital::Sandbox {
                 push(-1);
                 push_string(id);
                 lua_rawset(state, LUA_REGISTRYINDEX);
-                set_reference(get_environment_ref(id), -1);
+                set_reference("env", get_environment_ref(id), -1);
             }
 
             static void register_environment_cleaner(vm_env_cleaner exec) {
@@ -452,11 +452,11 @@ namespace Vital::Sandbox {
             void clear_environment_id(const std::string& id) {
                 Tool::assert_main_thread("Machine::clear_environment_id");
                 const std::string ref = get_environment_ref(id);
-                if (!is_reference(ref)) return;
+                if (!is_reference(scope, ref)) return;
                 get_reference(ref, true);
                 push_nil();
                 lua_rawset(state, LUA_REGISTRYINDEX);
-                del_reference(ref);
+                del_reference("env", ref);
                 lua_gc(state, LUA_GCCOLLECT, 0);
                 for (auto& clean : env_cleaners) clean(id);
             }
@@ -523,9 +523,9 @@ namespace Vital::Sandbox {
             void set_metatable(int index = 1) { lua_setmetatable(state, index); }
             void set_metatable(const std::string& index) { luaL_setmetatable(state, index.c_str()); }
 
-            void set_reference(const std::string& name, int index = 1) {
+            void set_reference(const std::string& scope, const std::string& name, int index = 1) {
                 Tool::assert_main_thread("Machine::set_reference");
-                del_reference(name);
+                del_reference(scope, name);
                 reference.emplace(name, set_raw_reference(index));
             }
 
@@ -534,10 +534,10 @@ namespace Vital::Sandbox {
                 return luaL_ref(state, LUA_REGISTRYINDEX);
             }
 
-            void del_reference(const std::string& name) {
+            void del_reference(const std::string& scope, const std::string& name) {
                 Tool::assert_main_thread("Machine::del_reference");
-                if (!is_reference(name)) return;
-                del_raw_reference(get_reference(name));
+                if (!is_reference(scope, name)) return;
+                del_raw_reference(get_reference(scope, name));
                 reference.erase(name);
             }
 
