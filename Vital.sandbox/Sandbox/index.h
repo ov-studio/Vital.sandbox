@@ -377,6 +377,10 @@ namespace Vital::Sandbox {
                 return Derived::release(static_cast<Derived*>(this) -> shared_from_this());
             }
 
+            void clean() {
+                return Derived::clean(static_cast<Derived*>(this) -> shared_from_this());
+            }
+
             static std::shared_ptr<Derived> find(int id) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return find_unlocked(id);
@@ -428,7 +432,7 @@ namespace Vital::Sandbox {
                 if (!erase(instance)) return;
                 release(instance);
             }
-            
+
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::registry.next_id.fetch_add(1);
