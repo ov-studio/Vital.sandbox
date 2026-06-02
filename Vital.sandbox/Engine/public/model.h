@@ -144,7 +144,7 @@ namespace Vital::Engine {
             static void on_connected();
             void destroy();
 
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             // Hydrates a placeholder node once the model asset has been loaded into cache.
             // Called automatically from load_from_buffer when a queued spawn exists.
             void hydrate(int authority_peer);
@@ -190,7 +190,7 @@ namespace Vital::Engine {
             void set_model_name(const std::string& name);
             void set_position(godot::Vector3 position);
             void set_rotation(godot::Vector3 rotation);
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             void set_sync_authority(int peer_id);
             #endif
             bool set_component_visible(const std::string& component, bool state);

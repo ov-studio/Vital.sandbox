@@ -27,7 +27,7 @@
 namespace Vital::Engine {
     // Instantiators //
     Console::Console() {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             Engine::Webview::Options options;
             options.fullscreen = true;
             options.transparent = true;
@@ -44,7 +44,7 @@ namespace Vital::Engine {
                 webview -> load_html(Manager::Kit::fetch_module("console"));
             });
         #else
-            #if defined(Vital_SDK_WINDOWS)
+            #if defined(VSDK_WINDOWS)
                 AllocConsole();
                 SetConsoleTitleA("Vital.server");
                 SetConsoleOutputCP(CP_UTF8);
@@ -74,7 +74,7 @@ namespace Vital::Engine {
                 GetConsoleMode(hStdin, &in_mode);
                 stdin_original_mode = in_mode;
                 SetConsoleMode(hStdin, ENABLE_PROCESSED_INPUT);
-            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+            #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
                 tcgetattr(STDIN_FILENO, &stdin_termios);
                 struct termios term = stdin_termios;
                 term.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK);
@@ -88,7 +88,7 @@ namespace Vital::Engine {
             stdin_thread = std::thread([this]() {
                 format_input_prompt();
                 while (stdin_running) {
-                    #if defined(Vital_SDK_WINDOWS)
+                    #if defined(VSDK_WINDOWS)
                         HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                         INPUT_RECORD rec;
                         DWORD count;
@@ -152,7 +152,7 @@ namespace Vital::Engine {
                             }
                             format_input_prompt();
                         }
-                    #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+                    #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
                         char ch;
                         ssize_t n = ::read(STDIN_FILENO, &ch, 1);
                         if (n <= 0) break;
@@ -226,17 +226,17 @@ namespace Vital::Engine {
     }
 
     Console::~Console() {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             if (!webview) return;
             webview -> destroy();
             webview = nullptr;
         #else
             stdin_running = false;
-            #if defined(Vital_SDK_WINDOWS)
+            #if defined(VSDK_WINDOWS)
                 HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                 SetConsoleMode(hStdin, stdin_original_mode);
                 FreeConsole();
-            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+            #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
                 tcsetattr(STDIN_FILENO, TCSANOW, &stdin_termios);
             #endif
         #endif
@@ -244,7 +244,7 @@ namespace Vital::Engine {
 
 
     // Helpers //
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     std::string Console::ansi_rgb(int r, int g, int b) {
         std::ostringstream oss;
         oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
@@ -412,16 +412,16 @@ namespace Vital::Engine {
         };
         oss << "Available Commands:\n";
         append_section("shared", "General");
-        #if !defined(Vital_SDK_Client)
+        #if !defined(VSDK_Client)
         append_section("server", "Server");
         #endif
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         append_section("client", "Client");
         #endif
         return oss.str();
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     std::string Console::fetch_info() {
         auto nm = Manager::Network::get_singleton();
         auto rm = Manager::Resource::get_singleton();
@@ -462,7 +462,7 @@ namespace Vital::Engine {
 
     // APIs //
     void Console::init() {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -518,7 +518,7 @@ namespace Vital::Engine {
                 const auto& cmds = help[section.c_str()];
                 if (!cmds.IsObject() || !cmds.HasMember(cmd.c_str())) continue;
                 const auto& entry = cmds[cmd.c_str()];
-                #if defined(Vital_SDK_Client)
+                #if defined(VSDK_Client)
                 if (entry.HasMember("require_connection") && entry["require_connection"].IsBool() && entry["require_connection"].GetBool()) {
                     if (!Manager::Network::get_singleton() -> is_connected()) {
                         print("warn", fmt::format("Command `{}` requires an active server connection", cmd));
@@ -542,7 +542,7 @@ namespace Vital::Engine {
             if (cmd == "version") { print("sbox", fetch_version()); return true; }
             if (cmd == "help") { print("sbox", fetch_help()); return true; }
             if (cmd == "clear") { clear(); return true; }
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             if (cmd == "info") { print("sbox", fetch_info()); return true; }
             if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
             if (cmd == "start") { Manager::Resource::get_singleton() -> start(tokens[1]); return true; }
@@ -569,7 +569,7 @@ namespace Vital::Engine {
     void Console::print(const std::string& mode, const std::string& message) {
         if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid print mode");
         if (message.empty()) return;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -580,7 +580,7 @@ namespace Vital::Engine {
             document.AddMember("message", rapidjson::Value(message.c_str(), alloc), alloc);
             document.Accept(writer);
             webview -> emit(buffer.GetString());
-            #if defined(Vital_SDK_Debug)
+            #if defined(VSDK_Debug)
             const Tool::Stack ts = Tool::get_timestamp();
             godot::UtilityFunctions::print_rich(Tool::to_godot_string(fmt::format(
                 "[color=#808080][{:02d}:{:02d}:{:02d}]   [{}]  {}[/color]",
@@ -610,7 +610,7 @@ namespace Vital::Engine {
 
     void Console::clear(bool signal) {
         if (signal) return print("sbox", "Console cleared successfully!");
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -629,7 +629,7 @@ namespace Vital::Engine {
         #endif
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     void Console::shutdown() {
         print("sbox", "Server shutting down...");
         Manager::Resource::get_singleton() -> stop_all();
@@ -649,7 +649,7 @@ namespace Vital::Engine {
 
 
     // Events //
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     bool Console::on_key(int keycode) {
         const auto bind = Manager::Kit::fetch_json_value("config/console", "bind");
         if (keycode != godot::OS::get_singleton() -> find_keycode_from_string(Tool::to_godot_string(bind.as<std::string>()))) return false;

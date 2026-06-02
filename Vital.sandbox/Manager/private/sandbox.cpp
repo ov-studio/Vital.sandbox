@@ -62,7 +62,7 @@ namespace Vital::Manager {
         signal("sandbox:process", Tool::StackValue(delta));
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     void Sandbox::draw(Engine::Canvas* canvas) {
         signal("sandbox:draw");
     }

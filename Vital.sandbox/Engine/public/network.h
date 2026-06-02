@@ -28,7 +28,7 @@ namespace Vital::Engine {
             void _receive(godot::Dictionary data);
             void setup_rpc();
 
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             std::function<void()> on_connected_to_server;
             std::function<void()> on_connection_failed;
             std::function<void()> on_server_disconnected;

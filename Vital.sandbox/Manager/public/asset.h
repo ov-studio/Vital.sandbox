@@ -30,7 +30,7 @@ namespace Vital::Manager {
                 std::string group = "";
             };
 
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             struct Download {
                 std::string path;
                 std::unordered_set<std::string> groups;
@@ -79,7 +79,7 @@ namespace Vital::Manager {
 
 
             // Config //
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             void set_http_port(int port);
             int  get_http_port() const;
             #endif
@@ -94,7 +94,7 @@ namespace Vital::Manager {
 
 
             // Server //
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             bool start_http_server();
             void stop_http_server();
             bool is_http_running() const;
@@ -102,7 +102,7 @@ namespace Vital::Manager {
 
 
             // Client //
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             void receive_manifest(const Tool::Stack& args);
             void set_server_http_ip(const std::string& ip);
             void cancel(const std::string& path, const std::string& group = "");
@@ -116,7 +116,7 @@ namespace Vital::Manager {
             // Shared //
             // Queues a placeholder Model* (client) or authority peer (server) for a named model.
             // On client: placeholder is an Engine::Model* cast to void* to avoid circular include.
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             void queue_spawn(const std::string& name, void* placeholder, int authority_peer = 1);
             void flush_spawn_queue(const std::string& loaded_name);
             #else

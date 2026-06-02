@@ -128,7 +128,7 @@ namespace Vital::Engine {
         //vm -> load_string(rwString);
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     void Sandbox::draw(Vital::Engine::Canvas* canvas) {
         //godot::UtilityFunctions::print("rendered");
         

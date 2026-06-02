@@ -26,7 +26,7 @@ namespace Vital::Tool {
     inline std::thread::id main_thread_id;
 
     static std::string indent(int level) {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         return std::string(level*4, ' ');
         #else
         return std::string(level*2, ' ');
@@ -64,7 +64,7 @@ namespace Vital::Tool {
     }
 
     inline const std::string get_platform() { 
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             return "client";
         #else
             return "server";

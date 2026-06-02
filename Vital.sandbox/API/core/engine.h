@@ -103,7 +103,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             API::bind(vm, {base_name}, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;

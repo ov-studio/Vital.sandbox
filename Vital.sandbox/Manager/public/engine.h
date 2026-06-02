@@ -39,7 +39,7 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Network>(true);
     godot::ClassDB::register_class<Vital::Engine::ModelSpawnerDelegate>(true);
     godot::ClassDB::register_class<Vital::Engine::Model>(true);
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     godot::ClassDB::register_class<Vital::Engine::Canvas>(true);
     godot::ClassDB::register_class<Vital::Engine::Rendertarget>(true);
     godot::ClassDB::register_class<Vital::Engine::Webview>(true);

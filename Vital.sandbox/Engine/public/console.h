@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/core.h>
-#if defined(Vital_SDK_Client)
+#if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/webview.h>
 #endif
 
@@ -28,7 +28,7 @@ namespace Vital::Engine {
         protected:
             inline static Console* singleton = nullptr;
         private:
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             Webview* webview = nullptr;
             #else
             std::mutex stdout_mutex;
@@ -37,9 +37,9 @@ namespace Vital::Engine {
             std::string stdin_buffer;
             std::vector<std::string> stdin_history;
             int stdin_history_index = -1;
-            #if defined(Vital_SDK_WINDOWS)
+            #if defined(VSDK_WINDOWS)
             DWORD stdin_original_mode = 0;
-            #elif defined(Vital_SDK_MACOS) || defined(Vital_SDK_LINUX)
+            #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
             struct termios stdin_termios{};
             #endif
 
@@ -79,7 +79,7 @@ namespace Vital::Engine {
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);
             void clear(bool signal = false);
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             void shutdown();
             #else
             void toggle();
@@ -87,7 +87,7 @@ namespace Vital::Engine {
 
 
             // Events //
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             bool on_key(int keycode);
             void on_message(godot::String message);
             #endif

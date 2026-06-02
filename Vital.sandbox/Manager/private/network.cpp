@@ -41,7 +41,7 @@ namespace Vital::Manager {
 
     void Network::free_singleton() {
         if (!singleton) return;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         singleton -> disconnect_from_server();
         #else
         singleton -> close();
@@ -67,7 +67,7 @@ namespace Vital::Manager {
         node -> set_name("VitalNetwork");
         Engine::Core::get_scene_root() -> add_child(node);
         node -> setup_rpc();
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             node -> on_connected_to_server = [this]() { _on_connected_to_server(); };
             node -> on_connection_failed = [this]() { _on_connection_failed(); };
             node -> on_server_disconnected = [this]() { _on_server_disconnected(); };
@@ -87,7 +87,7 @@ namespace Vital::Manager {
         if (!node) return;
         auto mp = get_scene_tree() -> get_multiplayer();
         if (!mp.is_valid()) return;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             mp -> connect("connected_to_server", godot::Callable(node, "_on_connected_to_server"));
             mp -> connect("connection_failed", godot::Callable(node, "_on_connection_failed"));
             mp -> connect("server_disconnected", godot::Callable(node, "_on_server_disconnected"));
@@ -106,7 +106,7 @@ namespace Vital::Manager {
             godot::Callable cb(node, method);
             if (mp -> is_connected(signal, cb)) mp -> disconnect(signal, cb);
         };
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             try_disconnect("connected_to_server", "_on_connected_to_server");
             try_disconnect("connection_failed", "_on_connection_failed");
             try_disconnect("server_disconnected", "_on_server_disconnected");
@@ -152,7 +152,7 @@ namespace Vital::Manager {
         Tool::Event::emit("network:packet", Tool::Stack::from_dict(data));
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
         if (is_connected() || is_connecting()) {
             Tool::print("sbox", "Network: already connected/connecting");
@@ -330,7 +330,7 @@ namespace Vital::Manager {
 
     bool Network::send(const Tool::Stack& stack, int peerID) {
         if (!node || !peer.is_valid()) return false;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         if (!is_connected()) return false;
         #endif
         if (peerID == 0) node -> rpc("_receive", stack.to_dict());
@@ -347,7 +347,7 @@ namespace Vital::Manager {
     }
 
     void Network::poll(double delta) {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         if (auto_reconnect && !is_connected() && !is_connecting()) {
             if (reconnect_timer > 0.0f) {
                 reconnect_timer -= static_cast<float>(delta);

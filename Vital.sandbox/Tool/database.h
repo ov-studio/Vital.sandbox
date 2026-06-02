@@ -12,7 +12,7 @@
 // Imports //
 //////////////
 
-#if !defined(Vital_SDK_Client)
+#if !defined(VSDK_Client)
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/log.h>

@@ -18,21 +18,21 @@ env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.Append(CPPDEFINES=["CPPHTTPLIB_OPENSSL_SUPPORT"])
 
 if env.Args["platform_type"] == "Client":
-    env.Append(CPPDEFINES=["Vital_SDK_Client"])
+    env.Append(CPPDEFINES=["VSDK_Client"])
 if env.Args["build_type"] == "Debug":
-    env.Append(CPPDEFINES=["Vital_SDK_Debug"])
+    env.Append(CPPDEFINES=["VSDK_Debug"])
 
 if os_info["type"] == "Windows":
-    env.Append(CPPDEFINES=["Vital_SDK_WINDOWS"])
+    env.Append(CPPDEFINES=["VSDK_WINDOWS"])
     env.Append(CPPDEFINES=["_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WIN32_LEAN_AND_MEAN", "NOMINMAX"])
     env.Append(CPPFLAGS=["/EHsc", "/wd4244", "/bigobj"])
     env.Append(LIBS=["ws2_32", "winmm", "wbemuuid"])
     env.Append(LINKFLAGS=["/NODEFAULTLIB:LIBCMT", "/NODEFAULTLIB:LIBCMTD", "/NODEFAULTLIB:MSVCRTD"])
 elif os_info["type"] == "Darwin":
-    env.Append(CPPDEFINES=["Vital_SDK_MACOS"])
+    env.Append(CPPDEFINES=["VSDK_MACOS"])
     env.Append(CPPDEFINES=["LUA_USE_MACOSX", "DUK_F_APPLE", "HAS_SOCKLEN_T"])
 elif os_info["type"] == "Linux":
-    env.Append(CPPDEFINES=["Vital_SDK_LINUX"])
+    env.Append(CPPDEFINES=["VSDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX", "HAS_SOCKLEN_T"])
     env.Append(CXXFLAGS=["-fexceptions"])
 

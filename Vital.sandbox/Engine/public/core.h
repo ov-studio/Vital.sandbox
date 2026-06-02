@@ -42,7 +42,7 @@ namespace Vital::Engine {
             void _ready() override;
             void _exit_tree() override;
             void _process(double delta) override;
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             void _unhandled_input(godot::Ref<godot::InputEvent> event);
             #endif
 
@@ -63,7 +63,7 @@ namespace Vital::Engine {
             // APIs //
             static godot::SceneTree* get_scene_tree();
             static godot::Window* get_scene_root();
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             static godot::DisplayServer* get_display_server();
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();

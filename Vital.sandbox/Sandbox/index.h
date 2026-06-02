@@ -160,7 +160,7 @@ namespace Vital::Sandbox {
                     std::lock_guard<std::mutex> lock(T::registry.mutex);
                     for (auto& [instance_id, instance] : T::registry.buffer) {
                         if (!instance -> is_alive()) continue;
-                        #if defined(Vital_SDK_Client)
+                        #if defined(VSDK_Client)
                         if (streamed && !instance -> is_streamed()) continue;
                         #endif
                         if (instance -> userdata) {
@@ -207,7 +207,7 @@ namespace Vital::Sandbox {
                     return 1;
                 });
 
-                #if defined(Vital_SDK_Client)
+                #if defined(VSDK_Client)
                 if constexpr (TOwner::has_remote) {
                     bind_method<TInstance>(vm, type_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
                         vm -> push_value(self -> is_remote());
@@ -229,7 +229,7 @@ namespace Vital::Sandbox {
                 });
 
                 bind_method<TInstance>(vm, type_name, "destroy", [](auto vm, auto self, auto& id) -> int {
-                    #if defined(Vital_SDK_Client)
+                    #if defined(VSDK_Client)
                     if constexpr (TOwner::has_remote) {
                         if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
                     }

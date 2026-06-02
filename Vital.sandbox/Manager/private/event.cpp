@@ -26,16 +26,16 @@
 // Events //
 /////////////
 
-#if !defined(Vital_SDK_Client)
+#if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
 static Vital::Config::Server g_server_config;
 #endif
 
 void shutdown() {
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     Vital::Manager::Network::get_singleton() -> close();
     #endif
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     Vital::Manager::Network::get_singleton() -> disconnect_from_server();
     #endif
     Vital::Manager::Network::free_singleton();
@@ -45,7 +45,7 @@ void shutdown() {
 void setup() {
     auto nm = Vital::Manager::Network::get_singleton();
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     Vital::Tool::Event::bind("network:connect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Connecting...");
     });
@@ -81,7 +81,7 @@ void setup() {
 void initialize_vital_events() {
     // Core //
     Vital::Tool::Event::bind("core:ready", [](Vital::Tool::Stack arguments) {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         Vital::Engine::Canvas::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
@@ -93,7 +93,7 @@ void initialize_vital_events() {
     });
 
     Vital::Tool::Event::bind("core:free", [](Vital::Tool::Stack arguments) {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         Vital::Engine::Canvas::free_singleton();
         Vital::Manager::Discord::free_singleton();
         #endif
@@ -111,7 +111,7 @@ void initialize_vital_events() {
 
 
     // Network //
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     Vital::Tool::Event::bind("network:connect:success", [](Vital::Tool::Stack) {
         auto nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
@@ -135,7 +135,7 @@ void initialize_vital_events() {
         if (!network_initialized) {
             network_initialized = true;
             auto nm = Vital::Manager::Network::get_singleton();
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
                 nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
                 g_server_config.load();
@@ -145,7 +145,7 @@ void initialize_vital_events() {
             #endif
         }
 
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         Vital::Manager::Discord::get_singleton() -> process();
         #endif
         Vital::Manager::Network::get_singleton() -> poll(arguments.array[0].as<double>());
@@ -155,7 +155,7 @@ void initialize_vital_events() {
         if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
             Vital::Tool::print("sbox", "created a model");
         }
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
             Vital::Tool::print("sbox", "created a webview");
         }
@@ -169,7 +169,7 @@ void initialize_vital_events() {
         if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Model::Instance>()) {
             Vital::Tool::print("sbox", "destroyed a model");
         }
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         else if (auto instance = arguments.array[0].as_ptr<Vital::Sandbox::API::Webview::Instance>()) {
             Vital::Tool::print("sbox", "destroyed a webview");
         }

@@ -14,7 +14,7 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/network.h>
-#if !defined(Vital_SDK_Client)
+#if !defined(VSDK_Client)
 #include <Vital.sandbox/Config/server.h>
 #endif
 
@@ -31,7 +31,7 @@ namespace Vital::Manager {
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             Engine::Network* node = nullptr;
 
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             bool auto_reconnect = false;
             bool pending_handshake = false;
             std::string reconnect_ip;
@@ -68,7 +68,7 @@ namespace Vital::Manager {
             bool is_connecting() const;
             int get_peer_id() const;
 
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             bool connect_to_server(const std::string& ip, int port, bool enable_reconnect = false);
             bool disconnect_from_server();
             void _on_connected_to_server();

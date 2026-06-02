@@ -78,7 +78,7 @@ namespace Vital::Sandbox::API {
                 ++it;
                 Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
                 instance -> on_model_destroyed();
-                #if defined(Vital_SDK_Client)
+                #if defined(VSDK_Client)
                 Instance::erase_unlocked(instance);
                 Instance::release(instance);
                 #endif
@@ -388,7 +388,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             vm_module::bind_method<Instance>(vm, base_name, "set_sync_authority", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(peer_id)")
                     .require(2, &Machine::is_number);

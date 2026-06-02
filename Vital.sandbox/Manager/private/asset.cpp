@@ -31,7 +31,7 @@ namespace Vital::Manager {
     void Asset::free_singleton() {
         if (!singleton) return;
         singleton -> clear();
-        #if !defined(Vital_SDK_Client)
+        #if !defined(VSDK_Client)
         singleton -> stop_http_server();
         #endif
         delete singleton;
@@ -56,7 +56,7 @@ namespace Vital::Manager {
     //----------------//
 
     void Asset::init() {
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             static bool initialized = false;
             if (initialized) return;
             initialized = true;
@@ -75,7 +75,7 @@ namespace Vital::Manager {
     void Asset::clear() {
         registered_assets.clear();
         spawn_queue.clear();
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         cancel_all();
         active_downloads.clear();
         #else
@@ -89,7 +89,7 @@ namespace Vital::Manager {
     //    Config      //
     //----------------//
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     void Asset::set_http_port(int port) { http_port = port; }
     int  Asset::get_http_port() const   { return http_port; }
     #endif
@@ -151,7 +151,7 @@ namespace Vital::Manager {
     //    Server: HTTP + Manifest //
     //----------------------------//
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
 
     bool Asset::start_http_server() {
         if (http_running) return true;
@@ -290,7 +290,7 @@ namespace Vital::Manager {
     //    Client      //
     //----------------//
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
 
     void Asset::receive_manifest(const Tool::Stack& arguments) {
         int count = arguments.object.at("asset_count").as<int32_t>();
@@ -463,7 +463,7 @@ namespace Vital::Manager {
     //    Shared      //
     //----------------//
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     void Asset::queue_spawn(const std::string& name, void* placeholder, int authority_peer) {
         spawn_queue[name] = { placeholder, authority_peer };
         Tool::print("sbox", "Asset: queued placeholder spawn -> ", name.c_str());

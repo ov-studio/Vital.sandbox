@@ -81,7 +81,7 @@ namespace Vital::Manager {
         }
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             if (!Resource::is_type(script.type)) continue;
             #endif
             std::string source;
@@ -129,7 +129,7 @@ namespace Vital::Manager {
         }
         if (!resource) return;
     
-        #if !defined(Vital_SDK_Client)
+        #if !defined(VSDK_Client)
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             const_cast<Manifest*>(resource) -> models = Engine::Model::filter_resource_models(name, resource -> files);
@@ -153,7 +153,7 @@ namespace Vital::Manager {
 
         Internal::load_models(name);
         Internal::execute_scripts(name, sources);
-        #if !defined(Vital_SDK_Client)
+        #if !defined(VSDK_Client)
             Engine::Core::get_singleton() -> enqueue([name]() {
                 const Manifest* resource;
                 {
@@ -169,7 +169,7 @@ namespace Vital::Manager {
         #endif
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     bool Resource::Internal::register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models) {
         Tool::assert_main_thread("Resource::Internal::register_resource");
         auto rm = Resource::get_singleton();
@@ -253,7 +253,7 @@ namespace Vital::Manager {
         return rm -> running.count(name) > 0;
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     bool Resource::Internal::is_pending(const std::string& name) {
         auto rm = Resource::get_singleton();
         return rm -> resource_assets.count(name) > 0;
@@ -302,15 +302,15 @@ namespace Vital::Manager {
         auto am = Manager::Asset::get_singleton();
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            #if !defined(Vital_SDK_Client)
+            #if !defined(VSDK_Client)
             if (!Internal::is_loaded(name)) { rm -> log("error", fmt::format("cannot start `{}` — resource not loaded", name)); return false; }
             #endif
             if (Internal::is_running(name)) { rm -> log("error", fmt::format("cannot start `{}` — already running", name)); return false; }
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             if (Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot start `{}` — already pending", name)); return false; }
             #endif
         }
-        #if !defined(Vital_SDK_Client)
+        #if !defined(VSDK_Client)
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             auto resource = Internal::get_resource(name);
@@ -353,7 +353,7 @@ namespace Vital::Manager {
         bool was_running;
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
                 if (!Internal::is_running(name) && !Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
                 if (Internal::is_pending(name)) {
                     rm -> resource_assets.erase(name);
@@ -366,7 +366,7 @@ namespace Vital::Manager {
             #endif
             was_running = Internal::is_running(name);
             if (was_running) rm -> running.erase(name);
-            #if defined(Vital_SDK_Client)
+            #if defined(VSDK_Client)
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
             #endif
         }
@@ -377,7 +377,7 @@ namespace Vital::Manager {
         }
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
 
-        #if !defined(Vital_SDK_Client)
+        #if !defined(VSDK_Client)
             Engine::Core::get_singleton() -> enqueue([rm, name]() {
                 Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:stopped", name));
                 Manager::Sandbox::get_singleton() -> signal("resource:stopped", Tool::StackValue(name));
@@ -402,7 +402,7 @@ namespace Vital::Manager {
         rm -> log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     void Resource::Internal::scan() {
         Tool::assert_main_thread("Resource::Internal::scan");
         auto rm = Resource::get_singleton();
@@ -586,7 +586,7 @@ namespace Vital::Manager {
         static bool initialized = false;
         if (initialized) return;
         initialized = true;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             Tool::Event::bind("asset:file_ready", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("path")) return;
                 const std::string path = arguments.object.at("path").as<std::string>();
@@ -645,7 +645,7 @@ namespace Vital::Manager {
         #endif
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     void Resource::sync(int peer_id) const {
         Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         std::lock_guard<std::mutex> lock(mutex);
@@ -681,7 +681,7 @@ namespace Vital::Manager {
         return Internal::is_running(name);
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     bool Resource::is_pending(const std::string& name) const {
         std::lock_guard<std::mutex> lock(mutex);
         return Internal::is_pending(name);
@@ -748,7 +748,7 @@ namespace Vital::Manager {
         Engine::Core::get_singleton() -> enqueue([]() { Internal::stop_all(); });
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     void Resource::scan() {
         Engine::Core::get_singleton() -> enqueue([]() { Internal::scan(); });
     }

@@ -71,7 +71,7 @@ namespace Vital::Engine {
         Manager::Sandbox::get_singleton() -> process(delta);
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (!is_ready()) return;
         Manager::Sandbox::get_singleton() -> input(event);
@@ -98,7 +98,7 @@ namespace Vital::Engine {
     void Core::teardown() {
         Manager::Asset::free_singleton();
         Engine::Model::teardown_spawner();
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         free_environment();
         #endif
         Tool::Event::emit("core:teardown");
@@ -135,7 +135,7 @@ namespace Vital::Engine {
         return get_scene_tree() -> get_root();
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     godot::DisplayServer* Core::get_display_server() {
         return godot::DisplayServer::get_singleton();
     }

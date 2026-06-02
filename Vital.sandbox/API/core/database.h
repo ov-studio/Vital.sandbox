@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#if !defined(Vital_SDK_Client)
+#if !defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/core/database_query.h>

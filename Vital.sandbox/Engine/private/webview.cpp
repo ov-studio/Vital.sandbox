@@ -13,7 +13,7 @@
 //////////////
 
 #pragma once
-#if defined(Vital_SDK_Client)
+#if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/webview.h>
 

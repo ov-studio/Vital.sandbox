@@ -15,7 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Tool/index.h>
 #include <Vital.sandbox/Tool/crypto.h>
-#if defined(Vital_SDK_WINDOWS)
+#if defined(VSDK_WINDOWS)
     #include <windows.h>
     #include <comdef.h>
     #include <wbemidl.h>
@@ -39,7 +39,7 @@ namespace Vital::Tool::Inspect {
         return Tool::Crypto::hash("SHA256", s);
     }
 
-    #if defined(Vital_SDK_WINDOWS)
+    #if defined(VSDK_WINDOWS)
     class WMI {
         IWbemLocator* locator = nullptr;
         IWbemServices* services = nullptr;
@@ -104,7 +104,7 @@ namespace Vital::Tool::Inspect {
     #endif
 
     inline std::string cpu() {
-        #if defined(Vital_SDK_WINDOWS)
+        #if defined(VSDK_WINDOWS)
         WMI wmi;
         auto ids = wmi.query(L"Win32_Processor", L"ProcessorId");
         if (!ids.empty()) return hash(normalize(std::string(ids[0].begin(), ids[0].end())));
@@ -120,7 +120,7 @@ namespace Vital::Tool::Inspect {
     }
 
     inline std::string system() {
-        #if defined(Vital_SDK_WINDOWS)
+        #if defined(VSDK_WINDOWS)
         WMI wmi;
         auto vendor = wmi.query(L"Win32_BaseBoard", L"Manufacturer");
         auto product = wmi.query(L"Win32_BaseBoard", L"Product");
@@ -136,7 +136,7 @@ namespace Vital::Tool::Inspect {
     }
 
     inline std::string disk() {
-        #if defined(Vital_SDK_WINDOWS)
+        #if defined(VSDK_WINDOWS)
         WMI wmi;
         auto serials = wmi.query(L"Win32_DiskDrive", L"SerialNumber");
         if (!serials.empty()) return hash(normalize(std::string(serials[0].begin(), serials[0].end())));

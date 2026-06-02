@@ -50,7 +50,7 @@ namespace Vital::Engine {
             return object;
         }
 
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             godot::UtilityFunctions::print("ModelSpawnerDelegate::spawn — asset not ready, creating placeholder: ", data);
             Model* placeholder = memnew(Model);
             placeholder -> set_model_name(name);
@@ -261,7 +261,7 @@ namespace Vital::Engine {
     
         if (scene.is_null()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: unsupported or invalid model format");
         cache_loaded[name] = scene;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
         Manager::Asset::get_singleton() -> flush_spawn_queue(name);
         #endif
         return true;
@@ -278,7 +278,7 @@ namespace Vital::Engine {
         auto it = cache_loaded.find(name);
         if (it == cache_loaded.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: model '{}' isn't loaded yet", name));
 
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             Model* object = memnew(Model);
             object -> set_model_name(name);
             godot::Node* instance = it -> second -> instantiate();
@@ -306,7 +306,7 @@ namespace Vital::Engine {
         this -> queue_free();
     }
 
-    #if defined(Vital_SDK_Client)
+    #if defined(VSDK_Client)
     void Model::hydrate(int authority_peer) {
         if (!placeholder) return;
 
@@ -400,7 +400,7 @@ namespace Vital::Engine {
 
     bool Model::is_streamed() const {
         if (placeholder || !is_visible_in_tree()) return false;
-        #if defined(Vital_SDK_Client)
+        #if defined(VSDK_Client)
             auto viewport = get_viewport();
             if (!viewport) return false;
             auto camera = viewport -> get_camera_3d();
@@ -551,7 +551,7 @@ namespace Vital::Engine {
         });
     }
 
-    #if !defined(Vital_SDK_Client)
+    #if !defined(VSDK_Client)
     void Model::set_sync_authority(int peer_id) {
         if (!net_sync) return;
         net_sync -> set_multiplayer_authority(peer_id);
