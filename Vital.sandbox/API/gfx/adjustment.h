@@ -152,7 +152,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "reset_lut", [](auto vm, auto& id) -> int {
                 base_class::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
-                vm -> del_reference(lut_reference);
+                vm -> del_reference("vsdk", lut_reference);
                 vm -> push_value(true);
                 return 1;
             });
