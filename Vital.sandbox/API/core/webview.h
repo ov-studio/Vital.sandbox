@@ -158,7 +158,7 @@ namespace Vital::Sandbox::API {
                 self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) return;
-                    vm -> get_reference(instance -> handler_reference(), true);
+                    instance -> get_ref(instance -> handler_reference());
                     vm -> push_value(Tool::to_std_string(message));
                     vm -> pcall(1, 0);
                 });
