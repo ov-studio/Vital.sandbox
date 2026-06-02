@@ -55,9 +55,6 @@ namespace Vital::Sandbox::API {
                 instance -> release();
             }
 
-            void on_model_destroyed() {
-                model = nullptr;
-            }
         };
         inline static vm_registry<Instance> registry;
 
@@ -89,7 +86,7 @@ namespace Vital::Sandbox::API {
                     if (instance -> model != dying) { ++it; continue; }
                     ++it;
                     Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
-                    instance -> on_model_destroyed();
+                    instance -> model = nullptr;
                     Instance::erase_unlocked(instance);
                     Instance::release(instance);
                 }
