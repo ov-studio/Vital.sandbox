@@ -25,7 +25,7 @@ namespace Vital::Tool {
     struct Stack;
     struct StackValue;
     struct StackValue {
-        using stack_value = std::variant
+        using stack_value = std::variant<
             std::nullptr_t,
             bool,
             int32_t,
