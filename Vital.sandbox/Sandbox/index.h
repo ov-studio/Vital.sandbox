@@ -206,29 +206,29 @@ namespace Vital::Sandbox {
                     vm -> push_value(std::string(TOwner::base_name) == vm -> get_string(2));
                     return 1;
                 });
-            
+
                 #if defined(VSDK_Client)
                 if constexpr (TOwner::has_remote) {
-                    bind_method<TInstance>(vm, TOwner::base_name, "is_remote", [](auto vm, auto self, auto& id) -> int {
+                    bind_method<TInstance>(vm, "is_remote", [](auto vm, auto self, auto& id) -> int {
                         vm -> push_value(self -> is_remote());
                         return 1;
                     });
                 }
-            
+
                 if constexpr (TOwner::has_streaming) {
-                    bind_method<TInstance>(vm, TOwner::base_name, "is_streamed", [](auto vm, auto self, auto& id) -> int {
+                    bind_method<TInstance>(vm, "is_streamed", [](auto vm, auto self, auto& id) -> int {
                         vm -> push_value(self -> is_streamed());
                         return 1;
                     });
                 }
                 #endif
-            
-                bind_method<TInstance>(vm, TOwner::base_name, "get_type", [](auto vm, auto self, auto& id) -> int {
+
+                bind_method<TInstance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(std::string(TOwner::base_name).empty() ? false : TOwner::base_name);
                     return 1;
                 });
-            
-                bind_method<TInstance>(vm, TOwner::base_name, "destroy", [](auto vm, auto self, auto& id) -> int {
+
+                bind_method<TInstance>(vm, "destroy", [](auto vm, auto self, auto& id) -> int {
                     #if defined(VSDK_Client)
                     if constexpr (TOwner::has_remote) {
                         if (self -> is_remote()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: remote entities cannot be destroyed by the client");
@@ -320,15 +320,15 @@ namespace Vital::Sandbox {
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
 
-            bool is_alive() const { 
+            bool is_alive() const {
                 return true;
             }
 
-            bool is_streamed() const { 
+            bool is_streamed() const {
                 return true;
             }
 
-            bool is_remote() const { 
+            bool is_remote() const {
                 return env.empty();
             }
 
@@ -352,7 +352,7 @@ namespace Vital::Sandbox {
                 if (!instance || !instance -> userdata) vm -> push_nil();
                 else instance -> get_reference(self_reference(), true);
             }
-        
+
             bool store() {
                 return Derived::store(static_cast<Derived*>(this) -> shared_from_this());
             }
