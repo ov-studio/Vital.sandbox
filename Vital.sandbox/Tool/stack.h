@@ -33,7 +33,7 @@ namespace Vital::Tool {
             float,
             double,
             std::string,
-            std::shared_ptr<Stack>
+            std::shared_ptr<Stack>,
             std::shared_ptr<void>
         >;
         stack_value value{nullptr};
