@@ -164,7 +164,7 @@ namespace Vital::Sandbox {
                         if (streamed && !instance -> is_streamed()) continue;
                         #endif
                         if (instance -> userdata) {
-                            instance -> get_ref(instance -> self_reference(), true);
+                            instance -> get_reference(instance -> self_reference(), true);
                             vm -> set_table_field(++count, -2);
                         }
                     }
@@ -332,23 +332,23 @@ namespace Vital::Sandbox {
                 return env.empty();
             }
 
-            void set_ref(const std::string& name, int index) {
+            void set_reference(const std::string& name, int index) {
                 vm -> set_reference("runtime", name, index);
                 references.push_back(name);
             }
 
-            int get_ref(const std::string& name, bool push_to_stack = false) {
+            int get_reference(const std::string& name, bool push_to_stack = false) {
                 vm -> get_reference("runtime", name, push_to_stack);
             }
 
-            int del_ref(const std::string& name) {
+            int del_reference(const std::string& name) {
                 vm -> del_reference("runtime", name);
             }
 
             void push_self(Machine* vm) override {
                 auto instance = Derived::find_unlocked(static_cast<Derived*>(this) -> id);
                 if (!instance || !instance -> userdata) vm -> push_nil();
-                else instance -> get_ref(self_reference(), true);
+                else instance -> get_reference(self_reference(), true);
             }
 
             bool store(Machine* vm, const std::string& type_name) {
@@ -391,7 +391,7 @@ namespace Vital::Sandbox {
                 }
                 vm -> create_object(type_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
-                instance -> set_ref(instance -> self_reference(), -1);
+                instance -> set_reference(instance -> self_reference(), -1);
                 return true;
             }
 
@@ -411,7 +411,7 @@ namespace Vital::Sandbox {
             static bool release(std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
-                    for (auto& name : instance -> references) instance -> del_ref(name);
+                    for (auto& name : instance -> references) instance -> del_reference(name);
                     instance -> references.clear();
                 }
                 instance -> vm = nullptr;

@@ -103,11 +103,11 @@ namespace Vital::Sandbox::API {
                 auto instance  = Instance::init(vm);
                 auto thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
-                instance -> set_ref(instance -> thread_reference(), 2);
-                instance -> set_ref(instance -> reference(), 1);
+                instance -> set_reference(instance -> thread_reference(), 2);
+                instance -> set_reference(instance -> reference(), 1);
                 vm -> pop(2);
                 instance -> store(vm, base_name);
-                instance -> get_ref(instance -> self_reference(), true);
+                instance -> get_reference(instance -> self_reference(), true);
                 return 1;
             });
 
@@ -124,7 +124,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (!found) vm -> push_value(false);
-                else found -> get_ref(found -> self_reference(), true);
+                else found -> get_reference(found -> self_reference(), true);
                 return 1;
             });
         }
@@ -133,9 +133,9 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, base_name, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (self -> sleeping || self -> awaiting) vm -> push_value(false);
                 else {
-                    self -> get_ref(self -> reference(), true);
+                    self -> get_reference(self -> reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
-                    self -> get_ref(self -> self_reference(), true);
+                    self -> get_reference(self -> self_reference(), true);
                     self -> vm -> move(self -> thread_vm, 1);
                     safe_resume(self, 1);
                     vm -> push_value(true);

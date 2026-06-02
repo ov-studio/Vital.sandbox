@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
             if (!instance || !instance -> vm || instance -> value_count == 0) return 0;
             auto state = dst -> get_state();
             for (int i = 1; i <= instance -> value_count; ++i) {
-                int ref = instance -> get_ref(instance -> value_reference(i));
+                int ref = instance -> get_reference(instance -> value_reference(i));
                 lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
             }
             return instance -> value_count;
@@ -69,7 +69,7 @@ namespace Vital::Sandbox::API {
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
             instance -> value_count = args_count;
-            for (int i = 0; i < args_count; ++i) instance -> set_ref(instance -> value_reference(i + 1), args_start + i);
+            for (int i = 0; i < args_count; ++i) instance -> set_reference(instance -> value_reference(i + 1), args_start + i);
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
             bool resolved_flag = instance -> resolved;

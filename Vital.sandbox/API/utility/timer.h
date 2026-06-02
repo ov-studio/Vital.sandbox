@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
                 int interval = std::max(1, vm -> get_int(2));
                 int executions = std::max(0, vm -> get_int(3));
                 auto instance = Instance::init(vm);
-                instance -> set_ref(instance -> reference(), 1);
+                instance -> set_reference(instance -> reference(), 1);
                 vm -> pop(1);
                 instance -> store(vm, base_name);
 
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                     Machine::enqueue([weak, captured_count, captured_stop]() {
                         auto instance = weak.lock();
                         if (!instance || instance -> destroyed) return;
-                        instance -> get_ref(instance -> reference(), true);
+                        instance -> get_reference(instance -> reference(), true);
                         instance -> vm -> push_value(captured_count);
                         instance -> vm -> pcall(1, 0);
                         if (captured_stop) {
