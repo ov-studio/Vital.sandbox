@@ -381,13 +381,11 @@ namespace Vital::Sandbox {
             }
 
             // TODO: MERGE bind under store??
-            static bool store(std::shared_ptr<Derived> instance) {
-                std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
-                Derived::Owner::registry.buffer[instance -> id] = instance;
-                return true;
-            }
-
-            static bool bind(std::shared_ptr<Derived> instance, Machine* vm, const std::string& type_name) {
+            static bool store(std::shared_ptr<Derived> instance, Machine* vm, const std::string& type_name) {
+                {
+                    std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
+                    Derived::Owner::registry.buffer[instance -> id] = instance;
+                }
                 vm -> create_object(type_name, instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
                 instance -> set_ref(instance -> self_reference(), -1);
