@@ -85,9 +85,8 @@ namespace Vital::Sandbox::API {
                     auto& instance = it -> second;
                     if (instance -> model != dying) { ++it; continue; }
                     ++it;
-                    Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
-                    instance -> model = nullptr;
                     Instance::erase_unlocked(instance);
+                    instance -> model = nullptr;
                     Instance::release(instance);
                 }
             };
