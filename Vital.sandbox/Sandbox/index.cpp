@@ -93,6 +93,7 @@ namespace Vital::Sandbox {
     void Machine::bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
         Engine::Core::get_singleton() -> execute([this, scope, name, exec = std::move(exec)]() mutable {
             Tool::assert_main_thread("Machine::bind");
+            // TODO: deallocate heap on sandbox vm closure??
             auto heap_exec = new vm_bind(std::move(exec));
             std::string id = scope[0];
             for (std::size_t i = 1; i < scope.size(); ++i) id += "." + scope[i];
