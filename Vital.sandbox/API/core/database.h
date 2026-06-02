@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            vm_module::register_type<Database>(vm, base_name);
+            vm_module::register_type<Database>(vm);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(host, user, password, database, port = 3306)")

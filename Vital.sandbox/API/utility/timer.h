@@ -46,7 +46,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void bind(Machine* vm) {
-            vm_module::register_type<Timer>(vm, base_name);
+            vm_module::register_type<Timer>(vm);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec, interval, executions)")

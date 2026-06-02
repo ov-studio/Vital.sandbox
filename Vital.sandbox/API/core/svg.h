@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void bind(Machine* vm) {
-            vm_module::register_type<SVG>(vm, base_name);
+            vm_module::register_type<SVG>(vm);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")

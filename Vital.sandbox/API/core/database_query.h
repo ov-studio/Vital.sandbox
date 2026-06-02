@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            vm_module::register_type<Database_Query>(vm, base_name);
+            vm_module::register_type<Database_Query>(vm);
         }
 
         static void methods(Machine* vm) {
