@@ -155,7 +155,7 @@ namespace Vital::Sandbox {
             bool is_thread(int index = 1) { return lua_isthread(state, index); }
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
-            bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(name) != reference.end(); }
+            bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(make_reference(scope, name)) != reference.end(); }
 
             bool is_horizontal_alignment(int index = 1) {
                 if (is_string(index)) return horizontal_alignment.count(get_string(index)) > 0;
@@ -232,8 +232,8 @@ namespace Vital::Sandbox {
             }
 
             int get_reference(const std::string& scope, const std::string& name, bool push_to_stack = false) {
-                if (!push_to_stack) return reference.at(name);
-                get_raw_reference(reference.at(name));
+                if (!push_to_stack) return reference.at(make_reference(scope, name));
+                get_raw_reference(reference.at(make_reference(scope, name)));
                 return 0;
             }
 
@@ -452,12 +452,11 @@ namespace Vital::Sandbox {
 
             void clear_environment_id(const std::string& id) {
                 Tool::assert_main_thread("Machine::clear_environment_id");
-                const std::string ref = get_environment_ref(id);
-                if (!is_reference(scope, ref)) return;
-                get_reference(ref, true);
+                if (!is_reference("env", id)) return;
+                get_reference("env", id, true);
                 push_nil();
                 lua_rawset(state, LUA_REGISTRYINDEX);
-                del_reference("env", ref);
+                del_reference("env", id);
                 lua_gc(state, LUA_GCCOLLECT, 0);
                 for (auto& clean : env_cleaners) clean(id);
             }
@@ -527,7 +526,7 @@ namespace Vital::Sandbox {
             void set_reference(const std::string& scope, const std::string& name, int index = 1) {
                 Tool::assert_main_thread("Machine::set_reference");
                 del_reference(scope, name);
-                reference.emplace(name, set_raw_reference(index));
+                reference.emplace(make_reference(scope, name), set_raw_reference(index));
             }
 
             int set_raw_reference(int index = -1) {
