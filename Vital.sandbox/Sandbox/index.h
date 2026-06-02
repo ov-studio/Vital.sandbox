@@ -310,7 +310,7 @@ namespace Vital::Sandbox {
     // TODO: Improve - push_associated_lua
     template<typename Derived>
     struct vm_instance : public vm_instance_anchor, public std::enable_shared_from_this<Derived> {
-        // Bring shared_from_this explicitly into dependent scope to fix C3861 errors globally
+        // TODO: Bring shared_from_this explicitly into dependent scope to fix C3861 errors globally
         using std::enable_shared_from_this<Derived>::shared_from_this;
         private:
             std::vector<std::string> refs;
