@@ -76,6 +76,7 @@ namespace Vital::Sandbox::API {
                 auto& instance = it -> second;
                 if (instance -> model != dying) { ++it; continue; }
                 ++it;
+                Manager::Sandbox::get_singleton() -> signal("vital.model:on_destroyed", Tool::StackValue(instance));
                 instance -> on_model_destroyed();
                 #if defined(Vital_SDK_Client)
                 Instance::erase_unlocked(instance);
@@ -98,6 +99,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(nullptr, remote);
                 instance -> model = spawned;
                 instance -> store();
+                Manager::Sandbox::get_singleton() -> signal("vital.model:on_created", Tool::StackValue(instance));
             };
 
             base_class::on_destroyed_callback = [](base_class* dying) {
@@ -155,6 +157,7 @@ namespace Vital::Sandbox::API {
                 int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
                 auto instance = Instance::make(vm);
                 instance -> model = base_class::create(name, authority);
+                Manager::Sandbox::get_singleton() -> signal("vital.model:on_created", Tool::StackValue(instance));
                 return 1;
             });
         }
