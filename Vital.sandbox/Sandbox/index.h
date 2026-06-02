@@ -163,9 +163,10 @@ namespace Vital::Sandbox {
                         #if defined(Vital_SDK_Client)
                         if (streamed && !instance -> is_streamed()) continue;
                         #endif
-                        if (instance -> userdata) instance -> vm -> get_reference(instance -> self_reference(), true);
-                        else instance -> bind(vm, T::base_name);
-                        vm -> set_table_field(++count, -2);
+                        if (instance -> userdata) {
+                            instance -> vm -> get_reference(instance -> self_reference(), true);
+                            vm -> set_table_field(++count, -2);
+                        }
                     }
                 });
             }
