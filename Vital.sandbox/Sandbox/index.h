@@ -334,8 +334,8 @@ namespace Vital::Sandbox {
                 return Derived::store(static_cast<Derived*>(this) -> shared_from_this());
             }
 
-            bool bind(Machine* vm, const std::string& type_name, int index = -1) {
-                return Derived::bind(static_cast<Derived*>(this) -> shared_from_this(), vm, type_name, index);
+            bool bind(Machine* vm, const std::string& type_name) {
+                return Derived::bind(static_cast<Derived*>(this) -> shared_from_this(), vm, type_name);
             }
 
             bool erase() {
@@ -373,10 +373,10 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static bool bind(std::shared_ptr<Derived> instance, Machine* vm, const std::string& type_name, int index = -1) {
+            static bool bind(std::shared_ptr<Derived> instance, Machine* vm, const std::string& type_name) {
                 vm -> create_object(type_name, instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(vm, index);
-                instance -> set_ref(instance -> self_reference(), index);
+                instance -> userdata = vm_module::get_userdata_ptr(vm, -1);
+                instance -> set_ref(instance -> self_reference(), -1);
                 return true;
             }
 
