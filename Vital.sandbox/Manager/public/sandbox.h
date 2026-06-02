@@ -24,9 +24,10 @@
 namespace Vital::Manager {
     class Sandbox;
     class Sandbox : public godot::Node {
+        public:
+            inline static const std::string signal_reference = "vital.network:execute";
         protected:
             inline static Sandbox* singleton = nullptr;
-            inline static const std::string signal_reference = "vital.network:execute";
         private:
             Vital::Sandbox::Machine* vm = nullptr;
             mutable std::mutex mutex;
