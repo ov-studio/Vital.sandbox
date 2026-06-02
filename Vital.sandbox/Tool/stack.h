@@ -55,15 +55,17 @@ namespace Vital::Tool {
         explicit StackValue(Stack v);
 
 
-        // Accessors //
-        // TODO: Arrange better
+        // Checkers //
         template<typename T>
         bool is() const { return std::holds_alternative<T>(value); }
+        bool is_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
+
+
+        // Accessors //
         template<typename T>
         const T& as() const { return std::get<T>(value); }
         template<typename T>
         std::shared_ptr<T> as_ptr() const { return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value)); }
-        bool has_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
 
 
         // Equality //
