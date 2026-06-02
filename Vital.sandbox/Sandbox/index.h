@@ -342,13 +342,9 @@ namespace Vital::Sandbox {
                 if (!instance || !instance -> userdata) vm -> push_nil();
                 else this -> vm -> get_reference(this -> self_reference(), true);
             }
-            
-            bool store() {
-                return Derived::store(static_cast<Derived*>(this) -> shared_from_this());
-            }
 
-            bool bind(Machine* vm, const std::string& type_name) {
-                return Derived::bind(static_cast<Derived*>(this) -> shared_from_this(), vm, type_name);
+            bool store(Machine* vm, const std::string& type_name) {
+                return Derived::store(static_cast<Derived*>(this) -> shared_from_this(), vm, type_name);
             }
 
             bool erase() {
@@ -380,7 +376,6 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
 
-            // TODO: MERGE bind under store??
             static bool store(std::shared_ptr<Derived> instance, Machine* vm, const std::string& type_name) {
                 {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
