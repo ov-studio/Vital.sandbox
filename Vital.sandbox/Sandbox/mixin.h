@@ -40,6 +40,8 @@ namespace Vital::Sandbox {
                     using T = std::decay_t<decltype(v)>;
                     if constexpr (std::is_same_v<T, std::nullptr_t>)
                         self() -> push_nil();
+                    else if constexpr (std::is_same_v<T, std::shared_ptr<void>>)
+                        self() -> push_nil(); // TODO: ← type-erased ptr, not pushable to Lua, check if castable to vm_instance and push its associated object?
                     else if constexpr (std::is_same_v<T, std::shared_ptr<Tool::Stack>>) {
                         self() -> create_table();
                         if (!v) return;
