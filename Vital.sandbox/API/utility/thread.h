@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            vm_module::register_type<Thread>(vm, base_name);
+            vm_module::register_type<Thread>(vm);
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
                 Machine::enqueue([thread_id, resolved, promise]() {
