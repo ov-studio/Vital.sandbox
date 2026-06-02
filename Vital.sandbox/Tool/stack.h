@@ -1,3 +1,4 @@
+```cpp
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
      Script: Tool: stack.h
@@ -25,7 +26,7 @@ namespace Vital::Tool {
     struct Stack;
     struct StackValue;
     struct StackValue {
-        using stack_value = std::variant<
+        using stack_value = std::variant
             std::nullptr_t,
             bool,
             int32_t,
@@ -36,7 +37,8 @@ namespace Vital::Tool {
             std::shared_ptr<void>,
             std::shared_ptr<Stack>
         >;
-        stack_value value{nullptr};
+        stack_value value { nullptr };
+        const std::type_info* ptr_type = nullptr;
 
 
         // Constructors //
@@ -51,7 +53,7 @@ namespace Vital::Tool {
         StackValue(std::string v) : value(std::move(v)) {}
         StackValue(std::shared_ptr<Stack> v) : value(std::move(v)) {}
         template<typename T>
-        explicit StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))) {}
+        explicit StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))), ptr_type(&typeid(T)) {}
         explicit StackValue(Stack v);
 
 
@@ -59,13 +61,18 @@ namespace Vital::Tool {
         template<typename T>
         bool is() const { return std::holds_alternative<T>(value); }
         bool is_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
+        template<typename T>
+        bool is_ptr() const { return is_ptr() && ptr_type && *ptr_type == typeid(T); }
 
 
         // Accessors //
         template<typename T>
         const T& as() const { return std::get<T>(value); }
         template<typename T>
-        std::shared_ptr<T> as_ptr() const { return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value)); }
+        std::shared_ptr<T> as_ptr() const {
+            if (!is_ptr<T>()) return nullptr;
+            return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value));
+        }
 
 
         // Equality //
@@ -207,3 +214,4 @@ namespace Vital::Tool {
         return value == other.value;
     }
 }
+```
