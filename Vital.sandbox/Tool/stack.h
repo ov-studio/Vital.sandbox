@@ -56,13 +56,14 @@ namespace Vital::Tool {
 
 
         // Accessors //
+        // TODO: Arrange better
         template<typename T>
         bool is() const { return std::holds_alternative<T>(value); }
         template<typename T>
         const T& as() const { return std::get<T>(value); }
         template<typename T>
-        bool is_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
         std::shared_ptr<T> as_ptr() const { return std::static_pointer_cast<T>(std::get<std::shared_ptr<void>>(value)); }
+        bool has_ptr() const { return std::holds_alternative<std::shared_ptr<void>>(value) && std::get<std::shared_ptr<void>>(value) != nullptr; }
 
 
         // Equality //
