@@ -368,6 +368,7 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
 
+            // TODO: MERGE bind under store??
             static bool store(std::shared_ptr<Derived> instance) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 Derived::Owner::registry.buffer[instance -> id] = instance;
