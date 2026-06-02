@@ -176,7 +176,7 @@ namespace Vital::Sandbox {
                 // TODO: These needs to be freed when changing server freeing core // Anisa
                 auto heap_exec = new std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>(std::move(exec));
                 auto heap_type = new std::string(T::Owner::base_name);
-                auto heap_id = new std::string(type_name + ":" + name);
+                auto heap_id = new std::string(T::Owner::base_name + ":" + name);
                 lua_pushlightuserdata(vm -> get_state(), heap_exec);
                 lua_pushlightuserdata(vm -> get_state(), heap_type);
                 lua_pushlightuserdata(vm -> get_state(), heap_id);
