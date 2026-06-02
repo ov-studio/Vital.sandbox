@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
                 const std::string name = vm -> get_string(1);
                 const std::string path = vm -> get_string(2);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
-
+                // TODO: SHOULD USE SAME FORMAT FOR RESOURCE PATH AS NAME INSTEAD OF "NAME" but when executed inside same resource it should automatically generate :resourcename/ actually the model.h/cpp should use better storing format map for it imo?? or idk its good
                 Tool::print("warn", resource);
 
                 bool result = base_class::load(name, path);
@@ -433,7 +433,7 @@ namespace Vital::Sandbox::API {
         static void clean(const std::string& env) {
             Instance::collect_env(env);
 
-            // TODO: Unload all model assets that were loaded by this resource env
+            // TODO: Unload all model assets that were loaded by this resource env, should below be removed and call Engine::Model::unload_resource_models(name); adapt it from resource.cpp to work accordingly?? 
             {
                 std::lock_guard<std::mutex> lock(scope_mutex);
                 std::vector<std::string> to_unload;
