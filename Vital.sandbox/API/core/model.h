@@ -99,7 +99,6 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(nullptr, remote);
                 instance -> model = spawned;
                 instance -> store(vm, base_name);
-                Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
             };
 
             base_class::on_destroyed_callback = [](base_class* dying) {
