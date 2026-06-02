@@ -424,6 +424,11 @@ namespace Vital::Sandbox {
                 return true;
             }
 
+            static void clean(std::shared_ptr<Derived> instance) {
+                if (!erase(instance)) return;
+                release(instance);
+            }
+            
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::registry.next_id.fetch_add(1);
