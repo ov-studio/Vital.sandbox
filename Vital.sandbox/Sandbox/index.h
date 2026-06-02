@@ -224,7 +224,7 @@ namespace Vital::Sandbox {
                 #endif
             
                 bind_method<TInstance>(vm, TOwner::base_name, "get_type", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(std::string(TOwner::base_name).empty() ? false : TOwner::base_name;
+                    vm -> push_value(std::string(TOwner::base_name).empty() ? false : TOwner::base_name);
                     return 1;
                 });
             
