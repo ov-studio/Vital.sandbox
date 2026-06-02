@@ -71,7 +71,7 @@ namespace Vital::Sandbox {
 
 
             // Helpers //
-            std::string make_reference(const std::string& scope, const std::string& name) { 
+            inline static std::string make_reference(const std::string& scope, const std::string& name) { 
                 return fmt::format("{}:{}", scope, name);
             }
         public:

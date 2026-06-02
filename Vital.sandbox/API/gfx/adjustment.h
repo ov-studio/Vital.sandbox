@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 lut_texture_3d -> create(godot::Image::FORMAT_RGBA8, lut_size, lut_size, lut_size, false, lut_slices);
                 base_class::get_environment() -> set_adjustment_color_correction(lut_texture_3d);
                 vm -> push_value(path);
-                vm -> set_reference(lut_reference, -1);
+                vm -> set_reference("vsdk", lut_reference, -1);
                 vm -> pop(1);
                 vm -> push_value(true);
                 return 1;

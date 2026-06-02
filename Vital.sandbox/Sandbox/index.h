@@ -333,7 +333,7 @@ namespace Vital::Sandbox {
             }
 
             void set_ref(const std::string& ref, int index) {
-                vm -> set_reference(ref, index);
+                vm -> set_reference("runtime", ref, index);
                 refs.push_back(ref);
             }
 
