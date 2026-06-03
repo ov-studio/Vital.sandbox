@@ -78,15 +78,15 @@ namespace Vital::Sandbox {
                 // TODO: These needs to be freed when changing server freeing core // Anisa
                 auto heap_exec = new std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>(std::move(exec));
                 auto heap_type = new std::string(T::Owner::base_name);
-                auto heap_id   = new std::string(std::string(T::Owner::base_name) + ":" + name);
+                auto heap_id = new std::string(std::string(T::Owner::base_name) + ":" + name);
                 lua_pushlightuserdata(vm -> get_state(), heap_exec);
                 lua_pushlightuserdata(vm -> get_state(), heap_type);
                 lua_pushlightuserdata(vm -> get_state(), heap_id);
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
-                    auto fn   = static_cast<std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>*>(lua_touserdata(state, lua_upvalueindex(1)));
+                    auto fn = static_cast<std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
-                    auto id   = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
-                    auto vm   = Machine::fetch_machine(state);
+                    auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
+                    auto vm = Machine::fetch_machine(state);
                     return vm -> execute([&]() -> int {
                         auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                         auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
