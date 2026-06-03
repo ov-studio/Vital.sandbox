@@ -60,7 +60,6 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Database>(),
             vm_module::make_api<Database_Query>(),
             vm_module::make_api<Discord>(),
-            vm_module::make_api<Network>(),
             vm_module::make_api<Model>(),
             vm_module::make_api<Webview>(),
             vm_module::make_api<Font>(),
