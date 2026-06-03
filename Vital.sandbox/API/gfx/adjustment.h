@@ -50,7 +50,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "get_lut", [](auto vm, auto& id) -> int {
-                if (vm -> is_reference("vsdk", lut_reference)) vm -> get_reference("vsdk", lut_reference, true);
+                if (vm -> is_reference("sandbox", lut_reference)) vm -> get_reference("sandbox", lut_reference, true);
                 else vm -> push_value(false);
                 return 1;
             });
@@ -144,7 +144,7 @@ namespace Vital::Sandbox::API {
                 lut_texture_3d -> create(godot::Image::FORMAT_RGBA8, lut_size, lut_size, lut_size, false, lut_slices);
                 base_class::get_environment() -> set_adjustment_color_correction(lut_texture_3d);
                 vm -> push_value(path);
-                vm -> set_reference("vsdk", lut_reference, -1);
+                vm -> set_reference("sandbox", lut_reference, -1);
                 vm -> pop(1);
                 vm -> push_value(true);
                 return 1;
@@ -152,7 +152,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, {base_name}, "reset_lut", [](auto vm, auto& id) -> int {
                 base_class::get_environment() -> set_adjustment_color_correction(godot::Ref<godot::Texture>());
-                vm -> del_reference("vsdk", lut_reference);
+                vm -> del_reference("sandbox", lut_reference);
                 vm -> push_value(true);
                 return 1;
             });

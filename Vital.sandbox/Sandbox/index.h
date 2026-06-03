@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/Sandbox/runtime/types.h>
 #include <Vital.sandbox/Sandbox/runtime/module.h>
 #include <Vital.sandbox/Sandbox/runtime/instance.h>
 
