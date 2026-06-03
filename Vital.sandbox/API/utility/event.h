@@ -107,8 +107,6 @@ namespace Vital::Sandbox::API {
         // Bind
         // ----------------------------------------------------------------
         static void bind(Machine* vm) {
-            vm_module::register_type<Event>(vm);
-
             // network.on(name, exec [, config]) -> bool
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec [, config])")
