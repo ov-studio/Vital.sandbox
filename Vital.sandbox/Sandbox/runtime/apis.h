@@ -20,7 +20,6 @@
 #include <Vital.sandbox/API/core/database.h>
 #include <Vital.sandbox/API/core/database_query.h>
 #include <Vital.sandbox/API/core/discord.h>
-#include <Vital.sandbox/API/core/network.h>
 #include <Vital.sandbox/API/core/model.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
@@ -36,6 +35,7 @@
 #include <Vital.sandbox/API/utility/crypto.h>
 #include <Vital.sandbox/API/utility/shrinker.h>
 #include <Vital.sandbox/API/utility/exports.h>
+#include <Vital.sandbox/API/utility/event.h>
 
 #include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/emissive.h>
@@ -77,6 +77,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Crypto>(),
             vm_module::make_api<Shrinker>(),
             vm_module::make_api<Exports>(),
+            vm_module::make_api<Event>(),
 
             // GFX //
             vm_module::make_api<Adjustment>(),
