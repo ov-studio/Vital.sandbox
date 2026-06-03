@@ -80,7 +80,7 @@ namespace Vital::Sandbox::API {
 
             // Push payload args onto Lua stack from Tool::Stack
             int n_args = static_cast<int>(payload.array.size());
-            for (auto& v : payload.array) vm -> push(v);
+            for (auto& v : payload.array) vm -> push_value(v);
 
             if (!is_callback) {
                 if (h.async) {
@@ -292,7 +292,7 @@ namespace Vital::Sandbox::API {
                 lua_rawgeti(state, LUA_REGISTRYINDEX, h.exec_ref);
 
                 int n_args = static_cast<int>(payload.array.size());
-                for (auto& v : payload.array) vm -> push(v);
+                for (auto& v : payload.array) vm -> push_value(v);
 
                 auto do_call = [&]() {
                     int base = lua_gettop(state) - n_args - 1;  // before fn
