@@ -538,7 +538,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::del_reference");
                 if (!is_reference(scope, name)) return;
                 del_raw_reference(get_reference(scope, name));
-                reference.erase(name);
+                reference.erase(make_reference(scope, name));
             }
 
             void del_raw_reference(int ref) { 
