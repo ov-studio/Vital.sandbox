@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
 #include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/API/utility/event.h>
 
 
 //////////////////////////////
@@ -144,12 +145,25 @@ namespace Vital::Manager {
     void Network::_on_packet_received(godot::Dictionary data) {
         auto tree = get_scene_tree();
         if (!tree) return;
-        auto mp = tree -> get_multiplayer();
-        int32_t sender = mp.is_valid() ? mp -> get_remote_sender_id() : 0;
+        auto mp = tree->get_multiplayer();
+        int32_t sender = mp.is_valid() ? mp->get_remote_sender_id() : 0;
+
+        // Inject sender_id into the object portion
         godot::Dictionary obj = data.has("object") ? (godot::Dictionary)data["object"] : godot::Dictionary();
         obj["sender_id"] = (int64_t)sender;
         data["object"] = obj;
-        Tool::Event::emit("network:packet", Tool::Stack::from_dict(data));
+
+        Tool::Stack stack = Tool::Stack::from_dict(data);
+
+        // If __event key present, this is a Sandbox event dispatch
+        if (stack.has("__event")) {
+            auto* vm = Manager::Sandbox::get_singleton()->get_vm();
+            Vital::Sandbox::API::Event::dispatch_remote(vm, stack);
+            return;
+        }
+
+        // Otherwise fall through to the raw packet event
+        Tool::Event::emit("network:packet", stack);
     }
 
     #if defined(VSDK_Client)
