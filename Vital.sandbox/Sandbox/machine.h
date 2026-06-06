@@ -68,6 +68,7 @@ namespace Vital::Sandbox {
             std::unordered_set<Machine*> children = {};
             vm_refs reference = {};
             vm_apis external_apis = {};
+            std::function<void(Machine*, int nresults)> on_finish;
 
 
             // Helpers //
@@ -142,6 +143,11 @@ namespace Vital::Sandbox {
                     std::swap(work, work_queue);
                 }
                 for (auto& fn : work) fn();
+            }
+
+            void set_finish_hook(std::function<void(Machine*, int)> fn) {
+                if (!is_virtual()) return;
+                on_finish = std::move(fn);
             }
 
 
@@ -548,15 +554,20 @@ namespace Vital::Sandbox {
             bool resume(int count = 0) {
                 Tool::assert_main_thread("Machine::resume");
                 if (!is_virtual()) return false;
-                int ncount;
-                int result = lua_resume(state, nullptr, count, &ncount);
+                int nresults = 0;
                 if (result != LUA_OK && result != LUA_YIELD) {
                     if (get_count() > 0) {
                         API::log(std::string(Tool::Log::error::label), get_string(-1));
                         pop(1);
                     }
                 }
-                if (result != LUA_YIELD) { delete this; return false; }
+                if (result != LUA_YIELD) {
+                    if (on_finish) {
+                        on_finish(this, nresults);
+                        on_finish = nullptr;
+                    }
+                    delete this;
+                    return false;
                 return true;
             }
 
