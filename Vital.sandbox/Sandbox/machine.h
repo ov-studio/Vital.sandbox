@@ -145,11 +145,6 @@ namespace Vital::Sandbox {
                 for (auto& fn : work) fn();
             }
 
-            void set_finish_hook(std::function<void(Machine*, int)> fn) {
-                if (!is_virtual()) return;
-                on_finish = std::move(fn);
-            }
-
 
             // Checkers //
             bool is_virtual() const { return virtualized; }
@@ -579,6 +574,11 @@ namespace Vital::Sandbox {
                 lua_yield(state, count);
             }
 
+            void set_finish_hook(std::function<void(Machine*, int)> fn) {
+                if (!is_virtual()) return;
+                on_finish = std::move(fn);
+            }
+    
             std::string to_string(int index = 1) {
                 size_t length;
                 const char* value = luaL_tolstring(state, index, &length);
