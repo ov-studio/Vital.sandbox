@@ -131,9 +131,9 @@ namespace Vital::Sandbox {
                 return it != machines.end() ? it -> second : nullptr;
             }
 
-            static void enqueue(std::function<void()> fn) {
+            static void enqueue(std::function<void()> exec) {
                 std::lock_guard<std::mutex> lock(mutex);
-                work_queue.push_back(std::move(fn));
+                work_queue.push_back(std::move(exec));
             }
 
             static void drain() {
@@ -142,7 +142,7 @@ namespace Vital::Sandbox {
                     std::lock_guard<std::mutex> lock(mutex);
                     std::swap(work, work_queue);
                 }
-                for (auto& fn : work) fn();
+                for (auto& exec : work) exec();
             }
 
 
@@ -574,9 +574,9 @@ namespace Vital::Sandbox {
                 lua_yield(state, count);
             }
 
-            void set_finish_hook(std::function<void(Machine*, int)> fn) {
+            void set_finish_hook(std::function<void(Machine*, int)> exec) {
                 if (!is_virtual()) return;
-                on_finish = std::move(fn);
+                on_finish = std::move(exec);
             }
     
             std::string to_string(int index = 1) {
