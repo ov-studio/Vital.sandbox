@@ -30,10 +30,11 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "event";
 
         struct Handler {
-            int  exec_ref           = LUA_NOREF;
-            bool async              = false;
-            int  subscription_limit = 0;
-            int  subscription_count = 0;
+            int         exec_ref           = LUA_NOREF;
+            bool        async              = false;
+            int         subscription_limit = 0;
+            int         subscription_count = 0;
+            std::string env;
         };
 
         struct EventEntry {
@@ -76,10 +77,9 @@ namespace Vital::Sandbox::API {
             return cfg;
         }
 
-        // Store all args [from_index..top] as a table in registry, return ref.
         static int store_args_ref(Machine* vm, int from_index) {
             vm->create_table();
-            int top   = vm->get_count() - 1; // -1 because we just pushed the table
+            int top   = vm->get_count() - 1;
             int count = top - from_index;
             for (int i = 0; i <= count; ++i) {
                 vm->push(from_index + i);
@@ -88,22 +88,42 @@ namespace Vital::Sandbox::API {
             return vm->set_raw_reference(-1);
         }
 
-        // Push args from stored table onto stack.
-        // Uses a stable absolute index for the table so each get_table_field
-        // doesn't shift the reference as the stack grows.  Returns arg count.
+        // Push args from stored table onto stack using a stable absolute index.
         static int push_args_ref(Machine* vm, int args_ref) {
             vm->get_raw_reference(args_ref);
-            int table_idx = vm->get_count();        // stable absolute position
+            int table_idx = vm->get_count();
             int n         = vm->get_length(table_idx);
             for (int i = 1; i <= n; ++i)
-                vm->get_table_field(i, table_idx);  // always index the same slot
-            // table is at table_idx; args are above it — rotate table past them, pop it
+                vm->get_table_field(i, table_idx);
             vm->rotate(table_idx, -1);
             vm->pop(1);
             return n;
         }
 
-        // Serializable collect for cross-side
+        static int store_args_ref_copy(Machine* vm, int args_ref) {
+            vm->get_raw_reference(args_ref);
+            vm->create_table();
+            int orig = vm->get_count() - 1;
+            int copy = vm->get_count();
+            int n    = vm->get_length(orig);
+            for (int i = 1; i <= n; ++i) {
+                vm->get_table_field(i, orig);
+                vm->set_table_field(i, copy);
+            }
+            vm->rotate(-2, -1);
+            vm->pop(1);
+            return vm->set_raw_reference(-1);
+        }
+
+        // Push a promise's userdata onto 'vm' (which may be a coroutine Machine).
+        // promise->vm is always the root vm; its Lua registry refs are shared across
+        // the entire lua_State, so lua_rawgeti on any coroutine's state with the same
+        // ref integer correctly retrieves the value onto that coroutine's stack.
+        static void push_promise(Machine* vm, std::shared_ptr<Promise::Instance> promise) {
+            int ref = promise->get_reference(promise->self_reference());
+            vm->get_raw_reference(ref);
+        }
+
         static Tool::Stack collect_serializable(Machine* vm, int from_index) {
             Tool::Stack payload;
             int top = vm->get_count();
@@ -174,53 +194,70 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        // Spawn a Thread::Instance with the handler as the direct coroutine body.
-        // Stack contract (all on parent vm):
-        //   entry : clean
-        //   exit  : clean
-        // Note: Instance::store() leaves the thread userdata on the parent vm stack.
-        // set_reference(thread_reference(), -1) anchors it, then vm->pop(1) cleans up.
+        // Spawn a Thread::Instance coroutine for an async event handler.
+        //
+        // Bug 1 fixed — create_thread on root_vm, not calling vm:
+        //   If emit_callback is called from inside a coroutine (e.g. inside thread.create),
+        //   'vm' is that coroutine's Machine.  vm->create_thread() makes the new handler
+        //   thread a child of the coroutine Machine.  When the coroutine finishes, ~Machine
+        //   destroys all children — killing the sleeping handler thread, nulling its
+        //   lua_State*, and crashing when the sleep timer fires.  Using root_vm->create_thread()
+        //   ties the handler thread's lifetime to the sandbox session instead.
+        //
+        // Bug 2 fixed — anchor the coroutine (lua_State*), not the userdata:
+        //   After store() pushes the thread userdata, -1 is the userdata.  The coroutine
+        //   is one slot below at the saved absolute index.  Anchoring -1 (userdata) left
+        //   the coroutine unregistered and eligible for GC.  When collected, the machines
+        //   map held a dangling key and the next map operation crashed.
         static void spawn_thread(Machine* vm,
                                   int exec_ref,
                                   int args_ref,
                                   std::shared_ptr<Promise::Instance> promise = nullptr) {
-            auto instance  = Thread::Instance::init(vm);
-            auto thread_vm = vm->create_thread();
+            auto* root_vm = vm->get_root();
+            auto  instance = Thread::Instance::init(vm);
+
+            // Create the handler coroutine under root_vm so its lifetime is independent
+            // of whichever coroutine is calling spawn_thread.
+            auto thread_vm = root_vm->create_thread();
             instance->thread_vm = thread_vm;
 
-            // Push handler + args into coroutine state before first resume
+            // Save the coroutine's absolute index on root_vm BEFORE anything else is
+            // pushed there — used below to anchor it in the Lua registry.
+            int coroutine_idx = root_vm->get_count();
+
+            // Push handler fn + args on the calling vm's stack, then move to thread_vm.
             push_ref(vm, exec_ref);
             int n_args = push_args_ref(vm, args_ref);
             vm->move(thread_vm, 1 + n_args);
 
-            // store() pushes thread userdata onto vm stack — kept alive until pop below
+            // store() pushes the Thread Instance userdata onto vm (calling stack).
             instance->store();
-            int self_ref = vm->get_root()->get_reference("runtime", instance->self_reference());
+            int self_ref = root_vm->get_reference("runtime", instance->self_reference());
 
-            // Inject eventthread global into coroutine state
+            // Inject eventthread global into the coroutine
             thread_vm->get_raw_reference(self_ref);
             lua_setglobal(thread_vm->get_state(), "eventthread");
 
-            // Anchor the coroutine on the parent vm (mirrors thread:create)
-            instance->set_reference(instance->thread_reference(), -1);
-            vm->pop(1); // pop thread userdata left by store()
+            // Anchor the COROUTINE on root_vm at its saved absolute index.
+            // root_vm->-1 is still the coroutine because store() pushed the userdata
+            // onto 'vm' (the calling stack), not root_vm.
+            instance->set_reference(instance->thread_reference(), coroutine_idx);
+            root_vm->pop(1); // pop coroutine from root_vm (registry keeps it alive)
 
-            if (!promise) {
-                Thread::safe_resume(instance, n_args);
-                return;
+            vm->pop(1); // pop thread Instance userdata from calling vm
+
+            if (promise) {
+                auto weak_promise = std::weak_ptr<Promise::Instance>(promise);
+                instance->on_finish = [weak_promise, root_vm](std::shared_ptr<Thread::Instance>) {
+                    auto p = weak_promise.lock();
+                    if (!p) return;
+                    root_vm->push_nil();
+                    Promise::settle(p, Promise::State::Resolved, root_vm, root_vm->get_count(), 1);
+                    root_vm->pop(1);
+                };
             }
 
-            // For emit_callback async: settle the promise when coroutine finishes.
-            // If it doesn't yield (sync-completing), results are gone after safe_resume
-            // deletes the thread — settle with nil.
-            // If it yields, we also settle with nil immediately (async handlers that
-            // yield don't return meaningful values to the caller anyway).
-            bool still_running = Thread::safe_resume(instance, n_args);
-            (void)still_running;
-
-            vm->push_nil();
-            Promise::settle(promise, Promise::State::Resolved, vm, vm->get_count(), 1);
-            vm->pop(1);
+            Thread::safe_resume(instance, n_args);
         }
 
         enum class FireMode { Emit, EmitCallback };
@@ -238,14 +275,12 @@ namespace Vital::Sandbox::API {
                     std::shared_ptr<Promise::Instance> promise;
                     if (mode == FireMode::EmitCallback) {
                         promise = Promise::make(vm);
-                        vm->pop(1); // pop ud left by Instance::store() — we hold the shared_ptr
+                        vm->pop(1); // pop ud left by Instance::store()
                         if (promises) promises->push_back(promise);
                     }
-                    // Each async handler needs its own args copy — coroutine reads
-                    // it after fire_all returns via push_args_ref inside spawn_thread.
                     int args_ref_copy = store_args_ref_copy(vm, args_ref);
                     spawn_thread(vm, h.exec_ref, args_ref_copy, promise);
-                    free_ref(vm, args_ref_copy); // spawn_thread consumed it; free now
+                    free_ref(vm, args_ref_copy);
                 } else {
                     if (mode == FireMode::EmitCallback) {
                         auto promise = Promise::make(vm);
@@ -282,29 +317,12 @@ namespace Vital::Sandbox::API {
             sweep_exhausted(vm, name, exhausted);
         }
 
-        // Shallow-copy an existing args table ref into a new registry ref.
-        static int store_args_ref_copy(Machine* vm, int args_ref) {
-            vm->get_raw_reference(args_ref); // push original table
-            vm->create_table();
-            int orig = vm->get_count() - 1;
-            int copy = vm->get_count();
-            int n    = vm->get_length(orig);
-            for (int i = 1; i <= n; ++i) {
-                vm->get_table_field(i, orig);
-                vm->set_table_field(i, copy);
-            }
-            vm->rotate(-2, -1); // bring copy to top, orig below
-            vm->pop(1);         // pop orig
-            return vm->set_raw_reference(-1);
-        }
-
 
         // ----------------------------------------------------------------
         // Bind
         // ----------------------------------------------------------------
         static void bind(Machine* vm) {
 
-            // event.on(name, exec [, config]) -> true
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec [, config])")
                     .require(1, &Machine::is_string)
@@ -318,6 +336,7 @@ namespace Vital::Sandbox::API {
                 h.async              = cfg.is_async;
                 h.subscription_limit = cfg.sub_limit;
                 h.subscription_count = 0;
+                h.env                = vm->get_environment_id();
 
                 {
                     std::lock_guard lock(buffer_mutex);
@@ -328,7 +347,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // event.off(name, exec) -> bool
             API::bind(vm, {base_name}, "off", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec)")
                     .require(1, &Machine::is_string)
@@ -364,7 +382,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // event.emit(name, ...) -> true
             API::bind(vm, {base_name}, "emit", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, ...)")
                     .require(1, &Machine::is_string);
@@ -388,7 +405,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // event.emit_callback(name, ...) -> Promise | table of Promises
+            // emit_callback: push promise userdata onto the CALLING vm's stack.
+            // promise->vm is root_vm, but Lua registry refs (luaL_ref integers) are
+            // global to the lua_State and valid on any coroutine's stack via lua_rawgeti.
+            // Using push_promise() instead of instance->get_reference(..., true) avoids
+            // pushing onto root_vm when the caller is a coroutine (which would leave the
+            // return value on the wrong stack and return garbage to Lua).
             API::bind(vm, {base_name}, "emit_callback", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, ...)")
                     .require(1, &Machine::is_string);
@@ -404,11 +426,11 @@ namespace Vital::Sandbox::API {
 
                 if (snapshot.empty()) {
                     auto promise = Promise::make(vm);
-                    vm->pop(1); // pop ud left by store()
+                    vm->pop(1);
                     vm->push_nil();
                     Promise::settle(promise, Promise::State::Resolved, vm, vm->get_count(), 1);
                     vm->pop(1);
-                    promise->get_reference(promise->self_reference(), true); // push ud for return
+                    push_promise(vm, promise); // push onto calling vm ✓
                     return 1;
                 }
 
@@ -417,15 +439,14 @@ namespace Vital::Sandbox::API {
                 std::vector<std::shared_ptr<Promise::Instance>> promises;
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
 
-                // Safe to free now — async handlers got their own copy in fire_all
                 free_ref(vm, args_ref);
 
                 if (promises.size() == 1) {
-                    promises[0]->get_reference(promises[0]->self_reference(), true);
+                    push_promise(vm, promises[0]); // push onto calling vm ✓
                 } else {
                     vm->create_table();
                     for (int i = 0; i < static_cast<int>(promises.size()); ++i) {
-                        promises[i]->get_reference(promises[i]->self_reference(), true);
+                        push_promise(vm, promises[i]);
                         vm->set_table_field(i + 1, -2);
                     }
                 }
@@ -433,7 +454,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // event.emit_remote(name, ...) -> true  [cross-side, serializable only]
             API::bind(vm, {base_name}, "emit_remote", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, ...)")
                     .require(1, &Machine::is_string);
@@ -452,7 +472,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // event.emit_remote_to(peer_id, name, ...) -> true  [server only]
             #if !defined(VSDK_Client)
             API::bind(vm, {base_name}, "emit_remote_to", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(peer_id, name, ...)")
@@ -471,7 +490,6 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
-        // Called from Manager::Network::_on_packet_received
         static void dispatch_remote(Machine* vm, const Tool::Stack& payload) {
             auto event_name_ptr = payload.get("__event");
             if (!event_name_ptr || !event_name_ptr->is<std::string>()) return;
@@ -503,9 +521,25 @@ namespace Vital::Sandbox::API {
             free_ref(vm, args_ref);
         }
 
+        // Remove all handlers registered by the given resource environment.
         static void clean(const std::string& env) {
+            if (env.empty()) return;
+            auto* vm = Manager::Sandbox::get_singleton()->get_vm();
+            if (!vm) return;
             std::lock_guard lock(buffer_mutex);
-            buffer.erase(env);
+            for (auto eit = buffer.begin(); eit != buffer.end(); ) {
+                auto& vec = eit->second.handlers;
+                for (auto vit = vec.begin(); vit != vec.end(); ) {
+                    if (vit->second.env == env) {
+                        free_ref(vm, vit->second.exec_ref);
+                        vit = vec.erase(vit);
+                    } else {
+                        ++vit;
+                    }
+                }
+                if (vec.empty()) eit = buffer.erase(eit);
+                else ++eit;
+            }
         }
     };
 }
