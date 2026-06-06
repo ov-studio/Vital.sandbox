@@ -555,6 +555,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::resume");
                 if (!is_virtual()) return false;
                 int nresults = 0;
+                int result = lua_resume(state, nullptr, count, &nresults);
                 if (result != LUA_OK && result != LUA_YIELD) {
                     if (get_count() > 0) {
                         API::log(std::string(Tool::Log::error::label), get_string(-1));
@@ -568,6 +569,7 @@ namespace Vital::Sandbox {
                     }
                     delete this;
                     return false;
+                }
                 return true;
             }
 
