@@ -32,7 +32,6 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> awaiting { false };
             std::atomic<bool> vm_owned { true };
             Machine* thread_vm = nullptr;
-            std::function<void(std::shared_ptr<Instance>)> on_finish;
             std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
 
             void clean() {
@@ -71,14 +70,11 @@ namespace Vital::Sandbox::API {
                     return false;
                 }
             }
+
             auto thread_vm = instance -> thread_vm;
             instance -> thread_vm = nullptr;
             instance -> vm_owned.store(false);
             if (!thread_vm -> resume(args)) {
-                if (instance -> on_finish) {
-                    instance -> on_finish(instance);
-                    instance -> on_finish = nullptr;
-                }
                 instance -> clean();
                 return false;
             }
