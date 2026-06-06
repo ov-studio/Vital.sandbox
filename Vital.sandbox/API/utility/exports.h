@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "register", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, fn)")
+                vm_args(vm, id, "(name, exec)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function);
 
