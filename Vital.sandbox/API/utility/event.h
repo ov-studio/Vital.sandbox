@@ -248,13 +248,28 @@ namespace Vital::Sandbox::API {
 
             if (promise) {
                 auto weak_promise = std::weak_ptr<Promise::Instance>(promise);
-                instance->on_finish = [weak_promise, root_vm](std::shared_ptr<Thread::Instance>) {
+                // Set directly on thread_vm — Machine::resume() fires this before
+                // delete this regardless of how many times the coroutine yields first.
+                // No forwarding through Instance needed; the hook lives on the Machine
+                // that owns the coroutine state for its entire lifetime.
+                thread_vm->set_finish_hook([weak_promise, root_vm](Machine* thread_vm, int nresults) {
                     auto p = weak_promise.lock();
                     if (!p) return;
-                    root_vm->push_nil();
-                    Promise::settle(p, Promise::State::Resolved, root_vm, root_vm->get_count(), 1);
-                    root_vm->pop(1);
-                };
+                    // Promise::settle stores values via instance->vm (root_vm) using
+                    // lua_pushvalue(root_vm->state, index) — so values must be on
+                    // root_vm's stack, not thread_vm's stack.  xmove them across first.
+                    // TODO: SIMPLIFY TO HANDLE AS ONE INSTEAD OF 2 REDUNDANT BLOCKS???
+                    if (nresults > 0) {
+                        int base = root_vm->get_count() + 1;
+                        lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
+                        Promise::settle(p, Promise::State::Resolved, root_vm, base, nresults);
+                        root_vm->pop(nresults);
+                    } else {
+                        root_vm->push_nil();
+                        Promise::settle(p, Promise::State::Resolved, root_vm, root_vm->get_count(), 1);
+                        root_vm->pop(1);
+                    }
+                });
             }
 
             Thread::safe_resume(instance, n_args);
