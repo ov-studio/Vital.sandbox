@@ -258,17 +258,11 @@ namespace Vital::Sandbox::API {
                     // Promise::settle stores values via instance->vm (root_vm) using
                     // lua_pushvalue(root_vm->state, index) — so values must be on
                     // root_vm's stack, not thread_vm's stack.  xmove them across first.
-                    // TODO: SIMPLIFY TO HANDLE AS ONE INSTEAD OF 2 REDUNDANT BLOCKS???
-                    if (nresults > 0) {
-                        int base = root_vm->get_count() + 1;
-                        lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
-                        Promise::settle(p, Promise::State::Resolved, root_vm, base, nresults);
-                        root_vm->pop(nresults);
-                    } else {
-                        root_vm->push_nil();
-                        Promise::settle(p, Promise::State::Resolved, root_vm, root_vm->get_count(), 1);
-                        root_vm->pop(1);
-                    }
+                    int base  = root_vm->get_count() + 1;
+                    int count = nresults > 0 ? nresults : 0;
+                    if (nresults > 0) lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
+                    Promise::settle(p, Promise::State::Resolved, root_vm, base, count);
+                    if (count > 0) root_vm->pop(count);
                 });
             }
 
@@ -308,13 +302,7 @@ namespace Vital::Sandbox::API {
 
                         if (vm->pcall(n_args, LUA_MULTRET)) {
                             int result_count = vm->get_count() - base;
-                            if (result_count > 0) {
-                                Promise::settle(promise, Promise::State::Resolved, vm, base + 1, result_count);
-                            } else {
-                                vm->push_nil();
-                                Promise::settle(promise, Promise::State::Resolved, vm, vm->get_count(), 1);
-                                vm->pop(1);
-                            }
+                            Promise::settle(promise, Promise::State::Resolved, vm, base + 1, result_count);
                             vm->pop(result_count);
                         } else {
                             Promise::settle(promise, Promise::State::Rejected, vm, 0, 0);
@@ -442,10 +430,8 @@ namespace Vital::Sandbox::API {
                 if (snapshot.empty()) {
                     auto promise = Promise::make(vm);
                     vm->pop(1);
-                    vm->push_nil();
-                    Promise::settle(promise, Promise::State::Resolved, vm, vm->get_count(), 1);
-                    vm->pop(1);
-                    push_promise(vm, promise); // push onto calling vm ✓
+                    Promise::settle(promise, Promise::State::Resolved, vm, 0, 0);
+                    push_promise(vm, promise);
                     return 1;
                 }
 
