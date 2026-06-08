@@ -44,6 +44,16 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
 
+        // serial -> Promise for pending remote emit_callback calls
+        inline static std::unordered_map<uint32_t, std::shared_ptr<Promise::Instance>> pending_remote;
+        inline static std::mutex pending_remote_mutex;
+        inline static std::atomic<uint32_t> serial_counter { 0 };
+
+        // promise_id -> reply callback for remote emit_callback response
+        using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
+        inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
+        inline static std::mutex reply_callbacks_mutex;
+
 
         // ----------------------------------------------------------------
         // Helpers
@@ -88,7 +98,6 @@ namespace Vital::Sandbox::API {
             return vm->set_raw_reference(-1);
         }
 
-        // Push args from stored table onto stack using a stable absolute index.
         static int push_args_ref(Machine* vm, int args_ref) {
             vm->get_raw_reference(args_ref);
             int table_idx = vm->get_count();
@@ -115,13 +124,45 @@ namespace Vital::Sandbox::API {
             return vm->set_raw_reference(-1);
         }
 
-        // Push a promise's userdata onto 'vm' (which may be a coroutine Machine).
-        // promise->vm is always the root vm; its Lua registry refs are shared across
-        // the entire lua_State, so lua_rawgeti on any coroutine's state with the same
-        // ref integer correctly retrieves the value onto that coroutine's stack.
         static void push_promise(Machine* vm, std::shared_ptr<Promise::Instance> promise) {
-            int ref = promise->get_reference(promise->self_reference());
-            vm->get_raw_reference(ref);
+            vm->get_raw_reference(promise->get_reference(promise->self_reference()));
+        }
+
+        // Send a packet to the appropriate destination.
+        // On client: always sends to server (peer_id ignored).
+        // On server: peer_id=0 broadcasts to all, peer_id>0 sends to that specific peer.
+        static void send_packet(const Tool::Stack& payload, int peer_id = 0) {
+            #if defined(VSDK_Client)
+            Vital::Manager::Network::get_singleton()->send_to_server(payload);
+            #else
+            if (peer_id > 0) Vital::Manager::Network::get_singleton()->send(payload, peer_id);
+            else             Vital::Manager::Network::get_singleton()->broadcast(payload);
+            #endif
+        }
+
+        // Build and send a remote emit payload, optionally with a serial for callback.
+        // Returns the promise (non-null only when serial > 0).
+        static std::shared_ptr<Promise::Instance> send_remote_emit(Machine* vm,
+                                                                     const std::string& name,
+                                                                     Tool::Stack payload,
+                                                                     int peer_id,
+                                                                     bool wants_callback) {
+            payload.object["__event"] = Tool::StackValue(name);
+
+            std::shared_ptr<Promise::Instance> promise;
+            if (wants_callback) {
+                uint32_t serial = ++serial_counter;
+                payload.object["__serial"] = Tool::StackValue(static_cast<double>(serial));
+                promise = Promise::make(vm);
+                vm->pop(1);
+                {
+                    std::lock_guard lock(pending_remote_mutex);
+                    pending_remote[serial] = promise;
+                }
+            }
+
+            send_packet(payload, peer_id);
+            return promise;
         }
 
         static Tool::Stack collect_serializable(Machine* vm, int from_index) {
@@ -195,69 +236,38 @@ namespace Vital::Sandbox::API {
         }
 
         // Spawn a Thread::Instance coroutine for an async event handler.
-        //
-        // Bug 1 fixed — create_thread on root_vm, not calling vm:
-        //   If emit_callback is called from inside a coroutine (e.g. inside thread.create),
-        //   'vm' is that coroutine's Machine.  vm->create_thread() makes the new handler
-        //   thread a child of the coroutine Machine.  When the coroutine finishes, ~Machine
-        //   destroys all children — killing the sleeping handler thread, nulling its
-        //   lua_State*, and crashing when the sleep timer fires.  Using root_vm->create_thread()
-        //   ties the handler thread's lifetime to the sandbox session instead.
-        //
-        // Bug 2 fixed — anchor the coroutine (lua_State*), not the userdata:
-        //   After store() pushes the thread userdata, -1 is the userdata.  The coroutine
-        //   is one slot below at the saved absolute index.  Anchoring -1 (userdata) left
-        //   the coroutine unregistered and eligible for GC.  When collected, the machines
-        //   map held a dangling key and the next map operation crashed.
+        // Always creates the coroutine under root_vm so its lifetime is independent
+        // of whatever coroutine called spawn_thread.
         static void spawn_thread(Machine* vm,
                                   int exec_ref,
                                   int args_ref,
                                   std::shared_ptr<Promise::Instance> promise = nullptr) {
-            auto* root_vm = vm->get_root();
-            auto  instance = Thread::Instance::init(vm);
-
-            // Create the handler coroutine under root_vm so its lifetime is independent
-            // of whichever coroutine is calling spawn_thread.
-            auto thread_vm = root_vm->create_thread();
+            auto* root_vm   = vm->get_root();
+            auto  instance  = Thread::Instance::init(vm);
+            auto  thread_vm = root_vm->create_thread();
             instance->thread_vm = thread_vm;
 
-            // Save the coroutine's absolute index on root_vm BEFORE anything else is
-            // pushed there — used below to anchor it in the Lua registry.
             int coroutine_idx = root_vm->get_count();
 
-            // Push handler fn + args on the calling vm's stack, then move to thread_vm.
             push_ref(vm, exec_ref);
             int n_args = push_args_ref(vm, args_ref);
             vm->move(thread_vm, 1 + n_args);
 
-            // store() pushes the Thread Instance userdata onto vm (calling stack).
             instance->store();
             int self_ref = root_vm->get_reference("runtime", instance->self_reference());
 
-            // Inject eventthread global into the coroutine
             thread_vm->get_raw_reference(self_ref);
             lua_setglobal(thread_vm->get_state(), "eventthread");
 
-            // Anchor the COROUTINE on root_vm at its saved absolute index.
-            // root_vm->-1 is still the coroutine because store() pushed the userdata
-            // onto 'vm' (the calling stack), not root_vm.
             instance->set_reference(instance->thread_reference(), coroutine_idx);
-            root_vm->pop(1); // pop coroutine from root_vm (registry keeps it alive)
-
-            vm->pop(1); // pop thread Instance userdata from calling vm
+            root_vm->pop(1);
+            vm->pop(1);
 
             if (promise) {
                 auto weak_promise = std::weak_ptr<Promise::Instance>(promise);
-                // Set directly on thread_vm — Machine::resume() fires this before
-                // delete this regardless of how many times the coroutine yields first.
-                // No forwarding through Instance needed; the hook lives on the Machine
-                // that owns the coroutine state for its entire lifetime.
                 thread_vm->set_finish_hook([weak_promise, root_vm](Machine* thread_vm, int nresults) {
                     auto p = weak_promise.lock();
                     if (!p) return;
-                    // Promise::settle stores values via instance->vm (root_vm) using
-                    // lua_pushvalue(root_vm->state, index) — so values must be on
-                    // root_vm's stack, not thread_vm's stack.  xmove them across first.
                     int base  = root_vm->get_count() + 1;
                     int count = nresults > 0 ? nresults : 0;
                     if (nresults > 0) lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
@@ -271,6 +281,41 @@ namespace Vital::Sandbox::API {
 
         enum class FireMode { Emit, EmitCallback };
 
+        // Fire a single handler, creating and returning a promise when mode=EmitCallback.
+        static std::shared_ptr<Promise::Instance> fire_one(Machine* vm,
+                                                            const Handler& h,
+                                                            int args_ref,
+                                                            FireMode mode) {
+            std::shared_ptr<Promise::Instance> promise;
+            if (mode == FireMode::EmitCallback) {
+                promise = Promise::make(vm);
+                vm->pop(1);
+            }
+
+            if (h.async) {
+                int args_ref_copy = store_args_ref_copy(vm, args_ref);
+                spawn_thread(vm, h.exec_ref, args_ref_copy, promise);
+                free_ref(vm, args_ref_copy);
+            } else {
+                push_ref(vm, h.exec_ref);
+                int n_args = push_args_ref(vm, args_ref);
+                if (mode == FireMode::EmitCallback) {
+                    int base = vm->get_count() - n_args - 1;
+                    if (vm->pcall(n_args, LUA_MULTRET)) {
+                        int result_count = vm->get_count() - base;
+                        Promise::settle(promise, Promise::State::Resolved, vm, base + 1, result_count);
+                        vm->pop(result_count);
+                    } else {
+                        Promise::settle(promise, Promise::State::Rejected, vm, 0, 0);
+                    }
+                } else {
+                    vm->pcall(n_args, 0);
+                }
+            }
+
+            return promise;
+        }
+
         static void fire_all(Machine* vm,
                               std::vector<std::pair<int, Handler>> snapshot,
                               const std::string& name,
@@ -280,44 +325,52 @@ namespace Vital::Sandbox::API {
             std::vector<int> exhausted;
 
             for (auto& [ref, h] : snapshot) {
-                if (h.async) {
-                    std::shared_ptr<Promise::Instance> promise;
-                    if (mode == FireMode::EmitCallback) {
-                        promise = Promise::make(vm);
-                        vm->pop(1); // pop ud left by Instance::store()
-                        if (promises) promises->push_back(promise);
-                    }
-                    int args_ref_copy = store_args_ref_copy(vm, args_ref);
-                    spawn_thread(vm, h.exec_ref, args_ref_copy, promise);
-                    free_ref(vm, args_ref_copy);
-                } else {
-                    if (mode == FireMode::EmitCallback) {
-                        auto promise = Promise::make(vm);
-                        vm->pop(1); // pop ud left by Instance::store()
-                        if (promises) promises->push_back(promise);
-
-                        push_ref(vm, h.exec_ref);
-                        int n_args = push_args_ref(vm, args_ref);
-                        int base   = vm->get_count() - n_args - 1;
-
-                        if (vm->pcall(n_args, LUA_MULTRET)) {
-                            int result_count = vm->get_count() - base;
-                            Promise::settle(promise, Promise::State::Resolved, vm, base + 1, result_count);
-                            vm->pop(result_count);
-                        } else {
-                            Promise::settle(promise, Promise::State::Rejected, vm, 0, 0);
-                        }
-                    } else {
-                        push_ref(vm, h.exec_ref);
-                        vm->pcall(push_args_ref(vm, args_ref), 0);
-                    }
-                }
-
-                if (h.subscription_limit > 0)
-                    bump_subscription(name, ref, exhausted);
+                auto promise = fire_one(vm, h, args_ref, mode);
+                if (promise && promises) promises->push_back(promise);
+                if (h.subscription_limit > 0) bump_subscription(name, ref, exhausted);
             }
 
             sweep_exhausted(vm, name, exhausted);
+        }
+
+        // Register a reply callback on a promise using sentinel thread_id=-1.
+        // When the promise settles, Thread::reply_dispatcher routes to dispatch_reply.
+        static void register_reply_callback(std::shared_ptr<Promise::Instance> promise,
+                                             ReplyCallback cb) {
+            {
+                std::lock_guard lock(reply_callbacks_mutex);
+                reply_callbacks[promise->id] = std::move(cb);
+            }
+            promise->waiting.push_back(-1);
+        }
+
+        // Called by Thread::reply_dispatcher when a promise with sentinel -1 settles.
+        static void dispatch_reply(int promise_id, std::shared_ptr<Promise::Instance> promise) {
+            ReplyCallback cb;
+            {
+                std::lock_guard lock(reply_callbacks_mutex);
+                auto it = reply_callbacks.find(promise_id);
+                if (it == reply_callbacks.end()) return;
+                cb = std::move(it->second);
+                reply_callbacks.erase(it);
+            }
+
+            auto* root_vm = Manager::Sandbox::get_singleton()->get_vm();
+            if (!root_vm || !cb) return;
+
+            Tool::Stack results;
+            for (int i = 1; i <= promise->value_count; ++i) {
+                root_vm->get_raw_reference(promise->get_reference(promise->value_reference(i)));
+                int idx = root_vm->get_count();
+                if      (root_vm->is_nil(idx))    results.array.emplace_back(nullptr);
+                else if (root_vm->is_bool(idx))   results.array.emplace_back(root_vm->get_bool(idx));
+                else if (root_vm->is_number(idx)) results.array.emplace_back(root_vm->get_double(idx));
+                else if (root_vm->is_string(idx)) results.array.emplace_back(root_vm->get_string(idx));
+                else                               results.array.emplace_back(nullptr);
+                root_vm->pop(1);
+            }
+
+            cb(root_vm, results);
         }
 
 
@@ -325,6 +378,9 @@ namespace Vital::Sandbox::API {
         // Bind
         // ----------------------------------------------------------------
         static void bind(Machine* vm) {
+            Thread::register_reply_dispatcher([](int promise_id, std::shared_ptr<Promise::Instance> promise) {
+                dispatch_reply(promise_id, promise);
+            });
 
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec [, config])")
@@ -408,12 +464,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // emit_callback: push promise userdata onto the CALLING vm's stack.
-            // promise->vm is root_vm, but Lua registry refs (luaL_ref integers) are
-            // global to the lua_State and valid on any coroutine's stack via lua_rawgeti.
-            // Using push_promise() instead of instance->get_reference(..., true) avoids
-            // pushing onto root_vm when the caller is a coroutine (which would leave the
-            // return value on the wrong stack and return garbage to Lua).
             API::bind(vm, {base_name}, "emit_callback", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, ...)")
                     .require(1, &Machine::is_string);
@@ -439,11 +489,10 @@ namespace Vital::Sandbox::API {
 
                 std::vector<std::shared_ptr<Promise::Instance>> promises;
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
-
                 free_ref(vm, args_ref);
 
                 if (promises.size() == 1) {
-                    push_promise(vm, promises[0]); // push onto calling vm ✓
+                    push_promise(vm, promises[0]);
                 } else {
                     vm->create_table();
                     for (int i = 0; i < static_cast<int>(promises.size()); ++i) {
@@ -455,46 +504,95 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // emit_remote(name, ...) -> true
+            // Client: sends to server. Server: broadcasts to all peers.
             API::bind(vm, {base_name}, "emit_remote", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, ...)")
                     .require(1, &Machine::is_string);
 
-                std::string name    = vm->get_string(1);
-                Tool::Stack payload = collect_serializable(vm, 2);
-                payload.object["__event"] = Tool::StackValue(name);
-
-                #if defined(VSDK_Client)
-                Vital::Manager::Network::get_singleton()->send_to_server(payload);
-                #else
-                Vital::Manager::Network::get_singleton()->broadcast(payload);
-                #endif
-
+                send_remote_emit(vm, vm->get_string(1), collect_serializable(vm, 2), 0, false);
                 vm->push_value(true);
                 return 1;
             });
 
+            // emit_remote_callback(name, ...) -> Promise
+            // Client: sends to server. Server: broadcasts to all peers.
+            API::bind(vm, {base_name}, "emit_remote_callback", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, ...)")
+                    .require(1, &Machine::is_string);
+
+                auto promise = send_remote_emit(vm, vm->get_string(1), collect_serializable(vm, 2), 0, true);
+                push_promise(vm, promise);
+                return 1;
+            });
+
+            // Server-only: emit_remote_to(peer_id, name, ...) -> true
+            // peer_id=0 broadcasts to all, peer_id>0 sends to that specific peer.
             #if !defined(VSDK_Client)
             API::bind(vm, {base_name}, "emit_remote_to", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(peer_id, name, ...)")
                     .require(1, &Machine::is_number)
                     .require(2, &Machine::is_string);
 
-                int         peer_id = vm->get_int(1);
-                std::string name    = vm->get_string(2);
-                Tool::Stack payload = collect_serializable(vm, 3);
-                payload.object["__event"] = Tool::StackValue(name);
-
-                Vital::Manager::Network::get_singleton()->send(payload, peer_id);
+                send_remote_emit(vm, vm->get_string(2), collect_serializable(vm, 3), vm->get_int(1), false);
                 vm->push_value(true);
+                return 1;
+            });
+
+            // Server-only: emit_remote_callback_to(peer_id, name, ...) -> Promise
+            // peer_id=0 broadcasts to all, peer_id>0 sends to that specific peer.
+            API::bind(vm, {base_name}, "emit_remote_callback_to", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(peer_id, name, ...)")
+                    .require(1, &Machine::is_number)
+                    .require(2, &Machine::is_string);
+
+                auto promise = send_remote_emit(vm, vm->get_string(2), collect_serializable(vm, 3), vm->get_int(1), true);
+                push_promise(vm, promise);
                 return 1;
             });
             #endif
         }
 
+        // Called from Manager::Network::_on_packet_received.
+        // Packet types:
+        //   __reply_serial              — reply to a pending emit_remote_callback
+        //   __event (no __serial)       — plain remote emit, fire handlers
+        //   __event + __serial          — remote emit_callback, fire handlers and reply
         static void dispatch_remote(Machine* vm, const Tool::Stack& payload) {
+            // Reply packet — resolve the promise on the calling side
+            auto reply_ptr = payload.get("__reply_serial");
+            if (reply_ptr && reply_ptr->is<double>()) {
+                uint32_t serial = static_cast<uint32_t>(reply_ptr->as<double>());
+                std::shared_ptr<Promise::Instance> promise;
+                {
+                    std::lock_guard lock(pending_remote_mutex);
+                    auto it = pending_remote.find(serial);
+                    if (it != pending_remote.end()) {
+                        promise = it->second;
+                        pending_remote.erase(it);
+                    }
+                }
+                if (!promise) return;
+
+                auto* root_vm = vm->get_root();
+                int   base    = root_vm->get_count() + 1;
+                int   count   = static_cast<int>(payload.array.size());
+                for (auto& v : payload.array) root_vm->push_value(v);
+                Promise::settle(promise, Promise::State::Resolved, root_vm, base, count);
+                if (count > 0) root_vm->pop(count);
+                return;
+            }
+
+            // Event packet — look up handlers
             auto event_name_ptr = payload.get("__event");
             if (!event_name_ptr || !event_name_ptr->is<std::string>()) return;
             std::string name = event_name_ptr->as<std::string>();
+
+            auto     serial_ptr  = payload.get("__serial");
+            bool     wants_reply = serial_ptr && serial_ptr->is<double>();
+            uint32_t serial      = wants_reply ? static_cast<uint32_t>(serial_ptr->as<double>()) : 0;
+            auto*    sid         = payload.get("sender_id");
+            int      reply_peer  = (sid && sid->is<double>()) ? static_cast<int>(sid->as<double>()) : 0;
 
             std::vector<std::pair<int, Handler>> snapshot;
             {
@@ -502,10 +600,9 @@ namespace Vital::Sandbox::API {
                 auto it = buffer.find(name);
                 if (it != buffer.end()) snapshot = it->second.handlers;
             }
-            if (snapshot.empty()) return;
 
+            // Build args table: [sender_id, ...payload.array]
             vm->create_table();
-            auto* sid = payload.get("sender_id");
             int offset = 0;
             if (sid) {
                 vm->push_value(*sid);
@@ -518,8 +615,37 @@ namespace Vital::Sandbox::API {
             }
             int args_ref = vm->set_raw_reference(-1);
 
-            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+            // No handlers — send empty reply if requested, then done
+            if (snapshot.empty()) {
+                free_ref(vm, args_ref);
+                if (wants_reply) {
+                    Tool::Stack reply;
+                    reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
+                    send_packet(reply, reply_peer);
+                }
+                return;
+            }
+
+            // Plain remote emit — fire and forget
+            if (!wants_reply) {
+                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+                free_ref(vm, args_ref);
+                return;
+            }
+
+            // Remote emit_callback — fire handlers, then reply with first result
+            std::vector<std::shared_ptr<Promise::Instance>> promises;
+            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
             free_ref(vm, args_ref);
+
+            if (promises.empty()) return;
+
+            register_reply_callback(promises[0], [serial, reply_peer](Machine*, const Tool::Stack& results) {
+                Tool::Stack reply;
+                reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
+                for (auto& v : results.array) reply.array.push_back(v);
+                send_packet(reply, reply_peer);
+            });
         }
 
         // Remove all handlers registered by the given resource environment.

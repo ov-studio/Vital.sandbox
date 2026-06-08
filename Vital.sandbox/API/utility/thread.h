@@ -48,6 +48,11 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        // TODO: Improve
+        using ReplyDispatcher = std::function<void(int promise_id, std::shared_ptr<Promise::Instance>)>;
+        inline static ReplyDispatcher reply_dispatcher;
+        static void register_reply_dispatcher(ReplyDispatcher fn) { reply_dispatcher = std::move(fn); }
+
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
             if (!instance -> vm) {
@@ -87,6 +92,17 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Thread>(vm);
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
+                if (thread_id == -1) {
+                    // TODO: Improve
+                    // Sentinel: route to the reply dispatcher registered by Event.
+                    if (reply_dispatcher) {
+                        int pid = promise->id;
+                        Machine::enqueue([pid, promise]() {
+                            if (reply_dispatcher) reply_dispatcher(pid, promise);
+                        });
+                    }
+                    return;
+                }
                 Machine::enqueue([thread_id, resolved, promise]() {
                     auto instance = Instance::find(thread_id);
                     if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
