@@ -601,19 +601,24 @@ namespace Vital::Sandbox::API {
                 if (it != buffer.end()) snapshot = it->second.handlers;
             }
 
-            // Build args table: [sender_id, ...payload.array]
-            vm->create_table();
-            int offset = 0;
-            if (sid) {
-                vm->push_value(*sid);
-                vm->set_table_field(1, -2);
-                offset = 1;
-            }
+            // Build args_ref so push_args_ref passes ONE arg to the handler — a data
+            // table — matching same-side emit: emit("name", myTable) gives handler(myTable).
+            // Remote: emit_remote("name", a, b) gives handler({[1]=a, [2]=b}).
+            int stack_top = vm->get_count();
+
+            vm->create_table();                              // data_table at stack_top+1
+            int data_idx = vm->get_count();
             for (int i = 0; i < static_cast<int>(payload.array.size()); ++i) {
                 vm->push_value(payload.array[i]);
-                vm->set_table_field(i + 1 + offset, -2);
+                vm->set_table_field(i + 1, data_idx);
             }
-            int args_ref = vm->set_raw_reference(-1);
+            vm->create_table();                              // outer at stack_top+2
+            int outer_idx = vm->get_count();
+            vm->push(data_idx);                              // dup data_table onto top
+            vm->set_table_field(1, outer_idx);               // outer[1] = data_table
+
+            int args_ref = vm->set_raw_reference(-1);        // ref outer, outer stays
+            vm->pop(vm->get_count() - stack_top);            // clean stack back to saved top
 
             // No handlers — send empty reply if requested, then done
             if (snapshot.empty()) {
