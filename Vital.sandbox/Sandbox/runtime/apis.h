@@ -34,6 +34,7 @@
 #include <Vital.sandbox/API/utility/http.h>
 #include <Vital.sandbox/API/utility/crypto.h>
 #include <Vital.sandbox/API/utility/shrinker.h>
+#include <Vital.sandbox/API/utility/resource.h>
 #include <Vital.sandbox/API/utility/exports.h>
 #include <Vital.sandbox/API/utility/event.h>
 
@@ -75,6 +76,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<HTTP>(),
             vm_module::make_api<Crypto>(),
             vm_module::make_api<Shrinker>(),
+            vm_module::make_api<Resource>(),
             vm_module::make_api<Exports>(),
             vm_module::make_api<Event>(),
 
