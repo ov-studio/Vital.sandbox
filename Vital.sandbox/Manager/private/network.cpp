@@ -155,8 +155,10 @@ namespace Vital::Manager {
 
         Tool::Stack stack = Tool::Stack::from_dict(data);
 
-        // If __event key present, this is a Sandbox event dispatch
-        if (stack.has("__event")) {
+        // Route to sandbox event dispatch for:
+        //   - Normal/callback remote emits (__event present)
+        //   - Reply packets from remote emit_callback (__reply_serial present)
+        if (stack.has("__event") || stack.has("__reply_serial")) {
             auto* vm = Manager::Sandbox::get_singleton()->get_vm();
             Vital::Sandbox::API::Event::dispatch_remote(vm, stack);
             return;
