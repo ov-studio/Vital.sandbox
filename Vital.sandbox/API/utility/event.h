@@ -167,51 +167,74 @@ namespace Vital::Sandbox::API {
 
         static Tool::Stack collect_serializable(Machine* vm, int from_index) {
             Tool::Stack payload;
+            auto* L = vm->get_state();
             int top = vm->get_count();
+            std::unordered_set<const void*> visited;
             for (int i = from_index; i <= top; ++i) {
-                if      (vm->is_nil(i))    payload.array.emplace_back(nullptr);
-                else if (vm->is_bool(i))   payload.array.emplace_back(vm->get_bool(i));
-                else if (vm->is_number(i)) payload.array.emplace_back(vm->get_double(i));
-                else if (vm->is_string(i)) payload.array.emplace_back(vm->get_string(i));
-                else if (vm->is_table(i))  payload.array.emplace_back(collect_table(vm, i));
-                else                        payload.array.emplace_back(nullptr);
+                int t = lua_type(L, i);
+                switch (t) {
+                    case LUA_TNIL:     payload.array.emplace_back(nullptr); break;
+                    case LUA_TBOOLEAN: payload.array.emplace_back((bool)lua_toboolean(L, i)); break;
+                    case LUA_TNUMBER:  payload.array.emplace_back((double)lua_tonumber(L, i)); break;
+                    case LUA_TSTRING:  payload.array.emplace_back(std::string(lua_tostring(L, i))); break;
+                    case LUA_TTABLE:   payload.array.emplace_back(collect_table(vm, i, visited)); break;
+                    default:           payload.array.emplace_back(nullptr); break; // skip userdata etc.
+                }
             }
             return payload;
         }
 
-        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index) {
+        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index, std::unordered_set<const void*>& visited, int depth = 0) {
             auto stack = std::make_shared<Tool::Stack>();
+            if (depth > 32) return stack;
+
+            // Track this table's pointer to detect circular references
             auto* L = vm->get_state();
+            const void* ptr = lua_topointer(L, index);
+            if (!ptr || visited.count(ptr)) return stack;
+            visited.insert(ptr);
+
             lua_pushnil(L);
             while (lua_next(L, index) != 0) {
-                // Use lua_type for the KEY — lua_isstring returns true for numbers too,
-                // and calling lua_tostring/get_string on an integer key during iteration
-                // coerces it in-place, making it invalid for the next lua_next call.
                 int key_type = lua_type(L, -2);
+                int val_type = lua_type(L, -1);
+
+                auto read_val = [&]() -> Tool::StackValue {
+                    switch (val_type) {
+                        case LUA_TNIL:     return Tool::StackValue(nullptr);
+                        case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, -1));
+                        case LUA_TNUMBER:  return Tool::StackValue((double)lua_tonumber(L, -1));
+                        case LUA_TSTRING:  return Tool::StackValue(std::string(lua_tostring(L, -1)));
+                        case LUA_TTABLE:   return Tool::StackValue(collect_table(vm, lua_gettop(L), visited, depth + 1));
+                        default:           return Tool::StackValue(nullptr); // skip functions, userdata, threads
+                    }
+                };
+
                 if (key_type == LUA_TNUMBER) {
-                    int idx = vm->get_int(-2);
-                    Tool::StackValue val;
-                    if      (vm->is_nil(-1))    val = Tool::StackValue(nullptr);
-                    else if (vm->is_bool(-1))   val = Tool::StackValue(vm->get_bool(-1));
-                    else if (vm->is_number(-1)) val = Tool::StackValue(vm->get_double(-1));
-                    else if (vm->is_string(-1)) val = Tool::StackValue(vm->get_string(-1));
-                    else if (vm->is_table(-1))  val = Tool::StackValue(collect_table(vm, vm->get_count()));
+                    int idx = (int)lua_tonumber(L, -2);
                     if (idx >= 1) {
+                        Tool::StackValue val = read_val();
                         if (static_cast<int>(stack->array.size()) < idx)
                             stack->array.resize(idx, Tool::StackValue(nullptr));
                         stack->array[idx - 1] = val;
                     }
                 } else if (key_type == LUA_TSTRING) {
-                    std::string key = vm->get_string(-2);
-                    if      (vm->is_nil(-1))    stack->object[key] = Tool::StackValue(nullptr);
-                    else if (vm->is_bool(-1))   stack->object[key] = Tool::StackValue(vm->get_bool(-1));
-                    else if (vm->is_number(-1)) stack->object[key] = Tool::StackValue(vm->get_double(-1));
-                    else if (vm->is_string(-1)) stack->object[key] = Tool::StackValue(vm->get_string(-1));
-                    else if (vm->is_table(-1))  stack->object[key] = Tool::StackValue(collect_table(vm, vm->get_count()));
+                    Tool::StackValue val = read_val();
+                    // Only store if it serialized to something meaningful (skip nil from functions/userdata)
+                    if (val_type == LUA_TNIL || val_type == LUA_TBOOLEAN || val_type == LUA_TNUMBER || val_type == LUA_TSTRING || val_type == LUA_TTABLE)
+                        stack->object[lua_tostring(L, -2)] = val;
                 }
-                vm->pop(1);
+                lua_pop(L, 1);
             }
+
+            visited.erase(ptr);
             return stack;
+        }
+
+        // Entry point — creates the visited set for cycle tracking
+        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index) {
+            std::unordered_set<const void*> visited;
+            return collect_table(vm, index, visited);
         }
 
         static void bump_subscription(const std::string& name, int ref, std::vector<int>& exhausted) {
