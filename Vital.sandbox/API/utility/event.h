@@ -181,16 +181,14 @@ namespace Vital::Sandbox::API {
 
         static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index) {
             auto stack = std::make_shared<Tool::Stack>();
-            lua_pushnil(vm->get_state());
-            while (lua_next(vm->get_state(), index) != 0) {
-                if (vm->is_string(-2)) {
-                    std::string key = vm->get_string(-2);
-                    if      (vm->is_nil(-1))    stack->object[key] = Tool::StackValue(nullptr);
-                    else if (vm->is_bool(-1))   stack->object[key] = Tool::StackValue(vm->get_bool(-1));
-                    else if (vm->is_number(-1)) stack->object[key] = Tool::StackValue(vm->get_double(-1));
-                    else if (vm->is_string(-1)) stack->object[key] = Tool::StackValue(vm->get_string(-1));
-                    else if (vm->is_table(-1))  stack->object[key] = Tool::StackValue(collect_table(vm, vm->get_count()));
-                } else if (vm->is_number(-2)) {
+            auto* L = vm->get_state();
+            lua_pushnil(L);
+            while (lua_next(L, index) != 0) {
+                // Use lua_type for the KEY — lua_isstring returns true for numbers too,
+                // and calling lua_tostring/get_string on an integer key during iteration
+                // coerces it in-place, making it invalid for the next lua_next call.
+                int key_type = lua_type(L, -2);
+                if (key_type == LUA_TNUMBER) {
                     int idx = vm->get_int(-2);
                     Tool::StackValue val;
                     if      (vm->is_nil(-1))    val = Tool::StackValue(nullptr);
@@ -203,6 +201,13 @@ namespace Vital::Sandbox::API {
                             stack->array.resize(idx, Tool::StackValue(nullptr));
                         stack->array[idx - 1] = val;
                     }
+                } else if (key_type == LUA_TSTRING) {
+                    std::string key = vm->get_string(-2);
+                    if      (vm->is_nil(-1))    stack->object[key] = Tool::StackValue(nullptr);
+                    else if (vm->is_bool(-1))   stack->object[key] = Tool::StackValue(vm->get_bool(-1));
+                    else if (vm->is_number(-1)) stack->object[key] = Tool::StackValue(vm->get_double(-1));
+                    else if (vm->is_string(-1)) stack->object[key] = Tool::StackValue(vm->get_string(-1));
+                    else if (vm->is_table(-1))  stack->object[key] = Tool::StackValue(collect_table(vm, vm->get_count()));
                 }
                 vm->pop(1);
             }
@@ -601,24 +606,36 @@ namespace Vital::Sandbox::API {
                 if (it != buffer.end()) snapshot = it->second.handlers;
             }
 
-            // Build args_ref so push_args_ref passes ONE arg to the handler — a data
-            // table — matching same-side emit: emit("name", myTable) gives handler(myTable).
-            // Remote: emit_remote("name", a, b) gives handler({[1]=a, [2]=b}).
+            // Build args_ref so push_args_ref passes ONE arg — the data table —
+            // matching same-side emit: emit("name", myTable) → handler(myTable).
+            // payload.array contains the serialized arguments sent by the caller.
+            // If the caller sent a single table arg, payload.array[0] is a shared_ptr<Stack>
+            // and push_value will reconstruct it as a Lua table — use it directly.
+            // If the caller sent multiple scalar args, wrap them in a table.
             int stack_top = vm->get_count();
 
-            vm->create_table();                              // data_table at stack_top+1
-            int data_idx = vm->get_count();
-            for (int i = 0; i < static_cast<int>(payload.array.size()); ++i) {
-                vm->push_value(payload.array[i]);
-                vm->set_table_field(i + 1, data_idx);
+            if (payload.array.size() == 1 && payload.array[0].is<std::shared_ptr<Tool::Stack>>()) {
+                // Single table arg — push it directly, then wrap in outer for push_args_ref
+                vm->push_value(payload.array[0]);           // data_table at stack_top+1
+            } else {
+                // Multiple/scalar args — build data_table from array values
+                vm->create_table();                          // data_table at stack_top+1
+                int data_idx = vm->get_count();
+                for (int i = 0; i < static_cast<int>(payload.array.size()); ++i) {
+                    vm->push_value(payload.array[i]);
+                    vm->set_table_field(i + 1, data_idx);
+                }
             }
+
+            // Wrap in outer so push_args_ref unpacks to exactly 1 arg
+            int data_idx = vm->get_count();
             vm->create_table();                              // outer at stack_top+2
             int outer_idx = vm->get_count();
-            vm->push(data_idx);                              // dup data_table onto top
+            vm->push(data_idx);                              // dup data_table
             vm->set_table_field(1, outer_idx);               // outer[1] = data_table
 
-            int args_ref = vm->set_raw_reference(-1);        // ref outer, outer stays
-            vm->pop(vm->get_count() - stack_top);            // clean stack back to saved top
+            int args_ref = vm->set_raw_reference(-1);
+            vm->pop(vm->get_count() - stack_top);
 
             // No handlers — send empty reply if requested, then done
             if (snapshot.empty()) {
