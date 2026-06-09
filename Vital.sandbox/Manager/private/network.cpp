@@ -155,6 +155,7 @@ namespace Vital::Manager {
 
         Tool::Stack stack = Tool::Stack::from_dict(data);
 
+        // TODO: Improve identifier
         // Route to sandbox event dispatch for:
         //   - Normal/callback remote emits (__event present)
         //   - Reply packets from remote emit_callback (__reply_serial present)
