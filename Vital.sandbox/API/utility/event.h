@@ -268,7 +268,7 @@ namespace Vital::Sandbox::API {
             int self_ref = root_vm->get_reference("runtime", instance->self_reference());
 
             thread_vm->get_raw_reference(self_ref);
-            lua_setglobal(thread_vm->get_state(), "eventthread");
+            lua_setglobal(thread_vm->get_state(), "thread");
 
             instance->set_reference(instance->thread_reference(), coroutine_idx);
             root_vm->pop(1);
