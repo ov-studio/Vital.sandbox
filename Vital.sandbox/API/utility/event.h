@@ -387,14 +387,19 @@ namespace Vital::Sandbox::API {
             if (!root_vm || !cb) return;
 
             Tool::Stack results;
+            std::unordered_set<const void*> visited;
             for (int i = 1; i <= promise->value_count; ++i) {
                 root_vm->get_raw_reference(promise->get_reference(promise->value_reference(i)));
                 int idx = root_vm->get_count();
-                if      (root_vm->is_nil(idx))    results.array.emplace_back(nullptr);
-                else if (root_vm->is_bool(idx))   results.array.emplace_back(root_vm->get_bool(idx));
-                else if (root_vm->is_number(idx)) results.array.emplace_back(root_vm->get_double(idx));
-                else if (root_vm->is_string(idx)) results.array.emplace_back(root_vm->get_string(idx));
-                else                               results.array.emplace_back(nullptr);
+                int t   = lua_type(root_vm->get_state(), idx);
+                switch (t) {
+                    case LUA_TNIL:     results.array.emplace_back(nullptr); break;
+                    case LUA_TBOOLEAN: results.array.emplace_back((bool)lua_toboolean(root_vm->get_state(), idx)); break;
+                    case LUA_TNUMBER:  results.array.emplace_back((double)lua_tonumber(root_vm->get_state(), idx)); break;
+                    case LUA_TSTRING:  results.array.emplace_back(std::string(lua_tostring(root_vm->get_state(), idx))); break;
+                    case LUA_TTABLE:   results.array.emplace_back(collect_table(root_vm, idx, visited)); break;
+                    default:           results.array.emplace_back(nullptr); break;
+                }
                 root_vm->pop(1);
             }
 
