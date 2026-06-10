@@ -474,34 +474,83 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "emit", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, ...)")
+            // emit(name [, options], ...)
+            // emit_callback(name [, options], ...) -> Promise | table of Promises
+            //
+            // options (optional table at arg 2):
+            //   remote = false  — same-side only (default)
+            //   remote = true   — cross-side; client→server, server→all peers
+            //   peer   = id     — server only: send to specific peer (0 = all, default)
+            //
+            // Examples:
+            //   event.emit("name", args...)                         -- same-side
+            //   event.emit("name", {remote=true}, args...)          -- cross-side broadcast
+            //   event.emit("name", {remote=true, peer=id}, args...) -- server→specific peer
+            //   event.emit_callback("name", args...)                -- same-side, returns Promise
+            //   event.emit_callback("name", {remote=true}, args...) -- cross-side, returns Promise
+
+            struct EmitOptions {
+                bool is_remote  = false;
+                int  peer_id    = 0;
+                int  args_start = 2; // index of first actual arg on Lua stack
+            };
+
+            auto read_emit_options = [](Machine* vm) -> EmitOptions {
+                EmitOptions opts;
+                // If arg 2 is a table, read options from it and args start at 3
+                if (vm->get_count() >= 2 && vm->is_table(2)) {
+                    vm->get_table_field("remote", 2);
+                    if (!vm->is_nil(-1)) opts.is_remote = vm->get_bool(-1);
+                    vm->pop(1);
+                    #if !defined(VSDK_Client)
+                    vm->get_table_field("peer", 2);
+                    if (vm->is_number(-1)) opts.peer_id = vm->get_int(-1);
+                    vm->pop(1);
+                    #endif
+                    opts.args_start = 3;
+                }
+                return opts;
+            };
+
+            API::bind(vm, {base_name}, "emit", [read_emit_options](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name [, options], ...)")
                     .require(1, &Machine::is_string);
 
                 std::string name = vm->get_string(1);
+                auto opts = read_emit_options(vm);
 
-                std::vector<std::pair<int, Handler>> snapshot;
-                {
-                    std::lock_guard lock(buffer_mutex);
-                    auto it = buffer.find(name);
-                    if (it != buffer.end()) snapshot = it->second.handlers;
-                }
-
-                if (!snapshot.empty()) {
-                    int args_ref = store_args_ref(vm, 2);
-                    fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
-                    free_ref(vm, args_ref);
+                if (opts.is_remote) {
+                    send_remote_emit(vm, name, collect_serializable(vm, opts.args_start), opts.peer_id, false);
+                } else {
+                    std::vector<std::pair<int, Handler>> snapshot;
+                    {
+                        std::lock_guard lock(buffer_mutex);
+                        auto it = buffer.find(name);
+                        if (it != buffer.end()) snapshot = it->second.handlers;
+                    }
+                    if (!snapshot.empty()) {
+                        int args_ref = store_args_ref(vm, opts.args_start);
+                        fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+                        free_ref(vm, args_ref);
+                    }
                 }
 
                 vm->push_value(true);
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "emit_callback", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, ...)")
+            API::bind(vm, {base_name}, "emit_callback", [read_emit_options](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name [, options], ...)")
                     .require(1, &Machine::is_string);
 
                 std::string name = vm->get_string(1);
+                auto opts = read_emit_options(vm);
+
+                if (opts.is_remote) {
+                    auto promise = send_remote_emit(vm, name, collect_serializable(vm, opts.args_start), opts.peer_id, true);
+                    push_promise(vm, promise);
+                    return 1;
+                }
 
                 std::vector<std::pair<int, Handler>> snapshot;
                 {
@@ -518,7 +567,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 }
 
-                int args_ref = store_args_ref(vm, 2);
+                int args_ref = store_args_ref(vm, opts.args_start);
 
                 std::vector<std::shared_ptr<Promise::Instance>> promises;
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
@@ -536,54 +585,6 @@ namespace Vital::Sandbox::API {
 
                 return 1;
             });
-
-            // emit_remote(name, ...) -> true
-            // Client: sends to server. Server: broadcasts to all peers.
-            API::bind(vm, {base_name}, "emit_remote", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, ...)")
-                    .require(1, &Machine::is_string);
-
-                send_remote_emit(vm, vm->get_string(1), collect_serializable(vm, 2), 0, false);
-                vm->push_value(true);
-                return 1;
-            });
-
-            // emit_remote_callback(name, ...) -> Promise
-            // Client: sends to server. Server: broadcasts to all peers.
-            API::bind(vm, {base_name}, "emit_remote_callback", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, ...)")
-                    .require(1, &Machine::is_string);
-
-                auto promise = send_remote_emit(vm, vm->get_string(1), collect_serializable(vm, 2), 0, true);
-                push_promise(vm, promise);
-                return 1;
-            });
-
-            // Server-only: emit_remote_to(peer_id, name, ...) -> true
-            // peer_id=0 broadcasts to all, peer_id>0 sends to that specific peer.
-            #if !defined(VSDK_Client)
-            API::bind(vm, {base_name}, "emit_remote_to", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(peer_id, name, ...)")
-                    .require(1, &Machine::is_number)
-                    .require(2, &Machine::is_string);
-
-                send_remote_emit(vm, vm->get_string(2), collect_serializable(vm, 3), vm->get_int(1), false);
-                vm->push_value(true);
-                return 1;
-            });
-
-            // Server-only: emit_remote_callback_to(peer_id, name, ...) -> Promise
-            // peer_id=0 broadcasts to all, peer_id>0 sends to that specific peer.
-            API::bind(vm, {base_name}, "emit_remote_callback_to", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(peer_id, name, ...)")
-                    .require(1, &Machine::is_number)
-                    .require(2, &Machine::is_string);
-
-                auto promise = send_remote_emit(vm, vm->get_string(2), collect_serializable(vm, 3), vm->get_int(1), true);
-                push_promise(vm, promise);
-                return 1;
-            });
-            #endif
         }
 
         // Called from Manager::Network::_on_packet_received.
