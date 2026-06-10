@@ -25,7 +25,6 @@
 ////////////////////////
 
 namespace Vital::Sandbox::API {
-    // TODO: Improve
     struct Event : vm_module {
         inline static const std::string base_name = "event";
 
@@ -629,34 +628,17 @@ namespace Vital::Sandbox::API {
                 if (it != buffer.end()) snapshot = it->second.handlers;
             }
 
-            // Build args_ref so push_args_ref passes ONE arg — the data table —
-            // matching same-side emit: emit("name", myTable) → handler(myTable).
-            // payload.array contains the serialized arguments sent by the caller.
-            // If the caller sent a single table arg, payload.array[0] is a shared_ptr<Stack>
-            // and push_value will reconstruct it as a Lua table — use it directly.
-            // If the caller sent multiple scalar args, wrap them in a table.
+            // Build args_ref flat so push_args_ref unpacks into N separate args.
+            // emit_remote("name", a, b, c)  → handler(a, b, c)
+            // emit_remote("name", {1,2}, c) → handler({1,2}, c)
+            // Matches same-side emit: emit("name", a, b) → handler(a, b)
             int stack_top = vm->get_count();
-
-            if (payload.array.size() == 1 && payload.array[0].is<std::shared_ptr<Tool::Stack>>()) {
-                // Single table arg — push it directly, then wrap in outer for push_args_ref
-                vm->push_value(payload.array[0]);           // data_table at stack_top+1
-            } else {
-                // Multiple/scalar args — build data_table from array values
-                vm->create_table();                          // data_table at stack_top+1
-                int data_idx = vm->get_count();
-                for (int i = 0; i < static_cast<int>(payload.array.size()); ++i) {
-                    vm->push_value(payload.array[i]);
-                    vm->set_table_field(i + 1, data_idx);
-                }
-            }
-
-            // Wrap in outer so push_args_ref unpacks to exactly 1 arg
-            int data_idx = vm->get_count();
-            vm->create_table();                              // outer at stack_top+2
+            vm->create_table();
             int outer_idx = vm->get_count();
-            vm->push(data_idx);                              // dup data_table
-            vm->set_table_field(1, outer_idx);               // outer[1] = data_table
-
+            for (int i = 0; i < static_cast<int>(payload.array.size()); ++i) {
+                vm->push_value(payload.array[i]);
+                vm->set_table_field(i + 1, outer_idx);
+            }
             int args_ref = vm->set_raw_reference(-1);
             vm->pop(vm->get_count() - stack_top);
 
