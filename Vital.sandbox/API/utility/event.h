@@ -41,15 +41,19 @@ namespace Vital::Sandbox::API {
             std::vector<std::pair<int, Handler>> handlers;
         };
 
+        struct EmitOptions {
+            bool is_remote  = false;
+            int  peer_id    = 0;
+            int  args_start = 2;
+        };
+
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
 
-        // serial -> Promise for pending remote emit_callback calls
         inline static std::unordered_map<uint32_t, std::shared_ptr<Promise::Instance>> pending_remote;
         inline static std::mutex pending_remote_mutex;
         inline static std::atomic<uint32_t> serial_counter { 0 };
 
-        // promise_id -> reply callback for remote emit_callback response
         using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
         inline static std::mutex reply_callbacks_mutex;
@@ -68,23 +72,35 @@ namespace Vital::Sandbox::API {
             if (ref != LUA_NOREF) vm->del_raw_reference(ref);
         }
 
-        static void push_ref(Machine* vm, int ref) {
-            vm->get_raw_reference(ref);
-        }
-
         struct HandlerConfig {
-            bool async  = false;
+            bool is_async  = false;
             int  sub_limit = 0;
         };
 
         static HandlerConfig read_config(Machine* vm, int index) {
             HandlerConfig cfg;
             if (vm->get_count() < index || !vm->is_table(index)) return cfg;
-            vm->get_table_field("async", index); cfg.async  = vm->get_bool(-1); vm->pop(1);
-            vm->get_table_field("subscription_limit", index);
+            vm->get_table_field("async",             index); cfg.is_async  = vm->get_bool(-1); vm->pop(1);
+            vm->get_table_field("subscriptionLimit", index);
             if (vm->is_number(-1)) cfg.sub_limit = std::max(1, vm->get_int(-1));
             vm->pop(1);
             return cfg;
+        }
+
+        static EmitOptions read_emit_options(Machine* vm) {
+            EmitOptions opts;
+            if (vm->get_count() >= 2 && vm->is_table(2)) {
+                vm->get_table_field("remote", 2);
+                if (!vm->is_nil(-1)) opts.is_remote = vm->get_bool(-1);
+                vm->pop(1);
+                #if !defined(VSDK_Client)
+                vm->get_table_field("peer", 2);
+                if (vm->is_number(-1)) opts.peer_id = vm->get_int(-1);
+                vm->pop(1);
+                #endif
+                opts.args_start = 3;
+            }
+            return opts;
         }
 
         static int store_args_ref(Machine* vm, int from_index) {
@@ -109,28 +125,72 @@ namespace Vital::Sandbox::API {
             return n;
         }
 
-        static int store_args_ref_copy(Machine* vm, int args_ref) {
-            vm->get_raw_reference(args_ref);
-            vm->create_table();
-            int orig = vm->get_count() - 1;
-            int copy = vm->get_count();
-            int n    = vm->get_length(orig);
-            for (int i = 1; i <= n; ++i) {
-                vm->get_table_field(i, orig);
-                vm->set_table_field(i, copy);
-            }
-            vm->rotate(-2, -1);
-            vm->pop(1);
-            return vm->set_raw_reference(-1);
-        }
-
         static void push_promise(Machine* vm, std::shared_ptr<Promise::Instance> promise) {
             vm->get_raw_reference(promise->get_reference(promise->self_reference()));
         }
 
-        // Send a packet to the appropriate destination.
-        // On client: always sends to server (peer_id ignored).
-        // On server: peer_id=0 broadcasts to all, peer_id>0 sends to that specific peer.
+        // Serialize a single Lua stack value at absolute index into a StackValue.
+        // Used by both collect_serializable and dispatch_reply to avoid duplication.
+        static Tool::StackValue collect_stack_value(Machine* vm, int index,
+                                                      std::unordered_set<const void*>& visited,
+                                                      int depth = 0) {
+            auto* L = vm->get_state();
+            switch (lua_type(L, index)) {
+                case LUA_TNIL:     return Tool::StackValue(nullptr);
+                case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, index));
+                case LUA_TNUMBER:  return Tool::StackValue((double)lua_tonumber(L, index));
+                case LUA_TSTRING:  return Tool::StackValue(std::string(lua_tostring(L, index)));
+                case LUA_TTABLE:   return Tool::StackValue(collect_table(vm, index, visited, depth));
+                default:           return Tool::StackValue(nullptr);
+            }
+        }
+
+        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index,
+                                                            std::unordered_set<const void*>& visited,
+                                                            int depth = 0) {
+            auto stack = std::make_shared<Tool::Stack>();
+            if (depth > 32) return stack;
+
+            auto* L = vm->get_state();
+            const void* ptr = lua_topointer(L, index);
+            if (!ptr || visited.count(ptr)) return stack;
+            visited.insert(ptr);
+
+            lua_pushnil(L);
+            while (lua_next(L, index) != 0) {
+                int key_type = lua_type(L, -2);
+                int val_type = lua_type(L, -1);
+                if (key_type == LUA_TNUMBER) {
+                    int idx = (int)lua_tonumber(L, -2);
+                    if (idx >= 1) {
+                        Tool::StackValue val = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
+                        if (static_cast<int>(stack->array.size()) < idx)
+                            stack->array.resize(idx, Tool::StackValue(nullptr));
+                        stack->array[idx - 1] = val;
+                    }
+                } else if (key_type == LUA_TSTRING) {
+                    // Only store serializable value types; skip functions/userdata/threads
+                    if (val_type == LUA_TNIL || val_type == LUA_TBOOLEAN ||
+                        val_type == LUA_TNUMBER || val_type == LUA_TSTRING || val_type == LUA_TTABLE)
+                        stack->object[lua_tostring(L, -2)] = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
+                }
+                lua_pop(L, 1);
+            }
+
+            visited.erase(ptr);
+            return stack;
+        }
+
+        static Tool::Stack collect_serializable(Machine* vm, int from_index) {
+            Tool::Stack payload;
+            std::unordered_set<const void*> visited;
+            int top = vm->get_count();
+            for (int i = from_index; i <= top; ++i) {
+                payload.array.emplace_back(collect_stack_value(vm, i, visited));
+            }
+            return payload;
+        }
+
         static void send_packet(const Tool::Stack& payload, int peer_id = 0) {
             #if defined(VSDK_Client)
             Vital::Manager::Network::get_singleton()->send_to_server(payload);
@@ -140,8 +200,6 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
-        // Build and send a remote emit payload, optionally with a serial for callback.
-        // Returns the promise (non-null only when serial > 0).
         static std::shared_ptr<Promise::Instance> send_remote_emit(Machine* vm,
                                                                      const std::string& name,
                                                                      Tool::Stack payload,
@@ -163,78 +221,6 @@ namespace Vital::Sandbox::API {
 
             send_packet(payload, peer_id);
             return promise;
-        }
-
-        static Tool::Stack collect_serializable(Machine* vm, int from_index) {
-            Tool::Stack payload;
-            auto* L = vm->get_state();
-            int top = vm->get_count();
-            std::unordered_set<const void*> visited;
-            for (int i = from_index; i <= top; ++i) {
-                int t = lua_type(L, i);
-                switch (t) {
-                    case LUA_TNIL:     payload.array.emplace_back(nullptr); break;
-                    case LUA_TBOOLEAN: payload.array.emplace_back((bool)lua_toboolean(L, i)); break;
-                    case LUA_TNUMBER:  payload.array.emplace_back((double)lua_tonumber(L, i)); break;
-                    case LUA_TSTRING:  payload.array.emplace_back(std::string(lua_tostring(L, i))); break;
-                    case LUA_TTABLE:   payload.array.emplace_back(collect_table(vm, i, visited)); break;
-                    default:           payload.array.emplace_back(nullptr); break; // skip userdata etc.
-                }
-            }
-            return payload;
-        }
-
-        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index, std::unordered_set<const void*>& visited, int depth = 0) {
-            auto stack = std::make_shared<Tool::Stack>();
-            if (depth > 32) return stack;
-
-            // Track this table's pointer to detect circular references
-            auto* L = vm->get_state();
-            const void* ptr = lua_topointer(L, index);
-            if (!ptr || visited.count(ptr)) return stack;
-            visited.insert(ptr);
-
-            lua_pushnil(L);
-            while (lua_next(L, index) != 0) {
-                int key_type = lua_type(L, -2);
-                int val_type = lua_type(L, -1);
-
-                auto read_val = [&]() -> Tool::StackValue {
-                    switch (val_type) {
-                        case LUA_TNIL:     return Tool::StackValue(nullptr);
-                        case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, -1));
-                        case LUA_TNUMBER:  return Tool::StackValue((double)lua_tonumber(L, -1));
-                        case LUA_TSTRING:  return Tool::StackValue(std::string(lua_tostring(L, -1)));
-                        case LUA_TTABLE:   return Tool::StackValue(collect_table(vm, lua_gettop(L), visited, depth + 1));
-                        default:           return Tool::StackValue(nullptr); // skip functions, userdata, threads
-                    }
-                };
-
-                if (key_type == LUA_TNUMBER) {
-                    int idx = (int)lua_tonumber(L, -2);
-                    if (idx >= 1) {
-                        Tool::StackValue val = read_val();
-                        if (static_cast<int>(stack->array.size()) < idx)
-                            stack->array.resize(idx, Tool::StackValue(nullptr));
-                        stack->array[idx - 1] = val;
-                    }
-                } else if (key_type == LUA_TSTRING) {
-                    Tool::StackValue val = read_val();
-                    // Only store if it serialized to something meaningful (skip nil from functions/userdata)
-                    if (val_type == LUA_TNIL || val_type == LUA_TBOOLEAN || val_type == LUA_TNUMBER || val_type == LUA_TSTRING || val_type == LUA_TTABLE)
-                        stack->object[lua_tostring(L, -2)] = val;
-                }
-                lua_pop(L, 1);
-            }
-
-            visited.erase(ptr);
-            return stack;
-        }
-
-        // Entry point — creates the visited set for cycle tracking
-        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index) {
-            std::unordered_set<const void*> visited;
-            return collect_table(vm, index, visited);
         }
 
         static void bump_subscription(const std::string& name, int ref, std::vector<int>& exhausted) {
@@ -263,9 +249,6 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        // Spawn a Thread::Instance coroutine for an async event handler.
-        // Always creates the coroutine under root_vm so its lifetime is independent
-        // of whatever coroutine called spawn_thread.
         static void spawn_thread(Machine* vm,
                                   int exec_ref,
                                   int args_ref,
@@ -277,7 +260,7 @@ namespace Vital::Sandbox::API {
 
             int coroutine_idx = root_vm->get_count();
 
-            push_ref(vm, exec_ref);
+            vm->get_raw_reference(exec_ref);
             int n_args = push_args_ref(vm, args_ref);
             vm->move(thread_vm, 1 + n_args);
 
@@ -297,10 +280,9 @@ namespace Vital::Sandbox::API {
                     auto p = weak_promise.lock();
                     if (!p) return;
                     int base  = root_vm->get_count() + 1;
-                    int count = nresults > 0 ? nresults : 0;
                     if (nresults > 0) lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
-                    Promise::settle(p, Promise::State::Resolved, root_vm, base, count);
-                    if (count > 0) root_vm->pop(count);
+                    Promise::settle(p, Promise::State::Resolved, root_vm, base, nresults);
+                    if (nresults > 0) root_vm->pop(nresults);
                 });
             }
 
@@ -309,7 +291,6 @@ namespace Vital::Sandbox::API {
 
         enum class FireMode { Emit, EmitCallback };
 
-        // Fire a single handler, creating and returning a promise when mode=EmitCallback.
         static std::shared_ptr<Promise::Instance> fire_one(Machine* vm,
                                                             const Handler& h,
                                                             int args_ref,
@@ -321,11 +302,22 @@ namespace Vital::Sandbox::API {
             }
 
             if (h.async) {
-                int args_ref_copy = store_args_ref_copy(vm, args_ref);
+                // Copy args so the coroutine has its own ref independent of the caller
+                vm->get_raw_reference(args_ref);
+                vm->create_table();
+                int orig = vm->get_count() - 1, copy = vm->get_count();
+                int n = vm->get_length(orig);
+                for (int i = 1; i <= n; ++i) {
+                    vm->get_table_field(i, orig);
+                    vm->set_table_field(i, copy);
+                }
+                vm->rotate(-2, -1);
+                vm->pop(1);
+                int args_ref_copy = vm->set_raw_reference(-1);
                 spawn_thread(vm, h.exec_ref, args_ref_copy, promise);
                 free_ref(vm, args_ref_copy);
             } else {
-                push_ref(vm, h.exec_ref);
+                vm->get_raw_reference(h.exec_ref);
                 int n_args = push_args_ref(vm, args_ref);
                 if (mode == FireMode::EmitCallback) {
                     int base = vm->get_count() - n_args - 1;
@@ -351,20 +343,15 @@ namespace Vital::Sandbox::API {
                               FireMode mode,
                               std::vector<std::shared_ptr<Promise::Instance>>* promises = nullptr) {
             std::vector<int> exhausted;
-
             for (auto& [ref, h] : snapshot) {
                 auto promise = fire_one(vm, h, args_ref, mode);
                 if (promise && promises) promises->push_back(promise);
                 if (h.subscription_limit > 0) bump_subscription(name, ref, exhausted);
             }
-
             sweep_exhausted(vm, name, exhausted);
         }
 
-        // Register a reply callback on a promise using sentinel thread_id=-1.
-        // When the promise settles, Thread::reply_dispatcher routes to dispatch_reply.
-        static void register_reply_callback(std::shared_ptr<Promise::Instance> promise,
-                                             ReplyCallback cb) {
+        static void register_reply_callback(std::shared_ptr<Promise::Instance> promise, ReplyCallback cb) {
             {
                 std::lock_guard lock(reply_callbacks_mutex);
                 reply_callbacks[promise->id] = std::move(cb);
@@ -372,7 +359,6 @@ namespace Vital::Sandbox::API {
             promise->waiting.push_back(-1);
         }
 
-        // Called by Thread::reply_dispatcher when a promise with sentinel -1 settles.
         static void dispatch_reply(int promise_id, std::shared_ptr<Promise::Instance> promise) {
             ReplyCallback cb;
             {
@@ -390,16 +376,7 @@ namespace Vital::Sandbox::API {
             std::unordered_set<const void*> visited;
             for (int i = 1; i <= promise->value_count; ++i) {
                 root_vm->get_raw_reference(promise->get_reference(promise->value_reference(i)));
-                int idx = root_vm->get_count();
-                int t   = lua_type(root_vm->get_state(), idx);
-                switch (t) {
-                    case LUA_TNIL:     results.array.emplace_back(nullptr); break;
-                    case LUA_TBOOLEAN: results.array.emplace_back((bool)lua_toboolean(root_vm->get_state(), idx)); break;
-                    case LUA_TNUMBER:  results.array.emplace_back((double)lua_tonumber(root_vm->get_state(), idx)); break;
-                    case LUA_TSTRING:  results.array.emplace_back(std::string(lua_tostring(root_vm->get_state(), idx))); break;
-                    case LUA_TTABLE:   results.array.emplace_back(collect_table(root_vm, idx, visited)); break;
-                    default:           results.array.emplace_back(nullptr); break;
-                }
+                results.array.emplace_back(collect_stack_value(root_vm, root_vm->get_count(), visited));
                 root_vm->pop(1);
             }
 
@@ -425,7 +402,7 @@ namespace Vital::Sandbox::API {
 
                 Handler h;
                 h.exec_ref           = store_ref(vm, 2);
-                h.async              = cfg.async;
+                h.async              = cfg.is_async;
                 h.subscription_limit = cfg.sub_limit;
                 h.subscription_count = 0;
                 h.env                = vm->get_environment_id();
@@ -479,41 +456,17 @@ namespace Vital::Sandbox::API {
             //
             // options (optional table at arg 2):
             //   remote = false  — same-side only (default)
-            //   remote = true   — cross-side; client→server, server→all peers
-            //   peer   = id     — server only: send to specific peer (0 = all, default)
+            //   remote = true   — cross-side; client→server or server→all peers
+            //   peer   = id     — server only: target specific peer (0 = all)
             //
-            // Examples:
-            //   event.emit("name", args...)                         -- same-side
-            //   event.emit("name", {remote=true}, args...)          -- cross-side broadcast
-            //   event.emit("name", {remote=true, peer=id}, args...) -- server→specific peer
-            //   event.emit_callback("name", args...)                -- same-side, returns Promise
-            //   event.emit_callback("name", {remote=true}, args...) -- cross-side, returns Promise
+            // event.emit("name", args...)
+            // event.emit("name", {remote=true}, args...)
+            // event.emit("name", {remote=true, peer=id}, args...)
+            // event.emit_callback("name", args...)              -- Promise
+            // event.emit_callback("name", {remote=true}, args...)
 
-            struct EmitOptions {
-                bool is_remote  = false;
-                int  peer_id    = 0;
-                int  args_start = 2; // index of first actual arg on Lua stack
-            };
-
-            auto read_emit_options = [](Machine* vm) -> EmitOptions {
-                EmitOptions opts;
-                // If arg 2 is a table, read options from it and args start at 3
-                if (vm->get_count() >= 2 && vm->is_table(2)) {
-                    vm->get_table_field("remote", 2);
-                    if (!vm->is_nil(-1)) opts.is_remote = vm->get_bool(-1);
-                    vm->pop(1);
-                    #if !defined(VSDK_Client)
-                    vm->get_table_field("peer", 2);
-                    if (vm->is_number(-1)) opts.peer_id = vm->get_int(-1);
-                    vm->pop(1);
-                    #endif
-                    opts.args_start = 3;
-                }
-                return opts;
-            };
-
-            API::bind(vm, {base_name}, "emit", [read_emit_options](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name [, options], ...)")
+            API::bind(vm, {base_name}, "emit", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, options = nil, ...)")
                     .require(1, &Machine::is_string);
 
                 std::string name = vm->get_string(1);
@@ -539,8 +492,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "emit_callback", [read_emit_options](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name [, options], ...)")
+            API::bind(vm, {base_name}, "emit_callback", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, options = nil, ...)")
                     .require(1, &Machine::is_string);
 
                 std::string name = vm->get_string(1);
@@ -589,7 +542,7 @@ namespace Vital::Sandbox::API {
 
         // Called from Manager::Network::_on_packet_received.
         // Packet types:
-        //   __reply_serial              — reply to a pending emit_remote_callback
+        //   __reply_serial              — reply to a pending emit_callback {remote=true}
         //   __event (no __serial)       — plain remote emit, fire handlers
         //   __event + __serial          — remote emit_callback, fire handlers and reply
         static void dispatch_remote(Machine* vm, const Tool::Stack& payload) {
@@ -635,10 +588,7 @@ namespace Vital::Sandbox::API {
                 if (it != buffer.end()) snapshot = it->second.handlers;
             }
 
-            // Build args_ref flat so push_args_ref unpacks into N separate args.
-            // emit_remote("name", a, b, c)  → handler(a, b, c)
-            // emit_remote("name", {1,2}, c) → handler({1,2}, c)
-            // Matches same-side emit: emit("name", a, b) → handler(a, b)
+            // Build flat args_ref: emit("name",{remote=true},a,b) → handler(a,b)
             int stack_top = vm->get_count();
             vm->create_table();
             int outer_idx = vm->get_count();
@@ -649,7 +599,6 @@ namespace Vital::Sandbox::API {
             int args_ref = vm->set_raw_reference(-1);
             vm->pop(vm->get_count() - stack_top);
 
-            // No handlers — send empty reply if requested, then done
             if (snapshot.empty()) {
                 free_ref(vm, args_ref);
                 if (wants_reply) {
@@ -660,14 +609,12 @@ namespace Vital::Sandbox::API {
                 return;
             }
 
-            // Plain remote emit — fire and forget
             if (!wants_reply) {
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
                 free_ref(vm, args_ref);
                 return;
             }
 
-            // Remote emit_callback — fire handlers, then reply with first result
             std::vector<std::shared_ptr<Promise::Instance>> promises;
             fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
             free_ref(vm, args_ref);
