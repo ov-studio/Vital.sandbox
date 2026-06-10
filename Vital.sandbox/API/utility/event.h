@@ -416,7 +416,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, exec [, config])")
+                vm_args(vm, id, "(name, exec, config = nil)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function);
 
