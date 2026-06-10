@@ -73,14 +73,14 @@ namespace Vital::Sandbox::API {
         }
 
         struct HandlerConfig {
-            bool is_async  = false;
+            bool async  = false;
             int  sub_limit = 0;
         };
 
         static HandlerConfig read_config(Machine* vm, int index) {
             HandlerConfig cfg;
             if (vm->get_count() < index || !vm->is_table(index)) return cfg;
-            vm->get_table_field("async",             index); cfg.is_async  = vm->get_bool(-1); vm->pop(1);
+            vm->get_table_field("async", index); cfg.async  = vm->get_bool(-1); vm->pop(1);
             vm->get_table_field("subscriptionLimit", index);
             if (vm->is_number(-1)) cfg.sub_limit = std::max(1, vm->get_int(-1));
             vm->pop(1);
@@ -425,7 +425,7 @@ namespace Vital::Sandbox::API {
 
                 Handler h;
                 h.exec_ref           = store_ref(vm, 2);
-                h.async              = cfg.is_async;
+                h.async              = cfg.async;
                 h.subscription_limit = cfg.sub_limit;
                 h.subscription_count = 0;
                 h.env                = vm->get_environment_id();
