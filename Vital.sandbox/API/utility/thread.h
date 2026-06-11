@@ -32,6 +32,7 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> awaiting { false };
             std::atomic<bool> vm_owned { true };
             Machine* thread_vm = nullptr;
+            vm_state* thread_state = nullptr;
             std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
 
             bool is_alive() const {
@@ -44,9 +45,13 @@ namespace Vital::Sandbox::API {
                 if (instance -> vm_owned.exchange(false)) {
                     auto thread_vm = instance -> thread_vm;
                     instance -> thread_vm = nullptr;
+                    instance -> thread_state = nullptr;
                     if (thread_vm) delete thread_vm;
                 }
-                else instance -> thread_vm = nullptr;
+                else {
+                    instance -> thread_vm = nullptr;
+                    instance -> thread_state = nullptr;
+                }
                 instance -> release();
             }
         };
@@ -62,6 +67,7 @@ namespace Vital::Sandbox::API {
             if (!instance -> vm) {
                 auto thread_vm = instance -> thread_vm;
                 instance -> thread_vm = nullptr;
+                instance -> thread_state = nullptr;
                 instance -> vm_owned.store(false);
                 if (thread_vm) delete thread_vm;
                 instance -> clean();
@@ -74,6 +80,7 @@ namespace Vital::Sandbox::API {
                 int status = lua_status(raw_state);
                 if (status != LUA_OK && status != LUA_YIELD) {
                     instance -> thread_vm = nullptr;
+                    instance -> thread_state = nullptr;
                     instance -> vm_owned.store(false);
                     instance -> clean();
                     return false;
@@ -84,6 +91,7 @@ namespace Vital::Sandbox::API {
             instance -> thread_vm = nullptr;
             instance -> vm_owned.store(false);
             if (!thread_vm -> resume(args)) {
+                instance -> thread_state = nullptr;
                 instance -> clean();
                 return false;
             }
@@ -124,6 +132,7 @@ namespace Vital::Sandbox::API {
                 auto instance  = Instance::init(vm);
                 auto thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
+                instance -> thread_state = thread_vm -> get_state();
                 instance -> set_reference(instance -> thread_reference(), 2);
                 instance -> set_reference(instance -> reference(), 1);
                 vm -> pop(2);
@@ -137,9 +146,8 @@ namespace Vital::Sandbox::API {
                 {
                     std::lock_guard<std::mutex> lock(Thread::registry.mutex);
                     for (auto& [id, instance] : Thread::registry.buffer) {
-                        if (instance -> destroyed || !instance -> thread_vm) continue;
-                        if (instance -> thread_vm -> get_state() == vm -> get_state()) {
                         if (!Instance::find_unlocked(instance)) continue;
+                        if (instance -> thread_state == vm -> get_state()) {
                             found = instance;
                             break;
                         }
