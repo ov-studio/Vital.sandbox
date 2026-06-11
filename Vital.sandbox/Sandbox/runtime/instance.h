@@ -57,8 +57,13 @@ namespace Vital::Sandbox {
                 if (std::find(references.begin(), references.end(), name) == references.end()) references.push_back(name);
             }
 
-            int get_reference(const std::string& name, bool push_to_stack = false) {
-                return vm -> get_reference("runtime", name, push_to_stack);
+            int get_reference(const std::string& name, bool push_to_stack = false, Machine* target_vm = nullptr) {
+                int ref = vm -> get_reference("runtime", name, false);
+                if (push_to_stack) {
+                    Machine* dest = (target_vm && target_vm != vm) ? target_vm : vm;
+                    dest -> get_raw_reference(ref);
+                }
+                return ref;
             }
 
             void del_reference(const std::string& name) {
@@ -70,7 +75,7 @@ namespace Vital::Sandbox {
             void push_self(Machine* vm) override {
                 auto instance = Derived::find_unlocked(static_cast<Derived*>(this) -> id);
                 if (!instance || !instance -> userdata) vm -> push_nil();
-                else instance -> get_reference(self_reference(), true);
+                else instance -> get_reference(self_reference(), true, vm);
             }
 
             bool store() {
