@@ -30,6 +30,10 @@ namespace Vital::Sandbox::API {
             using Owner = Timer;
             Tool::Timer* timer = nullptr;
 
+            bool is_alive() const { 
+                return timer ? true : false; 
+            }
+
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
