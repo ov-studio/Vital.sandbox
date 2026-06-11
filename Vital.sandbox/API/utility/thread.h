@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 if (!found) vm -> push_value(false);
-                else found -> get_reference(found -> self_reference(), true);
+                else found -> push_self(vm);
                 return 1;
             });
         }
