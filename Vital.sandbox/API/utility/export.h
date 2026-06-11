@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: utility: exports.h
+     Script: API: utility: export.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Exports APIs
+     Desc: Export APIs
 ----------------------------------------------------------------*/
 
 
@@ -17,13 +17,13 @@
 #include <Vital.sandbox/Manager/public/resource.h>
 
 
-//////////////////////////
-// Vital: API: Exports //
-//////////////////////////
+/////////////////////////
+// Vital: API: Export //
+/////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Exports : vm_module {
-        inline static const std::string base_name = "exports";
+    struct Export : vm_module {
+        inline static const std::string base_name = "export";
 
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "register", [](auto vm, auto& id) -> int {
@@ -33,7 +33,7 @@ namespace Vital::Sandbox::API {
 
                 const std::string name = vm -> get_string(1);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
-                if (resource.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: exports.register called outside a resource environment");
+                if (resource.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: export.register called outside a resource environment"); // TODO: APPLY BASE NAME USING FMT
 
                 Manager::Sandbox::get_singleton() -> register_export(resource, name, vm -> set_raw_reference(2));
                 vm -> push_value(true);
@@ -47,15 +47,15 @@ namespace Vital::Sandbox::API {
 
                 const std::string resource = vm -> get_string(1);
                 const std::string name = vm -> get_string(2);
-                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' is not running", resource));
+                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — resource '{}' is not running", resource));
                 int ref = Manager::Sandbox::get_singleton() -> get_export_ref(resource, name);
-                if (ref == LUA_NOREF) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — resource '{}' has no export '{}'", resource, name));
+                if (ref == LUA_NOREF) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — resource '{}' has no export '{}'", resource, name)); // TODO: APPLY BASE NAME USING FMT
 
                 int nargs = vm -> get_count() - 2;
                 vm -> get_raw_reference(ref);
                 if (nargs > 0) vm -> rotate(3, 1);
                 // TODO: can't use vm->pcall — it logs+pops on failure; we need to throw instead
-                if (lua_pcall(vm -> get_state(), nargs, LUA_MULTRET, 0) != LUA_OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.call — error in '{}:{}': {}", resource, name, vm -> get_string(-1)));
+                if (lua_pcall(vm -> get_state(), nargs, LUA_MULTRET, 0) != LUA_OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — error in '{}:{}': {}", resource, name, vm -> get_string(-1))); // TODO: APPLY BASE NAME USING FMT
                 return vm -> get_count() - 2;
             });
 
@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 const std::string resource = vm -> get_string(1);
-                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: exports.list — resource '{}' is not running", resource));
+                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.list — resource '{}' is not running", resource)); // TODO: APPLY BASE NAME USING FMT
 
                 const auto names = Manager::Sandbox::get_singleton() -> list_exports(resource);
                 vm -> create_table();
