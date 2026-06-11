@@ -252,7 +252,8 @@ namespace Vital::Sandbox::API {
             auto* root_vm   = vm->get_root();
             auto  instance  = Thread::Instance::init(vm);
             auto  thread_vm = root_vm->create_thread();
-            instance->thread_vm = thread_vm;
+            instance->thread_vm    = thread_vm;
+            instance->thread_state = thread_vm->get_state();
 
             int coroutine_idx = root_vm->get_count();
 
@@ -261,26 +262,21 @@ namespace Vital::Sandbox::API {
             vm->move(thread_vm, 1 + n_args);
 
             instance->store();
-            int self_ref = root_vm->get_reference("runtime", instance->self_reference());
-
-            thread_vm->get_raw_reference(self_ref);
-            lua_setglobal(thread_vm->get_state(), "eventthread");
 
             instance->set_reference(instance->thread_reference(), coroutine_idx);
             root_vm->pop(1);
             vm->pop(1);
 
-            if (promise) {
-                auto weak_promise = std::weak_ptr<Promise::Instance>(promise);
-                thread_vm->set_finish_hook([weak_promise, root_vm](Machine* thread_vm, int nresults) {
-                    auto p = weak_promise.lock();
-                    if (!p) return;
-                    int base = root_vm->get_count() + 1;
-                    if (nresults > 0) lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
-                    Promise::settle(p, Promise::State::Resolved, root_vm, base, nresults);
-                    if (nresults > 0) root_vm->pop(nresults);
-                });
-            }
+            auto weak_promise = std::weak_ptr<Promise::Instance>(promise);
+            thread_vm->set_finish_hook([weak_promise, root_vm, instance](Machine* thread_vm, int nresults) {
+                instance->thread_state = nullptr;
+                auto p = weak_promise.lock();
+                if (!p) return;
+                int base = root_vm->get_count() + 1;
+                if (nresults > 0) lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
+                Promise::settle(p, Promise::State::Resolved, root_vm, base, nresults);
+                if (nresults > 0) root_vm->pop(nresults);
+            });
 
             Thread::safe_resume(instance, n_args);
         }
