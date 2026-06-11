@@ -77,7 +77,7 @@ namespace Vital::Sandbox::API {
                     if (!vm -> is_string(i)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: invalid column name #{}", i - 1));
                     self -> query -> select.push_back(vm -> get_string(i));
                 }
-                self -> get_reference(self -> self_reference(), true);
+                self -> push_self(vm);
                 return 1;
             });
 
@@ -90,7 +90,7 @@ namespace Vital::Sandbox::API {
                 auto op = vm -> get_string(3);
                 auto value = vm -> get_string(4);
                 self -> query -> where.emplace_back(column, op, value);
-                self -> get_reference(self -> self_reference(), true);
+                self -> push_self(vm);
                 return 1;
             });
 
@@ -100,13 +100,13 @@ namespace Vital::Sandbox::API {
 
                 self -> query -> data = read_table(vm, 2);
                 self -> query -> query_type = "insert";
-                self -> get_reference(self -> self_reference(), true);
+                self -> push_self(vm);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "delete", [](auto vm, auto self, auto& id) -> int {
                 self -> query -> query_type = "delete";
-                self -> get_reference(self -> self_reference(), true);
+                self -> push_self(vm);
                 return 1;
             });
 
@@ -116,7 +116,7 @@ namespace Vital::Sandbox::API {
 
                 self -> query -> data = read_table(vm, 2);
                 self -> query -> query_type = "update";
-                self -> get_reference(self -> self_reference(), true);
+                self -> push_self(vm);
                 return 1;
             });
 
