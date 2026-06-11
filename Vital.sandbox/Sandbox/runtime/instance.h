@@ -39,6 +39,8 @@ namespace Vital::Sandbox {
             void** userdata = nullptr;
             std::string reference() const { return fmt::format("vm_instance:{}:{}", Derived::Owner::base_name, id); }
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
+            std::string value_reference(int index) const { return fmt::format("vm_instance:{}:{}:value:{}", Derived::Owner::base_name, id, index); }
+            std::string value_reference(const std::string& index) const { return fmt::format("vm_instance:{}:{}:value:{}", Derived::Owner::base_name, id, index); }
 
             bool is_alive() const {
                 return true;
