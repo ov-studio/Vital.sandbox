@@ -128,7 +128,7 @@ namespace Vital::Sandbox::API {
                 instance -> set_reference(instance -> reference(), 1);
                 vm -> pop(2);
                 instance -> store();
-                instance -> get_reference(instance -> self_reference(), true);
+                instance -> push_self(vm);
                 return 1;
             });
 
@@ -139,6 +139,7 @@ namespace Vital::Sandbox::API {
                     for (auto& [id, instance] : Thread::registry.buffer) {
                         if (instance -> destroyed || !instance -> thread_vm) continue;
                         if (instance -> thread_vm -> get_state() == vm -> get_state()) {
+                        if (!Instance::find_unlocked(instance)) continue;
                             found = instance;
                             break;
                         }
