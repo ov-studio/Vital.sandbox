@@ -129,8 +129,6 @@ namespace Vital::Sandbox::API {
             vm->get_raw_reference(promise->get_reference(promise->self_reference()));
         }
 
-        // Serialize a single Lua stack value at absolute index into a StackValue.
-        // Used by both collect_serializable and dispatch_reply to avoid duplication.
         static Tool::StackValue collect_stack_value(Machine* vm, int index,
                                                       std::unordered_set<const void*>& visited,
                                                       int depth = 0) {
@@ -169,7 +167,6 @@ namespace Vital::Sandbox::API {
                         stack->array[idx - 1] = val;
                     }
                 } else if (key_type == LUA_TSTRING) {
-                    // Only store serializable value types; skip functions/userdata/threads
                     if (val_type == LUA_TNIL || val_type == LUA_TBOOLEAN ||
                         val_type == LUA_TNUMBER || val_type == LUA_TSTRING || val_type == LUA_TTABLE)
                         stack->object[lua_tostring(L, -2)] = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
@@ -185,9 +182,8 @@ namespace Vital::Sandbox::API {
             Tool::Stack payload;
             std::unordered_set<const void*> visited;
             int top = vm->get_count();
-            for (int i = from_index; i <= top; ++i) {
+            for (int i = from_index; i <= top; ++i)
                 payload.array.emplace_back(collect_stack_value(vm, i, visited));
-            }
             return payload;
         }
 
@@ -268,7 +264,7 @@ namespace Vital::Sandbox::API {
             int self_ref = root_vm->get_reference("runtime", instance->self_reference());
 
             thread_vm->get_raw_reference(self_ref);
-            lua_setglobal(thread_vm->get_state(), "thread");
+            lua_setglobal(thread_vm->get_state(), "eventthread");
 
             instance->set_reference(instance->thread_reference(), coroutine_idx);
             root_vm->pop(1);
@@ -279,7 +275,7 @@ namespace Vital::Sandbox::API {
                 thread_vm->set_finish_hook([weak_promise, root_vm](Machine* thread_vm, int nresults) {
                     auto p = weak_promise.lock();
                     if (!p) return;
-                    int base  = root_vm->get_count() + 1;
+                    int base = root_vm->get_count() + 1;
                     if (nresults > 0) lua_xmove(thread_vm->get_state(), root_vm->get_state(), nresults);
                     Promise::settle(p, Promise::State::Resolved, root_vm, base, nresults);
                     if (nresults > 0) root_vm->pop(nresults);
@@ -302,7 +298,6 @@ namespace Vital::Sandbox::API {
             }
 
             if (h.async) {
-                // Copy args so the coroutine has its own ref independent of the caller
                 vm->get_raw_reference(args_ref);
                 vm->create_table();
                 int orig = vm->get_count() - 1, copy = vm->get_count();
@@ -349,6 +344,117 @@ namespace Vital::Sandbox::API {
                 if (h.subscription_limit > 0) bump_subscription(name, ref, exhausted);
             }
             sweep_exhausted(vm, name, exhausted);
+        }
+
+        // Aggregate multiple per-handler promises into a single promise that resolves
+        // once ALL handlers have settled.  The resolved value is a Lua table where
+        // results[i] holds the return value(s) of the i-th handler — so the caller
+        // can await one promise and inspect each handler's result individually.
+        //
+        // If there is only one handler the aggregation table is skipped and the single
+        // handler's promise is returned directly (no wrapping overhead).
+        static std::shared_ptr<Promise::Instance> aggregate_promises(
+                Machine* vm,
+                std::vector<std::shared_ptr<Promise::Instance>>& per_handler) {
+
+            if (per_handler.empty()) {
+                auto p = Promise::make(vm);
+                vm->pop(1);
+                Promise::settle(p, Promise::State::Resolved, vm, 0, 0);
+                return p;
+            }
+
+            if (per_handler.size() == 1) return per_handler[0];
+
+            // Aggregate: resolve when the last pending handler settles.
+            // shared_state tracks how many are still pending and collects results.
+            struct AggState {
+                std::mutex                                          mtx;
+                int                                                 total;
+                std::atomic<int>                                    done { 0 };
+                std::vector<std::vector<Tool::StackValue>>          results;
+                std::weak_ptr<Promise::Instance>                    agg_promise;
+                Machine*                                            vm;
+            };
+
+            auto agg = Promise::make(vm);
+            vm->pop(1);
+
+            auto state = std::make_shared<AggState>();
+            state->total      = static_cast<int>(per_handler.size());
+            state->results.resize(state->total);
+            state->agg_promise = agg;
+            state->vm          = vm->get_root();
+
+            for (int i = 0; i < state->total; ++i) {
+                auto& p = per_handler[i];
+                int   slot = i;
+
+                // If already settled, collect immediately
+                if (p->state != Promise::State::Pending) {
+                    auto* root_vm = vm->get_root();
+                    for (int j = 1; j <= p->value_count; ++j) {
+                        root_vm->get_raw_reference(p->get_reference(p->value_reference(j)));
+                        std::unordered_set<const void*> vis;
+                        state->results[slot].push_back(collect_stack_value(root_vm, root_vm->get_count(), vis));
+                        root_vm->pop(1);
+                    }
+                    if (++state->done == state->total)
+                        settle_aggregate(state);
+                    continue;
+                }
+
+                // Still pending — hook via sentinel -1 in waiting list
+                {
+                    std::lock_guard lock(reply_callbacks_mutex);
+                    reply_callbacks[p->id] = [state, slot](Machine* root_vm, const Tool::Stack& results) {
+                        state->results[slot] = results.array;
+                        if (++state->done == state->total)
+                            settle_aggregate(state);
+                    };
+                }
+                p->waiting.push_back(-1);
+            }
+
+            return agg;
+        }
+
+        // Called when all handlers in an aggregate have settled.
+        // Builds a Lua table {[1]=handler1_result, [2]=handler2_result, ...} and
+        // settles the aggregate promise with it.
+        struct AggState; // forward for settle_aggregate
+        template<typename T>
+        static void settle_aggregate(std::shared_ptr<T> state) {
+            Machine::enqueue([state]() {
+                auto agg = state->agg_promise.lock();
+                if (!agg) return;
+
+                auto* root_vm = state->vm;
+
+                // Build results table: {[i] = handler_i_result}
+                // Each handler's results are stored as a nested table if >1 value,
+                // or unwrapped directly if exactly 1 value.
+                root_vm->create_table();
+                int tbl = root_vm->get_count();
+                for (int i = 0; i < static_cast<int>(state->results.size()); ++i) {
+                    auto& row = state->results[i];
+                    if (row.size() == 1) {
+                        root_vm->push_value(row[0]);
+                    } else {
+                        root_vm->create_table();
+                        int sub = root_vm->get_count();
+                        for (int j = 0; j < static_cast<int>(row.size()); ++j) {
+                            root_vm->push_value(row[j]);
+                            root_vm->set_table_field(j + 1, sub);
+                        }
+                    }
+                    root_vm->set_table_field(i + 1, tbl);
+                }
+
+                int base = tbl;
+                Promise::settle(agg, Promise::State::Resolved, root_vm, base, 1);
+                root_vm->pop(1);
+            });
         }
 
         static void register_reply_callback(std::shared_ptr<Promise::Instance> promise, ReplyCallback cb) {
@@ -451,19 +557,19 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // emit(name [, options], ...)
-            // emit_callback(name [, options], ...) -> Promise | table of Promises
+            // emit(name [, options], ...)          → true
+            // emit_callback(name [, options], ...) → Promise
             //
             // options (optional table at arg 2):
             //   remote = false  — same-side only (default)
             //   remote = true   — cross-side; client→server or server→all peers
             //   peer   = id     — server only: target specific peer (0 = all)
             //
-            // event.emit("name", args...)
-            // event.emit("name", {remote=true}, args...)
-            // event.emit("name", {remote=true, peer=id}, args...)
-            // event.emit_callback("name", args...)              -- Promise
-            // event.emit_callback("name", {remote=true}, args...)
+            // emit_callback always returns a single Promise.
+            // With multiple handlers the promise resolves with a results table:
+            //   results[1] = handler1_return, results[2] = handler2_return, ...
+            // With a single handler the promise resolves with that handler's return
+            // value(s) directly (no wrapping table).
 
             API::bind(vm, {base_name}, "emit", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, options = nil, ...)")
@@ -526,16 +632,9 @@ namespace Vital::Sandbox::API {
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
                 free_ref(vm, args_ref);
 
-                if (promises.size() == 1) {
-                    push_promise(vm, promises[0]);
-                } else {
-                    vm->create_table();
-                    for (int i = 0; i < static_cast<int>(promises.size()); ++i) {
-                        push_promise(vm, promises[i]);
-                        vm->set_table_field(i + 1, -2);
-                    }
-                }
-
+                // Aggregate all handler promises into one
+                auto agg = aggregate_promises(vm, promises);
+                push_promise(vm, agg);
                 return 1;
             });
         }
@@ -588,7 +687,6 @@ namespace Vital::Sandbox::API {
                 if (it != buffer.end()) snapshot = it->second.handlers;
             }
 
-            // Build flat args_ref: emit("name",{remote=true},a,b) → handler(a,b)
             int stack_top = vm->get_count();
             vm->create_table();
             int outer_idx = vm->get_count();
@@ -615,13 +713,18 @@ namespace Vital::Sandbox::API {
                 return;
             }
 
+            // Remote emit_callback — fire all handlers, aggregate all results,
+            // send a single reply once every handler has settled.
             std::vector<std::shared_ptr<Promise::Instance>> promises;
             fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
             free_ref(vm, args_ref);
 
             if (promises.empty()) return;
 
-            register_reply_callback(promises[0], [serial, reply_peer](Machine*, const Tool::Stack& results) {
+            // Aggregate locally then send the combined results back
+            auto agg = aggregate_promises(vm, promises);
+
+            register_reply_callback(agg, [serial, reply_peer](Machine* root_vm, const Tool::Stack& results) {
                 Tool::Stack reply;
                 reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
                 for (auto& v : results.array) reply.array.push_back(v);
