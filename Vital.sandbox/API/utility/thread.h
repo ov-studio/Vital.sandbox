@@ -31,12 +31,12 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> sleeping { false };
             std::atomic<bool> awaiting { false };
             std::atomic<bool> vm_owned { true };
-            vm_state* thread_state = nullptr;
             Machine* thread_vm = nullptr;
+            vm_state* thread_state = nullptr;
             std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
 
             bool is_alive() const {
-                return thread_state != nullptr;
+                return thread_state ? true : false; 
             }
 
             void clean_thread() {
