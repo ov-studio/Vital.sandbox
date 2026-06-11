@@ -33,6 +33,17 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
+            API::bind(vm, {base_name}, "list", [](auto vm, auto& id) -> int {
+                auto resources = Manager::Resource::get_singleton() -> get_all_resources();
+                vm -> create_table();
+                int i = 1;
+                for (const auto& manifest : resources) {
+                    vm -> push_value(manifest -> ref);
+                    vm -> set_table_field(i++, -2);
+                }
+                return 1;
+            });
+
             API::bind(vm, {base_name}, "is_loaded", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
@@ -46,17 +57,6 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 vm -> push_value(Manager::Resource::get_singleton() -> is_running(vm -> get_string(1)));
-                return 1;
-            });
-        
-            API::bind(vm, {base_name}, "get_list", [](auto vm, auto& id) -> int {
-                auto resources = Manager::Resource::get_singleton() -> get_all_resources();
-                vm -> create_table();
-                int i = 1;
-                for (const auto& manifest : resources) {
-                    vm -> push_value(manifest -> ref);
-                    vm -> set_table_field(i++, -2);
-                }
                 return 1;
             });
         
