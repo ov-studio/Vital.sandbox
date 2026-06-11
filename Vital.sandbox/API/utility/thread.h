@@ -31,23 +31,25 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> sleeping { false };
             std::atomic<bool> awaiting { false };
             std::atomic<bool> vm_owned { true };
-            Machine* thread_vm = nullptr;
             vm_state* thread_state = nullptr;
+            Machine* thread_vm = nullptr;
             std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
 
             bool is_alive() const {
                 return thread_state != nullptr;
             }
 
+            void clean_thread() {
+                auto tvm = thread_vm;
+                thread_vm = nullptr;
+                thread_state = nullptr;
+                if (tvm) delete tvm;
+            }
+
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
-                if (instance -> vm_owned.exchange(false)) {
-                    auto thread_vm = instance -> thread_vm;
-                    instance -> thread_vm = nullptr;
-                    instance -> thread_state = nullptr;
-                    if (thread_vm) delete thread_vm;
-                }
+                if (instance -> vm_owned.exchange(false)) instance -> clean_thread();
                 else {
                     instance -> thread_vm = nullptr;
                     instance -> thread_state = nullptr;
@@ -65,11 +67,8 @@ namespace Vital::Sandbox::API {
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
             if (!instance -> vm) {
-                auto thread_vm = instance -> thread_vm;
-                instance -> thread_vm = nullptr;
-                instance -> thread_state = nullptr;
                 instance -> vm_owned.store(false);
-                if (thread_vm) delete thread_vm;
+                instance -> clean_thread();
                 instance -> clean();
                 return false;
             }
@@ -79,9 +78,8 @@ namespace Vital::Sandbox::API {
             {
                 int status = lua_status(raw_state);
                 if (status != LUA_OK && status != LUA_YIELD) {
-                    instance -> thread_vm = nullptr;
-                    instance -> thread_state = nullptr;
                     instance -> vm_owned.store(false);
+                    instance -> clean_thread();
                     instance -> clean();
                     return false;
                 }
