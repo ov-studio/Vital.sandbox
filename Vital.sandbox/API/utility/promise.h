@@ -37,7 +37,10 @@ namespace Vital::Sandbox::API {
             std::vector<int> waiting;
             bool resolved = false;
             int value_count = 0;
-            std::string value_reference(int i) const { return fmt::format("{}:{}:v:{}", base_name, id, i); }
+
+            std::string value_reference(int i) const { 
+                return fmt::format("{}:{}:v:{}", base_name, id, i);
+            }
 
             void clean() {
                 auto instance = shared_from_this();
