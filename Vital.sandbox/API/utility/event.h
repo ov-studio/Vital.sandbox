@@ -434,15 +434,11 @@ namespace Vital::Sandbox::API {
                 int tbl = root_vm->get_count();
                 for (int i = 0; i < static_cast<int>(state->results.size()); ++i) {
                     auto& row = state->results[i];
-                    if (row.size() == 1) {
-                        root_vm->push_value(row[0]);
-                    } else {
-                        root_vm->create_table();
-                        int sub = root_vm->get_count();
-                        for (int j = 0; j < static_cast<int>(row.size()); ++j) {
-                            root_vm->push_value(row[j]);
-                            root_vm->set_table_field(j + 1, sub);
-                        }
+                    root_vm->create_table();
+                    int sub = root_vm->get_count();
+                    for (int j = 0; j < static_cast<int>(row.size()); ++j) {
+                        root_vm->push_value(row[j]);
+                        root_vm->set_table_field(j + 1, sub);
                     }
                     root_vm->set_table_field(i + 1, tbl);
                 }
