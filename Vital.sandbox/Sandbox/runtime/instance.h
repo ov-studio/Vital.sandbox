@@ -108,6 +108,11 @@ namespace Vital::Sandbox {
                 if (it == Derived::Owner::registry.buffer.end() || it -> second -> destroyed || !it -> second -> is_alive()) return nullptr;
                 return it -> second;
             }
+            
+            static std::shared_ptr<Derived> find_unlocked(std::shared_ptr<Derived> instance) {
+                if (!instance || instance -> destroyed || !instance -> is_alive()) return nullptr;
+                return instance;
+            }
 
             static bool store(std::shared_ptr<Derived> instance) {
                 {
