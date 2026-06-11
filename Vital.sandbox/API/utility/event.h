@@ -255,15 +255,10 @@ namespace Vital::Sandbox::API {
             instance->thread_vm    = thread_vm;
             instance->thread_state = thread_vm->get_state();
 
-            int coroutine_idx = root_vm->get_count();
-
             vm->get_raw_reference(exec_ref);
             int n_args = push_args_ref(vm, args_ref);
             vm->move(thread_vm, 1 + n_args);
-
             instance->store();
-
-            instance->set_reference(instance->thread_reference(), coroutine_idx);
             root_vm->pop(1);
             vm->pop(1);
 

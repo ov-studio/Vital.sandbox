@@ -33,7 +33,6 @@ namespace Vital::Sandbox::API {
             std::atomic<bool> vm_owned { true };
             Machine* thread_vm = nullptr;
             vm_state* thread_state = nullptr;
-            std::string thread_reference() const { return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id); }
 
             bool is_alive() const {
                 return thread_state ? true : false; 
@@ -131,7 +130,6 @@ namespace Vital::Sandbox::API {
                 auto thread_vm = vm -> create_thread();
                 instance -> thread_vm = thread_vm;
                 instance -> thread_state = thread_vm -> get_state();
-                instance -> set_reference(instance -> thread_reference(), 2);
                 instance -> set_reference(instance -> reference(), 1);
                 vm -> pop(2);
                 instance -> store();
