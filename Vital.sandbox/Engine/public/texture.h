@@ -49,12 +49,12 @@ namespace Vital::Engine {
             };
 
             inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_registry = {
-                { "L8", godot::Image::FORMAT_L8 },
-                { "LA8", godot::Image::FORMAT_LA8 },
-                { "RGB8", godot::Image::FORMAT_RGB8 },
                 { "RGBA8", godot::Image::FORMAT_RGBA8 },
+                { "RGB8", godot::Image::FORMAT_RGB8 },
                 { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
-                { "RGB565", godot::Image::FORMAT_RGB565 }
+                { "RGB565", godot::Image::FORMAT_RGB565 },
+                { "LA8", godot::Image::FORMAT_LA8 },
+                { "L8", godot::Image::FORMAT_L8 }
             };
 
             struct Texture2D {
