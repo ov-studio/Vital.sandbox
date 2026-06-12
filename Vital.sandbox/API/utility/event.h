@@ -337,6 +337,33 @@ namespace Vital::Sandbox::API {
             sweep_exhausted(vm, name, exhausted);
         }
 
+        // Bridge for Manager::Sandbox::signal() — fires same-side event.on(name, fn)
+        // handlers with stack.array values pushed as unpacked args, exactly matching
+        // event.emit(name, args...).  Used for engine-originated signals (e.g.
+        // vital.entity:on_created / on_destroyed) so Lua can subscribe via event.on.
+        static void emit_internal(Machine* vm, const std::string& name, const Tool::Stack& stack) {
+            std::vector<std::pair<int, Handler>> snapshot;
+            {
+                std::lock_guard lock(buffer_mutex);
+                auto it = buffer.find(name);
+                if (it != buffer.end()) snapshot = it->second.handlers;
+            }
+            if (snapshot.empty()) return;
+
+            int stack_top = vm->get_count();
+            vm->create_table();
+            int outer_idx = vm->get_count();
+            for (int i = 0; i < static_cast<int>(stack.array.size()); ++i) {
+                vm->push_value(stack.array[i]);
+                vm->set_table_field(i + 1, outer_idx);
+            }
+            int args_ref = vm->set_raw_reference(-1);
+            vm->pop(vm->get_count() - stack_top);
+
+            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+            free_ref(vm, args_ref);
+        }
+
         // Aggregate multiple per-handler promises into a single promise that resolves
         // once ALL handlers have settled.  The resolved value is a Lua table where
         // results[i] holds the return value(s) of the i-th handler — so the caller
@@ -483,6 +510,13 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             Thread::register_reply_dispatcher([](int promise_id, std::shared_ptr<Promise::Instance> promise) {
                 dispatch_reply(promise_id, promise);
+            });
+
+            // Bridge Manager::Sandbox::signal(name, args...) into event.on(name, fn)
+            // with args unpacked — so engine signals (e.g. vital.entity:on_created)
+            // are subscribable the same way as event.emit.
+            Manager::Sandbox::register_signal_dispatcher([](Machine* vm, const std::string& name, const Tool::Stack& stack) {
+                emit_internal(vm, name, stack);
             });
 
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
