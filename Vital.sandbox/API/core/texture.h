@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "convert", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(format)")
+                vm_args(vm, id, "(texel_format)")
                     .require(2, &Machine::is_number);
 
                 self -> texture -> convert(static_cast<godot::Image::Format>(vm -> get_int(2)));
