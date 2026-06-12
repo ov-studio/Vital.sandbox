@@ -62,6 +62,22 @@ namespace Vital::Sandbox::API {
             });
         }
 
+        static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> texture -> get_size());
+                return 2;
+            });
+
+            vm_module::bind_method<Instance>(vm, "convert", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(format)")
+                    .require(2, &Machine::is_number);
+
+                self -> texture -> convert(static_cast<godot::Image::Format>(vm -> get_int(2)));
+                vm -> push_value(true);
+                return 1;
+            });
+        }
+
         static void clean(const std::string& env) {
             Instance::collect_env(env);
         }
