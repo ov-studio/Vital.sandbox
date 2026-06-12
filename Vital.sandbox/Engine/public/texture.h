@@ -48,7 +48,7 @@ namespace Vital::Engine {
                 { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
             };
 
-            inline static const std::vector<std::pair<std::string, godot::Image::Format>> convert_registry = {
+            inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_registry = {
                 { "L8", godot::Image::FORMAT_L8 },
                 { "LA8", godot::Image::FORMAT_LA8 },
                 { "RGB8", godot::Image::FORMAT_RGB8 },

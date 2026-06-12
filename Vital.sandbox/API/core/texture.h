@@ -60,6 +60,14 @@ namespace Vital::Sandbox::API {
                 instance -> store();
                 return 1;
             });
+
+            vm -> create_namespace(base_name);
+            vm -> create_table();
+            for (const auto& [name, format] : base_class::texel_registry) {
+                vm -> table_set_value(name, (int)format);
+            }
+            vm -> set_table_field("texel_format", -2);
+            vm -> pop(1);
         }
 
         static void methods(Machine* vm) {
