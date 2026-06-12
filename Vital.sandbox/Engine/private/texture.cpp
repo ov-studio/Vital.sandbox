@@ -153,7 +153,7 @@ namespace Vital::Engine {
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
         auto it = std::find_if(texel_registry.begin(), texel_registry.end(), [&](const auto& entry) { return entry.second == format; });
-        if (it == texel_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid conversion format");
+        if (it == texel_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texel format");
         auto image = get_image_texture() -> get_image();
         image -> convert(format);
         get_image_texture() -> update(image);
