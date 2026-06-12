@@ -97,8 +97,7 @@ namespace Vital::Engine {
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
         Texture2D payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
-        auto texture = memnew(Texture({Type::Texture2D, payload}, reference));
-        return texture;
+        return memnew(Texture({Type::Texture2D, payload}, reference));
     }
 
     Texture* Texture::create_svg(const std::string& path, const std::string& reference) {
