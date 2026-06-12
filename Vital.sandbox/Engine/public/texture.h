@@ -103,7 +103,7 @@ namespace Vital::Engine {
             static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
             void update_svg_from_raw(const std::string& raw);
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
-            void convert(godot::Image::Format format);
+            void convert(godot::Image::Format texel_format);
     };
 }
 #endif

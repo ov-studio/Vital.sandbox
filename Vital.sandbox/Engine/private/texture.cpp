@@ -150,12 +150,12 @@ namespace Vital::Engine {
         heartbeat();
     }
 
-    void Texture::convert(godot::Image::Format format) {
+    void Texture::convert(godot::Image::Format texel_format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        auto it = std::find_if(texel_registry.begin(), texel_registry.end(), [&](const auto& entry) { return entry.second == format; });
+        auto it = std::find_if(texel_registry.begin(), texel_registry.end(), [&](const auto& entry) { return entry.second == texel_format; });
         if (it == texel_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texel format");
         auto image = get_image_texture() -> get_image();
-        image -> convert(format);
+        image -> convert(texel_format);
         get_image_texture() -> update(image);
         heartbeat();
     }
