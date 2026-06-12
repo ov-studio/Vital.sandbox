@@ -145,6 +145,13 @@ namespace Vital::Engine {
         std::get<SVG>(command.payload).texture -> update(image);
         heartbeat();
     }
+
+    void Texture::convert(godot::Image::Format format) {
+        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
+        if (convert_registry .find(format) == convert_registry .end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid conversion format");
+        auto image = get_texture() -> get_image();
+        image -> convert(format);
+        std::get<Texture2D>(command.payload).texture -> update(image);
         heartbeat();
     }
 }
