@@ -48,13 +48,13 @@ namespace Vital::Engine {
                 { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
             };
 
-            inline static const std::unordered_set<godot::Image::Format> convert_registry = {
-                godot::Image::FORMAT_L8,
-                godot::Image::FORMAT_LA8,
-                godot::Image::FORMAT_RGB8,
-                godot::Image::FORMAT_RGBA8,
-                godot::Image::FORMAT_RGBA4444,
-                godot::Image::FORMAT_RGB565
+            inline static const std::vector<std::pair<std::string, godot::Image::Format>> convert_registry = {
+                { "L8", godot::Image::FORMAT_L8 },
+                { "LA8", godot::Image::FORMAT_LA8 },
+                { "RGB8", godot::Image::FORMAT_RGB8 },
+                { "RGBA8", godot::Image::FORMAT_RGBA8 },
+                { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
+                { "RGB565", godot::Image::FORMAT_RGB565 }
             };
 
             struct Texture2D {
