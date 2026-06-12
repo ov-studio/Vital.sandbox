@@ -67,12 +67,16 @@ namespace Vital::Engine {
         return it != reference_cache.end() ? it -> second : nullptr;
     }
 
-    godot::Ref<godot::Texture2D> Texture::get_texture() const {
+    godot::Ref<godot::ImageTexture> Texture::get_image_texture() const {
         switch (command.type) {
             case Type::Texture2D: return std::get<Texture2D>(command.payload).texture;
             case Type::SVG: return std::get<SVG>(command.payload).texture;
         }
-        return godot::Ref<godot::Texture2D>();
+        return godot::Ref<godot::ImageTexture>();
+    }
+
+    godot::Ref<godot::Texture2D> Texture::get_texture() const {
+        return get_image_texture();
     }
 
     godot::Vector2i Texture::get_size() const {

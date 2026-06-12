@@ -90,6 +90,7 @@ namespace Vital::Engine {
 
             // Getters //
             static Texture* get_from_reference(const std::string& reference);
+            godot::Ref<godot::ImageTexture> get_image_texture() const;
             godot::Ref<godot::Texture2D> get_texture() const;
             godot::Vector2i get_size() const;
 
