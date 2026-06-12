@@ -24,7 +24,9 @@
 namespace Vital::Manager {
     class Sandbox : public godot::Node {
         public:
-            inline static const std::string signal_reference = "network:execute";
+            using SignalDispatcher = std::function<void(Vital::Sandbox::Machine*, const std::string&, const Tool::Stack&)>;
+            inline static SignalDispatcher signal_dispatcher;
+            static void register_signal_dispatcher(SignalDispatcher fn) { signal_dispatcher = std::move(fn); }
         protected:
             inline static Sandbox* singleton = nullptr;
         private:
@@ -59,11 +61,7 @@ namespace Vital::Manager {
                 (stack.array.emplace_back(std::forward<Args>(args)), ...);
                 Engine::Core::get_singleton() -> execute([this, name, stack = std::move(stack)]() {
                     Tool::Event::emit(name, stack);
-                    if (!vm || !vm -> is_reference("sandbox", signal_reference)) return;
-                    vm -> get_reference("sandbox", signal_reference, true);
-                    vm -> push_value(name);
-                    for (const auto& value : stack.array) vm -> push_value(value);
-                    vm -> pcall(static_cast<int>(stack.array.size()) + 1, 0);
+                    if (signal_dispatcher) signal_dispatcher(vm, name, stack);
                 });
             }
 
