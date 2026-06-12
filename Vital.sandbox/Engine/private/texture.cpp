@@ -119,8 +119,7 @@ namespace Vital::Engine {
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
         SVG payload;
         payload.texture = godot::ImageTexture::create_from_image(image);
-        auto texture = memnew(Texture({Type::SVG, payload}, reference));
-        return texture;
+        return memnew(Texture({Type::SVG, payload}, reference));
     }
 
     void Texture::update_svg_from_raw(const std::string& raw) {
