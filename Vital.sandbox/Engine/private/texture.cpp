@@ -75,6 +75,12 @@ namespace Vital::Engine {
         return godot::Ref<godot::Texture2D>();
     }
 
+    godot::Vector2i Texture::get_size() const {
+        auto texture = get_texture();
+        if (!texture.is_valid()) return godot::Vector2i();
+        return texture -> get_size();
+    }
+
 
     // APIs //
     Texture* Texture::create_texture_2d(const std::string& path, const std::string& reference) {
