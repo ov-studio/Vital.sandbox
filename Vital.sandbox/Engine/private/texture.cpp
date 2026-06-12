@@ -86,8 +86,8 @@ namespace Vital::Engine {
         image.instantiate();
         godot::Error status;
         switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
-            case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
             case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;
+            case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
             case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
             case Format::BMP: status = image -> load_bmp_from_buffer(buffer); break;
             case Format::DDS: status = image -> load_dds_from_buffer(buffer); break;
