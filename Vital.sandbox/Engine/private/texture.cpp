@@ -136,7 +136,6 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        const auto& payload = std::get<SVG>(command.payload);
         std::get<SVG>(command.payload).texture -> update(image);
         heartbeat();
         heartbeat();
