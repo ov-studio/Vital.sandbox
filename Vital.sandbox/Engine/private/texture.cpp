@@ -137,7 +137,7 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        std::get<SVG>(command.payload).texture -> update(image);
+        get_image_texture() -> update(image);
         heartbeat();
     }
 
@@ -146,16 +146,16 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        std::get<SVG>(command.payload).texture -> update(image);
+        get_image_texture() -> update(image);
         heartbeat();
     }
 
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        if (convert_registry .find(format) == convert_registry .end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid conversion format");
-        auto image = get_texture() -> get_image();
+        if (convert_registry.find(format) == convert_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid conversion format");
+        auto image = get_image_texture() -> get_image();
         image -> convert(format);
-        std::get<Texture2D>(command.payload).texture -> update(image);
+        get_image_texture() -> update(image);
         heartbeat();
     }
 }
