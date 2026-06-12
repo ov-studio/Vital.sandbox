@@ -46,7 +46,7 @@ namespace Vital::Engine {
                 { Format::BMP, "bmp", { 0x42, 0x4D } },
                 { Format::DDS, "dds", { 0x44, 0x44, 0x53, 0x20 } },
                 { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
-            }
+            };
 
             inline static const std::unordered_set<godot::Image::Format> convert_registry = {
                 godot::Image::FORMAT_L8,
