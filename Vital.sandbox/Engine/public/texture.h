@@ -46,6 +46,13 @@ namespace Vital::Engine {
                 { Format::BMP, "bmp", { 0x42, 0x4D } },
                 { Format::DDS, "dds", { 0x44, 0x44, 0x53, 0x20 } },
                 { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
+            inline static const std::unordered_set<godot::Image::Format> convert_registry = {
+                godot::Image::FORMAT_L8,
+                godot::Image::FORMAT_LA8,
+                godot::Image::FORMAT_RGB8,
+                godot::Image::FORMAT_RGBA8,
+                godot::Image::FORMAT_RGBA4444,
+                godot::Image::FORMAT_RGB565
             };
 
             struct Texture2D {
@@ -93,6 +100,7 @@ namespace Vital::Engine {
             static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
             void update_svg_from_raw(const std::string& raw);
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
+            void convert(godot::Image::Format format);
     };
 }
 #endif
