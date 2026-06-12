@@ -33,13 +33,19 @@ namespace Vital::Engine {
                 PNG,
                 JPG,
                 WEBP,
+                BMP,
+                DDS,
+                KTX,
                 UNKNOWN
             };
 
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::PNG, "png", { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A } },
                 { Format::JPG, "jpg", { 0xFF, 0xD8 } },
-                { Format::WEBP, "webp", { 0x52, 0x49, 0x46, 0x46 } }
+                { Format::WEBP, "webp", { 0x52, 0x49, 0x46, 0x46 } },
+                { Format::BMP, "bmp", { 0x42, 0x4D } },
+                { Format::DDS, "dds", { 0x44, 0x44, 0x53, 0x20 } },
+                { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
             };
 
             struct Texture2D {
@@ -49,7 +55,7 @@ namespace Vital::Engine {
             struct SVG {
                 godot::Ref<godot::ImageTexture> texture;
             };
-        
+
             struct Command {
                 Type type;
                 std::variant<Texture2D, SVG> payload;

@@ -70,7 +70,7 @@ namespace Vital::Engine {
     godot::Ref<godot::Texture2D> Texture::get_texture() const {
         switch (command.type) {
             case Type::Texture2D: return std::get<Texture2D>(command.payload).texture;
-            case Type::SVG: return std::get<Texture2D>(command.payload).texture;
+            case Type::SVG: return std::get<SVG>(command.payload).texture;
         }
         return godot::Ref<godot::Texture2D>();
     }
@@ -89,6 +89,10 @@ namespace Vital::Engine {
             case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
             case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;
             case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
+            case Format::BMP: status = image -> load_bmp_from_buffer(buffer); break;
+            case Format::DDS: status = image -> load_dds_from_buffer(buffer); break;
+            case Format::KTX: status = image -> load_ktx_from_buffer(buffer); break;
+            default: break;
         }
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
         Texture2D payload;
