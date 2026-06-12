@@ -74,6 +74,12 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+                auto size = self -> texture -> get_size();
+                vm -> push_value(self -> texture -> get_size());
+                return 2;
+            });
+
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(raw)")
                     .require(2, &Machine::is_string);
