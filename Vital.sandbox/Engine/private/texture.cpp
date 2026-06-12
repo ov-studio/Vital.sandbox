@@ -152,7 +152,8 @@ namespace Vital::Engine {
 
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        if (convert_registry.find(format) == convert_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid conversion format");
+        auto it = std::find_if(convert_registry.begin(), convert_registry.end(), [&](const auto& entry) { return entry.second == format; });
+        if (it == convert_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid conversion format");
         auto image = get_image_texture() -> get_image();
         image -> convert(format);
         get_image_texture() -> update(image);
