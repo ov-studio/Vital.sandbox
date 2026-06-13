@@ -164,9 +164,9 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "resume", [](auto vm, auto self, auto& id) -> int {
                 if (self -> sleeping || self -> awaiting) vm -> push_value(false);
                 else {
-                    self -> get_reference(self -> reference(), true);
+                    self -> get_reference(self -> value_reference("exec"),   true);
                     self -> vm -> move(self -> thread_vm, 1);
-                    self -> get_reference(self -> self_reference(), true);
+                    self -> get_reference(self -> value_reference("thread"), true);
                     self -> vm -> move(self -> thread_vm, 1);
                     safe_resume(self, 1);
                     vm -> push_value(true);
