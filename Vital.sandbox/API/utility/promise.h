@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             instance -> waiting.clear();
             bool resolved_flag = instance -> resolved;
             if (!Promise::resume_dispatcher) return;
-            for (int tid : waiting) Promise::resume_dispatcher(tid, resolved_flag, instance);
+            for (int tid : waiting) API::Promise::resume_dispatcher(tid, resolved_flag, instance);
         }
 
         static std::shared_ptr<Instance> make(Machine* vm) {
@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Promise>(vm);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                Promise::make(vm);
+                API::Promise::make(vm);
                 return 1;
             });
         }
