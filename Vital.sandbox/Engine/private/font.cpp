@@ -29,8 +29,8 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Font* Font::create(const std::string& path) {
-        return create_from_buffer(Tool::File::read_binary(Tool::get_directory(), path));
+    Font* Font::create(const std::string& base, const std::string& path) {
+        return create_from_buffer(Tool::File::read_binary(base, path));
     }
 
     Font* Font::create_from_buffer(const godot::PackedByteArray& buffer) {

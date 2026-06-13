@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/font.h>
+#include <Vital.sandbox/API/utility/file.h>
 
 
 ///////////////////////
@@ -55,8 +56,10 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
+                const std::string base = API::File::get_base(vm, path);
+                if (!Tool::File::exists(base, path)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", path));
                 auto instance = Instance::init(vm);
-                instance -> font = base_class::create(path);
+                instance -> font = base_class::create(base, path);
                 instance -> store();
                 return 1;
             });

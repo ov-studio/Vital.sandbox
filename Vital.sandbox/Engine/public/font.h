@@ -32,7 +32,7 @@ namespace Vital::Engine {
 
 
             // Managers //
-            static Font* create(const std::string& path);
+            static Font* create(const std::string& base, const std::string& path);
             static Font* create_from_buffer(const godot::PackedByteArray& buffer);
             void destroy();
 
