@@ -58,7 +58,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        // TODO: Improve
         using ReplyDispatcher = std::function<void(int promise_id, std::shared_ptr<Promise::Instance>)>;
         inline static ReplyDispatcher reply_dispatcher;
         static void register_reply_dispatcher(ReplyDispatcher fn) { reply_dispatcher = std::move(fn); }
@@ -114,8 +113,6 @@ namespace Vital::Sandbox::API {
 
             Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
                 if (thread_id == -1) {
-                    // TODO: Improve
-                    // Sentinel: route to the reply dispatcher registered by Event.
                     if (reply_dispatcher) {
                         int pid = promise -> id;
                         Machine::enqueue([pid, promise]() {
