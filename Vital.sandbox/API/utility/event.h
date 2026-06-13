@@ -468,7 +468,7 @@ namespace Vital::Sandbox::API {
 
             Tool::Stack results;
             std::unordered_set<const void*> visited;
-            for (int i = 1; i <= promise -> value_count; ++i) {
+            for (int i = 1; i <= promise -> values; ++i) {
                 root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(i)));
                 results.array.emplace_back(collect_stack_value(root_vm, root_vm -> get_count(), visited));
                 root_vm -> pop(1);
