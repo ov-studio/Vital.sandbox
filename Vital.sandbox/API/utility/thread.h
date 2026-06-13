@@ -109,7 +109,7 @@ namespace Vital::Sandbox::API {
                     // TODO: Improve
                     // Sentinel: route to the reply dispatcher registered by Event.
                     if (reply_dispatcher) {
-                        int pid = promise->id;
+                        int pid = promise -> id;
                         Machine::enqueue([pid, promise]() {
                             if (reply_dispatcher) reply_dispatcher(pid, promise);
                         });
