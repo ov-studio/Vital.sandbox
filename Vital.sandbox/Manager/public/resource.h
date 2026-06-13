@@ -54,6 +54,8 @@ namespace Vital::Manager {
             std::unordered_set<std::string> running;
             #if defined(VSDK_Client)
             std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
+            #else
+            std::vector<std::string> resource_order;
             #endif
 
             struct Internal {
