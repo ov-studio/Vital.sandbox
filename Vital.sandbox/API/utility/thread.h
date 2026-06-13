@@ -130,14 +130,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                auto instance  = Instance::init(vm);
-                auto thread_vm = vm -> create_thread();
-                instance -> thread_vm = thread_vm;
-                instance -> thread_state = thread_vm -> get_state();
-                instance -> set_reference(instance -> thread_reference(), 2);
-                instance -> set_reference(instance -> reference(), 1);
-                vm -> pop(2);
-                instance -> store();
+                auto instance = Thread::make(vm);
                 instance -> push_self(vm);
                 return 1;
             });
