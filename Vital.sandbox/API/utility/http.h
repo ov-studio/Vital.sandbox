@@ -42,19 +42,19 @@ namespace Vital::Sandbox::API {
                 }
                 if (vm -> is_number(3)) timeout = vm -> get_int(3);
 
-                auto promise_id = Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, headers, timeout](Tool::Thread*) {
-                    auto promise = Promise::Instance::find(promise_id);
+                    auto promise = API::Promise::Instance::find(promise_id);
                     if (!promise) return;
                     auto vm = promise -> vm;
                     try {
                         vm -> push_value(Tool::HTTP::get(url, headers, timeout));
-                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
@@ -79,19 +79,19 @@ namespace Vital::Sandbox::API {
                 }
                 if (vm -> is_number(4)) timeout = vm -> get_int(4);
 
-                auto promise_id = Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm) -> id;
                 Tool::Thread::create([promise_id, url, body, headers, timeout](Tool::Thread*) {
-                    auto promise = Promise::Instance::find(promise_id);
+                    auto promise = API::Promise::Instance::find(promise_id);
                     if (!promise) return;
                     auto vm = promise -> vm;
                     try {
                         vm -> push_value(Tool::HTTP::post(url, body, headers, timeout));
-                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
