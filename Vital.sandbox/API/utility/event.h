@@ -478,10 +478,6 @@ namespace Vital::Sandbox::API {
             cb(root_vm, results);
         }
 
-
-        // ----------------------------------------------------------------
-        // Bind
-        // ----------------------------------------------------------------
         static void bind(Machine* vm) {
             Thread::register_reply_dispatcher([](int promise_id, std::shared_ptr<Promise::Instance> promise) {
                 dispatch_reply(promise_id, promise);
