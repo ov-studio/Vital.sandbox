@@ -586,6 +586,7 @@ namespace Vital::Manager {
         static bool initialized = false;
         if (initialized) return;
         initialized = true;
+        
         #if defined(VSDK_Client)
             Tool::Event::bind("asset:file_ready", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("path")) return;
