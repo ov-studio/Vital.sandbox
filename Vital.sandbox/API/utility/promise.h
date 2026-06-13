@@ -53,9 +53,7 @@ namespace Vital::Sandbox::API {
 
         using ResumeDispatcher = std::function<void(int thread_id, bool resolved, std::shared_ptr<Instance> promise)>;
         inline static ResumeDispatcher resume_dispatcher;
-        static void register_resume_dispatcher(ResumeDispatcher exec) {
-            resume_dispatcher = std::move(exec);
-        }
+        static void register_resume_dispatcher(ResumeDispatcher exec) { resume_dispatcher = std::move(exec); }
 
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
             if (!Instance::find_unlocked(instance) || !instance -> vm || instance -> values == 0) return 0;
