@@ -393,14 +393,13 @@ namespace Vital::Sandbox::API {
 
                 if (p -> state != Promise::State::Pending) {
                     auto* root_vm = vm -> get_root();
-                    for (int j = 1; j <= p -> value_count; ++j) {
+                    for (int j = 1; j <= p -> values; ++j) {
                         root_vm -> get_raw_reference(p -> get_reference(p -> value_reference(j)));
                         std::unordered_set<const void*> vis;
                         state -> results[slot].push_back(collect_stack_value(root_vm, root_vm -> get_count(), vis));
                         root_vm -> pop(1);
                     }
-                    if (++state -> done == state -> total)
-                        settle_aggregate(state);
+                    if (++state -> done == state -> total) settle_aggregate(state);
                     continue;
                 }
 

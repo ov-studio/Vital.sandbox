@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        using ReplyDispatcher = std::function<void(int promise_id, std::shared_ptr<Promise::Instance>)>;
+        using ReplyDispatcher = std::function<void(int promise_id, std::shared_ptr<API::Promise::Instance>)>;
         inline static ReplyDispatcher reply_dispatcher;
         static void register_reply_dispatcher(ReplyDispatcher fn) { reply_dispatcher = std::move(fn); }
 
@@ -111,7 +111,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm);
 
-            Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<Promise::Instance> promise) {
+            API::Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<API::Promise::Instance> promise) {
                 if (thread_id == -1) {
                     if (reply_dispatcher) {
                         int pid = promise -> id;
@@ -125,9 +125,9 @@ namespace Vital::Sandbox::API {
                     auto instance = Instance::find(thread_id);
                     if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
                     instance -> thread_vm -> push_bool(resolved);
-                    int value_count = Promise::push_values(promise, instance -> thread_vm);
+                    int values = API::Promise::push_values(promise, instance -> thread_vm);
                     instance -> awaiting = false;
-                    safe_resume(instance, 1 + value_count);
+                    safe_resume(instance, 1 + values);
                 });
             });
 
@@ -218,16 +218,16 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "await", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(promise)")
-                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<Promise::Instance>(vm, index); });
+                    .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<API::Promise::Instance>(vm, index); });
 
-                auto promise = vm_module::get_userdata_object<Promise::Instance>(vm, 2);
+                auto promise = vm_module::get_userdata_object<API::Promise::Instance>(vm, 2);
                 if (!vm -> is_virtual() || self -> sleeping || self -> awaiting || !promise) {
                     vm -> push_value(false);
                     return 1;
                 }
-                else if (promise -> state != Promise::State::Pending) {
+                else if (promise -> state != API::Promise::State::Pending) {
                     vm -> push_bool(promise -> resolved);
-                    return 1 + Promise::push_values(promise, vm);
+                    return 1 + API::Promise::push_values(promise, vm);
                 }
                 else {
                     self -> awaiting = true;
