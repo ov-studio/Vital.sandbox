@@ -131,12 +131,12 @@ namespace Vital::Sandbox::API {
                     try {
                         db -> sync();
                         vm -> push_value(true);
-                        Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
+                        API::Promise::settle(promise, Promise::State::Resolved, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                     catch (const std::runtime_error& error) {
                         vm -> push_value(std::string(error.what()));
-                        Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
+                        API::Promise::settle(promise, Promise::State::Rejected, vm, vm -> get_count(), 1);
                         vm -> pop(1);
                     }
                 }) -> detach();
