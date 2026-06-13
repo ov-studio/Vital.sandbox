@@ -34,10 +34,6 @@ namespace Vital::Sandbox::API {
             Machine* thread_vm = nullptr;
             vm_state* thread_state = nullptr;
 
-            std::string thread_reference() const { 
-                return fmt::format("vm_instance:{}:{}:thread", Owner::base_name, id);
-            }
-
             bool is_alive() const {
                 return thread_state ? true : false;
             }
