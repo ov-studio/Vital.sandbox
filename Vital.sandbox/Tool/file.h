@@ -203,7 +203,7 @@ namespace Vital::Tool::File {
         int last_slash = std::max(pattern_norm.rfind("/"), pattern_norm.rfind("\\"));
         auto dir_part = last_slash >= 0 ? pattern_norm.substr(0, last_slash) : godot::String();
         auto file_part = last_slash >= 0 ? pattern_norm.substr(last_slash + 1) : pattern_norm;
-        bool has_recursive_wildcard = dir_part.find("**") != -1;
+        bool has_recursive_wildcard = dir_part.find("**") != -1 || file_part == "**";
         bool has_single_wildcard = file_part.find("*") != -1;
 
         if (!has_recursive_wildcard && !has_single_wildcard) {
