@@ -39,7 +39,7 @@ namespace Vital::Sandbox::API {
             }
 
             bool is_alive() const {
-                return thread_state ? true : false; 
+                return thread_state ? true : false;
             }
 
             void clean_thread() {
