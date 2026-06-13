@@ -164,7 +164,7 @@ namespace Vital::Sandbox::API {
                 else {
                     self -> get_reference(self -> value_reference("exec"),   true);
                     self -> vm -> move(self -> thread_vm, 1);
-                    self -> get_reference(self -> value_reference("thread"), true);
+                    self -> push_self(self -> vm);
                     self -> vm -> move(self -> thread_vm, 1);
                     safe_resume(self, 1);
                     vm -> push_value(true);
