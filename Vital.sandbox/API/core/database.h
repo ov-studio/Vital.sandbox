@@ -148,7 +148,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string);
 
                 auto name = vm -> get_string(2);
-                auto instance = Database_Query::Instance::init(vm);
+                auto instance = API::Database_Query::Instance::init(vm);
                 instance -> query = self -> db -> table(name);
                 instance -> store();
                 return 1;
