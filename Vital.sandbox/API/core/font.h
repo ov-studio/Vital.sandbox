@@ -54,10 +54,9 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
-
+            
                 auto path = vm -> get_string(1);
-                const std::string base = API::File::get_base(vm, path);
-                if (!Tool::File::exists(base, path)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", path));
+                auto base = API::File::assert_file(vm, path);
                 auto instance = Instance::init(vm);
                 instance -> font = base_class::create(base, path);
                 instance -> store();

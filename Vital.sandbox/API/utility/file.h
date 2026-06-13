@@ -37,6 +37,13 @@ namespace Vital::Sandbox::API {
             return name.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(name);
         }
 
+        static std::string assert_file(Machine* vm, std::string& path) {
+            const std::string original = path;
+            const std::string base = get_base(vm, path);
+            if (!Tool::File::exists(base, path)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", original));
+            return base;
+        }
+    
         static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "exists", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
