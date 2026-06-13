@@ -192,7 +192,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
-                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) { 
+                if (!vm -> is_virtual() || self -> sleeping || self -> awaiting) {
                     vm -> push_value(false);
                     return 1;
                 }
