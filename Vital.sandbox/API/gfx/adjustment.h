@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/API/utility/file.h>
 
 
 /////////////////////////////
@@ -99,10 +100,11 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
-                // TODO: Should use resource relative paths
                 auto path = vm -> get_string(1);
-                auto lut_texture = Vital::Engine::Texture::get_from_reference(path);
-                if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(path, path);
+                auto ref = path;
+                auto base = API::File::assert_file(vm, path);
+                auto lut_texture = Vital::Engine::Texture::get_from_reference(ref);
+                if (!lut_texture) lut_texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
                 godot::Ref<godot::Image> lut_image = lut_texture -> get_texture() -> get_image();
                 int img_w = lut_image -> get_width();
                 int img_h = lut_image -> get_height();
