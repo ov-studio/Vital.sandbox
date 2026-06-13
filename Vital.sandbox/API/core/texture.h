@@ -55,8 +55,9 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
+                auto base = API::File::assert_file(vm, path);
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_texture_2d(path);
+                instance -> texture = base_class::create_texture_2d(base, path);
                 instance -> store();
                 return 1;
             });

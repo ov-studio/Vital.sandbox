@@ -96,7 +96,7 @@ namespace Vital::Engine {
 
 
             // APIs //
-            static Texture* create_texture_2d(const std::string& path, const std::string& reference = "");
+            static Texture* create_texture_2d(const std::string& base, const std::string& path, const std::string& reference = "");
             static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
             static Texture* create_svg(const std::string& path, const std::string& reference = "");
             static Texture* create_svg_from_raw(const std::string& raw, const std::string& reference = "");

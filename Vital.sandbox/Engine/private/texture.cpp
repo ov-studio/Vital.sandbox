@@ -87,8 +87,8 @@ namespace Vital::Engine {
 
 
     // APIs //
-    Texture* Texture::create_texture_2d(const std::string& path, const std::string& reference) {
-        return create_texture_2d_from_buffer(Tool::File::read_binary(Tool::get_directory(), path), reference);
+    Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, const std::string& reference) {
+        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), reference);
     }
 
     Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
