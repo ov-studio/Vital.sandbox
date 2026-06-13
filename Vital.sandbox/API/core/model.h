@@ -98,6 +98,7 @@ namespace Vital::Sandbox::API {
                 const std::string name = vm -> get_string(1);
                 const std::string path = vm -> get_string(2);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
+                // TODO: USE API::FILE::assert_file(vm, path) so it auto detects the asset file and resource base
                 // TODO: SHOULD USE SAME FORMAT FOR RESOURCE PATH AS NAME INSTEAD OF "NAME" but when executed inside same resource it should automatically generate :resourcename/ actually the model.h/cpp should use better storing format map for it imo?? or idk its good
                 Tool::print("warn", resource);
 
