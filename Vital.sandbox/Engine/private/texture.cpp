@@ -110,8 +110,8 @@ namespace Vital::Engine {
         return memnew(Texture({Type::Texture2D, payload}, reference));
     }
 
-    Texture* Texture::create_svg(const std::string& path, const std::string& reference) {
-        return create_svg_from_buffer(Tool::File::read_binary(Tool::get_directory(), path), reference);
+    Texture* Texture::create_svg(const std::string& base, const std::string& path, const std::string& reference) {
+        return create_svg_from_buffer(Tool::File::read_binary(base, path), reference);
     }
 
     Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference) {
