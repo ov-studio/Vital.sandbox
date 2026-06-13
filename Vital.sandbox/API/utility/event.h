@@ -254,7 +254,7 @@ namespace Vital::Sandbox::API {
             auto  thread_vm = root_vm->create_thread();
             instance->thread_vm    = thread_vm;
             instance->thread_state = thread_vm->get_state();
-
+            // STOTRE HERE REFERENCE like thread.h create SELF and Thread....??
             vm->get_raw_reference(exec_ref);
             int n_args = push_args_ref(vm, args_ref);
             vm->move(thread_vm, 1 + n_args);
