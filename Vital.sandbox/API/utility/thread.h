@@ -63,6 +63,18 @@ namespace Vital::Sandbox::API {
         inline static ReplyDispatcher reply_dispatcher;
         static void register_reply_dispatcher(ReplyDispatcher fn) { reply_dispatcher = std::move(fn); }
 
+        static std::shared_ptr<Instance> make(Machine* vm) {
+            auto instance = Instance::init(vm);
+            auto thread_vm = vm -> create_thread();
+            instance -> thread_vm = thread_vm;
+            instance -> thread_state = thread_vm -> get_state();
+            instance -> set_reference(instance -> value_reference("exec"), 1);
+            instance -> set_reference(instance -> value_reference("thread"), 2);
+            vm -> pop(2);
+            instance -> store();
+            return instance;
+        }
+
         static bool safe_resume(std::shared_ptr<Instance> instance, int args) {
             if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
             if (!instance -> vm) {
