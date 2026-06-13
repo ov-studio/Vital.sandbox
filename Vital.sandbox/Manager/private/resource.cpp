@@ -148,6 +148,10 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             rm -> running.insert(name);
+            #if !defined(VSDK_Client)
+            rm -> resource_order.erase(std::remove(rm -> resource_order.begin(), rm -> resource_order.end(), name), rm -> resource_order.end());
+            rm -> resource_order.push_back(name);
+            #endif
         }
         rm -> log("sbox", fmt::format("resource `{}` started", name));
 
@@ -365,7 +369,12 @@ namespace Vital::Manager {
                 am -> unregister_group(name);
             #endif
             was_running = Internal::is_running(name);
-            if (was_running) rm -> running.erase(name);
+            if (was_running) {
+                rm -> running.erase(name);
+                #if !defined(VSDK_Client)
+                rm -> resource_order.erase(std::remove(rm -> resource_order.begin(), rm -> resource_order.end(), name), rm -> resource_order.end());
+                #endif
+            }
             #if defined(VSDK_Client)
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
             #endif
@@ -650,7 +659,7 @@ namespace Vital::Manager {
     void Resource::sync(int peer_id) const {
         Manager::Asset::get_singleton() -> broadcast_manifest(peer_id);
         std::lock_guard<std::mutex> lock(mutex);
-        for (const auto& name : running) {
+        for (const auto& name : resource_order) {
             auto resource = Internal::get_resource(name);
             if (!resource) continue;
             Manager::Network::get_singleton() -> send(Internal::build_packet("resource:started", name, resource), peer_id);
