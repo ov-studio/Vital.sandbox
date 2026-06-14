@@ -37,4 +37,4 @@ jobs:
           pip install conan
           cd Vital.sandbox
           conan profile detect --force
-          conan install . --build=missing -v --settings=compiler.version=194 --settings=compiler.cppstd=17 --settings:build=compiler.version=194 --settings:build=compiler.cppstd=17
+          conan install . --build=missing -v --output-folder=.conan --settings=build_type=Release --settings=compiler.cppstd=17 --settings=compiler.runtime=dynamic --settings=compiler.version=194
