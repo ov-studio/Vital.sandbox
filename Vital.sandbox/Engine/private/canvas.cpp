@@ -163,7 +163,7 @@ namespace Vital::Engine {
                             payload.font,
                             -pivot,
                             payload.text,
-                            payload.alignment.first,
+                            godot::HORIZONTAL_ALIGNMENT_LEFT,
                             payload.rect.size.x,
                             payload.font_size,
                             -1,
@@ -175,7 +175,7 @@ namespace Vital::Engine {
                         payload.font,
                         -pivot,
                         payload.text,
-                        payload.alignment.first,
+                        godot::HORIZONTAL_ALIGNMENT_LEFT,
                         payload.rect.size.x,
                         payload.font_size,
                         -1,
@@ -455,12 +455,15 @@ namespace Vital::Engine {
         payload.rect.position.y += payload.font_ascent;
         payload.text_size = payload.font -> get_multiline_string_size(
             payload.text,
-            payload.alignment.first,
+            godot::HORIZONTAL_ALIGNMENT_LEFT,
             payload.wordwrap ? payload.rect.size.x : -1,
             payload.font_size
         );
+        if (payload.alignment.first == godot::HORIZONTAL_ALIGNMENT_CENTER) payload.rect.position.x += (payload.rect.size.x - payload.text_size.x)*0.5f;
+        else if (payload.alignment.first == godot::HORIZONTAL_ALIGNMENT_RIGHT) payload.rect.position.x += payload.rect.size.x - payload.text_size.x;
         if (payload.alignment.second == godot::VERTICAL_ALIGNMENT_CENTER) payload.rect.position.y += (payload.rect.size.y - payload.text_size.y)*0.5f;
         else if (payload.alignment.second == godot::VERTICAL_ALIGNMENT_BOTTOM) payload.rect.position.y += payload.rect.size.y - payload.text_size.y;
+        payload.rect.size.x = payload.text_size.x;
         payload.rect.size.y = payload.wordwrap ? payload.text_size.y : payload.rect.size.y;
         push({Type::TEXT, payload});
     }
