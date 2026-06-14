@@ -11,6 +11,7 @@ class BuildConan(ConanFile):
         self.requires("soci/4.1.2")
 
     def configure(self):
+        self.conf.define("tools.cmake.cmaketoolchain:generator", "Ninja")
         self.options["libmysqlclient"].shared = False
         self.options["soci"].shared = False
         self.options["soci"].with_mysql = True
