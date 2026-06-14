@@ -36,4 +36,5 @@ jobs:
         run: |
           pip install conan
           cd Vital.sandbox
-          conan install . --build=missing -v
+          conan profile detect --force
+          conan install . --build=missing -v --settings=compiler.version=194
