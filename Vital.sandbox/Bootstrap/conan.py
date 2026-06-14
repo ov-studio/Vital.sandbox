@@ -39,7 +39,8 @@ class Conan:
                 "--output-folder=.conan",
                 "--settings=build_type=Release",
                 "--settings=compiler.cppstd=17",
-                "--settings=compiler.runtime=dynamic"
+                "--settings=compiler.runtime=dynamic",
+                "--settings=compiler.version=194"
             ], "Installing packages")
         ]:
             log_info(f"{label} ...")
