@@ -41,7 +41,7 @@ Vital.sandbox's Lua layer isn't a thin wrapper — it's a full-featured runtime 
 ## Code Signing Policy
 Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
-- **Committers & Reviewers:** [members](https://github.com/orgs/ov-studio/teams/members) — all pull requests from external contributors are reviewed by a team member before merging
-- **Approvers:** [owners](https://github.com/orgs/ov-studio/people?query=role%3Aowner)
+- **Committers & Reviewers:** [Members](https://github.com/orgs/ov-studio/teams/members) — all pull requests from external contributors are reviewed by a team member before merging
+- **Approvers:** [Owners](https://github.com/orgs/ov-studio/people?query=role%3Aowner)
 
 **Privacy policy:** Vital.sandbox may send server information exposed by the server owner to the masterlist solely for server listing purposes. No personal data is collected, stored or shared with any third party.
