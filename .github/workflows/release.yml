@@ -162,7 +162,6 @@ jobs:
               [ ! -d "$target_dir" ] && continue
               target=$(basename "$target_dir")
               zip_name="Vital.sandbox-${TAG}-${platform}-${target}.zip"
-              (cd "$target_dir" && zip -r "${GITHUB_WORKSPACE}/${zip_name}" .)
               (cd "$target_dir" && zip -r "${GITHUB_WORKSPACE}/${zip_name}" . \
                 --exclude "*.TMP" \
                 --exclude "*.tmp" \
