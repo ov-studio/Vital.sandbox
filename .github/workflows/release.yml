@@ -23,6 +23,11 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Install VS 17 2022 Build Tools
+        shell: powershell
+        run: |
+          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -y
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -31,10 +36,14 @@ jobs:
       - name: Install SCons
         run: pip install scons
 
-      - name: Debug Conan install
+      - name: Conan install
         shell: cmd
         run: |
           pip install conan
           cd Vital.sandbox
           conan profile detect --force
-          conan install . --build=missing -v --output-folder=.conan --settings=build_type=Release --settings=compiler.cppstd=17 --settings=compiler.runtime=dynamic --settings=compiler.version=195 --conf=tools.microsoft.msbuild:vs_version=18
+          conan install . --build=missing -v --output-folder=.conan ^
+            --settings=build_type=Release ^
+            --settings=compiler.cppstd=17 ^
+            --settings=compiler.runtime=dynamic ^
+            --settings=compiler.version=194
