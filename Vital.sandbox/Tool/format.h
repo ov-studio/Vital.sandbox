@@ -32,8 +32,9 @@ namespace Vital::Tool::Format {
     template<typename F>
     inline int max_magic_size(const std::vector<Descriptor<F>>& registry) {
         int max = 0;
-        for (const auto& desc : registry)
+        for (const auto& desc : registry) {
             max = std::max(max, static_cast<int>(desc.magic_bytes.size()));
+        }
         return max;
     }
 
