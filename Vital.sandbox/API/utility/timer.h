@@ -29,9 +29,10 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Timer;
             Tool::Timer* timer = nullptr;
+            bool scheduled = false;
 
             bool is_alive() const { 
-                return timer ? true : false; 
+                return timer || scheduled; 
             }
 
             void clean() {
@@ -42,6 +43,7 @@ namespace Vital::Sandbox::API {
                     std::lock_guard<std::mutex> lock(registry.mutex);
                     __timer = instance -> timer;
                     instance -> timer = nullptr;
+                    instance -> scheduled = false;
                 }
                 if (__timer && Tool::Timer::valid(__timer)) __timer -> stop();
                 instance -> release();
@@ -97,12 +99,13 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "next_tick", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
-            
+
                 auto instance = Instance::init(vm);
+                instance -> scheduled = true;
                 instance -> set_reference(instance -> value_reference("exec"), 1);
                 vm -> pop(1);
                 instance -> store();
-            
+
                 auto weak = std::weak_ptr<Instance>(instance);
                 Machine::next_tick([weak]() {
                     auto instance = weak.lock();
