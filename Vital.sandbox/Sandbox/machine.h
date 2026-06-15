@@ -136,6 +136,12 @@ namespace Vital::Sandbox {
                 work_queue.push_back(std::move(exec));
             }
 
+            static void next_tick(std::function<void()> exec) {
+                Engine::Core::get_singleton() -> enqueue([exec = std::move(exec)]() {
+                    enqueue(std::move(exec));
+                });
+            }
+    
             static void drain() {
                 std::vector<std::function<void()>> work;
                 {
