@@ -93,6 +93,26 @@ namespace Vital::Sandbox::API {
                 }
                 return 1;
             });
+
+            API::bind(vm, {base_name}, "next_tick", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(exec)")
+                    .require(1, &Machine::is_function);
+
+                auto instance = Instance::init(vm);
+                instance -> set_reference(instance -> value_reference("exec"), 1);
+                vm -> pop(1);
+                instance -> store();
+
+                auto weak = std::weak_ptr<Instance>(instance);
+                Machine::next_tick([weak]() {
+                    auto instance = weak.lock();
+                    if (!Instance::find_unlocked(instance)) return;
+                    instance -> get_reference(instance -> value_reference("exec"), true);
+                    instance -> vm -> pcall(0, 0);
+                    instance -> clean();
+                });
+                return 0;
+            });
         }
 
         static void clean(const std::string& env) {
