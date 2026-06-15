@@ -26,6 +26,12 @@
 namespace Vital::Sandbox {
     vm_apis Machine::internal_apis = API::make_apis();
 
+    void Machine::next_tick(std::function<void()> exec) {
+        Engine::Core::get_singleton() -> enqueue([exec = std::move(exec)]() {
+            enqueue(std::move(exec));
+        });
+    }
+
     void Machine::bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
         Engine::Core::get_singleton() -> execute([this, scope, name, exec = std::move(exec)]() mutable {
             Tool::assert_main_thread("Machine::bind");
