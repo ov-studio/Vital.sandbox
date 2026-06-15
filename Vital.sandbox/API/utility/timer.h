@@ -97,12 +97,12 @@ namespace Vital::Sandbox::API {
             API::bind(vm, {base_name}, "next_tick", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
-
+            
                 auto instance = Instance::init(vm);
                 instance -> set_reference(instance -> value_reference("exec"), 1);
                 vm -> pop(1);
                 instance -> store();
-
+            
                 auto weak = std::weak_ptr<Instance>(instance);
                 Machine::next_tick([weak]() {
                     auto instance = weak.lock();
@@ -111,7 +111,8 @@ namespace Vital::Sandbox::API {
                     instance -> vm -> pcall(0, 0);
                     instance -> clean();
                 });
-                return 0;
+                vm -> push_value(true);
+                return 1;
             });
         }
 
