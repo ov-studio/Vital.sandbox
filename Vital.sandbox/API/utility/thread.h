@@ -104,8 +104,10 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        static void bind(Machine* vm) {
-            vm_module::register_type<Thread>(vm);
+        static void init(Machine* vm) {
+            static bool initialized = false;
+            if (initialized) return;
+            initialized = true;
 
             Tool::Event::bind("promise:settle", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
@@ -132,6 +134,10 @@ namespace Vital::Sandbox::API {
                     });
                 }
             });
+        }
+
+        static void bind(Machine* vm) {
+            vm_module::register_type<Thread>(vm);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
