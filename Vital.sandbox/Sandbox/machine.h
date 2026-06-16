@@ -157,6 +157,7 @@ namespace Vital::Sandbox {
             bool is_table(int index = 1) { return lua_istable(state, index); }
             bool is_thread(int index = 1) { return lua_isthread(state, index); }
             bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
+            bool is_pointer(int index = 1) { return lua_topointer(state, index) != nullptr; }
             bool is_function(int index = 1) { return lua_isfunction(state, index); }
             bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(make_reference(scope, name)) != reference.end(); }
 
@@ -220,6 +221,7 @@ namespace Vital::Sandbox {
             bool get_metatable(const std::string& index) { return luaL_getmetatable(state, index.c_str()); }
             vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
             void* get_userdata(int index = 1) { return lua_touserdata(state, index); }
+            const void* get_pointer(int index = 1) { return lua_topointer(state, index); }
 
             Machine* get_root() {
                 Machine* root = this;
