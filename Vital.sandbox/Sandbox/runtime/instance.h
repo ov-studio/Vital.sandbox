@@ -165,9 +165,9 @@ namespace Vital::Sandbox {
                 return instance;
             }
 
-            static std::shared_ptr<Derived> make(Machine* vm) {
+            static std::shared_ptr<Derived> make(Machine* vm, bool push_to_stack = false) {
                 auto instance = Derived::init(vm);
-                Derived::store(instance);
+                Derived::store(instance, push_to_stack);
                 return instance;
             }
 
