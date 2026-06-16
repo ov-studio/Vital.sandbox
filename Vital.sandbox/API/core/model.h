@@ -142,7 +142,7 @@ namespace Vital::Sandbox::API {
                 int authority = vm -> is_number(2) ? vm -> get_int(2) : 1;
                 auto instance = Instance::init(vm);
                 instance -> model = base_class::create(name, authority);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
         }

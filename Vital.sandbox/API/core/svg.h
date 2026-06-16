@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
                 auto base = API::File::assert_file(vm, path);
                 auto instance = Instance::init(vm);
                 instance -> texture = base_class::create_svg(base, path);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
 
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                 auto raw = vm -> get_string(1);
                 auto instance = Instance::init(vm);
                 instance -> texture = base_class::create_svg_from_raw(raw);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
         }

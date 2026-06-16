@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
                 auto port = vm -> is_number(5) ? static_cast<unsigned int>(vm -> get_int(5)) : 3306u;
                 auto instance = Instance::init(vm);
                 instance -> db = base_class::create(host, user, password, database, port);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
         }
@@ -149,7 +149,7 @@ namespace Vital::Sandbox::API {
                 auto name = vm -> get_string(2);
                 auto instance = API::Database_Query::Instance::init(vm);
                 instance -> query = self -> db -> table(name);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
         }

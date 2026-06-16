@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
                 auto base = API::File::assert_file(vm, path);
                 auto instance = Instance::init(vm);
                 instance -> texture = base_class::create_texture_2d(base, path);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
 

@@ -63,7 +63,7 @@ namespace Vital::Sandbox::API {
                 }
                 auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
-                instance -> store();
+                instance -> store(true);
                 return 1;
             });
         }
