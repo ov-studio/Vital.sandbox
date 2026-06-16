@@ -200,9 +200,8 @@ namespace Vital::Sandbox::API {
                     
                     auto weak = std::weak_ptr<Instance>(self);
                     Tool::Timer::create([weak](Tool::Timer*, int) {
-                        auto captured = weak;
-                        Machine::enqueue([captured]() {
-                            auto self = captured.lock();
+                        Machine::enqueue([weak]() {
+                            auto self = weak.lock();
                             if (!self || self -> destroyed) return;
                             self -> sleeping = false;
                             if (!self -> vm_owned.load() || !self -> thread_vm) return;
