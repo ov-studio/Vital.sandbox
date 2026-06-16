@@ -259,8 +259,8 @@ namespace Vital::Manager {
 
     #if defined(VSDK_Client)
     bool Resource::Internal::is_pending(const std::string& name) {
-        auto rm = Resource::get_singleton();
-        return rm -> resource_assets.count(name) > 0;
+        auto am = Manager::Asset::get_singleton();
+        return am -> is_group_pending(name);
     }
     #endif
 
