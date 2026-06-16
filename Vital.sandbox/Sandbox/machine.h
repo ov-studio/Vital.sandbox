@@ -544,7 +544,8 @@ namespace Vital::Sandbox {
                 reference.erase(make_reference(scope, name));
             }
 
-            void del_raw_reference(int ref) { 
+            void del_raw_reference(int ref) {
+                if (ref == LUA_NOREF) return;
                 luaL_unref(state, LUA_REGISTRYINDEX, ref);
             }
 
