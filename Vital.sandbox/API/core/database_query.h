@@ -125,7 +125,7 @@ namespace Vital::Sandbox::API {
 
                 if (vm -> is_number(2)) self -> query -> limit = vm -> get_int(2);
                 auto instance_id = self -> id;
-                auto promise_id = API::Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm, true) -> id;
 
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
@@ -196,7 +196,7 @@ namespace Vital::Sandbox::API {
 
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
-                auto promise_id = API::Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
 
                 Tool::Thread::create([promise_id, db, table, actions](Tool::Thread*) {
@@ -222,7 +222,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "drop", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
-                auto promise_id = API::Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
@@ -248,7 +248,7 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "truncate", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> query -> db;
                 auto table = self -> query -> table;
-                auto promise_id = API::Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm, true) -> id;
                 self -> clean();
 
                 Tool::Thread::create([promise_id, db, table](Tool::Thread*) {
@@ -273,7 +273,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "execute", [](auto vm, auto self, auto& id) -> int {
                 auto instance_id = self -> id;
-                auto promise_id = API::Promise::make(vm) -> id;
+                auto promise_id = API::Promise::make(vm, true) -> id;
 
                 Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
