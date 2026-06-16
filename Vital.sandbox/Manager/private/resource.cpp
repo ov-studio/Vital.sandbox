@@ -345,7 +345,6 @@ namespace Vital::Manager {
             #if defined(VSDK_Client)
                 if (!Internal::is_running(name) && !Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot stop `{}` — not running or pending", name)); return false; }
                 if (Internal::is_pending(name)) {
-                    rm -> resource_assets.erase(name);
                     am -> cancel_group(name);
                     rm -> log("sbox", fmt::format("resource `{}` download cancelled", name));
                 }
