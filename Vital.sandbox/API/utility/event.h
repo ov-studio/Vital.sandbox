@@ -46,6 +46,8 @@ namespace Vital::Sandbox::API {
             std::vector<std::pair<int, Handler>> handlers;
         };
 
+        enum class FireMode { Emit, EmitCallback };
+
         struct EmitOptions {
             bool is_remote = false;
             int peer_id = 0;
@@ -212,8 +214,7 @@ namespace Vital::Sandbox::API {
             for (auto& [vref, vh] : it -> second.handlers) {
                 if (vref != ref) continue;
                 vh.subscription_count++;
-                if (vh.subscription_count >= vh.subscription_limit)
-                    exhausted.push_back(ref);
+                if (vh.subscription_count >= vh.subscription_limit) exhausted.push_back(ref);
                 return;
             }
         }
@@ -234,10 +235,8 @@ namespace Vital::Sandbox::API {
 
         static void spawn_thread(Machine* vm, int exec_ref, int args_ref, std::shared_ptr<API::Promise::Instance> promise = nullptr) {
             auto* root_vm = vm -> get_root();
-
-            vm -> get_raw_reference(exec_ref);       // exec at 1; create_thread() will push coroutine at 2
-            auto instance = API::Thread::make(vm);      // anchors exec + coroutine, pops both, stores
-
+            vm -> get_raw_reference(exec_ref);
+            auto instance = API::Thread::make(vm);
             vm -> get_raw_reference(exec_ref);
             int n_args = push_args_ref(vm, args_ref);
             vm -> move(instance -> thread_vm, 1 + n_args);
@@ -252,11 +251,8 @@ namespace Vital::Sandbox::API {
                 API::Promise::settle(p, API::Promise::State::Resolved, root_vm, base, nresults);
                 if (nresults > 0) root_vm -> pop(nresults);
             });
-
             API::Thread::safe_resume(instance, n_args);
         }
-
-        enum class FireMode { Emit, EmitCallback };
 
         static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& h, int args_ref, FireMode mode) {
             std::shared_ptr<API::Promise::Instance> promise;
