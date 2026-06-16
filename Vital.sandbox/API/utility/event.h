@@ -55,7 +55,6 @@ namespace Vital::Sandbox::API {
         };
 
         struct AggState {
-            std::mutex mtx;
             int total;
             std::atomic<int> done { 0 };
             std::vector<std::vector<Tool::StackValue>> results;
