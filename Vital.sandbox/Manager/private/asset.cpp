@@ -76,6 +76,8 @@ namespace Vital::Manager {
         registered_assets.clear();
         spawn_queue.clear();
         #if defined(VSDK_Client)
+        group_pending_counts.clear();
+        group_generations.clear();
         cancel_all();
         active_downloads.clear();
         #else
@@ -292,6 +294,30 @@ namespace Vital::Manager {
 
     #if defined(VSDK_Client)
 
+    // Called on the main thread whenever a single asset becomes ready (cached or downloaded).
+    // Decrements the group's pending count and emits asset:group_ready when it hits zero.
+    void Asset::_on_file_ready(const std::string& path, const std::string& group) {
+        if (group.empty()) return;
+        auto it = group_pending_counts.find(group);
+        if (it == group_pending_counts.end()) return;
+        it -> second--;
+        Tool::print("sbox", fmt::format("Asset: file ready for group `{}` — {} remaining: {}", group, it -> second, path));
+        if (it -> second <= 0) {
+            group_pending_counts.erase(it);
+            Tool::print("sbox", fmt::format("Asset: group `{}` all assets ready", group));
+            // Capture the current generation. If cancel_group/cancel_all bumps it before
+            // the enqueued lambda runs, the emission is a no-op — preventing stale
+            // group_ready callbacks from cancelled downloads corrupting a fresh registration.
+            const uint32_t gen = group_generations[group];
+            Engine::Core::get_singleton() -> enqueue([this, group, gen]() {
+                if (group_generations[group] != gen) return;
+                Tool::Stack args;
+                args.object["group"] = Tool::StackValue(group);
+                Tool::Event::emit("asset:group_ready", args);
+            });
+        }
+    }
+
     void Asset::receive_manifest(const Tool::Stack& arguments) {
         int count = arguments.object.at("asset_count").as<int32_t>();
         int http_port = arguments.object.count("http_port") ? arguments.object.at("http_port").as<int32_t>() : 7778;
@@ -299,17 +325,36 @@ namespace Vital::Manager {
         const std::string server_ip = server_http_ip.empty() ? "127.0.0.1" : server_http_ip;
         const std::string base_url = "http://" + server_ip + ":" + std::to_string(http_port);
 
+        // Build per-group pending counts for this manifest batch before processing,
+        // so _on_file_ready can reliably detect when the last asset in a group lands.
+        // We only count assets that actually need resolution (not already downloading).
+        std::unordered_map<std::string, int> batch_counts;
+        for (int i = 0; i < count; i++) {
+            const std::string path  = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
+            const std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
+            if (group.empty()) continue;
+            if (active_downloads.count(path)) {
+                // Already in flight — attach our group and it will decrement when done.
+                active_downloads[path] -> groups.insert(group);
+            } else {
+                batch_counts[group]++;
+            }
+        }
+        for (auto& [group, n] : batch_counts) {
+            group_generations[group]++;   // invalidate any callbacks from a prior registration
+            group_pending_counts[group] += n;
+        }
+
         std::vector<std::string> to_download;
         std::vector<std::string> up_to_date;
         std::vector<std::string> in_progress;
 
         for (int i = 0; i < count; i++) {
-            std::string path = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
-            std::string hash = arguments.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
-            std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
+            const std::string path  = arguments.object.at("asset_path_"  + std::to_string(i)).as<std::string>();
+            const std::string hash  = arguments.object.at("asset_hash_"  + std::to_string(i)).as<std::string>();
+            const std::string group = arguments.object.count("asset_group_" + std::to_string(i)) ? arguments.object.at("asset_group_" + std::to_string(i)).as<std::string>() : "";
 
             if (active_downloads.count(path)) {
-                active_downloads[path] -> groups.insert(group);
                 in_progress.push_back(path);
                 continue;
             }
@@ -323,10 +368,8 @@ namespace Vital::Manager {
 
             if (hash_matches) {
                 up_to_date.push_back(path);
-                Tool::Stack ready_args;
-                ready_args.object["path"] = Tool::StackValue(path);
-                ready_args.object["cached"] = Tool::StackValue(true);
-                Tool::Event::emit("asset:file_ready", ready_args);
+                // Cached — immediately mark as ready for this group.
+                _on_file_ready(path, group);
             }
             else {
                 to_download.push_back(path);
@@ -358,13 +401,19 @@ namespace Vital::Manager {
     void Asset::download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group) {
         auto dl = std::make_shared<Download>();
         dl -> path = path;
-        dl -> groups.insert(group);
+        if (!group.empty()) dl -> groups.insert(group);
         active_downloads[path] = dl;
 
         const std::string local_base = Tool::get_directory();
         const std::string local_path = local_base + "/" + path;
 
-        dl -> thread = std::thread([this, dl, path, expected_hash, base_url, local_path]() {
+        // Capture generation per group at dispatch time. If the group is cancelled
+        // before this download completes, the generation will have been bumped and
+        // _on_file_ready will be skipped for those groups.
+        std::unordered_map<std::string, uint32_t> dispatch_gens;
+        if (!group.empty()) dispatch_gens[group] = group_generations[group];
+
+        dl -> thread = std::thread([this, dl, path, expected_hash, base_url, local_path, group, dispatch_gens]() {
             std::string response_body;
             try { response_body = Tool::HTTP::get(base_url + "/asset?path=" + path, {}, 60, true, &dl -> cancelled); }
             catch (const std::exception& e) {
@@ -403,14 +452,19 @@ namespace Vital::Manager {
             }
             catch (...) { _on_download_failed(path); return; }
 
+            // Capture the groups this download belonged to before erasing it,
+            // so we can decrement all of them on the main thread.
+            const std::unordered_set<std::string> dl_groups = dl -> groups;
             active_downloads.erase(path);
 
-            Engine::Core::get_singleton() -> enqueue([path]() {
-                Tool::Stack ready_args;
-                ready_args.object["path"] = Tool::StackValue(path);
-                ready_args.object["cached"] = Tool::StackValue(false);
-                Tool::Event::emit("asset:file_ready", ready_args);
-                if (!Asset::get_singleton() -> is_downloading()) {
+            Engine::Core::get_singleton() -> enqueue([this, path, dl_groups, dispatch_gens]() {
+                for (const auto& g : dl_groups) {
+                    // Skip if the group was cancelled after this download was dispatched.
+                    auto gen_it = dispatch_gens.find(g);
+                    if (gen_it != dispatch_gens.end() && group_generations[g] != gen_it -> second) continue;
+                    _on_file_ready(path, g);
+                }
+                if (!is_downloading()) {
                     Tool::print("sbox", "Asset: all assets ready");
                     Tool::Event::emit("asset:ready", {});
                 }
@@ -444,17 +498,22 @@ namespace Vital::Manager {
             dl -> groups.erase(group);
             if (dl -> groups.empty()) { dl -> cancelled.store(true); flagged++; }
         }
+        group_pending_counts.erase(group);
+        group_generations[group]++;
         if (flagged > 0) Tool::print("sbox", fmt::format("Asset: cancelled group `{}` — {} download(s) stopped", group, flagged));
     }
 
     void Asset::cancel_all() {
         if (active_downloads.empty()) return;
         for (auto& [path, dl] : active_downloads) dl -> cancelled.store(true);
+        group_pending_counts.clear();
+        for (auto& [g, gen] : group_generations) gen++;
         Tool::print("sbox", fmt::format("Asset: cancelled all downloads — {} stopped", active_downloads.size()));
     }
 
     bool Asset::is_downloading(const std::string& path) const { return active_downloads.count(path) > 0; }
     bool Asset::is_downloading() const { return !active_downloads.empty(); }
+    bool Asset::is_group_pending(const std::string& group) const { return group_pending_counts.count(group) > 0 && group_pending_counts.at(group) > 0; }
     void Asset::set_server_http_ip(const std::string& ip) { server_http_ip = ip; }
     #endif
 

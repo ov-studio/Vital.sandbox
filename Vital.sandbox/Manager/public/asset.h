@@ -48,11 +48,14 @@ namespace Vital::Manager {
 
             std::unordered_map<std::string, std::shared_ptr<Download>> active_downloads;
             std::unordered_map<std::string, PendingSpawn> spawn_queue;
+            std::unordered_map<std::string, int> group_pending_counts;
+            std::unordered_map<std::string, uint32_t> group_generations;
             std::string server_http_ip;
             void download_file(const std::string& path, const std::string& expected_hash, const std::string& base_url, const std::string& group);
             void _on_download_failed(const std::string& path);
+            void _on_file_ready(const std::string& path, const std::string& group);
             #else
-            std::unordered_map<std::string, int> spawn_queue; // unused on server, kept for symmetry
+            std::unordered_map<std::string, int> spawn_queue; // TODO: unused on server, kept for symmetry, remove it
             std::unique_ptr<httplib::Server> http_server;
             std::thread http_thread;
             int http_port = 7778;
@@ -110,6 +113,7 @@ namespace Vital::Manager {
             void cancel_all();
             bool is_downloading(const std::string& path) const;
             bool is_downloading() const;
+            bool is_group_pending(const std::string& group) const;
             #endif
 
 
