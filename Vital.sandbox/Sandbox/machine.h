@@ -88,6 +88,7 @@ namespace Vital::Sandbox {
                     push_nil();
                     push_global(value);
                 }
+                hook("init");
                 hook("bind");
                 for (auto& [name, source] : Manager::Kit::fetch_modules("lua")) {
                     load_string(source, name);
@@ -511,8 +512,15 @@ namespace Vital::Sandbox {
 
             void hook(const std::string& mode) {
                 Tool::assert_main_thread("Machine::hook");
-                for (auto& i : internal_apis) { mode == "bind" ? i.bind(this) : i.inject(this); }
-                for (auto& i : external_apis) { mode == "bind" ? i.bind(this) : i.inject(this); }
+                auto apply = [&](auto& apis) {
+                    for (auto& i : apis) {
+                        if (mode == "init") i.init(this);
+                        else if (mode == "bind") i.bind(this);
+                        else i.inject(this);
+                    }
+                };
+                apply(internal_apis);
+                apply(external_apis);
             }
 
             void bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec);
