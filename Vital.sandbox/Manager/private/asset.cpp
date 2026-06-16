@@ -150,7 +150,6 @@ namespace Vital::Manager {
     //----------------------------//
 
     #if !defined(VSDK_Client)
-
     bool Asset::start_http_server() {
         if (http_running) return true;
 
@@ -511,14 +510,7 @@ namespace Vital::Manager {
     bool Asset::is_downloading() const { return !active_downloads.empty(); }
     bool Asset::is_group_pending(const std::string& group) const { return group_pending_counts.count(group) > 0 && group_pending_counts.at(group) > 0; }
     void Asset::set_server_http_ip(const std::string& ip) { server_http_ip = ip; }
-    #endif
 
-
-    //----------------//
-    //    Shared      //
-    //----------------//
-
-    #if defined(VSDK_Client)
     void Asset::queue_spawn(const std::string& name, void* placeholder, int authority_peer) {
         spawn_queue[name] = { placeholder, authority_peer };
         Tool::print("sbox", "Asset: queued placeholder spawn -> ", name.c_str());
@@ -536,25 +528,6 @@ namespace Vital::Manager {
             if (!godot::ObjectDB::get_instance(placeholder -> get_instance_id())) return;
             placeholder -> hydrate(authority_peer);
             Tool::print("sbox", fmt::format("Asset: flushed spawn queue for '{}'", loaded_name));
-        });
-    }
-
-    #else
-    // Server-side queue_spawn / flush_spawn_queue are kept for API symmetry but
-    // models on the server are always loaded before create() is called, so these
-    // should rarely be needed. They are no-ops by default.
-    void Asset::queue_spawn(const std::string& name, int authority_peer) {
-        spawn_queue[name] = authority_peer;
-        Tool::print("sbox", "Asset: queued spawn -> ", name.c_str());
-    }
-
-    void Asset::flush_spawn_queue(const std::string& loaded_name) {
-        auto it = spawn_queue.find(loaded_name);
-        if (it == spawn_queue.end()) return;
-        const int authority_peer = it -> second;
-        spawn_queue.erase(it);
-        Engine::Core::get_singleton() -> enqueue([loaded_name, authority_peer]() {
-            Engine::Model::create(loaded_name, authority_peer);
         });
     }
     #endif

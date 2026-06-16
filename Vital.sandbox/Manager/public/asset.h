@@ -114,17 +114,8 @@ namespace Vital::Manager {
             bool is_downloading(const std::string& path) const;
             bool is_downloading() const;
             bool is_group_pending(const std::string& group) const;
-            #endif
-
-
-            // Shared //
-            // Queues a placeholder Model* (client) or authority peer (server) for a named model.
-            // On client: placeholder is an Engine::Model* cast to void* to avoid circular include.
-            #if defined(VSDK_Client)
+            // TODO: REMOVE IT? or move under Model?
             void queue_spawn(const std::string& name, void* placeholder, int authority_peer = 1);
-            void flush_spawn_queue(const std::string& loaded_name);
-            #else
-            void queue_spawn(const std::string& name, int authority_peer);
             void flush_spawn_queue(const std::string& loaded_name);
             #endif
     };
