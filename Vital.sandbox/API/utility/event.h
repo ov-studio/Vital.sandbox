@@ -75,6 +75,7 @@ namespace Vital::Sandbox::API {
             HandlerConfig cfg;
             if (vm -> get_count() < index || !vm -> is_table(index)) return cfg;
             vm -> get_table_field("async", index); cfg.is_async  = vm -> get_bool(-1); vm -> pop(1);
+            vm -> get_table_field("async", index); cfg.is_async = vm -> get_bool(-1); vm -> pop(1);
             vm -> get_table_field("subscription_limit", index);
             if (vm -> is_number(-1)) cfg.sub_limit = std::max(1, vm -> get_int(-1));
             vm -> pop(1);
