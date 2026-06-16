@@ -40,10 +40,7 @@ namespace Vital::Sandbox::API {
 
             void clean() {
                 auto instance = shared_from_this();
-                if (instance->state == State::Pending) {
-                    auto* vm = instance->vm;
-                    if (vm) settle(instance, State::Rejected, vm, 0, 0);
-                }
+                if ((instance -> state == State::Pending) && (instance -> vm)) settle(instance, State::Rejected, instance -> vm, 0, 0);
                 if (!instance -> erase()) return;
                 instance -> waiting.clear();
                 instance -> release();
