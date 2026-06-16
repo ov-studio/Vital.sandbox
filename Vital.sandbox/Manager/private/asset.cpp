@@ -113,9 +113,7 @@ namespace Vital::Manager {
                 Tool::print("sbox", report);
             }
         }
-        catch (...) {
-            Tool::print("error", "Asset: failed to register -> ", path.c_str());
-        }
+        catch (...) { Tool::print("error", "Asset: failed to register -> ", path.c_str()); }
     }
 
     void Asset::register_assets(const std::vector<std::string>& paths, const std::string& group) {
