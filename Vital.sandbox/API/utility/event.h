@@ -163,11 +163,11 @@ namespace Vital::Sandbox::API {
             auto weak_promise = std::weak_ptr<API::Promise::Instance>(promise);
             instance -> thread_vm -> set_finish_hook([weak_promise, root_vm, instance](Machine* thread_vm, int nresults) {
                 instance -> thread_state = nullptr;
-                auto p = weak_promise.lock();
-                if (!p) return;
+                auto promise = weak_promise.lock();
+                if (!promise) return;
                 int base = root_vm -> get_count() + 1;
                 if (nresults > 0) thread_vm -> move(root_vm, nresults);
-                API::Promise::settle(p, API::Promise::State::Resolved, root_vm, base, nresults);
+                API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, nresults);
                 if (nresults > 0) root_vm -> pop(nresults);
             });
             API::Thread::safe_resume(instance, n_args);
@@ -266,9 +266,9 @@ namespace Vital::Sandbox::API {
 
         static std::shared_ptr<API::Promise::Instance> aggregate_promises(Machine* vm, std::vector<std::shared_ptr<API::Promise::Instance>>& per_handler) {
             if (per_handler.empty()) {
-                auto p = API::Promise::make(vm);
-                API::Promise::settle(p, API::Promise::State::Resolved, vm, 0, 0);
-                return p;
+                auto promise = API::Promise::make(vm);
+                API::Promise::settle(promise, API::Promise::State::Resolved, vm, 0, 0);
+                return promise;
             }
             if (per_handler.size() == 1) return per_handler[0];
 
@@ -280,12 +280,12 @@ namespace Vital::Sandbox::API {
             agg_state -> vm = vm -> get_root();
 
             for (int i = 0; i < agg_state -> total; ++i) {
-                auto& p = per_handler[i];
+                auto& promise = per_handler[i];
                 int slot = i;
-                if (p -> state != API::Promise::State::Pending) {
+                if (promise -> state != API::Promise::State::Pending) {
                     auto* root_vm = vm -> get_root();
-                    for (int j = 1; j <= p -> values; ++j) {
-                        root_vm -> get_raw_reference(p -> get_reference(p -> value_reference(j)));
+                    for (int j = 1; j <= promise -> values; ++j) {
+                        root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(j)));
                         std::unordered_set<const void*> vis;
                         agg_state -> results[slot].push_back(root_vm -> collect_value(root_vm -> get_count(), vis));
                         root_vm -> pop(1);
@@ -295,12 +295,12 @@ namespace Vital::Sandbox::API {
                 }
                 {
                     std::lock_guard lock(reply_callbacks_mutex);
-                    reply_callbacks[p -> id] = [agg_state, slot](Machine* root_vm, const Tool::Stack& results) {
+                    reply_callbacks[promise -> id] = [agg_state, slot](Machine* root_vm, const Tool::Stack& results) {
                         agg_state -> results[slot] = results.array;
                         if (++agg_state -> done == agg_state -> total) settle_aggregate(agg_state);
                     };
                 }
-                p -> waiting.push_back(-1);
+                promise -> waiting.push_back(-1);
             }
             return agg;
         }
