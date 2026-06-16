@@ -326,12 +326,9 @@ namespace Vital::Manager {
                 am -> register_assets(asset_paths, name);
                 am -> broadcast_manifest(-1, true);
             }
-            Internal::execute_resource(name);
-            return true;
-        #else
-            Internal::execute_resource(name);
-            return true;
         #endif
+        Internal::execute_resource(name);
+        return true;
     }
 
     bool Resource::Internal::stop(std::string name) {
@@ -600,13 +597,10 @@ namespace Vital::Manager {
                     std::vector<std::string> models;
                     Internal::unpack_manifest(arguments, scripts, files, models);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    if (!Internal::is_running(name)) {
-                        Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
-                    }
+                    if (!Internal::is_running(name)) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
-                    auto rm = Resource::get_singleton();
                     const std::string name = arguments.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Internal::stop(name);
