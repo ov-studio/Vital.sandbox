@@ -589,7 +589,6 @@ namespace Vital::Manager {
         #if defined(VSDK_Client)
             Tool::Event::bind("asset:group_ready", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("group")) return;
-
                 const std::string name = arguments.object.at("group").as<std::string>();
                 {
                     auto rm = Resource::get_singleton();
@@ -602,7 +601,6 @@ namespace Vital::Manager {
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("event") || !arguments.object.count("name")) return;
-
                 const std::string event = arguments.object.at("event").as<std::string>();
                 const std::string name = arguments.object.at("name").as<std::string>();
                 if (event == "resource:started") {
@@ -630,7 +628,6 @@ namespace Vital::Manager {
 
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
-
                 const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
