@@ -127,7 +127,7 @@ namespace Vital::Sandbox::API {
                 auto instance_id = self -> id;
                 auto promise_id = API::Promise::make(vm, true) -> id;
 
-                Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
+                Tool::Thread::create([instance_id, promise_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     auto promise = API::Promise::Instance::find(promise_id);
                     if (!promise) { instance -> clean(); return; }
@@ -275,7 +275,7 @@ namespace Vital::Sandbox::API {
                 auto instance_id = self -> id;
                 auto promise_id = API::Promise::make(vm, true) -> id;
 
-                Tool::Thread::create([promise_id, instance_id](Tool::Thread*) {
+                Tool::Thread::create([instance_id, promise_id](Tool::Thread*) {
                     auto instance = Instance::find(instance_id);
                     auto promise = API::Promise::Instance::find(promise_id);
                     if (!promise) { instance -> clean(); return; }
