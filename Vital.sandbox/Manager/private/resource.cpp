@@ -183,7 +183,7 @@ namespace Vital::Manager {
         auto rm = Resource::get_singleton();
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            if (Internal::is_running(name)) { rm -> log("error", fmt::format("cannot register resource `{}` — already running", name)); return false; }
+            if (Internal::is_running(name)) return false;
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
             Manifest manifest;
             manifest.ref = name;
@@ -594,7 +594,7 @@ namespace Vital::Manager {
                 {
                     auto rm = Resource::get_singleton();
                     std::lock_guard<std::mutex> lock(rm -> mutex);
-                    if (!Internal::is_loaded(name)) return;
+                    if (!Internal::is_loaded(name) || Internal::is_running(name)) return;
                 }
                 log("sbox", fmt::format("resource `{}` all assets ready — executing scripts", name));
                 Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
@@ -627,7 +627,7 @@ namespace Vital::Manager {
             });
         #else
             scan();
-            
+
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
 
