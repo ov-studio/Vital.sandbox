@@ -336,22 +336,27 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            Tool::Event::bind("promise:settle", [](Tool::Stack args) {
-                if (args.array.size() < 2) return;
-                auto promise = args.array[1].as_ptr<API::Promise::Instance>();
-                if (!promise || !args.array[0].is<int32_t>()) return;
-                dispatch_reply(args.array[0].as<int32_t>(), promise);
-            });
-
-            Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
-                if (args.array.size() < 2) return;
-                if (!args.array[0].is<std::string>() || !args.array[1].is<std::shared_ptr<Tool::Stack>>()) return;
-                auto stack = args.array[1].as<std::shared_ptr<Tool::Stack>>();
-                if (!stack) return;
-                auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
-                if (!vm) return;
-                emit_internal(vm, args.array[0].as<std::string>(), *stack);
-            });
+            static bool initialized = false;
+            if (!initialized) {
+                initialized = true;
+        
+                Tool::Event::bind("promise:settle", [](Tool::Stack args) {
+                    if (args.array.size() < 2) return;
+                    if (!args.array[0].is<int32_t>() || !args.array[1].is_ptr<API::Promise::Instance>()) return;
+                    dispatch_reply(args.array[0].as<int32_t>(), args.array[1].as_ptr<API::Promise::Instance>());
+                });
+        
+                Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
+                    if (args.array.size() < 2) return;
+                    if (!args.array[0].is<std::string>() || !args.array[1].is<std::shared_ptr<Tool::Stack>>()) return;
+                    auto stack = args.array[1].as<std::shared_ptr<Tool::Stack>>();
+                    if (!stack) return;
+                    auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!vm) return;
+                    emit_internal(vm, args.array[0].as<std::string>(), *stack);
+                });
+            }
+        
             
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec, config = nil)")
