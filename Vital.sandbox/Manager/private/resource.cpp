@@ -620,7 +620,6 @@ namespace Vital::Manager {
                     if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "resource:stopped") {
-                    if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });
