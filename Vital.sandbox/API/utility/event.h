@@ -54,6 +54,15 @@ namespace Vital::Sandbox::API {
             int args_start = 2;
         };
 
+        struct AggState {
+            std::mutex mtx;
+            int total;
+            std::atomic<int> done { 0 };
+            std::vector<std::vector<Tool::StackValue>> results;
+            std::weak_ptr<API::Promise::Instance> agg_promise;
+            Machine* vm;
+        };
+
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
         inline static std::unordered_map<uint32_t, std::shared_ptr<API::Promise::Instance>> pending_remote;
@@ -64,15 +73,6 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
         inline static std::mutex reply_callbacks_mutex;
 
-        static int store_ref(Machine* vm, int index) {
-            vm -> push(index);
-            return vm -> set_raw_reference(-1);
-        }
-
-        static void free_ref(Machine* vm, int ref) {
-            if (ref != LUA_NOREF) vm -> del_raw_reference(ref);
-        }
-    
         static HandlerConfig read_config(Machine* vm, int index) {
             HandlerConfig cfg;
             if (vm -> get_count() < index || !vm -> is_table(index)) return cfg;
@@ -99,86 +99,8 @@ namespace Vital::Sandbox::API {
             return opts;
         }
 
-        static int store_args_ref(Machine* vm, int from_index) {
-            vm -> create_table();
-            int top   = vm -> get_count() - 1;
-            int count = top - from_index;
-            for (int i = 0; i <= count; ++i) {
-                vm -> push(from_index + i);
-                vm -> set_table_field(i + 1, -2);
-            }
-            return vm -> set_raw_reference(-1);
-        }
-
-        static int push_args_ref(Machine* vm, int args_ref) {
-            vm -> get_raw_reference(args_ref);
-            int table_idx = vm -> get_count();
-            int n = vm -> get_length(table_idx);
-            for (int i = 1; i <= n; ++i)
-                vm -> get_table_field(i, table_idx);
-            vm -> rotate(table_idx, -1);
-            vm -> pop(1);
-            return n;
-        }
-
         static void push_promise(Machine* vm, std::shared_ptr<API::Promise::Instance> promise) {
             vm -> get_raw_reference(promise -> get_reference(promise -> self_reference()));
-        }
-
-        static Tool::StackValue collect_stack_value(Machine* vm, int index, std::unordered_set<const void*>& visited, int depth = 0) {
-            auto* L = vm -> get_state();
-            switch (lua_type(L, index)) {
-                case LUA_TNIL: return Tool::StackValue(nullptr);
-                case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, index));
-                case LUA_TNUMBER: return Tool::StackValue((double)lua_tonumber(L, index));
-                case LUA_TSTRING: return Tool::StackValue(std::string(lua_tostring(L, index)));
-                case LUA_TTABLE: return Tool::StackValue(collect_table(vm, index, visited, depth));
-                default: return Tool::StackValue(nullptr);
-            }
-        }
-
-        static std::shared_ptr<Tool::Stack> collect_table(Machine* vm, int index, std::unordered_set<const void*>& visited, int depth = 0) {
-            auto stack = std::make_shared<Tool::Stack>();
-            if (depth > 32) return stack;
-
-            auto* L = vm -> get_state();
-            const void* ptr = lua_topointer(L, index);
-            if (!ptr || visited.count(ptr)) return stack;
-            visited.insert(ptr);
-
-            lua_pushnil(L);
-            while (lua_next(L, index) != 0) {
-                int key_type = lua_type(L, -2);
-                int val_type = lua_type(L, -1);
-                if (key_type == LUA_TNUMBER) {
-                    int idx = (int)lua_tonumber(L, -2);
-                    if (idx >= 1) {
-                        Tool::StackValue val = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
-                        if (static_cast<int>(stack -> array.size()) < idx)
-                            stack -> array.resize(idx, Tool::StackValue(nullptr));
-                        stack -> array[idx - 1] = val;
-                    }
-                }
-                else if (key_type == LUA_TSTRING) {
-                    if (val_type == LUA_TNIL || 
-                        val_type == LUA_TBOOLEAN || 
-                        val_type == LUA_TNUMBER || 
-                        val_type == LUA_TSTRING || 
-                        val_type == LUA_TTABLE
-                    ) stack -> object[lua_tostring(L, -2)] = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
-                }
-                lua_pop(L, 1);
-            }
-            visited.erase(ptr);
-            return stack;
-        }
-
-        static Tool::Stack collect_serializable(Machine* vm, int from_index) {
-            Tool::Stack payload;
-            std::unordered_set<const void*> visited;
-            int top = vm -> get_count();
-            for (int i = from_index; i <= top; ++i) payload.array.emplace_back(collect_stack_value(vm, i, visited));
-            return payload;
         }
 
         static void send_packet(const Tool::Stack& payload, int peer_id = 0) {
@@ -226,7 +148,7 @@ namespace Vital::Sandbox::API {
             if (it == buffer.end()) return;
             for (auto vit = it -> second.handlers.begin(); vit != it -> second.handlers.end(); ) {
                 if (std::find(dead_refs.begin(), dead_refs.end(), vit -> first) != dead_refs.end()) {
-                    free_ref(vm, vit -> second.exec_ref);
+                    vm -> del_raw_reference(vit -> second.exec_ref);
                     vit = it -> second.handlers.erase(vit);
                 }
                 else ++vit;
@@ -238,7 +160,7 @@ namespace Vital::Sandbox::API {
             vm -> get_raw_reference(exec_ref);
             auto instance = API::Thread::make(vm);
             vm -> get_raw_reference(exec_ref);
-            int n_args = push_args_ref(vm, args_ref);
+            int n_args = vm -> push_args(args_ref);
             vm -> move(instance -> thread_vm, 1 + n_args);
 
             auto weak_promise = std::weak_ptr<API::Promise::Instance>(promise);
@@ -274,11 +196,11 @@ namespace Vital::Sandbox::API {
                 vm -> pop(1);
                 int args_ref_copy = vm -> set_raw_reference(-1);
                 spawn_thread(vm, h.exec_ref, args_ref_copy, promise);
-                free_ref(vm, args_ref_copy);
+                vm -> del_raw_reference(args_ref_copy);
             }
             else {
                 vm -> get_raw_reference(h.exec_ref);
-                int n_args = push_args_ref(vm, args_ref);
+                int n_args = vm -> push_args(args_ref);
                 if (mode == FireMode::EmitCallback) {
                     int base = vm -> get_count() - n_args - 1;
                     if (vm -> pcall(n_args, LUA_MULTRET)) {
@@ -322,65 +244,10 @@ namespace Vital::Sandbox::API {
             int args_ref = vm -> set_raw_reference(-1);
             vm -> pop(vm -> get_count() - stack_top);
             fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
-            free_ref(vm, args_ref);
+            vm -> del_raw_reference(args_ref);
         }
 
-        static std::shared_ptr<API::Promise::Instance> aggregate_promises(Machine* vm, std::vector<std::shared_ptr<API::Promise::Instance>>& per_handler) {
-            if (per_handler.empty()) {
-                auto p = API::Promise::make(vm);
-                vm -> pop(1);
-                API::Promise::settle(p, API::Promise::State::Resolved, vm, 0, 0);
-                return p;
-            }
-            if (per_handler.size() == 1) return per_handler[0];
-
-            // TODO: Move outside to top level?
-            struct AggState {
-                std::mutex mtx;
-                int total;
-                std::atomic<int> done { 0 };
-                std::vector<std::vector<Tool::StackValue>> results;
-                std::weak_ptr<API::Promise::Instance> agg_promise;
-                Machine* vm;
-            };
-
-            auto agg = API::Promise::make(vm);
-            vm -> pop(1);
-            auto state = std::make_shared<AggState>();
-            state -> total = static_cast<int>(per_handler.size());
-            state -> results.resize(state -> total);
-            state -> agg_promise = agg;
-            state -> vm = vm -> get_root();
-
-            for (int i = 0; i < state -> total; ++i) {
-                auto& p = per_handler[i];
-                int slot = i;
-                if (p -> state != API::Promise::State::Pending) {
-                    auto* root_vm = vm -> get_root();
-                    for (int j = 1; j <= p -> values; ++j) {
-                        root_vm -> get_raw_reference(p -> get_reference(p -> value_reference(j)));
-                        std::unordered_set<const void*> vis;
-                        state -> results[slot].push_back(collect_stack_value(root_vm, root_vm -> get_count(), vis));
-                        root_vm -> pop(1);
-                    }
-                    if (++state -> done == state -> total) settle_aggregate(state);
-                    continue;
-                }
-                {
-                    std::lock_guard lock(reply_callbacks_mutex);
-                    reply_callbacks[p -> id] = [state, slot](Machine* root_vm, const Tool::Stack& results) {
-                        state -> results[slot] = results.array;
-                        if (++state -> done == state -> total) settle_aggregate(state);
-                    };
-                }
-                p -> waiting.push_back(-1);
-            }
-            return agg;
-        }
-
-        struct AggState;
-        template<typename T>
-        static void settle_aggregate(std::shared_ptr<T> state) {
+        static void settle_aggregate(std::shared_ptr<AggState> state) {
             Machine::enqueue([state]() {
                 auto agg = state -> agg_promise.lock();
                 if (!agg) return;
@@ -402,6 +269,49 @@ namespace Vital::Sandbox::API {
                 API::Promise::settle(agg, API::Promise::State::Resolved, root_vm, base, 1);
                 root_vm -> pop(1);
             });
+        }
+
+        static std::shared_ptr<API::Promise::Instance> aggregate_promises(Machine* vm, std::vector<std::shared_ptr<API::Promise::Instance>>& per_handler) {
+            if (per_handler.empty()) {
+                auto p = API::Promise::make(vm);
+                vm -> pop(1);
+                API::Promise::settle(p, API::Promise::State::Resolved, vm, 0, 0);
+                return p;
+            }
+            if (per_handler.size() == 1) return per_handler[0];
+
+            auto agg = API::Promise::make(vm);
+            vm -> pop(1);
+            auto agg_state = std::make_shared<AggState>();
+            agg_state -> total = static_cast<int>(per_handler.size());
+            agg_state -> results.resize(agg_state -> total);
+            agg_state -> agg_promise = agg;
+            agg_state -> vm = vm -> get_root();
+
+            for (int i = 0; i < agg_state -> total; ++i) {
+                auto& p = per_handler[i];
+                int slot = i;
+                if (p -> state != API::Promise::State::Pending) {
+                    auto* root_vm = vm -> get_root();
+                    for (int j = 1; j <= p -> values; ++j) {
+                        root_vm -> get_raw_reference(p -> get_reference(p -> value_reference(j)));
+                        std::unordered_set<const void*> vis;
+                        agg_state -> results[slot].push_back(root_vm -> collect_value(root_vm -> get_count(), vis));
+                        root_vm -> pop(1);
+                    }
+                    if (++agg_state -> done == agg_state -> total) settle_aggregate(agg_state);
+                    continue;
+                }
+                {
+                    std::lock_guard lock(reply_callbacks_mutex);
+                    reply_callbacks[p -> id] = [agg_state, slot](Machine* root_vm, const Tool::Stack& results) {
+                        agg_state -> results[slot] = results.array;
+                        if (++agg_state -> done == agg_state -> total) settle_aggregate(agg_state);
+                    };
+                }
+                p -> waiting.push_back(-1);
+            }
+            return agg;
         }
 
         static void register_reply_callback(std::shared_ptr<API::Promise::Instance> promise, ReplyCallback cb) {
@@ -428,7 +338,7 @@ namespace Vital::Sandbox::API {
             std::unordered_set<const void*> visited;
             for (int i = 1; i <= promise -> values; ++i) {
                 root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(i)));
-                results.array.emplace_back(collect_stack_value(root_vm, root_vm -> get_count(), visited));
+                results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
                 root_vm -> pop(1);
             }
             cb(root_vm, results);
@@ -451,7 +361,7 @@ namespace Vital::Sandbox::API {
                 std::string name = vm -> get_string(1);
                 HandlerConfig cfg = read_config(vm, 3);
                 Handler h;
-                h.exec_ref = store_ref(vm, 2);
+                h.exec_ref = vm -> set_raw_reference(2);
                 h.async = cfg.is_async;
                 h.subscription_limit = cfg.sub_limit;
                 h.subscription_count = 0;
@@ -471,8 +381,7 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 bool removed = false;
-                vm -> push(2);
-                int lookup_ref = vm -> set_raw_reference(-1);
+                int lookup_ref = vm -> set_raw_reference(2);
                 {
                     std::lock_guard lock(buffer_mutex);
                     auto it = buffer.find(name);
@@ -484,14 +393,14 @@ namespace Vital::Sandbox::API {
                             bool eq = lua_rawequal(vm -> get_state(), -1, -2);
                             vm -> pop(2);
                             if (!eq) continue;
-                            free_ref(vm, vit -> second.exec_ref);
+                            vm -> del_raw_reference(vit -> second.exec_ref);
                             vec.erase(vit);
                             removed = true;
                             break;
                         }
                     }
                 }
-                free_ref(vm, lookup_ref);
+                vm -> del_raw_reference(lookup_ref);
                 vm -> push_value(removed);
                 return 1;
             });
@@ -502,7 +411,7 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
-                if (opts.is_remote) send_remote_emit(vm, name, collect_serializable(vm, opts.args_start), opts.peer_id, false);
+                if (opts.is_remote) send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, false);
                 else {
                     std::vector<std::pair<int, Handler>> snapshot;
                     {
@@ -511,9 +420,9 @@ namespace Vital::Sandbox::API {
                         if (it != buffer.end()) snapshot = it -> second.handlers;
                     }
                     if (!snapshot.empty()) {
-                        int args_ref = store_args_ref(vm, opts.args_start);
+                        int args_ref = vm -> store_args(opts.args_start);
                         fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
-                        free_ref(vm, args_ref);
+                        vm -> del_raw_reference(args_ref);
                     }
                 }
                 vm -> push_value(true);
@@ -527,7 +436,7 @@ namespace Vital::Sandbox::API {
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
                 if (opts.is_remote) {
-                    auto promise = send_remote_emit(vm, name, collect_serializable(vm, opts.args_start), opts.peer_id, true);
+                    auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true);
                     push_promise(vm, promise);
                     return 1;
                 }
@@ -546,10 +455,10 @@ namespace Vital::Sandbox::API {
                     return 1;
                 }
 
-                int args_ref = store_args_ref(vm, opts.args_start);
+                int args_ref = vm -> store_args(opts.args_start);
                 std::vector<std::shared_ptr<API::Promise::Instance>> promises;
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
-                free_ref(vm, args_ref);
+                vm -> del_raw_reference(args_ref);
                 auto agg = aggregate_promises(vm, promises);
                 push_promise(vm, agg);
                 return 1;
@@ -608,7 +517,7 @@ namespace Vital::Sandbox::API {
             vm -> pop(vm -> get_count() - stack_top);
 
             if (snapshot.empty()) {
-                free_ref(vm, args_ref);
+                vm -> del_raw_reference(args_ref);
                 if (wants_reply) {
                     Tool::Stack reply;
                     reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
@@ -619,13 +528,13 @@ namespace Vital::Sandbox::API {
 
             if (!wants_reply) {
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
-                free_ref(vm, args_ref);
+                vm -> del_raw_reference(args_ref);
                 return;
             }
 
             std::vector<std::shared_ptr<API::Promise::Instance>> promises;
             fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
-            free_ref(vm, args_ref);
+            vm -> del_raw_reference(args_ref);
             if (promises.empty()) return;
 
             auto agg = aggregate_promises(vm, promises);
@@ -647,7 +556,7 @@ namespace Vital::Sandbox::API {
                 auto& vec = eit -> second.handlers;
                 for (auto vit = vec.begin(); vit != vec.end(); ) {
                     if (vit -> second.env == env) {
-                        free_ref(vm, vit -> second.exec_ref);
+                        vm -> del_raw_reference(vit -> second.exec_ref);
                         vit = vec.erase(vit);
                     }
                     else ++vit;
