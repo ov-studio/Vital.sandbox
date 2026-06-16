@@ -573,8 +573,8 @@ namespace Vital::Sandbox::API {
                 if (!promise) return;
 
                 auto* root_vm = vm -> get_root();
-                int   base    = root_vm -> get_count() + 1;
-                int   count   = static_cast<int>(payload.array.size());
+                int base = root_vm -> get_count() + 1;
+                int count = static_cast<int>(payload.array.size());
                 for (auto& v : payload.array) root_vm -> push_value(v);
                 API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, count);
                 if (count > 0) root_vm -> pop(count);
