@@ -343,12 +343,32 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            API::Thread::register_reply_dispatcher([](int promise_id, std::shared_ptr<API::Promise::Instance> promise) {
-                dispatch_reply(promise_id, promise);
+            // Route sentinel -1 promise resumes (from Thread) into dispatch_reply
+            Tool::Event::bind("sandbox:reply", [](Tool::Stack args) {
+                godot::UtilityFunctions::print("sandbox:reply - 0");
+                if (args.array.size() < 2) return;
+                godot::UtilityFunctions::print("sandbox:reply - 1");
+                auto promise = args.array[1].as_ptr<API::Promise::Instance>();
+                if (!promise || !args.array[0].is<int32_t>()) return;
+                godot::UtilityFunctions::print("sandbox:reply - 2");
+                dispatch_reply(args.array[0].as<int32_t>(), promise);
+                godot::UtilityFunctions::print("sandbox:reply - 3");
             });
 
-            Manager::Sandbox::register_signal_dispatcher([](Machine* vm, const std::string& name, const Tool::Stack& stack) {
-                emit_internal(vm, name, stack);
+            // Route engine signals (e.g. entity:created) into Lua event.on handlers
+            Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
+                //godot::UtilityFunctions::print("sandbox:signal - 0");
+                if (args.array.size() < 2) return;
+                //godot::UtilityFunctions::print("sandbox:signal - 1");
+                if (!args.array[0].is<std::string>()) return;
+                //godot::UtilityFunctions::print("sandbox:signal - 2");
+                auto stack = args.array[1].as_ptr<Tool::Stack>();
+                if (!stack) return;
+                //godot::UtilityFunctions::print("sandbox:signal - 3");
+                auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!vm) return;
+                //godot::UtilityFunctions::print("sandbox:signal - 4");
+                emit_internal(vm, args.array[0].as<std::string>(), *stack);
             });
 
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {

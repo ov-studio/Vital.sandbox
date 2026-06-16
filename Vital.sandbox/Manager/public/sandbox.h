@@ -23,15 +23,11 @@
 
 namespace Vital::Manager {
     class Sandbox : public godot::Node {
-        public:
-            using SignalDispatcher = std::function<void(Vital::Sandbox::Machine*, const std::string&, const Tool::Stack&)>;
-            inline static SignalDispatcher signal_dispatcher;
-            static void register_signal_dispatcher(SignalDispatcher fn) { signal_dispatcher = std::move(fn); }
         protected:
             inline static Sandbox* singleton = nullptr;
         private:
-            Vital::Sandbox::Machine* vm = nullptr;
             mutable std::mutex mutex;
+            Vital::Sandbox::Machine* vm = nullptr;
             std::unordered_map<std::string, std::unordered_map<std::string, int>> exports;
         public:
             // Instantiators //
@@ -61,7 +57,10 @@ namespace Vital::Manager {
                 (stack.array.emplace_back(std::forward<Args>(args)), ...);
                 Engine::Core::get_singleton() -> execute([this, name, stack = std::move(stack)]() {
                     Tool::Event::emit(name, stack);
-                    if (signal_dispatcher) signal_dispatcher(vm, name, stack);
+                    Tool::Event::emit("sandbox:signal", Tool::Stack({
+                        Tool::StackValue(name),
+                        Tool::StackValue(std::make_shared<Tool::Stack>(stack))
+                    }));
                 });
             }
 

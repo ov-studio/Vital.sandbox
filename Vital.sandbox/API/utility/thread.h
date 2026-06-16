@@ -58,10 +58,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        using ReplyDispatcher = std::function<void(int promise_id, std::shared_ptr<API::Promise::Instance>)>;
-        inline static ReplyDispatcher reply_dispatcher;
-        static void register_reply_dispatcher(ReplyDispatcher fn) { reply_dispatcher = std::move(fn); }
-
         static std::shared_ptr<Instance> make(Machine* vm) {
             auto instance = Instance::init(vm);
             auto thread_vm = vm -> create_thread();
@@ -112,15 +108,20 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Thread>(vm);
 
             API::Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<API::Promise::Instance> promise) {
+                godot::UtilityFunctions::print("resume dispatch 0");
                 if (thread_id == -1) {
-                    if (reply_dispatcher) {
-                        int pid = promise -> id;
-                        Machine::enqueue([pid, promise]() {
-                            if (reply_dispatcher) reply_dispatcher(pid, promise);
-                        });
-                    }
+                    godot::UtilityFunctions::print("resume dispatch 1");
+                    int pid = promise -> id;
+                    Machine::enqueue([pid, promise]() {
+                        godot::UtilityFunctions::print("sandbox:replying now");
+                        Tool::Event::emit("sandbox:reply", Tool::Stack({
+                            Tool::StackValue(pid),
+                            Tool::StackValue(promise)
+                        }));
+                    });
                     return;
                 }
+                godot::UtilityFunctions::print("resume dispatch 2");
                 Machine::enqueue([thread_id, resolved, promise]() {
                     auto instance = Instance::find(thread_id);
                     if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
