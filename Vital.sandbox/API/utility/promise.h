@@ -48,10 +48,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        using ResumeDispatcher = std::function<void(int thread_id, bool resolved, std::shared_ptr<Instance> promise)>;
-        inline static ResumeDispatcher resume_dispatcher;
-        static void register_resume_dispatcher(ResumeDispatcher exec) { resume_dispatcher = std::move(exec); }
-
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
             if (!Instance::find_unlocked(instance) || !instance -> vm || instance -> values == 0) return 0;
             if (!instance || !instance -> vm || instance -> values == 0) return 0;
@@ -82,9 +78,14 @@ namespace Vital::Sandbox::API {
 
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
-            bool resolved_flag = instance -> resolved;
-            if (!Promise::resume_dispatcher) return;
-            for (int tid : waiting) API::Promise::resume_dispatcher(tid, resolved_flag, instance);
+            bool resolved = instance -> resolved;
+            for (int tid : waiting) {
+                Tool::Event::emit("promise:resume", Tool::Stack({
+                    Tool::StackValue(tid),
+                    Tool::StackValue(resolved),
+                    Tool::StackValue(instance)
+                }));
+            }
         }
 
         static std::shared_ptr<Instance> make(Machine* vm, bool push_to_stack = false) {
