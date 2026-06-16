@@ -52,9 +52,7 @@ namespace Vital::Manager {
             mutable std::mutex mutex;
             std::vector<Manifest> resources;
             std::unordered_set<std::string> running;
-            #if defined(VSDK_Client)
-            std::unordered_map<std::string, std::unordered_set<std::string>> resource_assets;
-            #else
+            #if !defined(VSDK_Client)
             std::vector<std::string> resource_order;
             #endif
 
