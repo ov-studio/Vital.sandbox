@@ -562,6 +562,7 @@ namespace Vital::Sandbox {
             int push_args_ref(int args_ref) {
                 get_raw_reference(args_ref);
             int push_args(int ref) {
+                get_raw_reference(ref);
                 int table_idx = get_count();
                 int n = get_length(table_idx);
                 for (int i = 1; i <= n; ++i) get_table_field(i, table_idx);
