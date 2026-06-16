@@ -336,16 +336,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            // Route sentinel -1 promise resumes (from Thread) into dispatch_reply
             Tool::Event::bind("sandbox:reply", [](Tool::Stack args) {
-                godot::UtilityFunctions::print("sandbox:reply - 0");
                 if (args.array.size() < 2) return;
-                godot::UtilityFunctions::print("sandbox:reply - 1");
                 auto promise = args.array[1].as_ptr<API::Promise::Instance>();
                 if (!promise || !args.array[0].is<int32_t>()) return;
-                godot::UtilityFunctions::print("sandbox:reply - 2");
                 dispatch_reply(args.array[0].as<int32_t>(), promise);
-                godot::UtilityFunctions::print("sandbox:reply - 3");
             });
 
             // Route engine signals (e.g. entity:created) into Lua event.on handlers
