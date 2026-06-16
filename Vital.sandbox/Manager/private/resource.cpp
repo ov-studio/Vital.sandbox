@@ -629,7 +629,7 @@ namespace Vital::Manager {
             scan();
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
-                
+
                 const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
