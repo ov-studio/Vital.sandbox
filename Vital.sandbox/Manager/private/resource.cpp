@@ -691,17 +691,6 @@ namespace Vital::Manager {
         return Tool::get_directory("resources", name);
     }
 
-    std::vector<Resource::Script> Resource::get_resource_scripts(const std::string& name, const std::string& type) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        std::vector<Script> result;
-        auto resource = Internal::get_resource(name);
-        if (!resource) return result;
-        for (const auto& script : resource -> scripts) {
-            if (type.empty() || script.type == type) result.push_back(script);
-        }
-        return result;
-    }
-
     std::vector<const Resource::Manifest*> Resource::get_resources(State type) const {
         std::lock_guard<std::mutex> lock(mutex);
         return Internal::get_resources(type);
