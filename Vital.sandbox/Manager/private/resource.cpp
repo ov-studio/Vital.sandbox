@@ -584,18 +584,8 @@ namespace Vital::Manager {
             Tool::Event::bind("asset:group_ready", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("group")) return;
                 const std::string name = arguments.object.at("group").as<std::string>();
-                auto rm = Resource::get_singleton();
-                bool should_execute;
-                {
-                    std::lock_guard<std::mutex> lock(rm -> mutex);
-                    should_execute = Internal::is_loaded(name) && !Internal::is_running(name);
-                }
-                if (!should_execute) {
-                    rm -> log("sbox", fmt::format("resource `{}` group ready but skipping execute (stopped or already running)", name));
-                    return;
-                }
                 log("sbox", fmt::format("resource `{}` all assets ready — executing scripts", name));
-                Internal::execute_resource(name);
+                Internal::start(name);
             });
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
