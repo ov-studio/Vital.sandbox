@@ -80,6 +80,7 @@ namespace Vital::Manager {
             resource = Internal::get_resource(name);
         }
         if (!resource) return false;
+
         std::vector<std::string> errors;
         for (const auto& script : resource -> scripts) {
             #if defined(VSDK_Client)
@@ -112,6 +113,7 @@ namespace Vital::Manager {
             resource = Internal::get_resource(name);
         }
         if (!resource) return;
+
         vm -> create_environment(name);
         vm -> pop(1);
         for (const auto& [src, source] : sources) {
@@ -130,7 +132,7 @@ namespace Vital::Manager {
             resource = Internal::get_resource(name);
         }
         if (!resource) return;
-    
+
         #if !defined(VSDK_Client)
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
