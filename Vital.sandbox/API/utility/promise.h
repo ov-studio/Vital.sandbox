@@ -80,7 +80,7 @@ namespace Vital::Sandbox::API {
             instance -> waiting.clear();
             bool resolved = instance -> resolved;
             for (int tid : waiting) {
-                Tool::Event::emit("promise:resume", Tool::Stack({
+                Tool::Event::emit("promise:settle", Tool::Stack({
                     Tool::StackValue(tid),
                     Tool::StackValue(resolved),
                     Tool::StackValue(instance)

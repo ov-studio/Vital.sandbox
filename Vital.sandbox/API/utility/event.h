@@ -296,7 +296,7 @@ namespace Vital::Sandbox::API {
             if (initialized) return;
             initialized = true;
             
-            Tool::Event::bind("promise:settle", [](Tool::Stack args) {
+            Tool::Event::bind("promise:reply", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
                 if (!args.array[0].is_ptr<API::Promise::Instance>()) return;
 

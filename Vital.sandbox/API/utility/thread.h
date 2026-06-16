@@ -107,7 +107,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm);
 
-            Tool::Event::bind("promise:resume", [](Tool::Stack args) {
+            Tool::Event::bind("promise:settle", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
                 int thread_id = args.array[0].as<int32_t>();
                 bool resolved = args.array[1].as<bool>();
@@ -116,7 +116,7 @@ namespace Vital::Sandbox::API {
 
                 if (thread_id == -1) {
                     Machine::enqueue([promise]() {
-                        Tool::Event::emit("promise:settle", Tool::Stack({
+                        Tool::Event::emit("promise:reply", Tool::Stack({
                             Tool::StackValue(promise)
                         }));
                     });
