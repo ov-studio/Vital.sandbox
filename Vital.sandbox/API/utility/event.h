@@ -291,68 +291,69 @@ namespace Vital::Sandbox::API {
             promise -> waiting.push_back(-1);
         }
 
-        static void bind(Machine* vm) {
+        static void init(Machine* vm) {
             static bool initialized = false;
-            if (!initialized) {
-                initialized = true;
+            if (initialized) return;
+            initialized = true;
+            
+            Tool::Event::bind("promise:settle", [](Tool::Stack args) {
+                if (args.array.size() < 1) return;
+                if (!args.array[0].is_ptr<API::Promise::Instance>()) return;
 
-                Tool::Event::bind("promise:settle", [](Tool::Stack args) {
-                    if (args.array.size() < 1) return;
-                    if (!args.array[0].is_ptr<API::Promise::Instance>()) return;
-
-                    auto promise = args.array[0].as_ptr<API::Promise::Instance>();
-                    ReplyCallback cb;
-                    {
-                        std::lock_guard lock(reply_callbacks_mutex);
-                        auto it = reply_callbacks.find(promise -> id);
-                        if (it == reply_callbacks.end()) return;
-                        cb = std::move(it -> second);
-                        reply_callbacks.erase(it);
-                    }
-                    auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
-                    if (!root_vm || !cb) return;
-                    
-                    Tool::Stack results;
-                    std::unordered_set<const void*> visited;
-                    for (int i = 1; i <= promise -> values; ++i) {
-                        root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(i)));
-                        results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
-                        root_vm -> pop(1);
-                    }
-                    cb(root_vm, results);
-                });
-
-                Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
-                    if (args.array.size() < 2) return;
-                    if (!args.array[0].is<std::string>() || !args.array[1].is<std::shared_ptr<Tool::Stack>>()) return;
-                    auto stack = args.array[1].as<std::shared_ptr<Tool::Stack>>();
-                    if (!stack) return;
-                    auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
-                    if (!vm) return;
+                auto promise = args.array[0].as_ptr<API::Promise::Instance>();
+                ReplyCallback cb;
+                {
+                    std::lock_guard lock(reply_callbacks_mutex);
+                    auto it = reply_callbacks.find(promise -> id);
+                    if (it == reply_callbacks.end()) return;
+                    cb = std::move(it -> second);
+                    reply_callbacks.erase(it);
+                }
+                auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!root_vm || !cb) return;
                 
-                    std::string name = args.array[0].as<std::string>();
-                    std::vector<std::pair<int, Handler>> snapshot;
-                    {
-                        std::lock_guard lock(buffer_mutex);
-                        auto it = buffer.find(name);
-                        if (it != buffer.end()) snapshot = it -> second.handlers;
-                    }
-                    if (snapshot.empty()) return;
+                Tool::Stack results;
+                std::unordered_set<const void*> visited;
+                for (int i = 1; i <= promise -> values; ++i) {
+                    root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(i)));
+                    results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
+                    root_vm -> pop(1);
+                }
+                cb(root_vm, results);
+            });
 
-                    int stack_top = vm -> get_count();
-                    vm -> create_table();
-                    int outer_idx = vm -> get_count();
-                    for (int i = 0; i < static_cast<int>(stack -> array.size()); ++i) {
-                        vm -> push_value(stack -> array[i]);
-                        vm -> set_table_field(i + 1, outer_idx);
-                    }
-                    int args_ref = vm -> set_raw_reference(-1);
-                    vm -> pop(vm -> get_count() - stack_top);
-                    fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
-                    vm -> del_raw_reference(args_ref);
-                });
-            }
+            Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
+                if (args.array.size() < 2) return;
+                if (!args.array[0].is<std::string>() || !args.array[1].is<std::shared_ptr<Tool::Stack>>()) return;
+                auto stack = args.array[1].as<std::shared_ptr<Tool::Stack>>();
+                if (!stack) return;
+                auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!vm) return;
+            
+                std::string name = args.array[0].as<std::string>();
+                std::vector<std::pair<int, Handler>> snapshot;
+                {
+                    std::lock_guard lock(buffer_mutex);
+                    auto it = buffer.find(name);
+                    if (it != buffer.end()) snapshot = it -> second.handlers;
+                }
+                if (snapshot.empty()) return;
 
+                int stack_top = vm -> get_count();
+                vm -> create_table();
+                int outer_idx = vm -> get_count();
+                for (int i = 0; i < static_cast<int>(stack -> array.size()); ++i) {
+                    vm -> push_value(stack -> array[i]);
+                    vm -> set_table_field(i + 1, outer_idx);
+                }
+                int args_ref = vm -> set_raw_reference(-1);
+                vm -> pop(vm -> get_count() - stack_top);
+                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+                vm -> del_raw_reference(args_ref);
+            });
+        }
+
+        static void bind(Machine* vm) {
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec, config = nil)")
                     .require(1, &Machine::is_string)
