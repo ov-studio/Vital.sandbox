@@ -70,12 +70,7 @@ namespace Vital::Sandbox::API {
         static void free_ref(Machine* vm, int ref) {
             if (ref != LUA_NOREF) vm -> del_raw_reference(ref);
         }
-
-        struct HandlerConfig {
-            bool is_async  = false;
-            int  sub_limit = 0;
-        };
-
+    
         static HandlerConfig read_config(Machine* vm, int index) {
             HandlerConfig cfg;
             if (vm -> get_count() < index || !vm -> is_table(index)) return cfg;
