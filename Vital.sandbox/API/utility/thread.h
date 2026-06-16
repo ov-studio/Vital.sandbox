@@ -109,8 +109,7 @@ namespace Vital::Sandbox::API {
 
             API::Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<API::Promise::Instance> promise) {
                 if (thread_id == -1) {
-                    int pid = promise -> id;
-                    Machine::enqueue([pid, promise]() {
+                    Machine::enqueue([promise]() {
                         Tool::Event::emit("promise:settle", Tool::Stack({
                             Tool::StackValue(promise)
                         }));
