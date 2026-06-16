@@ -599,8 +599,7 @@ namespace Vital::Sandbox {
                         int idx = get_int(-2);
                         if (idx >= 1) {
                             Tool::StackValue val = collect_value(get_count(), visited, depth + 1);
-                            if (static_cast<int>(stack -> array.size()) < idx)
-                                stack -> array.resize(idx, Tool::StackValue(nullptr));
+                            if (static_cast<int>(stack -> array.size()) < idx) stack -> array.resize(idx, Tool::StackValue(nullptr));
                             stack -> array[idx - 1] = val;
                         }
                     }
