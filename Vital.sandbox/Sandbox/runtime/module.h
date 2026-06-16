@@ -29,6 +29,7 @@ namespace Vital::Sandbox {
         public:
             inline static constexpr bool has_remote = false;
             inline static constexpr bool has_streaming = false;
+            static void init(Machine* vm) {}
             static void bind(Machine* vm) {}
             static void methods(Machine* vm) {}
             static void inject(Machine* vm) {}
@@ -38,6 +39,7 @@ namespace Vital::Sandbox {
             static vm_api make_api() {
                 Machine::register_environment_cleaner([](const std::string& env) { T::clean(env); });
                 return {
+                    [](Machine* vm) { T::init(vm); },
                     [](Machine* vm) { T::bind(vm); },
                     [](Machine* vm) { T::inject(vm); }
                 };

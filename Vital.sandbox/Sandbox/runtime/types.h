@@ -44,6 +44,7 @@ namespace Vital::Sandbox {
     using vm_method = std::function<int(Machine*, void*, const std::string&)>;
 
     struct vm_api {
+        std::function<void(Machine*)> init;
         std::function<void(Machine*)> bind;
         std::function<void(Machine*)> inject;
     };
