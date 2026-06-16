@@ -575,9 +575,9 @@ namespace Vital::Sandbox {
             Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
                 switch (lua_type(state, index)) {
                     case LUA_TNIL: return Tool::StackValue(nullptr);
-                    case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(state, index));
-                    case LUA_TNUMBER: return Tool::StackValue((double)lua_tonumber(state, index));
-                    case LUA_TSTRING: return Tool::StackValue(std::string(lua_tostring(state, index)));
+                    case LUA_TBOOLEAN: return Tool::StackValue(get_bool(index));
+                    case LUA_TNUMBER: return Tool::StackValue(get_double(index));
+                    case LUA_TSTRING: return Tool::StackValue(get_string(index));
                     case LUA_TTABLE: return Tool::StackValue(collect_table(index, visited, depth));
                     default: return Tool::StackValue(nullptr);
                 }
