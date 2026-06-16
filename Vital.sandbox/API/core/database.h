@@ -60,9 +60,8 @@ namespace Vital::Sandbox::API {
 
         static base_class::SchemaActions read_schema_actions(Machine* vm, int index, base_class::SchemaAction::Type action) {
             base_class::SchemaActions actions;
-            auto state = vm -> get_state();
             vm -> push_nil();
-            while (lua_next(state, index)) {
+            while (vm -> next(index)) {
                 if (!vm -> is_string(-2) || !vm -> is_table(-1)) { vm -> pop(1); continue; }
                 auto column = vm -> get_string(-2);
                 actions.push_back({action, column, read_schema_definition(vm, vm -> get_count())});
@@ -105,11 +104,10 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
 
-                auto state = vm -> get_state();
                 auto table = vm -> get_string(2);
                 base_class::TableSchema columns;
                 vm -> push_nil();
-                while (lua_next(state, 3)) {
+                while (vm -> next(3)) {
                     if (!vm -> is_string(-2) || !vm -> is_table(-1)) { vm -> pop(1); continue; }
                     auto column = vm -> get_string(-2);
                     columns[column] = read_schema_definition(vm, vm -> get_count());
