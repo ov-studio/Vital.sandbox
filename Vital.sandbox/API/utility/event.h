@@ -538,7 +538,6 @@ namespace Vital::Sandbox::API {
                     auto it = buffer.find(name);
                     if (it != buffer.end()) snapshot = it -> second.handlers;
                 }
-
                 if (snapshot.empty()) {
                     auto promise = API::Promise::make(vm);
                     vm -> pop(1);
