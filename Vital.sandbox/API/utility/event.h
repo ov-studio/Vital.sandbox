@@ -464,7 +464,7 @@ namespace Vital::Sandbox::API {
                 }
                 if (snapshot.empty()) {
                     auto promise = API::Promise::make(vm);
-                    vm -> pop(1);
+                    // NOTE: no pop(1) — Promise::make -> store() -> set_reference pops internally.
                     API::Promise::settle(promise, API::Promise::State::Resolved, vm, 0, 0);
                     push_promise(vm, promise);
                     return 1;
