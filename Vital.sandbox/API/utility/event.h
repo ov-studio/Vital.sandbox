@@ -54,7 +54,6 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
-
         inline static std::unordered_map<uint32_t, std::shared_ptr<API::Promise::Instance>> pending_remote;
         inline static std::mutex pending_remote_mutex;
         inline static std::atomic<uint32_t> serial_counter { 0 };
@@ -62,11 +61,6 @@ namespace Vital::Sandbox::API {
         using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
         inline static std::mutex reply_callbacks_mutex;
-
-
-        // ----------------------------------------------------------------
-        // Helpers
-        // ----------------------------------------------------------------
 
         static int store_ref(Machine* vm, int index) {
             vm -> push(index);
