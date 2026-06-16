@@ -313,28 +313,6 @@ namespace Vital::Sandbox::API {
             promise -> waiting.push_back(-1);
         }
 
-        static void dispatch_reply(int promise_id, std::shared_ptr<API::Promise::Instance> promise) {
-            ReplyCallback cb;
-            {
-                std::lock_guard lock(reply_callbacks_mutex);
-                auto it = reply_callbacks.find(promise_id);
-                if (it == reply_callbacks.end()) return;
-                cb = std::move(it -> second);
-                reply_callbacks.erase(it);
-            }
-            auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
-            if (!root_vm || !cb) return;
-
-            Tool::Stack results;
-            std::unordered_set<const void*> visited;
-            for (int i = 1; i <= promise -> values; ++i) {
-                root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(i)));
-                results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
-                root_vm -> pop(1);
-            }
-            cb(root_vm, results);
-        }
-
         static void bind(Machine* vm) {
             static bool initialized = false;
             if (!initialized) {
@@ -343,7 +321,29 @@ namespace Vital::Sandbox::API {
                 Tool::Event::bind("promise:settle", [](Tool::Stack args) {
                     if (args.array.size() < 2) return;
                     if (!args.array[0].is<int32_t>() || !args.array[1].is_ptr<API::Promise::Instance>()) return;
-                    dispatch_reply(args.array[0].as<int32_t>(), args.array[1].as_ptr<API::Promise::Instance>());
+
+                    int promise_id = args.array[0].as<int32_t>();
+                    auto promise = args.array[1].as_ptr<API::Promise::Instance>();
+                    ReplyCallback cb;
+                    {
+                        std::lock_guard lock(reply_callbacks_mutex);
+                        auto it = reply_callbacks.find(promise_id);
+                        if (it == reply_callbacks.end()) return;
+                        cb = std::move(it -> second);
+                        reply_callbacks.erase(it);
+                    }
+
+                    auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
+                    if (!root_vm || !cb) return;
+
+                    Tool::Stack results;
+                    std::unordered_set<const void*> visited;
+                    for (int i = 1; i <= promise -> values; ++i) {
+                        root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(i)));
+                        results.array.emplace_back(root_vm -> collect_value(root_vm -> get_count(), visited));
+                        root_vm -> pop(1);
+                    }
+                    cb(root_vm, results);
                 });
         
                 Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
