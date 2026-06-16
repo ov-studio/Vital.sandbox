@@ -610,9 +610,9 @@ namespace Vital::Sandbox {
                             val_type == LUA_TNUMBER ||
                             val_type == LUA_TSTRING ||
                             val_type == LUA_TTABLE
-                        ) stack -> object[lua_tostring(state, -2)] = collect_value(lua_gettop(state), visited, depth + 1);
+                        ) stack -> object[get_string(-2)] = collect_value(get_count(), visited, depth + 1);
                     }
-                    lua_pop(state, 1);
+                    pop(1);
                 }
                 visited.erase(ptr);
                 return stack;
