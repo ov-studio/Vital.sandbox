@@ -183,10 +183,10 @@ namespace Vital::Sandbox::API {
 
         static void send_packet(const Tool::Stack& payload, int peer_id = 0) {
             #if defined(VSDK_Client)
-                Vital::Manager::Network::get_singleton() -> send_to_server(payload);
+                Manager::Network::get_singleton() -> send_to_server(payload);
             #else
-                if (peer_id > 0) Vital::Manager::Network::get_singleton() -> send(payload, peer_id);
-                else Vital::Manager::Network::get_singleton() -> broadcast(payload);
+                if (peer_id > 0) Manager::Network::get_singleton() -> send(payload, peer_id);
+                else Manager::Network::get_singleton() -> broadcast(payload);
             #endif
         }
 
