@@ -271,14 +271,12 @@ namespace Vital::Sandbox::API {
         static std::shared_ptr<API::Promise::Instance> aggregate_promises(Machine* vm, std::vector<std::shared_ptr<API::Promise::Instance>>& per_handler) {
             if (per_handler.empty()) {
                 auto p = API::Promise::make(vm);
-                vm -> pop(1);
                 API::Promise::settle(p, API::Promise::State::Resolved, vm, 0, 0);
                 return p;
             }
             if (per_handler.size() == 1) return per_handler[0];
 
             auto agg = API::Promise::make(vm);
-            vm -> pop(1);
             auto agg_state = std::make_shared<AggState>();
             agg_state -> total = static_cast<int>(per_handler.size());
             agg_state -> results.resize(agg_state -> total);
