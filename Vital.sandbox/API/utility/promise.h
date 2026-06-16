@@ -68,7 +68,20 @@ namespace Vital::Sandbox::API {
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
             instance -> values = args_count;
-            for (int i = 0; i < args_count; ++i) instance -> set_reference(instance -> value_reference(i + 1), args_start + i);
+
+            auto* store_vm = instance -> vm; // refs always stored on instance's vm (root)
+            if (store_vm -> get_state() != vm -> get_state() && args_count > 0) {
+                // Values are on a thread state; xmove them to root, store refs, then pop
+                int root_base = store_vm -> get_count() + 1;
+                for (int i = 0; i < args_count; ++i) vm -> push(args_start + i);
+                lua_xmove(vm -> get_state(), store_vm -> get_state(), args_count);
+                for (int i = 0; i < args_count; ++i) instance -> set_reference(instance -> value_reference(i + 1), root_base + i);
+                store_vm -> pop(args_count);
+            }
+            else {
+                for (int i = 0; i < args_count; ++i) instance -> set_reference(instance -> value_reference(i + 1), args_start + i);
+            }
+
             auto waiting = instance -> waiting;
             instance -> waiting.clear();
             bool resolved_flag = instance -> resolved;
