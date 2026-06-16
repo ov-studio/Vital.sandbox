@@ -559,8 +559,6 @@ namespace Vital::Sandbox {
                 return set_raw_reference(-1);
             }
 
-            int push_args_ref(int args_ref) {
-                get_raw_reference(args_ref);
             int push_args(int ref) {
                 get_raw_reference(ref);
                 int table_idx = get_count();
