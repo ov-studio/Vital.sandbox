@@ -610,12 +610,9 @@ namespace Vital::Manager {
                     std::vector<std::string> models;
                     Internal::unpack_manifest(arguments, scripts, files, models);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    bool already;
-                    {
-                        std::lock_guard<std::mutex> lock(rm -> mutex);
-                        already = Internal::is_running(name) || Internal::is_pending(name);
+                    if (!Internal::is_running(name)) {
+                        Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                     }
-                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
