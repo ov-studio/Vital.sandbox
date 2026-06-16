@@ -691,17 +691,17 @@ namespace Vital::Manager {
         return Internal::get_resource(name);
     }
 
-    std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
-        Tool::assert_main_thread("Resource::get_resource_from_vm");
-        return vm -> get_environment_id();
-    }
-
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
         if (!is_name(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid resource name");
         if (require_running && !get_singleton() -> is_running(name)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: resource `{}` not running", name));
         return Tool::get_directory("resources", name);
     }
 
+    std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
+        Tool::assert_main_thread("Resource::get_resource_from_vm");
+        return vm -> get_environment_id();
+    }
+    
     std::vector<const Resource::Manifest*> Resource::get_resources(State type) const {
         std::lock_guard<std::mutex> lock(mutex);
         return Internal::get_resources(type);
