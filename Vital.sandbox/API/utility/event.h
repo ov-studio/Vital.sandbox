@@ -30,10 +30,10 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "event";
 
         struct Handler {
-            int         exec_ref           = LUA_NOREF;
-            bool        async              = false;
-            int         subscription_limit = 0;
-            int         subscription_count = 0;
+            int exec_ref = LUA_NOREF;
+            bool async = false;
+            int subscription_limit = 0;
+            int subscription_count = 0;
             std::string env;
         };
 
@@ -42,9 +42,14 @@ namespace Vital::Sandbox::API {
         };
 
         struct EmitOptions {
-            bool is_remote  = false;
-            int  peer_id    = 0;
+            bool is_remote = false;
+            int  peer_id = 0;
             int  args_start = 2;
+        };
+
+        struct HandlerConfig {
+            bool is_async  = false;
+            int  sub_limit = 0;
         };
 
         inline static std::unordered_map<std::string, EventEntry> buffer;
