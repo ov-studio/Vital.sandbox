@@ -681,7 +681,7 @@ namespace Vital::Sandbox {
                 visited.insert(ptr);
 
                 push_nil();
-                while (lua_next(state, index) != 0) {
+                while (next(index)) {
                     int key_type = lua_type(state, -2);
                     int val_type = lua_type(state, -1);
                     if (key_type == LUA_TNUMBER) {
