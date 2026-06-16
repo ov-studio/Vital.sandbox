@@ -108,7 +108,6 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Thread>(vm);
 
             API::Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<API::Promise::Instance> promise) {
-                godot::UtilityFunctions::print("resume dispatch 0");
                 if (thread_id == -1) {
                     godot::UtilityFunctions::print("resume dispatch 1");
                     int pid = promise -> id;
@@ -119,17 +118,18 @@ namespace Vital::Sandbox::API {
                             Tool::StackValue(promise)
                         }));
                     });
-                    return;
                 }
-                godot::UtilityFunctions::print("resume dispatch 2");
-                Machine::enqueue([thread_id, resolved, promise]() {
-                    auto instance = Instance::find(thread_id);
-                    if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
-                    instance -> thread_vm -> push_bool(resolved);
-                    int values = API::Promise::push_values(promise, instance -> thread_vm);
-                    instance -> awaiting = false;
-                    safe_resume(instance, 1 + values);
-                });
+                else {
+                    godot::UtilityFunctions::print("resume dispatch 2");
+                    Machine::enqueue([thread_id, resolved, promise]() {
+                        auto instance = Instance::find(thread_id);
+                        if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
+                        instance -> thread_vm -> push_bool(resolved);
+                        int values = API::Promise::push_values(promise, instance -> thread_vm);
+                        instance -> awaiting = false;
+                        safe_resume(instance, 1 + values);
+                    });
+                }
             });
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
