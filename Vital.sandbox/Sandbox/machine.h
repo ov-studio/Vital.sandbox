@@ -570,7 +570,7 @@ namespace Vital::Sandbox {
                 pop(1);
                 return n;
             }
-        
+
             bool resume(int count = 0) {
                 Tool::assert_main_thread("Machine::resume");
                 if (!is_virtual()) return false;
@@ -686,7 +686,7 @@ namespace Vital::Sandbox {
                     if (key_type == LUA_TNUMBER) {
                         int idx = get_int(-2);
                         if (idx >= 1) {
-                            Tool::StackValue val = collect_value(get_count(), visited, depth + 1);
+                            auto val = collect_value(get_count(), visited, depth + 1);
                             if (static_cast<int>(stack -> array.size()) < idx) stack -> array.resize(idx, Tool::StackValue(nullptr));
                             stack -> array[idx - 1] = val;
                         }
