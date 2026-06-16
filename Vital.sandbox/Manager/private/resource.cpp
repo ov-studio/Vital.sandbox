@@ -587,7 +587,7 @@ namespace Vital::Manager {
                 auto rm = Resource::get_singleton();
                 bool should_execute;
                 {
-                    std::lock_guard<std::mutex> lock(rm -> mutex)
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
                     should_execute = Internal::is_loaded(name) && !Internal::is_running(name);
                 }
                 if (!should_execute) {
@@ -610,7 +610,12 @@ namespace Vital::Manager {
                     std::vector<std::string> models;
                     Internal::unpack_manifest(arguments, scripts, files, models);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                    bool already;
+                    {
+                        std::lock_guard<std::mutex> lock(rm -> mutex);
+                        already = Internal::is_running(name) || Internal::is_pending(name);
+                    }
+                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
