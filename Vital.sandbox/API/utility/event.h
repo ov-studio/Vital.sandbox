@@ -117,7 +117,6 @@ namespace Vital::Sandbox::API {
                 uint32_t serial = ++serial_counter;
                 payload.object["__serial"] = Tool::StackValue(static_cast<double>(serial));
                 promise = API::Promise::make(vm);
-                vm -> pop(1);
                 {
                     std::lock_guard lock(pending_remote_mutex);
                     pending_remote[serial] = promise;
