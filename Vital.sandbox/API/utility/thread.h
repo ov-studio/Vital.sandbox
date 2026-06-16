@@ -109,10 +109,8 @@ namespace Vital::Sandbox::API {
 
             API::Promise::register_resume_dispatcher([](int thread_id, bool resolved, std::shared_ptr<API::Promise::Instance> promise) {
                 if (thread_id == -1) {
-                    godot::UtilityFunctions::print("resume dispatch 1");
                     int pid = promise -> id;
                     Machine::enqueue([pid, promise]() {
-                        godot::UtilityFunctions::print("sandbox:replying now");
                         Tool::Event::emit("sandbox:reply", Tool::Stack({
                             Tool::StackValue(pid),
                             Tool::StackValue(promise)
@@ -120,7 +118,6 @@ namespace Vital::Sandbox::API {
                     });
                 }
                 else {
-                    godot::UtilityFunctions::print("resume dispatch 2");
                     Machine::enqueue([thread_id, resolved, promise]() {
                         auto instance = Instance::find(thread_id);
                         if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return;
