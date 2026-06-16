@@ -552,8 +552,7 @@ namespace Vital::Sandbox {
             // Args Refs //
             int store_args_ref(int from_index) {
                 create_table();
-                int top = get_count() - 1;
-                int count = top - from_index;
+                int count = get_count() - from_index - 1;
                 for (int i = 0; i <= count; ++i) {
                     push(from_index + i);
                     set_table_field(i + 1, -2);
