@@ -595,15 +595,18 @@ namespace Vital::Manager {
                 {
                     auto rm = Resource::get_singleton();
                     std::lock_guard<std::mutex> lock(rm -> mutex);
+                    if (!Internal::is_loaded(name)) return;
+                }
+                Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
             });
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
-                if (!arguments.object.count("event")) return;
+                if (!arguments.object.count("event") || !arguments.object.count("name")) return;
+
                 const std::string event = arguments.object.at("event").as<std::string>();
+                const std::string name = arguments.object.at("name").as<std::string>();
                 if (event == "resource:started") {
-                    if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
-                    const std::string name = arguments.object.at("name").as<std::string>();
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
                     std::vector<std::string> models;
@@ -619,7 +622,6 @@ namespace Vital::Manager {
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
                     auto rm = Resource::get_singleton();
-                    const std::string name = arguments.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
                     Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });
                 }
@@ -628,6 +630,7 @@ namespace Vital::Manager {
             scan();
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
+                
                 const int peer_id = arguments.array[0].as<int32_t>();
                 Engine::Core::get_singleton() -> enqueue([peer_id]() { Manager::Resource::get_singleton() -> sync(peer_id); });
             });
