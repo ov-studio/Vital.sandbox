@@ -111,7 +111,7 @@ namespace Vital::Sandbox::API {
         static int push_args_ref(Machine* vm, int args_ref) {
             vm -> get_raw_reference(args_ref);
             int table_idx = vm -> get_count();
-            int n         = vm -> get_length(table_idx);
+            int n = vm -> get_length(table_idx);
             for (int i = 1; i <= n; ++i)
                 vm -> get_table_field(i, table_idx);
             vm -> rotate(table_idx, -1);
@@ -126,12 +126,12 @@ namespace Vital::Sandbox::API {
         static Tool::StackValue collect_stack_value(Machine* vm, int index, std::unordered_set<const void*>& visited, int depth = 0) {
             auto* L = vm -> get_state();
             switch (lua_type(L, index)) {
-                case LUA_TNIL:     return Tool::StackValue(nullptr);
+                case LUA_TNIL: return Tool::StackValue(nullptr);
                 case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, index));
-                case LUA_TNUMBER:  return Tool::StackValue((double)lua_tonumber(L, index));
-                case LUA_TSTRING:  return Tool::StackValue(std::string(lua_tostring(L, index)));
-                case LUA_TTABLE:   return Tool::StackValue(collect_table(vm, index, visited, depth));
-                default:           return Tool::StackValue(nullptr);
+                case LUA_TNUMBER: return Tool::StackValue((double)lua_tonumber(L, index));
+                case LUA_TSTRING: return Tool::StackValue(std::string(lua_tostring(L, index)));
+                case LUA_TTABLE: return Tool::StackValue(collect_table(vm, index, visited, depth));
+                default: return Tool::StackValue(nullptr);
             }
         }
 
@@ -156,14 +156,17 @@ namespace Vital::Sandbox::API {
                             stack -> array.resize(idx, Tool::StackValue(nullptr));
                         stack -> array[idx - 1] = val;
                     }
-                } else if (key_type == LUA_TSTRING) {
-                    if (val_type == LUA_TNIL || val_type == LUA_TBOOLEAN ||
-                        val_type == LUA_TNUMBER || val_type == LUA_TSTRING || val_type == LUA_TTABLE)
-                        stack -> object[lua_tostring(L, -2)] = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
+                }
+                else if (key_type == LUA_TSTRING) {
+                    if (val_type == LUA_TNIL || 
+                        val_type == LUA_TBOOLEAN || 
+                        val_type == LUA_TNUMBER || 
+                        val_type == LUA_TSTRING || 
+                        val_type == LUA_TTABLE
+                    ) stack -> object[lua_tostring(L, -2)] = collect_stack_value(vm, lua_gettop(L), visited, depth + 1);
                 }
                 lua_pop(L, 1);
             }
-
             visited.erase(ptr);
             return stack;
         }
