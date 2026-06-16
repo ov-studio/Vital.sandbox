@@ -387,12 +387,12 @@ namespace Vital::Manager {
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             snapshot = rm -> running;
+            #if defined(VSDK_Client)
+            for (const auto& resource : rm -> resources) {
+                if (!snapshot.count(resource.ref) && Internal::is_pending(resource.ref)) snapshot.insert(resource.ref);
+            }
+            #endif
         }
-        #if defined(VSDK_Client)
-        for (const auto& resource : rm -> resources) {
-            if (!snapshot.count(resource.ref) && Internal::is_pending(resource.ref)) snapshot.insert(resource.ref);
-        }
-        #endif
         for (const auto& name : snapshot) if (stop(name)) count++;
         rm -> log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
     }
