@@ -175,11 +175,7 @@ namespace Vital::Sandbox::API {
 
         static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& h, int args_ref, FireMode mode) {
             std::shared_ptr<API::Promise::Instance> promise;
-            if (mode == FireMode::EmitCallback) {
-                promise = API::Promise::make(vm);
-                vm -> pop(1);
-            }
-
+            if (mode == FireMode::EmitCallback) promise = API::Promise::make(vm);
             if (h.async) {
                 vm -> get_raw_reference(args_ref);
                 vm -> create_table();
