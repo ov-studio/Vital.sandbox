@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                Thread::make(vm, true)
+                Thread::make(vm, true);
                 return 1;
             });
 
