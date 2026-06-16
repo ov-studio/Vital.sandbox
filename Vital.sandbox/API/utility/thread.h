@@ -111,7 +111,7 @@ namespace Vital::Sandbox::API {
                 if (thread_id == -1) {
                     int pid = promise -> id;
                     Machine::enqueue([pid, promise]() {
-                        Tool::Event::emit("sandbox:reply", Tool::Stack({
+                        Tool::Event::emit("promise:settle", Tool::Stack({
                             Tool::StackValue(pid),
                             Tool::StackValue(promise)
                         }));
