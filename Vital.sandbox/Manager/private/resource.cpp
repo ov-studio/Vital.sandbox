@@ -332,8 +332,6 @@ namespace Vital::Manager {
             rm -> log("sbox", fmt::format("resource `{}` queued — waiting for asset:group_ready", name));
             return true;
         #endif
-        Internal::execute_resource(name);
-        return true;
     }
 
     bool Resource::Internal::stop(std::string name) {
