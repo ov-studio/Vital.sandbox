@@ -582,25 +582,21 @@ namespace Vital::Manager {
         initialized = true;
         
         #if defined(VSDK_Client)
-            Tool::Event::bind("asset:file_ready", [this](Tool::Stack arguments) {
-                if (!arguments.object.count("path")) return;
-                const std::string path = arguments.object.at("path").as<std::string>();
+            Tool::Event::bind("asset:group_ready", [this](Tool::Stack arguments) {
+                if (!arguments.object.count("group")) return;
+                const std::string name = arguments.object.at("group").as<std::string>();
                 auto rm = Resource::get_singleton();
-                std::string ready_name;
+                bool should_execute;
                 {
-                    std::lock_guard<std::mutex> lock(rm -> mutex);
-                    for (auto& [name, remaining] : rm -> resource_assets) {
-                        if (!remaining.count(path)) continue;
-                        remaining.erase(path);
-                        if (remaining.empty()) ready_name = name;
-                        break;
-                    }
-                    if (!ready_name.empty()) rm -> resource_assets.erase(ready_name);
+                    std::lock_guard<std::mutex> lock(rm -> mutex)
+                    should_execute = Internal::is_loaded(name) && !Internal::is_running(name);
                 }
-                if (!ready_name.empty()) {
-                    log("sbox", fmt::format("resource `{}` all assets downloaded — executing scripts", ready_name));
-                    Internal::start(ready_name);
+                if (!should_execute) {
+                    rm -> log("sbox", fmt::format("resource `{}` group ready but skipping execute (stopped or already running)", name));
+                    return;
                 }
+                log("sbox", fmt::format("resource `{}` all assets ready — executing scripts", name));
+                Internal::execute_resource(name);
             });
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
