@@ -321,34 +321,31 @@ namespace Vital::Sandbox::API {
             }
             int args_ref = vm -> set_raw_reference(-1);
             vm -> pop(vm -> get_count() - stack_top);
-
             fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
             free_ref(vm, args_ref);
         }
 
         static std::shared_ptr<API::Promise::Instance> aggregate_promises(Machine* vm, std::vector<std::shared_ptr<API::Promise::Instance>>& per_handler) {
-
             if (per_handler.empty()) {
                 auto p = API::Promise::make(vm);
                 vm -> pop(1);
                 API::Promise::settle(p, API::Promise::State::Resolved, vm, 0, 0);
                 return p;
             }
-
             if (per_handler.size() == 1) return per_handler[0];
 
+            // TODO: Move outside to top level?
             struct AggState {
-                std::mutex                                          mtx;
-                int                                                 total;
-                std::atomic<int>                                    done { 0 };
-                std::vector<std::vector<Tool::StackValue>>          results;
-                std::weak_ptr<API::Promise::Instance>                    agg_promise;
-                Machine*                                            vm;
+                std::mutex mtx;
+                int total;
+                std::atomic<int> done { 0 };
+                std::vector<std::vector<Tool::StackValue>> results;
+                std::weak_ptr<API::Promise::Instance> agg_promise;
+                Machine* vm;
             };
 
             auto agg = API::Promise::make(vm);
             vm -> pop(1);
-
             auto state = std::make_shared<AggState>();
             state -> total = static_cast<int>(per_handler.size());
             state -> results.resize(state -> total);
@@ -424,7 +421,6 @@ namespace Vital::Sandbox::API {
                 cb = std::move(it -> second);
                 reply_callbacks.erase(it);
             }
-
             auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!root_vm || !cb) return;
 
@@ -454,7 +450,6 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 HandlerConfig cfg = read_config(vm, 3);
-
                 Handler h;
                 h.exec_ref = store_ref(vm, 2);
                 h.async = cfg.is_async;
@@ -476,7 +471,6 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 bool removed = false;
-
                 vm -> push(2);
                 int lookup_ref = vm -> set_raw_reference(-1);
                 {
@@ -508,7 +502,6 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
-
                 if (opts.is_remote) send_remote_emit(vm, name, collect_serializable(vm, opts.args_start), opts.peer_id, false);
                 else {
                     std::vector<std::pair<int, Handler>> snapshot;
