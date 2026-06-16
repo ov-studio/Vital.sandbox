@@ -179,7 +179,11 @@ namespace Vital::Manager {
         auto rm = Resource::get_singleton();
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            if (Internal::is_running(name) || Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot register resource `{}` — already running or pending", name)); return false; }
+            if (Internal::is_running(name) || Internal::is_pending(name)) {
+                rm -> log("sbox", fmt::format("resource `{}` start deferred — still running or pending", name));
+                Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                return false;
+            }
             rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
             Manifest manifest;
             manifest.ref = name;
@@ -613,9 +617,7 @@ namespace Vital::Manager {
                     bool already;
                     {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
-                        already = Internal::is_running(name) || Internal::is_pending(name);
-                    }
-                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                    Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
