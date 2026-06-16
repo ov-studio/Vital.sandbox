@@ -343,22 +343,16 @@ namespace Vital::Sandbox::API {
                 dispatch_reply(args.array[0].as<int32_t>(), promise);
             });
 
-            // Route engine signals (e.g. entity:created) into Lua event.on handlers
             Tool::Event::bind("sandbox:signal", [](Tool::Stack args) {
-                //godot::UtilityFunctions::print("sandbox:signal - 0");
                 if (args.array.size() < 2) return;
-                //godot::UtilityFunctions::print("sandbox:signal - 1");
-                if (!args.array[0].is<std::string>()) return;
-                //godot::UtilityFunctions::print("sandbox:signal - 2");
-                auto stack = args.array[1].as_ptr<Tool::Stack>();
+                if (!args.array[0].is<std::string>() || !args.array[1].is<std::shared_ptr<Tool::Stack>>()) return;
+                auto stack = args.array[1].as<std::shared_ptr<Tool::Stack>>();
                 if (!stack) return;
-                //godot::UtilityFunctions::print("sandbox:signal - 3");
                 auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
-                //godot::UtilityFunctions::print("sandbox:signal - 4");
                 emit_internal(vm, args.array[0].as<std::string>(), *stack);
             });
-
+            
             API::bind(vm, {base_name}, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec, config = nil)")
                     .require(1, &Machine::is_string)
