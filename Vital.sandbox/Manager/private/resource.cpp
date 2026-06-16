@@ -388,6 +388,11 @@ namespace Vital::Manager {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             snapshot = rm -> running;
         }
+        #if defined(VSDK_Client)
+        for (const auto& resource : rm -> resources) {
+            if (!snapshot.count(resource.ref) && Internal::is_pending(resource.ref)) snapshot.insert(resource.ref);
+        }
+        #endif
         for (const auto& name : snapshot) if (stop(name)) count++;
         rm -> log("sbox", fmt::format("all resources stopped — {} resource(s) stopped", count));
     }
@@ -597,7 +602,14 @@ namespace Vital::Manager {
                     std::vector<std::string> models;
                     Internal::unpack_manifest(arguments, scripts, files, models);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
-                    if (!Internal::is_running(name)) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                    bool already;
+                    {
+                        std::lock_guard<std::mutex> lock(rm -> mutex);
+                        already = Internal::is_running(name);
+                    }
+                    if (!already) {
+                        Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                    }
                 }
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
