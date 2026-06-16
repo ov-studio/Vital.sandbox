@@ -596,7 +596,7 @@ namespace Vital::Sandbox {
                     int key_type = lua_type(state, -2);
                     int val_type = lua_type(state, -1);
                     if (key_type == LUA_TNUMBER) {
-                        int idx = (int)lua_tonumber(state, -2);
+                        int idx = get_int(-2);
                         if (idx >= 1) {
                             Tool::StackValue val = collect_value(get_count(), visited, depth + 1);
                             if (static_cast<int>(stack -> array.size()) < idx)
