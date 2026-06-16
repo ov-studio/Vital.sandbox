@@ -299,6 +299,7 @@ namespace Vital::Sandbox::API {
                 Tool::Event::bind("promise:settle", [](Tool::Stack args) {
                     if (args.array.size() < 2) return;
                     if (!args.array[0].is<int32_t>() || !args.array[1].is_ptr<API::Promise::Instance>()) return;
+
                     int promise_id = args.array[0].as<int32_t>();
                     auto promise = args.array[1].as_ptr<API::Promise::Instance>();
                     ReplyCallback cb;
@@ -311,6 +312,7 @@ namespace Vital::Sandbox::API {
                     }
                     auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
                     if (!root_vm || !cb) return;
+
                     Tool::Stack results;
                     std::unordered_set<const void*> visited;
                     for (int i = 1; i <= promise -> values; ++i) {
@@ -328,6 +330,7 @@ namespace Vital::Sandbox::API {
                     if (!stack) return;
                     auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
                     if (!vm) return;
+                
                     std::string name = args.array[0].as<std::string>();
                     std::vector<std::pair<int, Handler>> snapshot;
                     {
@@ -336,6 +339,7 @@ namespace Vital::Sandbox::API {
                         if (it != buffer.end()) snapshot = it -> second.handlers;
                     }
                     if (snapshot.empty()) return;
+
                     int stack_top = vm -> get_count();
                     vm -> create_table();
                     int outer_idx = vm -> get_count();
