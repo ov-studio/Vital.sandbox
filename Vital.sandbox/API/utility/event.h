@@ -31,7 +31,7 @@ namespace Vital::Sandbox::API {
 
         struct HandlerConfig {
             bool is_async  = false;
-            int  sub_limit = 0;
+            int sub_limit = 0;
         };
 
         struct Handler {
@@ -48,8 +48,8 @@ namespace Vital::Sandbox::API {
 
         struct EmitOptions {
             bool is_remote = false;
-            int  peer_id = 0;
-            int  args_start = 2;
+            int peer_id = 0;
+            int args_start = 2;
         };
 
         inline static std::unordered_map<std::string, EventEntry> buffer;
