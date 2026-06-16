@@ -549,6 +549,84 @@ namespace Vital::Sandbox {
                 luaL_unref(state, LUA_REGISTRYINDEX, ref);
             }
 
+            int store_args_ref(int from_index) {
+                create_table();
+                int top = get_count() - 1;
+                int count = top - from_index;
+                for (int i = 0; i <= count; ++i) {
+                    push(from_index + i);
+                    set_table_field(i + 1, -2);
+                }
+                return set_raw_reference(-1);
+            }
+
+            int push_args_ref(int args_ref) {
+                get_raw_reference(args_ref);
+                int table_idx = get_count();
+                int n = get_length(table_idx);
+                for (int i = 1; i <= n; ++i) get_table_field(i, table_idx);
+                rotate(table_idx, -1);
+                pop(1);
+                return n;
+            }
+
+
+            // Serialization //
+            Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
+                auto* L = get_state();
+                switch (lua_type(L, index)) {
+                    case LUA_TNIL: return Tool::StackValue(nullptr);
+                    case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, index));
+                    case LUA_TNUMBER: return Tool::StackValue((double)lua_tonumber(L, index));
+                    case LUA_TSTRING: return Tool::StackValue(std::string(lua_tostring(L, index)));
+                    case LUA_TTABLE: return Tool::StackValue(collect_table(index, visited, depth));
+                    default: return Tool::StackValue(nullptr);
+                }
+            }
+
+            std::shared_ptr<Tool::Stack> collect_table(int index, std::unordered_set<const void*>& visited, int depth = 0) {
+                auto stack = std::make_shared<Tool::Stack>();
+                if (depth > 32) return stack;
+
+                auto* L = get_state();
+                const void* ptr = lua_topointer(L, index);
+                if (!ptr || visited.count(ptr)) return stack;
+                visited.insert(ptr);
+
+                lua_pushnil(L);
+                while (lua_next(L, index) != 0) {
+                    int key_type = lua_type(L, -2);
+                    int val_type = lua_type(L, -1);
+                    if (key_type == LUA_TNUMBER) {
+                        int idx = (int)lua_tonumber(L, -2);
+                        if (idx >= 1) {
+                            Tool::StackValue val = collect_value(lua_gettop(L), visited, depth + 1);
+                            if (static_cast<int>(stack -> array.size()) < idx) stack -> array.resize(idx, Tool::StackValue(nullptr));
+                            stack -> array[idx - 1] = val;
+                        }
+                    }
+                    else if (key_type == LUA_TSTRING) {
+                        if (val_type == LUA_TNIL ||
+                            val_type == LUA_TBOOLEAN ||
+                            val_type == LUA_TNUMBER ||
+                            val_type == LUA_TSTRING ||
+                            val_type == LUA_TTABLE
+                        ) stack -> object[lua_tostring(L, -2)] = collect_value(lua_gettop(L), visited, depth + 1);
+                    }
+                    lua_pop(L, 1);
+                }
+                visited.erase(ptr);
+                return stack;
+            }
+
+            Tool::Stack collect_args(int from_index) {
+                Tool::Stack payload;
+                std::unordered_set<const void*> visited;
+                int top = get_count();
+                for (int i = from_index; i <= top; ++i) payload.array.emplace_back(collect_value(i, visited));
+                return payload;
+            }
+
             bool resume(int count = 0) {
                 Tool::assert_main_thread("Machine::resume");
                 if (!is_virtual()) return false;
