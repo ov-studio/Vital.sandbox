@@ -329,7 +329,7 @@ namespace Vital::Manager {
             Internal::execute_resource(name);
             return true;
         #else
-            rm -> log("sbox", fmt::format("resource `{}` queued — waiting for asset:group_ready", name));
+            Internal::execute_resource(name);
             return true;
         #endif
     }
