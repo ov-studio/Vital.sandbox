@@ -549,6 +549,7 @@ namespace Vital::Sandbox {
                 luaL_unref(state, LUA_REGISTRYINDEX, ref);
             }
 
+            // Args Refs //
             int store_args_ref(int from_index) {
                 create_table();
                 int top = get_count() - 1;
@@ -570,15 +571,13 @@ namespace Vital::Sandbox {
                 return n;
             }
 
-
             // Serialization //
             Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
-                auto* L = get_state();
-                switch (lua_type(L, index)) {
+                switch (lua_type(state, index)) {
                     case LUA_TNIL: return Tool::StackValue(nullptr);
-                    case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(L, index));
-                    case LUA_TNUMBER: return Tool::StackValue((double)lua_tonumber(L, index));
-                    case LUA_TSTRING: return Tool::StackValue(std::string(lua_tostring(L, index)));
+                    case LUA_TBOOLEAN: return Tool::StackValue((bool)lua_toboolean(state, index));
+                    case LUA_TNUMBER: return Tool::StackValue((double)lua_tonumber(state, index));
+                    case LUA_TSTRING: return Tool::StackValue(std::string(lua_tostring(state, index)));
                     case LUA_TTABLE: return Tool::StackValue(collect_table(index, visited, depth));
                     default: return Tool::StackValue(nullptr);
                 }
@@ -588,20 +587,20 @@ namespace Vital::Sandbox {
                 auto stack = std::make_shared<Tool::Stack>();
                 if (depth > 32) return stack;
 
-                auto* L = get_state();
-                const void* ptr = lua_topointer(L, index);
+                const void* ptr = lua_topointer(state, index);
                 if (!ptr || visited.count(ptr)) return stack;
                 visited.insert(ptr);
 
-                lua_pushnil(L);
-                while (lua_next(L, index) != 0) {
-                    int key_type = lua_type(L, -2);
-                    int val_type = lua_type(L, -1);
+                lua_pushnil(state);
+                while (lua_next(state, index) != 0) {
+                    int key_type = lua_type(state, -2);
+                    int val_type = lua_type(state, -1);
                     if (key_type == LUA_TNUMBER) {
-                        int idx = (int)lua_tonumber(L, -2);
+                        int idx = (int)lua_tonumber(state, -2);
                         if (idx >= 1) {
-                            Tool::StackValue val = collect_value(lua_gettop(L), visited, depth + 1);
-                            if (static_cast<int>(stack -> array.size()) < idx) stack -> array.resize(idx, Tool::StackValue(nullptr));
+                            Tool::StackValue val = collect_value(lua_gettop(state), visited, depth + 1);
+                            if (static_cast<int>(stack -> array.size()) < idx)
+                                stack -> array.resize(idx, Tool::StackValue(nullptr));
                             stack -> array[idx - 1] = val;
                         }
                     }
@@ -611,9 +610,9 @@ namespace Vital::Sandbox {
                             val_type == LUA_TNUMBER ||
                             val_type == LUA_TSTRING ||
                             val_type == LUA_TTABLE
-                        ) stack -> object[lua_tostring(L, -2)] = collect_value(lua_gettop(L), visited, depth + 1);
+                        ) stack -> object[lua_tostring(state, -2)] = collect_value(lua_gettop(state), visited, depth + 1);
                     }
-                    lua_pop(L, 1);
+                    lua_pop(state, 1);
                 }
                 visited.erase(ptr);
                 return stack;
