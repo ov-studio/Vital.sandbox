@@ -136,8 +136,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                auto instance = Thread::make(vm);
-                instance -> push_self(vm);
+                Thread::make(vm, true);
                 return 1;
             });
 
