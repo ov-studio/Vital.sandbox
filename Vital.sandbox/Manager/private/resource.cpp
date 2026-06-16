@@ -589,9 +589,12 @@ namespace Vital::Manager {
         #if defined(VSDK_Client)
             Tool::Event::bind("asset:group_ready", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("group")) return;
+
                 const std::string name = arguments.object.at("group").as<std::string>();
                 log("sbox", fmt::format("resource `{}` all assets ready — executing scripts", name));
-                Internal::start(name);
+                {
+                    auto rm = Resource::get_singleton();
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
             });
 
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
