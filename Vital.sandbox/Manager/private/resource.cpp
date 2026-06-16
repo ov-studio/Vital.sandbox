@@ -615,7 +615,7 @@ namespace Vital::Manager {
                     if (!arguments.object.count("name")) return;
                     const std::string name = arguments.object.at("name").as<std::string>();
                     log("sbox", fmt::format("client received resource stop: `{}`", name));
-                    Internal::stop(name);
+                    Engine::Core::get_singleton() -> enqueue([name]() { Internal::stop(name); });
                 }
             });
         #else
