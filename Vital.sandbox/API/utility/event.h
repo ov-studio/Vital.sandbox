@@ -336,7 +336,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            Tool::Event::bind("sandbox:reply", [](Tool::Stack args) {
+            Tool::Event::bind("promise:settle", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 auto promise = args.array[1].as_ptr<API::Promise::Instance>();
                 if (!promise || !args.array[0].is<int32_t>()) return;
@@ -455,7 +455,6 @@ namespace Vital::Sandbox::API {
                 }
                 if (snapshot.empty()) {
                     auto promise = API::Promise::make(vm);
-                    // NOTE: no pop(1) — Promise::make -> store() -> set_reference pops internally.
                     API::Promise::settle(promise, API::Promise::State::Resolved, vm, 0, 0);
                     push_promise(vm, promise);
                     return 1;
