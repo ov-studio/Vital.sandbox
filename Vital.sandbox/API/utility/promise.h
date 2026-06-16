@@ -84,7 +84,8 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Promise>(vm);
 
             API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
-                API::Promise::make(vm);
+                auto instance = Promise::make(vm);
+                instance -> push_self(vm);
                 return 1;
             });
         }
