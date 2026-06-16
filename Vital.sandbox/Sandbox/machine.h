@@ -520,6 +520,7 @@ namespace Vital::Sandbox {
             // Utils //
             void push(int index = 1) { lua_pushvalue(state, index); }
             void pop(int count = 1) { lua_pop(state, count); }
+            bool next(int index = 1) { return lua_next(state, index) != 0; }
             void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
             void rotate(int index, int n) { lua_rotate(state, index, n); }
             void set_table(int index = 1) { lua_settable(state, index); }
