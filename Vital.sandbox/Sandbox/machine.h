@@ -571,7 +571,7 @@ namespace Vital::Sandbox {
                 pop(1);
                 return n;
             }
-
+    
             bool resume(int count = 0) {
                 Tool::assert_main_thread("Machine::resume");
                 if (!is_virtual()) return false;
