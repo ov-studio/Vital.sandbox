@@ -297,22 +297,21 @@ namespace Vital::Sandbox::API {
                 initialized = true;
 
                 Tool::Event::bind("promise:settle", [](Tool::Stack args) {
-                    if (args.array.size() < 2) return;
-                    if (!args.array[0].is<int32_t>() || !args.array[1].is_ptr<API::Promise::Instance>()) return;
+                    if (args.array.size() < 1) return;
+                    if (!args.array[0].is_ptr<API::Promise::Instance>()) return;
 
-                    int promise_id = args.array[0].as<int32_t>();
-                    auto promise = args.array[1].as_ptr<API::Promise::Instance>();
+                    auto promise = args.array[0].as_ptr<API::Promise::Instance>();
                     ReplyCallback cb;
                     {
                         std::lock_guard lock(reply_callbacks_mutex);
-                        auto it = reply_callbacks.find(promise_id);
+                        auto it = reply_callbacks.find(promise -> id);
                         if (it == reply_callbacks.end()) return;
                         cb = std::move(it -> second);
                         reply_callbacks.erase(it);
                     }
                     auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
                     if (!root_vm || !cb) return;
-
+                    
                     Tool::Stack results;
                     std::unordered_set<const void*> visited;
                     for (int i = 1; i <= promise -> values; ++i) {

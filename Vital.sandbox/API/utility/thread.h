@@ -112,7 +112,6 @@ namespace Vital::Sandbox::API {
                     int pid = promise -> id;
                     Machine::enqueue([pid, promise]() {
                         Tool::Event::emit("promise:settle", Tool::Stack({
-                            Tool::StackValue(pid),
                             Tool::StackValue(promise)
                         }));
                     });
