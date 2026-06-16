@@ -413,6 +413,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::create_thread");
                 auto* thread = new Machine(lua_newthread(state), this);
                 children.emplace(thread);
+                pop(1);
                 return thread;
             }
 
