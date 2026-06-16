@@ -25,7 +25,6 @@
 ////////////////////////
 
 namespace Vital::Sandbox::API {
-    // TODO: Improve
     struct Event : vm_module {
         inline static const std::string base_name = "event";
 
