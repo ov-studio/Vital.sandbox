@@ -607,9 +607,7 @@ namespace Vital::Manager {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
                         already = Internal::is_running(name);
                     }
-                    if (!already) {
-                        Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
-                    }
+                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
                 }
                 else if (event == "resource:stopped") {
                     if (!arguments.object.count("name")) return;
