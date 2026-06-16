@@ -675,7 +675,7 @@ namespace Vital::Sandbox {
                 auto stack = std::make_shared<Tool::Stack>();
                 if (depth > 32) return stack;
 
-                const void* ptr = lua_topointer(state, index);
+                const void* ptr = get_pointer(index);
                 if (!ptr || visited.count(ptr)) return stack;
                 visited.insert(ptr);
 
