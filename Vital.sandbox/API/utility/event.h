@@ -166,7 +166,7 @@ namespace Vital::Sandbox::API {
                 auto p = weak_promise.lock();
                 if (!p) return;
                 int base = root_vm -> get_count() + 1;
-                if (nresults > 0) lua_xmove(thread_vm -> get_state(), root_vm -> get_state(), nresults);
+                if (nresults > 0) thread_vm -> move(root_vm, nresults);
                 API::Promise::settle(p, API::Promise::State::Resolved, root_vm, base, nresults);
                 if (nresults > 0) root_vm -> pop(nresults);
             });
