@@ -693,7 +693,6 @@ namespace Vital::Manager {
 
     #if defined(VSDK_Client)
     bool Resource::is_pending(const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
         return Internal::is_pending(name);
     }
     #endif
