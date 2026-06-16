@@ -197,6 +197,7 @@ namespace Vital::Sandbox::API {
                 else {
                     self -> sleeping = true;
                     int duration = vm -> get_int(2);
+                    
                     auto weak = std::weak_ptr<Instance>(self);
                     Tool::Timer::create([weak](Tool::Timer*, int) {
                         auto captured = weak;
