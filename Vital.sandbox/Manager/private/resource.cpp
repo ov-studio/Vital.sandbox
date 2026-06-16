@@ -681,14 +681,24 @@ namespace Vital::Manager {
 
 
     // Getters //
+    const Resource::Manifest* Resource::get_resource(const std::string& name) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return Internal::get_resource(name);
+    }
+
     std::vector<const Resource::Manifest*> Resource::get_all_resources() const {
         std::lock_guard<std::mutex> lock(mutex);
         return Internal::get_all_resources();
     }
 
-    const Resource::Manifest* Resource::get_resource(const std::string& name) const {
+    std::vector<const Resource::Manifest*> Resource::get_resources(State type) const {
         std::lock_guard<std::mutex> lock(mutex);
-        return Internal::get_resource(name);
+        return Internal::get_resources(type);
+    }
+
+    int Resource::get_resource_count(State type) const {
+        std::lock_guard<std::mutex> lock(mutex);
+        return static_cast<int>(Internal::get_resources(type).size());
     }
 
     std::string Resource::get_resource_base(const std::string& name, bool require_running) {
@@ -700,16 +710,6 @@ namespace Vital::Manager {
     std::string Resource::get_resource_from_vm(Vital::Sandbox::Machine* vm) {
         Tool::assert_main_thread("Resource::get_resource_from_vm");
         return vm -> get_environment_id();
-    }
-    
-    std::vector<const Resource::Manifest*> Resource::get_resources(State type) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return Internal::get_resources(type);
-    }
-
-    int Resource::get_resource_count(State type) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        return static_cast<int>(Internal::get_resources(type).size());
     }
 
 

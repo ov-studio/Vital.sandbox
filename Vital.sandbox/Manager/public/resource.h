@@ -128,12 +128,12 @@ namespace Vital::Manager {
 
 
             // Getters //
-            std::vector<const Manifest*> get_all_resources() const;
             const Manifest* get_resource(const std::string& name) const;
-            static std::string get_resource_base(const std::string& name, bool require_running = false);
-            static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
+            std::vector<const Manifest*> get_all_resources() const;
             std::vector<const Manifest*> get_resources(State type) const;
             int get_resource_count(State type) const;
+            static std::string get_resource_base(const std::string& name, bool require_running = false);
+            static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
 
 
             // APIs //
