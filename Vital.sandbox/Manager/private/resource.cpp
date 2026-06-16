@@ -315,35 +315,22 @@ namespace Vital::Manager {
             #endif
         }
         #if !defined(VSDK_Client)
-        {
-            std::lock_guard<std::mutex> lock(rm -> mutex);
-            auto resource = Internal::get_resource(name);
-            std::vector<std::string> asset_paths;
-            for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
-            for (const auto& script : resource -> scripts) {
-                if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+            {
+                std::lock_guard<std::mutex> lock(rm -> mutex);
+                auto resource = Internal::get_resource(name);
+                std::vector<std::string> asset_paths;
+                for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
+                for (const auto& script : resource -> scripts) {
+                    if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+                }
+                am -> register_assets(asset_paths, name);
+                am -> broadcast_manifest(-1, true);
             }
-            am -> register_assets(asset_paths, name);
-            am -> broadcast_manifest(-1, true);
-        }
+            Internal::execute_resource(name);
+            return true;
         #else
-        {
-            std::lock_guard<std::mutex> lock(rm -> mutex);
-            auto resource = Internal::get_resource(name);
-            std::unordered_set<std::string> asset_paths;
-            for (const auto& file : resource -> files) asset_paths.insert(fmt::format("resources/{}/{}", name, file));
-            for (const auto& script : resource -> scripts) {
-                if (is_type(script.type)) asset_paths.insert(fmt::format("resources/{}/{}", name, script.src));
-            }
-            for (const auto& path : asset_paths) {
-                if (Tool::File::exists(Tool::get_directory(), path)) rm -> log("sbox", fmt::format("resource `{}` asset cached: {}", name, path));
-                else rm -> resource_assets[name].insert(path);
-            }
-            if (Internal::is_pending(name)) {
-                rm -> log("sbox", fmt::format("resource `{}` queued — {} asset(s) pending download", name, rm -> resource_assets[name].size()));
-                return true;
-            }
-        }
+            rm -> log("sbox", fmt::format("resource `{}` queued — waiting for asset:group_ready", name));
+            return true;
         #endif
         Internal::execute_resource(name);
         return true;
