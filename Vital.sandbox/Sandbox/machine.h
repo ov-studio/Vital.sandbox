@@ -549,12 +549,11 @@ namespace Vital::Sandbox {
                 luaL_unref(state, LUA_REGISTRYINDEX, ref);
             }
 
-            // Args Refs //
-            int store_args_ref(int from_index) {
+            int store_args(int index) {
                 create_table();
-                int count = get_count() - from_index - 1;
+                int count = get_count() - index - 1;
                 for (int i = 0; i <= count; ++i) {
-                    push(from_index + i);
+                    push(index + i);
                     set_table_field(i + 1, -2);
                 }
                 return set_raw_reference(-1);
@@ -562,6 +561,7 @@ namespace Vital::Sandbox {
 
             int push_args_ref(int args_ref) {
                 get_raw_reference(args_ref);
+            int push_args(int ref) {
                 int table_idx = get_count();
                 int n = get_length(table_idx);
                 for (int i = 1; i <= n; ++i) get_table_field(i, table_idx);
