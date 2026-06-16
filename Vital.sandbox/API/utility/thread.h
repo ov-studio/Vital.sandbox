@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static std::shared_ptr<Instance> make(Machine* vm) {
+        static std::shared_ptr<Instance> make(Machine* vm, bool push_to_stack = false) {
             auto instance = Instance::init(vm);
             auto thread_vm = vm -> create_thread();
             instance -> thread_vm = thread_vm;
@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
             instance -> set_reference(instance -> value_reference("exec"), 1);
             instance -> set_reference(instance -> value_reference("thread"), 2);
             vm -> pop(2);
-            instance -> store();
+            instance -> store(push_to_stack);
             return instance;
         }
 
@@ -136,7 +136,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
-                Thread::make(vm, true);
+                Thread::make(vm, true)
                 return 1;
             });
 
