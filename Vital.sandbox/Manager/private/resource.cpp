@@ -627,6 +627,7 @@ namespace Vital::Manager {
             });
         #else
             scan();
+            
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
 
