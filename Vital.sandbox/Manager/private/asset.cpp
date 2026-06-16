@@ -67,8 +67,6 @@ namespace Vital::Manager {
                 if (event != "asset:manifest") return;
                 receive_manifest(arguments);
             });
-
-            Tool::print("sbox", "Asset: initialized");
         #endif
     }
 
