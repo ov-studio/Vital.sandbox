@@ -368,7 +368,7 @@ namespace Vital::Manager {
         rm -> log("sbox", fmt::format("resource `{}` stopped", name));
 
         #if !defined(VSDK_Client)
-            Engine::Core::get_singleton() -> enqueue([rm, name]() {
+            Engine::Core::get_singleton() -> enqueue([name]() {
                 Manager::Network::get_singleton() -> broadcast(Internal::build_packet("resource:stopped", name));
                 Manager::Sandbox::get_singleton() -> signal("resource:stopped", Tool::StackValue(name));
             });
