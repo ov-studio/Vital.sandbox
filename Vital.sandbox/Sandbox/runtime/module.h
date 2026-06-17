@@ -57,7 +57,8 @@ namespace Vital::Sandbox {
 
             template<typename T>
             static void register_type(Machine* vm) {
-                vm -> create_metatable(T::base_name);
+                const auto name = scope_name(T::base_scope);
+                vm -> create_metatable(name);
                 vm -> create_table();
                 T::methods(vm);
                 bind_natives<typename T::Instance>(vm);
@@ -70,7 +71,7 @@ namespace Vital::Sandbox {
                 vm -> set_table_field("__gc", -2);
                 vm -> pop(1);
 
-                entity_pool.emplace(T::base_name, [](Machine* vm, int& count, bool streamed) {
+                entity_pool.emplace(name, [](Machine* vm, int& count, bool streamed) {
                     std::lock_guard<std::mutex> lock(T::registry.mutex);
                     for (auto& [instance_id, instance] : T::registry.buffer) {
                         if (!instance -> is_alive()) continue;
@@ -89,8 +90,8 @@ namespace Vital::Sandbox {
             static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<T>, const std::string&)> exec) {
                 // TODO: These needs to be freed when changing server freeing core // Anisa
                 auto heap_exec = new std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>(std::move(exec));
-                auto heap_type = new std::string(T::Owner::base_name);
-                auto heap_id = new std::string(std::string(T::Owner::base_name) + ":" + name);
+                auto heap_type = new std::string(scope_name(T::Owner::base_scope));
+                auto heap_id = new std::string(scope_id(T::Owner::base_scope) + ":" + name);
                 lua_pushlightuserdata(vm -> get_state(), heap_exec);
                 lua_pushlightuserdata(vm -> get_state(), heap_type);
                 lua_pushlightuserdata(vm -> get_state(), heap_id);
@@ -119,7 +120,7 @@ namespace Vital::Sandbox {
                     vm_args(vm, id, "(type_name)")
                         .require(2, &Machine::is_string);
 
-                    vm -> push_value(std::string(TOwner::base_name) == vm -> get_string(2));
+                    vm -> push_value(scope_name(TOwner::base_scope) == vm -> get_string(2));
                     return 1;
                 });
 
