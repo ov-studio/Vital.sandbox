@@ -23,7 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Volumetric_Fog : vm_module {
-        inline static const std::string base_name = "volumetric_fog";
+        inline static const std::string base_name = "vol_fog";
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
