@@ -30,7 +30,6 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Webview;
             base_class* webview = nullptr;
-            std::string handler_reference() const { return fmt::format("vm_instance:{}:{}:handler", Owner::base_name, id); }
 
             bool is_alive() const { 
                 return webview ? true : false; 
@@ -154,12 +153,12 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(handler)")
                     .require(2, &Machine::is_function);
 
-                self -> set_reference(self -> handler_reference(), 2);
+                self -> set_reference(self -> value_reference("exec"), 2);
                 auto instance_id = self -> id;
                 self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) return;
-                    instance -> get_reference(instance -> handler_reference(), true);
+                    instance -> get_reference(instance -> value_reference("exec"), true);
                     vm -> push_value(Tool::to_std_string(message));
                     vm -> pcall(1, 0);
                 });
