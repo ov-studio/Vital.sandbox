@@ -39,16 +39,7 @@ namespace Vital::Sandbox {
             auto heap_exec = new vm_bind(std::move(exec));
             std::string id = vm_module::scope_id(scope) + "." + name;
             auto heap_id = new std::string(std::move(id));
-            create_namespace(scope[0]);
-            for (std::size_t i = 1; i < scope.size(); ++i) {
-                get_table_field(scope[i], -1);
-                if (!is_table(-1)) {
-                    pop(1);
-                    create_table();
-                    push(-1);
-                    set_table_field(scope[i], -3);
-                }
-            }
+            create_scope(scope);
             push_userdata(heap_exec);
             push_userdata(heap_id);
             lua_pushcclosure(state, [](vm_state* state) -> int {
