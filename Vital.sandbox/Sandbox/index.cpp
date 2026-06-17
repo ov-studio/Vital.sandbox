@@ -37,9 +37,7 @@ namespace Vital::Sandbox {
             Tool::assert_main_thread("Machine::bind");
             // TODO: deallocate heap on sandbox vm closure??
             auto heap_exec = new vm_bind(std::move(exec));
-            std::string id = scope[0];
-            for (std::size_t i = 1; i < scope.size(); ++i) id += "." + scope[i];
-            id += "." + name;
+            std::string id = vm_module::scope_id(scope) + "." + name;
             auto heap_id = new std::string(std::move(id));
             create_namespace(scope[0]);
             for (std::size_t i = 1; i < scope.size(); ++i) {
