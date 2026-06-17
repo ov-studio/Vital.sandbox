@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Emissive : vm_module {
-        inline static const std::string base_nspace = "gfx";
-        inline static const std::string base_name = "emissive";
+        inline static const std::vector<std::string> base_scope = {"gfx", "emissive"};
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {

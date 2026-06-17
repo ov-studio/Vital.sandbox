@@ -26,8 +26,7 @@
 
 namespace Vital::Sandbox::API {
     struct Event : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "event";
+        inline static const std::vector<std::string> base_scope = {"util", "event"};
 
         struct HandlerConfig {
             bool is_async  = false;

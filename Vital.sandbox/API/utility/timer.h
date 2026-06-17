@@ -24,8 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Timer : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "timer";
+        inline static const std::vector<std::string> base_scope = {"util", "timer"};
 
         struct Instance : vm_instance<Instance> {
             using Owner = Timer;

@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct HTTP : public vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "http";
+        inline static const std::vector<std::string> base_scope = {"util", "http"};
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get", [](auto vm, auto& id) -> int {

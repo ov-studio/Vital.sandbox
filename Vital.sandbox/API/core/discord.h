@@ -24,8 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Discord : vm_module {
-        inline static const std::string base_nspace = "core";
-        inline static const std::string base_name = "discord";
+        inline static const std::vector<std::string> base_scope = {"core", "discord"};
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_connected", [](auto vm, auto& id) -> int {

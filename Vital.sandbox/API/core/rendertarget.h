@@ -24,8 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Rendertarget : vm_module {
-        inline static const std::string base_nspace = "core";
-        inline static const std::string base_name = "rendertarget";
+        inline static const std::vector<std::string> base_scope = {"core", "rendertarget"};
         using base_class = Vital::Engine::Rendertarget;
 
         struct Instance : vm_instance<Instance> {

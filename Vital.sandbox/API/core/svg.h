@@ -25,8 +25,7 @@
 
 namespace Vital::Sandbox::API {
     struct SVG : vm_module {
-        inline static const std::string base_nspace = "core";
-        inline static const std::string base_name = "svg";
+        inline static const std::vector<std::string> base_scope = {"core", "svg"};
         using base_class = Vital::Engine::Texture;
 
         struct Instance : vm_instance<Instance> {

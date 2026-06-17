@@ -22,8 +22,7 @@
 
 namespace Vital::Sandbox::API {
     struct Shrinker : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "shrinker";
+        inline static const std::vector<std::string> base_scope = {"util", "shrinker"};
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "compress", [](auto vm, auto& id) -> int {

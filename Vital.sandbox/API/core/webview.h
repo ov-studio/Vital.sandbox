@@ -24,8 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Webview : vm_module {
-        inline static const std::string base_nspace = "core";
-        inline static const std::string base_name = "webview";
+        inline static const std::vector<std::string> base_scope = {"core", "webview"};
         using base_class = Vital::Engine::Webview;
 
         struct Instance : vm_instance<Instance> {

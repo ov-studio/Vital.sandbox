@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Vol_Fog : vm_module {
-        inline static const std::string base_nspace = "gfx";
-        inline static const std::string base_name = "vol_fog";
+        inline static const std::vector<std::string> base_scope = {"gfx", "vol_fog"};
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {

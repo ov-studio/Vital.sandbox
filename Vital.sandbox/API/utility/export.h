@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Export : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "export";
+        inline static const std::vector<std::string> base_scope = {"util", "export"};
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "register", [](auto vm, auto& id) -> int {

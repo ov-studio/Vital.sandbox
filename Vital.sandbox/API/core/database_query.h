@@ -24,8 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Database_Query : vm_module {
-        inline static const std::string base_nspace = "core";
-        inline static const std::string base_name = "db_query";
+        inline static const std::vector<std::string> base_scope = {"core", "db_query"};
         using base_class = Tool::Database::Query;
 
         struct Instance : vm_instance<Instance> {

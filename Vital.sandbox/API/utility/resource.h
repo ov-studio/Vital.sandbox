@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Resource : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "resource";
+        inline static const std::vector<std::string> base_scope = {"util", "resource"};
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "current", [](auto vm, auto& id) -> int {

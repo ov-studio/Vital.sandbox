@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct File : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "file";
+        inline static const std::vector<std::string> base_scope = {"util", "file"};
 
         static std::string get_base(Machine* vm, std::string& path) {
             if (!path.empty() && (path[0] == ':')) {

@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Promise : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "promise";
+        inline static const std::vector<std::string> base_scope = {"util", "promise"};
 
         enum class State {
             Pending,

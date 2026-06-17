@@ -23,8 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Engine : vm_module {
-        inline static const std::string base_nspace = "core";
-        inline static const std::string base_name = "engine";
+        inline static const std::vector<std::string> base_scope = {"core", "engine"};
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "print", [](auto vm, auto& id) -> int {
