@@ -24,6 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Model : vm_module {
+        inline static const std::string base_nspace = "core";
         inline static const std::string base_name = "model";
         inline static constexpr bool has_remote = true;
         inline static constexpr bool has_streaming = true;
@@ -90,7 +91,7 @@ namespace Vital::Sandbox::API {
                 }
             };
 
-            API::bind(vm, {base_name}, "load", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "load", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, path)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
@@ -111,7 +112,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "unload", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "unload", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
@@ -125,7 +126,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "is_loaded", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "is_loaded", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
@@ -133,7 +134,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, authority = 1)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_number);

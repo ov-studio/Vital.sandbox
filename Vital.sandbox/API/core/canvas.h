@@ -26,16 +26,17 @@
 
 namespace Vital::Sandbox::API {
     struct Canvas : vm_module {
+        inline static const std::string base_nspace = "core";
         inline static const std::string base_name = "engine";
         using base_class = Vital::Engine::Canvas;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "get_resolution", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "get_resolution", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_singleton() -> get_resolution());
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "world_to_screen", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "world_to_screen", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, padding)")
                     .require(1, &Machine::is_vector3);
 
@@ -47,7 +48,7 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
 
-            API::bind(vm, {base_name}, "screen_to_world", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "screen_to_world", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, depth)")
                     .require(1, &Machine::is_vector2);
 
@@ -57,7 +58,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "draw_line", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "draw_line", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(points, stroke, color)")
                     .require(1, &Machine::is_vector2_array);
 
@@ -69,7 +70,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "draw_polygon", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "draw_polygon", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(points, color, stroke, stroke_color, rotation, pivot)")
                     .require(1, &Machine::is_vector2_array);
 
@@ -84,7 +85,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "draw_rectangle", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "draw_rectangle", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, size, color, stroke, stroke_color, rotation, pivot)")
                     .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_vector2);
@@ -101,7 +102,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "draw_circle", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "draw_circle", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, radius, color, stroke, stroke_color, rotation, pivot)")
                     .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_number);
@@ -118,7 +119,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "draw_image", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "draw_image", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, size, material, rotation, pivot, color)")
                     .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_vector2)
@@ -153,7 +154,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "draw_text", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "draw_text", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(text, start_at, end_at, font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_vector2)

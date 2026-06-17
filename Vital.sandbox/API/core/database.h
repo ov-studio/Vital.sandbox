@@ -25,6 +25,7 @@
 
 namespace Vital::Sandbox::API {
     struct Database : vm_module {
+        inline static const std::string base_nspace = "core";
         inline static const std::string base_name = "database";
         using base_class = Tool::Database;
 
@@ -73,7 +74,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Database>(vm);
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(host, user, password, database, port = 3306)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)

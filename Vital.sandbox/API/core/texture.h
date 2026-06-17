@@ -25,6 +25,7 @@
 
 namespace Vital::Sandbox::API {
     struct Texture : vm_module {
+        inline static const std::string base_nspace = "core";
         inline static const std::string base_name = "texture";
         using base_class = Vital::Engine::Texture;
 
@@ -51,7 +52,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Texture>(vm);
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
