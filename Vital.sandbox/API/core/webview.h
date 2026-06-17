@@ -114,7 +114,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)")
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 self -> webview -> set_visible(vm -> get_bool(2));
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)")
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
 
                 self -> webview -> set_position(vm -> get_vector2(2));
@@ -132,7 +132,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(size)")
+                vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_vector2);
 
                 self -> webview -> set_size(vm -> get_vector2(2));
@@ -141,7 +141,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)")
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 self -> webview -> set_devtools_visible(vm -> get_bool(2));
@@ -150,7 +150,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(handler)")
+                vm_args(vm, id, "(handler)", true)
                     .require(2, &Machine::is_function);
 
                 self -> set_reference(self -> value_reference("exec"), 2);
@@ -167,7 +167,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "load_url", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(url)")
+                vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
 
                 self -> webview -> load_url(vm -> get_string(2));
@@ -176,7 +176,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "load_html", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(html)")
+                vm_args(vm, id, "(html)", true)
                     .require(2, &Machine::is_string);
 
                 self -> webview -> load_html(vm -> get_string(2));
@@ -203,7 +203,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "zoom", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(value)")
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> webview -> zoom(vm -> get_float(2));
@@ -218,7 +218,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "eval", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(input)")
+                vm_args(vm, id, "(input)", true)
                     .require(2, &Machine::is_string);
 
                 self -> webview -> eval(vm -> get_string(2));
@@ -227,7 +227,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "emit", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(input)")
+                vm_args(vm, id, "(input)", true)
                     .require(2, &Machine::is_string);
 
                 self -> webview -> emit(vm -> get_string(2));
