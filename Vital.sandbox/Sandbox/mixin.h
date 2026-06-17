@@ -34,10 +34,6 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
-            void push_scope(const std::vector<std::string>& scope) {
-                self() -> get_global(scope[0]);
-                for (std::size_t i = 1; i < scope.size(); ++i) self() -> get_table_field(scope[i], -1);
-            }
 
             void push_value(const Tool::StackValue& value) {
                 std::visit([this](auto&& v) {
@@ -66,6 +62,26 @@ namespace Vital::Sandbox {
                     }
                     else push_value(v);
                 }, value.value);
+            }
+
+
+            // Scopes //
+            void push_scope(const std::vector<std::string>& scope) {
+                self() -> get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) self() -> get_table_field(scope[i], -1);
+            }
+
+            void set_scope(const std::vector<std::string>& scope) {
+                self() -> create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    self() -> get_table_field(scope[i], -1);
+                    if (!self() -> is_table(-1)) {
+                        self() -> pop(1);
+                        self() -> create_table();
+                        self() -> push(-1);
+                        self() -> set_table_field(scope[i], -3);
+                    }
+                }
             }
 
 
