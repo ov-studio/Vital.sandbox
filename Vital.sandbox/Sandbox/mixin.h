@@ -34,6 +34,10 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
+            void push_scope(const std::vector<std::string>& scope) {
+                self() -> get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) self() -> get_table_field(scope[i], -1);
+            }
 
             void push_value(const Tool::StackValue& value) {
                 std::visit([this](auto&& v) {
@@ -66,11 +70,6 @@ namespace Vital::Sandbox {
 
 
             // Getters //
-            void get_scope(const std::vector<std::string>& scope) {
-                self() -> get_global(scope[0]);
-                for (std::size_t i = 1; i < scope.size(); ++i) self() -> get_table_field(scope[i], -1);
-            }
-
             void table_get_value(int value, int index = 1) {
                 self() -> get_table_field(value, index);
             }
