@@ -37,9 +37,9 @@ namespace Vital::Sandbox {
             std::atomic<bool> destroyed { false };
             Machine* vm = nullptr;
             void** userdata = nullptr;
-            std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", Derived::Owner::base_name, id); }
-            std::string value_reference(int index) const { return fmt::format("vm_instance:{}:{}:value:{}", Derived::Owner::base_name, id, index); }
-            std::string value_reference(const std::string& index) const { return fmt::format("vm_instance:{}:{}:value:{}", Derived::Owner::base_name, id, index); }
+            std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", vm_module::scope_name(Derived::Owner::base_scope), id); }
+            std::string value_reference(int index) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_name(Derived::Owner::base_scope), id, index); }
+            std::string value_reference(const std::string& index) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_name(Derived::Owner::base_scope), id, index); }
 
             bool is_alive() const {
                 return true;
@@ -110,6 +110,7 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
             
+
             static std::shared_ptr<Derived> find_unlocked(std::shared_ptr<Derived> instance) {
                 if (!instance || instance -> destroyed || !instance -> is_alive()) return nullptr;
                 return instance;
@@ -120,7 +121,7 @@ namespace Vital::Sandbox {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                     Derived::Owner::registry.buffer[instance -> id] = instance;
                 }
-                instance -> vm -> create_object(Derived::Owner::base_name, instance.get());
+                instance -> vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
                 instance -> userdata = vm_module::get_userdata_ptr(instance -> vm, -1);
                 instance -> set_reference(instance -> self_reference(), -1);
                 if (!push_to_stack) instance -> vm -> pop(1);
