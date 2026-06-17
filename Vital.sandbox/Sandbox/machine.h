@@ -543,7 +543,7 @@ namespace Vital::Sandbox {
                 reference.emplace(make_reference(scope, name), set_raw_reference(index));
             }
 
-            int set_raw_reference(int index = -1) {
+            int set_raw_reference(int index = 1) {
                 push(index);
                 return luaL_ref(state, LUA_REGISTRYINDEX);
             }

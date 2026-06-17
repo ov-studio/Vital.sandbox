@@ -125,10 +125,10 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> get_global(base_name);
-            vm -> get_table_field("print", -1);
+            vm -> get_scope(base_scope);
+            vm -> table_get_value("print", -1);
             vm -> push_global("print");
-            vm -> pop(1);
+            vm -> pop(base_scope.size());
             vm -> table_set_nil("dump", "string");
             vm -> table_set_nil("dump", "utf8");
         }

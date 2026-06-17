@@ -65,6 +65,21 @@ namespace Vital::Sandbox {
             }
 
 
+            // Getters //
+            void get_scope(const std::vector<std::string>& scope) {
+                self() -> get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) self() -> get_table_field(scope[i], -1);
+            }
+
+            void table_get_value(int value, int index = 1) {
+                self() -> get_table_field(value, index);
+            }
+
+            void table_get_value(const std::string& value, int index = 1) {
+                self() -> get_table_field(value, index);
+            }
+
+
             // Pushers //
             void table_push_nil(const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
