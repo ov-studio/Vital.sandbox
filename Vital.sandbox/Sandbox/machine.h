@@ -418,6 +418,34 @@ namespace Vital::Sandbox {
             }
 
 
+            // Scope //
+            void with_scope(const std::vector<std::string>& scope, std::function<void(Machine*)> exec) {
+                get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    if (!is_table(-1)) {
+                        pop(static_cast<int>(i));
+                        return;
+                    }
+                    get_table_field(scope[i], -1);
+                }
+                if (is_table(-1)) exec(this);
+                pop(static_cast<int>(scope.size()));
+            }
+
+            void set_scope(const std::vector<std::string>& scope) {
+                create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    get_table_field(scope[i], -1);
+                    if (!is_table(-1)) {
+                        pop(1);
+                        create_table();
+                        push(-1);
+                        set_table_field(scope[i], -3);
+                    }
+                }
+            }
+
+
             // Environment //
             void create_environment(const std::string& id) {
                 Tool::assert_main_thread("Machine::create_environment");
