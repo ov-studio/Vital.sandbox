@@ -22,45 +22,44 @@
 
 namespace Vital::Sandbox::API {
     struct Crypto : vm_module {
-        inline static const std::string base_nspace = "util";
-        inline static const std::string base_name = "crypto";
+        inline static const std::vector<std::string> base_scope = {"util", "crypto"};
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "hash", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "hash", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, input)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
-        
+
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
                 vm -> push_value(Tool::Crypto::hash(mode, input));
                 return 1;
             });
-        
-            API::bind(vm, {base_nspace, base_name}, "encode", [](auto vm, auto& id) -> int {
+
+            API::bind(vm, base_scope, "encode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
-        
+
                 auto input = vm -> get_string(1);
                 vm -> push_value(Tool::Crypto::encode(input));
                 return 1;
             });
-        
-            API::bind(vm, {base_nspace, base_name}, "decode", [](auto vm, auto& id) -> int {
+
+            API::bind(vm, base_scope, "decode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
-        
+
                 auto input = vm -> get_string(1);
                 vm -> push_value(Tool::Crypto::decode(input));
                 return 1;
             });
-        
-            API::bind(vm, {base_nspace, base_name}, "encrypt", [](auto vm, auto& id) -> int {
+
+            API::bind(vm, base_scope, "encrypt", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, input, key)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
-        
+
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
                 auto key = vm -> get_string(3);
@@ -69,14 +68,14 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(result.second);
                 return 2;
             });
-        
-            API::bind(vm, {base_nspace, base_name}, "decrypt", [](auto vm, auto& id) -> int {
+
+            API::bind(vm, base_scope, "decrypt", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, input, key, iv)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_string);
-        
+
                 auto mode = vm -> get_string(1);
                 auto input = vm -> get_string(2);
                 auto key = vm -> get_string(3);
