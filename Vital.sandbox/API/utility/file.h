@@ -46,7 +46,7 @@ namespace Vital::Sandbox::API {
         }
     
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "exists", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "exists", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
@@ -55,7 +55,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "size", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "size", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "hash", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "hash", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, mode)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
@@ -75,7 +75,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "delete", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "delete", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "read", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "read", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
@@ -93,7 +93,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "write", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "write", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, buffer)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
@@ -104,7 +104,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "contents", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "contents", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, directory_search = false)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_bool);

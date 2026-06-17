@@ -355,7 +355,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "on", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec, config = nil)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function);
@@ -376,7 +376,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "off", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "off", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function);
@@ -407,7 +407,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "emit", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "emit", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, options = nil, ...)")
                     .require(1, &Machine::is_string);
 
@@ -431,7 +431,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "emit_callback", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "emit_callback", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, options = nil, ...)")
                     .require(1, &Machine::is_string);
 

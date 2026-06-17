@@ -96,7 +96,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Promise>(vm);
 
-            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 Promise::make(vm, true);
                 return 1;
             });

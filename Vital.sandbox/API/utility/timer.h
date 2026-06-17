@@ -55,7 +55,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Timer>(vm);
 
-            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec, interval, executions)")
                     .require(1, &Machine::is_function)
                     .require(2, &Machine::is_number)
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "next_tick", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "next_tick", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 

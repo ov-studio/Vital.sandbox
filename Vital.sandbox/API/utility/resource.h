@@ -27,14 +27,14 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "resource";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "current", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "current", [](auto vm, auto& id) -> int {
                 auto name = Manager::Resource::get_resource_from_vm(vm);
                 if (name.empty()) vm -> push_value(false);
                 else vm -> push_value(name);
                 return 1;
             });
         
-            API::bind(vm, {base_nspace, base_name}, "list", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
                 auto resources = Manager::Resource::get_singleton() -> get_all_resources();
                 vm -> create_table();
                 int i = 1;
@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "is_loaded", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_loaded", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {base_nspace, base_name}, "is_running", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_running", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
@@ -62,7 +62,7 @@ namespace Vital::Sandbox::API {
             });
         
             #if !defined(VSDK_Client)
-            API::bind(vm, {base_nspace, base_name}, "start", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "start", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {base_nspace, base_name}, "stop", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "stop", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
@@ -78,7 +78,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {base_nspace, base_name}, "restart", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "restart", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 

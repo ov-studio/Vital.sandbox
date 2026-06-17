@@ -28,72 +28,72 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "is_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_volumetric_fog_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "is_temporal_reprojection_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_temporal_reprojection_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_volumetric_fog_temporal_reprojection_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_emission", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_emission", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_emission());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_albedo", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_albedo", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_albedo());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_density", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_density", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_density());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_emission_energy", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_emission_energy", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_emission_energy());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_anisotropy", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_anisotropy", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_anisotropy());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_length", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_length", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_length());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_detail_spread", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_detail_spread", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_detail_spread());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_gi_inject", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_gi_inject", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_gi_inject());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_ambient_inject", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_ambient_inject", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_ambient_inject());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_sky_affect", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_sky_affect", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_sky_affect());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_temporal_reprojection_amount", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_temporal_reprojection_amount", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_volumetric_fog_temporal_reprojection_amount());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
 
@@ -103,7 +103,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_emission", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_emission", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
 
@@ -113,7 +113,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_albedo", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_albedo", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
 
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_density", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_density", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_emission_energy", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_emission_energy", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_anisotropy", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_anisotropy", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -153,7 +153,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_length", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_length", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -163,7 +163,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_detail_spread", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_detail_spread", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -173,7 +173,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_gi_inject", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_gi_inject", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -183,7 +183,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_ambient_inject", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_ambient_inject", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -193,7 +193,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_sky_affect", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_sky_affect", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -203,7 +203,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_temporal_reprojection_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_temporal_reprojection_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
 
@@ -213,7 +213,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_temporal_reprojection_amount", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_temporal_reprojection_amount", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 

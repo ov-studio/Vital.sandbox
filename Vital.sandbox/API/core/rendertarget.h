@@ -60,7 +60,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Rendertarget>(vm);
 
-            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(size, transparent = false)")
                     .require(1, &Machine::is_vector2)
                     .optional(2, &Machine::is_bool);
@@ -73,7 +73,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_active", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_active", [](auto vm, auto& id) -> int {
                 auto ptr = base_class::get_active();
                 auto instance = find_by_ptr(ptr);
                 if (!instance) vm -> push_value(false);
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_active", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_active", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
                     .optional(1, [](Machine* vm, int index) { return vm_module::is_userdata<Instance>(vm, index); })
                     .optional(2, &Machine::is_bool)

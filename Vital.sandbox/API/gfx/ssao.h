@@ -28,52 +28,52 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "is_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_ssao_enabled());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_radius", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_radius", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_radius());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_intensity", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_intensity", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_intensity());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_power", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_power", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_power());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_detail", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_detail", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_detail());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_horizon", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_horizon", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_horizon());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_sharpness", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_sharpness", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_sharpness());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_direct_light_affect", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_direct_light_affect", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_direct_light_affect());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_channel_affect", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_channel_affect", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ssao_ao_channel_affect());
                 return 1;
             });
             
-            API::bind(vm, {base_nspace, base_name}, "set_enabled", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_enabled", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
 
@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_radius", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_radius", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -93,7 +93,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_intensity", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_intensity", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -103,7 +103,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_power", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_power", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -113,7 +113,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_detail", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_detail", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_horizon", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_horizon", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_sharpness", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_sharpness", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_direct_light_affect", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_direct_light_affect", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
@@ -153,7 +153,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_channel_affect", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_channel_affect", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 

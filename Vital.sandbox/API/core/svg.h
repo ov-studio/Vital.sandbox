@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<SVG>(vm);
 
-            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path)")
                     .require(1, &Machine::is_string);
 
@@ -64,7 +64,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "create_from_raw", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "create_from_raw", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(raw)")
                     .require(1, &Machine::is_string);
 

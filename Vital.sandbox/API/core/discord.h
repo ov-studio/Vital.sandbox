@@ -28,24 +28,24 @@ namespace Vital::Sandbox::API {
         inline static const std::string base_name = "discord";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_nspace, base_name}, "is_connected", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_connected", [](auto vm, auto& id) -> int {
                 vm -> push_value(Manager::Discord::get_singleton() -> is_connected());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_userid", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_userid", [](auto vm, auto& id) -> int {
                 if (!Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
                 else vm -> push_value(std::to_string(Manager::Discord::get_singleton() -> get_userid()));
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "get_username", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_username", [](auto vm, auto& id) -> int {
                 if (!Manager::Discord::get_singleton() -> is_connected()) vm -> push_value(false);
                 else vm -> push_value(Manager::Discord::get_singleton() -> get_username());
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_application_id", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_application_id", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id, authenticate = false, force_reauth = false)")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_bool)
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_state", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_state", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_string);
 
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_details", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_details", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(details)")
                     .require(1, &Machine::is_string);
 
@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_small_image", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_small_image", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, text = \"N/A\")")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_large_image", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_large_image", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, text = \"N/A\")")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_string);
@@ -100,7 +100,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "set_timestamps", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_timestamps", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(start_at, end_at = 0)")
                     .require(1, &Machine::is_number)
                     .optional(2, &Machine::is_number);
@@ -111,7 +111,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_nspace, base_name}, "reset_application", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "reset_application", [](auto vm, auto& id) -> int {
                 vm -> push_value(Manager::Discord::get_singleton() -> reset_application());
                 return 1;
             });
