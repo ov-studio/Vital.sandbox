@@ -126,10 +126,10 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             {
-                vm -> push_scope(base_scope);
-                vm -> table_get_value("print", -1);
-                vm -> push_global("print");
-                vm -> pop(base_scope.size());
+                vm -> scope_with(base_scope, [](auto vm) {
+                    vm -> table_get_value("print");
+                    vm -> push_global("print");
+                });
             }
             {
                 vm -> table_set_nil("dump", "string");
