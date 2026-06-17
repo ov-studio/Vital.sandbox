@@ -66,7 +66,7 @@ namespace Vital::Sandbox::API {
             vm -> scope_with(base_scope, [](auto vm) {
                 vm -> create_table();
                 for (const auto& [name, format] : base_class::texel_registry) vm -> table_set_value(name, format);
-                vm -> set_table_field("texel_format", -1);
+                vm -> set_table_field("texel_format", -2);
             });
         }
 
