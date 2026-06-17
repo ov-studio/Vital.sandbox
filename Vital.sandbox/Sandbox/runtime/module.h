@@ -117,7 +117,7 @@ namespace Vital::Sandbox {
                 using TOwner = typename TInstance::Owner;
 
                 bind_method<TInstance>(vm, "is_type", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(type_name)")
+                    vm_args(vm, id, "(type_name)", true)
                         .require(2, &Machine::is_string);
 
                     vm -> push_value(scope_name(TOwner::base_scope) == vm -> get_string(2));

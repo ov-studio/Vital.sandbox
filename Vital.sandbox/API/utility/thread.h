@@ -193,7 +193,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "sleep", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(duration)")
+                vm_args(vm, id, "(duration)", true)
                     .require(2, &Machine::is_number)
                     .validate(2, [](auto vm, int index) { return vm -> get_int(index) >= 0; }, "expected >= 0");
 
@@ -224,7 +224,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "await", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(promise)")
+                vm_args(vm, id, "(promise)", true)
                     .require(2, [](Machine* vm, int index) { return vm_module::is_userdata<API::Promise::Instance>(vm, index); });
 
                 auto promise = vm_module::get_userdata_object<API::Promise::Instance>(vm, 2);
