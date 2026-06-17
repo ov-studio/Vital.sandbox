@@ -26,7 +26,7 @@
 namespace Vital::Sandbox::API {
     struct Adjustment : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "adjustment"};
-        inline static const std::string lut_reference = fmt::format("{}:{}:lut", base_nspace, base_name);
+        inline static const std::string lut_reference = fmt::format("{}:lut", vm_module::scope_id(base_scope));
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
