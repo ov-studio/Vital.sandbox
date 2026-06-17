@@ -23,10 +23,11 @@
 
 namespace Vital::Sandbox::API {
     struct Export : vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "export";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "register", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "register", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function);
@@ -40,7 +41,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "call", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "call", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(resource, name, ...)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
@@ -59,7 +60,7 @@ namespace Vital::Sandbox::API {
                 return vm -> get_count() - 2;
             });
 
-            API::bind(vm, {base_name}, "list", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "list", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(resource)")
                     .require(1, &Machine::is_string);
 

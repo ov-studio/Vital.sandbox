@@ -24,6 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Thread : vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "thread";
 
         struct Instance : vm_instance<Instance> {
@@ -139,7 +140,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Thread>(vm);
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 
@@ -147,7 +148,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "current", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "current", [](auto vm, auto& id) -> int {
                 std::shared_ptr<Instance> found;
                 {
                     std::lock_guard<std::mutex> lock(Thread::registry.mutex);

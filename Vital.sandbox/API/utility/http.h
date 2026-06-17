@@ -23,10 +23,11 @@
 
 namespace Vital::Sandbox::API {
     struct HTTP : public vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "http";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "get", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "get", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(url, headers = {\"Content-Type: application/json\"}, timeout = 60)")
                     .require(1, &Machine::is_string);
 
@@ -61,7 +62,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "post", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "post", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(url, body, headers = {\"Content-Type: application/json\"}, timeout = 60)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);

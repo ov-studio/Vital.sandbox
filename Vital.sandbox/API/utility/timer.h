@@ -24,6 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Timer : vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "timer";
 
         struct Instance : vm_instance<Instance> {
@@ -54,7 +55,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Timer>(vm);
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec, interval, executions)")
                     .require(1, &Machine::is_function)
                     .require(2, &Machine::is_number)
@@ -96,7 +97,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "next_tick", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "next_tick", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(exec)")
                     .require(1, &Machine::is_function);
 

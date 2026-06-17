@@ -23,6 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Promise : vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "promise";
 
         enum class State {
@@ -95,7 +96,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             vm_module::register_type<Promise>(vm);
 
-            API::bind(vm, {base_name}, "create", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "create", [](auto vm, auto& id) -> int {
                 Promise::make(vm, true);
                 return 1;
             });

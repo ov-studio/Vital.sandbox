@@ -22,10 +22,11 @@
 
 namespace Vital::Sandbox::API {
     struct Crypto : vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "crypto";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "hash", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "hash", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, input)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
@@ -36,7 +37,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {base_name}, "encode", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "encode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
         
@@ -45,7 +46,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {base_name}, "decode", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "decode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
         
@@ -54,7 +55,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, {base_name}, "encrypt", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "encrypt", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, input, key)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
@@ -69,7 +70,7 @@ namespace Vital::Sandbox::API {
                 return 2;
             });
         
-            API::bind(vm, {base_name}, "decrypt", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "decrypt", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, input, key, iv)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)

@@ -22,10 +22,11 @@
 
 namespace Vital::Sandbox::API {
     struct Shrinker : vm_module {
+        inline static const std::string base_nspace = "util";
         inline static const std::string base_name = "shrinker";
 
         static void bind(Machine* vm) {
-            API::bind(vm, {base_name}, "compress", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "compress", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
 
@@ -34,7 +35,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, {base_name}, "decompress", [](auto vm, auto& id) -> int {
+            API::bind(vm, {base_nspace, base_name}, "decompress", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
 
