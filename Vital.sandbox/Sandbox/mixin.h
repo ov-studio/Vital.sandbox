@@ -38,8 +38,7 @@ namespace Vital::Sandbox {
             void push_value(const Tool::StackValue& value) {
                 std::visit([this](auto&& v) {
                     using T = std::decay_t<decltype(v)>;
-                    if constexpr (std::is_same_v<T, std::nullptr_t>)
-                        self() -> push_nil();
+                    if constexpr (std::is_same_v<T, std::nullptr_t>) self() -> push_nil();
                     else if constexpr (std::is_same_v<T, std::shared_ptr<void>>) {
                         if (!v) self() -> push_nil();
                         else {
@@ -51,11 +50,11 @@ namespace Vital::Sandbox {
                     else if constexpr (std::is_same_v<T, std::shared_ptr<Tool::Stack>>) {
                         self() -> create_table();
                         if (!v) return;
-                        for (int i = 0; i < static_cast<int>(v->array.size()); ++i) {
-                            push_value(v->array[i]);
+                        for (int i = 0; i < static_cast<int>(v -> array.size()); ++i) {
+                            push_value(v -> array[i]);
                             self() -> set_table_field(i + 1, -2);
                         }
-                        for (const auto& [key, sv] : v->object) {
+                        for (const auto& [key, sv] : v -> object) {
                             push_value(sv);
                             self() -> set_table_field(key, -2);
                         }
