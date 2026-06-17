@@ -60,9 +60,12 @@ namespace Vital::Sandbox {
 
     struct vm_args {
         private:
+            int arg_offset = 0;
+
             inline void throw_error(int index, const std::string& reason = "") const {
-                const std::string arg = (index - 1) < (int)arguments.size() ? arguments[index - 1] : std::to_string(index);
-                const std::string partial = fmt::format("bad argument #{} '{}' {}", index, arg, reason.empty() ? "" : fmt::format("({})", reason));
+                int display_index = index - arg_offset;
+                const std::string arg = (index - 1 - arg_offset) < (int)arguments.size() ? arguments[index - 1 - arg_offset] : std::to_string(display_index);
+                const std::string partial = fmt::format("bad argument #{} '{}' {}", display_index, arg, reason.empty() ? "" : fmt::format("({})", reason));
                 const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", syntax, partial);
                 throw vm_error(detail, partial);
             }
@@ -72,7 +75,7 @@ namespace Vital::Sandbox {
             std::vector<std::string> arguments;
 
             inline vm_args(Machine* vm, const std::string& syntax) : vm_args(vm, syntax, "") {}
-            inline vm_args(Machine* vm, const std::string& id, const std::string& args) : vm(vm), syntax(id + args) {
+            inline vm_args(Machine* vm, const std::string& id, const std::string& args, bool is_method = false) : vm(vm), syntax(id + args), arg_offset(is_method ? 1 : 0) {
                 auto start = syntax.find('(');
                 auto end = syntax.find(')');
                 if (start == std::string::npos || end == std::string::npos) return;
