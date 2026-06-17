@@ -140,7 +140,8 @@ namespace Vital::Sandbox {
                 #endif
 
                 bind_method<TInstance>(vm, "get_type", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(std::string(TOwner::base_name).empty() ? false : TOwner::base_name);
+                    auto name = scope_name(TOwner::base_scope);
+                    vm -> push_value(name.empty() ? false : name);
                     return 1;
                 });
 
