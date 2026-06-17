@@ -100,7 +100,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "define", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(table, schema)")
+                vm_args(vm, id, "(table, schema)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_table);
 
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "table", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name)")
+                vm_args(vm, id, "(name)", true)
                     .require(2, &Machine::is_string);
 
                 auto name = vm -> get_string(2);

@@ -76,7 +76,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_antialiasing", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(state)")
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 self -> font -> set_antialiasing(vm -> get_bool(2));
@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_oversampling", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(value)")
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> font -> set_oversampling(static_cast<float>(vm -> get_float(2)));

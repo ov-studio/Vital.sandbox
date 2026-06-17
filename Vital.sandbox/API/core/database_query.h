@@ -68,7 +68,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "select", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(...)")
+                vm_args(vm, id, "(...)", true)
                     .require(2, &Machine::is_string);
 
                 int count = vm -> get_count();
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "where", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(column, op, value)")
+                vm_args(vm, id, "(column, op, value)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
@@ -94,7 +94,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "insert", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(data)")
+                vm_args(vm, id, "(data)", true)
                     .require(2, &Machine::is_table);
 
                 self -> query -> data = read_table(vm, 2);
@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(data)")
+                vm_args(vm, id, "(data)", true)
                     .require(2, &Machine::is_table);
 
                 self -> query -> data = read_table(vm, 2);
@@ -120,7 +120,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "fetch", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(limit = 0)")
+                vm_args(vm, id, "(limit = 0)", true)
                     .optional(2, &Machine::is_number);
 
                 if (vm -> is_number(2)) self -> query -> limit = vm -> get_int(2);
@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "alter", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(actions)")
+                vm_args(vm, id, "(actions)", true)
                     .require(2, &Machine::is_table);
 
                 int index = 2;

@@ -83,7 +83,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(raw)")
+                vm_args(vm, id, "(raw)", true)
                     .require(2, &Machine::is_string);
 
                 self -> texture -> update_svg_from_raw(vm -> get_string(2));

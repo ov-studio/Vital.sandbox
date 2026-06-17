@@ -149,7 +149,7 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "is_component_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component)")
+                vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
 
                 vm -> push_value(self -> model -> is_component_visible(vm -> get_string(2)));
@@ -157,7 +157,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_material_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material)")
+                vm_args(vm, id, "(component, material)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
@@ -166,7 +166,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_material_feature", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, feature)")
+                vm_args(vm, id, "(component, material, feature)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
@@ -176,7 +176,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_material_flag", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, flag)")
+                vm_args(vm, id, "(component, material, flag)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
@@ -216,7 +216,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_materials", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component)")
+                vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
 
                 auto list = self -> model -> get_materials(vm -> get_string(2));
@@ -229,7 +229,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_blendshapes", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component)")
+                vm_args(vm, id, "(component)", true)
                     .require(2, &Machine::is_string);
 
                 auto list = self -> model -> get_blendshapes(vm -> get_string(2));
@@ -262,7 +262,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_blendshape_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, blendshape)")
+                vm_args(vm, id, "(component, blendshape)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
@@ -271,7 +271,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_bone_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(bone)")
+                vm_args(vm, id, "(bone)", true)
                     .require(2, &Machine::is_string);
 
                 vm -> push_value(self -> model -> get_bone_position(vm -> get_string(2)));
@@ -294,7 +294,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)")
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
                 self -> model -> set_position(vm -> get_vector3(2));
@@ -303,7 +303,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(rotation)")
+                vm_args(vm, id, "(rotation)", true)
                     .require(2, &Machine::is_vector3);
 
                 self -> model -> set_rotation(vm -> get_vector3(2));
@@ -312,7 +312,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_component_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, state)")
+                vm_args(vm, id, "(component, state)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
 
@@ -322,7 +322,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_material_visible", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, state)")
+                vm_args(vm, id, "(component, material, state)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_bool);
@@ -332,7 +332,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_material_feature", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, feature, state)")
+                vm_args(vm, id, "(component, material, feature, state)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number)
@@ -343,7 +343,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_material_flag", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, material, flag, state)")
+                vm_args(vm, id, "(component, material, flag, state)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number)
@@ -354,7 +354,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_blendshape_value", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(component, blendshape, value)")
+                vm_args(vm, id, "(component, blendshape, value)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
                     .require(4, &Machine::is_number);
@@ -365,7 +365,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_animation_speed", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(speed)")
+                vm_args(vm, id, "(speed)", true)
                     .require(2, &Machine::is_number);
 
                 self -> model -> set_animation_speed(vm -> get_float(2));
@@ -375,7 +375,7 @@ namespace Vital::Sandbox::API {
 
             #if !defined(VSDK_Client)
             vm_module::bind_method<Instance>(vm, "set_sync_authority", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(peer_id)")
+                vm_args(vm, id, "(peer_id)", true)
                     .require(2, &Machine::is_number);
 
                 self -> model -> set_sync_authority(vm -> get_int(2));
@@ -385,7 +385,7 @@ namespace Vital::Sandbox::API {
             #endif
 
             vm_module::bind_method<Instance>(vm, "play_animation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, loop = true, speed = 1.0)")
+                vm_args(vm, id, "(name, loop = true, speed = 1.0)", true)
                     .require(2, &Machine::is_string)
                     .optional(3, &Machine::is_bool)
                     .optional(4, &Machine::is_number);

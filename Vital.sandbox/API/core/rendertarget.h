@@ -107,7 +107,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_active", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(clear = false, instant = false)")
+                vm_args(vm, id, "(clear = false, instant = false)", true)
                     .optional(2, &Machine::is_bool)
                     .optional(3, &Machine::is_bool);
 
