@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: gfx: volumetric_fog.h
+     Script: API: gfx: vol_fog.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -17,12 +17,12 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-/////////////////////////////////
-// Vital: API: Volumetric_Fog //
-/////////////////////////////////
+//////////////////////////
+// Vital: API: Vol_Fog //
+//////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Volumetric_Fog : vm_module {
+    struct Vol_Fog : vm_module {
         inline static const std::string base_nspace = "gfx";
         inline static const std::string base_name = "vol_fog";
         using base_class = Vital::Engine::Core;
@@ -227,6 +227,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct Volumetric_Fog : vm_module {};
+    struct Vol_Fog : vm_module {};
 }
 #endif

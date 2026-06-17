@@ -45,7 +45,7 @@
 #include <Vital.sandbox/API/gfx/sdfgi.h>
 #include <Vital.sandbox/API/gfx/ssao.h>
 #include <Vital.sandbox/API/gfx/fog.h>
-#include <Vital.sandbox/API/gfx/volumetric_fog.h>
+#include <Vital.sandbox/API/gfx/vol_fog.h>
 
 
 /////////////////////
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<SDFGI>(),
             vm_module::make_api<SSAO>(),
             vm_module::make_api<Fog>(),
-            vm_module::make_api<Volumetric_Fog>()
+            vm_module::make_api<Vol_Fog>()
         };
     }
 }
