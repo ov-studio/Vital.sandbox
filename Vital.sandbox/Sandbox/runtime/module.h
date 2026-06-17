@@ -157,8 +157,7 @@ namespace Vital::Sandbox {
 
             template<typename T>
             static bool is_userdata(Machine* vm, int index = 1) {
-                const auto name = scope_name(T::Owner::base_scope);
-                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, name.c_str()));
+                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, scope_name(T::Owner::base_scope).c_str()));
                 if (!ud || !*ud) return false;
                 return T::find_unlocked(static_cast<T*>(*ud) -> id) != nullptr;
             }
