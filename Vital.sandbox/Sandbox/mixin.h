@@ -65,7 +65,7 @@ namespace Vital::Sandbox {
 
 
             // Scopes //
-            void scope_with(const std::vector<std::string>& scope, std::function<void(Derived*)> exec) {
+            void with_scope(const std::vector<std::string>& scope, std::function<void(Derived*)> exec) {
                 self() -> get_global(scope[0]);
                 for (std::size_t i = 1; i < scope.size(); ++i) {
                     if (!self() -> is_table(-1)) {
@@ -78,7 +78,7 @@ namespace Vital::Sandbox {
                 self() -> pop(static_cast<int>(scope.size()));
             }
             
-            void scope_set(const std::vector<std::string>& scope) {
+            void set_scope(const std::vector<std::string>& scope) {
                 self() -> create_namespace(scope[0]);
                 for (std::size_t i = 1; i < scope.size(); ++i) {
                     self() -> get_table_field(scope[i], -1);

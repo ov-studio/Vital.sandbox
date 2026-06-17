@@ -126,7 +126,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             {
-                vm -> scope_with(base_scope, [](auto vm) {
+                vm -> with_scope(base_scope, [](auto vm) {
                     vm -> table_get_value("print", -1);
                     vm -> push_global("print");
                 });
