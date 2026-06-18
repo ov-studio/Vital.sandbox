@@ -40,6 +40,22 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(resource)")
+                    .require(1, &Machine::is_string);
+
+                const std::string resource = vm -> get_string(1);
+                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.list — resource '{}' is not running", resource)); // TODO: APPLY BASE NAME USING FMT
+
+                const auto names = Manager::Sandbox::get_singleton() -> list_exports(resource);
+                vm -> create_table();
+                for (int i = 0; i < static_cast<int>(names.size()); ++i) {
+                    vm -> push_value(names[i]);
+                    vm -> set_table_field(i + 1, -2);
+                }
+                return 1;
+            });
+
             API::bind(vm, base_scope, "call", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(resource, name, ...)")
                     .require(1, &Machine::is_string)
@@ -57,22 +73,6 @@ namespace Vital::Sandbox::API {
                 // TODO: can't use vm->pcall — it logs+pops on failure; we need to throw instead
                 if (lua_pcall(vm -> get_state(), nargs, LUA_MULTRET, 0) != LUA_OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — error in '{}:{}': {}", resource, name, vm -> get_string(-1))); // TODO: APPLY BASE NAME USING FMT
                 return vm -> get_count() - 2;
-            });
-
-            API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(resource)")
-                    .require(1, &Machine::is_string);
-
-                const std::string resource = vm -> get_string(1);
-                if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.list — resource '{}' is not running", resource)); // TODO: APPLY BASE NAME USING FMT
-
-                const auto names = Manager::Sandbox::get_singleton() -> list_exports(resource);
-                vm -> create_table();
-                for (int i = 0; i < static_cast<int>(names.size()); ++i) {
-                    vm -> push_value(names[i]);
-                    vm -> set_table_field(i + 1, -2);
-                }
-                return 1;
             });
         }
     };
