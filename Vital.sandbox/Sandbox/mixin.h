@@ -184,7 +184,7 @@ namespace Vital::Sandbox {
 
             // Collectors //
             Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
-                switch (lua_type(self() -> get_state(), index)) {
+                switch (self() -> get_type(index)) {
                     case LUA_TNIL: return Tool::StackValue(nullptr);
                     case LUA_TBOOLEAN: return Tool::StackValue(self() -> get_bool(index));
                     case LUA_TNUMBER: return Tool::StackValue(self() -> get_double(index));
@@ -211,8 +211,8 @@ namespace Vital::Sandbox {
 
                 self() -> push_nil();
                 while (self() -> next(index)) {
-                    int key_type = lua_type(self() -> get_state(), -2);
-                    int val_type = lua_type(self() -> get_state(), -1);
+                    int key_type = self() -> get_type(-2);
+                    int val_type = self() -> get_type(-1);
                     if (key_type == LUA_TNUMBER) {
                         int idx = self() -> get_int(-2);
                         if (idx >= 1) {
