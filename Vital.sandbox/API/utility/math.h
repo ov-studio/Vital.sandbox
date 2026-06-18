@@ -64,17 +64,13 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "distance_3d", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(x1, y1, z1, x2, y2, z2)")
-                    .require(1, &Machine::is_number)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number)
-                    .require(4, &Machine::is_number)
-                    .require(5, &Machine::is_number)
-                    .require(6, &Machine::is_number);
+                vm_args(vm, id, "(a, b)")
+                    .require(1, &Machine::is_vector3)
+                    .require(2, &Machine::is_vector3);
 
-                double x1 = vm -> get_double(1), y1 = vm -> get_double(2), z1 = vm -> get_double(3);
-                double x2 = vm -> get_double(4), y2 = vm -> get_double(5), z2 = vm -> get_double(6);
-                vm -> push_value(std::sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1) + (z2 - z1)*(z2 - z1)));
+                auto a = vm -> get_vector3(1);
+                auto b = vm -> get_vector3(2);
+                vm -> push_value(static_cast<double>(a.distance_to(b)));
                 return 1;
             });
 
