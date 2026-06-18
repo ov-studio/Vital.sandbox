@@ -156,24 +156,24 @@ namespace Vital::Tool::File {
         return read_magic(Tool::to_godot_string(base), Tool::to_godot_string(path), count);
     }
 
-    inline bool write_text(const godot::String& base, const godot::String& path, const std::string& text) {
+    inline bool write_text(const godot::String& base, const godot::String& path, const std::string& content) {
         auto file = Internal::assert_file(base, path, godot::FileAccess::WRITE);
-        file -> store_string(Tool::to_godot_string(text));
+        file -> store_string(Tool::to_godot_string(content));
         return true;
     }
 
-    inline bool write_text(const std::string& base, const std::string& path, const std::string& text) {
-        return write_text(Tool::to_godot_string(base), Tool::to_godot_string(path), text);
+    inline bool write_text(const std::string& base, const std::string& path, const std::string& content) {
+        return write_text(Tool::to_godot_string(base), Tool::to_godot_string(path), content);
     }
 
-    inline bool write_binary(const godot::String& base, const godot::String& path, const godot::PackedByteArray& data) {
+    inline bool write_binary(const godot::String& base, const godot::String& path, const godot::PackedByteArray& content) {
         auto file = Internal::assert_file(base, path, godot::FileAccess::WRITE);
-        file -> store_buffer(data);
+        file -> store_buffer(content);
         return true;
     }
 
-    inline bool write_binary(const std::string& base, const std::string& path, const godot::PackedByteArray& data) {
-        return write_binary(Tool::to_godot_string(base), Tool::to_godot_string(path), data);
+    inline bool write_binary(const std::string& base, const std::string& path, const godot::PackedByteArray& content) {
+        return write_binary(Tool::to_godot_string(base), Tool::to_godot_string(path), content);
     }
 
     inline std::vector<std::string> contents(const godot::String& base, const godot::String& path, bool directory_search = false) {

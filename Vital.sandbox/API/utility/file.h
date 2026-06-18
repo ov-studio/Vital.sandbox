@@ -93,13 +93,13 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "write", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path, buffer)")
+                vm_args(vm, id, "(path, content)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
-                auto buffer = vm -> get_string(2);
-                vm -> push_value(Tool::File::write_text(get_base(vm, path), path, buffer));
+                auto content = vm -> get_string(2);
+                vm -> push_value(Tool::File::write_text(get_base(vm, path), path, content));
                 return 1;
             });
 
