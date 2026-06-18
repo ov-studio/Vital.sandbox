@@ -659,59 +659,5 @@ namespace Vital::Sandbox {
                 if (auto_load && !pcall(0)) return 0;
                 return 1;
             }
-
-
-            // Collectors //
-            Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
-                switch (lua_type(state, index)) {
-                    case LUA_TNIL: return Tool::StackValue(nullptr);
-                    case LUA_TBOOLEAN: return Tool::StackValue(get_bool(index));
-                    case LUA_TNUMBER: return Tool::StackValue(get_double(index));
-                    case LUA_TSTRING: return Tool::StackValue(get_string(index));
-                    case LUA_TTABLE: return Tool::StackValue(collect_table(index, visited, depth));
-                    default: return Tool::StackValue(nullptr);
-                }
-            }
-
-            Tool::Stack collect_args(int index) {
-                Tool::Stack payload;
-                std::unordered_set<const void*> visited;
-                for (int i = index; i <= get_count(); ++i) payload.array.emplace_back(collect_value(i, visited));
-                return payload;
-            }
-
-            std::shared_ptr<Tool::Stack> collect_table(int index, std::unordered_set<const void*>& visited, int depth = 0) {
-                auto stack = std::make_shared<Tool::Stack>();
-                if (depth > 32) return stack;
-
-                auto ptr = get_pointer(index);
-                if (!ptr || visited.count(ptr)) return stack;
-                visited.insert(ptr);
-
-                push_nil();
-                while (next(index)) {
-                    int key_type = lua_type(state, -2);
-                    int val_type = lua_type(state, -1);
-                    if (key_type == LUA_TNUMBER) {
-                        int idx = get_int(-2);
-                        if (idx >= 1) {
-                            auto val = collect_value(get_count(), visited, depth + 1);
-                            if (static_cast<int>(stack -> array.size()) < idx) stack -> array.resize(idx, Tool::StackValue(nullptr));
-                            stack -> array[idx - 1] = val;
-                        }
-                    }
-                    else if (key_type == LUA_TSTRING) {
-                        if (val_type == LUA_TNIL ||
-                            val_type == LUA_TBOOLEAN ||
-                            val_type == LUA_TNUMBER ||
-                            val_type == LUA_TSTRING ||
-                            val_type == LUA_TTABLE
-                        ) stack -> object[get_string(-2)] = collect_value(get_count(), visited, depth + 1);
-                    }
-                    pop(1);
-                }
-                visited.erase(ptr);
-                return stack;
-            }
     };
 }
