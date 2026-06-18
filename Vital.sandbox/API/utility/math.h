@@ -34,9 +34,9 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .optional(2, &Machine::is_number);
 
-                double value = vm -> get_double(1);
-                int decimals = vm -> is_number(2) ? vm -> get_int(2) : 0;
-                double factor = std::pow(10.0, decimals);
+                auto value = vm -> get_double(1);
+                auto decimals = vm -> is_number(2) ? vm -> get_int(2) : 0;
+                auto factor = std::pow(10.0, decimals);
                 vm -> push_value(std::round(value*factor)/factor);
                 return 1;
             });
@@ -46,8 +46,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .require(2, &Machine::is_number);
 
-                double value = vm -> get_double(1);
-                double percent = vm -> get_double(2);
+                auto value = vm -> get_double(1);
+                auto percent = vm -> get_double(2);
                 vm -> push_value(value*percent*0.01);
                 return 1;
             });
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
 
                 auto a = vm -> get_vector2(1);
                 auto b = vm -> get_vector2(2);
-                double rotation = godot::Math::rad_to_deg((b - a).angle());
+                auto rotation = godot::Math::rad_to_deg((b - a).angle());
                 if (rotation < 0) rotation += 360.0;
                 vm -> push_value(rotation);
                 return 1;
@@ -94,8 +94,8 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_number);
 
                 auto origin = vm -> get_vector2(1);
-                float distance = vm -> get_float(2);
-                float rotation = godot::Math::deg_to_rad(vm -> get_float(3));
+                auto distance = vm -> get_float(2);
+                auto rotation = godot::Math::deg_to_rad(vm -> get_float(3));
                 vm -> push_value(origin + godot::Vector2(std::cos(rotation), std::sin(rotation))*distance);
                 return 1;
             });
