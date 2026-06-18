@@ -25,7 +25,7 @@
 namespace Vital::Sandbox {
     class Machine : public Mixin<Machine> {
         protected:
-            static vm_apis internal_apis;
+            static vm_apis apis;
             inline static std::mutex mutex;
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
@@ -67,7 +67,6 @@ namespace Vital::Sandbox {
             Machine* parent = nullptr;
             std::unordered_set<Machine*> children = {};
             vm_refs reference = {};
-            vm_apis external_apis = {};
             std::function<void(Machine*, int nresults)> on_finish;
 
 
@@ -77,8 +76,9 @@ namespace Vital::Sandbox {
             }
         public:
             // Instantiators //
-            Machine(vm_apis apis = {}) : state(luaL_newstate()), external_apis(std::move(apis)) {
+            Machine() {
                 Tool::assert_main_thread("Machine::Machine");
+                state = luaL_newstate();
                 machines.emplace(state, this);
                 for (auto& value : whitelist) {
                     luaL_requiref(state, value.name, value.func, 1);
@@ -512,15 +512,11 @@ namespace Vital::Sandbox {
 
             void hook(const std::string& mode) {
                 Tool::assert_main_thread("Machine::hook");
-                auto apply = [&](auto& apis) {
-                    for (auto& i : apis) {
-                        if (mode == "init") i.init(this);
-                        else if (mode == "bind") i.bind(this);
-                        else i.inject(this);
-                    }
-                };
-                apply(internal_apis);
-                apply(external_apis);
+                for (auto& i : apis) {
+                    if (mode == "init") i.init(this);
+                    else if (mode == "bind") i.bind(this);
+                    else i.inject(this);
+                }
             }
 
             void bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec);

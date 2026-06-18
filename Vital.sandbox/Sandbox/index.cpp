@@ -24,7 +24,7 @@
 /////////////////////
 
 namespace Vital::Sandbox {
-    vm_apis Machine::internal_apis = API::make_apis();
+    vm_apis Machine::apis = API::make_apis();
 
     void Machine::next_tick(std::function<void()> exec) {
         Engine::Core::get_singleton() -> enqueue([exec = std::move(exec)]() {
