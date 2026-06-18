@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "world_to_screen", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(position, padding)")
+                vm_args(vm, id, "(position, padding = 0)")
                     .require(1, &Machine::is_vector3);
 
                 auto position = vm -> get_vector3(1);
@@ -48,7 +48,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "screen_to_world", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(position, depth)")
+                vm_args(vm, id, "(position, depth = 1)")
                     .require(1, &Machine::is_vector2);
 
                 auto position = vm -> get_vector2(1);
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_line", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(points, stroke, color)")
+                vm_args(vm, id, "(points, stroke = 0, color = {1, 1, 1, 1})")
                     .require(1, &Machine::is_vector2_array);
 
                 auto points = vm -> get_vector2_array(1);
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_polygon", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(points, color, stroke, stroke_color, rotation, pivot)")
+                vm_args(vm, id, "(points, color = {1, 1, 1, 1}, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
                     .require(1, &Machine::is_vector2_array);
 
                 auto points = vm -> get_vector2_array(1);
