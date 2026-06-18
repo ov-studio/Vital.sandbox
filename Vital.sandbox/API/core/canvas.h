@@ -30,11 +30,6 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Canvas;
 
         static void bind(Machine* vm) {
-            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_singleton() -> get_resolution());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "world_to_screen", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, padding = 0)")
                     .require(1, &Machine::is_vector3);
