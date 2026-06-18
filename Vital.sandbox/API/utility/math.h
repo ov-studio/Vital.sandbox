@@ -89,7 +89,7 @@ namespace Vital::Sandbox::API {
 
                 double x1 = vm -> get_double(1), y1 = vm -> get_double(2);
                 double x2 = vm -> get_double(3), y2 = vm -> get_double(4);
-                double rotation = -godot::Math::rad_to_deg(std::atan2(x2 - x1, y2 - y1));
+                double rotation = godot::Math::rad_to_deg(std::atan2(y2 - y1, x2 - x1));
                 if (rotation < 0) rotation += 360.0;
                 vm -> push_value(rotation);
                 return 1;
@@ -104,7 +104,7 @@ namespace Vital::Sandbox::API {
 
                 double x = vm -> get_double(1), y = vm -> get_double(2);
                 double distance = vm -> get_double(3);
-                double rotation = godot::Math::deg_to_rad(90.0 - vm -> get_double(4));
+                double rotation = godot::Math::deg_to_rad(vm -> get_double(4));
                 vm -> push_value(x + std::cos(rotation)*distance);
                 vm -> push_value(y + std::sin(rotation)*distance);
                 return 2;
