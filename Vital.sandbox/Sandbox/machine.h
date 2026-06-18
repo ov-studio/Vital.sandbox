@@ -418,34 +418,6 @@ namespace Vital::Sandbox {
             }
 
 
-            // Scope //
-            void with_scope(const std::vector<std::string>& scope, std::function<void(Machine*)> exec) {
-                get_global(scope[0]);
-                for (std::size_t i = 1; i < scope.size(); ++i) {
-                    if (!is_table(-1)) {
-                        pop(static_cast<int>(i));
-                        return;
-                    }
-                    get_table_field(scope[i], -1);
-                }
-                if (is_table(-1)) exec(this);
-                pop(static_cast<int>(scope.size()));
-            }
-
-            void set_scope(const std::vector<std::string>& scope) {
-                create_namespace(scope[0]);
-                for (std::size_t i = 1; i < scope.size(); ++i) {
-                    get_table_field(scope[i], -1);
-                    if (!is_table(-1)) {
-                        pop(1);
-                        create_table();
-                        push(-1);
-                        set_table_field(scope[i], -3);
-                    }
-                }
-            }
-
-
             // Environment //
             void create_environment(const std::string& id) {
                 Tool::assert_main_thread("Machine::create_environment");
@@ -495,6 +467,70 @@ namespace Vital::Sandbox {
                 for (auto& clean : env_cleaners) clean(id);
             }
 
+
+            // Scope //
+            void with_scope(const std::vector<std::string>& scope, std::function<void(Machine*)> exec) {
+                get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    if (!is_table(-1)) {
+                        pop(static_cast<int>(i));
+                        return;
+                    }
+                    get_table_field(scope[i], -1);
+                }
+                if (is_table(-1)) exec(this);
+                pop(static_cast<int>(scope.size()));
+            }
+
+            void set_scope(const std::vector<std::string>& scope) {
+                create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    get_table_field(scope[i], -1);
+                    if (!is_table(-1)) {
+                        pop(1);
+                        create_table();
+                        push(-1);
+                        set_table_field(scope[i], -3);
+                    }
+                }
+            }
+
+            void scope_move_global(const std::vector<std::string>& scope, const std::string& name, bool nil_source = false) {
+                create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size() - 1; ++i) {
+                    get_table_field(scope[i], -1);
+                    if (!is_table(-1)) {
+                        pop(1);
+                        create_table();
+                        push(-1);
+                        set_table_field(scope[i], -3);
+                    }
+                }
+                get_global(name);
+                set_table_field(scope.back(), -2);
+                pop(static_cast<int>(scope.size() - 1));
+                if (nil_source) {
+                    push_nil();
+                    push_global(name);
+                }
+            }
+
+            void scope_nil_field(const std::vector<std::string>& scope, const std::string& name) {
+                get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    if (!is_table(-1)) {
+                        pop(static_cast<int>(i));
+                        return;
+                    }
+                    get_table_field(scope[i], -1);
+                }
+                if (is_table(-1)) {
+                    push_nil();
+                    set_table_field(name, -2);
+                }
+                pop(static_cast<int>(scope.size()));
+            }
+        
 
             // Context Handles //
             std::string fetch_source() {
