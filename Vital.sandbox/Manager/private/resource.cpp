@@ -539,7 +539,13 @@ namespace Vital::Manager {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             all = Internal::get_all_resources();
         }
-        for (auto resource : all) if (start(resource -> ref)) count++;
+        for (auto resource : all) {
+            {
+                std::lock_guard<std::mutex> lock(rm -> mutex);
+                if (Internal::is_running(resource -> ref)) continue;
+            }
+            if (start(resource -> ref)) count++;
+        }
         rm -> log("sbox", fmt::format("all resources started — {} resource(s) started", count));
     }
 
