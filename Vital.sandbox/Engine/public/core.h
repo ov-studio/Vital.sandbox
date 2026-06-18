@@ -68,6 +68,7 @@ namespace Vital::Engine {
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
+            godot::Vector2 get_resolution();
             #endif
     };
 }

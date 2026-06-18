@@ -195,12 +195,6 @@ namespace Vital::Engine {
     }
 
 
-    // Getters //
-    godot::Vector2 Canvas::get_resolution() {
-        return Engine::Core::get_display_server() -> window_get_size();
-    }
-
-
     // APIs //
     godot::Vector3 Canvas::world_to_screen(godot::Vector3 position, float padding) {
         godot::Vector3 result = {-1, -1, -1};

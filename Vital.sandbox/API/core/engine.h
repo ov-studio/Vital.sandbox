@@ -108,6 +108,11 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
             });
+
+            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
+                vm -> push_value(Engine::Core::get_singleton() -> get_resolution());
+                return 1;
+            });
             #endif
 
             API::bind(vm, base_scope, "get_entities", [](auto vm, auto& id) -> int {

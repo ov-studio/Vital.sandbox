@@ -126,9 +126,7 @@ namespace Vital::Engine {
 
     // APIs //
     godot::SceneTree* Core::get_scene_tree() {
-        return godot::Object::cast_to<godot::SceneTree>(
-            godot::Engine::get_singleton() -> get_main_loop()
-        );
+        return godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
     }
 
     godot::Window* Core::get_scene_root() {
@@ -161,6 +159,10 @@ namespace Vital::Engine {
         if (!environment) return;
         environment -> queue_free();
         environment = nullptr;
+    }
+
+    godot::Vector2 Core::get_resolution() {
+        return get_display_server() -> window_get_size();
     }
     #endif
 }
