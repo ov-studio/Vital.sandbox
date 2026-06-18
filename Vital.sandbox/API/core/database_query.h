@@ -86,9 +86,9 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_string);
 
                 auto column = vm -> get_string(2);
-                auto operator = vm -> get_string(3);
+                auto op = vm -> get_string(3);
                 auto value = vm -> get_string(4);
-                self -> query -> where.emplace_back(column, operator, value);
+                self -> query -> where.emplace_back(column, op, value);
                 self -> push_self(vm);
                 return 1;
             });
