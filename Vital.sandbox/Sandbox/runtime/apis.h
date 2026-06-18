@@ -27,6 +27,9 @@
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
 
+#include <Vital.sandbox/API/utility/math.h>
+#include <Vital.sandbox/API/utility/string.h>
+#include <Vital.sandbox/API/utility/table.h>
 #include <Vital.sandbox/API/utility/timer.h>
 #include <Vital.sandbox/API/utility/promise.h>
 #include <Vital.sandbox/API/utility/thread.h>
@@ -69,6 +72,9 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Rendertarget>(),
 
             // Utility //
+            vm_module::make_api<Math>(),
+            vm_module::make_api<String>(),
+            vm_module::make_api<Table>(),
             vm_module::make_api<Timer>(),
             vm_module::make_api<Promise>(),
             vm_module::make_api<Thread>(),
