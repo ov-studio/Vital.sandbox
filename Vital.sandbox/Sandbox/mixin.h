@@ -25,7 +25,7 @@ namespace Vital::Sandbox {
             void push_value(float value) { self() -> push_number(value); }
             void push_value(double value) { self() -> push_number(value); }
             void push_value(const std::string& value) { self() -> push_string(value); }
-            void push_value(void* value) { self() -> push_userdata(state, value); }
+            void push_value(void* value) { self() -> push_userdata(value); }
             void push_value(vm_exec& value) { self() -> push_function(value); }
             void push_value(const godot::Color& value) { self() -> push_color(value); }
             void push_value(const godot::Vector2& value) { self() -> push_vector2(value); }
@@ -64,7 +64,7 @@ namespace Vital::Sandbox {
             }
 
 
-            // Getters //
+            // Table //
             void table_get_value(int value, int index = 1) {
                 self() -> get_table_field(value, index);
             }
@@ -73,8 +73,6 @@ namespace Vital::Sandbox {
                 self() -> get_table_field(value, index);
             }
 
-
-            // Pushers //
             void table_push_nil(const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 self() -> push_nil();
@@ -99,8 +97,6 @@ namespace Vital::Sandbox {
                 if (!nspace.empty()) self() -> pop(2);
             }
 
-
-            // Setters //
             void table_set_nil(const std::string& index, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 self() -> push_nil();
@@ -123,6 +119,71 @@ namespace Vital::Sandbox {
                 }
                 self() -> set_table_field(index, -2);
                 if (!nspace.empty()) self() -> pop(2);
+            }
+
+
+            // Scope //
+            void scope_with(const std::vector<std::string>& scope, std::function<void(Derived*)> exec) {
+                self() -> get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    if (!self() -> is_table(-1)) {
+                        self() -> pop(static_cast<int>(i));
+                        return;
+                    }
+                    self() -> get_table_field(scope[i], -1);
+                }
+                if (self() -> is_table(-1)) exec(self());
+                self() -> pop(static_cast<int>(scope.size()));
+            }
+
+            void scope_set(const std::vector<std::string>& scope) {
+                self() -> create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    self() -> get_table_field(scope[i], -1);
+                    if (!self() -> is_table(-1)) {
+                        self() -> pop(1);
+                        self() -> create_table();
+                        self() -> push(-1);
+                        self() -> set_table_field(scope[i], -3);
+                    }
+                }
+            }
+
+            void scope_move_global(const std::vector<std::string>& scope, const std::string& name, bool nil_source = false) {
+                if (scope.size() < 2) return;
+                self() -> create_namespace(scope[0]);
+                for (std::size_t i = 1; i < scope.size() - 1; ++i) {
+                    self() -> get_table_field(scope[i], -1);
+                    if (!self() -> is_table(-1)) {
+                        self() -> pop(1);
+                        self() -> create_table();
+                        self() -> push(-1);
+                        self() -> set_table_field(scope[i], -3);
+                    }
+                }
+                self() -> get_global(name);
+                self() -> set_table_field(scope.back(), -2);
+                self() -> pop(static_cast<int>(scope.size() - 1));
+                if (nil_source) {
+                    self() -> push_nil();
+                    self() -> push_global(name);
+                }
+            }
+
+            void scope_nil_field(const std::vector<std::string>& scope, const std::string& name) {
+                self() -> get_global(scope[0]);
+                for (std::size_t i = 1; i < scope.size(); ++i) {
+                    if (!self() -> is_table(-1)) {
+                        self() -> pop(static_cast<int>(i));
+                        return;
+                    }
+                    self() -> get_table_field(scope[i], -1);
+                }
+                if (self() -> is_table(-1)) {
+                    self() -> push_nil();
+                    self() -> set_table_field(name, -2);
+                }
+                self() -> pop(static_cast<int>(scope.size()));
             }
     };
 }
