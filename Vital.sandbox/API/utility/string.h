@@ -23,15 +23,16 @@
 namespace Vital::Sandbox::API {
     struct String : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "string"};
+        inline static const std::vector<std::string> base_scope_utf8 = {"util", "utf8"};
 
         static void init(Machine* vm) {
             {
-                vm -> scope_move_global({"util", "string"}, "string", true);
-                vm -> scope_nil_field({"util", "string"}, "dump");
+                vm -> scope_move_global(base_scope, "string", true);
+                vm -> scope_nil_field(base_scope, "dump");
             }
             {
-                vm -> scope_move_global({"util", "utf8"}, "utf8", true);
-                vm -> scope_nil_field({"util", "utf8"}, "dump");
+                vm -> scope_move_global(base_scope_utf8, "utf8", true);
+                vm -> scope_nil_field(base_scope_utf8, "dump");
             }
             // TODO: MERGE UTF8 AND STRING IN ONE IN HERE DIRECTLY?
         }

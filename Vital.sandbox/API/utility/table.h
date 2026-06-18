@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: utility: math.h
+     Script: API: utility: table.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Math APIs
+     Desc: Table APIs
 ----------------------------------------------------------------*/
 
 
@@ -16,16 +16,16 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-///////////////////////
-// Vital: API: Math //
-///////////////////////
+////////////////////////
+// Vital: API: Table //
+////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Math : vm_module {
-        inline static const std::vector<std::string> base_scope = {"util", "string"};
+    struct Table : vm_module {
+        inline static const std::vector<std::string> base_scope = {"util", "table"};
 
         static void init(Machine* vm) {
-            vm -> scope_move_global(base_scope, "math", true);
+            vm -> scope_move_global(base_scope, "table", true);
         }
 
         static void bind(Machine* vm) {
