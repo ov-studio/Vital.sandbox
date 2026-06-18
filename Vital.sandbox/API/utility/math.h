@@ -88,18 +88,16 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "project_2d", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(x, y, distance, rotation)")
-                    .require(1, &Machine::is_number)
+                vm_args(vm, id, "(origin, distance, rotation)")
+                    .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number)
-                    .require(4, &Machine::is_number);
+                    .require(3, &Machine::is_number);
 
-                double x = vm -> get_double(1), y = vm -> get_double(2);
-                double distance = vm -> get_double(3);
-                double rotation = godot::Math::deg_to_rad(vm -> get_double(4));
-                vm -> push_value(x + std::cos(rotation)*distance);
-                vm -> push_value(y + std::sin(rotation)*distance);
-                return 2;
+                auto origin = vm -> get_vector2(1);
+                float distance = vm -> get_float(2);
+                float rotation = godot::Math::deg_to_rad(vm -> get_float(3));
+                vm -> push_value(origin + godot::Vector2(std::cos(rotation), std::sin(rotation))*distance);
+                return 1;
             });
         }
     };
