@@ -59,7 +59,7 @@ namespace Vital::Sandbox::API {
 
                 auto a = vm -> get_vector2(1);
                 auto b = vm -> get_vector2(2);
-                vm -> push_value(static_cast<double>(a.distance_to(b)));
+                vm -> push_value(a.distance_to(b));
                 return 1;
             });
 
@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
 
                 auto a = vm -> get_vector3(1);
                 auto b = vm -> get_vector3(2);
-                vm -> push_value(static_cast<double>(a.distance_to(b)));
+                vm -> push_value(a.distance_to(b));
                 return 1;
             });
 
