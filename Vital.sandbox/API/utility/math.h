@@ -22,7 +22,7 @@
 
 namespace Vital::Sandbox::API {
     struct Math : vm_module {
-        inline static const std::vector<std::string> base_scope = {"util", "string"};
+        inline static const std::vector<std::string> base_scope = {"util", "math"};
 
         static void init(Machine* vm) {
             vm -> scope_move_global(base_scope, "math", true);

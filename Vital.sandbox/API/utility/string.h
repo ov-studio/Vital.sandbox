@@ -34,7 +34,7 @@ namespace Vital::Sandbox::API {
                 vm -> scope_move_global(base_scope_utf8, "utf8", true);
                 vm -> scope_nil_field(base_scope_utf8, "dump");
             }
-            // TODO: MERGE UTF8 AND STRING IN ONE IN HERE DIRECTLY?
+            // TODO: MERGE UTF8 AND STRING IN ONE IN HERE DIRECTLY? and then nil utf8? to avoid lua injection
         }
 
         static void bind(Machine* vm) {
