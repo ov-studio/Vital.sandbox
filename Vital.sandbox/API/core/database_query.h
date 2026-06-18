@@ -81,14 +81,14 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "where", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(column, op, value)", true)
+                vm_args(vm, id, "(column, operator, value)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string);
 
                 auto column = vm -> get_string(2);
-                auto op = vm -> get_string(3);
+                auto operator = vm -> get_string(3);
                 auto value = vm -> get_string(4);
-                self -> query -> where.emplace_back(column, op, value);
+                self -> query -> where.emplace_back(column, operator, value);
                 self -> push_self(vm);
                 return 1;
             });
