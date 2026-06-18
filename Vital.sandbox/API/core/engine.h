@@ -105,13 +105,13 @@ namespace Vital::Sandbox::API {
             });
 
             #if defined(VSDK_Client)
-            API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::Inspect::fingerprint());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_singleton() -> get_resolution());
+                return 1;
+            });
+            
+            API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
             });
             #endif
