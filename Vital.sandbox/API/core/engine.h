@@ -24,6 +24,7 @@
 namespace Vital::Sandbox::API {
     struct Engine : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "engine"};
+        using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "print", [](auto vm, auto& id) -> int {
@@ -110,7 +111,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
-                vm -> push_value(Engine::Core::get_singleton() -> get_resolution());
+                vm -> push_value(base_class::get_singleton() -> get_resolution());
                 return 1;
             });
             #endif
