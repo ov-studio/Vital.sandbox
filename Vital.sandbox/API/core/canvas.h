@@ -102,7 +102,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_circle", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(position, radius, color, stroke, stroke_color, rotation, pivot)")
+                vm_args(vm, id, "(position, radius, color = {1, 1, 1, 1}, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
                     .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_number);
 
