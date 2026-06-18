@@ -30,8 +30,12 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             {
-                vm -> table_set_nil("dump", "string");
-                vm -> table_set_nil("dump", "utf8");
+                vm -> scope_move_global({"util", "string"}, "string", true);
+                vm -> scope_nil_field({"util", "string"}, "dump");
+            }
+            {
+                vm -> scope_move_global({"util", "utf8"}, "utf8", true);
+                vm -> scope_nil_field({"util", "utf8"}, "dump");
             }
         }
     };
