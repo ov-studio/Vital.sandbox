@@ -65,13 +65,8 @@ namespace Vital::Sandbox {
 
 
             // Table //
-            void table_get_value(int value, int index = 1) {
-                self() -> get_table_field(value, index);
-            }
-
-            void table_get_value(const std::string& value, int index = 1) {
-                self() -> get_table_field(value, index);
-            }
+            void table_get_value(int value, int index = 1) { self() -> get_table_field(value, index); }
+            void table_get_value(const std::string& value, int index = 1) { self() -> get_table_field(value, index); }
 
             void table_push_nil(const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);

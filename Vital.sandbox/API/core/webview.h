@@ -53,11 +53,11 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 base_class::Options options;
                 if (vm -> is_table(1)) {
-                    vm -> get_table_field("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
-                    vm -> get_table_field("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
-                    vm -> get_table_field("incognito", 1); options.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.incognito;
-                    vm -> get_table_field("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
-                    vm -> get_table_field("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
+                    vm -> table_get_value("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
+                    vm -> table_get_value("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
+                    vm -> table_get_value("incognito", 1); options.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.incognito;
+                    vm -> table_get_value("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
+                    vm -> table_get_value("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> pop(5);
                 }
                 auto instance = Instance::init(vm);

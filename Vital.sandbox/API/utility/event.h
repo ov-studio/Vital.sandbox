@@ -74,8 +74,8 @@ namespace Vital::Sandbox::API {
         static HandlerConfig read_config(Machine* vm, int index) {
             HandlerConfig cfg;
             if (vm -> get_count() < index || !vm -> is_table(index)) return cfg;
-            vm -> get_table_field("async", index); cfg.is_async = vm -> get_bool(-1); vm -> pop(1);
-            vm -> get_table_field("subscription_limit", index);
+            vm -> table_get_value("async", index); cfg.is_async = vm -> get_bool(-1); vm -> pop(1);
+            vm -> table_get_value("subscription_limit", index);
             if (vm -> is_number(-1)) cfg.sub_limit = std::max(1, vm -> get_int(-1));
             vm -> pop(1);
             return cfg;
@@ -84,11 +84,11 @@ namespace Vital::Sandbox::API {
         static EmitOptions read_emit_options(Machine* vm) {
             EmitOptions opts;
             if (vm -> get_count() >= 2 && vm -> is_table(2)) {
-                vm -> get_table_field("remote", 2);
+                vm -> table_get_value("remote", 2);
                 if (!vm -> is_nil(-1)) opts.is_remote = vm -> get_bool(-1);
                 vm -> pop(1);
                 #if !defined(VSDK_Client)
-                vm -> get_table_field("peer", 2);
+                vm -> table_get_value("peer", 2);
                 if (vm -> is_number(-1)) opts.peer_id = vm -> get_int(-1);
                 vm -> pop(1);
                 #endif
@@ -182,7 +182,7 @@ namespace Vital::Sandbox::API {
                 int orig = vm -> get_count() - 1, copy = vm -> get_count();
                 int n = vm -> get_length(orig);
                 for (int i = 1; i <= n; ++i) {
-                    vm -> get_table_field(i, orig);
+                    vm -> table_get_value(i, orig);
                     vm -> set_table_field(i, copy);
                 }
                 vm -> rotate(-2, -1);

@@ -50,10 +50,10 @@ namespace Vital::Sandbox::API {
 
         static base_class::Column read_schema_definition(Machine* vm, int index) {
             base_class::Column definition;
-            vm -> get_table_field("type", index); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
-            vm -> get_table_field("primary", index); definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.primary;
-            vm -> get_table_field("autoincrement", index); definition.autoincrement = vm -> is_bool(-1)   ? vm -> get_bool(-1) : definition.autoincrement;
-            vm -> get_table_field("nullable", index); definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.nullable;
+            vm -> table_get_value("type", index); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
+            vm -> table_get_value("primary", index); definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.primary;
+            vm -> table_get_value("autoincrement", index); definition.autoincrement = vm -> is_bool(-1)   ? vm -> get_bool(-1) : definition.autoincrement;
+            vm -> table_get_value("nullable", index); definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.nullable;
             vm -> pop(4);
             return definition;
         }

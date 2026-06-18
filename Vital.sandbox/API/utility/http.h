@@ -35,7 +35,7 @@ namespace Vital::Sandbox::API {
                 int timeout = 60;
                 if (vm -> is_table(2)) {
                     for (int i = 1; i <= vm -> get_length(2); i++) {
-                        vm -> get_table_field(i, 2);
+                        vm -> table_get_value(i, 2);
                         if (vm -> is_string(-1)) headers.push_back(vm -> get_string(-1));
                         vm -> pop(1);
                     }
@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
                 int timeout = 60;
                 if (vm -> is_table(3)) {
                     for (int i = 1; i <= vm -> get_length(3); i++) {
-                        vm -> get_table_field(i, 3);
+                        vm -> table_get_value(i, 3);
                         if (vm -> is_string(-1)) headers.push_back(vm -> get_string(-1));
                         vm -> pop(1);
                     }

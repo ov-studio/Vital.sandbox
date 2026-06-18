@@ -165,23 +165,23 @@ namespace Vital::Sandbox::API {
 
                 int index = 2;
                 Tool::Database::SchemaActions actions;
-                vm -> get_table_field("add", index);
+                vm -> table_get_value("add", index);
                 if (vm -> is_table(-1)) {
                     auto steps = API::Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Add);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
-                vm -> get_table_field("modify", index);
+                vm -> table_get_value("modify", index);
                 if (vm -> is_table(-1)) {
                     auto steps = API::Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Modify);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
-                vm -> get_table_field("drop", index);
+                vm -> table_get_value("drop", index);
                 if (vm -> is_table(-1)) {
                     auto step_index = vm -> get_count();
                     for (int i = 1; i <= vm -> get_length(step_index); i++) {
-                        vm -> get_table_field(i, step_index);
+                        vm -> table_get_value(i, step_index);
                         if (vm -> is_string(-1)) {
                             Tool::Database::SchemaAction step;
                             step.type = Tool::Database::SchemaAction::Type::Drop;
