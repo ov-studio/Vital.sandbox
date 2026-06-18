@@ -119,7 +119,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_image", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(position, size, material, rotation, pivot, color)")
+                vm_args(vm, id, "(position, size, material, rotation = 0, pivot = {0, 0}, color = {1, 1, 1, 1})")
                     .require(1, &Machine::is_vector2)
                     .require(2, &Machine::is_vector2)
                     .require(3, [](Machine* vm, int index) {
