@@ -154,7 +154,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_text", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(text, start_at, end_at, font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot)")
+                vm_args(vm, id, "(text, start_at, end_at, font, font_size, color = {1, 1, 1, 1}, alignment = {\"left\", \"top\"}, clip = false, wordwrap = false, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_vector2)
