@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: utility: string.h
+     Script: API: utility: math.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: String APIs
+     Desc: Math APIs
 ----------------------------------------------------------------*/
 
 
@@ -16,12 +16,12 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-/////////////////////////
-// Vital: API: String //
-/////////////////////////
+///////////////////////
+// Vital: API: Math //
+///////////////////////
 
 namespace Vital::Sandbox::API {
-    struct String : vm_module {
+    struct Math : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "string"};
 
         static void init(Machine* vm) {
@@ -36,7 +36,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-
+            
         }
     };
 }
