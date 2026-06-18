@@ -33,6 +33,7 @@ namespace Vital::Sandbox::API {
                 vm -> scope_move_global({"util", "utf8"}, "utf8", true);
                 vm -> scope_nil_field({"util", "utf8"}, "dump");
             }
+            // TODO: MERGE UTF8 AND STRING IN ONE IN HERE DIRECTLY?
         }
 
         static void bind(Machine* vm) {
