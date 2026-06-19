@@ -33,11 +33,11 @@ namespace Vital::Sandbox::API {
                 vm -> scope_nil_field(base_scope_utf8, "dump");
             }
             {
-                vm -> scope_with(base_scope, [](Machine* vm) {
-                    int string_idx = vm -> get_count();
-                    int util_idx = string_idx - 1;
+                vm -> scope_with(base_scope, [](auto vm) {
+                    auto string_idx = vm -> get_count();
+                    auto util_idx = string_idx - 1;
                     vm -> get_table_field(base_scope_utf8.back(), util_idx);
-                    int utf8_idx = vm -> get_count();
+                    auto utf8_idx = vm -> get_count();
                     if (vm -> is_table(utf8_idx)) {
                         vm -> push_nil();
                         while (vm -> next(utf8_idx)) {
