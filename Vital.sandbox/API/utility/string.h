@@ -29,31 +29,33 @@ namespace Vital::Sandbox::API {
             {
                 vm -> scope_move_global(base_scope, "string", true);
                 vm -> scope_nil_field(base_scope, "dump");
-            }
-            {
                 vm -> scope_move_global(base_scope_utf8, "utf8", true);
                 vm -> scope_nil_field(base_scope_utf8, "dump");
             }
             {
-                vm -> create_namespace(base_scope[0]);
-                int util_idx = vm -> get_count();
-                vm -> get_table_field(base_scope.back(), util_idx);
-                int string_idx = vm -> get_count();
-                vm -> get_table_field(base_scope_utf8.back(), util_idx);
-                int utf8_idx = vm -> get_count();
-                if (vm -> is_table(string_idx) && vm -> is_table(utf8_idx)) {
-                    vm -> push_nil();
-                    while (vm -> next(utf8_idx)) {
-                        vm -> push(-2);
-                        vm -> push(-2);
-                        vm -> set_table(string_idx);
-                        vm -> pop(1);
+                vm -> scope_with(base_scope, [](Machine* vm) {
+                    int string_idx = vm -> get_count();
+                    int util_idx = string_idx - 1;
+                    vm -> get_table_field(base_scope_utf8.back(), util_idx);
+                    int utf8_idx = vm -> get_count();
+                    if (vm -> is_table(utf8_idx)) {
+                        vm -> push_nil();
+                        while (vm -> next(utf8_idx)) {
+                            vm -> push(-2);
+                            vm -> push(-2);
+                            vm -> set_table(string_idx);
+                            vm -> pop(1);
+                        }
                     }
-                }
-                vm -> push_nil();
-                vm -> set_table_field(base_scope_utf8.back(), util_idx);
-                vm -> pop(3);
+                    vm -> push_nil();
+                    vm -> set_table_field(base_scope_utf8.back(), util_idx);
+                    vm -> pop(1);
+                });
             }
+        }
+        
+        static void bind(Machine* vm) {
+        
         }
 
         static void bind(Machine* vm) {
