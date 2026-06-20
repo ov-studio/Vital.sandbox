@@ -87,7 +87,7 @@ namespace Vital::Manager {
                 static std::vector<const Manifest*> get_resources(State type);
 
 
-                // APIs //
+                // Misc //
                 static bool start(std::string name);
                 static bool stop(std::string name);
                 static void stop_all();
@@ -136,7 +136,7 @@ namespace Vital::Manager {
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
 
 
-            // APIs //
+            // Misc //
             bool start(std::string name);
             bool stop(std::string name);
             void stop_all();

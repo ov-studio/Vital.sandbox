@@ -124,7 +124,7 @@ namespace Vital::Engine {
     }
 
 
-    // APIs //
+    // Misc //
     godot::SceneTree* Core::get_scene_tree() {
         return godot::Object::cast_to<godot::SceneTree>(godot::Engine::get_singleton() -> get_main_loop());
     }

@@ -201,7 +201,7 @@ namespace Vital::Engine {
             void set_animation_speed(float speed);
 
 
-            // APIs //
+            // Misc //
             bool play_animation(const std::string& name, bool loop = true, float speed = 1.0f);
             void stop_animation();
             void pause_animation();

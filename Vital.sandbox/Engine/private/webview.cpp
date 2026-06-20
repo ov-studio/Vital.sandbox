@@ -127,7 +127,7 @@ namespace Vital::Engine {
     }
 
 
-    // APIs //
+    // Misc //
     void Webview::load_url(const std::string& url) {
         webview -> call_deferred("load_url", Tool::to_godot_string(url));
     }

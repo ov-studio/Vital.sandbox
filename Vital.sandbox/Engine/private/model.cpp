@@ -634,7 +634,7 @@ namespace Vital::Engine {
     }
 
 
-    // APIs //
+    // Misc //
     bool Model::play_animation(const std::string& name, bool loop, float speed) {
         if (!anim_player) return false;
         if (!anim_player -> has_animation(Tool::to_godot_string(name))) {

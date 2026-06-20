@@ -72,7 +72,7 @@ namespace Vital::Engine {
             void set_message_handler(std::function<void(godot::String)> handler);
 
 
-            // APIs //
+            // Misc //
             void load_url(const std::string& url);
             void load_html(const std::string& raw);
             void clear_history();

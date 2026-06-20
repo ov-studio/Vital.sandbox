@@ -76,7 +76,7 @@ namespace Vital::Manager {
             static void free_singleton();
 
 
-            // APIs //
+            // Misc //
             void init();
             void clear();
 

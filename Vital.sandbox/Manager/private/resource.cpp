@@ -303,7 +303,7 @@ namespace Vital::Manager {
     }
 
 
-    // APIs //
+    // Misc //
     bool Resource::Internal::start(std::string name) {
         Tool::assert_main_thread("Resource::Internal::start");
         auto rm = Resource::get_singleton();
@@ -716,7 +716,7 @@ namespace Vital::Manager {
     }
 
 
-    // APIs //
+    // Misc //
     bool Resource::start(std::string name) {
         Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
         return true;

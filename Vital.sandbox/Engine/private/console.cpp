@@ -460,7 +460,7 @@ namespace Vital::Engine {
     }
 
 
-    // APIs //
+    // Misc //
     void Console::init() {
         #if defined(VSDK_Client)
         rapidjson::Document document;

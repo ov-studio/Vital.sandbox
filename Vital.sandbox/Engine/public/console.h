@@ -74,7 +74,7 @@ namespace Vital::Engine {
             static void free_singleton();
 
 
-            // APIs //
+            // Misc //
             void init();
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);

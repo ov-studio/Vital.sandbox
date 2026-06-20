@@ -86,7 +86,7 @@ namespace Vital::Engine {
     }
 
 
-    // APIs //
+    // Misc //
     Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, const std::string& reference) {
         return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), reference);
     }

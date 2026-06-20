@@ -60,7 +60,7 @@ namespace Vital::Engine {
             void teardown();
 
 
-            // APIs //
+            // Misc //
             static godot::SceneTree* get_scene_tree();
             static godot::Window* get_scene_root();
             #if defined(VSDK_Client)
