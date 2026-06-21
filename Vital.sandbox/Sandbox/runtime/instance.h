@@ -124,6 +124,7 @@ namespace Vital::Sandbox {
                 instance -> userdata = vm_module::get_userdata_ptr(instance -> vm, -1);
                 instance -> set_reference(instance -> self_reference(), -1);
                 if (!push_to_stack) instance -> vm -> pop(1);
+                instance -> vm = instance -> vm -> get_root();
                 Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
                 return true;
             }
@@ -160,7 +161,7 @@ namespace Vital::Sandbox {
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::registry.next_id.fetch_add(1);
-                instance -> vm = remote ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm -> get_root();
+                instance -> vm = remote ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm;
                 if (!remote) instance -> env = vm -> get_environment_id();
                 return instance;
             }
