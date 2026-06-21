@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(data)", true)
                     .require(2, &Machine::is_table);
 
-                self -> query -> data = read_table(vm, 2);
+                self -> query -> insert_rows.push_back(read_table(vm, 2));
                 self -> query -> query_type = "insert";
                 self -> push_self(vm);
                 return 1;
