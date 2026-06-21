@@ -49,6 +49,7 @@ namespace Vital::Tool {
                 std::vector<std::string> select;
                 std::vector<std::tuple<std::string, std::string, std::string>> where;
                 std::unordered_map<std::string, std::string> data;
+                std::vector<std::unordered_map<std::string, std::string>> insert_rows;
                 int limit = 0;
                 inline static const std::unordered_set<std::string> valid_ops = {"=", "!=", ">", "<", ">=", "<="};
 
@@ -308,15 +309,38 @@ namespace Vital::Tool {
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
                 if (query -> query_type == "insert") {
-                    std::string columns, placeholders;
-                    bool first = true;
-                    int index = 0;
-                    for (const auto& [k, v] : query -> data) {
-                        if (!first) { columns += ", "; placeholders += ", "; }
-                        first = false;
-                        push_bind(query -> table, k, v, index++, columns, placeholders, binds, bind_names);
+                    if (query -> insert_rows.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: no rows to insert");
+                    std::vector<std::string> column_order;
+                    for (const auto& [k, v] : query -> insert_rows[0]) column_order.push_back(k);
+                    for (std::size_t r = 0; r < query -> insert_rows.size(); r++) {
+                        const auto& row = query -> insert_rows[r];
+                        if (row.size() != column_order.size()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: insert row #{} has a different column set than row #1", r + 1));
+                        for (const auto& column : column_order) {
+                            if (!row.count(column)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: insert row #{} is missing column '{}'", r + 1, column));
+                        }
                     }
-                    sql = fmt::format("INSERT INTO `{}` ({}) VALUES ({})", query -> table, columns, placeholders);
+
+                    std::string columns;
+                    for (std::size_t i = 0; i < column_order.size(); i++) {
+                        assert_column(query -> table, column_order[i]);
+                        if (i > 0) columns += ", ";
+                        columns += fmt::format("`{}`", column_order[i]);
+                    }
+
+                    std::string values_clause;
+                    for (std::size_t r = 0; r < query -> insert_rows.size(); r++) {
+                        if (r > 0) values_clause += ", ";
+                        std::string placeholders;
+                        for (std::size_t i = 0; i < column_order.size(); i++) {
+                            if (i > 0) placeholders += ", ";
+                            auto pname = fmt::format("r{}c{}", r, i);
+                            placeholders += fmt::format(":{}", pname);
+                            bind_names.push_back(pname);
+                            binds.push_back(query -> insert_rows[r].at(column_order[i]));
+                        }
+                        values_clause += fmt::format("({})", placeholders);
+                    }
+                    sql = fmt::format("INSERT INTO `{}` ({}) VALUES {}", query -> table, columns, values_clause);
                 }
                 else if (query -> query_type == "delete") {
                     sql = fmt::format("DELETE FROM `{}`", query -> table);
