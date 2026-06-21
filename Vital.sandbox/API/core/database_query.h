@@ -284,16 +284,29 @@ namespace Vital::Sandbox::API {
                     auto vm = promise -> vm;
                     try {
                         bool result = instance -> query -> db -> execute(instance -> query);
-                        instance -> clean();
-                        vm -> push_value(result);
-                        API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        vm -> pop(1);
+                        Machine::enqueue([instance_id, promise_id, result]() {
+                            auto instance = Instance::find(instance_id);
+                            if (instance) instance -> clean();
+                            auto promise = API::Promise::Instance::find(promise_id);
+                            if (!promise) return;
+                            auto vm = promise -> vm;
+                            vm -> push_value(result);
+                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
+                            vm -> pop(1);
+                        });
                     }
                     catch (const std::runtime_error& error) {
-                        instance -> clean();
-                        vm -> push_value(std::string(error.what()));
-                        API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        vm -> pop(1);
+                        std::string message = error.what();
+                        Machine::enqueue([instance_id, promise_id, message]() {
+                            auto instance = Instance::find(instance_id);
+                            if (instance) instance -> clean();
+                            auto promise = API::Promise::Instance::find(promise_id);
+                            if (!promise) return;
+                            auto vm = promise -> vm;
+                            vm -> push_value(message);
+                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
+                            vm -> pop(1);
+                        });
                     }
                 }) -> detach();
                 return 1;
