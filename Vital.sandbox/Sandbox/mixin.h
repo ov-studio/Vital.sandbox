@@ -184,14 +184,12 @@ namespace Vital::Sandbox {
 
             // Collectors //
             Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
-                switch (self() -> get_type(index)) {
-                    case LUA_TNIL: return Tool::StackValue(nullptr);
-                    case LUA_TBOOLEAN: return Tool::StackValue(self() -> get_bool(index));
-                    case LUA_TNUMBER: return Tool::StackValue(self() -> get_double(index));
-                    case LUA_TSTRING: return Tool::StackValue(self() -> get_string(index));
-                    case LUA_TTABLE: return Tool::StackValue(collect_table(index, visited, depth));
-                    default: return Tool::StackValue(nullptr);
-                }
+                if (self() -> is_nil(index)) return Tool::StackValue(nullptr);
+                if (self() -> is_bool(index)) return Tool::StackValue(self() -> get_bool(index));
+                if (self() -> is_number(index)) return Tool::StackValue(self() -> get_double(index));
+                if (self() -> is_string(index)) return Tool::StackValue(self() -> get_string(index));
+                if (self() -> is_table(index)) return Tool::StackValue(collect_table(index, visited, depth));
+                return Tool::StackValue(nullptr);
             }
 
             Tool::Stack collect_args(int index) {
@@ -211,9 +209,10 @@ namespace Vital::Sandbox {
 
                 self() -> push_nil();
                 while (self() -> next(index)) {
-                    int key_type = self() -> get_type(-2);
-                    int val_type = self() -> get_type(-1);
-                    if (key_type == LUA_TNUMBER) {
+                    bool key_is_number = self() -> is_number(-2);
+                    bool key_is_string = self() -> is_string(-2);
+                    bool val_is_collectible = self() -> is_nil(-1) || self() -> is_bool(-1) || self() -> is_number(-1) || self() -> is_string(-1) || self() -> is_table(-1);
+                    if (key_is_number) {
                         int idx = self() -> get_int(-2);
                         if (idx >= 1) {
                             auto val = collect_value(self() -> get_count(), visited, depth + 1);
@@ -221,13 +220,8 @@ namespace Vital::Sandbox {
                             stack -> array[idx - 1] = val;
                         }
                     }
-                    else if (key_type == LUA_TSTRING) {
-                        if (val_type == LUA_TNIL ||
-                            val_type == LUA_TBOOLEAN ||
-                            val_type == LUA_TNUMBER ||
-                            val_type == LUA_TSTRING ||
-                            val_type == LUA_TTABLE
-                        ) stack -> object[self() -> get_string(-2)] = collect_value(self() -> get_count(), visited, depth + 1);
+                    else if (key_is_string) {
+                        if (val_is_collectible) stack -> object[self() -> get_string(-2)] = collect_value(self() -> get_count(), visited, depth + 1);
                     }
                     self() -> pop(1);
                 }

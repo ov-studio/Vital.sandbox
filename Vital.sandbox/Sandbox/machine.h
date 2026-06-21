@@ -151,15 +151,15 @@ namespace Vital::Sandbox {
 
             // Checkers //
             bool is_virtual() const { return virtualized; }
-            bool is_nil(int index = 1) { return lua_isnoneornil(state, index); }
-            bool is_bool(int index = 1) { return lua_isboolean(state, index); }
-            bool is_number(int index = 1) { return lua_isnumber(state, index); }
-            bool is_string(int index = 1) { return lua_isstring(state, index); }
-            bool is_table(int index = 1) { return lua_istable(state, index); }
-            bool is_thread(int index = 1) { return lua_isthread(state, index); }
-            bool is_userdata(int index = 1) { return lua_isuserdata(state, index); }
+            bool is_nil(int index = 1) { return get_type(index) <= 0; }
+            bool is_bool(int index = 1) { return get_type(index) == LUA_TBOOLEAN; }
+            bool is_number(int index = 1) { return get_type(index) == LUA_TNUMBER; }
+            bool is_string(int index = 1) { return get_type(index) == LUA_TSTRING; }
+            bool is_table(int index = 1) { return get_type(index) == LUA_TTABLE; }
+            bool is_thread(int index = 1) { return get_type(index) == LUA_TTHREAD; }
+            bool is_userdata(int index = 1) { return get_type(index) == LUA_TUSERDATA || get_type(index) == LUA_TLIGHTUSERDATA; }
             bool is_pointer(int index = 1) { return lua_topointer(state, index) != nullptr; }
-            bool is_function(int index = 1) { return lua_isfunction(state, index); }
+            bool is_function(int index = 1) { return get_type(index) == LUA_TFUNCTION; }
             bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(make_reference(scope, name)) != reference.end(); }
 
             bool is_horizontal_alignment(int index = 1) {
