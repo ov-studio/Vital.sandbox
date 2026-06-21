@@ -37,7 +37,8 @@ namespace Vital::Tool::HTTP {
         std::string host;
         if (port_pos != std::string::npos && (path_start == std::string::npos || port_pos < path_start)) {
             host = host_part.substr(0, port_pos);
-            port = std::stoi(host_part.substr(port_pos + 1));
+            try { port = std::stoi(host_part.substr(port_pos + 1)); }
+            catch (const std::exception&) { throw std::runtime_error("Invalid URL format"); }
         }
         else {
             host = host_part;
