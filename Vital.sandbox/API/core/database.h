@@ -121,22 +121,29 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "sync", [](auto vm, auto self, auto& id) -> int {
                 auto db = self -> db;
                 auto promise_id = API::Promise::make(vm, true) -> id;
-                
+
                 Tool::Thread::create([promise_id, db](Tool::Thread*) {
-                    auto promise = API::Promise::Instance::find(promise_id);
-                    if (!promise) return;
-                    
-                    auto vm = promise -> vm;
                     try {
                         db -> sync();
-                        vm -> push_value(true);
-                        API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                        vm -> pop(1);
+                        Machine::enqueue([promise_id]() {
+                            auto promise = API::Promise::Instance::find(promise_id);
+                            if (!promise) return;
+                            auto vm = promise -> vm;
+                            vm -> push_value(true);
+                            API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
+                            vm -> pop(1);
+                        });
                     }
                     catch (const std::runtime_error& error) {
-                        vm -> push_value(std::string(error.what()));
-                        API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                        vm -> pop(1);
+                        std::string message = error.what();
+                        Machine::enqueue([promise_id, message]() {
+                            auto promise = API::Promise::Instance::find(promise_id);
+                            if (!promise) return;
+                            auto vm = promise -> vm;
+                            vm -> push_value(message);
+                            API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
+                            vm -> pop(1);
+                        });
                     }
                 }) -> detach();
                 return 1;
