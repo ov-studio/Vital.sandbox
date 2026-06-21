@@ -49,7 +49,6 @@ namespace Vital::Sandbox::API {
                         Machine::enqueue([promise_id, response]() {
                             auto promise = API::Promise::Instance::find(promise_id);
                             if (!promise) return;
-                            
                             auto vm = promise -> vm;
                             vm -> push_value(response);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -61,7 +60,6 @@ namespace Vital::Sandbox::API {
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
                             if (!promise) return;
-
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -97,7 +95,6 @@ namespace Vital::Sandbox::API {
                         Machine::enqueue([promise_id, response]() {
                             auto promise = API::Promise::Instance::find(promise_id);
                             if (!promise) return;
-
                             auto vm = promise -> vm;
                             vm -> push_value(response);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -109,7 +106,6 @@ namespace Vital::Sandbox::API {
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
                             if (!promise) return;
-
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
