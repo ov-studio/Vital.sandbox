@@ -94,6 +94,7 @@ namespace Vital::Tool {
         private:
             std::unique_ptr<soci::session> session;
             GlobalSchema schema;
+            std::mutex mutex;
 
             void assert_identifier(const std::string& name) const {
                 if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid identifier '{}'", name));
@@ -160,6 +161,7 @@ namespace Vital::Tool {
             }
 
             void destroy() {
+                std::lock_guard<std::mutex> lock(mutex);
                 if (session) {
                     session -> close();
                     session.reset();
@@ -167,17 +169,20 @@ namespace Vital::Tool {
                 delete this;
             }
 
-            bool is_connected() const {
+            bool is_connected() {
+                std::lock_guard<std::mutex> lock(mutex);
                 return session != nullptr && session -> is_connected();
             }
 
             void define(const std::string& table, const TableSchema& columns) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_identifier(table);
                 for (const auto& [column, definition] : columns) assert_identifier(column);
                 schema[table] = columns;
             }
 
             void sync() {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_session();
                 for (const auto& [table, columns] : schema) {
                     std::string sql = fmt::format("CREATE TABLE IF NOT EXISTS `{}` (", table);
@@ -196,6 +201,7 @@ namespace Vital::Tool {
             }
 
             Query* table(const std::string& name) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_table(name);
                 auto query = new Query();
                 query -> db = this;
@@ -204,6 +210,7 @@ namespace Vital::Tool {
             }
 
             Rows fetch(Query* query) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(query -> table);
                 std::string columns;
                 if (query -> select.empty()) columns = "*";
@@ -254,6 +261,7 @@ namespace Vital::Tool {
             }
 
             void alter(const std::string& table, const SchemaActions& actions) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(table);
                 if (actions.empty()) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: no actions specified");
 
@@ -282,17 +290,20 @@ namespace Vital::Tool {
             }
 
             void drop(const std::string& table) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(table);
                 *session << fmt::format("DROP TABLE IF EXISTS `{}`", table);
                 schema.erase(table);
             }
 
             void truncate(const std::string& table) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(table);
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
             
             bool execute(Query* query) {
+                std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(query -> table);
                 std::string sql;
                 std::vector<std::string> binds, bind_names;
