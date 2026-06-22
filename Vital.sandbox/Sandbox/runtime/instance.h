@@ -120,11 +120,24 @@ namespace Vital::Sandbox {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                     Derived::Owner::registry.buffer[instance -> id] = instance;
                 }
-                instance -> vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
-                instance -> userdata = vm_module::get_userdata_ptr(instance -> vm, -1);
-                instance -> set_reference(instance -> self_reference(), -1);
-                if (!push_to_stack) instance -> vm -> pop(1);
-                instance -> vm = instance -> vm -> get_root();
+                auto calling_vm = instance -> vm;
+                auto root_vm = calling_vm -> get_root();
+                calling_vm -> create_object(vm_module::scope_name(Derived::Owner::base_scope), instance.get());
+                instance -> userdata = vm_module::get_userdata_ptr(calling_vm, -1);
+                if (calling_vm != root_vm) {
+                    calling_vm -> move(root_vm, 1);
+                    instance -> vm = root_vm;
+                    instance -> set_reference(instance -> self_reference(), -1);
+                    if (push_to_stack) {
+                        root_vm -> push(-1);
+                        root_vm -> move(calling_vm, 1);
+                    }
+                }
+                else {
+                    instance -> set_reference(instance -> self_reference(), -1);
+                    if (!push_to_stack) calling_vm -> pop(1);
+                }
+
                 Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
                 return true;
             }
