@@ -61,7 +61,7 @@ namespace Vital::Sandbox {
             int get_reference(const std::string& name, bool push_to_stack = false, Machine* target_vm = nullptr) {
                 int ref = vm -> get_reference("runtime", name, false);
                 if (push_to_stack) {
-                    Machine* dest = (target_vm && target_vm != vm) ? target_vm : vm;
+                    auto dest = (target_vm && target_vm != vm) ? target_vm : vm;
                     dest -> get_raw_reference(ref);
                 }
                 return ref;
