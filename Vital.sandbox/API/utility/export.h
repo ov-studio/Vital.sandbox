@@ -33,6 +33,7 @@ namespace Vital::Sandbox::API {
 
                 const std::string name = vm -> get_string(1);
                 const std::string resource = Manager::Resource::get_resource_from_vm(vm);
+                // TODO: Improve logs?? Reason: export.register
                 if (resource.empty()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: export.register called outside a resource environment"); // TODO: APPLY BASE NAME USING FMT
 
                 Manager::Sandbox::get_singleton() -> register_export(resource, name, vm -> set_raw_reference(2));
