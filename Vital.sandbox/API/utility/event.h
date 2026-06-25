@@ -434,6 +434,11 @@ namespace Vital::Sandbox::API {
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
                 if (opts.is_remote) {
+                    #if !defined(VSDK_Client)
+                    // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
+                    if (opts.peer_id <= 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: event.emit_callback — 'options.peer' is required for remote emit_callback on server");
+                    if (!Manager::Network::get_singleton() -> get_connected_peers().count(opts.peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: event.emit_callback — peer '{}' is not connected", opts.peer_id));
+                    #endif
                     auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true);
                     push_promise(vm, promise);
                     return 1;
