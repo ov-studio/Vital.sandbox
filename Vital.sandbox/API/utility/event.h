@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"util", "event"};
 
         struct HandlerConfig {
-            bool is_async  = false;
+            bool is_async = false;
             int sub_limit = 0;
         };
 
