@@ -51,6 +51,7 @@ namespace Vital::Sandbox::API {
             bool is_remote = false;
             int peer_id = 0;
             int args_start = 2;
+            bool collect_all = false;
         };
 
         struct AggState {
@@ -86,6 +87,9 @@ namespace Vital::Sandbox::API {
             if (vm -> get_count() >= 2 && vm -> is_table(2)) {
                 vm -> table_get_value("remote", 2);
                 if (!vm -> is_nil(-1)) opts.is_remote = vm -> get_bool(-1);
+                vm -> pop(1);
+                vm -> table_get_value("collect_all", 2);
+                if (!vm -> is_nil(-1)) opts.collect_all = vm -> get_bool(-1);
                 vm -> pop(1);
                 #if !defined(VSDK_Client)
                 vm -> table_get_value("peer", 2);
@@ -459,7 +463,7 @@ namespace Vital::Sandbox::API {
 
                 int args_ref = vm -> store_args(opts.args_start);
                 std::vector<std::shared_ptr<API::Promise::Instance>> promises;
-                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
+                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises, opts.collect_all);
                 vm -> del_raw_reference(args_ref);
                 auto agg = aggregate_promises(vm, promises);
                 push_promise(vm, agg);
