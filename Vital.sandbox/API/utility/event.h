@@ -210,12 +210,13 @@ namespace Vital::Sandbox::API {
             return promise;
         }
 
-        static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr) {
+        static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr, bool collect_all = false) {
             std::vector<int> exhausted;
             for (auto& [ref, h] : snapshot) {
                 auto promise = fire_one(vm, h, args_ref, mode);
                 if (promise && promises) promises -> push_back(promise);
                 if (h.subscription_limit > 0) bump_subscription(name, ref, exhausted);
+                if (!collect_all) break;
             }
             sweep_exhausted(vm, name, exhausted);
         }
@@ -439,7 +440,6 @@ namespace Vital::Sandbox::API {
                 auto opts = read_emit_options(vm);
                 if (opts.is_remote) {
                     #if !defined(VSDK_Client)
-                    // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
                     if (opts.peer_id <= 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: event.emit_callback — 'options.peer' is required for remote emit_callback on server");
                     if (!Manager::Network::get_singleton() -> get_connected_peers().count(opts.peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: event.emit_callback — peer '{}' is not connected", opts.peer_id));
                     #endif
