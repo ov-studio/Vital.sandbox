@@ -137,7 +137,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(std::string("query instance was destroyed"));
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                         return;
                     }
@@ -158,7 +157,6 @@ namespace Vital::Sandbox::API {
                                 vm -> set_table_field(index++, -2);
                             }
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                     catch (const std::runtime_error& error) {
@@ -171,7 +169,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                 }) -> detach();
@@ -227,7 +224,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                     catch (const std::runtime_error& error) {
@@ -238,7 +234,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                 }) -> detach();
@@ -260,7 +255,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                     catch (const std::runtime_error& error) {
@@ -271,7 +265,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                 }) -> detach();
@@ -293,7 +286,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                     catch (const std::runtime_error& error) {
@@ -304,7 +296,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                 }) -> detach();
@@ -324,7 +315,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(std::string("query instance was destroyed"));
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                         return;
                     }
@@ -339,7 +329,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(result);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                     catch (const std::runtime_error& error) {
@@ -352,7 +341,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                 }) -> detach();

@@ -75,6 +75,7 @@ namespace Vital::Sandbox::API {
             else {
                 for (int i = 0; i < args_count; ++i) instance -> set_reference(instance -> value_reference(i + 1), args_start + i);
             }
+            vm -> pop(args_count);
 
             auto waiting = instance -> waiting;
             instance -> waiting.clear();

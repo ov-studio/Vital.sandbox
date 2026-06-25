@@ -131,7 +131,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                     catch (const std::runtime_error& error) {
@@ -142,7 +141,6 @@ namespace Vital::Sandbox::API {
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
-                            vm -> pop(1);
                         });
                     }
                 }) -> detach();
