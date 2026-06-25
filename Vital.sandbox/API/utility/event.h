@@ -168,7 +168,6 @@ namespace Vital::Sandbox::API {
                 int base = root_vm -> get_count() + 1;
                 if (nresults > 0) thread_vm -> move(root_vm, nresults);
                 API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, nresults);
-                if (nresults > 0) root_vm -> pop(nresults);
             });
             API::Thread::safe_resume(instance, n_args);
         }
@@ -199,7 +198,6 @@ namespace Vital::Sandbox::API {
                     if (vm -> pcall(n_args, LUA_MULTRET)) {
                         int result_count = vm -> get_count() - base;
                         API::Promise::settle(promise, API::Promise::State::Resolved, vm, base + 1, result_count);
-                        vm -> pop(result_count);
                     }
                     else API::Promise::settle(promise, API::Promise::State::Rejected, vm, 0, 0);
                 }
@@ -238,7 +236,6 @@ namespace Vital::Sandbox::API {
                 }
                 int base = tbl;
                 API::Promise::settle(agg, API::Promise::State::Resolved, root_vm, base, 1);
-                root_vm -> pop(1);
             });
         }
 
@@ -485,7 +482,6 @@ namespace Vital::Sandbox::API {
                 int count = static_cast<int>(payload.array.size());
                 for (auto& v : payload.array) root_vm -> push_value(v);
                 API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, count);
-                if (count > 0) root_vm -> pop(count);
                 return;
             }
 
