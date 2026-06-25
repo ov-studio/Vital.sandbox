@@ -83,7 +83,8 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "where", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(column, operator, value)", true)
                     .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_string);
+                    .require(3, &Machine::is_string)
+                    .require(4, [](Machine* vm, int index) { return vm -> is_string(index) || vm -> is_number(index); });
 
                 auto column = vm -> get_string(2);
                 auto op = vm -> get_string(3);
