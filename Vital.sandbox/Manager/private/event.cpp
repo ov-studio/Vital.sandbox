@@ -136,6 +136,7 @@ void initialize_vital_events() {
             network_initialized = true;
             auto nm = Vital::Manager::Network::get_singleton();
             #if defined(VSDK_Client)
+                // TODO: 7777?
                 nm -> connect_to_server("127.0.0.1", 7777, true);
             #else
                 g_server_config.load();
