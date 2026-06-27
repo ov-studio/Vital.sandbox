@@ -86,17 +86,29 @@ namespace Vital::Sandbox {
                 });
             }
 
+            template<typename T, typename... Args>
+            static T* push_owned(vm_state* state, Args&&... args) {
+                auto ptr = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
+                new (ptr) T(std::forward<Args>(args)...);
+                if (luaL_newmetatable(state, typeid(T).name())) {
+                    lua_pushcfunction(state, [](vm_state* state) -> int {
+                        static_cast<T*>(lua_touserdata(state, 1)) -> ~T();
+                        return 0;
+                    });
+                    lua_setfield(state, -2, "__gc");
+                }
+                lua_setmetatable(state, -2);
+                return ptr;
+            }
+
             template<typename T>
             static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<T>, const std::string&)> exec) {
-                // TODO: These needs to be freed when changing server freeing core // Anisa
-                auto heap_exec = new std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>(std::move(exec));
-                auto heap_type = new std::string(scope_name(T::Owner::base_scope));
-                auto heap_id = new std::string("self<" + scope_name(T::Owner::base_scope) + ">:" + name);
-                lua_pushlightuserdata(vm -> get_state(), heap_exec);
-                lua_pushlightuserdata(vm -> get_state(), heap_type);
-                lua_pushlightuserdata(vm -> get_state(), heap_id);
+                using exec_type = std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>;
+                push_owned<exec_type>(vm -> get_state(), std::move(exec));
+                push_owned<std::string>(vm -> get_state(), scope_name(T::Owner::base_scope));
+                push_owned<std::string>(vm -> get_state(), "self<" + scope_name(T::Owner::base_scope) + ">:" + name);
                 lua_pushcclosure(vm -> get_state(), [](vm_state* state) -> int {
-                    auto fn = static_cast<std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>*>(lua_touserdata(state, lua_upvalueindex(1)));
+                    auto fn = static_cast<exec_type*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
                     auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
                     auto vm = Machine::fetch_machine(state);
