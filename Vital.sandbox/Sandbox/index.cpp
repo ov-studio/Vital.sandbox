@@ -35,13 +35,9 @@ namespace Vital::Sandbox {
     void Machine::bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec) {
         Engine::Core::get_singleton() -> execute([this, scope, name, exec = std::move(exec)]() mutable {
             Tool::assert_main_thread("Machine::bind");
-            // TODO: deallocate heap on sandbox vm closure??
-            auto heap_exec = new vm_bind(std::move(exec));
-            std::string id = vm_module::scope_id(scope) + "." + name;
-            auto heap_id = new std::string(std::move(id));
             scope_set(scope);
-            push_userdata(heap_exec);
-            push_userdata(heap_id);
+            vm_module::push_owned<vm_bind>(state, std::move(exec));
+            vm_module::push_owned<std::string>(state, vm_module::scope_id(scope) + "." + name);
             lua_pushcclosure(state, [](vm_state* state) -> int {
                 auto exec = static_cast<vm_bind*>(lua_touserdata(state, lua_upvalueindex(1)));
                 auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
