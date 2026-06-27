@@ -41,7 +41,7 @@ namespace Vital::Engine {
             });
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
-                webview -> load_html(Manager::Kit::fetch_module("console"));
+                webview -> load_url(fmt::format("http://127.0.0.1:{}/cache/Vital.kit/console/build/index.html", Engine::Core::get_singleton() -> get_http_port()));
             });
         #else
             #if defined(VSDK_WINDOWS)

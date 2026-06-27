@@ -31,6 +31,14 @@ namespace Vital::Engine {
             std::atomic<bool> kit_ready { false };
             std::atomic<bool> kit_abort { false };
             std::vector<std::function<void()>> work_queue;
+            #if defined(VSDK_Client)
+            std::unique_ptr<httplib::Server> http_server;
+            std::thread http_thread;
+            std::atomic<bool> http_running { false };
+            int http_port = 7779;
+            void start_http_server();
+            void stop_http_server();
+            #endif
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);
@@ -69,6 +77,7 @@ namespace Vital::Engine {
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
             godot::Vector2 get_resolution();
+            int get_http_port() const;
             #endif
     };
 }

@@ -38,6 +38,9 @@ namespace Vital::Engine {
             if (!kit_abort.load()) {
                 enqueue([this]() {
                     Tool::print("sbox", "Core: Vital.kit ready");
+                    #if defined(VSDK_Client)
+                    start_http_server();
+                    #endif
                     kit_ready.store(true);
                     Tool::Event::emit("kit:ready");
                     Tool::Event::emit("core:ready");
@@ -99,6 +102,7 @@ namespace Vital::Engine {
         Manager::Asset::free_singleton();
         Engine::Model::teardown_spawner();
         #if defined(VSDK_Client)
+        stop_http_server();
         free_environment();
         #endif
         Tool::Event::emit("core:teardown");
@@ -163,6 +167,36 @@ namespace Vital::Engine {
 
     godot::Vector2 Core::get_resolution() {
         return get_display_server() -> window_get_size();
+    }
+
+    void Core::start_http_server() {
+        if (http_running) return;
+
+        http_server = std::make_unique<httplib::Server>();
+        http_server -> set_mount_point("/cache", Tool::get_directory() + "/cache");
+        http_server -> set_mount_point("/resources", Tool::get_directory() + "/resources");
+
+        http_running = true;
+        http_thread = std::thread([this]() {
+            Tool::print("sbox", "Core: HTTP server starting on port ", http_port);
+            http_server -> listen("127.0.0.1", http_port);
+            Tool::print("sbox", "Core: HTTP server stopped");
+        });
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Tool::print("sbox", "Core: HTTP server running on port ", http_port);
+    }
+
+    void Core::stop_http_server() {
+        if (!http_running) return;
+        http_running = false;
+        if (http_server) http_server -> stop();
+        if (http_thread.joinable()) http_thread.join();
+        http_server.reset();
+    }
+
+    int Core::get_http_port() const {
+        return http_port;
     }
     #endif
 }
