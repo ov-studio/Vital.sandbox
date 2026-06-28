@@ -15,7 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Sandbox/index.h>
 #include <Vital.sandbox/Sandbox/mixin.h>
-#include <Vital.sandbox/Manager/public/kit.h>
 
 
 //////////////////////////////
@@ -71,6 +70,7 @@ namespace Vital::Sandbox {
 
 
             // Helpers //
+            static void load_modules(Machine* vm);
             inline static std::string make_reference(const std::string& scope, const std::string& name) { 
                 return fmt::format("{}:{}", scope, name);
             }
@@ -90,9 +90,7 @@ namespace Vital::Sandbox {
                 }
                 hook("init");
                 hook("bind");
-                for (auto& [name, source] : Manager::Kit::fetch_modules("lua")) {
-                    load_string(source, name);
-                }
+                load_modules(this);
                 hook("inject");
             }
 
