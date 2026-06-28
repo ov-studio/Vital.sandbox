@@ -110,6 +110,10 @@ namespace Vital::Tool::HTTP {
             Server(const Server&) = delete;
             Server& operator=(const Server&) = delete;
 
+            bool is_running() const { 
+                return running.load();
+            }
+
             void set_bind_address(const std::string& address) { 
                 bind_address = address;
             }
@@ -120,15 +124,6 @@ namespace Vital::Tool::HTTP {
 
             void set_label(const std::string& l) { 
                 label = l;
-            }
-
-            void add_mount(const std::string& prefix, const std::string& directory) {
-                if (!server) server = std::make_unique<httplib::Server>();
-                server -> set_mount_point(prefix, directory);
-            }
-        
-            bool is_running() const { 
-                return running.load();
             }
 
             int get_port() const { 
