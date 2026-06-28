@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/network.h>
-#include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/API/utility/event.h>
 
 
