@@ -135,7 +135,12 @@ namespace Vital::Tool::HTTP {
                 if (!server) server = std::make_unique<httplib::Server>();
                 server -> Get(pattern, std::move(handler));
             }
-
+            
+            void add_mount(const std::string& prefix, const std::string& directory) {
+                if (!server) server = std::make_unique<httplib::Server>();
+                server -> set_mount_point(prefix, directory);
+            }
+    
             bool start() {
                 if (running.load()) return true;
                 if (!server) server = std::make_unique<httplib::Server>();
