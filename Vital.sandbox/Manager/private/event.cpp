@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Manager/public/engine.h>
 #include <Vital.sandbox/Manager/public/resource.h>
+#include <Vital.sandbox/Manager/public/discord.h>
 
 // TODO: Improve / Remove later
 #include <Vital.sandbox/API/core/model.h>

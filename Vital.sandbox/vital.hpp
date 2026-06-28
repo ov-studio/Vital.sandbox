@@ -14,4 +14,3 @@
 
 #pragma once
 #include <Vital.sandbox/Sandbox/machine.h>
-#include <Vital.sandbox/Manager/public/discord.h>
