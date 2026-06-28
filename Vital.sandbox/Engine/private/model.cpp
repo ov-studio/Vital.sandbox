@@ -14,7 +14,6 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/model.h>
-#include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Manager/public/resource.h>
 
