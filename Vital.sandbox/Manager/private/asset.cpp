@@ -24,7 +24,14 @@
 // TODO: Improve
 namespace Vital::Manager {
     Asset* Asset::get_singleton() {
-        if (!singleton) singleton = new Asset();
+        if (!singleton) {
+            singleton = new Asset();
+            #if !defined(VSDK_Client)
+            singleton -> http_server.set_port(7778); // default; overridable via set_http_port
+            singleton -> http_server.set_bind_address("0.0.0.0"); // public-facing — serves remote clients
+            singleton -> http_server.set_label("Asset");
+            #endif
+        }
         return singleton;
     }
 
@@ -90,8 +97,8 @@ namespace Vital::Manager {
     //----------------//
 
     #if !defined(VSDK_Client)
-    void Asset::set_http_port(int port) { http_port = port; }
-    int  Asset::get_http_port() const   { return http_port; }
+    void Asset::set_http_port(int port) { http_server.set_port(port); }
+    int  Asset::get_http_port() const   { return http_server.get_port(); }
     #endif
 
 
@@ -151,11 +158,9 @@ namespace Vital::Manager {
 
     #if !defined(VSDK_Client)
     bool Asset::start_http_server() {
-        if (http_running) return true;
+        if (http_server.is_running()) return true;
 
-        http_server = std::make_unique<httplib::Server>();
-
-        http_server -> Get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
+        http_server.get("/asset", [this](const httplib::Request& req, httplib::Response& res) {
             if (!req.has_param("path")) { res.status = 400; res.set_content("Missing path", "text/plain"); return; }
             const std::string path = req.get_param_value("path");
             if (!registered_assets.count(path)) { res.status = 404; res.set_content("Not found", "text/plain"); return; }
@@ -189,7 +194,7 @@ namespace Vital::Manager {
             );
         });
 
-        http_server -> Get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
+        http_server.get("/manifest", [this](const httplib::Request&, httplib::Response& res) {
             std::string body = "{\"assets\":[";
             bool first = true;
             for (auto& [path, entry] : registered_assets) {
@@ -203,7 +208,7 @@ namespace Vital::Manager {
             res.set_content(body, "application/json");
         });
 
-        http_server -> Get("/info", [this](const httplib::Request&, httplib::Response& res) {
+        http_server.get("/info", [this](const httplib::Request&, httplib::Response& res) {
             const auto& cfg = Manager::Network::get_singleton() -> get_server_config();
             rapidjson::Document document;
             document.SetObject();
@@ -221,30 +226,16 @@ namespace Vital::Manager {
             document.Accept(writer);
             res.set_content(buffer.GetString(), "application/json");
         });
-        
-        http_running = true;
-        http_thread = std::thread([this]() {
-            Tool::print("sbox", "Asset: HTTP server starting on port ", http_port);
-            http_server -> listen("0.0.0.0", http_port);
-            Tool::print("sbox", "Asset: HTTP server stopped");
-        });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        Tool::print("sbox", "Asset: HTTP server running on port ", http_port);
-        return true;
+        return http_server.start();
     }
 
     void Asset::stop_http_server() {
-        if (!http_running) return;
-        http_running = false;
-        if (http_server) http_server -> stop();
-        if (http_thread.joinable()) http_thread.join();
-        http_server.reset();
-        Tool::print("sbox", "Asset: HTTP server stopped");
+        http_server.stop();
     }
 
     bool Asset::is_http_running() const {
-        return http_running;
+        return http_server.is_running();
     }
 
     void Asset::broadcast_manifest(int peer_id, bool deferred) {
@@ -268,7 +259,7 @@ namespace Vital::Manager {
             Tool::Stack msg;
             msg.object["event"] = Tool::StackValue(std::string("asset:manifest"));
             msg.object["asset_count"] = Tool::StackValue((int32_t)registered_assets.size());
-            msg.object["http_port"] = Tool::StackValue((int32_t)http_port);
+            msg.object["http_port"] = Tool::StackValue((int32_t)http_server.get_port());
             int i = 0;
             for (auto& [path, entry] : registered_assets) {
                 msg.object["asset_path_" + std::to_string(i)] = Tool::StackValue(path);

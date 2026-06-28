@@ -32,12 +32,7 @@ namespace Vital::Engine {
             std::atomic<bool> kit_abort { false };
             std::vector<std::function<void()>> work_queue;
             #if defined(VSDK_Client)
-            std::unique_ptr<httplib::Server> http_server;
-            std::thread http_thread;
-            std::atomic<bool> http_running { false };
-            int http_port = 7779;
-            void start_http_server();
-            void stop_http_server();
+            Tool::HTTP::Server http_server;
             #endif
 
             static void _bind_methods() {

@@ -95,4 +95,73 @@ namespace Vital::Tool::HTTP {
         if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status));
         return res -> body;
     }
+
+    class Server {
+        private:
+            std::unique_ptr<httplib::Server> server;
+            std::thread thread;
+            std::atomic<bool> running { false };
+            std::string bind_address = "127.0.0.1";
+            int port = 0;
+            std::string label = "HTTP";
+        public:
+            Server() = default;
+            ~Server() { stop(); }
+            Server(const Server&) = delete;
+            Server& operator=(const Server&) = delete;
+
+            void set_bind_address(const std::string& address) { 
+                bind_address = address;
+            }
+
+            void set_port(int p) { 
+                port = p;
+            }
+
+            void set_label(const std::string& l) { 
+                label = l;
+            }
+
+            void add_mount(const std::string& prefix, const std::string& directory) {
+                if (!server) server = std::make_unique<httplib::Server>();
+                server -> set_mount_point(prefix, directory);
+            }
+        
+            bool is_running() const { 
+                return running.load();
+            }
+
+            int get_port() const { 
+                return port;
+            }
+            
+            template<typename Handler>
+            void get(const std::string& pattern, Handler handler) {
+                if (!server) server = std::make_unique<httplib::Server>();
+                server -> Get(pattern, std::move(handler));
+            }
+
+            bool start() {
+                if (running.load()) return true;
+                if (!server) server = std::make_unique<httplib::Server>();
+
+                running.store(true);
+                thread = std::thread([this]() {
+                    //Tool::print("sbox", fmt::format("{}: HTTP server starting on port {}", label, port));
+                    server -> listen(bind_address, port);
+                    //Tool::print("sbox", fmt::format("{}: HTTP server stopped", label));
+                });
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                //Tool::print("sbox", fmt::format("{}: HTTP server running on port {}", label, port));
+                return true;
+            }
+
+            void stop() {
+                if (!running.load()) return;
+                running.store(false);
+                if (server) server -> stop();
+                if (thread.joinable()) thread.join();
+                server.reset();
+            }
+    };
 }
