@@ -24,12 +24,21 @@
 
 namespace Vital::Tool {
     inline std::thread::id main_thread_id;
+    inline std::function<void(const std::string&, const std::string&)> print_sink;
+
+    template<typename... Args>
+    inline void print(const std::string& mode, Args&&... args) {
+        std::ostringstream oss;
+        bool first = true;
+        ((oss << (first ? (first = false, "") : " ") << std::forward<Args>(args)), ...);
+        if (print_sink) print_sink(mode, oss.str());
+    }
 
     static std::string indent(int level) {
         #if defined(VSDK_Client)
-        return std::string(level*4, ' ');
+            return std::string(level*4, ' ');
         #else
-        return std::string(level*2, ' ');
+            return std::string(level*2, ' ');
         #endif
     }
 
