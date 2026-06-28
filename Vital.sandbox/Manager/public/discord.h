@@ -14,7 +14,7 @@
 
 #pragma once
 #if defined(VSDK_Client)
-#include <Vital.sandbox/Tool/index.h>
+#include <Vital.sandbox/Engine/public/core.h>
 #include <discord-sdk/include/discordpp.h>
 
 
