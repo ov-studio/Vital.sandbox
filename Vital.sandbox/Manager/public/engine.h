@@ -13,6 +13,8 @@
 //////////////
 
 #pragma once
+// TODO: MOVE TO VITAL_MANAGER.hpp
+// TODO: RENAME THIS AS ENTRYPOINT OUTSIDE MANAGER
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/Engine/public/model.h>
