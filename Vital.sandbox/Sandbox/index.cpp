@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Sandbox/runtime/apis.h>
+#include <Vital.sandbox/Manager/public/kit.h>
 
 
 /////////////////////
@@ -25,6 +26,12 @@
 
 namespace Vital::Sandbox {
     vm_apis Machine::apis = API::make_apis();
+
+    void Machine::load_modules(Machine* vm) {
+        for (auto& [name, source] : Manager::Kit::fetch_modules("lua")) {
+            vm -> load_string(source, name);
+        }
+    }
 
     void Machine::next_tick(std::function<void()> exec) {
         Engine::Core::get_singleton() -> enqueue([exec = std::move(exec)]() {
