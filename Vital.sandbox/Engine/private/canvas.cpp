@@ -14,7 +14,6 @@
 
 #pragma once
 #if defined(VSDK_Client)
-#include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/Engine/public/font.h>
 #include <Vital.sandbox/Engine/public/texture.h>
