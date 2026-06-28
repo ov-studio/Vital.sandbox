@@ -14,7 +14,6 @@
 
 #include <Vital.sandbox/Manager/public/asset.h>
 #include <Vital.sandbox/Engine/public/model.h>
-#include <Vital.sandbox/Engine/public/console.h>
 
 
 ////////////////////////////
