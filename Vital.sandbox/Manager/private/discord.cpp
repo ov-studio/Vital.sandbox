@@ -16,7 +16,7 @@
 #if defined(VSDK_Client)
 #define DISCORDPP_IMPLEMENTATION
 #include <Vital.sandbox/Manager/public/discord.h>
-#include <Vital.sandbox/Engine/public/console.h>
+#include <Vital.sandbox/Manager/public/kit.h>
 
 
 /////////////////////////////
