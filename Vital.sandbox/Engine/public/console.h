@@ -93,13 +93,3 @@ namespace Vital::Engine {
             #endif
     };
 }
-
-namespace Vital::Tool {
-    template<typename... Args>
-    inline void print(const std::string& mode, Args&&... args) {
-        std::ostringstream oss;
-        bool first = true;
-        ((oss << (first ? (first = false, "") : " ") << std::forward<Args>(args)), ...);
-        Engine::Console::get_singleton() -> print(mode, oss.str());
-    }
-}
