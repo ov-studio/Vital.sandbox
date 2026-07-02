@@ -53,10 +53,6 @@ namespace Vital::Manager {
 
 
     // Managers //
-    void Discord::log(const std::string& mode, const std::string& message) const {
-        Tool::print(mode, fmt::format("Discord: {}", message));
-    }
-
     void Discord::process() const {
         discordpp::RunCallbacks();
     }
