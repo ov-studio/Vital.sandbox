@@ -199,7 +199,7 @@ namespace Vital::Manager::Kit {
         return doc;
     }
 
-    inline void log(const std::string& message) { Tool::print("sbox", fmt::format("Vital.kit: {}", message)); };
+    inline void log(const std::string& mode, const std::string& message) { Tool::print(mode, fmt::format("Vital.kit: {}", message)); };
     bool download(const std::string& url, const std::string& dest_path);
     bool extract(const std::string& zip_path, const std::string& dest_dir);
     bool ensure();
