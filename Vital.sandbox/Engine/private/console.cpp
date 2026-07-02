@@ -39,6 +39,7 @@ namespace Vital::Engine {
             webview -> set_message_handler([this](godot::String message) {
                 on_message(message);
             });
+            webview -> set_message_handler(std::bind(&Console::on_message, this, std::placeholders::_1));
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
                 webview -> load_url(fmt::format("http://127.0.0.1:{}/cache/Vital.kit/console/build/index.html", Engine::Core::get_singleton() -> get_http_port()));
