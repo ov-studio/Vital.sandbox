@@ -224,6 +224,7 @@ namespace Vital::Engine {
     }
 
     Console::~Console() {
+        Tool::print_sink = nullptr;
         #if defined(VSDK_Client)
             if (!webview) return;
             webview -> destroy();
