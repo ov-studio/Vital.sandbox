@@ -108,7 +108,7 @@ namespace Vital::Manager::Kit {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
                 v = Internal::get_version();
             }
-            log(fmt::format("status ~ cache valid | files ~ {}/{} | version ~ {}", checked, total, v));
+            log("sbox", fmt::format("status ~ cache valid | files ~ {}/{} | version ~ {}", checked, total, v));
             return true;
         };
 
