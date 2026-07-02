@@ -75,9 +75,9 @@ namespace Vital::Manager::Kit {
 
         auto do_download = [&]() -> bool {
             std::filesystem::remove_all(kit_dir);
-            log("status ~ downloading");
+            log("sbox", "status ~ downloading");
             if (!download(zip_url, zip_path)) { log("error", "status ~ download failed"); return false; }
-            log("status ~ extracting");
+            log("sbox", "status ~ extracting");
             if (!extract(zip_path, kit_dir)) { log("error", "status ~ extraction failed"); return false; }
             std::filesystem::remove(zip_path);
             {
