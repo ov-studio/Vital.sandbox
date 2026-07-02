@@ -34,7 +34,7 @@ namespace Vital::Manager {
     }
 
 
-    // Utils //
+    // Singleton //
     Sandbox* Sandbox::get_singleton() {
         singleton = singleton ? singleton : memnew(Sandbox());
         return singleton;
