@@ -29,7 +29,31 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            
+            API::bind(vm, base_scope, "encode", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(input)")
+                    .require(1, &Machine::is_table);
+        
+                vm -> get_global("json");
+                vm -> get_table_field("encode", -1);
+                vm -> rotate(-2, 1);
+                vm -> pop(1);
+                vm -> push(1);
+                if (!vm -> pcall(1, 1)) vm -> push_value(false);
+                return 1;
+            });
+        
+            API::bind(vm, base_scope, "decode", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(input)")
+                    .require(1, &Machine::is_string);
+        
+                vm -> get_global("json");
+                vm -> get_table_field("decode", -1);
+                vm -> rotate(-2, 1);
+                vm -> pop(1);
+                vm -> push(1);
+                if (!vm -> pcall(1, 1)) vm -> push_value(false);
+                return 1;
+            });
         }
     };
 }
