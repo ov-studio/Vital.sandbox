@@ -39,7 +39,7 @@ namespace Vital::Manager {
     }
 
 
-    // Utils //
+    // Singleton //
     Discord* Discord::get_singleton() {
         if (!singleton) singleton = new Discord();
         return singleton;

@@ -46,7 +46,7 @@ namespace Vital::Engine {
     }
 
 
-    // Utils //
+    // Singleton //
     Canvas* Canvas::get_singleton() {
         if (!singleton) {
             singleton = memnew(Canvas);
