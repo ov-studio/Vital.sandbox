@@ -25,7 +25,7 @@ namespace Vital::Manager::Kit {
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::HTTP::get(url, {}, 120); }
-        catch (const std::exception& e) { log(fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
+        catch (const std::exception& e) { log("error", fmt::format("status ~ download failed | reason ~ {}", e.what())); return false; }
         if (data.empty()) return false;
         std::filesystem::create_directories(std::filesystem::path(dest_path).parent_path());
         std::ofstream out(dest_path, std::ios::binary | std::ios::trunc);
@@ -68,7 +68,7 @@ namespace Vital::Manager::Kit {
         auto [tag, zip_url, checksum_url] = fetch_release();
 
         if (tag.empty() || zip_url.empty()) {
-            log("status ~ release fetch failed");
+            log("error", "status ~ release fetch failed");
             return std::filesystem::exists(kit_dir);
         }
         log(fmt::format("release ~ {}", tag));
@@ -76,9 +76,9 @@ namespace Vital::Manager::Kit {
         auto do_download = [&]() -> bool {
             std::filesystem::remove_all(kit_dir);
             log("status ~ downloading");
-            if (!download(zip_url, zip_path)) { log("status ~ download failed"); return false; }
+            if (!download(zip_url, zip_path)) { log("error", "status ~ download failed"); return false; }
             log("status ~ extracting");
-            if (!extract(zip_path, kit_dir)) { log("status ~ extraction failed"); return false; }
+            if (!extract(zip_path, kit_dir)) { log("error", "status ~ extraction failed"); return false; }
             std::filesystem::remove(zip_path);
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
