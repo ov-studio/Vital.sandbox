@@ -10,7 +10,6 @@
 .build_*
 discord-sdk/
 vital.sdk/
-godot-cpp/
 
 
 # Binaries
