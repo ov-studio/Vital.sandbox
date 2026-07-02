@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Manager: engine.h
+     Script: Vital: entrypoint.hpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Engine Manager
+     Desc: SDK Entrypoint
 ----------------------------------------------------------------*/
 
 
@@ -17,9 +17,9 @@
 #include <Vital.sandbox/Vital/manager.h>
 
 
-/////////////////////////////
-// Vital: Manager: Engine //
-/////////////////////////////
+////////////////
+// SDK Hooks //
+////////////////
 
 void initialize_vital_events();
 
