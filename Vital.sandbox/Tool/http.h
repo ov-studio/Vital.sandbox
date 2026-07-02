@@ -147,12 +147,12 @@ namespace Vital::Tool::HTTP {
 
                 running.store(true);
                 thread = std::thread([this]() {
-                    //Tool::print("sbox", fmt::format("{}: HTTP server starting on port {}", label, port));
+                    Tool::print("sbox", fmt::format("{}: HTTP server starting on port {}", label, port));
                     server -> listen(bind_address, port);
-                    //Tool::print("sbox", fmt::format("{}: HTTP server stopped", label));
+                    Tool::print("sbox", fmt::format("{}: HTTP server stopped", label));
                 });
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                //Tool::print("sbox", fmt::format("{}: HTTP server running on port {}", label, port));
+                Tool::print("sbox", fmt::format("{}: HTTP server running on port {}", label, port));
                 return true;
             }
 
