@@ -447,7 +447,12 @@ namespace Vital::Engine {
 
     // Utils //
     Console* Console::get_singleton() {
-        if (!singleton) singleton = memnew(Console);
+        if (!singleton) {
+            singleton = memnew(Console);
+            #if !defined(VSDK_Client)
+            singleton -> init();
+            #endif
+        }
         return singleton;
     }
 
@@ -498,6 +503,10 @@ namespace Vital::Engine {
             webview -> emit(buffer.GetString());
         }
         #endif
+
+        Tool::print_sink = [](const std::string& mode, const std::string& message) {
+            Engine::Console::get_singleton() -> print(mode, message);
+        };
     }
 
     void Console::execute(const std::string& input) {
