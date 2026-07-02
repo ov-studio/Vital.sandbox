@@ -470,7 +470,7 @@ namespace Vital::Engine {
     }
 
 
-    // Misc //
+    // Managers //
     void Console::ready() {
         #if defined(VSDK_Client)
         rapidjson::Document document;
