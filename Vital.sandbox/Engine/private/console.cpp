@@ -223,6 +223,10 @@ namespace Vital::Engine {
             });
             stdin_thread.detach();
         #endif
+
+        Tool::print_sink = [](const std::string& mode, const std::string& message) {
+            Engine::Console::get_singleton() -> print(mode, message);
+        };
     }
 
     Console::~Console() {
@@ -453,7 +457,7 @@ namespace Vital::Engine {
         if (!singleton) {
             singleton = memnew(Console);
             #if !defined(VSDK_Client)
-            singleton -> init();
+            singleton -> ready();
             #endif
         }
         return singleton;
@@ -467,7 +471,7 @@ namespace Vital::Engine {
 
 
     // Misc //
-    void Console::init() {
+    void Console::ready() {
         #if defined(VSDK_Client)
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
@@ -506,12 +510,8 @@ namespace Vital::Engine {
             webview -> emit(buffer.GetString());
         }
         #endif
-
-        Tool::print_sink = [](const std::string& mode, const std::string& message) {
-            Engine::Console::get_singleton() -> print(mode, message);
-        };
     }
-
+ 
     void Console::execute(const std::string& input) {
         std::istringstream iss(input);
         std::vector<std::string> tokens;
@@ -665,7 +665,7 @@ namespace Vital::Engine {
         document.Parse(Tool::to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
-        if (action == "ready") init();
+        if (action == "ready") ready();
         else if (action == "clear") clear(true);
         else if (action == "toggle") toggle();
         else if (action == "input") {

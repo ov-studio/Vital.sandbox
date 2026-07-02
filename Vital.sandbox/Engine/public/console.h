@@ -75,7 +75,7 @@ namespace Vital::Engine {
 
 
             // Misc //
-            void init();
+            void ready();
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);
             void clear(bool signal = false);
