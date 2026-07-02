@@ -73,6 +73,10 @@ namespace Vital::Manager {
             static void free_singleton();
 
 
+            // Managers //
+            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Asset.manager: {}", message)); }
+
+
             // Misc //
             void init();
             void clear();

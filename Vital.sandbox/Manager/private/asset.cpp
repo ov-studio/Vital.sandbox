@@ -116,12 +116,12 @@ namespace Vital::Manager {
             const std::string full_path = Tool::get_directory() + "/" + path;
             registered_assets[path] = { hash_file(full_path), group };
             if (!silenced) {
-                std::string report = fmt::format("Asset: registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
+                std::string report = fmt::format("registered asset for group `{}`:\n", group.empty() ? "(none)" : group);
                 report += fmt::format("> `{}` — {}", path, registered_assets[path].hash);
-                Tool::print("sbox", report);
+                log("sbox", report);
             }
         }
-        catch (...) { Tool::print("error", "Asset: failed to register -> ", path.c_str()); }
+        catch (...) { log("error", fmt::format("failed to register -> {}", path)); }
     }
 
     void Asset::register_assets(const std::vector<std::string>& paths, const std::string& group) {
@@ -132,9 +132,9 @@ namespace Vital::Manager {
             if (registered_assets.size() > before) registered.push_back(path);
         }
         if (registered.empty()) return;
-        std::string report = fmt::format("Asset: registered {} asset(s) for group `{}`:\n", registered.size(), group.empty() ? "(none)" : group);
+        std::string report = fmt::format("registered {} asset(s) for group `{}`:\n", registered.size(), group.empty() ? "(none)" : group);
         for (const auto& path : registered) report += fmt::format("> `{}` — {}\n", path, registered_assets[path].hash);
-        Tool::print("sbox", report);
+        log("sbox", report);
     }
 
     void Asset::unregister_asset(const std::string& path) {
@@ -149,7 +149,7 @@ namespace Vital::Manager {
             if (it -> second.group == group) { it = registered_assets.erase(it); count++; }
             else ++it;
         }
-        Tool::print("sbox", fmt::format("Asset: unregistered group `{}` — {} asset(s) removed", group, count));
+        log("sbox", fmt::format("unregistered group `{}` — {} asset(s) removed", group, count));
     }
 
 
@@ -269,7 +269,7 @@ namespace Vital::Manager {
                 i++;
             }
             nm -> send(msg, pid);
-            Tool::print("sbox", fmt::format("Asset: sent manifest ({} assets) to peer {}", (int)registered_assets.size(), pid));
+            log("sbox", fmt::format("sent manifest ({} assets) to peer {}", (int)registered_assets.size(), pid));
         }
     }
     #endif
@@ -288,10 +288,10 @@ namespace Vital::Manager {
         auto it = group_pending_counts.find(group);
         if (it == group_pending_counts.end()) return;
         it -> second--;
-        Tool::print("sbox", fmt::format("Asset: file ready for group `{}` — {} remaining: {}", group, it -> second, path));
+        log("sbox", fmt::format("file ready for group `{}` — {} remaining: {}", group, it -> second, path));
         if (it -> second <= 0) {
             group_pending_counts.erase(it);
-            Tool::print("sbox", fmt::format("Asset: group `{}` all assets ready", group));
+            log("sbox", fmt::format("group `{}` all assets ready", group));
             // Capture the current generation. If cancel_group/cancel_all bumps it before
             // the enqueued lambda runs, the emission is a no-op — preventing stale
             // group_ready callbacks from cancelled downloads corrupting a fresh registration.
@@ -364,7 +364,7 @@ namespace Vital::Manager {
             }
         }
 
-        std::string report = fmt::format("Asset: manifest received — {} asset(s) total\n", count);
+        std::string report = fmt::format("manifest received — {} asset(s) total\n", count);
         if (!up_to_date.empty()) {
             report += fmt::format("> Cached ({}):\n", up_to_date.size());
             for (const auto& p : up_to_date) report += fmt::format("> `{}`\n", p);
@@ -377,10 +377,10 @@ namespace Vital::Manager {
             report += fmt::format("> Queued ({}):\n", to_download.size());
             for (const auto& p : to_download) report += fmt::format("> `{}`\n", p);
         }
-        Tool::print("sbox", report);
+        log("sbox", report);
 
         if (to_download.empty() && in_progress.empty()) {
-            Tool::print("sbox", "Asset: all assets ready (cached)");
+            log("sbox", "all assets ready (cached)");
             Tool::Event::emit("asset:ready", {});
         }
     }
@@ -404,14 +404,14 @@ namespace Vital::Manager {
             std::string response_body;
             try { response_body = Tool::HTTP::get(base_url + "/asset?path=" + path, {}, 60, true, &dl -> cancelled); }
             catch (const std::exception& e) {
-                Tool::print("error", fmt::format("Asset: download failed — {}\n│ reason: {}", path, e.what()));
+                log("error", fmt::format("download failed — {}\n│ reason: {}", path, e.what()));
                 _on_download_failed(path);
                 return;
             }
 
             if (dl -> cancelled.load()) {
                 try { std::filesystem::remove(local_path); } catch (...) {}
-                Tool::print("sbox", fmt::format("Asset: download cancelled — {}", path));
+                log("sbox", fmt::format("download cancelled — {}", path));
                 active_downloads.erase(path);
                 return;
             }
@@ -421,7 +421,7 @@ namespace Vital::Manager {
 
             std::ofstream out(local_path, std::ios::binary | std::ios::trunc);
             if (!out) {
-                Tool::print("error", fmt::format("Asset: download failed — {}\n│ reason: cannot open output file", path));
+                log("error", fmt::format("download failed — {}\n│ reason: cannot open output file", path));
                 _on_download_failed(path);
                 return;
             }
@@ -432,7 +432,7 @@ namespace Vital::Manager {
                 const std::string actual_hash = hash_file(local_path);
                 if (actual_hash != expected_hash) {
                     try { std::filesystem::remove(local_path); } catch (...) {}
-                    Tool::print("error", fmt::format("Asset: download failed — {}\n│ reason: hash mismatch", path));
+                    log("error", fmt::format("download failed — {}\n│ reason: hash mismatch", path));
                     _on_download_failed(path);
                     return;
                 }
@@ -452,7 +452,7 @@ namespace Vital::Manager {
                     _on_file_ready(path, g);
                 }
                 if (!is_downloading()) {
-                    Tool::print("sbox", "Asset: all assets ready");
+                    log("sbox", "all assets ready");
                     Tool::Event::emit("asset:ready", {});
                 }
             });
@@ -463,8 +463,8 @@ namespace Vital::Manager {
 
     void Asset::_on_download_failed(const std::string& path) {
         active_downloads.erase(path);
-        Engine::Core::get_singleton() -> enqueue([path]() {
-            Tool::print("error", fmt::format("Asset: download failed — {}", path));
+        Engine::Core::get_singleton() -> enqueue([this, path]() {
+            log("error", fmt::format("download failed — {}", path));
         });
     }
 
@@ -474,7 +474,7 @@ namespace Vital::Manager {
         if (!group.empty()) it -> second -> groups.erase(group);
         if (it -> second -> groups.empty()) {
             it -> second -> cancelled.store(true);
-            Tool::print("sbox", fmt::format("Asset: cancelling — {}", path));
+            log("sbox", fmt::format("cancelling — {}", path));
         }
     }
 
@@ -487,7 +487,7 @@ namespace Vital::Manager {
         }
         group_pending_counts.erase(group);
         group_generations[group]++;
-        if (flagged > 0) Tool::print("sbox", fmt::format("Asset: cancelled group `{}` — {} download(s) stopped", group, flagged));
+        if (flagged > 0) log("sbox", fmt::format("cancelled group `{}` — {} download(s) stopped", group, flagged));
     }
 
     void Asset::cancel_all() {
@@ -495,7 +495,7 @@ namespace Vital::Manager {
         for (auto& [path, dl] : active_downloads) dl -> cancelled.store(true);
         group_pending_counts.clear();
         for (auto& [g, gen] : group_generations) gen++;
-        Tool::print("sbox", fmt::format("Asset: cancelled all downloads — {} stopped", active_downloads.size()));
+        log("sbox", fmt::format("cancelled all downloads — {} stopped", active_downloads.size()));
     }
 
     bool Asset::is_downloading(const std::string& path) const { return active_downloads.count(path) > 0; }
@@ -505,7 +505,7 @@ namespace Vital::Manager {
 
     void Asset::queue_spawn(const std::string& name, void* placeholder, int authority_peer) {
         spawn_queue[name] = { placeholder, authority_peer };
-        Tool::print("sbox", "Asset: queued placeholder spawn -> ", name.c_str());
+        log("sbox", fmt::format("queued placeholder spawn -> {}", name));
     }
 
     void Asset::flush_spawn_queue(const std::string& loaded_name) {
@@ -515,11 +515,11 @@ namespace Vital::Manager {
         int authority_peer = it -> second.authority_peer;
         spawn_queue.erase(it);
 
-        Engine::Core::get_singleton() -> enqueue([loaded_name, raw, authority_peer]() {
+        Engine::Core::get_singleton() -> enqueue([this, loaded_name, raw, authority_peer]() {
             Engine::Model* placeholder = static_cast<Engine::Model*>(raw);
             if (!godot::ObjectDB::get_instance(placeholder -> get_instance_id())) return;
             placeholder -> hydrate(authority_peer);
-            Tool::print("sbox", fmt::format("Asset: flushed spawn queue for '{}'", loaded_name));
+            log("sbox", fmt::format("flushed spawn queue for '{}'", loaded_name));
         });
     }
     #endif
