@@ -520,7 +520,7 @@ namespace Vital::Sandbox {
             void bind(const std::vector<std::string>& scope, const std::string& name, vm_bind exec);
 
 
-            // Utils //
+            // Misc //
             void push(int index = 1) { lua_pushvalue(state, index); }
             void pop(int count = 1) { lua_pop(state, count); }
             bool next(int index = 1) { return lua_next(state, index) != 0; }
