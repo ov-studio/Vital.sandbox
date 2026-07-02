@@ -91,16 +91,16 @@ namespace Vital::Manager::Kit {
         };
 
         auto validate_files = [&](const rapidjson::Document& checksum_doc) -> bool {
-            if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("checksum ~ invalid | reason ~ missing files"); return false; }
+            if (!checksum_doc.HasMember("files") || !checksum_doc["files"].IsObject()) { log("warn", "checksum ~ invalid | reason ~ missing files"); return false; }
             const auto& files = checksum_doc["files"];
             const int total = static_cast<int>(files.MemberCount());
             int checked = 0;
             for (auto it = files.MemberBegin(); it != files.MemberEnd(); ++it) {
                 const std::string rel_path = it -> name.GetString();
-                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log(fmt::format("checksum ~ malformed | file ~ {}", rel_path)); return false; }
+                if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log("warn", fmt::format("checksum ~ malformed | file ~ {}", rel_path)); return false; }
                 const std::string expected = it -> value["sha256"].GetString();
-                if (!Tool::File::exists(kit_dir, rel_path)) { log(fmt::format("file ~ missing | progress ~ {}/{} | path ~ {}", checked, total, rel_path)); return false; }
-                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { log(fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
+                if (!Tool::File::exists(kit_dir, rel_path)) { log(fmt::format("warn", "file ~ missing | progress ~ {}/{} | path ~ {}", checked, total, rel_path)); return false; }
+                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { log(fmt::format("warn", "checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
             std::string v;
@@ -113,7 +113,7 @@ namespace Vital::Manager::Kit {
         };
 
         auto needs_download = [&]() -> bool {
-            if (!std::filesystem::exists(kit_dir)) { log("status ~ cache missing"); return true; }
+            if (!std::filesystem::exists(kit_dir)) { log("warn", "status ~ cache missing"); return true; }
             std::string remote_hash;
             auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
             if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("checksum ~ fetch failed"); return true; }
