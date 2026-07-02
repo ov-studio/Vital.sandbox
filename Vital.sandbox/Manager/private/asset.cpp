@@ -31,6 +31,7 @@ namespace Vital::Manager {
             singleton -> http_server.set_bind_address("0.0.0.0"); // public-facing — serves remote clients
             singleton -> http_server.set_label("Asset");
             #endif
+            singleton -> init();
         }
         return singleton;
     }
