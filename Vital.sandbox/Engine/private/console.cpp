@@ -448,7 +448,7 @@ namespace Vital::Engine {
     #endif
 
 
-    // Utils //
+    // Singleton //
     Console* Console::get_singleton() {
         if (!singleton) {
             singleton = memnew(Console);
