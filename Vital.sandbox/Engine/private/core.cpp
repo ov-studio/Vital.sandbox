@@ -89,7 +89,7 @@ namespace Vital::Engine {
     #endif
 
 
-    // Utils //
+    // Singleton //
     Core* Core::get_singleton() {
         return singleton;
     }
