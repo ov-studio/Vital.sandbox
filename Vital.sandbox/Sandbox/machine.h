@@ -484,14 +484,14 @@ namespace Vital::Sandbox {
             void log(const std::string& type, const std::string& message = "") {
                 const std::string source = fetch_source();
                 const std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
-                API::log(type, err);
+                Tool::print(type, err);
                 push_string(err);
                 lua_error(state);
             }
             
             void log(const vm_error& e) {
                 const std::string source = fetch_source();
-                API::log(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
+                Tool::print(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
                 push_string(fmt::format("{}: {}", source, e.partial));
                 lua_error(state);
             }
@@ -582,7 +582,7 @@ namespace Vital::Sandbox {
                 int result = lua_resume(state, nullptr, count, &nresults);
                 if (result != LUA_OK && result != LUA_YIELD) {
                     if (get_count() > 0) {
-                        API::log(std::string(Tool::Log::error::label), get_string(-1));
+                        Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                         pop(1);
                     }
                 }
@@ -619,7 +619,7 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::pcall");
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
-                    API::log(std::string(Tool::Log::error::label), get_string(-1));
+                    Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                     pop(1);
                 }
                 return result;
@@ -643,7 +643,7 @@ namespace Vital::Sandbox {
                 if (raw.empty()) return 0;
                 const std::string name = chunk_name.empty() ? raw : ("@" + chunk_name);
                 if (luaL_loadbuffer(state, raw.c_str(), raw.size(), name.c_str()) != LUA_OK) {
-                    API::log(std::string(Tool::Log::error::label), get_string(-1));
+                    Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                     pop(1);
                     return 0;
                 }
