@@ -565,7 +565,7 @@ namespace Vital::Manager {
 }
 
 namespace Vital::Manager {
-    // Utils //
+    // Singleton //
     Resource* Resource::get_singleton() {
         if (!singleton) {
             singleton = new Resource();
