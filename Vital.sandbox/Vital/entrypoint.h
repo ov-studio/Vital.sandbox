@@ -21,7 +21,7 @@
 // SDK Hooks //
 ////////////////
 
-void initialize_vital_events();
+void vsdk_initialize();
 
 inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_level) {
     if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
@@ -34,7 +34,7 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Rendertarget>(true);
     godot::ClassDB::register_class<Vital::Engine::Webview>(true);
     #endif
-    initialize_vital_events();
+    vsdk_initialize();
 }
 
 inline void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_level) {

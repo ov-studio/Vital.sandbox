@@ -76,7 +76,7 @@ void setup() {
     #endif
 }
 
-void initialize_vital_events() {
+void vsdk_initialize() {
     // Core //
     Vital::Tool::Event::bind("core:preready", [](Vital::Tool::Stack arguments) {
         Vital::Engine::Console::get_singleton();
