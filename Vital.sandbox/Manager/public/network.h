@@ -61,7 +61,10 @@ namespace Vital::Manager {
             static void free_singleton();
 
 
+            // Managers //
+            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Network.manager: {}", message)); }
             void _on_packet_received(godot::Dictionary data);
+
 
             // State
             bool is_connected() const;

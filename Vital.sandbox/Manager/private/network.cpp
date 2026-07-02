@@ -171,13 +171,13 @@ namespace Vital::Manager {
     #if defined(VSDK_Client)
     bool Network::connect_to_server(const std::string& ip, int port, bool enable_reconnect) {
         if (is_connected() || is_connecting()) {
-            Tool::print("sbox", "Network: already connected/connecting");
+            log("sbox", "already connected/connecting");
             return false;
         }
         create();
         peer.instantiate();
         if (peer -> create_client(godot::String(ip.c_str()), port) != godot::OK) {
-            Tool::print("sbox", "Network: failed to connect to ", ip.c_str(), ":", port);
+            log("sbox", fmt::format("failed to connect to {}:{}", ip, port));
             peer.unref();
             return false;
         }
@@ -191,7 +191,7 @@ namespace Vital::Manager {
         reconnect_attempts = 0;
         reconnect_timer = 0.0f;
         pending_handshake = false;
-        Tool::print("sbox", "Network: connecting to ", ip.c_str(), ":", port);
+        log("sbox", fmt::format("connecting to {}:{}", ip, port));
         Tool::Event::emit("network:connect", {});
         return true;
     }
@@ -205,7 +205,7 @@ namespace Vital::Manager {
         peer.unref();
         auto tree = get_scene_tree();
         if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
-        Tool::print("sbox", "Network: disconnected");
+        log("sbox", "disconnected");
         Tool::Event::emit("network:disconnect", {});
         return true;
     }
@@ -213,12 +213,12 @@ namespace Vital::Manager {
     void Network::_on_connected_to_server() {
         reconnect_attempts = 0;
         pending_handshake  = true;
-        Tool::print("sbox", "Network: connected (handshake deferred)");
+        log("sbox", "connected (handshake deferred)");
         Tool::Event::emit("network:connect:success", {});
     }
 
     void Network::_on_connection_failed() {
-        Tool::print("sbox", "Network: connection failed");
+        log("sbox", "connection failed");
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
@@ -227,7 +227,7 @@ namespace Vital::Manager {
     }
 
     void Network::_on_server_disconnected() {
-        Tool::print("sbox", "Network: server dropped connection");
+        log("sbox", "server dropped connection");
         pending_handshake = false;
         unwire_signals();
         if (peer.is_valid()) peer.unref();
@@ -242,14 +242,14 @@ namespace Vital::Manager {
 
     void Network::_schedule_reconnect() {
         if (reconnect_attempts >= reconnect_max) {
-            Tool::print("sbox", "Network: max reconnect attempts reached");
+            log("sbox", "max reconnect attempts reached");
             auto_reconnect = false;
             Tool::Event::emit("network:reconnect:failed", {});
             return;
         }
         reconnect_attempts++;
         reconnect_timer = reconnect_delay;
-        Tool::print("sbox", "Network: retry in ", reconnect_delay, "s  attempt ", reconnect_attempts, "/", reconnect_max);
+        log("sbox", fmt::format("retry in {}s  attempt {}/{}", reconnect_delay, reconnect_attempts, reconnect_max));
         Tool::Event::emit("network:reconnect", {});
     }
 
@@ -260,7 +260,7 @@ namespace Vital::Manager {
     #else
     bool Network::host(Config::Server& config) {
         if (is_connected()) {
-            Tool::print("sbox", "Network: already hosting");
+            log("sbox", "already hosting");
             return false;
         }
         server_config = &config;
@@ -268,7 +268,7 @@ namespace Vital::Manager {
         peer.instantiate();
         godot::Error err = peer -> create_server(config.get_network_port(), config.get_max_clients());
         if (err != godot::OK) {
-            Tool::print("sbox", "Network: failed to host on port ", config.get_network_port(), " (err=", (int)err, ")");
+            log("sbox", fmt::format("failed to host on port {} (err={})", config.get_network_port(), (int)err));
             peer.unref();
             server_config = nullptr;
             return false;
@@ -282,8 +282,8 @@ namespace Vital::Manager {
             if (!server_ip.empty() && std::isspace((unsigned char)server_ip.back())) server_ip.pop_back();
         }
         catch (...) { }
-        Vital::Tool::print("sbox", fmt::format(
-            "Network: Server is live!\n"
+        log("sbox", fmt::format(
+            "Server is live!\n"
             "> IP — `{}`\n"
             "> Port — `{}`",
             get_server_ip(),
@@ -301,14 +301,14 @@ namespace Vital::Manager {
         peer.unref();
         auto tree = get_scene_tree();
         if (tree) tree -> get_multiplayer() -> set_multiplayer_peer(nullptr);
-        Tool::print("sbox", "Network: server closed");
+        log("sbox", "server closed");
         Tool::Event::emit("network:close", {});
         return true;
     }
 
     void Network::_on_peer_connected(int id) {
         connected_peers.insert(id);
-        Tool::print("sbox", "Network: peer joined -> ", id, "  total: ", (int)connected_peers.size());
+        log("sbox", fmt::format("peer joined -> {}  total: {}", id, (int)connected_peers.size()));
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
         Tool::Event::emit("network:peer:join", args);
@@ -316,7 +316,7 @@ namespace Vital::Manager {
 
     void Network::_on_peer_disconnected(int id) {
         connected_peers.erase(id);
-        Tool::print("sbox", "Network: peer left -> ", id, "  remaining: ", (int)connected_peers.size());
+        log("sbox", fmt::format("peer left -> {}  remaining: {}", id, (int)connected_peers.size()));
         Tool::Stack args;
         args.array.push_back(Tool::StackValue((int32_t)id));
         Tool::Event::emit("network:peer:leave", args);
@@ -373,7 +373,7 @@ namespace Vital::Manager {
         }
         if (pending_handshake && is_connected()) {
             pending_handshake = false;
-            Tool::print("sbox", "Network: sending handshake, peer_id=", get_peer_id());
+            log("sbox", fmt::format("sending handshake, peer_id={}", get_peer_id()));
             Tool::Stack msg;
             msg.array.push_back(Tool::StackValue(std::string("ping")));
             msg.object["event"] = Tool::StackValue(std::string("system"));
