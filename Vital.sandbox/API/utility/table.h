@@ -26,11 +26,13 @@ namespace Vital::Sandbox::API {
 
         static void init(Machine* vm) {
             vm -> scope_move_global(base_scope, "table", true);
-            vm -> get_global("json");
-            vm -> set_reference("sandbox", "json", -1);
-            vm -> pop(1);
-            vm -> push_nil();
-            vm -> push_global("json");
+            {
+                vm -> get_global("json");
+                vm -> set_reference("sandbox", "json", -1);
+                vm -> pop(1);
+                vm -> push_nil();
+                vm -> push_global("json");
+            }
         }
         
         static void bind(Machine* vm) {
