@@ -200,9 +200,6 @@ namespace Vital::Engine {
         core -> add_child(net_spawner);
         net_spawner -> set_multiplayer_authority(1);
         net_spawner -> set_spawn_path(godot::NodePath(".."));
-
-        godot::UtilityFunctions::print("ModelSpawner: watching path -> ", net_spawner -> get_spawn_path());
-        godot::UtilityFunctions::print("ModelSpawner: authority -> ", net_spawner -> get_multiplayer_authority());
     }
 
     void Model::teardown_spawner() {
