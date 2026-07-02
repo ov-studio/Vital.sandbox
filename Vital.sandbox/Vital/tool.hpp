@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: vital.hpp
+     Script: Vital: tool.hpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Vital Header
+     Desc: Precompiled Tool Header
 ----------------------------------------------------------------*/
 
 
