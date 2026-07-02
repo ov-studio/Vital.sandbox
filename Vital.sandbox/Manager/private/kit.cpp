@@ -116,14 +116,14 @@ namespace Vital::Manager::Kit {
             if (!std::filesystem::exists(kit_dir)) { log("warn", "status ~ cache missing"); return true; }
             std::string remote_hash;
             auto checksum_doc = fetch_checksum(checksum_url, remote_hash);
-            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("checksum ~ fetch failed"); return true; }
+            if (checksum_doc.HasParseError() || !checksum_doc.IsObject()) { log("error", "checksum ~ fetch failed"); return true; }
             std::string local_version;
             {
                 std::lock_guard<std::mutex> lock(Internal::mutex);
                 local_version = Internal::get_version();
             }
-            if (local_version != tag) { log(fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag)); return true; }
-            if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("checksum ~ tampered"); return true; }
+            if (local_version != tag) { log("warn", fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag)); return true; }
+            if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("warn", "checksum ~ tampered"); return true; }
             return !validate_files(checksum_doc);
         };
 
