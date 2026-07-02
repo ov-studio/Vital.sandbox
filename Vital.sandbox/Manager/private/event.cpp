@@ -81,12 +81,15 @@ void setup() {
 
 void initialize_vital_events() {
     // Core //
+    Vital::Tool::Event::bind("core:preready", [](Vital::Tool::Stack arguments) {
+        Vital::Engine::Console::get_singleton();
+    });
+
     Vital::Tool::Event::bind("core:ready", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
         Vital::Engine::Canvas::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
-        Vital::Engine::Console::get_singleton();
         Vital::Manager::Sandbox::get_singleton() -> ready();
         Vital::Manager::Asset::get_singleton() -> init();
         Vital::Manager::Resource::get_singleton();
