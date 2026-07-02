@@ -582,10 +582,6 @@ namespace Vital::Manager {
 
 
     // Managers //
-    void Resource::log(const std::string& mode, const std::string& message) const {
-        Tool::print(mode, fmt::format("Resource: {}", message));
-    }
-
     void Resource::ready() {
         static bool initialized = false;
         if (initialized) return;
