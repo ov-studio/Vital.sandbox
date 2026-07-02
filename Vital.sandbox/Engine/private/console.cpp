@@ -36,9 +36,6 @@ namespace Vital::Engine {
             options.zoomable = false;
             webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
-            webview -> set_message_handler([this](godot::String message) {
-                on_message(message);
-            });
             webview -> set_message_handler(std::bind(&Console::on_message, this, std::placeholders::_1));
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
