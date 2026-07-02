@@ -91,7 +91,7 @@ void initialize_vital_events() {
         Vital::Manager::Discord::get_singleton();
         #endif
         Vital::Manager::Sandbox::get_singleton() -> ready();
-        Vital::Manager::Asset::get_singleton() -> init();
+        Vital::Manager::Asset::get_singleton();
         Vital::Manager::Resource::get_singleton();
         setup();
     });
