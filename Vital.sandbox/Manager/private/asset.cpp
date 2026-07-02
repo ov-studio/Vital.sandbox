@@ -29,7 +29,7 @@ namespace Vital::Manager {
             #if !defined(VSDK_Client)
             singleton -> http_server.set_port(7778); // default; overridable via set_http_port
             singleton -> http_server.set_bind_address("0.0.0.0"); // public-facing — serves remote clients
-            singleton -> http_server.set_label("Asset");
+            singleton -> http_server.set_label("Asset.manager");
             #endif
             singleton -> init();
         }
