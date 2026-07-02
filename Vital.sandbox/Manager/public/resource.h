@@ -114,7 +114,7 @@ namespace Vital::Manager {
             #if !defined(VSDK_Client)
             void sync(int peer_id) const;
             #endif
-            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Resource: {}", message)); }
+            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Resource.manager: {}", message)); }
 
 
             // Checkers //

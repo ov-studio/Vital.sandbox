@@ -22,10 +22,6 @@
 //////////////////////////
 
 namespace Vital::Manager::Kit {
-    void log(const std::string& message) {
-        Tool::print("sbox", fmt::format("Vital.kit: {}", message));
-    }
-
     bool download(const std::string& url, const std::string& dest_path) {
         std::string data;
         try { data = Tool::HTTP::get(url, {}, 120); }

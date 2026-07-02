@@ -58,7 +58,7 @@ namespace Vital::Manager {
             void process() const;
             void update();
             void authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth = false);
-            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Discord: {}", message)); }
+            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Discord.manager: {}", message)); }
 
 
             // Checkers //
