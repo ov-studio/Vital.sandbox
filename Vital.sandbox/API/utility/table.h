@@ -35,8 +35,6 @@ namespace Vital::Sandbox::API {
                 vm -> set_reference("api", "json.decode", -1);
                 vm -> pop(1);
                 vm -> pop(1);
-            }
-            {
                 vm -> push_nil();
                 vm -> push_global("json");
             }
