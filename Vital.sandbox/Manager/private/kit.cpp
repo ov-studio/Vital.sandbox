@@ -71,7 +71,7 @@ namespace Vital::Manager::Kit {
             log("error", "status ~ release fetch failed");
             return std::filesystem::exists(kit_dir);
         }
-        log(fmt::format("release ~ {}", tag));
+        log("sbox", fmt::format("release ~ {}", tag));
 
         auto do_download = [&]() -> bool {
             std::filesystem::remove_all(kit_dir);
@@ -86,7 +86,7 @@ namespace Vital::Manager::Kit {
                 Internal::content_cache.clear();
                 Internal::json_cache.clear();
             }
-            log(fmt::format("status ~ ready | version ~ {}", get_version()));
+            log("sbox", fmt::format("status ~ ready | version ~ {}", get_version()));
             return true;
         };
 
