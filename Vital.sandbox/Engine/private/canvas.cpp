@@ -56,7 +56,7 @@ namespace Vital::Engine {
     }
 
     void Canvas::free_singleton() {
-        if (!singleton) return
+        if (!singleton) return;
         singleton -> queue_free();
         singleton = nullptr;
     }
