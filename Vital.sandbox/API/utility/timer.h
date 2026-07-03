@@ -77,7 +77,7 @@ namespace Vital::Sandbox::API {
                         if (!Instance::find_unlocked(instance)) return;
                         instance -> get_reference(instance -> value_reference("exec"), true);
                         instance -> vm -> push_value(captured_count);
-                        instance -> vm -> pcall(1, 0);
+                        instance -> vm -> call(1, 0);
                         if (captured_stop) {
                             {
                                 std::lock_guard<std::mutex> lock(registry.mutex);
@@ -110,7 +110,7 @@ namespace Vital::Sandbox::API {
                     auto instance = weak.lock();
                     if (!Instance::find_unlocked(instance)) return;
                     instance -> get_reference(instance -> value_reference("exec"), true);
-                    instance -> vm -> pcall(0, 0);
+                    instance -> vm -> call(0, 0);
                     instance -> clean();
                 });
                 vm -> push_value(true);

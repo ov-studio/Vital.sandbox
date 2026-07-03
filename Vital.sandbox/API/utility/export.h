@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
                 int nargs = vm -> get_count() - 2;
                 vm -> get_raw_reference(ref);
                 if (nargs > 0) vm -> rotate(3, 1);
-                // TODO: can't use vm->pcall — it logs+pops on failure; we need to throw instead
+                // TODO: can't use vm->call — it logs+pops on failure; we need to throw instead
                 if (lua_pcall(vm -> get_state(), nargs, LUA_MULTRET, 0) != LUA_OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — error in '{}:{}': {}", resource, name, vm -> get_string(-1))); // TODO: APPLY BASE NAME USING FMT
                 return vm -> get_count() - 2;
             });

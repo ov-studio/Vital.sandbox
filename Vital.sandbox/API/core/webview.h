@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
                     if (!instance) return;
                     instance -> get_reference(instance -> value_reference("exec"), true);
                     vm -> push_value(Tool::to_std_string(message));
-                    vm -> pcall(1, 0);
+                    vm -> call(1, 0);
                 });
                 vm -> push_value(true);
                 return 1;
