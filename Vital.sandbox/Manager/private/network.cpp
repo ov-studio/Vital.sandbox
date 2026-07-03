@@ -34,11 +34,6 @@ namespace Vital::Manager {
         );
     }
 
-    Network* Network::get_singleton() {
-        if (!singleton) singleton = new Network();
-        return singleton;
-    }
-
     void Network::free_singleton() {
         if (!singleton) return;
         #if defined(VSDK_Client)
@@ -52,7 +47,7 @@ namespace Vital::Manager {
             singleton -> peer -> close();
             singleton -> peer.unref();
         }
-        delete singleton;
+        memdelete(singleton);
         singleton = nullptr;
     }
 

@@ -25,9 +25,11 @@
 
 namespace Vital::Manager {
     // TODO: Improve
-    class Network {
+    class Network : public godot::Node, public Tool::Base<Network> {
+        friend class Tool::Base<Network>;
+        public:
+            static constexpr const char* Name = "Network.manager";
         private:
-            inline static Network* singleton = nullptr;
             godot::Ref<godot::ENetMultiplayerPeer> peer;
             Engine::Network* node = nullptr;
 
@@ -62,11 +64,10 @@ namespace Vital::Manager {
 
 
             // Managers //
-            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Network.manager: {}", message)); }
             void _on_packet_received(godot::Dictionary data);
 
 
-            // State
+            // State //
             bool is_connected() const;
             bool is_connecting() const;
             int get_peer_id() const;
@@ -91,7 +92,7 @@ namespace Vital::Manager {
             std::string get_server_ip() const;
             #endif
 
-            // Shared
+            // Shared //
             bool send(const Tool::Stack& stack, int peerID = 0);
             bool broadcast(const Tool::Stack& stack);
             bool send_to_server(const Tool::Stack& stack);
