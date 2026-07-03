@@ -629,10 +629,9 @@ namespace Vital::Sandbox {
                         push_string(err);
                         error_handled = true;
                         lua_error(state);
-                    } else {
-                        if (!error_handled) {
-                            Tool::print(std::string(Tool::Log::error::label), get_string(-1));
-                        }
+                    }
+                    else {
+                        if (!error_handled) Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                         error_handled = false;
                         pop(1);
                     }
