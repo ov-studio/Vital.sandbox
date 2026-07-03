@@ -123,6 +123,26 @@ namespace Vital::Sandbox::API {
             #endif
         }
 
+        static int store_stack_args(Machine* vm, const std::vector<Tool::StackValue>& array) {
+            int stack_top = vm -> get_count();
+            vm -> create_table();
+            int outer_idx = vm -> get_count();
+            for (int i = 0; i < static_cast<int>(array.size()); ++i) {
+                vm -> push_value(array[i]);
+                vm -> set_table_field(i + 1, outer_idx);
+            }
+            int args_ref = vm -> set_raw_reference(-1);
+            vm -> pop(vm -> get_count() - stack_top);
+            return args_ref;
+        }
+
+        static void send_reply(uint32_t serial, int reply_peer, const std::vector<Tool::StackValue>* results = nullptr) {
+            Tool::Stack reply;
+            reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
+            if (results) for (auto& v : *results) reply.array.push_back(v);
+            send_packet(reply, reply_peer);
+        }
+
         static std::shared_ptr<API::Promise::Instance> send_remote_emit(Machine* vm, const std::string& name, Tool::Stack payload, int peer_id, bool wants_callback) {
             payload.object["__event"] = Tool::StackValue(name);
             std::shared_ptr<API::Promise::Instance> promise;
@@ -350,15 +370,7 @@ namespace Vital::Sandbox::API {
                 }
                 if (snapshot.empty()) return;
 
-                int stack_top = vm -> get_count();
-                vm -> create_table();
-                int outer_idx = vm -> get_count();
-                for (int i = 0; i < static_cast<int>(stack -> array.size()); ++i) {
-                    vm -> push_value(stack -> array[i]);
-                    vm -> set_table_field(i + 1, outer_idx);
-                }
-                int args_ref = vm -> set_raw_reference(-1);
-                vm -> pop(vm -> get_count() - stack_top);
+                int args_ref = store_stack_args(vm, stack -> array);
                 fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
                 vm -> del_raw_reference(args_ref);
             });
@@ -469,12 +481,6 @@ namespace Vital::Sandbox::API {
                     auto it = buffer.find(name);
                     if (it != buffer.end()) snapshot = it -> second.handlers;
                 }
-                if (snapshot.empty()) {
-                    auto promise = API::Promise::make(vm);
-                    API::Promise::settle(promise, API::Promise::State::Resolved, vm, 0, 0);
-                    push_promise(vm, promise);
-                    return 1;
-                }
 
                 int args_ref = vm -> store_args(opts.args_start);
                 std::vector<std::shared_ptr<API::Promise::Instance>> promises;
@@ -526,23 +532,10 @@ namespace Vital::Sandbox::API {
                 if (it != buffer.end()) snapshot = it -> second.handlers;
             }
 
-            int stack_top = vm -> get_count();
-            vm -> create_table();
-            int outer_idx = vm -> get_count();
-            for (int i = 0; i < static_cast<int>(payload.array.size()); ++i) {
-                vm -> push_value(payload.array[i]);
-                vm -> set_table_field(i + 1, outer_idx);
-            }
-            int args_ref = vm -> set_raw_reference(-1);
-            vm -> pop(vm -> get_count() - stack_top);
-
+            int args_ref = store_stack_args(vm, payload.array);
             if (snapshot.empty()) {
                 vm -> del_raw_reference(args_ref);
-                if (wants_reply) {
-                    Tool::Stack reply;
-                    reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
-                    send_packet(reply, reply_peer);
-                }
+                if (wants_reply) send_reply(serial, reply_peer);
                 return;
             }
 
@@ -559,10 +552,7 @@ namespace Vital::Sandbox::API {
 
             auto agg = aggregate_promises(vm, promises);
             register_reply_callback(agg, [serial, reply_peer](Machine* root_vm, const Tool::Stack& results) {
-                Tool::Stack reply;
-                reply.object["__reply_serial"] = Tool::StackValue(static_cast<double>(serial));
-                for (auto& v : results.array) reply.array.push_back(v);
-                send_packet(reply, reply_peer);
+                send_reply(serial, reply_peer, &results.array);
             });
         }
 
