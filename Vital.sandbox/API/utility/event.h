@@ -113,15 +113,6 @@ namespace Vital::Sandbox::API {
             vm -> get_raw_reference(promise -> get_reference(promise -> self_reference()));
         }
 
-        static void send_packet(const Tool::Stack& payload, int peer_id = 0) {
-            #if defined(VSDK_Client)
-                Manager::Network::get_singleton() -> send_to_server(payload);
-            #else
-                if (peer_id > 0) Manager::Network::get_singleton() -> send(payload, peer_id);
-                else Manager::Network::get_singleton() -> broadcast(payload);
-            #endif
-        }
-
         static int store_stack_args(Machine* vm, const std::vector<Tool::StackValue>& array) {
             int stack_top = vm -> get_count();
             vm -> create_table();
@@ -133,6 +124,15 @@ namespace Vital::Sandbox::API {
             int args_ref = vm -> set_raw_reference(-1);
             vm -> pop(vm -> get_count() - stack_top);
             return args_ref;
+        }
+    
+        static void send_packet(const Tool::Stack& payload, int peer_id = 0) {
+            #if defined(VSDK_Client)
+                Manager::Network::get_singleton() -> send_to_server(payload);
+            #else
+                if (peer_id > 0) Manager::Network::get_singleton() -> send(payload, peer_id);
+                else Manager::Network::get_singleton() -> broadcast(payload);
+            #endif
         }
 
         static void send_reply(uint32_t serial, int reply_peer, const std::vector<Tool::StackValue>* results = nullptr) {
