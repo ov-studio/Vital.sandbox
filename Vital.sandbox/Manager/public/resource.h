@@ -21,8 +21,10 @@
 ///////////////////////////////
 
 namespace Vital::Manager {
-    class Resource {
+    class Resource : public Tool::Base<Resource> {
+        friend class Tool::Base<Resource>;
         public:
+            static constexpr const char* Name = "Resource.manager";
             inline static const std::unordered_set<std::string> Types = {"shared", "server", "client"};
 
             enum class State {
@@ -46,8 +48,6 @@ namespace Vital::Manager {
                 std::unordered_map<std::string, std::string> script_hashes;
                 std::unordered_map<std::string, std::string> file_hashes;
             };
-        protected:
-            inline static Resource* singleton = nullptr;
         private:
             mutable std::mutex mutex;
             std::vector<Manifest> resources;
@@ -102,19 +102,17 @@ namespace Vital::Manager {
             // Instantiators //
             Resource() = default;
             ~Resource() = default;
-
+    
 
             // Singleton //
             static Resource* get_singleton();
-            static void free_singleton();
 
 
             // Managers //
-            void ready();
+            void init();
             #if !defined(VSDK_Client)
             void sync(int peer_id) const;
             #endif
-            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Resource.manager: {}", message)); }
 
 
             // Checkers //

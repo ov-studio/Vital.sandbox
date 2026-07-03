@@ -565,24 +565,8 @@ namespace Vital::Manager {
 }
 
 namespace Vital::Manager {
-    // Singleton //
-    Resource* Resource::get_singleton() {
-        if (!singleton) {
-            singleton = new Resource();
-            singleton -> ready();
-        }
-        return singleton;
-    }
-
-    void Resource::free_singleton() {
-        if (!singleton) return;
-        delete singleton;
-        singleton = nullptr;
-    }
-
-
     // Managers //
-    void Resource::ready() {
+    void Resource::init() {
         static bool initialized = false;
         if (initialized) return;
         initialized = true;
