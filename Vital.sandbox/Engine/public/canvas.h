@@ -120,13 +120,13 @@ namespace Vital::Engine {
 
 
             // Singleton //
-            static Canvas* get_singleton();
             static void free_singleton();
 
 
             // Managers //
-            static void execute(godot::Node2D* node, std::vector<Command>& queue);
+            void init();
             void push(Command command);
+            static void execute(godot::Node2D* node, std::vector<Command>& queue);
 
 
             // Misc //

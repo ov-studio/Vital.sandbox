@@ -47,22 +47,25 @@ namespace Vital::Engine {
 
 
     // Singleton //
-    Canvas* Canvas::get_singleton() {
-        if (!singleton) {
-            singleton = memnew(Canvas);
-            Engine::Core::get_singleton() -> add_child(singleton);
-        }
-        return singleton;
-    }
-
     void Canvas::free_singleton() {
         if (!singleton) return;
+        singleton -> teardown();
         singleton -> queue_free();
         singleton = nullptr;
     }
 
 
     // Managers //
+    void Canvas::init() {
+        Engine::Core::get_singleton() -> add_child(singleton);
+    }
+
+    void Canvas::push(Command command) {
+        auto rt = Engine::Rendertarget::get_active();
+        if (rt) return rt -> push(command);
+        queue.push_back(command);
+    }
+
     void Canvas::execute(godot::Node2D* node, std::vector<Command>& queue) {
         for (const auto &command : queue) {
             switch (command.type) {
@@ -186,12 +189,6 @@ namespace Vital::Engine {
         }
         queue.clear();
     };
-
-    void Canvas::push(Command command) {
-        auto rt = Engine::Rendertarget::get_active();
-        if (rt) return rt -> push(command);
-        queue.push_back(command);
-    }
 
 
     // Misc //
