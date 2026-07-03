@@ -116,7 +116,7 @@ namespace Vital::Engine {
             Canvas() = default;
             ~Canvas() override = default;
         public:
-            // Instantiators //
+            // Hooks //
             void _ready() override;
             void _process(double delta) override;
             void _draw() override;

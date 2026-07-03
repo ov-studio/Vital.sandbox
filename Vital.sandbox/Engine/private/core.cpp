@@ -27,7 +27,7 @@
 //////////////////////////
 
 namespace Vital::Engine {
-    // Instantiators //
+    // Hooks //
     void Core::_ready() {
         singleton = singleton ? singleton : this;
         set_process(false);

@@ -26,7 +26,7 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    // Instantiators //
+    // Hooks //
     void Canvas::_ready() {
         queue.reserve(256);
         set_as_top_level(true);

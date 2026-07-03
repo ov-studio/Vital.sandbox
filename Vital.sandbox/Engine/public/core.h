@@ -43,7 +43,7 @@ namespace Vital::Engine {
             Core() = default;
             ~Core() override = default;
         public:
-            // Instantiators //
+            // Hooks //
             void _ready() override;
             void _exit_tree() override;
             void _process(double delta) override;
