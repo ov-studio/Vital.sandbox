@@ -40,6 +40,5 @@ Vital.sandbox's Lua layer isn't a thin wrapper — it's a full-featured runtime 
 
 ## Privacy policy
 
-Vital.sandbox may send server information exposed by the server owner to the masterlist solely for server listing purposes.
-
-No personal data is collected, stored or shared with any third party.
+- Vital.sandbox may send server information exposed by the server owner to the masterlist solely for server listing purposes.
+- No personal data is collected, stored or shared with any third party.
