@@ -62,7 +62,6 @@ namespace Vital::Engine {
                 static std::string format_inline(const Tool::Stack& mode_rgb, const std::string& content);
                 static std::string format_line(const Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation);
                 static std::string format_output(const std::string& mode, const std::string& message);
-                void format_input_prompt();
                 #endif
             };
 
@@ -77,6 +76,7 @@ namespace Vital::Engine {
             // Managers //
             void init();
             void ready();
+            void update();
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);
             void clear(bool signal = false);

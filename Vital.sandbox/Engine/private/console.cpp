@@ -211,19 +211,6 @@ namespace Vital::Engine {
         oss << "\n";
         return oss.str();
     }
-
-    void Console::Internal::format_input_prompt() {
-        std::lock_guard<std::mutex> lock(stdout_mutex);
-        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
-        std::ostringstream prompt_oss;
-        prompt_oss << "\r\033[J"
-                   << Internal::ANSI_BOLD << Internal::FG_GRAY << " > " << Internal::ANSI_RESET << " "
-                   << stdin_buffer
-                   << "\n"
-                   << "\033[1A"
-                   << "\033[" << cursor_col << "G";
-        std::cout << prompt_oss.str() << std::flush;
-    }
     #endif
 }
 
@@ -289,7 +276,7 @@ namespace Vital::Engine {
 
             stdin_running = true;
             stdin_thread = std::thread([this]() {
-                Internal::format_input_prompt();
+                update();
                 while (stdin_running) {
                     #if defined(VSDK_WINDOWS)
                         HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -312,7 +299,7 @@ namespace Vital::Engine {
                                 std::cout << "\r\033[J" << std::flush;
                             }
                             if (!line.empty()) execute(line);
-                            Internal::format_input_prompt();
+                            update();
                         }
                         else if (vk == VK_UP) {
                             {
@@ -325,7 +312,7 @@ namespace Vital::Engine {
                                     stdin_buffer = stdin_history[stdin_history_index];
                                 }
                             }
-                            Internal::format_input_prompt();
+                            update();
                         }
                         else if (vk == VK_DOWN) {
                             {
@@ -339,21 +326,21 @@ namespace Vital::Engine {
                                     else stdin_buffer = stdin_history[stdin_history_index];
                                 }
                             }
-                            Internal::format_input_prompt();
+                            update();
                         }
                         else if (vk == VK_BACK) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 if (!stdin_buffer.empty()) stdin_buffer.pop_back();
                             }
-                            Internal::format_input_prompt();
+                            update();
                         }
                         else if (ch >= 0x20 && ch < 0x7F) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 stdin_buffer += ch;
                             }
-                            Internal::format_input_prompt();
+                            update();
                         }
                     #elif defined(VSDK_MACOS) || defined(VSDK_LINUX)
                         char ch;
@@ -372,7 +359,7 @@ namespace Vital::Engine {
                                 std::cout << "\r\033[J" << std::flush;
                             }
                             if (!line.empty()) execute(line);
-                            Internal::format_input_prompt();
+                            update();
                         }
                         else if (ch == '\033') {
                             char seq[2];
@@ -389,7 +376,7 @@ namespace Vital::Engine {
                                             stdin_buffer = stdin_history[stdin_history_index];
                                         }
                                     }
-                                    Internal::format_input_prompt();
+                                    update();
                                 }
                                 else if (seq[1] == 'B') {
                                     {
@@ -403,7 +390,7 @@ namespace Vital::Engine {
                                             else stdin_buffer = stdin_history[stdin_history_index];
                                         }
                                     }
-                                    Internal::format_input_prompt();
+                                    update();
                                 }
                             }
                         }
@@ -412,14 +399,14 @@ namespace Vital::Engine {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 if (!stdin_buffer.empty()) stdin_buffer.pop_back();
                             }
-                            Internal::format_input_prompt();
+                            update();
                         }
                         else if (ch >= 0x20 && ch < 0x7F) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 stdin_buffer += ch;
                             }
-                            Internal::format_input_prompt();
+                            update();
                         }
                     #endif
                 }
@@ -499,6 +486,19 @@ namespace Vital::Engine {
         #endif
     }
  
+    void Console::update() {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
+        std::ostringstream prompt_oss;
+        prompt_oss << "\r\033[J"
+                   << Internal::ANSI_BOLD << Internal::FG_GRAY << " > " << Internal::ANSI_RESET << " "
+                   << stdin_buffer
+                   << "\n"
+                   << "\033[1A"
+                   << "\033[" << cursor_col << "G";
+        std::cout << prompt_oss.str() << std::flush;
+    }
+
     void Console::execute(const std::string& input) {
         std::istringstream iss(input);
         std::vector<std::string> tokens;
