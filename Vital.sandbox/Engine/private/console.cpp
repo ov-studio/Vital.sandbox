@@ -561,7 +561,7 @@ namespace Vital::Engine {
             if (cmd == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
             if (cmd == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
             if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
-            if (cmd == "shutdown") { shutdown(); return true; }
+            if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown()(); return true; }
             #endif
             return false;
         };
@@ -639,19 +639,7 @@ namespace Vital::Engine {
         #endif
     }
 
-    #if !defined(VSDK_Client)
-    void Console::shutdown() {
-        print("sbox", "Server shutting down...");
-        Manager::Resource::get_singleton() -> stop_all();
-        Engine::Core::get_singleton() -> enqueue([this]() {
-            stdin_running = false;
-            print("sbox", "Server shut down successfully!");
-            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
-            Engine::Core:: free_singleton();
-        });
-    }
-
-    #else
+    #if defined(VSDK_Client)
     void Console::toggle() {
         webview -> set_visible(!webview -> is_visible());
     }
