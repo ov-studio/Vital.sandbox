@@ -23,39 +23,29 @@
 
 // TODO: Improve
 namespace Vital::Manager {
-    Asset* Asset::get_singleton() {
-        if (!singleton) {
-            singleton = new Asset();
-            #if !defined(VSDK_Client)
-            singleton -> http_server.set_port(7778); // default; overridable via set_http_port
-            singleton -> http_server.set_bind_address("0.0.0.0"); // public-facing — serves remote clients
-            singleton -> http_server.set_label("Asset.manager");
-            #endif
-            singleton -> init();
-        }
-        return singleton;
-    }
-
-    void Asset::free_singleton() {
-        if (!singleton) return;
-        singleton -> clear();
-        #if !defined(VSDK_Client)
-        singleton -> stop_http_server();
-        #endif
-        delete singleton;
-        singleton = nullptr;
-    }
-
-
-    //----------------//
-    //    Helpers     //
-    //----------------//
-
+    // Helpers //
     std::string Asset::hash_file(const std::string& path) {
         size_t last_sep = path.find_last_of("/\\");
         std::string base = (last_sep != std::string::npos) ? path.substr(0, last_sep) : ".";
         std::string file = (last_sep != std::string::npos) ? path.substr(last_sep + 1) : path;
         return Tool::File::hash(base, file);
+    }
+
+
+    // Instantiators //
+    Asset::Asset() {
+        #if !defined(VSDK_Client)
+        http_server.set_port(7778); // default; overridable via set_http_port
+        http_server.set_bind_address("0.0.0.0"); // public-facing — serves remote clients
+        http_server.set_label("Asset.manager");
+        #endif
+    }
+
+    Asset::~Asset() {
+        clear();
+        #if !defined(VSDK_Client)
+        stop_http_server();
+        #endif
     }
 
 

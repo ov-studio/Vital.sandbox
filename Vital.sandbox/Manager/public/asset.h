@@ -23,7 +23,10 @@
 
 // TODO: Improve
 namespace Vital::Manager {
-    class Asset {
+    class Asset : public Tool::Base<Asset> {
+        friend class Tool::Base<Asset>;
+        public:
+            static constexpr const char* Name = "Asset.manager";
         private:
             struct AssetEntry {
                 std::string hash;
@@ -59,25 +62,18 @@ namespace Vital::Manager {
             Tool::HTTP::Server http_server;
             std::unordered_set<int> pending_manifest_peers;
             #endif
-
-            inline static Asset* singleton = nullptr;
             std::unordered_map<std::string, AssetEntry> registered_assets;
+
+
+            // Helpers //
             static std::string hash_file(const std::string& path);
+
+
+            // Instantiators //
+            Asset();
+            ~Asset();
         public:
-            Asset() = default;
-            ~Asset() = default;
-
-
-            // Singleton //
-            static Asset* get_singleton();
-            static void free_singleton();
-
-
             // Managers //
-            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Asset.manager: {}", message)); }
-
-
-            // Misc //
             void init();
             void clear();
 
