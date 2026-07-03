@@ -106,8 +106,6 @@ namespace Vital::Engine {
                 Type type;
                 std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
             };
-        protected:
-            static void _bind_methods() {}
         private:
             std::vector<Command> queue;
 
@@ -115,6 +113,7 @@ namespace Vital::Engine {
             // Instantiators //
             Canvas() = default;
             ~Canvas() override = default;
+            static void _bind_methods() {}
         public:
             // Hooks //
             void _ready() override;

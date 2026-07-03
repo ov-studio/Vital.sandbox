@@ -25,7 +25,7 @@ namespace Vital::Engine {
     class Model;
     class ModelSpawnerDelegate : public godot::Node {
         GDCLASS(ModelSpawnerDelegate, godot::Node)
-        protected:
+        private:
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("spawn", "data"), &ModelSpawnerDelegate::spawn);
             }
@@ -49,7 +49,7 @@ namespace Vital::Engine {
 
             inline static std::function<void(Model*, bool)> on_spawned_callback;
             inline static std::function<void(Model*)> on_destroyed_callback;
-        protected:
+        private:
             static void _bind_methods() {};
         private:
             std::string model_name;

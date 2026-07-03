@@ -27,7 +27,6 @@ namespace Vital::Engine {
         protected:
             godot::SubViewport* viewport = nullptr;
             inline static Rendertarget* active = nullptr;
-            static void _bind_methods() {}
         private:
             std::vector<Engine::Canvas::Command> queue;
             bool instant = false;
@@ -36,6 +35,7 @@ namespace Vital::Engine {
             // Instantiators //
             Rendertarget() = default;
             ~Rendertarget() override;
+            static void _bind_methods() {}
         public:
             // Hooks //
             void _draw() override;

@@ -21,10 +21,12 @@
 /////////////////////////////
 
 namespace Vital::Engine {
+    // TODO: Improve
     class Network : public godot::Node {
         GDCLASS(Network, godot::Node)
-        public:
+        private:
             static void _bind_methods();
+        public:
             void _receive(godot::Dictionary data);
             void setup_rpc();
 

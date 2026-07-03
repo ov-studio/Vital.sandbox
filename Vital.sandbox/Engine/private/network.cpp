@@ -21,6 +21,7 @@
 // Vital: Engine: Network //
 /////////////////////////////
 
+// TODO: Improve
 namespace Vital::Engine {
     void Network::_bind_methods() {
         godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);

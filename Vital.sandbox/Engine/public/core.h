@@ -34,14 +34,14 @@ namespace Vital::Engine {
             #if defined(VSDK_Client)
             Tool::HTTP::Server http_server;
             #endif
-
-            static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);
-            };
         private:
             // Instantiators //
             Core() = default;
             ~Core() override = default;
+
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);
+            };
         public:
             // Hooks //
             void _ready() override;
