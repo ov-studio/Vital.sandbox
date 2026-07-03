@@ -25,8 +25,6 @@
 
 namespace Vital::Manager {
     // Instantiators //
-    Discord::Discord() {}
-
     Discord::~Discord() {
         client.reset();
     }

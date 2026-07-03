@@ -45,12 +45,12 @@ namespace Vital::Manager {
             uint64_t application_id;
             Activity activity = {};
             std::shared_ptr<discordpp::Client> client;
-        public:
+
+
             // Instantiators //
-            Discord();
+            Discord() = default;
             ~Discord();
-
-
+        public:
             // Managers //
             void init();
             void process() const;
