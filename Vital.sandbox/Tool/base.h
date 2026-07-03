@@ -23,7 +23,7 @@
 namespace Vital::Tool {
     // Derived must declare:
     // static constexpr const char* Name = "ClassName";
-    // friend class Base<Derived>; (constructor/destructor stay private)
+    // friend class Base<Derived>;
     
     template<typename Derived>
     class Base {
@@ -34,7 +34,10 @@ namespace Vital::Tool {
         public:
             // Singleton //
             static Derived* get_singleton() {
-                if (!singleton) singleton = new Derived();
+                if (!singleton) {
+                    singleton = new Derived();
+                    singleton -> init();
+                }
                 return singleton;
             }
 
@@ -46,8 +49,10 @@ namespace Vital::Tool {
 
 
             // Managers //
+            inline void init() {}
+            inline void ready() {}
             inline void log(const std::string& mode, const std::string& message) const {
-                Tool::print(mode, fmt::format("{}.manager: {}", Derived::Name, message));
+                Tool::print(mode, fmt::format("{}: {}", Derived::Name, message));
             }
     };
 }
