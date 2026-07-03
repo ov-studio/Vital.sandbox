@@ -21,7 +21,7 @@
 ///////////////////////////////
 
 namespace Vital::Manager {
-    class Resource : public Tool::Base<Resource> {
+    class Resource : public godot::Node, public Tool::Base<Resource> {
         friend class Tool::Base<Resource>;
         public:
             static constexpr const char* Name = "Resource.manager";

@@ -23,7 +23,7 @@
 
 // TODO: Improve
 namespace Vital::Manager {
-    class Asset : public Tool::Base<Asset> {
+    class Asset : public godot::Node, public Tool::Base<Asset> {
         friend class Tool::Base<Asset>;
         public:
             static constexpr const char* Name = "Asset.manager";
