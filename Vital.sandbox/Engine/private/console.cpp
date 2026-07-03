@@ -561,7 +561,7 @@ namespace Vital::Engine {
             if (cmd == "start_all") { Manager::Resource::get_singleton() -> start_all(); return true; }
             if (cmd == "stop_all") { Manager::Resource::get_singleton() -> stop_all(); return true; }
             if (cmd == "restart_all") { Manager::Resource::get_singleton() -> restart_all(); return true; }
-            if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown()(); return true; }
+            if (cmd == "shutdown") { Engine::Core::get_singleton() -> shutdown(); return true; }
             #endif
             return false;
         };
