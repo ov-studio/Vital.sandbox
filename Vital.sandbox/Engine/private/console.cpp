@@ -486,7 +486,7 @@ namespace Vital::Engine {
     }
  
     void Console::update() {
-        #if defined(VSDK_Client)
+        #if !defined(VSDK_Client)
             std::lock_guard<std::mutex> lock(stdout_mutex);
             const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
             std::ostringstream prompt_oss;
