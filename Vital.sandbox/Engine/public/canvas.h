@@ -110,10 +110,12 @@ namespace Vital::Engine {
             static void _bind_methods() {}
         private:
             std::vector<Command> queue;
-        public:
+
+
             // Instantiators //
             Canvas() = default;
             ~Canvas() override = default;
+        public:
             void _ready() override;
             void _process(double delta) override;
             void _draw() override;
