@@ -25,7 +25,15 @@
 
 namespace Vital::Manager {
     // Instantiators //
-    Discord::Discord() {
+    Discord::Discord() {}
+
+    Discord::~Discord() {
+        client.reset();
+    }
+
+
+    // Managers //
+    void Discord::init() {
         default_application_id = static_cast<uint64_t>(std::stoull(Manager::Kit::fetch_json_value("config/discord", "application_id").as<std::string>()));
         default_activity = {
             Manager::Kit::fetch_json_value("config/discord", "state").as<std::string>(),
@@ -34,25 +42,6 @@ namespace Vital::Manager {
         reset_application();
     }
 
-    Discord::~Discord() {
-        client.reset();
-    }
-
-
-    // Singleton //
-    Discord* Discord::get_singleton() {
-        if (!singleton) singleton = new Discord();
-        return singleton;
-    }
-
-    void Discord::free_singleton() {
-        if (!singleton) return;
-        delete singleton;
-        singleton = nullptr;
-    }
-
-
-    // Managers //
     void Discord::process() const {
         discordpp::RunCallbacks();
     }

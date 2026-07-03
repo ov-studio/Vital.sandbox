@@ -23,8 +23,11 @@
 /////////////////////////////
 
 namespace Vital::Manager {
-    class Discord {
+    class Discord : public Tool::Base<Discord> {
+        friend class Tool::Base<Discord>;
         public:
+            static constexpr const char* Name = "Discord.manager";
+
             struct Activity {
                 std::string state;
                 std::string details;
@@ -36,7 +39,6 @@ namespace Vital::Manager {
                 int64_t timestamp_end = 0;
             };
         protected:
-            inline static Discord* singleton = nullptr;
             uint64_t default_application_id;
             Activity default_activity = {};
         private:
@@ -49,16 +51,11 @@ namespace Vital::Manager {
             ~Discord();
 
 
-            // Singleton //
-            static Discord* get_singleton();
-            static void free_singleton();
-
-
             // Managers //
+            void init();
             void process() const;
             void update();
             void authorize(const std::string& token_directory, const std::string& token_file, bool force_reauth = false);
-            inline void log(const std::string& mode, const std::string& message) const { Tool::print(mode, fmt::format("Discord.manager: {}", message)); }
 
 
             // Checkers //
