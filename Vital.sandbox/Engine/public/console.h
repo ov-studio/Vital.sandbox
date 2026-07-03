@@ -24,9 +24,8 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Console : public godot::Control {
-        protected:
-            inline static Console* singleton = nullptr;
+    class Console : public godot::Control, public Tool::Base<Console> {
+        friend class Tool::Base<Console>;
         private:
             #if defined(VSDK_Client)
             Webview* webview = nullptr;
@@ -63,18 +62,17 @@ namespace Vital::Engine {
             static std::string fetch_version();
             static std::string fetch_help();
             static std::string fetch_info();
-        public:
+
+
             // Instantiators //
             Console();
             ~Console();
-
-
-            // Singleton //
-            static Console* get_singleton();
-            static void free_singleton();
+        public:
+            static constexpr const char* Name = "Console.manager";
 
 
             // Managers //
+            void init();
             void ready();
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);

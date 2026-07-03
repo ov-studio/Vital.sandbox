@@ -25,6 +25,210 @@
 /////////////////////////////
 
 namespace Vital::Engine {
+    // Helpers //
+    #if !defined(VSDK_Client)
+    std::string Console::ansi_rgb(int r, int g, int b) {
+        std::ostringstream oss;
+        oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
+        return oss.str();
+    }
+
+    std::string Console::ansi_rgb(const Tool::Stack& color) {
+        return ansi_rgb(
+            color.array[0].as<int32_t>(),
+            color.array[1].as<int32_t>(),
+            color.array[2].as<int32_t>()
+        );
+    }
+
+    std::string Console::ansi_rgb_lighten(const Tool::Stack& color, float factor) {
+        const int r = color.array[0].as<int32_t>();
+        const int g = color.array[1].as<int32_t>();
+        const int b = color.array[2].as<int32_t>();
+        return ansi_rgb(
+            r + static_cast<int>((255 - r)*factor),
+            g + static_cast<int>((255 - g)*factor),
+            b + static_cast<int>((255 - b)*factor)
+        );
+    }
+
+    std::string Console::format_inline(const Tool::Stack& mode_rgb, const std::string& content) {
+        const std::string mode_color = ansi_rgb(mode_rgb);
+        std::string result;
+        size_t i = 0;
+        while (i < content.size()) {
+            if (content[i] == '`') {
+                size_t end = content.find('`', i + 1);
+                if (end != std::string::npos) {
+                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + content.substr(i + 1, end - i - 1) + mode_color;
+                    i = end + 1;
+                    continue;
+                }
+            }
+            result += content[i++];
+        }
+        return result;
+    }
+
+    std::string Console::format_line(const Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
+        const std::string mode_color = ansi_rgb(mode_rgb);
+        const std::string marker = ANSI_BOLD + mode_color + "│ " + ANSI_RESET;
+        const std::string indent_str(18 + mode_label.size(), ' ');
+        std::ostringstream oss;
+        std::string content = line;
+        const bool is_highlighted = !content.empty() && content[0] == '>';
+        if (is_highlighted) {
+            content = content.substr(1);
+            if (!content.empty() && content[0] == ' ') content = content.substr(1);
+        }
+        if (!is_continuation) {
+            oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
+                << "   " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
+                << "  " << (is_highlighted ? marker : "")
+                << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
+        }
+        else {
+            if (content.empty()) return "";
+            oss << indent_str << (is_highlighted ? marker : "") << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
+        }
+        return oss.str();
+    }
+    
+    std::string Console::format_output(const std::string& mode, const std::string& message) {
+        auto mode_badge = fetch_mode_badge(mode);
+        const Tool::Stack mode_rgb = fetch_mode_color(mode);
+        const Tool::Stack ts = Tool::get_timestamp();
+        const std::string ts_str = fmt::format(
+            "{:02d}:{:02d}:{:02d}", 
+            ts.object.at("hour").as<int32_t>(), 
+            ts.object.at("minute").as<int32_t>(), 
+            ts.object.at("second").as<int32_t>()
+        );
+        std::string normalized;
+        normalized.reserve(message.size());
+        std::size_t start = 0, pos;
+        while ((pos = message.find('\t', start)) != std::string::npos) {
+            normalized.append(message, start, pos - start);
+            normalized += "    ";
+            start = pos + 1;
+        }
+        normalized.append(message, start, std::string::npos);
+        std::ostringstream oss;
+        std::istringstream stream(normalized);
+        std::string line;
+        bool first = true;
+        while (std::getline(stream, line)) {
+            if (!line.empty() && line.back() == '\r') line.pop_back();
+            if (line.empty()) continue;
+            oss << format_line(mode_rgb, ts_str, mode_badge, line, !first);
+            first = false;
+        }
+        oss << "\n";
+        return oss.str();
+    }
+
+    void Console::format_input_prompt() {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
+        std::ostringstream prompt_oss;
+        prompt_oss << "\r\033[J"
+                   << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " "
+                   << stdin_buffer
+                   << "\n"
+                   << "\033[1A"
+                   << "\033[" << cursor_col << "G";
+        std::cout << prompt_oss.str() << std::flush;
+    }
+    #endif
+
+    std::string Console::fetch_mode_label(const std::string& mode) {
+        const auto label = Manager::Kit::fetch_json_value("config/console", "log", mode, "label");
+        if (label.is<std::string>()) return label.as<std::string>();
+        return mode;
+    }
+
+    std::string Console::fetch_mode_badge(const std::string& mode) {
+        const auto badge = Manager::Kit::fetch_json_value("config/console", "log", mode, "badge");
+        if (badge.is<std::string>()) return badge.as<std::string>();
+        std::string upper = mode;
+        std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+        return upper;
+    }
+
+    Tool::Stack Console::fetch_mode_color(const std::string& mode) {
+        const auto r = Manager::Kit::fetch_json_value("config/console", "log", mode, "color", 0);
+        const auto g = Manager::Kit::fetch_json_value("config/console", "log", mode, "color", 1);
+        const auto b = Manager::Kit::fetch_json_value("config/console", "log", mode, "color", 2);
+        return Tool::Stack(
+            r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()
+            ? std::initializer_list<Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
+            : std::initializer_list<Tool::StackValue>{ int32_t(220), int32_t(220), int32_t(220) }
+        );
+    }
+
+    std::string Console::fetch_version() {
+        return fmt::format(
+            "Version:\n"
+            "> Vital.sandbox: `{}`\n"
+            "> Vital.kit: `{}`\n",
+            Vital::Build.to_string(),
+            Manager::Kit::get_version()
+        );
+    }
+    
+    std::string Console::fetch_help() {
+        std::ostringstream oss;
+        auto append_section = [&](const std::string& section, const std::string& label) {
+            auto& help = Manager::Kit::fetch_json("config/help");
+            if (help.HasParseError() || !help.HasMember(section.c_str())) return;
+            const auto& cmds = help[section.c_str()];
+            if (!cmds.IsObject()) return;
+            oss << "• " << label << ":\n";
+            for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
+                std::string cmd = it -> name.GetString();
+                std::string syntax = it -> value.HasMember("syntax") && it -> value["syntax"].IsString() ? it -> value["syntax"].GetString() : "";
+                std::string desc = it -> value.HasMember("desc")   && it -> value["desc"].IsString()   ? it -> value["desc"].GetString()   : "";
+                std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
+                oss << fmt::format("> {} — {}\n", full_cmd, desc);
+            }
+        };
+        oss << "Available Commands:\n";
+        append_section("shared", "General");
+        #if !defined(VSDK_Client)
+        append_section("server", "Server");
+        #endif
+        #if defined(VSDK_Client)
+        append_section("client", "Client");
+        #endif
+        return oss.str();
+    }
+
+    #if !defined(VSDK_Client)
+    std::string Console::fetch_info() {
+        auto nm = Manager::Network::get_singleton();
+        auto rm = Manager::Resource::get_singleton();
+        const auto& cfg = nm -> get_server_config();
+        std::ostringstream oss;
+        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value); };
+        auto append_ratio = [&](const std::string& label, auto current, auto max) { oss << fmt::format("> {} — `{}/{}`\n", label, current, max); };
+        oss << "Server Info:\n";
+        oss << "• Server:\n";
+        append_field("Name", cfg.get_server_name());
+        append_field("Version", cfg.get_server_version());
+        append_field("Website", cfg.get_website());
+        append_field("Discord", cfg.get_discord());
+        oss << "• Network:\n";
+        append_field("IP", nm -> get_server_ip());
+        append_field("Port", std::to_string(cfg.get_network_port()));
+        append_field("HTTP Port", std::to_string(cfg.get_http_port()));
+        oss << "• Stats:\n";
+        append_ratio("Players", nm -> get_peer_count(), cfg.get_max_clients());
+        append_ratio("Resources", rm -> get_resource_count(Manager::Resource::State::Running), rm -> get_resource_count(Manager::Resource::State::Loaded));
+        return oss.str();
+    }
+    #endif
+
+
     // Instantiators //
     Console::Console() {
         #if defined(VSDK_Client)
@@ -248,229 +452,13 @@ namespace Vital::Engine {
     }
 
 
-    // Helpers //
-    #if !defined(VSDK_Client)
-    std::string Console::ansi_rgb(int r, int g, int b) {
-        std::ostringstream oss;
-        oss << "\033[38;2;" << r << ";" << g << ";" << b << "m";
-        return oss.str();
-    }
-
-    std::string Console::ansi_rgb(const Tool::Stack& color) {
-        return ansi_rgb(
-            color.array[0].as<int32_t>(),
-            color.array[1].as<int32_t>(),
-            color.array[2].as<int32_t>()
-        );
-    }
-
-    std::string Console::ansi_rgb_lighten(const Tool::Stack& color, float factor) {
-        const int r = color.array[0].as<int32_t>();
-        const int g = color.array[1].as<int32_t>();
-        const int b = color.array[2].as<int32_t>();
-        return ansi_rgb(
-            r + static_cast<int>((255 - r)*factor),
-            g + static_cast<int>((255 - g)*factor),
-            b + static_cast<int>((255 - b)*factor)
-        );
-    }
-
-    std::string Console::format_inline(const Tool::Stack& mode_rgb, const std::string& content) {
-        const std::string mode_color = ansi_rgb(mode_rgb);
-        std::string result;
-        size_t i = 0;
-        while (i < content.size()) {
-            if (content[i] == '`') {
-                size_t end = content.find('`', i + 1);
-                if (end != std::string::npos) {
-                    result += ansi_rgb_lighten(mode_rgb, 0.35f) + content.substr(i + 1, end - i - 1) + mode_color;
-                    i = end + 1;
-                    continue;
-                }
-            }
-            result += content[i++];
-        }
-        return result;
-    }
-
-    std::string Console::format_line(const Tool::Stack& mode_rgb, const std::string& timestamp, const std::string& mode_label, const std::string& line, bool is_continuation) {
-        const std::string mode_color = ansi_rgb(mode_rgb);
-        const std::string marker = ANSI_BOLD + mode_color + "│ " + ANSI_RESET;
-        const std::string indent_str(18 + mode_label.size(), ' ');
-        std::ostringstream oss;
-        std::string content = line;
-        const bool is_highlighted = !content.empty() && content[0] == '>';
-        if (is_highlighted) {
-            content = content.substr(1);
-            if (!content.empty() && content[0] == ' ') content = content.substr(1);
-        }
-        if (!is_continuation) {
-            oss << " " << ANSI_DIM << FG_GRAY << "[" << timestamp << "]" << ANSI_RESET
-                << "   " << ANSI_BOLD << mode_color << "[" << mode_label << "]" << ANSI_RESET
-                << "  " << (is_highlighted ? marker : "")
-                << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
-        }
-        else {
-            if (content.empty()) return "";
-            oss << indent_str << (is_highlighted ? marker : "") << mode_color << format_inline(mode_rgb, content) << ANSI_RESET << "\n";
-        }
-        return oss.str();
-    }
-    
-    std::string Console::format_output(const std::string& mode, const std::string& message) {
-        auto mode_badge = fetch_mode_badge(mode);
-        const Tool::Stack mode_rgb = fetch_mode_color(mode);
-        const Tool::Stack ts = Tool::get_timestamp();
-        const std::string ts_str = fmt::format(
-            "{:02d}:{:02d}:{:02d}", 
-            ts.object.at("hour").as<int32_t>(), 
-            ts.object.at("minute").as<int32_t>(), 
-            ts.object.at("second").as<int32_t>()
-        );
-        std::string normalized;
-        normalized.reserve(message.size());
-        std::size_t start = 0, pos;
-        while ((pos = message.find('\t', start)) != std::string::npos) {
-            normalized.append(message, start, pos - start);
-            normalized += "    ";
-            start = pos + 1;
-        }
-        normalized.append(message, start, std::string::npos);
-        std::ostringstream oss;
-        std::istringstream stream(normalized);
-        std::string line;
-        bool first = true;
-        while (std::getline(stream, line)) {
-            if (!line.empty() && line.back() == '\r') line.pop_back();
-            if (line.empty()) continue;
-            oss << format_line(mode_rgb, ts_str, mode_badge, line, !first);
-            first = false;
-        }
-        oss << "\n";
-        return oss.str();
-    }
-
-    void Console::format_input_prompt() {
-        std::lock_guard<std::mutex> lock(stdout_mutex);
-        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
-        std::ostringstream prompt_oss;
-        prompt_oss << "\r\033[J"
-                   << ANSI_BOLD << FG_GRAY << " > " << ANSI_RESET << " "
-                   << stdin_buffer
-                   << "\n"
-                   << "\033[1A"
-                   << "\033[" << cursor_col << "G";
-        std::cout << prompt_oss.str() << std::flush;
-    }
-    #endif
-
-    std::string Console::fetch_mode_label(const std::string& mode) {
-        const auto label = Manager::Kit::fetch_json_value("config/console", "log", mode, "label");
-        if (label.is<std::string>()) return label.as<std::string>();
-        return mode;
-    }
-
-    std::string Console::fetch_mode_badge(const std::string& mode) {
-        const auto badge = Manager::Kit::fetch_json_value("config/console", "log", mode, "badge");
-        if (badge.is<std::string>()) return badge.as<std::string>();
-        std::string upper = mode;
-        std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-        return upper;
-    }
-
-    Tool::Stack Console::fetch_mode_color(const std::string& mode) {
-        const auto r = Manager::Kit::fetch_json_value("config/console", "log", mode, "color", 0);
-        const auto g = Manager::Kit::fetch_json_value("config/console", "log", mode, "color", 1);
-        const auto b = Manager::Kit::fetch_json_value("config/console", "log", mode, "color", 2);
-        return Tool::Stack(
-            r.is<int32_t>() && g.is<int32_t>() && b.is<int32_t>()
-            ? std::initializer_list<Tool::StackValue>{ r.as<int32_t>(), g.as<int32_t>(), b.as<int32_t>() }
-            : std::initializer_list<Tool::StackValue>{ int32_t(220), int32_t(220), int32_t(220) }
-        );
-    }
-
-    std::string Console::fetch_version() {
-        return fmt::format(
-            "Version:\n"
-            "> Vital.sandbox: `{}`\n"
-            "> Vital.kit: `{}`\n",
-            Vital::Build.to_string(),
-            Manager::Kit::get_version()
-        );
-    }
-    
-    std::string Console::fetch_help() {
-        std::ostringstream oss;
-        auto append_section = [&](const std::string& section, const std::string& label) {
-            auto& help = Manager::Kit::fetch_json("config/help");
-            if (help.HasParseError() || !help.HasMember(section.c_str())) return;
-            const auto& cmds = help[section.c_str()];
-            if (!cmds.IsObject()) return;
-            oss << "• " << label << ":\n";
-            for (auto it = cmds.MemberBegin(); it != cmds.MemberEnd(); ++it) {
-                std::string cmd = it -> name.GetString();
-                std::string syntax = it -> value.HasMember("syntax") && it -> value["syntax"].IsString() ? it -> value["syntax"].GetString() : "";
-                std::string desc = it -> value.HasMember("desc")   && it -> value["desc"].IsString()   ? it -> value["desc"].GetString()   : "";
-                std::string full_cmd = syntax.empty() ? fmt::format("`{}`", cmd) : fmt::format("`{}` {}", cmd, syntax);
-                oss << fmt::format("> {} — {}\n", full_cmd, desc);
-            }
-        };
-        oss << "Available Commands:\n";
-        append_section("shared", "General");
-        #if !defined(VSDK_Client)
-        append_section("server", "Server");
-        #endif
-        #if defined(VSDK_Client)
-        append_section("client", "Client");
-        #endif
-        return oss.str();
-    }
-
-    #if !defined(VSDK_Client)
-    std::string Console::fetch_info() {
-        auto nm = Manager::Network::get_singleton();
-        auto rm = Manager::Resource::get_singleton();
-        const auto& cfg = nm -> get_server_config();
-        std::ostringstream oss;
-        auto append_field = [&](const std::string& label, const std::string& value) { oss << fmt::format("> {} — `{}`\n", label, value.empty() ? "—" : value); };
-        auto append_ratio = [&](const std::string& label, auto current, auto max) { oss << fmt::format("> {} — `{}/{}`\n", label, current, max); };
-        oss << "Server Info:\n";
-        oss << "• Server:\n";
-        append_field("Name", cfg.get_server_name());
-        append_field("Version", cfg.get_server_version());
-        append_field("Website", cfg.get_website());
-        append_field("Discord", cfg.get_discord());
-        oss << "• Network:\n";
-        append_field("IP", nm -> get_server_ip());
-        append_field("Port", std::to_string(cfg.get_network_port()));
-        append_field("HTTP Port", std::to_string(cfg.get_http_port()));
-        oss << "• Stats:\n";
-        append_ratio("Players", nm -> get_peer_count(), cfg.get_max_clients());
-        append_ratio("Resources", rm -> get_resource_count(Manager::Resource::State::Running), rm -> get_resource_count(Manager::Resource::State::Loaded));
-        return oss.str();
-    }
-    #endif
-
-
-    // Singleton //
-    Console* Console::get_singleton() {
-        if (!singleton) {
-            singleton = memnew(Console);
-            #if !defined(VSDK_Client)
-            singleton -> ready();
-            #endif
-        }
-        return singleton;
-    }
-
-    void Console::free_singleton() {
-        if (!singleton) return;
-        memdelete(singleton);
-        singleton = nullptr;
-    }
-
-
     // Managers //
+    void Console::init() {
+        #if !defined(VSDK_Client)
+        ready();
+        #endif
+    }
+
     void Console::ready() {
         #if defined(VSDK_Client)
         rapidjson::Document document;
