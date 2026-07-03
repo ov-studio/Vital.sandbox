@@ -98,12 +98,12 @@ namespace Vital::Manager {
                 static void restart_all();
                 #endif
             };
-        public:
+
+
             // Instantiators //
             Resource() = default;
             ~Resource() = default;
-
-
+        public:
             // Managers //
             void init();
             #if !defined(VSDK_Client)
