@@ -61,6 +61,7 @@ namespace Vital::Engine {
             void enqueue(std::function<void()> exec);
             void drain();
             void teardown();
+            void shutdown();
 
 
             // Misc //

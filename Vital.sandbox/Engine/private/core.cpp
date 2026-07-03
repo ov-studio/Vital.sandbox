@@ -19,6 +19,7 @@
 #include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/asset.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 
 
 //////////////////////////
@@ -105,16 +106,6 @@ namespace Vital::Engine {
         return Tool::is_runtime() && kit_ready.load();
     }
 
-    void Core::teardown() {
-        Manager::Asset::free_singleton();
-        Engine::Model::teardown_spawner();
-        #if defined(VSDK_Client)
-        http_server.stop();
-        free_environment();
-        #endif
-        Tool::Event::emit("core:teardown");
-    }
-
     void Core::execute(std::function<void()> exec) {
         if (Tool::is_main_thread()) exec();
         else enqueue(std::move(exec));
@@ -132,6 +123,26 @@ namespace Vital::Engine {
             local.swap(work_queue);
         }
         for (auto& exec : local) exec();
+    }
+
+    void Core::teardown() {
+        Manager::Asset::free_singleton();
+        Engine::Model::teardown_spawner();
+        #if defined(VSDK_Client)
+        http_server.stop();
+        free_environment();
+        #endif
+        Tool::Event::emit("core:teardown");
+    }
+
+    void Core::shutdown() {
+        Tool::print("sbox", "Core: shutting down...");
+        Manager::Resource::get_singleton() -> stop_all();
+        enqueue([this]() {
+            Tool::print("sbox", "Core: shut down successfully!");
+            std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+            free_singleton();
+        });
     }
 
 
