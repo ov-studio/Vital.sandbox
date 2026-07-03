@@ -37,13 +37,13 @@ namespace Vital::Engine {
         private:
             godot::Control* webview = nullptr;
             std::function<void(godot::String)> message_handler;
-        public:
+
+
             // Instantiators //
             Webview() : Webview(Options{}) {}
             Webview(const Options& options);
             ~Webview();
-
-
+        public:
             // Managers //
             static Webview* create(const Options& options = {});
             void destroy();
