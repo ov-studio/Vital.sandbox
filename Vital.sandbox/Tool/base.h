@@ -35,7 +35,7 @@ namespace Vital::Tool {
             // Singleton //
             static Derived* get_singleton() {
                 if (!singleton) {
-                    singleton = new Derived();
+                    singleton = memnew(Derived);
                     singleton -> init();
                 }
                 return singleton;
@@ -43,7 +43,7 @@ namespace Vital::Tool {
 
             static void free_singleton() {
                 if (!singleton) return;
-                delete singleton;
+                memdelete(singleton);
                 singleton = nullptr;
             }
 
