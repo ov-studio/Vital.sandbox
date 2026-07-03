@@ -13,20 +13,7 @@
 //////////////
 
 #pragma once
-#include <Vital.sandbox/Tool/index.h>
-#include <Vital.sandbox/Tool/log.h>
-#include <Vital.sandbox/Tool/yaml.h>
-#include <Vital.sandbox/Tool/stack.h>
-#include <Vital.sandbox/Tool/thread.h>
-#include <Vital.sandbox/Tool/timer.h>
-#include <Vital.sandbox/Tool/file.h>
-#include <Vital.sandbox/Tool/format.h>
-#include <Vital.sandbox/Tool/event.h>
-#include <Vital.sandbox/Tool/database.h>
-#include <Vital.sandbox/Tool/http.h>
-#include <Vital.sandbox/Tool/inspect.h>
-#include <Vital.sandbox/Tool/crypto.h>
-#include <Vital.sandbox/Tool/shrinker.h>
+#include <Vital.sandbox/Vital/tool.h>
 #include <Vital.sandbox/Vendor/lua/lua.hpp>
 
 
