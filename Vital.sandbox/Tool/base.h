@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Tool: base.h
+     Script: Tool: 3.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
@@ -22,7 +22,7 @@
 
 namespace Vital::Tool {
     // Derived must declare:
-    // static constexpr const char* Name = "ClassName";
+    // static constexpr const char* Name = "classname";
     // friend class Base<Derived>;
     
     template<typename Derived>
