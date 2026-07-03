@@ -31,11 +31,13 @@ namespace Vital::Engine {
         private:
             std::vector<Engine::Canvas::Command> queue;
             bool instant = false;
-        public:
+
+
             // Instantiators //
             Rendertarget() = default;
             ~Rendertarget() override;
-            void _update();
+        public:
+            // Hooks //
             void _draw() override;
 
 
@@ -44,7 +46,9 @@ namespace Vital::Engine {
             void destroy();
             void push(Engine::Canvas::Command command);
             void clear(bool clear, bool instant);
-        
+            void update();
+            void draw();
+
 
             // Checkers //
             bool is_active();

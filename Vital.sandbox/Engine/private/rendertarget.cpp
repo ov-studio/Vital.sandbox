@@ -30,17 +30,10 @@ namespace Vital::Engine {
         viewport = nullptr;
     }
 
-    void Rendertarget::_update() {
-        auto rs = Engine::Core::get_rendering_server();
-        auto viewport_main = Engine::Core::get_scene_root() -> get_viewport_rid();
-        rs -> viewport_set_active(viewport_main, false);
-        rs -> force_draw();
-        rs -> viewport_set_active(viewport_main, true);
-    }
 
+    // Hooks //
     void Rendertarget::_draw() {
-        Canvas::execute(static_cast<godot::Node2D*>(this), queue);
-        instant = false;
+        draw();
     }
 
 
@@ -61,17 +54,30 @@ namespace Vital::Engine {
         queue_free();
     }
 
+    void Rendertarget::push(Engine::Canvas::Command command) {
+        queue.push_back(command);
+        queue_redraw();
+        if (instant) update();
+    }
+
     void Rendertarget::clear(bool clear, bool instant) {
         this -> instant = instant;
         viewport -> set_clear_mode(clear ? godot::SubViewport::CLEAR_MODE_ONCE : godot::SubViewport::CLEAR_MODE_NEVER);
         if (clear) queue_redraw();
-        if (instant) _update();
+        if (instant) update();
     }
 
-    void Rendertarget::push(Engine::Canvas::Command command) {
-        queue.push_back(command);
-        queue_redraw();
-        if (instant) _update();
+    void Rendertarget::update() {
+        auto rs = Engine::Core::get_rendering_server();
+        auto viewport_main = Engine::Core::get_scene_root() -> get_viewport_rid();
+        rs -> viewport_set_active(viewport_main, false);
+        rs -> force_draw();
+        rs -> viewport_set_active(viewport_main, true);
+    }
+
+    void Rendertarget::draw() {
+        Canvas::execute(static_cast<godot::Node2D*>(this), queue);
+        instant = false;
     }
 
 
