@@ -38,7 +38,7 @@ namespace Vital::Engine {
             static void _bind_methods() {}
         public:
             // Hooks //
-            void _draw() override;
+            void _draw() override { draw(); };
 
 
             // Managers //
