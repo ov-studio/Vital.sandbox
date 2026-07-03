@@ -617,11 +617,11 @@ namespace Vital::Sandbox {
                 return std::string(value, length);
             }
 
-            bool call(int arguments, int returns = LUA_MULTRET, bool protected = true) {
+            bool call(int arguments, int returns = LUA_MULTRET, bool protected_call = true) {
                 Tool::assert_main_thread("Machine::call");
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
-                    if (protected) {
+                    if (protected_call) {
                         if (!error_handled) Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                         error_handled = false;
                         pop(1);
