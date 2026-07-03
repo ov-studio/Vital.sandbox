@@ -487,6 +487,7 @@ namespace Vital::Sandbox {
                 const std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
                 Tool::print(type, err);
                 push_string(err);
+                if (halt) lua_error(state);
             }
             
             void log(const vm_error& e, bool halt = true) {
