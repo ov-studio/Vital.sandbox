@@ -45,7 +45,7 @@ namespace Vital::Sandbox::API {
                 vm -> rotate(-2, 1);
                 vm -> pop(1);
                 vm -> push(1);
-                if (!vm -> call(1, 1, true)) vm -> push_value(false);
+                vm -> call(1, 1, true);
                 return 1;
             });
         
@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
                 vm -> rotate(-2, 1);
                 vm -> pop(1);
                 vm -> push(1);
-                if (!vm -> call(1, 1, true)) vm -> push_value(false);
+                vm -> call(1, 1, true);
                 return 1;
             });
         }
