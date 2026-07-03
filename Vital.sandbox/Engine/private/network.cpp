@@ -23,19 +23,6 @@
 
 // TODO: Improve
 namespace Vital::Engine {
-    void Network::_bind_methods() {
-        godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
-        godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &Network::setup_rpc);
-        #if defined(VSDK_Client)
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &Network::_on_server_disconnected);
-        #else
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &Network::_on_peer_connected);
-        godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &Network::_on_peer_disconnected);
-        #endif
-    }
-
     void Network::setup_rpc() {
         godot::Dictionary cfg;
         cfg["rpc_mode"] = (int)godot::MultiplayerAPI::RPC_MODE_ANY_PEER;

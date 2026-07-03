@@ -25,7 +25,18 @@ namespace Vital::Engine {
     class Network : public godot::Node {
         GDCLASS(Network, godot::Node)
         private:
-            static void _bind_methods();
+            static void _bind_methods() { 
+                godot::ClassDB::bind_method(godot::D_METHOD("_receive", "data"), &Network::_receive);
+                godot::ClassDB::bind_method(godot::D_METHOD("setup_rpc"), &Network::setup_rpc);
+                #if defined(VSDK_Client)
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_connected_to_server"), &Network::_on_connected_to_server);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_connection_failed"), &Network::_on_connection_failed);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_server_disconnected"), &Network::_on_server_disconnected);
+                #else
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_connected", "id"), &Network::_on_peer_connected);
+                godot::ClassDB::bind_method(godot::D_METHOD("_on_peer_disconnected", "id"), &Network::_on_peer_disconnected);
+                #endif
+            }
         public:
             void _receive(godot::Dictionary data);
             void setup_rpc();

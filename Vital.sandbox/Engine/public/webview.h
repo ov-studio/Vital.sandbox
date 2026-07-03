@@ -41,7 +41,10 @@ namespace Vital::Engine {
             Webview() : Webview(Options{}) {}
             Webview(const Options& options);
             ~Webview();
-            static void _bind_methods();
+
+            static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("on_message", "message"), &Webview::on_message);
+            }
         public:
             // Managers //
             static Webview* create(const Options& options = {});

@@ -35,6 +35,7 @@ namespace Vital::Engine {
 
     class Model : public godot::Node3D {
         GDCLASS(Model, godot::Node3D)
+        friend class ModelSpawnerDelegate;
         public:
             enum class Format {
                 GLB,
@@ -209,9 +210,5 @@ namespace Vital::Engine {
             void stop_animation();
             void pause_animation();
             void resume_animation();
-
-
-            // Friends //
-            friend class ModelSpawnerDelegate;
     };
 }
