@@ -76,12 +76,12 @@ namespace Vital::Engine {
             uint64_t reference_tick = 0;
             std::string reference_key = "";
             inline static std::unordered_map<std::string, Texture*> reference_cache = {};
-        public:
+
+
             // Instantiators //
             Texture(Command cmd, const std::string& reference = "");
             ~Texture();
-
-
+        public:
             // Managers //
             void destroy();
             void heartbeat();

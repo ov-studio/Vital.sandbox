@@ -32,8 +32,6 @@ namespace Vital::Engine {
                 bool autoplay = false;
                 bool zoomable = false;
             };
-        protected:
-            static void _bind_methods();
         private:
             godot::Control* webview = nullptr;
             std::function<void(godot::String)> message_handler;
@@ -43,6 +41,7 @@ namespace Vital::Engine {
             Webview() : Webview(Options{}) {}
             Webview(const Options& options);
             ~Webview();
+            static void _bind_methods();
         public:
             // Managers //
             static Webview* create(const Options& options = {});
