@@ -64,11 +64,11 @@ namespace Vital::Manager {
     //----------------//
 
     void Asset::init() {
+        static bool initialized = false;
+        if (initialized) return;
+        initialized = true;
+        
         #if defined(VSDK_Client)
-            static bool initialized = false;
-            if (initialized) return;
-            initialized = true;
-
             Tool::Event::bind("network:packet", [this](Tool::Stack arguments) {
                 if (!arguments.object.count("event")) return;
                 const std::string event = arguments.object.at("event").as<std::string>();
