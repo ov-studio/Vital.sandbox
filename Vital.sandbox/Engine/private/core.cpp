@@ -140,6 +140,7 @@ namespace Vital::Engine {
         Manager::Resource::get_singleton() -> stop_all();
         enqueue([this]() {
             Tool::print("sbox", "Core: shut down successfully!");
+            Engine::Console::get_singleton() -> teardown();
             std::this_thread::sleep_for(std::chrono::milliseconds(2500));
             free_singleton();
         });
