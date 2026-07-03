@@ -34,8 +34,7 @@ namespace Vital::Manager {
         );
     }
 
-    void Network::free_singleton() {
-        if (!singleton) return;
+    void Network::teardown() {
         #if defined(VSDK_Client)
         singleton -> disconnect_from_server();
         #else
@@ -47,10 +46,7 @@ namespace Vital::Manager {
             singleton -> peer -> close();
             singleton -> peer.unref();
         }
-        memdelete(singleton);
-        singleton = nullptr;
     }
-
 
     //--------------------//
     //    Node Helpers    //

@@ -58,11 +58,8 @@ namespace Vital::Manager {
             ~Network() = default;
 
 
-            // Singleton //
-            static void free_singleton();
-
-
             // Managers //
+            void teardown();
             void _on_packet_received(godot::Dictionary data);
 
 
