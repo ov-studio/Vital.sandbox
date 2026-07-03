@@ -29,6 +29,7 @@ namespace Vital::Sandbox {
             inline static vm_machines machines;
             inline static vm_env_cleaners env_cleaners;
             inline static std::vector<std::function<void()>> work_queue;
+            inline static thread_local bool error_handled = false;
 
             inline static std::vector<luaL_Reg> whitelist = {
                 {"_G", luaopen_base},
@@ -498,6 +499,7 @@ namespace Vital::Sandbox {
 
             template<typename F>
             int execute(F&& exec) {
+                error_handled = false;
                 try { return exec(); }
                 catch (const vm_error& e) { log(e); }
                 catch (const Tool::Log::info& e) { log(std::string(Tool::Log::info::label), e.what()); }
@@ -625,13 +627,14 @@ namespace Vital::Sandbox {
                         pop(1);
                         Tool::print(std::string(Tool::Log::error::label), err);
                         push_string(err);
+                        error_handled = true;
                         lua_error(state);
                     } else {
-                        const std::string err = get_string(-1);
-                        pop(1);
-                        if (err.empty() || err[0] != '@') {
-                            Tool::print(std::string(Tool::Log::error::label), err);
+                        if (!error_handled) {
+                            Tool::print(std::string(Tool::Log::error::label), get_string(-1));
                         }
+                        error_handled = false;
+                        pop(1);
                     }
                 }
                 return result;
