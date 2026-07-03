@@ -102,10 +102,6 @@ namespace Vital::Manager {
             // Instantiators //
             Resource() = default;
             ~Resource() = default;
-    
-
-            // Singleton //
-            static Resource* get_singleton();
 
 
             // Managers //
