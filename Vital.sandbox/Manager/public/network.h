@@ -59,7 +59,6 @@ namespace Vital::Manager {
 
 
             // Singleton //
-            static Network* get_singleton();
             static void free_singleton();
 
 
