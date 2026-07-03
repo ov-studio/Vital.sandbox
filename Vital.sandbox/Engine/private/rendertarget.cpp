@@ -31,12 +31,6 @@ namespace Vital::Engine {
     }
 
 
-    // Hooks //
-    void Rendertarget::_draw() {
-        draw();
-    }
-
-
     // Managers //
     Rendertarget* Rendertarget::create(godot::Vector2 size, bool transparent) {
         auto rt = memnew(Rendertarget);
