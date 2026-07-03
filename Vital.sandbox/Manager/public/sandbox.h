@@ -22,21 +22,21 @@
 /////////////////////////////
 
 namespace Vital::Manager {
-    class Sandbox : public godot::Node {
-        protected:
-            inline static Sandbox* singleton = nullptr;
+    class Sandbox : public godot::Node, public Tool::Base<Sandbox> {
+        friend class Tool::Base<Sandbox>;
+        public:
+            static constexpr const char* Name = "Sandbox.manager";
         private:
             mutable std::mutex mutex;
             Vital::Sandbox::Machine* vm = nullptr;
             std::unordered_map<std::string, std::unordered_map<std::string, int>> exports;
-        public:
+
+
             // Instantiators //
             Sandbox();
             ~Sandbox();
-
-
+        public:
             // Singleton //
-            static Sandbox* get_singleton();
             static void free_singleton();
 
 

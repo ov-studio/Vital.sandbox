@@ -35,13 +35,9 @@ namespace Vital::Manager {
 
 
     // Singleton //
-    Sandbox* Sandbox::get_singleton() {
-        singleton = singleton ? singleton : memnew(Sandbox());
-        return singleton;
-    }
-
     void Sandbox::free_singleton() {
         if (!singleton) return;
+        singleton -> teardown();
         singleton -> queue_free();
         singleton = nullptr;
     }
