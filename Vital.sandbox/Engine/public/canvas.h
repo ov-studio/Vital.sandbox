@@ -25,9 +25,12 @@ namespace Vital::Engine {
     class Font;
     class Texture;
     class Rendertarget;
-    class Canvas : public godot::Node2D {
+    class Canvas : public godot::Node2D, public Tool::Base<Canvas> {
         GDCLASS(Canvas, godot::Node2D)
+        friend class Tool::Base<Canvas>;
         public:
+            static constexpr const char* Name = "Canvas";
+
             enum class Type {
                 Line,
                 Polygon,
@@ -104,7 +107,6 @@ namespace Vital::Engine {
                 std::variant<Line, Polygon, Rectangle, Circle, Image, Text> payload;
             };
         protected:
-            inline static Canvas* singleton = nullptr;
             static void _bind_methods() {}
         private:
             std::vector<Command> queue;
