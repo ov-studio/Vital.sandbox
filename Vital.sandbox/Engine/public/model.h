@@ -125,10 +125,13 @@ namespace Vital::Engine {
             godot::AnimationPlayer* assert_animation_player();
             void assert_material_feature(int feature);
             void assert_material_flag(int flag);
-        public:
+
+
             // Instantiators //
             Model() = default;
             ~Model() override = default;
+        public:
+            // Hooks //
             void _ready() override;
             void _notification(int what);
 

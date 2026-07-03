@@ -65,7 +65,7 @@ namespace Vital::Engine {
     }
 
 
-    // Instantiators //
+    // Hooks //
     void Model::_ready() {
         godot::UtilityFunctions::print("Model::_ready fired, pending_authority=", pending_authority);
         if (placeholder) return;
