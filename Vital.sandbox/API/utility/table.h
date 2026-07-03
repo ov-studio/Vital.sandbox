@@ -52,13 +52,17 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "decode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(input)")
                     .require(1, &Machine::is_string);
-        
+            
                 vm -> get_reference("sandbox", "json", true);
                 vm -> get_table_field("decode", -1);
                 vm -> rotate(-2, 1);
                 vm -> pop(1);
                 vm -> push(1);
-                vm -> call(1, 1, false);
+                vm -> call(1, 1, true);
+                if (vm -> is_nil(-1)) {
+                    vm -> pop(1);
+                    vm -> push_value(false);
+                }
                 return 1;
             });
         }
