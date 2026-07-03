@@ -619,12 +619,24 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::pcall");
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
-                    Tool::print(std::string(Tool::Log::error::label), get_string(-1));
-                    pop(1);
+                    if (raw_call) {
+                        const std::string source = fetch_source();
+                        const std::string err = fmt::format("{}: {}", source, get_string(-1));
+                        pop(1);
+                        Tool::print(std::string(Tool::Log::error::label), err);
+                        push_string(err);
+                        lua_error(state);
+                    } else {
+                        const std::string err = get_string(-1);
+                        pop(1);
+                        if (err.empty() || err[0] != '@') {
+                            Tool::print(std::string(Tool::Log::error::label), err);
+                        }
+                    }
                 }
                 return result;
             }
-        
+            
             std::string compile_string(const std::string& raw, const std::string& chunk_name = "") {
                 Tool::assert_main_thread("Machine::compile_string");
                 if (raw.empty()) return "empty source";
@@ -651,7 +663,7 @@ namespace Vital::Sandbox {
                     push(env_index);
                     if (!lua_setupvalue(state, -2, 1)) pop(1);
                 }
-                if (auto_load && !pcall(0)) return 0;
+                if (auto_load && !call(0)) return 0;
                 return 1;
             }
     };
