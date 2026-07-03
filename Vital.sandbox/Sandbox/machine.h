@@ -622,11 +622,9 @@ namespace Vital::Sandbox {
                 bool result = lua_pcall(state, arguments, returns, 0) == LUA_OK;
                 if (!result) {
                     if (raw_call) {
-                        const std::string source = fetch_source();
-                        const std::string err = fmt::format("{}: {}", source, get_string(-1));
+                        const std::string err = get_string(-1);
                         pop(1);
-                        Tool::print(std::string(Tool::Log::error::label), err);
-                        push_string(err);
+                        log(std::string(Tool::Log::error::label), err, false);
                         error_handled = true;
                         lua_error(state);
                     }
