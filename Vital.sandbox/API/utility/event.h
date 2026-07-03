@@ -100,6 +100,16 @@ namespace Vital::Sandbox::API {
             return opts;
         }
 
+        #if !defined(VSDK_Client)
+        static void verify_peer(const std::string& caller, int peer_id, bool required) {
+            if (peer_id <= 0) {
+                if (required) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: {} — 'options.peer' is required for remote {} on server", caller, caller));
+                return;
+            }
+            if (!Manager::Network::get_singleton() -> get_connected_peers().count(peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: {} — peer '{}' is not connected", caller, peer_id));
+        }
+        #endif
+
         static void push_promise(Machine* vm, std::shared_ptr<API::Promise::Instance> promise) {
             vm -> get_raw_reference(promise -> get_reference(promise -> self_reference()));
         }
@@ -413,7 +423,13 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
-                if (opts.is_remote) send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, false);
+                if (opts.is_remote) {
+                    #if !defined(VSDK_Client)
+                    // TODO: Improve logs?? Reason: event.emit, use base_name call etc to automate?
+                    verify_peer("event.emit", opts.peer_id, false);
+                    #endif
+                    send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, false);
+                }
                 else {
                     std::vector<std::pair<int, Handler>> snapshot;
                     {
@@ -440,8 +456,7 @@ namespace Vital::Sandbox::API {
                 if (opts.is_remote) {
                     #if !defined(VSDK_Client)
                     // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
-                    if (opts.peer_id <= 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: event.emit_callback — 'options.peer' is required for remote emit_callback on server");
-                    if (!Manager::Network::get_singleton() -> get_connected_peers().count(opts.peer_id)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: event.emit_callback — peer '{}' is not connected", opts.peer_id));
+                    verify_peer("event.emit_callback", opts.peer_id, true);
                     #endif
                     auto promise = send_remote_emit(vm, name, vm -> collect_args(opts.args_start), opts.peer_id, true);
                     push_promise(vm, promise);
