@@ -199,7 +199,7 @@ namespace Vital::Sandbox::API {
                 int n_args = vm -> push_args(args_ref);
                 if (mode == FireMode::EmitCallback) {
                     int base = vm -> get_count() - n_args - 1;
-                    if (vm -> call(n_args, LUA_MULTRET)) {
+                    if (vm -> call(n_args)) {
                         int result_count = vm -> get_count() - base;
                         API::Promise::settle(promise, API::Promise::State::Resolved, vm, base + 1, result_count);
                     }
