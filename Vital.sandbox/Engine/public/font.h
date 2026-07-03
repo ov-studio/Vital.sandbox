@@ -25,12 +25,12 @@ namespace Vital::Engine {
     class Font : public godot::Node2D {
         private:
             godot::Ref<godot::FontFile> font;
-        public:
+
+
             // Instantiators //
             Font(const godot::Ref<godot::FontFile>& font);
             ~Font() override = default;
-
-
+        public:
             // Managers //
             static Font* create(const std::string& base, const std::string& path);
             static Font* create_from_buffer(const godot::PackedByteArray& buffer);
