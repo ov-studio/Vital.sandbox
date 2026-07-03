@@ -38,10 +38,11 @@ namespace Vital::Engine {
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("drain"), &Core::drain);
             };
-        public:
+        private:
             // Instantiators //
             Core() = default;
             ~Core() override = default;
+        public:
             void _ready() override;
             void _exit_tree() override;
             void _process(double delta) override;
