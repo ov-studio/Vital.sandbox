@@ -21,12 +21,12 @@
 ////////////////////////
 
 namespace Vital::Tool {
-    // Derived must declare:
-    // static constexpr const char* Name = "classname";
-    // friend class Base<Derived>;
-    
     template<typename Derived>
     class Base {
+        // Derived must declare:
+        // static constexpr const char* Name = "classname";
+        // friend class Base<Derived>;
+    
         protected:
             inline static Derived* singleton = nullptr;
             Base() = default;
