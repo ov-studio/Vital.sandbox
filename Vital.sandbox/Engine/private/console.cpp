@@ -487,16 +487,16 @@ namespace Vital::Engine {
  
     void Console::update() {
         #if defined(VSDK_Client)
-        std::lock_guard<std::mutex> lock(stdout_mutex);
-        const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
-        std::ostringstream prompt_oss;
-        prompt_oss << "\r\033[J"
-                   << Internal::ANSI_BOLD << Internal::FG_GRAY << " > " << Internal::ANSI_RESET << " "
-                   << stdin_buffer
-                   << "\n"
-                   << "\033[1A"
-                   << "\033[" << cursor_col << "G";
-        std::cout << prompt_oss.str() << std::flush;
+            std::lock_guard<std::mutex> lock(stdout_mutex);
+            const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
+            std::ostringstream prompt_oss;
+            prompt_oss << "\r\033[J"
+                    << Internal::ANSI_BOLD << Internal::FG_GRAY << " > " << Internal::ANSI_RESET << " "
+                    << stdin_buffer
+                    << "\n"
+                    << "\033[1A"
+                    << "\033[" << cursor_col << "G";
+            std::cout << prompt_oss.str() << std::flush;
         #endif
     }
 
