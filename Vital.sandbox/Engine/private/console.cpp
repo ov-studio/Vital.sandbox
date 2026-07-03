@@ -639,6 +639,12 @@ namespace Vital::Engine {
         #endif
     }
 
+    void Console::teardown() {
+        #if !defined(VSDK_Client)
+        stdin_running = false;
+        #endif
+    }
+
     #if defined(VSDK_Client)
     void Console::toggle() {
         webview -> set_visible(!webview -> is_visible());

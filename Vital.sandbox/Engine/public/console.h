@@ -79,6 +79,7 @@ namespace Vital::Engine {
             void execute(const std::string& input);
             void print(const std::string& mode, const std::string& message);
             void clear(bool signal = false);
+            void teardown();
             #if defined(VSDK_Client)
             void toggle();
             #endif
