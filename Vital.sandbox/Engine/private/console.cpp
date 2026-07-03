@@ -81,8 +81,7 @@ namespace Vital::Engine {
         append_section("shared", "General");
         #if !defined(VSDK_Client)
         append_section("server", "Server");
-        #endif
-        #if defined(VSDK_Client)
+        #else
         append_section("client", "Client");
         #endif
         return oss.str();
@@ -487,6 +486,7 @@ namespace Vital::Engine {
     }
  
     void Console::update() {
+        #if defined(VSDK_Client)
         std::lock_guard<std::mutex> lock(stdout_mutex);
         const int cursor_col = 5 + static_cast<int>(stdin_buffer.size());
         std::ostringstream prompt_oss;
@@ -497,6 +497,7 @@ namespace Vital::Engine {
                    << "\033[1A"
                    << "\033[" << cursor_col << "G";
         std::cout << prompt_oss.str() << std::flush;
+        #endif
     }
 
     void Console::execute(const std::string& input) {
