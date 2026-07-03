@@ -482,19 +482,18 @@ namespace Vital::Sandbox {
                 return source;
             }
 
-            void log(const std::string& type, const std::string& message = "") {
+            void log(const std::string& type, const std::string& message = "", bool halt = true) {
                 const std::string source = fetch_source();
                 const std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
                 Tool::print(type, err);
                 push_string(err);
-                lua_error(state);
             }
             
-            void log(const vm_error& e) {
+            void log(const vm_error& e, bool halt = true) {
                 const std::string source = fetch_source();
                 Tool::print(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
                 push_string(fmt::format("{}: {}", source, e.partial));
-                lua_error(state);
+                if (halt) lua_error(state);
             }
 
             template<typename F>
