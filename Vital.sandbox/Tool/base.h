@@ -43,6 +43,7 @@ namespace Vital::Tool {
 
             static void free_singleton() {
                 if (!singleton) return;
+                singleton -> teardown();
                 memdelete(singleton);
                 singleton = nullptr;
             }
@@ -51,6 +52,7 @@ namespace Vital::Tool {
             // Managers //
             inline void init() {}
             inline void ready() {}
+            inline void teardown() {}
             inline void log(const std::string& mode, const std::string& message) const {
                 Tool::print(mode, fmt::format("{}: {}", Derived::Name, message));
             }
