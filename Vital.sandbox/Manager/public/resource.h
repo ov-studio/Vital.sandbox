@@ -128,6 +128,7 @@ namespace Vital::Manager {
             int get_resource_count(State type) const;
             static std::string get_resource_base(const std::string& name, bool require_running = false);
             static std::string get_resource_from_vm(Vital::Sandbox::Machine* vm);
+            static std::pair<std::string, std::string> get_resource_scoped_path(Vital::Sandbox::Machine* vm, std::string path);
 
 
             // Misc //

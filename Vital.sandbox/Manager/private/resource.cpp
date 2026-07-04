@@ -694,6 +694,17 @@ namespace Vital::Manager {
         return vm -> get_environment_id();
     }
 
+    std::pair<std::string, std::string> Resource::get_resource_scoped_path(Vital::Sandbox::Machine* vm, std::string path) {
+        if (!path.empty() && path[0] == ':') {
+            const size_t slash = path.find('/');
+            if (slash == std::string::npos) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid resource-scoped path — missing '/' after name");
+            const std::string target = path.substr(1, slash - 1);
+            get_resource_base(target, true);
+            return { target, path.substr(slash + 1) };
+        }
+        return { get_resource_from_vm(vm), path };
+    }
+
 
     // Misc //
     bool Resource::start(std::string name) {
