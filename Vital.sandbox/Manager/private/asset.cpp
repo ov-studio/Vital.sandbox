@@ -278,13 +278,9 @@ namespace Vital::Manager {
         auto it = group_pending_counts.find(group);
         if (it == group_pending_counts.end()) return;
         it -> second--;
-        log("sbox", fmt::format("file ready for group `{}` — {} remaining: {}", group, it -> second, path));
         if (it -> second <= 0) {
             group_pending_counts.erase(it);
             log("sbox", fmt::format("group `{}` all assets ready", group));
-            // Capture the current generation. If cancel_group/cancel_all bumps it before
-            // the enqueued lambda runs, the emission is a no-op — preventing stale
-            // group_ready callbacks from cancelled downloads corrupting a fresh registration.
             const uint32_t gen = group_generations[group];
             Engine::Core::get_singleton() -> enqueue([this, group, gen]() {
                 if (group_generations[group] != gen) return;
