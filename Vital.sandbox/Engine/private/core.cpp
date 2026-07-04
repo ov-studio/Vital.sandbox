@@ -187,8 +187,8 @@ namespace Vital::Engine {
         return get_display_server() -> window_get_size();
     }
 
-    int Core::get_http_port() const {
-        return http_server.get_port();
+    std::string Core::get_http_url(const std::string& path) const {
+        return http_server.get_url(path);
     }
     #endif
 }

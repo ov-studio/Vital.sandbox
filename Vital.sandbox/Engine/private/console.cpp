@@ -229,7 +229,7 @@ namespace Vital::Engine {
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
                 Engine::Core::get_singleton() -> enqueue([this]() {
-                    webview -> load_url(fmt::format("http://127.0.0.1:{}/cache/Vital.kit/console/build/index.html", Engine::Core::get_singleton() -> get_http_port()));
+                    webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/console/build/index.html"));
                 });
             });
         #else
