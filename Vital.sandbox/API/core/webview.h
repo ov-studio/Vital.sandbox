@@ -51,7 +51,7 @@ namespace Vital::Sandbox::API {
         static std::string build_url(Machine* vm, const std::string& input) {
             auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, input);
             const std::string mounted_path = resource.empty() ? fmt::format("resources/{}", relative) : fmt::format("resources/{}/{}", resource, relative);
-            return Engine::Core::get_singleton() -> get_http_url(mounted_path);
+            return Vital::Engine::Core::get_singleton() -> get_http_url(mounted_path);
         }
 
         static std::string resolve_url(Machine* vm, const std::string& input) {
