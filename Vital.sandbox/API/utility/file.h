@@ -26,15 +26,9 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"util", "file"};
 
         static std::string get_base(Machine* vm, std::string& path) {
-            if (!path.empty() && (path[0] == ':')) {
-                const size_t slash = path.find('/');
-                if (slash == std::string::npos) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid base path");
-                const std::string target = path.substr(1, slash - 1);
-                path = path.substr(slash + 1);
-                return Manager::Resource::get_resource_base(target, true);
-            }
-            const std::string name = Manager::Resource::get_resource_from_vm(vm);
-            return name.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(name);
+            auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, path);
+            path = relative;
+            return resource.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(resource);
         }
 
         static std::string assert_file(Machine* vm, std::string& path) {
