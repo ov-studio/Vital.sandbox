@@ -47,6 +47,17 @@ namespace Vital::Sandbox::API {
             }
         };
         inline static vm_registry<Instance> registry;
+    
+        static std::string build_url(Machine* vm, const std::string& input) {
+            auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, input);
+            const std::string mounted_path = resource.empty() ? fmt::format("resources/{}", relative) : fmt::format("resources/{}/{}", resource, relative);
+            return Engine::Core::get_singleton() -> get_http_url(mounted_path);
+        }
+
+        static std::string resolve_url(Machine* vm, const std::string& input) {
+            if (input.rfind("http://", 0) == 0 || input.rfind("https://", 0) == 0) return input;
+            return build_url(vm, input);
+        }
 
         static void bind(Machine* vm) {
             vm_module::register_type<Webview>(vm);
@@ -171,7 +182,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
 
-                self -> webview -> load_url(vm -> get_string(2));
+                self -> webview -> load_url(resolve_url(vm, vm -> get_string(2)));
                 vm -> push_value(true);
                 return 1;
             });
