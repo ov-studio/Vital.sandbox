@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Engine/public/webview.h>
 
 
