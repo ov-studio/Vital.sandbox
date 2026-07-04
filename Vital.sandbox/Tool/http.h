@@ -141,14 +141,27 @@ namespace Vital::Tool::HTTP {
                 server -> set_mount_point(prefix, directory);
             }
     
-            bool start() {
+            bool start(bool random_port = false) {
                 if (running.load()) return true;
                 if (!server) server = std::make_unique<httplib::Server>();
+
+                if (random_port) {
+                    int bound_port = server -> bind_to_any_port(bind_address);
+                    if (bound_port <= 0) {
+                        Tool::print("sbox", fmt::format("{}: HTTP server failed to bind to an available port", label));
+                        return false;
+                    }
+                    port = bound_port;
+                }
+                else if (!server -> bind_to_port(bind_address, port)) {
+                    Tool::print("sbox", fmt::format("{}: HTTP server failed to bind port {}", label, port));
+                    return false;
+                }
 
                 running.store(true);
                 thread = std::thread([this]() {
                     Tool::print("sbox", fmt::format("{}: HTTP server starting on port {}", label, port));
-                    server -> listen(bind_address, port);
+                    server -> listen_after_bind();
                     Tool::print("sbox", fmt::format("{}: HTTP server stopped", label));
                 });
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));

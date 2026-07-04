@@ -43,11 +43,10 @@ namespace Vital::Engine {
                     Tool::print("sbox", "Core: Vital.kit ready");
                     #if defined(VSDK_Client)
                     http_server.set_bind_address("127.0.0.1");
-                    http_server.set_port(7779);
                     http_server.set_label("Core");
                     http_server.add_mount("/cache", Tool::get_directory() + "/cache");
                     http_server.add_mount("/resources", Tool::get_directory() + "/resources");
-                    http_server.start();
+                    http_server.start(true);
                     #endif
                     kit_ready.store(true);
                     Tool::Event::emit("kit:ready");
