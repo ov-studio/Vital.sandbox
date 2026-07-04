@@ -129,6 +129,12 @@ namespace Vital::Tool::HTTP {
             int get_port() const { 
                 return port;
             }
+
+            std::string get_url(const std::string& path = "") const {
+                std::string base = "http://" + bind_address + ":" + std::to_string(port);
+                if (path.empty()) return base;
+                return base + (path.front() == '/' ? path : "/" + path);
+            }
             
             template<typename Handler>
             void get(const std::string& pattern, Handler handler) {
