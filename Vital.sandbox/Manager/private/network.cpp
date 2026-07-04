@@ -254,12 +254,24 @@ namespace Vital::Manager {
             log("sbox", "already hosting");
             return false;
         }
+
+        const int net_port = config.get_network_port();
+        {
+            godot::Ref<godot::UDPServer> probe;
+            probe.instantiate();
+            if (probe -> listen(net_port) != godot::OK) {
+                log("error", fmt::format("failed to host on port {} — already in use", net_port));
+                return false;
+            }
+            probe -> stop();
+        }
+
         server_config = &config;
         create();
         peer.instantiate();
-        godot::Error err = peer -> create_server(config.get_network_port(), config.get_max_clients());
+        godot::Error err = peer -> create_server(net_port, config.get_max_clients());
         if (err != godot::OK) {
-            log("sbox", fmt::format("failed to host on port {} (err={})", config.get_network_port(), (int)err));
+            log("sbox", fmt::format("failed to host on port {} (err={})", net_port, (int)err));
             peer.unref();
             server_config = nullptr;
             return false;
