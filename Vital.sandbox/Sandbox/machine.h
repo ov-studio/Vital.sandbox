@@ -486,6 +486,7 @@ namespace Vital::Sandbox {
                 const std::string source = fetch_source();
                 const std::string err = message.empty() ? source : fmt::format("{}: {}", source, message);
                 Tool::print(type, err);
+                error_handled = true;
                 push_string(err);
                 if (halt) lua_error(state);
             }
@@ -493,6 +494,7 @@ namespace Vital::Sandbox {
             void log(const vm_error& e, bool halt = true) {
                 const std::string source = fetch_source();
                 Tool::print(std::string(Tool::Log::error::label), fmt::format("{}: {}", source, e.detail));
+                error_handled = true;
                 push_string(fmt::format("{}: {}", source, e.partial));
                 if (halt) lua_error(state);
             }
@@ -584,7 +586,8 @@ namespace Vital::Sandbox {
                 int result = lua_resume(state, nullptr, count, &nresults);
                 if (result != LUA_OK && result != LUA_YIELD) {
                     if (get_count() > 0) {
-                        Tool::print(std::string(Tool::Log::error::label), get_string(-1));
+                        if (!error_handled) Tool::print(std::string(Tool::Log::error::label), get_string(-1));
+                        error_handled = false;
                         pop(1);
                     }
                 }
