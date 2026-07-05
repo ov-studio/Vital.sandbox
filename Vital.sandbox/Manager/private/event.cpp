@@ -117,7 +117,6 @@ void vsdk_initialize() {
         auto nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
         Vital::Engine::Model::on_connected();
-        Vital::Manager::Asset::get_singleton() -> clear();
         Vital::Manager::Asset::get_singleton() -> set_server_http_ip(nm -> get_server_ip());
     });
 
@@ -126,6 +125,7 @@ void vsdk_initialize() {
         Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
         Vital::Manager::Resource::get_singleton() -> stop_all();
         Vital::Manager::Asset::get_singleton() -> clear();
+        Vital::Engine::Core::get_singleton() -> free_environment();
     });
     #endif
 

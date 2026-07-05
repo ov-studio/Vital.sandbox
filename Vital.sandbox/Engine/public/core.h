@@ -74,7 +74,6 @@ namespace Vital::Engine {
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();
             static void free_environment();
-            static void reset_environment();
             godot::Vector2 get_resolution();
             std::string get_http_url(const std::string& path = "") const;
             #endif
