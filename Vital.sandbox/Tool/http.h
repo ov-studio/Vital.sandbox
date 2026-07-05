@@ -135,7 +135,16 @@ namespace Vital::Tool::HTTP {
                 if (path.empty()) return base;
                 return base + (path.front() == '/' ? path : "/" + path);
             }
-            
+        private:
+            bool is_port_taken(int check_port) const {
+                const std::string probe_host = (bind_address == "0.0.0.0") ? "127.0.0.1" : bind_address;
+                httplib::Client probe(probe_host, check_port);
+                probe.set_connection_timeout(0, 200000);
+                probe.set_read_timeout(0, 200000);
+                auto res = probe.Get("/");
+                return res.error() != httplib::Error::Connection;
+            }
+        public:
             template<typename Handler>
             void get(const std::string& pattern, Handler handler) {
                 if (!server) server = std::make_unique<httplib::Server>();
@@ -159,9 +168,15 @@ namespace Vital::Tool::HTTP {
                     }
                     port = bound_port;
                 }
-                else if (!server -> bind_to_port(bind_address, port)) {
-                    Tool::print("sbox", fmt::format("{}: HTTP server failed to bind port {}", label, port));
-                    return false;
+                else {
+                    if (is_port_taken(port)) {
+                        Tool::print("error", fmt::format("{}: HTTP server failed to bind port {} — already in use", label, port));
+                        return false;
+                    }
+                    if (!server -> bind_to_port(bind_address, port)) {
+                        Tool::print("error", fmt::format("{}: HTTP server failed to bind port {}", label, port));
+                        return false;
+                    }
                 }
 
                 running.store(true);
