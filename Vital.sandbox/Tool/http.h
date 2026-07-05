@@ -163,7 +163,7 @@ namespace Vital::Tool::HTTP {
                 if (random_port) {
                     int bound_port = server -> bind_to_any_port(bind_address);
                     if (bound_port <= 0) {
-                        Tool::print("sbox", fmt::format("{}: HTTP server failed to bind to an available port", label));
+                        Tool::print("error", fmt::format("{}: HTTP server failed to bind to an available port", label));
                         return false;
                     }
                     port = bound_port;
