@@ -183,6 +183,11 @@ namespace Vital::Engine {
         environment = nullptr;
     }
 
+    void Core::reset_environment() {
+        free_environment();
+        get_environment();
+    }
+
     godot::Vector2 Core::get_resolution() {
         return get_display_server() -> window_get_size();
     }
