@@ -116,15 +116,16 @@ void vsdk_initialize() {
     Vital::Tool::Event::bind("network:connect:success", [](Vital::Tool::Stack) {
         auto nm = Vital::Manager::Network::get_singleton();
         Vital::Tool::print("sbox", "Connected! My ID: ", nm -> get_peer_id());
-        Vital::Engine::Model::on_connected();
         Vital::Manager::Asset::get_singleton() -> set_server_http_ip(nm -> get_server_ip());
+        Vital::Engine::Model::on_connected();
+        Vital::Engine::Core::get_singleton() -> get_environment();
     });
 
     Vital::Tool::Event::bind("network:server:disconnect", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Lost connection to server");
-        Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
         Vital::Manager::Resource::get_singleton() -> stop_all();
         Vital::Manager::Asset::get_singleton() -> clear();
+        Vital::Engine::Model::cleanup_spawned(); // TODO: ?? NEEDED SINCE IT ALREADY FREES ENV WHEN RESOURCE AUTO STOPPS
         Vital::Engine::Core::get_singleton() -> free_environment();
     });
     #endif
