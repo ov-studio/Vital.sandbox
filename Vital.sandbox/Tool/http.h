@@ -142,7 +142,7 @@ namespace Vital::Tool::HTTP {
                 probe.set_connection_timeout(0, 200000);
                 probe.set_read_timeout(0, 200000);
                 auto res = probe.Get("/");
-                return res.error() != httplib::Error::Connection;
+                return res.error() == httplib::Error::Success;
             }
         public:
             template<typename Handler>
