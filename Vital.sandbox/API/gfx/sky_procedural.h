@@ -171,7 +171,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-            
+
             API::bind(vm, base_scope, "set_sky_cover_modulate", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
@@ -264,7 +264,6 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-
 #else
 namespace Vital::Sandbox::API {
     struct Sky_Procedural : vm_module {};

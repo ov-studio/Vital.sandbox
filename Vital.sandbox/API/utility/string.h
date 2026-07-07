@@ -53,9 +53,5 @@ namespace Vital::Sandbox::API {
                 });
             }
         }
-        
-        static void bind(Machine* vm) {
-        
-        }
     };
 }

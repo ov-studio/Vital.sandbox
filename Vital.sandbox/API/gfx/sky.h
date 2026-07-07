@@ -128,7 +128,6 @@ namespace Vital::Sandbox::API {
         }
     };
 }
-
 #else
 namespace Vital::Sandbox::API {
     struct Sky : vm_module {};
