@@ -58,13 +58,28 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "get_background_energy_multiplier", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_bg_energy_multiplier());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_background_energy_multiplier", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_bg_energy_multiplier(value);
+                vm -> push_value(true);
+                return 1;
+            });
+    
             API::bind(vm, base_scope, "get_background_intensity", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_bg_intensity());
                 return 1;
             });
 
             API::bind(vm, base_scope, "set_background_intensity", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(energy)")
+                vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
                 auto value = vm -> get_float(1);
@@ -72,7 +87,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-        
+    
             API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
                 return 1;
