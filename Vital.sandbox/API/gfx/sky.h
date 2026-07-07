@@ -63,6 +63,36 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            API::bind(vm, base_scope, "get_fov", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sky_custom_fov());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_fov", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_sky_custom_fov(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_rotation", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sky_rotation());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_rotation", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(rotation)")
+                    .require(1, &Machine::is_vector3);
+
+                auto value = vm -> get_vector3(1);
+                base_class::get_environment() -> set_sky_rotation(value);
+                vm -> push_value(true);
+                return 1;
+            });
     
             API::bind(vm, base_scope, "get_radiance_size", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_sky() -> get_radiance_size()));
