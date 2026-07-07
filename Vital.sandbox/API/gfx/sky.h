@@ -40,7 +40,7 @@ namespace Vital::Sandbox::API {
             return typed;
         }
 
-        static void Sky::bind(Machine* vm) {
+        static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_type", [](auto vm, auto& id) -> int {
                 godot::Ref<godot::Material> current = base_class::get_sky() -> get_material();
                 if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid()) vm -> push_value(std::string("panorama"));
