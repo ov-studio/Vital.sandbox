@@ -159,12 +159,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
     
-            API::bind(vm, base_scope, "get_tonemapper", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
                 return 1;
             });
 
-            API::bind(vm, base_scope, "set_tonemapper", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require(1, &Machine::is_number)
                     .validate_enum(1, godot::Environment::TONE_MAPPER_LINEAR, godot::Environment::TONE_MAPPER_ACES);
