@@ -29,7 +29,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "get_texture", [](auto vm, auto& id) -> int {
                 auto material = Sky::ensure_material<godot::PanoramaSkyMaterial>();
                 auto texture = material -> get_panorama();
-                vm -> push_value(texture.is_valid());
+                vm -> push_value(texture.is_valid()); // TODO: Return texture path here
                 return 1;
             });
 
@@ -39,7 +39,7 @@ namespace Vital::Sandbox::API {
 
                 auto path = vm -> get_string(1);
                 auto ref = path;
-                auto base = API::File::assert_file(vm, path);
+                auto base = API::File::assert_file(vm, path); // TODO: Resource scope? or just like lut maybe
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
                 Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_panorama(texture -> get_texture());
