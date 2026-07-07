@@ -158,6 +158,51 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            API::bind(vm, base_scope, "get_tonemapper", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_tonemapper", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(mode)")
+                    .require(1, &Machine::is_number);
+
+                auto mode = static_cast<godot::Environment::ToneMapper>(vm -> get_int(1));
+                base_class::get_environment() -> set_tonemapper(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_tonemap_exposure", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_tonemap_exposure());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_tonemap_exposure", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_tonemap_exposure(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_tonemap_white", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_tonemap_white());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_tonemap_white", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_tonemap_white(value);
+                vm -> push_value(true);
+                return 1;
+            });
         }
     };
 }

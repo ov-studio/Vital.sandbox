@@ -100,12 +100,12 @@ public:
 	float get_ambient_light_sky_contribution() const;
 	void set_reflection_source(Environment::ReflectionSource p_source);
 	Environment::ReflectionSource get_reflection_source() const;
-	void set_tonemapper(Environment::ToneMapper p_mode);
-	Environment::ToneMapper get_tonemapper() const;
-	void set_tonemap_exposure(float p_exposure);
-	float get_tonemap_exposure() const;
-	void set_tonemap_white(float p_white);
-	float get_tonemap_white() const;
+	//void set_tonemapper(Environment::ToneMapper p_mode);
+	//Environment::ToneMapper get_tonemapper() const;
+	//void set_tonemap_exposure(float p_exposure);
+	//float get_tonemap_exposure() const;
+	//void set_tonemap_white(float p_white);
+	//float get_tonemap_white() const;
 	//void set_ssr_enabled(bool p_enabled);
 	//bool is_ssr_enabled() const;
 	//void set_ssr_max_steps(int32_t p_max_steps);
