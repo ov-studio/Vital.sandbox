@@ -27,8 +27,8 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_texture", [](auto vm, auto& id) -> int {
-                auto mat = Sky::ensure_material<godot::PanoramaSkyMaterial>();
-                auto texture = mat -> get_panorama();
+                auto material = Sky::ensure_material<godot::PanoramaSkyMaterial>();
+                auto texture = material -> get_panorama();
                 vm -> push_value(texture.is_valid());
                 return 1;
             });

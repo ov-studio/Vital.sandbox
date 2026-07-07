@@ -56,9 +56,9 @@ namespace Vital::Sandbox::API {
     
                 auto type = vm -> get_string(1);
                 auto sky = base_class::get_sky();
-                if (type == "panorama") { godot::Ref<godot::PanoramaSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
-                else if (type == "procedural") { godot::Ref<godot::ProceduralSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
-                else if (type == "physical") { godot::Ref<godot::PhysicalSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
+                if (type == "panorama") { godot::Ref<godot::PanoramaSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
+                else if (type == "procedural") { godot::Ref<godot::ProceduralSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
+                else if (type == "physical") { godot::Ref<godot::PhysicalSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
                 else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid sky type, expected 'panorama', 'procedural', or 'physical'");
                 vm -> push_value(true);
                 return 1;
