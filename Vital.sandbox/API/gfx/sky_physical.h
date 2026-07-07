@@ -26,6 +26,16 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "sky", "physical"};
         inline static const std::string night_sky_reference = fmt::format("{}:night_sky", vm_module::scope_id(base_scope));
 
+        static void init(Machine* vm) {
+            static bool initialized = false;
+            if (initialized) return;
+            initialized = true;
+
+            Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+                vm -> del_reference("sandbox", night_sky_reference);
+            });
+        }
+        
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_rayleigh_coefficient", [](auto vm, auto& id) -> int {
                 vm -> push_value(Sky::ensure_material<godot::PhysicalSkyMaterial>() -> get_rayleigh_coefficient());

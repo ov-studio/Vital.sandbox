@@ -26,6 +26,16 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "sky", "procedural"};
         inline static const std::string sky_cover_reference = fmt::format("{}:sky_cover", vm_module::scope_id(base_scope));
 
+        static void init(Machine* vm) {
+            static bool initialized = false;
+            if (initialized) return;
+            initialized = true;
+
+            Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+                vm -> del_reference("sandbox", sky_cover_reference);
+            });
+        }
+        
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_sky_top_color", [](auto vm, auto& id) -> int {
                 vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_top_color());

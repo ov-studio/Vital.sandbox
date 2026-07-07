@@ -29,6 +29,16 @@ namespace Vital::Sandbox::API {
         inline static const std::string lut_reference = fmt::format("{}:lut", vm_module::scope_id(base_scope));
         using base_class = Vital::Engine::Core;
 
+        static void init(Machine* vm) {
+            static bool initialized = false;
+            if (initialized) return;
+            initialized = true;
+        
+            Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+                vm -> del_reference("sandbox", lut_reference);
+            });
+        }
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_adjustment_enabled());
