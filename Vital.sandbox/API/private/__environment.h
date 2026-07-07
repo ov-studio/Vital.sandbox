@@ -84,8 +84,8 @@ public:
 	//Color get_bg_color() const;
 	//void set_bg_energy_multiplier(float p_energy);
 	//float get_bg_energy_multiplier() const;
-	void set_bg_intensity(float p_energy);
-	float get_bg_intensity() const;
+	//void set_bg_intensity(float p_energy);
+	//float get_bg_intensity() const;
 	void set_canvas_max_layer(int32_t p_layer);
 	int32_t get_canvas_max_layer() const;
 	void set_camera_feed_id(int32_t p_id);
