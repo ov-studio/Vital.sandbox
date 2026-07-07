@@ -240,37 +240,6 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            // Ambient // TODO: REMOVE
-            API::bind(vm, base_scope, "get_canvas_max_layer", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_canvas_max_layer());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_canvas_max_layer", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(layer)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_int(1);
-                base_class::get_environment() -> set_canvas_max_layer(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_camera_feed_id", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_camera_feed_id());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_camera_feed_id", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_int(1);
-                base_class::get_environment() -> set_camera_feed_id(value);
-                vm -> push_value(true);
-                return 1;
-            });
         }
     };
 }
