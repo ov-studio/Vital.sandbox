@@ -75,6 +75,10 @@
 #include <godot_cpp/classes/visual_instance3d.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/sky.hpp>
+#include <godot_cpp/classes/panorama_sky_material.hpp>
+#include <godot_cpp/classes/procedural_sky_material.hpp>
+#include <godot_cpp/classes/physical_sky_material.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
