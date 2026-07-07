@@ -88,6 +88,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
     
+            API::bind(vm, base_scope, "get_sky_rotation", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sky_rotation());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_sky_rotation", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_vector3);
+
+                auto value = vm -> get_vector3(1);
+                base_class::get_environment() -> set_sky_rotation(value);
+                vm -> push_value(true);
+                return 1;
+            });
+        
             API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
                 return 1;
@@ -134,22 +149,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Sky / Ambient // TODO: REMOVE
-            API::bind(vm, base_scope, "get_sky_rotation", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sky_rotation());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_sky_rotation", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(euler_radians)")
-                    .require(1, &Machine::is_vector3);
-
-                auto value = vm -> get_vector3(1);
-                base_class::get_environment() -> set_sky_rotation(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
+            // Ambient // TODO: REMOVE
             API::bind(vm, base_scope, "get_canvas_max_layer", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_canvas_max_layer());
                 return 1;
