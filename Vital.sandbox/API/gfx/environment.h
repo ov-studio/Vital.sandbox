@@ -88,12 +88,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_background_energy_multiplier", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_background_energy", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_bg_energy_multiplier());
                 return 1;
             });
 
-            API::bind(vm, base_scope, "set_background_energy_multiplier", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_background_energy", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
