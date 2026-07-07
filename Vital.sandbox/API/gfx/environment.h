@@ -87,14 +87,29 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-    
+
+            API::bind(vm, base_scope, "get_sky_fov", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sky_custom_fov());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_sky_fov", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_sky_custom_fov(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_sky_rotation", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_sky_rotation());
                 return 1;
             });
 
             API::bind(vm, base_scope, "set_sky_rotation", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
+                vm_args(vm, id, "(rotation)")
                     .require(1, &Machine::is_vector3);
 
                 auto value = vm -> get_vector3(1);
