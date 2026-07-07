@@ -27,7 +27,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_texture", [](auto vm, auto& id) -> int {
-                auto mat = Sky::ensure_material<godot::PanoramaSkyMaterial>();
+                auto mat = Sky::Sky::ensure_material<godot::PanoramaSkyMaterial>();
                 auto texture = mat -> get_panorama();
                 vm -> push_value(texture.is_valid());
                 return 1;
@@ -42,13 +42,13 @@ namespace Vital::Sandbox::API {
                 auto base = API::File::assert_file(vm, path);
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
-                Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_panorama(texture -> get_texture());
+                Sky::Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_panorama(texture -> get_texture());
                 vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, base_scope, "is_filtering_enabled", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::PanoramaSkyMaterial>() -> is_filtering_enabled());
+                vm -> push_value(Sky::Sky::ensure_material<godot::PanoramaSkyMaterial>() -> is_filtering_enabled());
                 return 1;
             });
 
@@ -57,13 +57,13 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_bool);
 
                 auto state = vm -> get_bool(1);
-                Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_filtering_enabled(state);
+                Sky::Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_filtering_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
 
             API::bind(vm, base_scope, "get_energy_multiplier", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::PanoramaSkyMaterial>() -> get_energy_multiplier());
+                vm -> push_value(Sky::Sky::ensure_material<godot::PanoramaSkyMaterial>() -> get_energy_multiplier());
                 return 1;
             });
 
@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number);
 
                 auto value = vm -> get_float(1);
-                Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_energy_multiplier(value);
+                Sky::Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_energy_multiplier(value);
                 vm -> push_value(true);
                 return 1;
             });
