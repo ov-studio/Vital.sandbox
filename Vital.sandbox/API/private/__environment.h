@@ -80,8 +80,8 @@ public:
 	//float get_sky_custom_fov() const;
 	void set_sky_rotation(const Vector3 &p_euler_radians);
 	Vector3 get_sky_rotation() const;
-	void set_bg_color(const Color &p_color);
-	Color get_bg_color() const;
+	//void set_bg_color(const Color &p_color);
+	//Color get_bg_color() const;
 	//void set_bg_energy_multiplier(float p_energy);
 	//float get_bg_energy_multiplier() const;
 	void set_bg_intensity(float p_energy);

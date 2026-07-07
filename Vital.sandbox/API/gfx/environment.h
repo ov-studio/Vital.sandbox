@@ -43,6 +43,36 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
+            API::bind(vm, base_scope, "get_background_color", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_bg_color());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_background_color", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(color)")
+                    .require(1, &Machine::is_color);
+
+                auto value = vm -> get_color(1);
+                base_class::get_environment() -> set_bg_color(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_background_intensity", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_bg_intensity());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_background_intensity", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(energy)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_bg_intensity(value);
+                vm -> push_value(true);
+                return 1;
+            });
+        
             API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
                 return 1;
@@ -88,25 +118,8 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-        
 
-            API::bind(vm, base_scope, "get_background_mode", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int>(base_class::get_environment() -> get_background()));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_background_mode", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Environment::BG_CLEAR_COLOR, godot::Environment::BG_CAMERA_FEED);
-
-                auto mode = static_cast<godot::Environment::BGMode>(vm -> get_int(1));
-                base_class::get_environment() -> set_background(mode);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            // Background / Sky / Ambient / Tonemap //
+            // Sky / Ambient // TODO: REMOVE
             API::bind(vm, base_scope, "get_sky_rotation", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_sky_rotation());
                 return 1;
@@ -118,36 +131,6 @@ namespace Vital::Sandbox::API {
 
                 auto value = vm -> get_vector3(1);
                 base_class::get_environment() -> set_sky_rotation(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_bg_color", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_bg_color());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_bg_color", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(color)")
-                    .require(1, &Machine::is_color);
-
-                auto value = vm -> get_color(1);
-                base_class::get_environment() -> set_bg_color(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_bg_intensity", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_bg_intensity());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_bg_intensity", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(energy)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_bg_intensity(value);
                 vm -> push_value(true);
                 return 1;
             });
