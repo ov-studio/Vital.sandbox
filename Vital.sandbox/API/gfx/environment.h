@@ -118,21 +118,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, base_scope, "get_ambient_color", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_ambient_light_color());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_ambient_color", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(color)")
-                    .require(1, &Machine::is_color);
-
-                auto value = vm -> get_color(1);
-                base_class::get_environment() -> set_ambient_light_color(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::bind(vm, base_scope, "get_ambient_source", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_ambient_source()));
                 return 1;
@@ -145,6 +130,21 @@ namespace Vital::Sandbox::API {
 
                 auto source = static_cast<godot::Environment::AmbientSource>(vm -> get_int(1));
                 base_class::get_environment() -> set_ambient_source(source);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_ambient_color", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_ambient_light_color());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_ambient_color", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(color)")
+                    .require(1, &Machine::is_color);
+
+                auto value = vm -> get_color(1);
+                base_class::get_environment() -> set_ambient_light_color(value);
                 vm -> push_value(true);
                 return 1;
             });
