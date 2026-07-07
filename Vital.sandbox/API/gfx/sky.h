@@ -43,9 +43,9 @@ namespace Vital::Sandbox::API {
         inline void Sky::bind(Machine* vm) {
             API::bind(vm, base_scope, "get_type", [](auto vm, auto& id) -> int {
                 godot::Ref<godot::Material> current = base_class::get_sky() -> get_material();
-                if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid())        vm -> push_value(std::string("panorama"));
+                if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid()) vm -> push_value(std::string("panorama"));
                 else if (godot::Ref<godot::ProceduralSkyMaterial>(current).is_valid()) vm -> push_value(std::string("procedural"));
-                else if (godot::Ref<godot::PhysicalSkyMaterial>(current).is_valid())   vm -> push_value(std::string("physical"));
+                else if (godot::Ref<godot::PhysicalSkyMaterial>(current).is_valid()) vm -> push_value(std::string("physical"));
                 else vm -> push_value(false);
                 return 1;
             });
@@ -56,9 +56,9 @@ namespace Vital::Sandbox::API {
     
                 auto type = vm -> get_string(1);
                 auto sky = base_class::get_sky();
-                if (type == "panorama")        { godot::Ref<godot::PanoramaSkyMaterial> mat;   mat.instantiate(); sky -> set_material(mat); }
+                if (type == "panorama") { godot::Ref<godot::PanoramaSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
                 else if (type == "procedural") { godot::Ref<godot::ProceduralSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
-                else if (type == "physical")   { godot::Ref<godot::PhysicalSkyMaterial> mat;   mat.instantiate(); sky -> set_material(mat); }
+                else if (type == "physical") { godot::Ref<godot::PhysicalSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
                 else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid sky type, expected 'panorama', 'procedural', or 'physical'");
                 vm -> push_value(true);
                 return 1;
