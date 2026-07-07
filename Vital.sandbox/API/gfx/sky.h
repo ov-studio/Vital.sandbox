@@ -24,10 +24,6 @@
 //////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Sky_Panorama;
-    struct Sky_Procedural;
-    struct Sky_Physical;
-
     struct Sky : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "sky"};
         using base_class = Vital::Engine::Core;
@@ -44,76 +40,63 @@ namespace Vital::Sandbox::API {
             return typed;
         }
 
-        static void bind(Machine* vm);
+        inline void Sky::bind(Machine* vm) {
+            API::bind(vm, base_scope, "get_type", [](auto vm, auto& id) -> int {
+                godot::Ref<godot::Material> current = base_class::get_sky() -> get_material();
+                if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid())        vm -> push_value(std::string("panorama"));
+                else if (godot::Ref<godot::ProceduralSkyMaterial>(current).is_valid()) vm -> push_value(std::string("procedural"));
+                else if (godot::Ref<godot::PhysicalSkyMaterial>(current).is_valid())   vm -> push_value(std::string("physical"));
+                else vm -> push_value(false);
+                return 1;
+            });
+    
+            API::bind(vm, base_scope, "set_type", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(type)")
+                    .require(1, &Machine::is_string);
+    
+                auto type = vm -> get_string(1);
+                auto sky = base_class::get_sky();
+                if (type == "panorama")        { godot::Ref<godot::PanoramaSkyMaterial> mat;   mat.instantiate(); sky -> set_material(mat); }
+                else if (type == "procedural") { godot::Ref<godot::ProceduralSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
+                else if (type == "physical")   { godot::Ref<godot::PhysicalSkyMaterial> mat;   mat.instantiate(); sky -> set_material(mat); }
+                else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid sky type, expected 'panorama', 'procedural', or 'physical'");
+                vm -> push_value(true);
+                return 1;
+            });
+    
+            API::bind(vm, base_scope, "get_radiance_size", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_sky() -> get_radiance_size()));
+                return 1;
+            });
+    
+            API::bind(vm, base_scope, "set_radiance_size", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(size)")
+                    .require(1, &Machine::is_number)
+                    .validate_enum(1, godot::Sky::RADIANCE_SIZE_32, godot::Sky::RADIANCE_SIZE_2048);
+    
+                auto value = static_cast<godot::Sky::RadianceSize>(vm -> get_int(1));
+                base_class::get_sky() -> set_radiance_size(value);
+                vm -> push_value(true);
+                return 1;
+            });
+    
+            API::bind(vm, base_scope, "get_process_mode", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_sky() -> get_process_mode()));
+                return 1;
+            });
+    
+            API::bind(vm, base_scope, "set_process_mode", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(mode)")
+                    .require(1, &Machine::is_number)
+                    .validate_enum(1, godot::Sky::PROCESS_MODE_AUTOMATIC, godot::Sky::PROCESS_MODE_REALTIME);
+    
+                auto value = static_cast<godot::Sky::ProcessMode>(vm -> get_int(1));
+                base_class::get_sky() -> set_process_mode(value);
+                vm -> push_value(true);
+                return 1;
+            });
+        }
     };
-}
-
-#include <Vital.sandbox/API/gfx/sky_panorama.h>
-#include <Vital.sandbox/API/gfx/sky_procedural.h>
-#include <Vital.sandbox/API/gfx/sky_physical.h>
-
-namespace Vital::Sandbox::API {
-    inline void Sky::bind(Machine* vm) {
-        API::bind(vm, base_scope, "get_type", [](auto vm, auto& id) -> int {
-            godot::Ref<godot::Material> current = base_class::get_sky() -> get_material();
-            if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid())        vm -> push_value(std::string("panorama"));
-            else if (godot::Ref<godot::ProceduralSkyMaterial>(current).is_valid()) vm -> push_value(std::string("procedural"));
-            else if (godot::Ref<godot::PhysicalSkyMaterial>(current).is_valid())   vm -> push_value(std::string("physical"));
-            else vm -> push_value(false);
-            return 1;
-        });
-
-        API::bind(vm, base_scope, "set_type", [](auto vm, auto& id) -> int {
-            vm_args(vm, id, "(type)")
-                .require(1, &Machine::is_string);
-
-            auto type = vm -> get_string(1);
-            auto sky = base_class::get_sky();
-            if (type == "panorama")        { godot::Ref<godot::PanoramaSkyMaterial> mat;   mat.instantiate(); sky -> set_material(mat); }
-            else if (type == "procedural") { godot::Ref<godot::ProceduralSkyMaterial> mat; mat.instantiate(); sky -> set_material(mat); }
-            else if (type == "physical")   { godot::Ref<godot::PhysicalSkyMaterial> mat;   mat.instantiate(); sky -> set_material(mat); }
-            else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid sky type, expected 'panorama', 'procedural', or 'physical'");
-            vm -> push_value(true);
-            return 1;
-        });
-
-        API::bind(vm, base_scope, "get_radiance_size", [](auto vm, auto& id) -> int {
-            vm -> push_value(static_cast<int>(base_class::get_sky() -> get_radiance_size()));
-            return 1;
-        });
-
-        API::bind(vm, base_scope, "set_radiance_size", [](auto vm, auto& id) -> int {
-            vm_args(vm, id, "(size)")
-                .require(1, &Machine::is_number)
-                .validate_enum(1, godot::Sky::RADIANCE_SIZE_32, godot::Sky::RADIANCE_SIZE_2048);
-
-            auto value = static_cast<godot::Sky::RadianceSize>(vm -> get_int(1));
-            base_class::get_sky() -> set_radiance_size(value);
-            vm -> push_value(true);
-            return 1;
-        });
-
-        API::bind(vm, base_scope, "get_process_mode", [](auto vm, auto& id) -> int {
-            vm -> push_value(static_cast<int>(base_class::get_sky() -> get_process_mode()));
-            return 1;
-        });
-
-        API::bind(vm, base_scope, "set_process_mode", [](auto vm, auto& id) -> int {
-            vm_args(vm, id, "(mode)")
-                .require(1, &Machine::is_number)
-                .validate_enum(1, godot::Sky::PROCESS_MODE_AUTOMATIC, godot::Sky::PROCESS_MODE_REALTIME);
-
-            auto value = static_cast<godot::Sky::ProcessMode>(vm -> get_int(1));
-            base_class::get_sky() -> set_process_mode(value);
-            vm -> push_value(true);
-            return 1;
-        });
-
-        // Sub-modules //
-        Sky_Panorama::bind(vm);
-        Sky_Procedural::bind(vm);
-        Sky_Physical::bind(vm);
-    }
 }
 
 #else

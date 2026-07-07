@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#if defined(VSDK_Client)
 #include <Vital.sandbox/API/gfx/sky.h>
 
 
@@ -197,3 +198,9 @@ namespace Vital::Sandbox::API {
         }
     };
 }
+
+#else
+namespace Vital::Sandbox::API {
+    struct Sky_Physical : vm_module {};
+}
+#endif
