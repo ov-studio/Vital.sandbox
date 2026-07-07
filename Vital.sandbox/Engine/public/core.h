@@ -25,7 +25,10 @@ namespace Vital::Engine {
         GDCLASS(Core, godot::Node)
         protected:
             inline static Core* singleton = nullptr;
+            #if defined(VSDK_Client)
             inline static godot::WorldEnvironment* environment = nullptr;
+            inline static godot::Ref<godot::Sky> sky = nullptr;
+            #endif
             std::mutex mutex;
             std::thread kit_thread;
             std::atomic<bool> kit_ready { false };
@@ -73,6 +76,7 @@ namespace Vital::Engine {
             static godot::DisplayServer* get_display_server();
             static godot::RenderingServer* get_rendering_server();
             static godot::Ref<godot::Environment> get_environment();
+            static godot::Ref<godot::Sky> get_sky();
             static void free_environment();
             static void reset_environment();
             godot::Vector2 get_resolution();
