@@ -173,6 +173,7 @@ namespace Vital::Engine {
             godot::Ref<godot::Environment> env;
             env.instantiate();
             environment -> set_environment(env);
+            get_sky();
             Tool::Event::emit("environment:ready");
         }
         return environment -> get_environment();
