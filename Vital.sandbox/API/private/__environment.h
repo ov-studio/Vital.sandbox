@@ -74,8 +74,8 @@ public:
 
 	//void set_background(Environment::BGMode p_mode);
 	//Environment::BGMode get_background() const;
-	void set_sky(const Ref<Sky> &p_sky);
-	Ref<Sky> get_sky() const;
+	//void set_sky(const Ref<Sky> &p_sky);
+	//Ref<Sky> get_sky() const;
 	//void set_sky_custom_fov(float p_scale);
 	//float get_sky_custom_fov() const;
 	//void set_sky_rotation(const Vector3 &p_euler_radians);
