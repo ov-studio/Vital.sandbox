@@ -24,6 +24,7 @@
 namespace Vital::Sandbox::API {
     struct Sky_Procedural : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "sky", "procedural"};
+        inline static const std::string sky_cover_reference = fmt::format("{}:sky_cover", vm_module::scope_id(base_scope));
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_sky_top_color", [](auto vm, auto& id) -> int {
@@ -87,8 +88,8 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_sky_cover", [](auto vm, auto& id) -> int {
-                auto texture = Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_cover();
-                vm -> push_value(texture.is_valid()); // TODO: Return texture path here
+                if (vm -> is_reference("sandbox", sky_cover_reference)) vm -> get_reference("sandbox", sky_cover_reference, true);
+                else vm -> push_value(false);
                 return 1;
             });
 
@@ -98,10 +99,13 @@ namespace Vital::Sandbox::API {
 
                 auto path = vm -> get_string(1);
                 auto ref = path;
-                auto base = API::File::assert_file(vm, path); // TODO: Resource scope? or just like lut maybe
+                auto base = API::File::assert_file(vm, path);
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover(texture -> get_texture());
+                vm -> push_value(path);
+                vm -> set_reference("sandbox", sky_cover_reference, -1);
+                vm -> pop(1);
                 vm -> push_value(true);
                 return 1;
             });
