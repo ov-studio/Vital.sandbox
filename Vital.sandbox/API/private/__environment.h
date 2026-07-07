@@ -90,8 +90,8 @@ public:
 	int32_t get_canvas_max_layer() const;
 	void set_camera_feed_id(int32_t p_id);
 	int32_t get_camera_feed_id() const;
-	void set_ambient_light_color(const Color &p_color);
-	Color get_ambient_light_color() const;
+	//void set_ambient_light_color(const Color &p_color);
+	//Color get_ambient_light_color() const;
 	//void set_ambient_source(Environment::AmbientSource p_source);
 	//Environment::AmbientSource get_ambient_source() const;
 	//void set_ambient_light_energy(float p_energy);
