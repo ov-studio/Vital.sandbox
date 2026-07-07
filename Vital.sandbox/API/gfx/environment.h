@@ -27,6 +27,22 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
+            API::bind(vm, base_scope, "get_background_mode", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_environment() -> get_background()));
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_background_mode", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(mode)")
+                    .require(1, &Machine::is_number)
+                    .validate_enum(1, godot::Environment::BG_CLEAR_COLOR, godot::Environment::BG_CAMERA_FEED);
+
+                auto mode = static_cast<godot::Environment::BGMode>(vm -> get_int(1));
+                base_class::get_environment() -> set_background(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+        
             API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
                 return 1;

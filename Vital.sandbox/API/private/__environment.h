@@ -72,8 +72,8 @@ public:
 		SDFGI_Y_SCALE_100_PERCENT = 2,
 	};
 
-	void set_background(Environment::BGMode p_mode);
-	Environment::BGMode get_background() const;
+	//void set_background(Environment::BGMode p_mode);
+	//Environment::BGMode get_background() const;
 	void set_sky(const Ref<Sky> &p_sky);
 	Ref<Sky> get_sky() const;
 	//void set_sky_custom_fov(float p_scale);
