@@ -118,83 +118,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         
-            API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_tonemapper_mode", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Environment::TONE_MAPPER_LINEAR, godot::Environment::TONE_MAPPER_ACES);
-
-                auto mode = static_cast<godot::Environment::ToneMapper>(vm -> get_int(1));
-                base_class::get_environment() -> set_tonemapper(mode);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_tonemap_exposure", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_tonemap_exposure());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_tonemap_exposure", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_tonemap_exposure(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_tonemap_white", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_tonemap_white());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_tonemap_white", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_float(1);
-                base_class::get_environment() -> set_tonemap_white(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            // Ambient // TODO: REMOVE
-            API::bind(vm, base_scope, "get_canvas_max_layer", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_canvas_max_layer());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_canvas_max_layer", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(layer)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_int(1);
-                base_class::get_environment() -> set_canvas_max_layer(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_camera_feed_id", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_camera_feed_id());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "set_camera_feed_id", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id)")
-                    .require(1, &Machine::is_number);
-
-                auto value = vm -> get_int(1);
-                base_class::get_environment() -> set_camera_feed_id(value);
-                vm -> push_value(true);
-                return 1;
-            });
-
             API::bind(vm, base_scope, "get_ambient_color", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_ambient_light_color());
                 return 1;
@@ -268,6 +191,83 @@ namespace Vital::Sandbox::API {
 
                 auto source = static_cast<godot::Environment::ReflectionSource>(vm -> get_int(1));
                 base_class::get_environment() -> set_reflection_source(source);
+                vm -> push_value(true);
+                return 1;
+            });
+        
+            API::bind(vm, base_scope, "get_tonemapper_mode", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_environment() -> get_tonemapper()));
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_tonemapper_mode", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(mode)")
+                    .require(1, &Machine::is_number)
+                    .validate_enum(1, godot::Environment::TONE_MAPPER_LINEAR, godot::Environment::TONE_MAPPER_ACES);
+
+                auto mode = static_cast<godot::Environment::ToneMapper>(vm -> get_int(1));
+                base_class::get_environment() -> set_tonemapper(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_tonemap_exposure", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_tonemap_exposure());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_tonemap_exposure", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_tonemap_exposure(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_tonemap_white", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_tonemap_white());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_tonemap_white", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(value)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_float(1);
+                base_class::get_environment() -> set_tonemap_white(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // Ambient // TODO: REMOVE
+            API::bind(vm, base_scope, "get_canvas_max_layer", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_canvas_max_layer());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_canvas_max_layer", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(layer)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_int(1);
+                base_class::get_environment() -> set_canvas_max_layer(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_camera_feed_id", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_camera_feed_id());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_camera_feed_id", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(id)")
+                    .require(1, &Machine::is_number);
+
+                auto value = vm -> get_int(1);
+                base_class::get_environment() -> set_camera_feed_id(value);
                 vm -> push_value(true);
                 return 1;
             });
