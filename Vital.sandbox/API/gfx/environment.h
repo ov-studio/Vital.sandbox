@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "set_background_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Environment::BG_CLEAR_COLOR, godot::Environment::BG_CAMERA_FEED);
+                    .validate_enum(1, godot::Environment::BG_CLEAR_COLOR, godot::Environment::BG_SKY);
 
                 auto mode = static_cast<godot::Environment::BGMode>(vm -> get_int(1));
                 base_class::get_environment() -> set_background(mode);
