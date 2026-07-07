@@ -155,7 +155,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_ambient_energy", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(energy)")
+                vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
                 auto value = vm -> get_float(1);
@@ -170,7 +170,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_ambient_sky_contribution", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(ratio)")
+                vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
                 auto value = vm -> get_float(1);
