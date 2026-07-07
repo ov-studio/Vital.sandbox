@@ -199,6 +199,13 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            API::bind(vm, base_scope, "reset_night_sky", [](auto vm, auto& id) -> int {
+                Sky::ensure_material<godot::PhysicalSkyMaterial>() -> set_night_sky(godot::Ref<godot::Texture>());
+                vm -> del_reference("sandbox", night_sky_reference);
+                vm -> push_value(true);
+                return 1;
+            });
         }
     };
 }

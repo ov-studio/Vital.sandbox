@@ -50,6 +50,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "reset_texture", [](auto vm, auto& id) -> int {
+                Sky::ensure_material<godot::PanoramaSkyMaterial>() -> set_panorama(godot::Ref<godot::Texture>());
+                vm -> del_reference("sandbox", texture_reference);
+                vm -> push_value(true);
+                return 1;
+            });
+            
             API::bind(vm, base_scope, "is_filtering_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(Sky::ensure_material<godot::PanoramaSkyMaterial>() -> is_filtering_enabled());
                 return 1;

@@ -110,6 +110,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "reset_sky_cover", [](auto vm, auto& id) -> int {
+                Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover(godot::Ref<godot::Texture>());
+                vm -> del_reference("sandbox", sky_cover_reference);
+                vm -> push_value(true);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_sky_cover_modulate", [](auto vm, auto& id) -> int {
                 vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_cover_modulate());
                 return 1;
