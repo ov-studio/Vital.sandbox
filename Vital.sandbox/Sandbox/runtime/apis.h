@@ -41,6 +41,7 @@
 #include <Vital.sandbox/API/utility/export.h>
 #include <Vital.sandbox/API/utility/event.h>
 
+#include <Vital.sandbox/API/gfx/environment.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/emissive.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
@@ -87,6 +88,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Event>(),
 
             // GFX //
+            vm_module::make_api<Environment>(),
             vm_module::make_api<Adjustment>(),
             vm_module::make_api<Emissive>(),
             vm_module::make_api<SSR>(),
