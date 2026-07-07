@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Sky Panorama APIs
+     Desc: Sky (Panorama) APIs
 ----------------------------------------------------------------*/
 
 
@@ -16,9 +16,9 @@
 #include <Vital.sandbox/API/gfx/sky.h>
 
 
-////////////////////////////////
-// Vital: API: Sky: Panorama //
-////////////////////////////////
+///////////////////////////////
+// Vital: API: Sky_Panorama //
+///////////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Sky_Panorama : vm_module {
