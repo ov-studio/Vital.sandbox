@@ -49,11 +49,31 @@ namespace Vital::Sandbox::API {
                 else vm -> push_value(false);
                 return 1;
             });
-    
+
+            API::bind(vm, base_scope, "get_fov", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sky_custom_fov());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_rotation", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_environment() -> get_sky_rotation());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_radiance_size", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_sky() -> get_radiance_size()));
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_process_mode", [](auto vm, auto& id) -> int {
+                vm -> push_value(static_cast<int>(base_class::get_sky() -> get_process_mode()));
+                return 1;
+            });
+
             API::bind(vm, base_scope, "set_type", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(type)")
                     .require(1, &Machine::is_string);
-    
+
                 auto type = vm -> get_string(1);
                 auto sky = base_class::get_sky();
                 if (type == "panorama") { godot::Ref<godot::PanoramaSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
@@ -61,11 +81,6 @@ namespace Vital::Sandbox::API {
                 else if (type == "physical") { godot::Ref<godot::PhysicalSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
                 else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid sky type");
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_fov", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sky_custom_fov());
                 return 1;
             });
 
@@ -79,11 +94,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_rotation", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_environment() -> get_sky_rotation());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_rotation", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(rotation)")
                     .require(1, &Machine::is_vector3);
@@ -93,33 +103,23 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-    
-            API::bind(vm, base_scope, "get_radiance_size", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int>(base_class::get_sky() -> get_radiance_size()));
-                return 1;
-            });
-    
+
             API::bind(vm, base_scope, "set_radiance_size", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(size)")
                     .require(1, &Machine::is_number)
                     .validate_enum(1, godot::Sky::RADIANCE_SIZE_32, godot::Sky::RADIANCE_SIZE_2048);
-    
+
                 auto value = static_cast<godot::Sky::RadianceSize>(vm -> get_int(1));
                 base_class::get_sky() -> set_radiance_size(value);
                 vm -> push_value(true);
                 return 1;
             });
-    
-            API::bind(vm, base_scope, "get_process_mode", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int>(base_class::get_sky() -> get_process_mode()));
-                return 1;
-            });
-    
+
             API::bind(vm, base_scope, "set_process_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require(1, &Machine::is_number)
                     .validate_enum(1, godot::Sky::PROCESS_MODE_AUTOMATIC, godot::Sky::PROCESS_MODE_REALTIME);
-    
+
                 auto value = static_cast<godot::Sky::ProcessMode>(vm -> get_int(1));
                 base_class::get_sky() -> set_process_mode(value);
                 vm -> push_value(true);

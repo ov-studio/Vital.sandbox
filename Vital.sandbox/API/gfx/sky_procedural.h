@@ -35,10 +35,76 @@ namespace Vital::Sandbox::API {
                 vm -> del_reference("sandbox", sky_cover_reference);
             });
         }
-        
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_sky_top_color", [](auto vm, auto& id) -> int {
                 vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_top_color());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sky_horizon_color", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_horizon_color());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sky_curve", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_curve());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sky_energy_multiplier", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_energy_multiplier());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sky_cover", [](auto vm, auto& id) -> int {
+                if (vm -> is_reference("sandbox", sky_cover_reference)) vm -> get_reference("sandbox", sky_cover_reference, true);
+                else vm -> push_value(false);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sky_cover_modulate", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_cover_modulate());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_ground_bottom_color", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_bottom_color());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_ground_horizon_color", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_horizon_color());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_ground_curve", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_curve());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_ground_energy_multiplier", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_energy_multiplier());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sun_angle_max", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sun_angle_max());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_sun_curve", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sun_curve());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_use_debanding", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_use_debanding());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_energy_multiplier", [](auto vm, auto& id) -> int {
+                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_energy_multiplier());
                 return 1;
             });
 
@@ -52,11 +118,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_sky_horizon_color", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_horizon_color());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_sky_horizon_color", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
@@ -64,11 +125,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_color(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_horizon_color(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_sky_curve", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_curve());
                 return 1;
             });
 
@@ -82,11 +138,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_sky_energy_multiplier", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_energy_multiplier());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_sky_energy_multiplier", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -94,12 +145,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_energy_multiplier(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_sky_cover", [](auto vm, auto& id) -> int {
-                if (vm -> is_reference("sandbox", sky_cover_reference)) vm -> get_reference("sandbox", sky_cover_reference, true);
-                else vm -> push_value(false);
                 return 1;
             });
 
@@ -126,12 +171,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            API::bind(vm, base_scope, "get_sky_cover_modulate", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_cover_modulate());
-                return 1;
-            });
-
+            
             API::bind(vm, base_scope, "set_sky_cover_modulate", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
@@ -139,11 +179,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_color(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover_modulate(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_ground_bottom_color", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_bottom_color());
                 return 1;
             });
 
@@ -157,11 +192,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_ground_horizon_color", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_horizon_color());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_ground_horizon_color", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(color)")
                     .require(1, &Machine::is_color);
@@ -169,11 +199,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_color(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_ground_horizon_color(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_ground_curve", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_curve());
                 return 1;
             });
 
@@ -187,11 +212,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_ground_energy_multiplier", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_ground_energy_multiplier());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_ground_energy_multiplier", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -199,11 +219,6 @@ namespace Vital::Sandbox::API {
                 auto value = vm -> get_float(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_ground_energy_multiplier(value);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_sun_angle_max", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sun_angle_max());
                 return 1;
             });
 
@@ -217,11 +232,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_sun_curve", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sun_curve());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_sun_curve", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
@@ -232,11 +242,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_use_debanding", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_use_debanding());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "set_use_debanding", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(state)")
                     .require(1, &Machine::is_bool);
@@ -244,11 +249,6 @@ namespace Vital::Sandbox::API {
                 auto state = vm -> get_bool(1);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_use_debanding(state);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_energy_multiplier", [](auto vm, auto& id) -> int {
-                vm -> push_value(Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_energy_multiplier());
                 return 1;
             });
 
