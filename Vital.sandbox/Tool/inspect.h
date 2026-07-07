@@ -36,7 +36,7 @@ namespace Vital::Tool::Inspect {
     }
 
     inline std::string hash(const std::string& s) {
-        return Tool::Crypto::hash("SHA256", s);
+        return Tool::Crypto::hash("sha256", s);
     }
 
     #if defined(VSDK_WINDOWS)

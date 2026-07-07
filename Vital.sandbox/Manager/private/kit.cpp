@@ -100,7 +100,7 @@ namespace Vital::Manager::Kit {
                 if (!it -> value.IsObject() || !it -> value.HasMember("sha256") || !it -> value["sha256"].IsString()) { log("warn", fmt::format("checksum ~ malformed | file ~ {}", rel_path)); return false; }
                 const std::string expected = it -> value["sha256"].GetString();
                 if (!Tool::File::exists(kit_dir, rel_path)) { log("warn", fmt::format("file ~ missing | progress ~ {}/{} | path ~ {}", checked, total, rel_path)); return false; }
-                if (Tool::Crypto::hash_file("SHA256", kit_dir + "/" + rel_path) != expected) { log("warn", fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
+                if (Tool::Crypto::hash_file("sha256", kit_dir + "/" + rel_path) != expected) { log("warn", fmt::format("checksum ~ mismatch | progress ~ {}/{} | file ~ {}", checked, total, rel_path)); return false; }
                 ++checked;
             }
             std::string v;
@@ -123,7 +123,7 @@ namespace Vital::Manager::Kit {
                 local_version = Internal::get_version();
             }
             if (local_version != tag) { log("warn", fmt::format("version ~ mismatch | local ~ {} | remote ~ {}", local_version, tag)); return true; }
-            if (!remote_hash.empty() && Tool::Crypto::hash_file("SHA256", kit_dir + "/checksum.json") != remote_hash) { log("warn", "checksum ~ tampered"); return true; }
+            if (!remote_hash.empty() && Tool::Crypto::hash_file("sha256", kit_dir + "/checksum.json") != remote_hash) { log("warn", "checksum ~ tampered"); return true; }
             return !validate_files(checksum_doc);
         };
 

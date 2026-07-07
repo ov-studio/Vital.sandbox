@@ -105,13 +105,13 @@ namespace Vital::Tool::File {
         return size(Tool::to_godot_string(base), Tool::to_godot_string(path));
     }
 
-    inline std::string hash(const godot::String& base, const godot::String& path, std::string_view mode = "SHA256") {
+    inline std::string hash(const godot::String& base, const godot::String& path, std::string_view mode = "sha256") {
         auto [dir, dest, full_path] = Internal::assert_path(base, path);
         if (!dir -> file_exists(dest)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: file `{}` non-existent", Tool::to_std_string(path)));
         return Tool::Crypto::hash_file(mode, Tool::to_std_string(full_path));
     }
 
-    inline std::string hash(const std::string& base, const std::string& path, std::string_view mode = "SHA256") {
+    inline std::string hash(const std::string& base, const std::string& path, std::string_view mode = "sha256") {
         return hash(Tool::to_godot_string(base), Tool::to_godot_string(path), mode);
     }
 

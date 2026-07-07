@@ -193,7 +193,7 @@ namespace Vital::Manager::Kit {
         try { data = Tool::HTTP::get(checksum_url); }
         catch (...) {}
         if (!data.empty()) {
-            checksum_hash = Tool::Crypto::hash("SHA256", data);
+            checksum_hash = Tool::Crypto::hash("sha256", data);
             doc.Parse(data.c_str());
         }
         return doc;
