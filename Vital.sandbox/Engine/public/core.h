@@ -27,7 +27,6 @@ namespace Vital::Engine {
             inline static Core* singleton = nullptr;
             #if defined(VSDK_Client)
             inline static godot::WorldEnvironment* environment = nullptr;
-            inline static godot::Ref<godot::Sky> sky = nullptr;
             #endif
             std::mutex mutex;
             std::thread kit_thread;

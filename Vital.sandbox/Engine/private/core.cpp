@@ -178,9 +178,11 @@ namespace Vital::Engine {
     }
 
     godot::Ref<godot::Sky> Core::get_sky() {
+        auto environment = get_environment();
+        godot::Ref<godot::Sky> sky = environment -> get_sky();
         if (!sky.is_valid()) {
             sky.instantiate();
-            get_environment() -> set_sky(sky);
+            environment -> set_sky(sky);
         }
         return sky;
     }
@@ -189,7 +191,6 @@ namespace Vital::Engine {
         if (!environment) return;
         environment -> queue_free();
         environment = nullptr;
-        sky = nullptr;
     }
 
     void Core::reset_environment() {
