@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_sky_cover", [](auto vm, auto& id) -> int {
                 auto texture = Sky::ensure_material<godot::ProceduralSkyMaterial>() -> get_sky_cover();
-                vm -> push_value(texture.is_valid());
+                vm -> push_value(texture.is_valid()); // TODO: Return texture path here
                 return 1;
             });
 
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
 
                 auto path = vm -> get_string(1);
                 auto ref = path;
-                auto base = API::File::assert_file(vm, path);
+                auto base = API::File::assert_file(vm, path); // TODO: Resource scope? or just like lut maybe
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
                 Sky::ensure_material<godot::ProceduralSkyMaterial>() -> set_sky_cover(texture -> get_texture());
@@ -187,7 +187,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_sun_angle_max", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(degrees)")
+                vm_args(vm, id, "(value)")
                     .require(1, &Machine::is_number);
 
                 auto value = vm -> get_float(1);
