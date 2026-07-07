@@ -192,8 +192,8 @@ public:
 	//float get_glow_hdr_luminance_cap() const;
 	//void set_glow_map_strength(float p_strength);
 	//float get_glow_map_strength() const;
-	//XXXX void set_glow_map(const Ref<Texture> &p_mode);
-	//XXXX Ref<Texture> get_glow_map() const;
+	void set_glow_map(const Ref<Texture> &p_mode);
+	Ref<Texture> get_glow_map() const;
 	//void set_fog_enabled(bool p_enabled);
 	//bool is_fog_enabled() const;
 	//void set_fog_mode(Environment::FogMode p_mode);
