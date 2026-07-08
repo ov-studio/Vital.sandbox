@@ -71,7 +71,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(type)")
+                vm_args(vm, id, "(mode)")
                     .require(1, &Machine::is_string);
 
                 auto type = vm -> get_string(1);
