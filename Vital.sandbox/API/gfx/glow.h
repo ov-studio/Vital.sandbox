@@ -22,7 +22,7 @@
 ////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Emissive : vm_module {
+    struct Glow : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "glow"};
         using base_class = Vital::Engine::Core;
 
