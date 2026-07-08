@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: gfx: emissive.h
+     Script: API: gfx: glow.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Emissive APIs
+     Desc: Glow APIs
 ----------------------------------------------------------------*/
 
 
@@ -17,13 +17,13 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-///////////////////////////
-// Vital: API: Emissive //
-///////////////////////////
+////////////////////////
+// Vital: API: Glow //
+////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Emissive : vm_module {
-        inline static const std::vector<std::string> base_scope = {"gfx", "emissive"};
+        inline static const std::vector<std::string> base_scope = {"gfx", "glow"};
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
