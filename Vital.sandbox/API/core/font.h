@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> font -> set_oversampling(static_cast<float>(vm -> get_float(2)));
+                self -> font -> set_oversampling(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
