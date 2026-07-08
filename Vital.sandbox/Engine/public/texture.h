@@ -57,6 +57,13 @@ namespace Vital::Engine {
                 { "L8", godot::Image::FORMAT_L8 }
             };
 
+            inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_registry = {
+                { "S3TC", godot::Image::COMPRESS_S3TC },
+                { "ETC2", godot::Image::COMPRESS_ETC2 },
+                { "BPTC", godot::Image::COMPRESS_BPTC },
+                { "ASTC", godot::Image::COMPRESS_ASTC }
+            };
+
             struct Texture2D {
                 godot::Ref<godot::Texture2D> texture;
             };
@@ -104,6 +111,7 @@ namespace Vital::Engine {
             void update_svg_from_raw(const std::string& raw);
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
             void convert(godot::Image::Format format);
+            void compress(godot::Image::CompressMode mode);
     };
 }
 #endif

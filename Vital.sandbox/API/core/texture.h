@@ -68,6 +68,12 @@ namespace Vital::Sandbox::API {
                 for (const auto& [name, format] : base_class::texel_registry) vm -> table_set_value(name, format);
                 vm -> set_table_field("texel_format", -2);
             });
+
+            vm -> scope_with(base_scope, [](auto vm) {
+                vm -> create_table();
+                for (const auto& [name, mode] : base_class::compression_registry) vm -> table_set_value(name, static_cast<int>(mode));
+                vm -> set_table_field("compression_mode", -2);
+            });
         }
 
         static void methods(Machine* vm) {
@@ -81,6 +87,15 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number);
 
                 self -> texture -> convert(static_cast<godot::Image::Format>(vm -> get_int(2)));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "compress", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> texture -> compress(static_cast<godot::Image::CompressMode>(vm -> get_int(2)));
                 vm -> push_value(true);
                 return 1;
             });
