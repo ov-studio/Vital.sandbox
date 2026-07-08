@@ -218,6 +218,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct Emissive : vm_module {};
+    struct Glow : vm_module {};
 }
 #endif
