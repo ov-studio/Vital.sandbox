@@ -92,12 +92,12 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Event>(),
 
             // GFX //
+            vm_module::make_api<Environment>(),
+            vm_module::make_api<Adjustment>(),
             vm_module::make_api<Sky>(),
             vm_module::make_api<Sky_Panorama>(),
             vm_module::make_api<Sky_Physical>(),
             vm_module::make_api<Sky_Procedural>(),
-            vm_module::make_api<Environment>(),
-            vm_module::make_api<Adjustment>(),
             vm_module::make_api<Glow>(),
             vm_module::make_api<SSR>(),
             vm_module::make_api<SSIL>(),
