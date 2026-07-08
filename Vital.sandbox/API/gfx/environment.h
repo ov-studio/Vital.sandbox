@@ -23,7 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Environment : vm_module {
-        inline static const std::vector<std::string> base_scope = {"gfx", "env"};
+        inline static const std::vector<std::string> base_scope = {"gfx", "environment"};
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
