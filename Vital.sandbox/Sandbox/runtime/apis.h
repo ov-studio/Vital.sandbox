@@ -47,7 +47,7 @@
 #include <Vital.sandbox/API/gfx/sky_procedural.h>
 #include <Vital.sandbox/API/gfx/environment.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
-#include <Vital.sandbox/API/gfx/emissive.h>
+#include <Vital.sandbox/API/gfx/glow.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
 #include <Vital.sandbox/API/gfx/ssil.h>
 #include <Vital.sandbox/API/gfx/sdfgi.h>
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Sky_Procedural>(),
             vm_module::make_api<Environment>(),
             vm_module::make_api<Adjustment>(),
-            vm_module::make_api<Emissive>(),
+            vm_module::make_api<Glow>(),
             vm_module::make_api<SSR>(),
             vm_module::make_api<SSIL>(),
             vm_module::make_api<SDFGI>(),
