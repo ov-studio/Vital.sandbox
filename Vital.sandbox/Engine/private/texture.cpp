@@ -152,18 +152,16 @@ namespace Vital::Engine {
 
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        auto it = std::find_if(texel_registry.begin(), texel_registry.end(), [&](const auto& entry) { return entry.second == format; });
-        if (it == texel_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texel format");
+        Tool::assert_registry(texel_registry, format);
         auto image = get_image_texture() -> get_image();
         image -> convert(format);
         get_image_texture() -> update(image);
         heartbeat();
     }
-
+    
     void Texture::compress(godot::Image::CompressMode mode) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        auto it = std::find_if(compression_registry.begin(), compression_registry.end(), [&](const auto& entry) { return entry.second == mode; });
-        if (it == compression_registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid compression mode");
+        Tool::assert_registry(compression_registry, mode);
         auto image = get_image_texture() -> get_image();
         if (image -> is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture is already compressed");
         if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: compression failed");
