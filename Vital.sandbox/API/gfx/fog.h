@@ -109,7 +109,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require_enum(1, mode_registry);
+                    .require_enum(1, fog_mode_registry);
                     
                 auto value = vm -> get_int(1);
                 base_class::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
