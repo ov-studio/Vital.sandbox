@@ -244,6 +244,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct Adjustment : vm_module {};
+    struct Environment : vm_module {};
 }
 #endif
