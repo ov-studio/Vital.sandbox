@@ -1,8 +1,6 @@
 from Bootstrap.utils import *
 from Bootstrap.download import *
 
-_GODOT_FALLBACK_VERSION = "4.7-stable"
-
 class Godot:
     def __init__(self, env):
         self.env = env
@@ -44,6 +42,37 @@ class Godot:
             pass
         return None
 
+    def _fetch_latest_stable_version(self):
+        try:
+            import urllib.request, json as _json
+            req = urllib.request.Request(
+                "https://api.github.com/repos/godotengine/godot/releases/latest",
+                headers={"User-Agent": "Vital.sandbox-bootstrap"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                tag = _json.load(resp).get("tag_name", "").strip()
+                if tag:
+                    return tag
+        except Exception:
+            pass
+
+        try:
+            import json as _json
+            result = subprocess.run(
+                ["curl", "-s", "-L",
+                 "-H", "User-Agent: Vital.sandbox-bootstrap",
+                 "https://api.github.com/repos/godotengine/godot/releases/latest"],
+                capture_output=True, text=True, timeout=10
+            )
+            if result.returncode == 0:
+                tag = _json.loads(result.stdout).get("tag_name", "").strip()
+                if tag:
+                    return tag
+        except Exception:
+            pass
+
+        return None
+
     def _get_version(self, script_dir):
         godot_cpp_dir = os.path.join(script_dir, "Vital.sandbox", "Vendor", "godot-cpp")
 
@@ -80,8 +109,12 @@ class Godot:
         except Exception:
             pass
 
-        log_warn(f"Could not detect Godot version from godot-cpp — falling back to {_GODOT_FALLBACK_VERSION}")
-        return _GODOT_FALLBACK_VERSION
+        latest = self._fetch_latest_stable_version()
+        if latest:
+            log_warn(f"Could not detect Godot version from godot-cpp — using latest stable release {latest}")
+            return latest
+
+        Throw_Error("Could not detect Godot version from godot-cpp and failed to fetch latest release from GitHub")
 
     def _ver_dash(self, version):
         return version.replace(".stable", "-stable").replace(".rc", "-rc").replace(".beta", "-beta")
@@ -174,7 +207,7 @@ class Godot:
                 os.remove(dl_path)
             if os_info["type"] != "Windows":
                 os.chmod(godot["exe_path"], 0o755)
-            log_ok(f"Binary ready")
+            log_ok("Binary ready")
         else:
             log_info("Binary cached")
 
