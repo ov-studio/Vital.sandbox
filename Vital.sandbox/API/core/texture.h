@@ -62,18 +62,6 @@ namespace Vital::Sandbox::API {
                 instance -> store(true);
                 return 1;
             });
-
-            vm -> scope_with(base_scope, [](auto vm) {
-                vm -> create_table();
-                for (const auto& [name, format] : base_class::texel_registry) vm -> table_set_value(name, format);
-                vm -> set_table_field("texel_format", -2);
-            });
-
-            vm -> scope_with(base_scope, [](auto vm) {
-                vm -> create_table();
-                for (const auto& [name, mode] : base_class::compression_registry) vm -> table_set_value(name, static_cast<int>(mode));
-                vm -> set_table_field("compression_mode", -2);
-            });
         }
 
         static void methods(Machine* vm) {
@@ -99,6 +87,11 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "texel_format", base_class::texel_registry);
+            vm -> scope_set_enum(base_scope, "compression_mode", base_class::compression_registry);
         }
 
         static void clean(const std::string& env) {
