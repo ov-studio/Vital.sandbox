@@ -26,6 +26,11 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "fog"};
         using base_class = Vital::Engine::Core;
 
+        inline static const std::vector<std::pair<std::string, int>> mode_registry = {
+            { "EXPONENTIAL", godot::Environment::FOG_MODE_EXPONENTIAL },
+            { "DEPTH",       godot::Environment::FOG_MODE_DEPTH }
+        };
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_fog_enabled());
@@ -103,9 +108,8 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Environment::FOG_MODE_EXPONENTIAL, godot::Environment::FOG_MODE_DEPTH);
+                vm_args(vm, id, "(mode)")
+                    .require_enum(1, mode_registry);
                     
                 auto value = vm -> get_int(1);
                 base_class::get_environment() -> set_fog_mode(static_cast<godot::Environment::FogMode>(value));
@@ -222,6 +226,10 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "mode", mode_registry);
         }
     };
 }
