@@ -26,7 +26,7 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "fog"};
         using base_class = Vital::Engine::Core;
 
-        inline static const std::vector<std::pair<std::string, int>> mode_registry = {
+        inline static const std::vector<std::pair<std::string, int>> fog_mode_registry = {
             { "EXPONENTIAL", godot::Environment::FOG_MODE_EXPONENTIAL },
             { "DEPTH", godot::Environment::FOG_MODE_DEPTH }
         };
@@ -229,7 +229,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "mode", mode_registry);
+            vm -> scope_set_enum(base_scope, "fog_mode", fog_mode_registry);
         }
     };
 }
