@@ -100,6 +100,16 @@ namespace Vital::Sandbox {
                     return value >= static_cast<int>(min) && value <= static_cast<int>(max);
                 }, fmt::format("out of range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
             }
+
+            template<typename Registry>
+            inline vm_args& validate_enum(int index, const Registry& registry) {
+                return validate(index, [&registry](Machine* vm, int index) {
+                    auto value = vm -> get_int(index);
+                    return std::find_if(registry.begin(), registry.end(), [&](const auto& entry) {
+                        return static_cast<int>(entry.second) == value;
+                    }) != registry.end();
+                }, "invalid enum value");
+            }
     };
 
     template<typename T>
