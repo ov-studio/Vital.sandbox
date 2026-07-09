@@ -152,7 +152,6 @@ namespace Vital::Engine {
 
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        Tool::assert_enum(texel_registry, format);
         auto image = get_image_texture() -> get_image();
         image -> convert(format);
         get_image_texture() -> update(image);
@@ -161,7 +160,6 @@ namespace Vital::Engine {
     
     void Texture::compress(godot::Image::CompressMode mode) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        Tool::assert_enum(compression_registry, mode);
         auto image = get_image_texture() -> get_image();
         if (image -> is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture is already compressed");
         if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: compression failed");
