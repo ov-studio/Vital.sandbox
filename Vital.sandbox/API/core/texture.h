@@ -72,7 +72,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "convert", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(format)", true)
-                    .require(2, &Machine::is_number);
+                    .require_enum(2, base_class::texel_registry);
 
                 self -> texture -> convert(static_cast<godot::Image::Format>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "compress", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
-                    .require(2, &Machine::is_number);
+                    .require_enum(2, base_class::compression_registry);
 
                 self -> texture -> compress(static_cast<godot::Image::CompressMode>(vm -> get_int(2)));
                 vm -> push_value(true);
