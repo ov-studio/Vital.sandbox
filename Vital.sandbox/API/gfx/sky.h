@@ -28,6 +28,23 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "sky"};
         using base_class = Vital::Engine::Core;
 
+        inline static const std::vector<std::pair<std::string, int>> radiance_size_registry = {
+            { "SIZE_32", godot::Sky::RADIANCE_SIZE_32 },
+            { "SIZE_64", godot::Sky::RADIANCE_SIZE_64 },
+            { "SIZE_128", godot::Sky::RADIANCE_SIZE_128 },
+            { "SIZE_256", godot::Sky::RADIANCE_SIZE_256 },
+            { "SIZE_512", godot::Sky::RADIANCE_SIZE_512 },
+            { "SIZE_1024", godot::Sky::RADIANCE_SIZE_1024 },
+            { "SIZE_2048", godot::Sky::RADIANCE_SIZE_2048 }
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> process_mode_registry = {
+            { "AUTOMATIC", godot::Sky::PROCESS_MODE_AUTOMATIC },
+            { "QUALITY", godot::Sky::PROCESS_MODE_QUALITY },
+            { "INCREMENTAL", godot::Sky::PROCESS_MODE_INCREMENTAL },
+            { "REALTIME", godot::Sky::PROCESS_MODE_REALTIME }
+        };
+
         template<typename T>
         static godot::Ref<T> ensure_material() {
             auto sky = base_class::get_sky();
@@ -106,8 +123,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_radiance_size", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(size)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Sky::RADIANCE_SIZE_32, godot::Sky::RADIANCE_SIZE_2048);
+                    .require_enum(1, radiance_size_registry);
 
                 auto value = static_cast<godot::Sky::RadianceSize>(vm -> get_int(1));
                 base_class::get_sky() -> set_radiance_size(value);
@@ -117,14 +133,18 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_process_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Sky::PROCESS_MODE_AUTOMATIC, godot::Sky::PROCESS_MODE_REALTIME);
+                    .require_enum(1, process_mode_registry);
 
                 auto value = static_cast<godot::Sky::ProcessMode>(vm -> get_int(1));
                 base_class::get_sky() -> set_process_mode(value);
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "radiance_size", radiance_size_registry);
+            vm -> scope_set_enum(base_scope, "process_mode", process_mode_registry);
         }
     };
 }
