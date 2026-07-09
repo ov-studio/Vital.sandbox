@@ -26,6 +26,12 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "sdfgi"};
         using base_class = Vital::Engine::Core;
 
+        inline static const std::vector<std::pair<std::string, int>> y_scale_registry = {
+            { "PERCENT_50", godot::Environment::SDFGI_Y_SCALE_50_PERCENT },
+            { "PERCENT_75", godot::Environment::SDFGI_Y_SCALE_75_PERCENT },
+            { "PERCENT_100", godot::Environment::SDFGI_Y_SCALE_100_PERCENT }
+        };
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_sdfgi_enabled());
@@ -123,10 +129,9 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_y_scale", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Environment::SDFGI_Y_SCALE_50_PERCENT, godot::Environment::SDFGI_Y_SCALE_100_PERCENT);
-    
+                vm_args(vm, id, "(scale)")
+                    .require_enum(1, y_scale_registry);
+
                 auto value = vm -> get_int(1);
                 base_class::get_environment() -> set_sdfgi_y_scale(static_cast<godot::Environment::SDFGIYScale>(value));
                 vm -> push_value(true);
@@ -192,6 +197,10 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "y_scale", y_scale_registry);
         }
     };
 }
