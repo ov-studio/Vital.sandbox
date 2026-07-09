@@ -26,6 +26,32 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "env"};
         using base_class = Vital::Engine::Core;
 
+        inline static const std::vector<std::pair<std::string, int>> background_mode_registry = {
+            { "CLEAR_COLOR", godot::Environment::BG_CLEAR_COLOR },
+            { "COLOR", godot::Environment::BG_COLOR },
+            { "SKY", godot::Environment::BG_SKY }
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> ambient_source_registry = {
+            { "BG", godot::Environment::AMBIENT_SOURCE_BG },
+            { "DISABLED", godot::Environment::AMBIENT_SOURCE_DISABLED },
+            { "COLOR", godot::Environment::AMBIENT_SOURCE_COLOR },
+            { "SKY", godot::Environment::AMBIENT_SOURCE_SKY }
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> reflection_source_registry = {
+            { "BG", godot::Environment::REFLECTION_SOURCE_BG },
+            { "DISABLED", godot::Environment::REFLECTION_SOURCE_DISABLED },
+            { "SKY", godot::Environment::REFLECTION_SOURCE_SKY }
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> tonemapper_mode_registry = {
+            { "LINEAR", godot::Environment::TONE_MAPPER_LINEAR },
+            { "REINHARDT", godot::Environment::TONE_MAPPER_REINHARDT },
+            { "FILMIC", godot::Environment::TONE_MAPPER_FILMIC },
+            { "ACES", godot::Environment::TONE_MAPPER_ACES }
+        };
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_background_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_environment() -> get_background()));
@@ -210,6 +236,13 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "background_mode", background_mode_registry);
+            vm -> scope_set_enum(base_scope, "ambient_source", ambient_source_registry);
+            vm -> scope_set_enum(base_scope, "reflection_source", reflection_source_registry);
+            vm -> scope_set_enum(base_scope, "tonemapper_mode", tonemapper_mode_registry);
         }
     };
 }
