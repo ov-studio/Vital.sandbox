@@ -144,6 +144,15 @@ namespace Vital::Sandbox {
                 }
             }
 
+            template<typename T>
+            void scope_set_enum(const std::vector<std::string>& scope, const std::string& field, const std::vector<std::pair<std::string, T>>& registry) {
+                scope_with(scope, [&](auto vm) {
+                    vm -> create_table();
+                    for (const auto& [name, value] : registry) vm -> table_set_value(name, static_cast<int>(value));
+                    vm -> set_table_field(field, -2);
+                });
+            }
+
             void scope_move_global(const std::vector<std::string>& scope, const std::string& name, bool nil_source = false) {
                 if (scope.size() < 2) return;
                 self() -> create_namespace(scope[0]);
