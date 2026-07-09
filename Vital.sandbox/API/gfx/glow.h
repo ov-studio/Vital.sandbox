@@ -26,6 +26,14 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "glow"};
         using base_class = Vital::Engine::Core;
 
+        inline static const std::vector<std::pair<std::string, int>> blend_mode_registry = {
+            { "ADDITIVE", godot::Environment::GLOW_BLEND_MODE_ADDITIVE },
+            { "SCREEN", godot::Environment::GLOW_BLEND_MODE_SCREEN },
+            { "SOFTLIGHT", godot::Environment::GLOW_BLEND_MODE_SOFTLIGHT },
+            { "REPLACE", godot::Environment::GLOW_BLEND_MODE_REPLACE },
+            { "MIX", godot::Environment::GLOW_BLEND_MODE_MIX }
+        };
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> is_glow_enabled());
@@ -164,10 +172,9 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "set_blend_mode", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(value)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, godot::Environment::GLOW_BLEND_MODE_ADDITIVE, godot::Environment::GLOW_BLEND_MODE_MIX);
-                    
+                vm_args(vm, id, "(mode)")
+                    .require_enum(1, blend_mode_registry);
+
                 auto value = vm -> get_int(1);
                 base_class::get_environment() -> set_glow_blend_mode(static_cast<godot::Environment::GlowBlendMode>(value));
                 vm -> push_value(true);
@@ -213,6 +220,10 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "blend_mode", blend_mode_registry);
         }
     };
 }
