@@ -1,6 +1,8 @@
 from Bootstrap.utils import *
 from Bootstrap.download import *
 
+_GODOT_FALLBACK_VERSION = "4.7-stable"
+
 class Godot:
     def __init__(self, env):
         self.env = env
@@ -19,8 +21,33 @@ class Godot:
             "templates_dir": self._get_templates_dir(version, os_info["type"]) if version else None,
         }
 
+    def _get_version_from_header(self, godot_cpp_dir):
+        header = os.path.join(godot_cpp_dir, "gdextension", "gdextension_interface.h")
+        if not os.path.exists(header):
+            return None
+        major = minor = patch = None
+        try:
+            with open(header) as f:
+                for line in f:
+                    line = line.strip()
+                    if "#define GDEXTENSION_VERSION_MAJOR" in line:
+                        major = int(line.split()[-1])
+                    elif "#define GDEXTENSION_VERSION_MINOR" in line:
+                        minor = int(line.split()[-1])
+                    elif "#define GDEXTENSION_VERSION_PATCH" in line:
+                        patch = int(line.split()[-1])
+                    if major is not None and minor is not None and patch is not None:
+                        break
+            if major is not None and minor is not None:
+                return f"{major}.{minor}.{patch}-stable" if patch else f"{major}.{minor}-stable"
+        except Exception:
+            pass
+        return None
+
     def _get_version(self, script_dir):
-        version_file = os.path.join(script_dir, "Vital.sandbox", "Vendor", "godot-cpp", "version.py")
+        godot_cpp_dir = os.path.join(script_dir, "Vital.sandbox", "Vendor", "godot-cpp")
+
+        version_file = os.path.join(godot_cpp_dir, "version.py")
         if os.path.exists(version_file):
             ns = {}
             with open(version_file) as f:
@@ -34,20 +61,27 @@ class Godot:
                     status = part
                     break
             return f"{major}.{minor}.{patch}-{status}" if patch else f"{major}.{minor}-{status}"
+
+        version = self._get_version_from_header(godot_cpp_dir)
+        if version:
+            return version
+
         try:
             result = subprocess.run(
-                ["git", "-C", os.path.join(script_dir, "Vital.sandbox", "Vendor", "godot-cpp"),
-                 "describe", "--tags", "--exact-match"],
+                ["git", "-C", godot_cpp_dir, "describe", "--tags", "--exact-match"],
                 capture_output=True, text=True
             )
-            tag = result.stdout.strip().lstrip("v")
-            if tag.startswith("godot-"):
-                tag = tag[len("godot-"):]
-            if tag:
-                return tag
+            if result.returncode == 0:
+                tag = result.stdout.strip().lstrip("v")
+                if tag.startswith("godot-"):
+                    tag = tag[len("godot-"):]
+                if tag:
+                    return tag
         except Exception:
             pass
-        return None
+
+        log_warn(f"Could not detect Godot version from godot-cpp — falling back to {_GODOT_FALLBACK_VERSION}")
+        return _GODOT_FALLBACK_VERSION
 
     def _ver_dash(self, version):
         return version.replace(".stable", "-stable").replace(".rc", "-rc").replace(".beta", "-beta")
