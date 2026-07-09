@@ -115,8 +115,7 @@ namespace Vital::Sandbox::API {
             
             API::bind(vm, base_scope, "set_background_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, background_mode_registry);
+                    .require_enum(1, background_mode_registry);
 
                 auto mode = static_cast<godot::Environment::BGMode>(vm -> get_int(1));
                 base_class::get_environment() -> set_background(mode);
@@ -156,8 +155,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_ambient_source", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(source)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, ambient_source_registry);
+                    .require_enum(1, ambient_source_registry);
 
                 auto source = static_cast<godot::Environment::AmbientSource>(vm -> get_int(1));
                 base_class::get_environment() -> set_ambient_source(source);
@@ -197,8 +195,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_reflection_source", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(source)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, reflection_source_registry);
+                    .require_enum(1, reflection_source_registry);
 
                 auto source = static_cast<godot::Environment::ReflectionSource>(vm -> get_int(1));
                 base_class::get_environment() -> set_reflection_source(source);
@@ -208,8 +205,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_tonemapper_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_number)
-                    .validate_enum(1, tonemapper_mode_registry);
+                    .require_enum(1, tonemapper_mode_registry);
 
                 auto mode = static_cast<godot::Environment::ToneMapper>(vm -> get_int(1));
                 base_class::get_environment() -> set_tonemapper(mode);
