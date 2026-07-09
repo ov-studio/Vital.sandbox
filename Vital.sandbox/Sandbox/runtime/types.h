@@ -81,6 +81,16 @@ namespace Vital::Sandbox {
                 return *this;
             }
 
+            template<typename Registry>
+            inline vm_args& require_enum(int index, const Registry& registry) {
+                return require(index, &Machine::is_number).validate_enum(index, registry);
+            }
+            
+            template<typename E>
+            inline vm_args& require_enum(int index, E min, E max) {
+                return require(index, &Machine::is_number).validate_enum(index, min, max);
+            }
+    
             template<typename F>
             inline vm_args& optional(int index, F&& check) {
                 if ((vm -> get_count() >= index) && !vm -> is_nil(index) && !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
@@ -93,14 +103,6 @@ namespace Vital::Sandbox {
                 return *this;
             }
 
-            template<typename E>
-            inline vm_args& validate_enum(int index, E min, E max) {
-                return validate(index, [min, max](Machine* vm, int index) {
-                    auto value = vm -> get_int(index);
-                    return value >= static_cast<int>(min) && value <= static_cast<int>(max);
-                }, fmt::format("out of range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
-            }
-
             template<typename Registry>
             inline vm_args& validate_enum(int index, const Registry& registry) {
                 return validate(index, [&registry](Machine* vm, int index) {
@@ -109,6 +111,14 @@ namespace Vital::Sandbox {
                         return static_cast<int>(entry.second) == value;
                     }) != registry.end();
                 }, "invalid enum value");
+            }
+
+            template<typename E>
+            inline vm_args& validate_enum(int index, E min, E max) {
+                return validate(index, [min, max](Machine* vm, int index) {
+                    auto value = vm -> get_int(index);
+                    return value >= static_cast<int>(min) && value <= static_cast<int>(max);
+                }, fmt::format("out of range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
             }
     };
 
