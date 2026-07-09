@@ -22,7 +22,7 @@ class Environment : public Resource {
 	GDEXTENSION_CLASS(Environment, Resource)
 
 public:
-
+	/*
 	enum BGMode {
 		BG_CLEAR_COLOR = 0,
 		BG_COLOR = 1,
@@ -71,7 +71,8 @@ public:
 		SDFGI_Y_SCALE_75_PERCENT = 1,
 		SDFGI_Y_SCALE_100_PERCENT = 2,
 	};
-
+	*/
+	
 	//void set_background(Environment::BGMode p_mode);
 	//Environment::BGMode get_background() const;
 	//void set_sky(const Ref<Sky> &p_sky);
