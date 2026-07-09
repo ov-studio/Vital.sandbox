@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "convert", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(format)", true)
-                    .require_enum(2, base_class::texel_format_registry);
+                    .require_enum(2, texel_format_registry);
 
                 self -> texture -> convert(static_cast<godot::Image::Format>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -97,7 +97,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "compress", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, base_class::compression_mode_registry);
+                    .require_enum(2, compression_mode_registry);
 
                 self -> texture -> compress(static_cast<godot::Image::CompressMode>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -106,8 +106,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "texel_format", base_class::texel_format_registry);
-            vm -> scope_set_enum(base_scope, "compression_mode", base_class::compression_mode_registry);
+            vm -> scope_set_enum(base_scope, "texel_format", texel_format_registry);
+            vm -> scope_set_enum(base_scope, "compression_mode", compression_mode_registry);
         }
 
         static void clean(const std::string& env) {
