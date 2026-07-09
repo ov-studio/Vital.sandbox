@@ -60,7 +60,7 @@ namespace Vital::Tool {
     }
 
     template<typename Registry, typename Value>
-    static auto assert_registry(const Registry& registry, const Value& value) {
+    static auto assert_enum_value(const Registry& registry, const Value& value) {
         auto it = std::find_if(registry.begin(), registry.end(), [&](const auto& entry) { return entry.second == value; });
         if (it == registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid enum value");
         return it;
