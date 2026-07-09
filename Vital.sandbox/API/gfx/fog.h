@@ -28,7 +28,7 @@ namespace Vital::Sandbox::API {
 
         inline static const std::vector<std::pair<std::string, int>> mode_registry = {
             { "EXPONENTIAL", godot::Environment::FOG_MODE_EXPONENTIAL },
-            { "DEPTH",       godot::Environment::FOG_MODE_DEPTH }
+            { "DEPTH", godot::Environment::FOG_MODE_DEPTH }
         };
 
         static void bind(Machine* vm) {
