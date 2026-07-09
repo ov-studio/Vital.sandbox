@@ -48,22 +48,6 @@ namespace Vital::Engine {
                 { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
             };
 
-            inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_registry = {
-                { "RGBA8", godot::Image::FORMAT_RGBA8 },
-                { "RGB8", godot::Image::FORMAT_RGB8 },
-                { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
-                { "RGB565", godot::Image::FORMAT_RGB565 },
-                { "LA8", godot::Image::FORMAT_LA8 },
-                { "L8", godot::Image::FORMAT_L8 }
-            };
-
-            inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_registry = {
-                { "S3TC", godot::Image::COMPRESS_S3TC },
-                { "ETC2", godot::Image::COMPRESS_ETC2 },
-                { "BPTC", godot::Image::COMPRESS_BPTC },
-                { "ASTC", godot::Image::COMPRESS_ASTC }
-            };
-
             struct Texture2D {
                 godot::Ref<godot::Texture2D> texture;
             };

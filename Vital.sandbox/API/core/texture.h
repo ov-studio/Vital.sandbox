@@ -48,6 +48,22 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_format_registry = {
+            { "RGBA8", godot::Image::FORMAT_RGBA8 },
+            { "RGB8", godot::Image::FORMAT_RGB8 },
+            { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
+            { "RGB565", godot::Image::FORMAT_RGB565 },
+            { "LA8", godot::Image::FORMAT_LA8 },
+            { "L8", godot::Image::FORMAT_L8 }
+        };
+
+        inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_mode_registry = {
+            { "S3TC", godot::Image::COMPRESS_S3TC },
+            { "ETC2", godot::Image::COMPRESS_ETC2 },
+            { "BPTC", godot::Image::COMPRESS_BPTC },
+            { "ASTC", godot::Image::COMPRESS_ASTC }
+        };
+    
         static void bind(Machine* vm) {
             vm_module::register_type<Texture>(vm);
 
@@ -72,7 +88,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "convert", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(format)", true)
-                    .require_enum(2, base_class::texel_registry);
+                    .require_enum(2, base_class::texel_format_registry);
 
                 self -> texture -> convert(static_cast<godot::Image::Format>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -81,7 +97,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "compress", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, base_class::compression_registry);
+                    .require_enum(2, base_class::compression_mode_registry);
 
                 self -> texture -> compress(static_cast<godot::Image::CompressMode>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -90,8 +106,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "texel_format", base_class::texel_registry);
-            vm -> scope_set_enum(base_scope, "compression_mode", base_class::compression_registry);
+            vm -> scope_set_enum(base_scope, "texel_format", base_class::texel_format_registry);
+            vm -> scope_set_enum(base_scope, "compression_mode", base_class::compression_mode_registry);
         }
 
         static void clean(const std::string& env) {
