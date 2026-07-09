@@ -28,6 +28,22 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "texture"};
         using base_class = Vital::Engine::Texture;
 
+        inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_format_registry = {
+            { "RGBA8", godot::Image::FORMAT_RGBA8 },
+            { "RGB8", godot::Image::FORMAT_RGB8 },
+            { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
+            { "RGB565", godot::Image::FORMAT_RGB565 },
+            { "LA8", godot::Image::FORMAT_LA8 },
+            { "L8", godot::Image::FORMAT_L8 }
+        };
+
+        inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_mode_registry = {
+            { "S3TC", godot::Image::COMPRESS_S3TC },
+            { "ETC2", godot::Image::COMPRESS_ETC2 },
+            { "BPTC", godot::Image::COMPRESS_BPTC },
+            { "ASTC", godot::Image::COMPRESS_ASTC }
+        };
+
         struct Instance : vm_instance<Instance> {
             using Owner = Texture;
             base_class* texture = nullptr;
@@ -48,22 +64,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_format_registry = {
-            { "RGBA8", godot::Image::FORMAT_RGBA8 },
-            { "RGB8", godot::Image::FORMAT_RGB8 },
-            { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
-            { "RGB565", godot::Image::FORMAT_RGB565 },
-            { "LA8", godot::Image::FORMAT_LA8 },
-            { "L8", godot::Image::FORMAT_L8 }
-        };
-
-        inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_mode_registry = {
-            { "S3TC", godot::Image::COMPRESS_S3TC },
-            { "ETC2", godot::Image::COMPRESS_ETC2 },
-            { "BPTC", godot::Image::COMPRESS_BPTC },
-            { "ASTC", godot::Image::COMPRESS_ASTC }
-        };
-    
         static void bind(Machine* vm) {
             vm_module::register_type<Texture>(vm);
 
