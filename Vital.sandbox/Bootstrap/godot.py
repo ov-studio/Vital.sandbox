@@ -19,29 +19,6 @@ class Godot:
             "templates_dir": self._get_templates_dir(version, os_info["type"]) if version else None,
         }
 
-    def _get_version_from_header(self, godot_cpp_dir):
-        header = os.path.join(godot_cpp_dir, "gdextension", "gdextension_interface.h")
-        if not os.path.exists(header):
-            return None
-        major = minor = patch = None
-        try:
-            with open(header) as f:
-                for line in f:
-                    line = line.strip()
-                    if "#define GDEXTENSION_VERSION_MAJOR" in line:
-                        major = int(line.split()[-1])
-                    elif "#define GDEXTENSION_VERSION_MINOR" in line:
-                        minor = int(line.split()[-1])
-                    elif "#define GDEXTENSION_VERSION_PATCH" in line:
-                        patch = int(line.split()[-1])
-                    if major is not None and minor is not None and patch is not None:
-                        break
-            if major is not None and minor is not None:
-                return f"{major}.{minor}.{patch}-stable" if patch else f"{major}.{minor}-stable"
-        except Exception:
-            pass
-        return None
-
     def _fetch_latest_stable_version(self):
         try:
             import urllib.request, json as _json
@@ -90,10 +67,6 @@ class Godot:
                     status = part
                     break
             return f"{major}.{minor}.{patch}-{status}" if patch else f"{major}.{minor}-{status}"
-
-        version = self._get_version_from_header(godot_cpp_dir)
-        if version:
-            return version
 
         try:
             result = subprocess.run(
