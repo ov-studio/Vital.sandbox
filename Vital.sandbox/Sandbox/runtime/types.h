@@ -118,7 +118,7 @@ namespace Vital::Sandbox {
                 return validate(index, [min, max](Machine* vm, int index) {
                     auto value = vm -> get_int(index);
                     return value >= static_cast<int>(min) && value <= static_cast<int>(max);
-                }, fmt::format("out of range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
+                }, fmt::format("out of enum range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
             }
     };
 
