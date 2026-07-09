@@ -59,13 +59,6 @@ namespace Vital::Tool {
         throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `{}()` called off the main thread. Wrap the call in `Engine::Core::execute()`.", fn_name));
     }
 
-    template<typename Registry, typename Value>
-    static auto assert_enum_value(const Registry& registry, const Value& value) {
-        auto it = std::find_if(registry.begin(), registry.end(), [&](const auto& entry) { return entry.second == value; });
-        if (it == registry.end()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid enum value");
-        return it;
-    }
-
     inline bool is_runtime() { 
         if (godot::Engine::get_singleton() -> is_editor_hint()) return false;
         godot::PackedStringArray args = godot::OS::get_singleton() -> get_cmdline_args();
