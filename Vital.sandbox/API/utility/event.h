@@ -321,6 +321,70 @@ namespace Vital::Sandbox::API {
             promise -> waiting.push_back(-1);
         }
 
+        static void dispatch_remote(Machine* vm, const Tool::Stack& payload) {
+            auto reply_ptr = payload.get("__reply_serial");
+            if (reply_ptr && reply_ptr -> is<double>()) {
+                uint32_t serial = static_cast<uint32_t>(reply_ptr -> as<double>());
+                std::shared_ptr<API::Promise::Instance> promise;
+                {
+                    std::lock_guard lock(pending_remote_mutex);
+                    auto it = pending_remote.find(serial);
+                    if (it != pending_remote.end()) {
+                        promise = it -> second;
+                        pending_remote.erase(it);
+                    }
+                }
+                if (!promise) return;
+
+                auto* root_vm = vm -> get_root();
+                int base = root_vm -> get_count() + 1;
+                int count = static_cast<int>(payload.array.size());
+                for (auto& v : payload.array) root_vm -> push_value(v);
+                API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, count);
+                return;
+            }
+
+            auto event_name_ptr = payload.get("__event");
+            if (!event_name_ptr || !event_name_ptr -> is<std::string>()) return;
+            std::string name = event_name_ptr -> as<std::string>();
+
+            auto serial_ptr = payload.get("__serial");
+            bool wants_reply = serial_ptr && serial_ptr -> is<double>();
+            uint32_t serial = wants_reply ? static_cast<uint32_t>(serial_ptr -> as<double>()) : 0;
+            auto* sid = payload.get("sender_id");
+            int reply_peer = (sid && sid -> is<double>()) ? static_cast<int>(sid -> as<double>()) : 0;
+
+            std::vector<std::pair<int, Handler>> snapshot;
+            {
+                std::lock_guard lock(buffer_mutex);
+                auto it = buffer.find(name);
+                if (it != buffer.end()) snapshot = it -> second.handlers;
+            }
+
+            int args_ref = store_stack_args(vm, payload.array);
+            if (snapshot.empty()) {
+                vm -> del_raw_reference(args_ref);
+                if (wants_reply) send_reply(serial, reply_peer);
+                return;
+            }
+
+            if (!wants_reply) {
+                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
+                vm -> del_raw_reference(args_ref);
+                return;
+            }
+
+            std::vector<std::shared_ptr<API::Promise::Instance>> promises;
+            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
+            vm -> del_raw_reference(args_ref);
+            if (promises.empty()) return;
+
+            auto agg = aggregate_promises(vm, promises);
+            register_reply_callback(agg, [serial, reply_peer](Machine* root_vm, const Tool::Stack& results) {
+                send_reply(serial, reply_peer, &results.array);
+            });
+        }
+
         static void init(Machine* vm) {
             static bool initialized = false;
             if (initialized) return;
@@ -488,70 +552,6 @@ namespace Vital::Sandbox::API {
                 auto agg = aggregate_promises(vm, promises);
                 push_promise(vm, agg);
                 return 1;
-            });
-        }
-
-        static void dispatch_remote(Machine* vm, const Tool::Stack& payload) {
-            auto reply_ptr = payload.get("__reply_serial");
-            if (reply_ptr && reply_ptr -> is<double>()) {
-                uint32_t serial = static_cast<uint32_t>(reply_ptr -> as<double>());
-                std::shared_ptr<API::Promise::Instance> promise;
-                {
-                    std::lock_guard lock(pending_remote_mutex);
-                    auto it = pending_remote.find(serial);
-                    if (it != pending_remote.end()) {
-                        promise = it -> second;
-                        pending_remote.erase(it);
-                    }
-                }
-                if (!promise) return;
-
-                auto* root_vm = vm -> get_root();
-                int base = root_vm -> get_count() + 1;
-                int count = static_cast<int>(payload.array.size());
-                for (auto& v : payload.array) root_vm -> push_value(v);
-                API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, count);
-                return;
-            }
-
-            auto event_name_ptr = payload.get("__event");
-            if (!event_name_ptr || !event_name_ptr -> is<std::string>()) return;
-            std::string name = event_name_ptr -> as<std::string>();
-
-            auto serial_ptr = payload.get("__serial");
-            bool wants_reply = serial_ptr && serial_ptr -> is<double>();
-            uint32_t serial = wants_reply ? static_cast<uint32_t>(serial_ptr -> as<double>()) : 0;
-            auto* sid = payload.get("sender_id");
-            int reply_peer = (sid && sid -> is<double>()) ? static_cast<int>(sid -> as<double>()) : 0;
-
-            std::vector<std::pair<int, Handler>> snapshot;
-            {
-                std::lock_guard lock(buffer_mutex);
-                auto it = buffer.find(name);
-                if (it != buffer.end()) snapshot = it -> second.handlers;
-            }
-
-            int args_ref = store_stack_args(vm, payload.array);
-            if (snapshot.empty()) {
-                vm -> del_raw_reference(args_ref);
-                if (wants_reply) send_reply(serial, reply_peer);
-                return;
-            }
-
-            if (!wants_reply) {
-                fire_all(vm, std::move(snapshot), name, args_ref, FireMode::Emit);
-                vm -> del_raw_reference(args_ref);
-                return;
-            }
-
-            std::vector<std::shared_ptr<API::Promise::Instance>> promises;
-            fire_all(vm, std::move(snapshot), name, args_ref, FireMode::EmitCallback, &promises);
-            vm -> del_raw_reference(args_ref);
-            if (promises.empty()) return;
-
-            auto agg = aggregate_promises(vm, promises);
-            register_reply_callback(agg, [serial, reply_peer](Machine* root_vm, const Tool::Stack& results) {
-                send_reply(serial, reply_peer, &results.array);
             });
         }
 
