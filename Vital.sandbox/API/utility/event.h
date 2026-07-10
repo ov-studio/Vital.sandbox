@@ -36,8 +36,8 @@ namespace Vital::Sandbox::API {
         };
 
         struct HandlerConfig {
-            bool is_async = false;
-            int sub_limit = 0;
+            bool async = false;
+            int subscription_limit = 0;
         };
     
         struct EventEntry {
@@ -73,9 +73,9 @@ namespace Vital::Sandbox::API {
         static HandlerConfig read_config(Machine* vm, int index) {
             HandlerConfig cfg;
             if (vm -> get_count() < index || !vm -> is_table(index)) return cfg;
-            vm -> table_get_value("async", index); cfg.is_async = vm -> get_bool(-1); vm -> pop(1);
+            vm -> table_get_value("async", index); cfg.async = vm -> get_bool(-1); vm -> pop(1);
             vm -> table_get_value("subscription_limit", index);
-            if (vm -> is_number(-1)) cfg.sub_limit = std::max(1, vm -> get_int(-1));
+            if (vm -> is_number(-1)) cfg.subscription_limit = std::max(1, vm -> get_int(-1));
             vm -> pop(1);
             return cfg;
         }
@@ -449,8 +449,8 @@ namespace Vital::Sandbox::API {
                 HandlerConfig cfg = read_config(vm, 3);
                 Handler h;
                 h.exec_ref = vm -> set_raw_reference(2);
-                h.async = cfg.is_async;
-                h.subscription_limit = cfg.sub_limit;
+                h.async = cfg.async;
+                h.subscription_limit = cfg.subscription_limit;
                 h.subscription_count = 0;
                 h.env = vm -> get_environment_id();
                 {
