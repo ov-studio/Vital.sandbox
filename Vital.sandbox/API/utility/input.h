@@ -242,7 +242,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "is_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
                     .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key");
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key");
 
                 int code;
                 bool is_mouse;
@@ -275,7 +275,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, direction, exec)")
                     .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key")
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key")
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
@@ -293,7 +293,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, direction, exec)")
                     .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key")
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key")
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
