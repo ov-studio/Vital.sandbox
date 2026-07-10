@@ -24,7 +24,6 @@
 namespace Vital::Sandbox::API {
     struct Input : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "input"};
-        inline static const std::string mouse_prefix = "mouse_";
 
         inline static const std::vector<std::pair<std::string, int>> key_registry = {
             { "A", godot::Key::KEY_A },
@@ -140,14 +139,7 @@ namespace Vital::Sandbox::API {
 
 
         // Helpers //
-        // Resolves a Lua-facing binding name to its target map and numeric code.
         static bool resolve_binding(const std::string& name, bool& is_mouse, int& code) {
-            if (name.rfind(mouse_prefix, 0) == 0) {
-                is_mouse = true;
-                try { code = std::stoi(name.substr(mouse_prefix.size())); }
-                catch (...) { return false; }
-                return true;
-            }
             auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.first == name; });
             if (it == key_registry.end()) return false;
             is_mouse = it -> first.rfind("MOUSE_", 0) == 0;
@@ -160,7 +152,6 @@ namespace Vital::Sandbox::API {
             return resolve_binding(name, is_mouse, code);
         }
 
-        // Appends a fresh handler for the calling env. Returns true on success.
         static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
@@ -168,8 +159,6 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        // Removes the handler whose Lua function compares equal to the one at
-        // exec_index. Mirrors event.off — one matching entry removed per call.
         static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
@@ -198,8 +187,6 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        // Fires every env's bound handlers matching the current edge for a
-        // given code. Snapshot taken first to guard against re-entrant bind/unbind.
         static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed) {
             auto it = map.find(code);
             if (it == map.end()) return;
@@ -218,21 +205,20 @@ namespace Vital::Sandbox::API {
             if (initialized) return;
             initialized = true;
 
-            // Hook into existing sandbox:key_input signal (fired by Manager::Sandbox::input())
             Tool::Event::bind("sandbox:key_input", [](Tool::Stack args) {
-                if (args.array.size() < 2) return;
+                if (args.array.size() < 3) return;
                 auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
-                auto key_str = args.array[0].as<std::string>();
-                bool is_pressed = args.array[1].as<bool>();
 
-                if (key_str.rfind(mouse_prefix, 0) == 0) dispatch_handler(bound_mouse, vm, std::stoi(key_str.substr(mouse_prefix.size())), is_pressed);
-                else dispatch_handler(bound_keys, vm, std::stoi(key_str), is_pressed);
+                int code = args.array[0].as<int32_t>();
+                bool is_pressed = args.array[1].as<bool>();
+                bool is_mouse = args.array[2].as<bool>();
+                if (is_mouse) dispatch_handler(bound_mouse, vm, code, is_pressed);
+                else dispatch_handler(bound_keys, vm, code, is_pressed);
             });
         }
 
         static void bind(Machine* vm) {
-            // Checkers //
             API::bind(vm, base_scope, "is_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
                     .require(1, &Machine::is_string)
@@ -245,8 +231,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-
-            // Getters //
             API::bind(vm, base_scope, "get_mouse_velocity", [](auto vm, auto& id) -> int {
                 vm -> push_value(godot::Input::get_singleton() -> get_last_mouse_velocity());
                 return 1;
@@ -257,8 +241,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-
-            // Setters //
             API::bind(vm, base_scope, "set_mouse_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require_enum(1, mouse_mode_registry);
@@ -269,8 +251,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Bind //
-            // TODO: Disable for mouse_1 mouse_2 ETC should be MOUSE_LEFT MOUSE_RIGHT strictly
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, direction, exec)")
                     .require(1, &Machine::is_string)
@@ -285,7 +265,6 @@ namespace Vital::Sandbox::API {
                 bool is_mouse; int code;
                 resolve_binding(vm -> get_string(1), is_mouse, code);
                 bool is_down = vm -> get_string(2) == "down";
-
                 bool ok = is_mouse ? bind_handler(bound_mouse, vm, code, is_down, 3) : bind_handler(bound_keys, vm, code, is_down, 3);
                 vm -> push_value(ok);
                 return 1;
@@ -299,7 +278,6 @@ namespace Vital::Sandbox::API {
 
                 bool is_mouse; int code;
                 resolve_binding(vm -> get_string(1), is_mouse, code);
-
                 bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, 2) : unbind_handler(bound_keys, vm, code, 2);
                 vm -> push_value(ok);
                 return 1;
