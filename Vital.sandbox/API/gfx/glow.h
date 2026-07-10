@@ -15,6 +15,8 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/texture.h>
+#include <Vital.sandbox/API/utility/file.h>
 
 
 ////////////////////////
@@ -24,6 +26,7 @@
 namespace Vital::Sandbox::API {
     struct Glow : vm_module {
         inline static const std::vector<std::string> base_scope = {"gfx", "glow"};
+        inline static const std::string map_reference = fmt::format("{}:map", vm_module::scope_id(base_scope));
         using base_class = Vital::Engine::Core;
 
         inline static const std::vector<std::pair<std::string, int>> blend_mode_registry = {
@@ -33,6 +36,16 @@ namespace Vital::Sandbox::API {
             { "REPLACE", godot::Environment::GLOW_BLEND_MODE_REPLACE },
             { "MIX", godot::Environment::GLOW_BLEND_MODE_MIX }
         };
+
+        static void init(Machine* vm) {
+            static bool initialized = false;
+            if (initialized) return;
+            initialized = true;
+
+            Tool::Event::bind("environment:free", [vm](Tool::Stack args) {
+                vm -> del_reference("sandbox", map_reference);
+            });
+        }
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_enabled", [](auto vm, auto& id) -> int {
@@ -96,6 +109,12 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_map_strength", [](auto vm, auto& id) -> int {
                 vm -> push_value(base_class::get_environment() -> get_glow_map_strength());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_map", [](auto vm, auto& id) -> int {
+                if (vm -> is_reference("sandbox", map_reference)) vm -> get_reference("sandbox", map_reference, true);
+                else vm -> push_value(false);
                 return 1;
             });
 
@@ -217,6 +236,30 @@ namespace Vital::Sandbox::API {
 
                 auto value = vm -> get_float(1);
                 base_class::get_environment() -> set_glow_map_strength(value);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_map", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
+
+                auto path = vm -> get_string(1);
+                auto ref = path;
+                auto base = API::File::assert_file(vm, path);
+                auto map_texture = Vital::Engine::Texture::get_from_reference(ref);
+                if (!map_texture) map_texture = Vital::Engine::Texture::create_texture_2d(base, path, ref);
+                base_class::get_environment() -> set_glow_map(map_texture -> get_texture());
+                vm -> push_value(path);
+                vm -> set_reference("sandbox", map_reference, -1);
+                vm -> pop(1);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "reset_map", [](auto vm, auto& id) -> int {
+                base_class::get_environment() -> set_glow_map(godot::Ref<godot::Texture>());
+                vm -> del_reference("sandbox", map_reference);
                 vm -> push_value(true);
                 return 1;
             });
