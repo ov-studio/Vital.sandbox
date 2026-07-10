@@ -153,7 +153,7 @@ namespace Vital::Sandbox::API {
         static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
-            map[code][env].push_back({is_down, ref});
+            map[code][env].push_back({ref, is_down});
             return true;
         }
 
