@@ -197,14 +197,14 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed, const std::string& key) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool pressed, const std::string& key) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
-            const std::string direction = is_pressed ? "down" : "up";
+            const std::string direction = pressed ? "down" : "up";
             for (auto& [env, handlers] : snapshot) {
                 for (auto& entry : handlers) {
-                    if (entry.down != is_pressed) continue;
+                    if (entry.down != pressed) continue;
                     vm -> get_raw_reference(entry.exec_ref);
                     vm -> push_value(key);
                     vm -> push_value(direction);
@@ -224,7 +224,7 @@ namespace Vital::Sandbox::API {
                 if (!vm) return;
 
                 auto code = args.array[0].as<int32_t>();
-                auto is_pressed = args.array[1].as<bool>();
+                auto pressed = args.array[1].as<bool>();
                 auto is_mouse = args.array[2].as<bool>();
                 std::string key_idx;
                 for (auto& [key, value] : Input::key_registry) {
@@ -233,8 +233,8 @@ namespace Vital::Sandbox::API {
                         break;
                     }
                 }
-                if (is_mouse) dispatch_handler(bound_mouse, vm, code, is_pressed, key_idx);
-                else dispatch_handler(bound_keys, vm, code, is_pressed, key_idx);
+                if (is_mouse) dispatch_handler(bound_mouse, vm, code, pressed, key_idx);
+                else dispatch_handler(bound_keys, vm, code, pressed, key_idx);
             });
         }
 
