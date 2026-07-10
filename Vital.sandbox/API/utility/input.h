@@ -66,7 +66,26 @@ namespace Vital::Sandbox::API {
             { "8", godot::Key::KEY_8 },
             { "9", godot::Key::KEY_9 },
 
-            // Function keys
+            // Numpad Digits
+            { "NUM0", godot::Key::KEY_KP_0 },
+            { "NUM1", godot::Key::KEY_KP_1 },
+            { "NUM2", godot::Key::KEY_KP_2 },
+            { "NUM3", godot::Key::KEY_KP_3 },
+            { "NUM4", godot::Key::KEY_KP_4 },
+            { "NUM5", godot::Key::KEY_KP_5 },
+            { "NUM6", godot::Key::KEY_KP_6 },
+            { "NUM7", godot::Key::KEY_KP_7 },
+            { "NUM8", godot::Key::KEY_KP_8 },
+            { "NUM9", godot::Key::KEY_KP_9 },
+
+            // Numpad Operators
+            { "NUM_ADD",      godot::Key::KEY_KP_ADD      },
+            { "NUM_SUBTRACT", godot::Key::KEY_KP_SUBTRACT },
+            { "NUM_MULTIPLY", godot::Key::KEY_KP_MULTIPLY },
+            { "NUM_DIVIDE",   godot::Key::KEY_KP_DIVIDE   },
+            { "NUM_PERIOD",   godot::Key::KEY_KP_PERIOD   },
+
+            // Function Keys
             { "F1",  godot::Key::KEY_F1  },
             { "F2",  godot::Key::KEY_F2  },
             { "F3",  godot::Key::KEY_F3  },
@@ -92,13 +111,13 @@ namespace Vital::Sandbox::API {
             { "F23", godot::Key::KEY_F23 },
             { "F24", godot::Key::KEY_F24 },
 
-            // Arrow keys
+            // Arrow Keys
             { "UP",    godot::Key::KEY_UP    },
             { "DOWN",  godot::Key::KEY_DOWN  },
             { "LEFT",  godot::Key::KEY_LEFT  },
             { "RIGHT", godot::Key::KEY_RIGHT },
 
-            // Control keys
+            // Control Keys
             { "SPACE",     godot::Key::KEY_SPACE     },
             { "ENTER",     godot::Key::KEY_ENTER     },
             { "KP_ENTER",  godot::Key::KEY_KP_ENTER  },
@@ -117,7 +136,7 @@ namespace Vital::Sandbox::API {
             { "CLEAR",     godot::Key::KEY_CLEAR     },
             { "MENU",      godot::Key::KEY_MENU      },
 
-            // Modifier keys (with sided aliases)
+            // Modifier Keys (with sided aliases)
             { "SHIFT",  godot::Key::KEY_SHIFT },
             { "LSHIFT", godot::Key::KEY_SHIFT },
             { "RSHIFT", godot::Key::KEY_SHIFT },
@@ -131,31 +150,12 @@ namespace Vital::Sandbox::API {
             { "LMETA",  godot::Key::KEY_META  },
             { "RMETA",  godot::Key::KEY_META  },
 
-            // Lock keys
+            // Lock Keys
             { "CAPSLOCK",   godot::Key::KEY_CAPSLOCK   },
             { "NUMLOCK",    godot::Key::KEY_NUMLOCK    },
             { "SCROLLLOCK", godot::Key::KEY_SCROLLLOCK },
 
-            // Numpad digits
-            { "NUM0", godot::Key::KEY_KP_0 },
-            { "NUM1", godot::Key::KEY_KP_1 },
-            { "NUM2", godot::Key::KEY_KP_2 },
-            { "NUM3", godot::Key::KEY_KP_3 },
-            { "NUM4", godot::Key::KEY_KP_4 },
-            { "NUM5", godot::Key::KEY_KP_5 },
-            { "NUM6", godot::Key::KEY_KP_6 },
-            { "NUM7", godot::Key::KEY_KP_7 },
-            { "NUM8", godot::Key::KEY_KP_8 },
-            { "NUM9", godot::Key::KEY_KP_9 },
-
-            // Numpad operators
-            { "NUM_ADD",      godot::Key::KEY_KP_ADD      },
-            { "NUM_SUBTRACT", godot::Key::KEY_KP_SUBTRACT },
-            { "NUM_MULTIPLY", godot::Key::KEY_KP_MULTIPLY },
-            { "NUM_DIVIDE",   godot::Key::KEY_KP_DIVIDE   },
-            { "NUM_PERIOD",   godot::Key::KEY_KP_PERIOD   },
-
-            // Punctuation & symbols
+            // Punctuation & Symbols
             { "SPACE",        godot::Key::KEY_SPACE        },
             { "EXCLAM",       godot::Key::KEY_EXCLAM       },
             { "QUOTEDBL",     godot::Key::KEY_QUOTEDBL     },
@@ -190,7 +190,7 @@ namespace Vital::Sandbox::API {
             { "BRACERIGHT",   godot::Key::KEY_BRACERIGHT   },
             { "ASCIITILDE",   godot::Key::KEY_ASCIITILDE   },
 
-            // Volume & media keys
+            // Volume & Media Keys
             { "VOLUMEDOWN",    godot::Key::KEY_VOLUMEDOWN    },
             { "VOLUMEMUTE",    godot::Key::KEY_VOLUMEMUTE    },
             { "VOLUMEUP",      godot::Key::KEY_VOLUMEUP      },
@@ -200,7 +200,7 @@ namespace Vital::Sandbox::API {
             { "MEDIANEXT",     godot::Key::KEY_MEDIANEXT     },
             { "MEDIARECORD",   godot::Key::KEY_MEDIARECORD   },
 
-            // Mouse buttons
+            // Mouse Keys
             { "MOUSE_LEFT",       godot::MouseButton::MOUSE_BUTTON_LEFT       },
             { "MOUSE_RIGHT",      godot::MouseButton::MOUSE_BUTTON_RIGHT      },
             { "MOUSE_MIDDLE",     godot::MouseButton::MOUSE_BUTTON_MIDDLE     },
