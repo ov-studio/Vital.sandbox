@@ -164,15 +164,6 @@ namespace Vital::Engine {
         return memnew(Texture({Type::Texture2D, payload}, reference));
     }
 
-    void Texture::update_exr_from_buffer(const godot::PackedByteArray& buffer) {
-        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        godot::Ref<godot::Image> image;
-        image.instantiate();
-        if (image -> load_exr_from_buffer(buffer) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid exr buffer");
-        get_image_texture() -> update(image);
-        heartbeat();
-    }
-
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
         auto image = get_image_texture() -> get_image();

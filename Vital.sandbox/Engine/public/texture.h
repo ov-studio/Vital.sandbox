@@ -98,7 +98,6 @@ namespace Vital::Engine {
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
             static Texture* create_exr(const std::string& base, const std::string& path, const std::string& reference = "");
             static Texture* create_exr_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
-            void update_exr_from_buffer(const godot::PackedByteArray& buffer);
             void convert(godot::Image::Format format);
             void compress(godot::Image::CompressMode mode);
     };
