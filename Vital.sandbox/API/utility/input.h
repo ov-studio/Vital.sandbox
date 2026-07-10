@@ -131,7 +131,7 @@ namespace Vital::Sandbox::API {
 
         struct Handler {
             int exec_ref = LUA_NOREF;
-            bool is_down;
+            bool is_down; // TODO: Store direction string instead?
         };
 
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
