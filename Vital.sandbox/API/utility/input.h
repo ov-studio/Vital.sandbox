@@ -247,7 +247,7 @@ namespace Vital::Sandbox::API {
                 int code;
                 bool mouse;
                 resolve_key(vm -> get_string(1), code, mouse);
-                if (mouse) vm -> push_value(godot::Input::get_singleton() -> mouse_button_pressed(static_cast<godot::MouseButton>(code)));
+                if (mouse) vm -> push_value(godot::Input::get_singleton() -> is_mouse_button_pressed(static_cast<godot::MouseButton>(code)));
                 else vm -> push_value(godot::Input::get_singleton() -> is_key_pressed(static_cast<godot::Key>(code)));
                 return 1;
             });
