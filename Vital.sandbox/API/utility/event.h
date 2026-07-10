@@ -35,12 +35,6 @@ namespace Vital::Sandbox::API {
             int subscription_count = 0;
         };
 
-        // TODO: Scrap out redundancy???
-        struct HandlerConfig {
-            bool async = false;
-            int subscription_limit = 0;
-        };
-    
         struct EventEntry {
             std::vector<std::pair<int, Handler>> handlers;
         };
@@ -71,14 +65,12 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
         inline static std::mutex reply_callbacks_mutex;
 
-        static HandlerConfig read_config(Machine* vm, int index) {
-            HandlerConfig cfg;
-            if (vm -> get_count() < index || !vm -> is_table(index)) return cfg;
-            vm -> table_get_value("async", index); cfg.async = vm -> get_bool(-1); vm -> pop(1);
+        static void read_config(Machine* vm, int index, Handler& handler) {
+            if (vm -> get_count() < index || !vm -> is_table(index)) return;
+            vm -> table_get_value("async", index); handler.async = vm -> get_bool(-1); vm -> pop(1);
             vm -> table_get_value("subscription_limit", index);
-            if (vm -> is_number(-1)) cfg.subscription_limit = std::max(1, vm -> get_int(-1));
+            if (vm -> is_number(-1)) handler.subscription_limit = std::max(1, vm -> get_int(-1));
             vm -> pop(1);
-            return cfg;
         }
 
         static EmitOptions read_emit_options(Machine* vm) {
@@ -205,10 +197,10 @@ namespace Vital::Sandbox::API {
             API::Thread::safe_resume(instance, n_args);
         }
 
-        static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& h, int args_ref, FireMode mode) {
+        static std::shared_ptr<API::Promise::Instance> fire_one(Machine* vm, const Handler& handler, int args_ref, FireMode mode) {
             std::shared_ptr<API::Promise::Instance> promise;
             if (mode == FireMode::EmitCallback) promise = API::Promise::make(vm);
-            if (h.async) {
+            if (handler.async) {
                 vm -> get_raw_reference(args_ref);
                 vm -> create_table();
                 int orig = vm -> get_count() - 1, copy = vm -> get_count();
@@ -220,11 +212,11 @@ namespace Vital::Sandbox::API {
                 vm -> rotate(-2, -1);
                 vm -> pop(1);
                 int args_ref_copy = vm -> set_raw_reference(-1);
-                spawn_thread(vm, h.exec_ref, args_ref_copy, promise);
+                spawn_thread(vm, handler.exec_ref, args_ref_copy, promise);
                 vm -> del_raw_reference(args_ref_copy);
             }
             else {
-                vm -> get_raw_reference(h.exec_ref);
+                vm -> get_raw_reference(handler.exec_ref);
                 int n_args = vm -> push_args(args_ref);
                 if (mode == FireMode::EmitCallback) {
                     int base = vm -> get_count() - n_args - 1;
@@ -241,10 +233,10 @@ namespace Vital::Sandbox::API {
 
         static void fire_all(Machine* vm, std::vector<std::pair<int, Handler>> snapshot, const std::string& name, int args_ref, FireMode mode, std::vector<std::shared_ptr<API::Promise::Instance>>* promises = nullptr, bool collect_all = false) {
             std::vector<int> exhausted;
-            for (auto& [ref, h] : snapshot) {
-                auto promise = fire_one(vm, h, args_ref, mode);
+            for (auto& [ref, handler] : snapshot) {
+                auto promise = fire_one(vm, handler, args_ref, mode);
                 if (promise && promises) promises -> push_back(promise);
-                if (h.subscription_limit > 0) bump_subscription(name, ref, exhausted);
+                if (handler.subscription_limit > 0) bump_subscription(name, ref, exhausted);
                 if (!collect_all) break;
             }
             sweep_exhausted(vm, name, exhausted);
@@ -447,16 +439,13 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 std::string name = vm -> get_string(1);
-                HandlerConfig cfg = read_config(vm, 3);
-                Handler h;
-                h.exec_ref = vm -> set_raw_reference(2);
-                h.async = cfg.async;
-                h.subscription_limit = cfg.subscription_limit;
-                h.subscription_count = 0;
-                h.env = vm -> get_environment_id();
+                Handler handler;
+                handler.exec_ref = vm -> set_raw_reference(2);
+                handler.env = vm -> get_environment_id();
+                read_config(vm, 3, handler);
                 {
                     std::lock_guard lock(buffer_mutex);
-                    buffer[name].handlers.emplace_back(h.exec_ref, h);
+                    buffer[name].handlers.emplace_back(handler.exec_ref, handler);
                 }
                 vm -> push_value(true);
                 return 1;
