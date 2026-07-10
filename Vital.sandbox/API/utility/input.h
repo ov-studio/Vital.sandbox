@@ -166,7 +166,7 @@ namespace Vital::Sandbox::API {
         }
 
         // Appends a fresh handler for the calling env. Returns true on success.
-        static bool bind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
+        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
             map[code][env].push_back({is_down, ref});
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
 
         // Removes the handler whose Lua function compares equal to the one at
         // exec_index. Mirrors event.off — one matching entry removed per call.
-        static bool unbind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, int exec_index) {
+        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
             if (mit == map.end()) return false;
@@ -205,7 +205,7 @@ namespace Vital::Sandbox::API {
 
         // Fires every env's bound handlers matching the current edge for a
         // given code. Snapshot taken first to guard against re-entrant bind/unbind.
-        static void dispatch_single(const std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_pressed) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_pressed) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
@@ -231,8 +231,8 @@ namespace Vital::Sandbox::API {
                 auto key_str = args.array[0].as<std::string>();
                 bool is_pressed = args.array[1].as<bool>();
 
-                if (key_str.rfind(mouse_prefix, 0) == 0) dispatch_single(bound_mouse, vm, std::stoi(key_str.substr(mouse_prefix.size())), is_pressed);
-                else dispatch_single(bound_keys, vm, std::stoi(key_str), is_pressed);
+                if (key_str.rfind(mouse_prefix, 0) == 0) dispatch_handler(bound_mouse, vm, std::stoi(key_str.substr(mouse_prefix.size())), is_pressed);
+                else dispatch_handler(bound_keys, vm, std::stoi(key_str), is_pressed);
             });
         }
 
@@ -291,9 +291,7 @@ namespace Vital::Sandbox::API {
                 resolve_binding(vm -> get_string(1), is_mouse, code);
                 bool is_down = vm -> get_string(2) == "down";
 
-                bool ok = is_mouse
-                    ? bind_single(bound_mouse, vm, code, is_down, 3)
-                    : bind_single(bound_keys, vm, code, is_down, 3);
+                bool ok = is_mouse ? bind_handler(bound_mouse, vm, code, is_down, 3) : bind_handler(bound_keys, vm, code, is_down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -307,9 +305,7 @@ namespace Vital::Sandbox::API {
                 bool is_mouse; int code;
                 resolve_binding(vm -> get_string(1), is_mouse, code);
 
-                bool ok = is_mouse
-                    ? unbind_single(bound_mouse, vm, code, 2)
-                    : unbind_single(bound_keys, vm, code, 2);
+                bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, 2) : unbind_handler(bound_keys, vm, code, 2);
                 vm -> push_value(ok);
                 return 1;
             });
