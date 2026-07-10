@@ -137,8 +137,8 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_mouse;
 
-        static bool resolve_key(const std::string& name, int& code, bool& is_mouse) {
-            auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.first == name; });
+        static bool resolve_key(const std::string& key, int& code, bool& is_mouse) {
+            auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.first == key; });
             if (it == key_registry.end()) return false;
             code = it -> second;
             is_mouse = it -> first.rfind("MOUSE_", 0) == 0;
@@ -151,10 +151,10 @@ namespace Vital::Sandbox::API {
             return false;
         }
 
-        static bool is_valid_key(const std::string& name) {
+        static bool is_valid_key(const std::string& key) {
             int code;
             bool is_mouse;
-            return resolve_key(name, code, is_mouse);
+            return resolve_key(key, code, is_mouse);
         }
 
         static bool is_valid_direction(const std::string& direction) {
@@ -197,7 +197,7 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed, const std::string& key_name) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed, const std::string& key) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
@@ -206,7 +206,7 @@ namespace Vital::Sandbox::API {
                 for (auto& entry : handlers) {
                     if (entry.down != is_pressed) continue;
                     vm -> get_raw_reference(entry.exec_ref);
-                    vm -> push_value(key_name);
+                    vm -> push_value(key);
                     vm -> push_value(direction);
                     vm -> call(2, 0);
                 }
@@ -226,15 +226,15 @@ namespace Vital::Sandbox::API {
                 auto code = args.array[0].as<int32_t>();
                 auto is_pressed = args.array[1].as<bool>();
                 auto is_mouse = args.array[2].as<bool>();
-                std::string key_name;
-                for (auto& [name, val] : Input::key_registry) {
-                    if (val == code) {
-                        key_name = name;
+                std::string key_idx;
+                for (auto& [key, value] : Input::key_registry) {
+                    if (value == code) {
+                        key_idx = key;
                         break;
                     }
                 }
-                if (is_mouse) dispatch_handler(bound_mouse, vm, code, is_pressed, key_name);
-                else dispatch_handler(bound_keys, vm, code, is_pressed, key_name);
+                if (is_mouse) dispatch_handler(bound_mouse, vm, code, is_pressed, key_idx);
+                else dispatch_handler(bound_keys, vm, code, is_pressed, key_idx);
             });
         }
 
@@ -273,7 +273,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, direction, exec)")
+                vm_args(vm, id, "(key, direction, exec)")
                     .require(1, &Machine::is_string)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key")
                     .require(2, &Machine::is_string)
@@ -291,7 +291,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, direction, exec)")
+                vm_args(vm, id, "(key, direction, exec)")
                     .require(1, &Machine::is_string)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key")
                     .require(2, &Machine::is_string)
