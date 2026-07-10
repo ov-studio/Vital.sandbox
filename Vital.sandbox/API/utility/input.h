@@ -137,11 +137,11 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_mouse;
 
-        static bool resolve_key(const std::string& key, int& code, bool& is_mouse) {
+        static bool resolve_key(const std::string& key, int& code, bool& mouse) {
             auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.first == key; });
             if (it == key_registry.end()) return false;
             code = it -> second;
-            is_mouse = it -> first.rfind("MOUSE_", 0) == 0;
+            mouse = it -> first.rfind("MOUSE_", 0) == 0;
             return true;
         }
 
@@ -153,8 +153,8 @@ namespace Vital::Sandbox::API {
 
         static bool is_valid_key(const std::string& key) {
             int code;
-            bool is_mouse;
-            return resolve_key(key, code, is_mouse);
+            bool mouse;
+            return resolve_key(key, code, mouse);
         }
 
         static bool is_valid_direction(const std::string& direction) {
@@ -225,7 +225,7 @@ namespace Vital::Sandbox::API {
 
                 auto code = args.array[0].as<int32_t>();
                 auto pressed = args.array[1].as<bool>();
-                auto is_mouse = args.array[2].as<bool>();
+                auto mouse = args.array[2].as<bool>();
                 std::string key_idx;
                 for (auto& [key, value] : Input::key_registry) {
                     if (value == code) {
@@ -233,7 +233,7 @@ namespace Vital::Sandbox::API {
                         break;
                     }
                 }
-                if (is_mouse) dispatch_handler(bound_mouse, vm, code, pressed, key_idx);
+                if (mouse) dispatch_handler(bound_mouse, vm, code, pressed, key_idx);
                 else dispatch_handler(bound_keys, vm, code, pressed, key_idx);
             });
         }
@@ -245,9 +245,9 @@ namespace Vital::Sandbox::API {
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key");
 
                 int code;
-                bool is_mouse;
-                resolve_key(vm -> get_string(1), code, is_mouse);
-                if (is_mouse) vm -> push_value(godot::Input::get_singleton() -> is_mouse_button_pressed(static_cast<godot::MouseButton>(code)));
+                bool mouse;
+                resolve_key(vm -> get_string(1), code, mouse);
+                if (mouse) vm -> push_value(godot::Input::get_singleton() -> mouse_button_pressed(static_cast<godot::MouseButton>(code)));
                 else vm -> push_value(godot::Input::get_singleton() -> is_key_pressed(static_cast<godot::Key>(code)));
                 return 1;
             });
@@ -281,11 +281,11 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_function);
 
                 int code;
-                bool is_mouse;
-                resolve_key(vm -> get_string(1), code, is_mouse);
+                bool mouse;
+                resolve_key(vm -> get_string(1), code, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                bool ok = is_mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
+                bool ok = mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -299,11 +299,11 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_function);
 
                 int code;
-                bool is_mouse;
-                resolve_key(vm -> get_string(1), code, is_mouse);
+                bool mouse;
+                resolve_key(vm -> get_string(1), code, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
+                bool ok = mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
