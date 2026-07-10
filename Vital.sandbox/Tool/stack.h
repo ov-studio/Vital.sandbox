@@ -175,10 +175,10 @@ namespace Vital::Tool {
             // godot::Variant → StackValue
             static StackValue variant_to_value(const godot::Variant& v) {
                 switch (v.get_type()) {
-                    case godot::Variant::NIL: return StackValue(nullptr);
-                    case godot::Variant::BOOL: return StackValue((bool)v);
-                    case godot::Variant::INT: return StackValue((int32_t)(int64_t)v);
-                    case godot::Variant::FLOAT: return StackValue((double)v);
+                    case godot::Variant::NIL:    return StackValue(nullptr);
+                    case godot::Variant::BOOL:   return StackValue((bool)v);
+                    case godot::Variant::INT:    return StackValue((int32_t)(int64_t)v);
+                    case godot::Variant::FLOAT:  return StackValue((double)v);
                     case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
                     case godot::Variant::ARRAY: {
                         const godot::Array arr = v;

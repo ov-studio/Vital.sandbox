@@ -79,7 +79,7 @@ namespace Vital::Engine {
     godot::Ref<godot::ImageTexture> Texture::get_image_texture() const {
         switch (command.type) {
             case Type::Texture2D: return std::get<Texture2D>(command.payload).texture;
-            case Type::SVG: return std::get<SVG>(command.payload).texture;
+            case Type::SVG:       return std::get<SVG>(command.payload).texture;
         }
         return godot::Ref<godot::ImageTexture>();
     }
@@ -105,13 +105,13 @@ namespace Vital::Engine {
         image.instantiate();
         godot::Error status;
         switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
-            case Format::JPG: status = image -> load_jpg_from_buffer(buffer); break;
-            case Format::PNG: status = image -> load_png_from_buffer(buffer); break;
+            case Format::JPG:  status = image -> load_jpg_from_buffer(buffer); break;
+            case Format::PNG:  status = image -> load_png_from_buffer(buffer); break;
             case Format::WEBP: status = image -> load_webp_from_buffer(buffer); break;
-            case Format::BMP: status = image -> load_bmp_from_buffer(buffer); break;
-            case Format::DDS: status = image -> load_dds_from_buffer(buffer); break;
-            case Format::KTX: status = image -> load_ktx_from_buffer(buffer); break;
-            case Format::EXR: status = image -> load_exr_from_buffer(buffer); break;
+            case Format::BMP:  status = image -> load_bmp_from_buffer(buffer); break;
+            case Format::DDS:  status = image -> load_dds_from_buffer(buffer); break;
+            case Format::KTX:  status = image -> load_ktx_from_buffer(buffer); break;
+            case Format::EXR:  status = image -> load_exr_from_buffer(buffer); break;
             default: break;
         }
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");

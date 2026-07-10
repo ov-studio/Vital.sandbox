@@ -78,7 +78,7 @@ namespace Vital::Tool::Log {
             case Type::sbox: return sbox(body);
             case Type::info: return info(body);
             case Type::warn: return warn(body);
-            default: return error(body);
+            default:         return error(body);
         }
     }
 }
