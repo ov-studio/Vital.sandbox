@@ -311,7 +311,7 @@ namespace Vital::Sandbox::API {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            auto release_bound = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map) {
+            auto release = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map) {
                 for (auto mit = map.begin(); mit != map.end(); ) {
                     auto eit = mit -> second.find(env);
                     if (eit != mit -> second.end()) {
@@ -322,8 +322,8 @@ namespace Vital::Sandbox::API {
                     else ++mit;
                 }
             };
-            release_bound(bound_keys);
-            release_bound(bound_mouse);
+            release(bound_keys);
+            release(bound_mouse);
         }
     };
 }
