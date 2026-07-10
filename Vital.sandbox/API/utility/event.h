@@ -556,7 +556,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            if (env.empty()) return;
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
