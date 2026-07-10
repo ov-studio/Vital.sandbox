@@ -157,7 +157,7 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, int exec_index) {
+        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
             if (mit == map.end()) return false;
@@ -168,6 +168,7 @@ namespace Vital::Sandbox::API {
             bool removed = false;
             auto& handlers = eit -> second;
             for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
+                if (vit -> is_down != is_down) continue;
                 vm -> get_raw_reference(lookup_ref);
                 vm -> get_raw_reference(vit -> exec_ref);
                 bool eq = lua_rawequal(vm -> get_state(), -1, -2);
@@ -185,15 +186,18 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed, const std::string& key_name) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
+            const std::string direction = is_pressed ? "down" : "up";
             for (auto& [env, handlers] : snapshot) {
                 for (auto& entry : handlers) {
                     if (entry.is_down != is_pressed) continue;
                     vm -> get_raw_reference(entry.exec_ref);
-                    vm -> call(0, 0);
+                    vm -> push_value(key_name);
+                    vm -> push_value(direction);
+                    vm -> call(2, 0);
                 }
             }
         }
@@ -208,11 +212,18 @@ namespace Vital::Sandbox::API {
                 auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
 
-                int code = args.array[0].as<int32_t>();
-                bool is_pressed = args.array[1].as<bool>();
-                bool is_mouse = args.array[2].as<bool>();
-                if (is_mouse) dispatch_handler(bound_mouse, vm, code, is_pressed);
-                else dispatch_handler(bound_keys, vm, code, is_pressed);
+                auto code = args.array[0].as<int32_t>();
+                auto is_pressed = args.array[1].as<bool>();
+                auto is_mouse = args.array[2].as<bool>();
+                std::string key_name;
+                for (auto& [name, val] : Input::key_registry) {
+                    if (val == code) {
+                        key_name = name;
+                        break;
+                    }
+                }
+                if (is_mouse) dispatch_handler(bound_mouse, vm, code, is_pressed, key_name);
+                else dispatch_handler(bound_keys, vm, code, is_pressed, key_name);
             });
         }
 
@@ -269,14 +280,20 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, exec)")
+                vm_args(vm, id, "(name, direction, exec)")
                     .require(1, &Machine::is_string)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key binding")
-                    .require(2, &Machine::is_function);
+                    .require(2, &Machine::is_string)
+                    .validate(2, [](Machine* vm, int idx) {
+                        auto dir = vm -> get_string(idx);
+                        return dir == "up" || dir == "down";
+                    }, "direction must be 'up' or 'down'")
+                    .require(3, &Machine::is_function);
 
                 bool is_mouse; int code;
                 resolve_binding(vm -> get_string(1), is_mouse, code);
-                bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, 2) : unbind_handler(bound_keys, vm, code, 2);
+                bool is_down = vm -> get_string(2) == "down";
+                bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, is_down, 3) : unbind_handler(bound_keys, vm, code, is_down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
