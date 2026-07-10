@@ -220,32 +220,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "is_action_pressed", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(action)")
-                    .require(1, &Machine::is_string);
-
-                auto action = Tool::to_godot_string_name(vm -> get_string(1));
-                vm -> push_value(godot::Input::get_singleton() -> is_action_pressed(action));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "is_action_just_pressed", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(action)")
-                    .require(1, &Machine::is_string);
-
-                auto action = Tool::to_godot_string_name(vm -> get_string(1));
-                vm -> push_value(godot::Input::get_singleton() -> is_action_just_pressed(action));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "is_action_just_released", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(action)")
-                    .require(1, &Machine::is_string);
-
-                auto action = Tool::to_godot_string_name(vm -> get_string(1));
-                vm -> push_value(godot::Input::get_singleton() -> is_action_just_released(action));
-                return 1;
-            });
 
             // Getters //
             API::bind(vm, base_scope, "get_key_state", [](auto vm, auto& id) -> int {
