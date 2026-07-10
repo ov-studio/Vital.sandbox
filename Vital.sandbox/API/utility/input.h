@@ -130,27 +130,20 @@ namespace Vital::Sandbox::API {
             { "CONFINED_HIDDEN", godot::Input::MOUSE_MODE_CONFINED_HIDDEN }
         };
 
-        // A single bound handler, tagged with a handle so a specific
-        // registration can be torn down later without touching its siblings.
-        // is_down selects whether this fires on the press or release edge.
+        // A single bound handler. is_down selects whether this fires on the
+        // press or release edge. exec_ref is the registry reference to the
+        // Lua function and is also the identity key used by unbind.
         struct key_handler {
-            int handle;
             bool is_down;
-            int ref;
+            int exec_ref;
         };
 
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>> bound_keys;
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>> bound_mouse;
-        inline static std::atomic<int> next_handle {1};
 
 
         // Helpers //
         // Resolves a Lua-facing binding name to its target map and numeric code.
-        // Accepts:
-        //   - a binding_registry name: bare keyboard names ("A", "SPACE", ...)
-        //     or "MOUSE_"-prefixed mouse names ("MOUSE_LEFT", "MOUSE_RIGHT", ...)
-        //   - a raw "mouse_<button_code>" fallback ("mouse_1"), matching the
-        //     same wire format sandbox:key_input already uses internally
         static bool resolve_binding(const std::string& name, bool& is_mouse, int& code) {
             if (name.rfind(mouse_prefix, 0) == 0) {
                 is_mouse = true;
@@ -158,52 +151,53 @@ namespace Vital::Sandbox::API {
                 catch (...) { return false; }
                 return true;
             }
-            auto it = std::find_if(binding_registry.begin(), binding_registry.end(), [&](const auto& p) { return p.first == name; });
-            if (it == binding_registry.end()) return false;
+            auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.first == name; });
+            if (it == key_registry.end()) return false;
             is_mouse = it -> first.rfind("MOUSE_", 0) == 0;
             code = it -> second;
             return true;
         }
 
-        // Shared by bind — appends a fresh handler for the calling env and
-        // returns a handle identifying it.
-        static int bind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
+        // Appends a fresh handler for the calling env. Returns true on success.
+        static bool bind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
             auto env = vm -> get_environment_id();
-            int handle = next_handle++;
             int ref = vm -> set_raw_reference(exec_index);
-            map[code][env].push_back({handle, is_down, ref});
-            return handle;
+            map[code][env].push_back({is_down, ref});
+            return true;
         }
 
-        // TODO: Remove clearing of every bind the handler registered, bind should return true/false and unbind should use the registered function as ref to free its handler like event.on/off
-        static void unbind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, int handle = 0) {
+        // Removes the handler whose Lua function compares equal to the one at
+        // exec_index. Mirrors event.off — one matching entry removed per call.
+        static bool unbind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
-            if (mit == map.end()) return;
+            if (mit == map.end()) return false;
             auto eit = mit -> second.find(env);
-            if (eit == mit -> second.end()) return;
+            if (eit == mit -> second.end()) return false;
 
+            int lookup_ref = vm -> set_raw_reference(exec_index);
+            bool removed = false;
             auto& handlers = eit -> second;
-            if (handle == 0) {
-                for (auto& entry : handlers) vm -> del_raw_reference(entry.ref);
-                handlers.clear();
+            for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
+                vm -> get_raw_reference(lookup_ref);
+                vm -> get_raw_reference(vit -> exec_ref);
+                bool eq = lua_rawequal(vm -> get_state(), -1, -2);
+                vm -> pop(2);
+                if (!eq) continue;
+                vm -> del_raw_reference(vit -> exec_ref);
+                handlers.erase(vit);
+                removed = true;
+                break;
             }
-            else {
-                handlers.erase(std::remove_if(handlers.begin(), handlers.end(), [&](key_handler& entry) {
-                    if (entry.handle != handle) return false;
-                    vm -> del_raw_reference(entry.ref);
-                    return true;
-                }), handlers.end());
-            }
+            vm -> del_raw_reference(lookup_ref);
 
             if (handlers.empty()) mit -> second.erase(eit);
             if (mit -> second.empty()) map.erase(mit);
+            return removed;
         }
 
-        // Shared by the sandbox:key_input handler — fires every env's bound
-        // handlers matching the current edge (press/release) for a given
-        // code. Snapshotted first since a handler could itself bind/unbind,
-        // which would otherwise invalidate iteration.
+        // Fires every env's bound handlers matching the current edge for a
+        // given code. Snapshot taken first to guard against re-entrant bind/unbind.
         static void dispatch_single(const std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_pressed) {
             auto it = map.find(code);
             if (it == map.end()) return;
@@ -211,7 +205,7 @@ namespace Vital::Sandbox::API {
             for (auto& [env, handlers] : snapshot) {
                 for (auto& entry : handlers) {
                     if (entry.is_down != is_pressed) continue;
-                    vm -> get_raw_reference(entry.ref);
+                    vm -> get_raw_reference(entry.exec_ref);
                     vm -> call(0, 0);
                 }
             }
@@ -237,7 +231,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             // Checkers //
-            // TOOD: NEED TO MERGE is_mouse_pressed w is_key_pressed NOW?
+            // TODO: NEED TO MERGE is_mouse_pressed w is_key_pressed NOW?
             API::bind(vm, base_scope, "is_key_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
                     .require_enum(1, key_registry);
@@ -281,7 +275,7 @@ namespace Vital::Sandbox::API {
             });
 
             // Bind //
-            // TODO: Disable for mouse_1 mouse_2 ETC should be MOUSE_LEFT MOUSE_RIGHT stricly
+            // TODO: Disable for mouse_1 mouse_2 ETC should be MOUSE_LEFT MOUSE_RIGHT strictly
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, direction, exec)")
                     .require(1, &Machine::is_string)
@@ -300,29 +294,29 @@ namespace Vital::Sandbox::API {
                 resolve_binding(vm -> get_string(1), is_mouse, code);
                 bool is_down = vm -> get_string(2) == "down";
 
-                int handle = is_mouse
+                bool ok = is_mouse
                     ? bind_single(bound_mouse, vm, code, is_down, 3)
                     : bind_single(bound_keys, vm, code, is_down, 3);
-                vm -> push_value(handle);
+                vm -> push_value(ok);
                 return 1;
             });
 
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, [handle])")
+                vm_args(vm, id, "(name, exec)")
                     .require(1, &Machine::is_string)
                     .validate(1, [](Machine* vm, int idx) {
                         bool is_mouse; int code;
                         return resolve_binding(vm -> get_string(idx), is_mouse, code);
                     }, "unknown key or mouse binding")
-                    .optional(2, &Machine::is_number);
+                    .require(2, &Machine::is_function);
 
                 bool is_mouse; int code;
                 resolve_binding(vm -> get_string(1), is_mouse, code);
-                int handle = (vm -> get_count() >= 2) ? vm -> get_int(2) : 0;
 
-                if (is_mouse) unbind_single(bound_mouse, vm, code, handle);
-                else unbind_single(bound_keys, vm, code, handle);
-                vm -> push_value(true);
+                bool ok = is_mouse
+                    ? unbind_single(bound_mouse, vm, code, 2)
+                    : unbind_single(bound_keys, vm, code, 2);
+                vm -> push_value(ok);
                 return 1;
             });
         }
@@ -340,7 +334,7 @@ namespace Vital::Sandbox::API {
                 for (auto mit = map.begin(); mit != map.end(); ) {
                     auto eit = mit -> second.find(env);
                     if (eit != mit -> second.end()) {
-                        for (auto& entry : eit -> second) vm -> del_raw_reference(entry.ref);
+                        for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
                         mit -> second.erase(eit);
                     }
                     if (mit -> second.empty()) mit = map.erase(mit);
