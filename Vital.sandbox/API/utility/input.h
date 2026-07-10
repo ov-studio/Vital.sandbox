@@ -231,22 +231,18 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             // Checkers //
-            // TODO: NEED TO MERGE is_mouse_pressed w is_key_pressed NOW?
-            API::bind(vm, base_scope, "is_key_pressed", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "is_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
-                    .require_enum(1, key_registry);
+                    .require(1, &Machine::is_string)
+                    .validate(1, [](Machine* vm, int idx) {
+                        bool is_mouse; int code;
+                        return resolve_binding(vm -> get_string(idx), is_mouse, code);
+                    }, "unknown key binding");
 
-                auto key = static_cast<godot::Key>(vm -> get_int(1));
-                vm -> push_value(godot::Input::get_singleton() -> is_key_pressed(key));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "is_mouse_pressed", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(button)")
-                    .require_enum(1, mouse_button_registry);
-
-                auto button = static_cast<godot::MouseButton>(vm -> get_int(1));
-                vm -> push_value(godot::Input::get_singleton() -> is_mouse_button_pressed(button));
+                bool is_mouse; int code;
+                resolve_binding(vm -> get_string(1), is_mouse, code);
+                if (is_mouse) vm -> push_value(godot::Input::get_singleton() -> is_mouse_button_pressed(static_cast<godot::MouseButton>(code)));
+                else vm -> push_value(godot::Input::get_singleton() -> is_key_pressed(static_cast<godot::Key>(code)));
                 return 1;
             });
 
