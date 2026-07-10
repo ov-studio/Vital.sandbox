@@ -145,10 +145,21 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
+        static bool resolve_direction(const std::string& direction, bool& is_down) {
+            if (direction == "down") {is_down = true; return true; }
+            if (direction == "up") { is_down = false; return true; }
+            return false;
+        }
+
         static bool is_valid_key(const std::string& name) {
             int code;
             bool is_mouse;
             return resolve_key(name, code, is_mouse);
+        }
+
+        static bool is_valid_direction(const std::string& direction) {
+            bool is_down;
+            return resolve_direction(direction, is_down);
         }
 
         static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
