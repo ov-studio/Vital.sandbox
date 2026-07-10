@@ -175,11 +175,7 @@ namespace Vital::Sandbox::API {
             return handle;
         }
 
-        // Shared by unbind — releases the calling env's binding(s) for a code.
-        // If handle is 0, every handler the calling env registered for that
-        // code is removed (both up and down); otherwise only the handler
-        // matching that handle is removed.
-        // TODO: Remove clearing of every bind the handler registered, bind should return true/false and unbind should use the registered function as ref to free its handler
+        // TODO: Remove clearing of every bind the handler registered, bind should return true/false and unbind should use the registered function as ref to free its handler like event.on/off
         static void unbind_single(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, int handle = 0) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
