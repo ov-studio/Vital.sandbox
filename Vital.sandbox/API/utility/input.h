@@ -131,7 +131,7 @@ namespace Vital::Sandbox::API {
 
         struct Handler {
             int exec_ref = LUA_NOREF;
-            bool is_down; // TODO: Store direction string instead?
+            bool down;
         };
 
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
@@ -145,9 +145,9 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        static bool resolve_direction(const std::string& direction, bool& is_down) {
-            if (direction == "down") {is_down = true; return true; }
-            if (direction == "up") { is_down = false; return true; }
+        static bool resolve_direction(const std::string& direction, bool& down) {
+            if (direction == "down") {down = true; return true; }
+            if (direction == "up") { down = false; return true; }
             return false;
         }
 
@@ -158,18 +158,18 @@ namespace Vital::Sandbox::API {
         }
 
         static bool is_valid_direction(const std::string& direction) {
-            bool is_down;
-            return resolve_direction(direction, is_down);
+            bool down;
+            return resolve_direction(direction, down);
         }
 
-        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
+        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
-            map[code][env].push_back({ref, is_down});
+            map[code][env].push_back({ref, down});
             return true;
         }
 
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
+        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
             if (mit == map.end()) return false;
@@ -180,7 +180,7 @@ namespace Vital::Sandbox::API {
             bool removed = false;
             auto& handlers = eit -> second;
             for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
-                if (vit -> is_down != is_down) continue;
+                if (vit -> down != down) continue;
                 vm -> get_raw_reference(lookup_ref);
                 vm -> get_raw_reference(vit -> exec_ref);
                 bool eq = lua_rawequal(vm -> get_state(), -1, -2);
@@ -204,7 +204,7 @@ namespace Vital::Sandbox::API {
             const std::string direction = is_pressed ? "down" : "up";
             for (auto& [env, handlers] : snapshot) {
                 for (auto& entry : handlers) {
-                    if (entry.is_down != is_pressed) continue;
+                    if (entry.down != is_pressed) continue;
                     vm -> get_raw_reference(entry.exec_ref);
                     vm -> push_value(key_name);
                     vm -> push_value(direction);
@@ -277,17 +277,15 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key binding")
                     .require(2, &Machine::is_string)
-                    .validate(2, [](Machine* vm, int idx) {
-                        auto dir = vm -> get_string(idx);
-                        return dir == "up" || dir == "down";
-                    }, "direction must be 'up' or 'down'") // TODO: MAKE HELPER FOR Direction; is_valid_direction
+                    .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be 'up' or 'down'")
                     .require(3, &Machine::is_function);
 
                 int code;
                 bool is_mouse;
                 resolve_key(vm -> get_string(1), code, is_mouse);
-                bool is_down = vm -> get_string(2) == "down";
-                bool ok = is_mouse ? bind_handler(bound_mouse, vm, code, is_down, 3) : bind_handler(bound_keys, vm, code, is_down, 3);
+                bool down;
+                resolve_direction(vm -> get_string(2), down);
+                bool ok = is_mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -297,17 +295,15 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key binding")
                     .require(2, &Machine::is_string)
-                    .validate(2, [](Machine* vm, int idx) {
-                        auto dir = vm -> get_string(idx);
-                        return dir == "up" || dir == "down";
-                    }, "direction must be 'up' or 'down'")
+                    .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be 'up' or 'down'")
                     .require(3, &Machine::is_function);
 
                 int code;
                 bool is_mouse;
                 resolve_key(vm -> get_string(1), code, is_mouse);
-                bool is_down = vm -> get_string(2) == "down";
-                bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, is_down, 3) : unbind_handler(bound_keys, vm, code, is_down, 3);
+                bool down;
+                resolve_direction(vm -> get_string(2), down);
+                bool ok = is_mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
