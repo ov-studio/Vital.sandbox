@@ -29,20 +29,20 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         inline static const std::vector<std::pair<std::string, int>> radiance_size_registry = {
-            { "SIZE_32", godot::Sky::RADIANCE_SIZE_32 },
-            { "SIZE_64", godot::Sky::RADIANCE_SIZE_64 },
-            { "SIZE_128", godot::Sky::RADIANCE_SIZE_128 },
-            { "SIZE_256", godot::Sky::RADIANCE_SIZE_256 },
-            { "SIZE_512", godot::Sky::RADIANCE_SIZE_512 },
+            { "SIZE_32",   godot::Sky::RADIANCE_SIZE_32 },
+            { "SIZE_64",   godot::Sky::RADIANCE_SIZE_64 },
+            { "SIZE_128",  godot::Sky::RADIANCE_SIZE_128 },
+            { "SIZE_256",  godot::Sky::RADIANCE_SIZE_256 },
+            { "SIZE_512",  godot::Sky::RADIANCE_SIZE_512 },
             { "SIZE_1024", godot::Sky::RADIANCE_SIZE_1024 },
             { "SIZE_2048", godot::Sky::RADIANCE_SIZE_2048 }
         };
 
         inline static const std::vector<std::pair<std::string, int>> process_mode_registry = {
-            { "AUTOMATIC", godot::Sky::PROCESS_MODE_AUTOMATIC },
-            { "QUALITY", godot::Sky::PROCESS_MODE_QUALITY },
+            { "AUTOMATIC",   godot::Sky::PROCESS_MODE_AUTOMATIC },
+            { "QUALITY",     godot::Sky::PROCESS_MODE_QUALITY },
             { "INCREMENTAL", godot::Sky::PROCESS_MODE_INCREMENTAL },
-            { "REALTIME", godot::Sky::PROCESS_MODE_REALTIME }
+            { "REALTIME",    godot::Sky::PROCESS_MODE_REALTIME }
         };
 
         template<typename T>

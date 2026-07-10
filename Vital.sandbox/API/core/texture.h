@@ -29,12 +29,12 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Texture;
 
         inline static const std::vector<std::pair<std::string, godot::Image::Format>> texel_format_registry = {
-            { "RGBA8", godot::Image::FORMAT_RGBA8 },
-            { "RGB8", godot::Image::FORMAT_RGB8 },
+            { "RGBA8",    godot::Image::FORMAT_RGBA8 },
+            { "RGB8",     godot::Image::FORMAT_RGB8 },
             { "RGBA4444", godot::Image::FORMAT_RGBA4444 },
-            { "RGB565", godot::Image::FORMAT_RGB565 },
-            { "LA8", godot::Image::FORMAT_LA8 },
-            { "L8", godot::Image::FORMAT_L8 }
+            { "RGB565",   godot::Image::FORMAT_RGB565 },
+            { "LA8",      godot::Image::FORMAT_LA8 },
+            { "L8",       godot::Image::FORMAT_L8 }
         };
 
         inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_mode_registry = {

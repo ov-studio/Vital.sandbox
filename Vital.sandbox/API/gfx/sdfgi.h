@@ -27,8 +27,8 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         inline static const std::vector<std::pair<std::string, int>> y_scale_registry = {
-            { "PERCENT_50", godot::Environment::SDFGI_Y_SCALE_50_PERCENT },
-            { "PERCENT_75", godot::Environment::SDFGI_Y_SCALE_75_PERCENT },
+            { "PERCENT_50",  godot::Environment::SDFGI_Y_SCALE_50_PERCENT },
+            { "PERCENT_75",  godot::Environment::SDFGI_Y_SCALE_75_PERCENT },
             { "PERCENT_100", godot::Environment::SDFGI_Y_SCALE_100_PERCENT }
         };
 
