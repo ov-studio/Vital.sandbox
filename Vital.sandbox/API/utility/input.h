@@ -270,7 +270,7 @@ namespace Vital::Sandbox::API {
                     .validate(2, [](Machine* vm, int idx) {
                         auto dir = vm -> get_string(idx);
                         return dir == "up" || dir == "down";
-                    }, "direction must be 'up' or 'down'")
+                    }, "direction must be 'up' or 'down'") // TODO: MAKE HELPER FOR Direction; is_valid_direction
                     .require(3, &Machine::is_function);
 
                 int code;
