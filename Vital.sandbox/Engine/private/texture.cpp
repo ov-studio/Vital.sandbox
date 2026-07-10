@@ -171,7 +171,7 @@ namespace Vital::Engine {
     void Texture::compress(godot::Image::CompressMode mode) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
         auto image = get_image_texture() -> get_image();
-        if (image -> is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture is already compressed");
+        if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture is already compressed");
         if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: compression failed");
         get_image_texture() -> update(image);
         heartbeat();
