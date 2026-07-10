@@ -205,7 +205,7 @@ namespace Vital::Sandbox::API {
 
             Tool::Event::bind("sandbox:key_input", [](Tool::Stack args) {
                 if (args.array.size() < 3) return;
-                auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
 
                 int code = args.array[0].as<int32_t>();
@@ -288,7 +288,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void clean(const std::string& env) {
-            auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+            auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
             auto release_bound = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map) {

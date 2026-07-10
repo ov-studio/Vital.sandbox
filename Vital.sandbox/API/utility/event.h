@@ -185,7 +185,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void spawn_thread(Machine* vm, int exec_ref, int args_ref, std::shared_ptr<API::Promise::Instance> promise = nullptr) {
-            auto* root_vm = vm -> get_root();
+            auto root_vm = vm -> get_root();
             vm -> get_raw_reference(exec_ref);
             auto instance = API::Thread::make(vm);
             vm -> get_raw_reference(exec_ref);
@@ -254,7 +254,7 @@ namespace Vital::Sandbox::API {
                 auto agg = state -> agg_promise.lock();
                 if (!agg) return;
 
-                auto* root_vm = state -> vm;
+                auto root_vm = state -> vm;
                 root_vm -> create_table();
                 int tbl = root_vm -> get_count();
                 for (int i = 0; i < static_cast<int>(state -> results.size()); ++i) {
@@ -291,7 +291,7 @@ namespace Vital::Sandbox::API {
                 auto& promise = per_handler[i];
                 int slot = i;
                 if (promise -> state != API::Promise::State::Pending) {
-                    auto* root_vm = vm -> get_root();
+                    auto root_vm = vm -> get_root();
                     for (int j = 1; j <= promise -> values; ++j) {
                         root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(j)));
                         std::unordered_set<const void*> vis;
@@ -336,7 +336,7 @@ namespace Vital::Sandbox::API {
                 }
                 if (!promise) return;
 
-                auto* root_vm = vm -> get_root();
+                auto root_vm = vm -> get_root();
                 int base = root_vm -> get_count() + 1;
                 int count = static_cast<int>(payload.array.size());
                 for (auto& v : payload.array) root_vm -> push_value(v);
@@ -351,7 +351,7 @@ namespace Vital::Sandbox::API {
             auto serial_ptr = payload.get("__serial");
             bool wants_reply = serial_ptr && serial_ptr -> is<double>();
             uint32_t serial = wants_reply ? static_cast<uint32_t>(serial_ptr -> as<double>()) : 0;
-            auto* sid = payload.get("sender_id");
+            auto sid = payload.get("sender_id");
             int reply_peer = (sid && sid -> is<double>()) ? static_cast<int>(sid -> as<double>()) : 0;
 
             std::vector<std::pair<int, Handler>> snapshot;
@@ -403,7 +403,7 @@ namespace Vital::Sandbox::API {
                     cb = std::move(it -> second);
                     reply_callbacks.erase(it);
                 }
-                auto* root_vm = Manager::Sandbox::get_singleton() -> get_vm();
+                auto root_vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!root_vm || !cb) return;
                 
                 Tool::Stack results;
@@ -421,7 +421,7 @@ namespace Vital::Sandbox::API {
                 if (!args.array[0].is<std::string>() || !args.array[1].is<std::shared_ptr<Tool::Stack>>()) return;
                 auto stack = args.array[1].as<std::shared_ptr<Tool::Stack>>();
                 if (!stack) return;
-                auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
+                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
             
                 std::string name = args.array[0].as<std::string>();
