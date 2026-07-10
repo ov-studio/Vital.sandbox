@@ -167,7 +167,7 @@ namespace Vital::Engine {
         get_image_texture() -> update(image);
         heartbeat();
     }
-    
+
     void Texture::compress(godot::Image::CompressMode mode) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
         auto image = get_image_texture() -> get_image();
