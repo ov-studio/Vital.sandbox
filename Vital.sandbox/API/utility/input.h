@@ -133,13 +133,13 @@ namespace Vital::Sandbox::API {
         // A single bound handler. is_down selects whether this fires on the
         // press or release edge. exec_ref is the registry reference to the
         // Lua function and is also the identity key used by unbind.
-        struct key_handler {
+        struct Handler {
+            int exec_ref = LUA_NOREF;
             bool is_down;
-            int exec_ref;
         };
 
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>> bound_keys;
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>> bound_mouse;
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_mouse;
 
 
         // Helpers //
@@ -166,7 +166,7 @@ namespace Vital::Sandbox::API {
         }
 
         // Appends a fresh handler for the calling env. Returns true on success.
-        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
+        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
             map[code][env].push_back({is_down, ref});
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
 
         // Removes the handler whose Lua function compares equal to the one at
         // exec_index. Mirrors event.off — one matching entry removed per call.
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, int exec_index) {
+        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
             if (mit == map.end()) return false;
@@ -205,7 +205,7 @@ namespace Vital::Sandbox::API {
 
         // Fires every env's bound handlers matching the current edge for a
         // given code. Snapshot taken first to guard against re-entrant bind/unbind.
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map, Machine* vm, int code, bool is_pressed) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool is_pressed) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
@@ -320,7 +320,7 @@ namespace Vital::Sandbox::API {
             auto* vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            auto release_bound = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<key_handler>>>& map) {
+            auto release_bound = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map) {
                 for (auto mit = map.begin(); mit != map.end(); ) {
                     auto eit = mit -> second.find(env);
                     if (eit != mit -> second.end()) {
