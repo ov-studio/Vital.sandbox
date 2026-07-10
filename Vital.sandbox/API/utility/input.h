@@ -186,15 +186,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "is_physical_key_pressed", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(key)")
-                    .require_enum(1, key_registry);
-
-                auto key = static_cast<godot::Key>(vm -> get_int(1));
-                vm -> push_value(godot::Input::get_singleton() -> is_physical_key_pressed(key));
-                return 1;
-            });
-
             API::bind(vm, base_scope, "is_mouse_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(button)")
                     .require_enum(1, mouse_button_registry);
