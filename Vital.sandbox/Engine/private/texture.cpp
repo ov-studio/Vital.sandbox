@@ -61,6 +61,15 @@ namespace Vital::Engine {
     }
 
 
+    // Checkers //
+    bool Texture::is_compressed() const {
+        if (command.type != Type::Texture2D) return false;
+        auto texture = get_image_texture();
+        if (!texture.is_valid()) return false;
+        return texture -> get_image() -> is_compressed();
+    }
+
+
     // Getters //
     Texture* Texture::get_from_reference(const std::string& reference) {
         auto it = reference_cache.find(reference);

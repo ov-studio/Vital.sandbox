@@ -81,6 +81,10 @@ namespace Vital::Engine {
             static void flush();
 
 
+            // Checkers //
+            bool is_compressed() const;
+
+
             // Getters //
             static Texture* get_from_reference(const std::string& reference);
             godot::Ref<godot::ImageTexture> get_image_texture() const;
