@@ -35,6 +35,7 @@ namespace Vital::Sandbox::API {
             int subscription_count = 0;
         };
 
+        // TODO: Scrap out redundancy???
         struct HandlerConfig {
             bool async = false;
             int subscription_limit = 0;
