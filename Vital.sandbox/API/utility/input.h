@@ -242,25 +242,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_action_strength", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(action)")
-                    .require(1, &Machine::is_string);
-
-                auto action = Tool::to_godot_string_name(vm -> get_string(1));
-                vm -> push_value(godot::Input::get_singleton() -> get_action_strength(action));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_axis", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(negative_action, positive_action)")
-                    .require(1, &Machine::is_string)
-                    .require(2, &Machine::is_string);
-
-                auto neg = Tool::to_godot_string_name(vm -> get_string(1));
-                auto pos = Tool::to_godot_string_name(vm -> get_string(2));
-                vm -> push_value(godot::Input::get_singleton() -> get_axis(neg, pos));
-                return 1;
-            });
 
             // Setters //
             API::bind(vm, base_scope, "set_mouse_mode", [](auto vm, auto& id) -> int {
