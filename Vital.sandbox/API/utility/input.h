@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "is_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
                     .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key or mouse binding");
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key binding");
 
                 bool is_mouse; int code;
                 resolve_binding(vm -> get_string(1), is_mouse, code);
@@ -252,7 +252,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, direction, exec)")
                     .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key or mouse binding")
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key binding")
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) {
                         auto dir = vm -> get_string(idx);
@@ -271,7 +271,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec)")
                     .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key or mouse binding")
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "unknown key binding")
                     .require(2, &Machine::is_function);
 
                 bool is_mouse; int code;
