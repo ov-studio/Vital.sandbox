@@ -28,28 +28,28 @@ namespace Vital::Sandbox::API {
 
         inline static const std::vector<std::pair<std::string, int>> background_mode_registry = {
             { "CLEAR_COLOR", godot::Environment::BG_CLEAR_COLOR },
-            { "COLOR", godot::Environment::BG_COLOR },
-            { "SKY", godot::Environment::BG_SKY }
+            { "COLOR",       godot::Environment::BG_COLOR },
+            { "SKY",         godot::Environment::BG_SKY }
         };
 
         inline static const std::vector<std::pair<std::string, int>> ambient_source_registry = {
-            { "BG", godot::Environment::AMBIENT_SOURCE_BG },
+            { "BG",       godot::Environment::AMBIENT_SOURCE_BG },
             { "DISABLED", godot::Environment::AMBIENT_SOURCE_DISABLED },
-            { "COLOR", godot::Environment::AMBIENT_SOURCE_COLOR },
-            { "SKY", godot::Environment::AMBIENT_SOURCE_SKY }
+            { "COLOR",    godot::Environment::AMBIENT_SOURCE_COLOR },
+            { "SKY",      godot::Environment::AMBIENT_SOURCE_SKY }
         };
 
         inline static const std::vector<std::pair<std::string, int>> reflection_source_registry = {
-            { "BG", godot::Environment::REFLECTION_SOURCE_BG },
+            { "BG",       godot::Environment::REFLECTION_SOURCE_BG },
             { "DISABLED", godot::Environment::REFLECTION_SOURCE_DISABLED },
-            { "SKY", godot::Environment::REFLECTION_SOURCE_SKY }
+            { "SKY",      godot::Environment::REFLECTION_SOURCE_SKY }
         };
 
         inline static const std::vector<std::pair<std::string, int>> tonemapper_mode_registry = {
-            { "LINEAR", godot::Environment::TONE_MAPPER_LINEAR },
+            { "LINEAR",    godot::Environment::TONE_MAPPER_LINEAR },
             { "REINHARDT", godot::Environment::TONE_MAPPER_REINHARDT },
-            { "FILMIC", godot::Environment::TONE_MAPPER_FILMIC },
-            { "ACES", godot::Environment::TONE_MAPPER_ACES }
+            { "FILMIC",    godot::Environment::TONE_MAPPER_FILMIC },
+            { "ACES",      godot::Environment::TONE_MAPPER_ACES }
         };
 
         static void bind(Machine* vm) {
