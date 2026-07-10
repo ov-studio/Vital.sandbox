@@ -201,21 +201,21 @@ namespace Vital::Sandbox::API {
             { "MEDIARECORD",   godot::Key::KEY_MEDIARECORD   },
 
             // Mouse buttons
-            { "MOUSE_LEFT",        godot::MouseButton::MOUSE_BUTTON_LEFT       },
-            { "MOUSE_RIGHT",       godot::MouseButton::MOUSE_BUTTON_RIGHT      },
-            { "MOUSE_MIDDLE",      godot::MouseButton::MOUSE_BUTTON_MIDDLE     },
-            { "MOUSE_WHEEL_UP",    godot::MouseButton::MOUSE_BUTTON_WHEEL_UP   },
-            { "MOUSE_WHEEL_DOWN",  godot::MouseButton::MOUSE_BUTTON_WHEEL_DOWN },
-            { "MOUSE_XBUTTON1",    godot::MouseButton::MOUSE_BUTTON_XBUTTON1   },
-            { "MOUSE_XBUTTON2",    godot::MouseButton::MOUSE_BUTTON_XBUTTON2   }
+            { "MOUSE_LEFT",       godot::MouseButton::MOUSE_BUTTON_LEFT       },
+            { "MOUSE_RIGHT",      godot::MouseButton::MOUSE_BUTTON_RIGHT      },
+            { "MOUSE_MIDDLE",     godot::MouseButton::MOUSE_BUTTON_MIDDLE     },
+            { "MOUSE_WHEEL_UP",   godot::MouseButton::MOUSE_BUTTON_WHEEL_UP   },
+            { "MOUSE_WHEEL_DOWN", godot::MouseButton::MOUSE_BUTTON_WHEEL_DOWN },
+            { "MOUSE_XBUTTON1",   godot::MouseButton::MOUSE_BUTTON_XBUTTON1   },
+            { "MOUSE_XBUTTON2",   godot::MouseButton::MOUSE_BUTTON_XBUTTON2   }
         };
 
         inline static const std::vector<std::pair<std::string, int>> mouse_mode_registry = {
-            { "VISIBLE",        godot::Input::MOUSE_MODE_VISIBLE         },
-            { "HIDDEN",         godot::Input::MOUSE_MODE_HIDDEN          },
-            { "CAPTURED",       godot::Input::MOUSE_MODE_CAPTURED        },
-            { "CONFINED",       godot::Input::MOUSE_MODE_CONFINED        },
-            { "CONFINED_HIDDEN",godot::Input::MOUSE_MODE_CONFINED_HIDDEN }
+            { "VISIBLE",         godot::Input::MOUSE_MODE_VISIBLE         },
+            { "HIDDEN",          godot::Input::MOUSE_MODE_HIDDEN          },
+            { "CAPTURED",        godot::Input::MOUSE_MODE_CAPTURED        },
+            { "CONFINED",        godot::Input::MOUSE_MODE_CONFINED        },
+            { "CONFINED_HIDDEN", godot::Input::MOUSE_MODE_CONFINED_HIDDEN }
         };
 
         struct Handler {
