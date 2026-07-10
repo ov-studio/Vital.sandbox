@@ -30,11 +30,11 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         inline static const std::vector<std::pair<std::string, int>> blend_mode_registry = {
-            { "ADDITIVE",  godot::Environment::GLOW_BLEND_MODE_ADDITIVE },
-            { "SCREEN",    godot::Environment::GLOW_BLEND_MODE_SCREEN },
+            { "ADDITIVE",  godot::Environment::GLOW_BLEND_MODE_ADDITIVE  },
+            { "SCREEN",    godot::Environment::GLOW_BLEND_MODE_SCREEN    },
             { "SOFTLIGHT", godot::Environment::GLOW_BLEND_MODE_SOFTLIGHT },
-            { "REPLACE",   godot::Environment::GLOW_BLEND_MODE_REPLACE },
-            { "MIX",       godot::Environment::GLOW_BLEND_MODE_MIX }
+            { "REPLACE",   godot::Environment::GLOW_BLEND_MODE_REPLACE   },
+            { "MIX",       godot::Environment::GLOW_BLEND_MODE_MIX       }
         };
 
         static void init(Machine* vm) {
