@@ -197,7 +197,7 @@ namespace Vital::Sandbox::API {
                     vm -> get_raw_reference(entry.exec_ref);
                     vm -> push_value(key_name);
                     vm -> push_value(direction);
-                    vm -> call(2, 0);
+                    vm -> call(2, 0); // TODO: Utilize pcall??
                 }
             }
         }
