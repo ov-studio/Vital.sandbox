@@ -181,7 +181,6 @@ namespace Vital::Sandbox::API {
                 break;
             }
             vm -> del_raw_reference(lookup_ref);
-
             if (handlers.empty()) mit -> second.erase(eit);
             if (mit -> second.empty()) map.erase(mit);
             return removed;
