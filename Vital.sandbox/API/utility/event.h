@@ -27,19 +27,19 @@ namespace Vital::Sandbox::API {
     struct Event : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "event"};
 
-        struct HandlerConfig {
-            bool is_async = false;
-            int sub_limit = 0;
-        };
-
         struct Handler {
+            std::string env;
             int exec_ref = LUA_NOREF;
             bool async = false;
             int subscription_limit = 0;
             int subscription_count = 0;
-            std::string env;
         };
 
+        struct HandlerConfig {
+            bool is_async = false;
+            int sub_limit = 0;
+        };
+    
         struct EventEntry {
             std::vector<std::pair<int, Handler>> handlers;
         };
