@@ -47,7 +47,7 @@ namespace Vital::Sandbox::API {
         enum class FireMode { Emit, EmitCallback };
 
         struct EmitOptions {
-            bool is_remote = false;
+            bool remote = false;
             int peer_id = 0;
             int args_start = 2;
             bool collect_all = false;
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
             EmitOptions opts;
             if (vm -> get_count() >= 2 && vm -> is_table(2)) {
                 vm -> table_get_value("remote", 2);
-                if (!vm -> is_nil(-1)) opts.is_remote = vm -> get_bool(-1);
+                if (!vm -> is_nil(-1)) opts.remote = vm -> get_bool(-1);
                 vm -> pop(1);
                 vm -> table_get_value("collect_all", 2);
                 if (!vm -> is_nil(-1)) opts.collect_all = vm -> get_bool(-1);
@@ -498,7 +498,7 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
-                if (opts.is_remote) {
+                if (opts.remote) {
                     #if !defined(VSDK_Client)
                     // TODO: Improve logs?? Reason: event.emit, use base_name call etc to automate?
                     verify_peer("event.emit", opts.peer_id, false);
@@ -528,7 +528,7 @@ namespace Vital::Sandbox::API {
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
-                if (opts.is_remote) {
+                if (opts.remote) {
                     #if !defined(VSDK_Client)
                     // TODO: Improve logs?? Reason: event.emit_callback, use base_name call etc to automate?
                     verify_peer("event.emit_callback", opts.peer_id, true);
