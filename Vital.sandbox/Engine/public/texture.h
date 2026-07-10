@@ -36,6 +36,7 @@ namespace Vital::Engine {
                 BMP,
                 DDS,
                 KTX,
+                EXR,
                 UNKNOWN
             };
 
@@ -45,7 +46,8 @@ namespace Vital::Engine {
                 { Format::WEBP, "webp", { 0x52, 0x49, 0x46, 0x46 } },
                 { Format::BMP, "bmp", { 0x42, 0x4D } },
                 { Format::DDS, "dds", { 0x44, 0x44, 0x53, 0x20 } },
-                { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } }
+                { Format::KTX, "ktx", { 0xAB, 0x4B, 0x54, 0x58, 0x20 } },
+                { Format::EXR, "exr", { 0x76, 0x2F, 0x31, 0x01 } }
             };
 
             struct Texture2D {
@@ -94,6 +96,9 @@ namespace Vital::Engine {
             static Texture* create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
             void update_svg_from_raw(const std::string& raw);
             void update_svg_from_buffer(const godot::PackedByteArray& buffer);
+            static Texture* create_exr(const std::string& base, const std::string& path, const std::string& reference = "");
+            static Texture* create_exr_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
+            void update_exr_from_buffer(const godot::PackedByteArray& buffer);
             void convert(godot::Image::Format format);
             void compress(godot::Image::CompressMode mode);
     };

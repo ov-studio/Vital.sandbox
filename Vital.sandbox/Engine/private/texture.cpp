@@ -102,6 +102,7 @@ namespace Vital::Engine {
             case Format::BMP: status = image -> load_bmp_from_buffer(buffer); break;
             case Format::DDS: status = image -> load_dds_from_buffer(buffer); break;
             case Format::KTX: status = image -> load_ktx_from_buffer(buffer); break;
+            case Format::EXR: status = image -> load_exr_from_buffer(buffer); break;
             default: break;
         }
         if (status != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid texture buffer");
@@ -146,6 +147,28 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
+        get_image_texture() -> update(image);
+        heartbeat();
+    }
+
+    Texture* Texture::create_exr(const std::string& base, const std::string& path, const std::string& reference) {
+        return create_exr_from_buffer(Tool::File::read_binary(base, path), reference);
+    }
+
+    Texture* Texture::create_exr_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference) {
+        godot::Ref<godot::Image> image;
+        image.instantiate();
+        if (image -> load_exr_from_buffer(buffer) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid exr buffer");
+        Texture2D payload;
+        payload.texture = godot::ImageTexture::create_from_image(image);
+        return memnew(Texture({Type::Texture2D, payload}, reference));
+    }
+
+    void Texture::update_exr_from_buffer(const godot::PackedByteArray& buffer) {
+        if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
+        godot::Ref<godot::Image> image;
+        image.instantiate();
+        if (image -> load_exr_from_buffer(buffer) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid exr buffer");
         get_image_texture() -> update(image);
         heartbeat();
     }
