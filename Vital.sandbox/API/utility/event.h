@@ -268,7 +268,7 @@ namespace Vital::Sandbox::API {
                 auto promise = fire_one(vm, handler, args_ref, mode);
                 if (promise && promises) promises -> push_back(promise);
                 if (handler.subscription_limit > 0) bump_subscription(name, ref, exhausted);
-                if (!collect_all) break;
+                if (mode == FireMode::EmitCallback && !collect_all) break;
             }
             sweep_exhausted(vm, name, exhausted);
         }
