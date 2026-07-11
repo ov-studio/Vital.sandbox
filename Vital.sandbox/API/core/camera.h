@@ -395,24 +395,6 @@ namespace Vital::Sandbox::API {
             // Compositor) before these can bind correctly. `resource` below is a placeholder
             // member name on each Instance -- swap in whatever the real field is called once
             // those modules exist / are confirmed.
-            vm_module::bind_method<Instance>(vm, "set_environment", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(environment)", true)
-                    .optional(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Environment::Instance>(vm, idx); });
-
-                std::shared_ptr<API::Environment::Instance> env = vm -> is_nil(2) ? nullptr : vm_module::get_userdata_object<API::Environment::Instance>(vm, 2);
-                self -> camera -> set_environment(env ? env -> resource : nullptr);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_environment", [](auto vm, auto self, auto& id) -> int {
-                auto env = self -> camera -> get_environment();
-                auto instance = API::Environment::find_by_ptr(env.ptr());
-                if (!instance) vm -> push_value(false);
-                else instance -> push_self(vm);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_attributes", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(attributes)", true)
                     .optional(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::CameraAttributes::Instance>(vm, idx); });
@@ -426,24 +408,6 @@ namespace Vital::Sandbox::API {
             vm_module::bind_method<Instance>(vm, "get_attributes", [](auto vm, auto self, auto& id) -> int {
                 auto attributes = self -> camera -> get_attributes();
                 auto instance = API::CameraAttributes::find_by_ptr(attributes.ptr());
-                if (!instance) vm -> push_value(false);
-                else instance -> push_self(vm);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_compositor", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(compositor)", true)
-                    .optional(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Compositor::Instance>(vm, idx); });
-
-                std::shared_ptr<API::Compositor::Instance> compositor = vm -> is_nil(2) ? nullptr : vm_module::get_userdata_object<API::Compositor::Instance>(vm, 2);
-                self -> camera -> set_compositor(compositor ? compositor -> resource : nullptr);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_compositor", [](auto vm, auto self, auto& id) -> int {
-                auto compositor = self -> camera -> get_compositor();
-                auto instance = API::Compositor::find_by_ptr(compositor.ptr());
                 if (!instance) vm -> push_value(false);
                 else instance -> push_self(vm);
                 return 1;
