@@ -115,7 +115,7 @@ namespace Vital::Sandbox {
                 return instance;
             }
 
-            static bool store(const std::shared_ptr<Derived>& instance, bool push_to_stack = false) {
+            static bool store(std::shared_ptr<Derived> instance, bool push_to_stack = false) {
                 {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                     Derived::Owner::registry.buffer[instance -> id] = instance;
@@ -142,12 +142,12 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static bool erase(const std::shared_ptr<Derived>& instance) {
+            static bool erase(std::shared_ptr<Derived> instance) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return erase_unlocked(instance);
             }
 
-            static bool erase_unlocked(const std::shared_ptr<Derived>& instance) {
+            static bool erase_unlocked(std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
                 Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
@@ -156,7 +156,7 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static bool release(const std::shared_ptr<Derived>& instance) {
+            static bool release(std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
                     auto snapshot = instance -> references;
@@ -166,7 +166,7 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static void clean(const std::shared_ptr<Derived>& instance) {
+            static void clean(std::shared_ptr<Derived> instance) {
                 if (!erase(instance)) return;
                 release(instance);
             }
