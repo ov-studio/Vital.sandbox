@@ -286,7 +286,7 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool pressed, const std::string& key) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool pressed) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
@@ -295,7 +295,7 @@ namespace Vital::Sandbox::API {
                 for (auto& entry : handlers) {
                     if (entry.down != pressed) continue;
                     vm -> get_raw_reference(entry.exec_ref);
-                    vm -> push_value(key);
+                    vm -> push_value(code);
                     vm -> push_value(direction);
                     vm -> call(2, 0);
                 }
@@ -315,27 +315,21 @@ namespace Vital::Sandbox::API {
                 auto code = args.array[0].as<int32_t>();
                 auto pressed = args.array[1].as<bool>();
                 auto mouse = args.array[2].as<bool>();
-                std::string key_idx;
-                for (auto& [key, value] : Input::key_registry) {
-                    if (value == code) {
-                        key_idx = key;
-                        break;
-                    }
-                }
-                if (mouse) dispatch_handler(bound_mouse, vm, code, pressed, key_idx);
-                else dispatch_handler(bound_keys, vm, code, pressed, key_idx);
+                if (mouse) dispatch_handler(bound_mouse, vm, code, pressed);
+                else dispatch_handler(bound_keys, vm, code, pressed);
             });
         }
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
-                    .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key");
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key");
 
-                int code;
+                int code = vm -> get_int(1);
+                std::string key;
                 bool mouse;
-                resolve_key(vm -> get_string(1), code, mouse);
+                resolve_key(code, key, mouse);
                 if (mouse) vm -> push_value(godot::Input::get_singleton() -> is_mouse_button_pressed(static_cast<godot::MouseButton>(code)));
                 else vm -> push_value(godot::Input::get_singleton() -> is_key_pressed(static_cast<godot::Key>(code)));
                 return 1;
@@ -363,15 +357,16 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, direction, exec)")
-                    .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key")
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key")
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
 
-                int code;
+                int code = vm -> get_int(1);
+                std::string key;
                 bool mouse;
-                resolve_key(vm -> get_string(1), code, mouse);
+                resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
                 bool ok = mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
@@ -381,15 +376,16 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, direction, exec)")
-                    .require(1, &Machine::is_string)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_string(idx)); }, "invalid key")
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key")
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
 
-                int code;
+                int code = vm -> get_int(1);
+                std::string key;
                 bool mouse;
-                resolve_key(vm -> get_string(1), code, mouse);
+                resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
                 bool ok = mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
