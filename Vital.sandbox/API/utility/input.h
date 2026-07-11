@@ -156,7 +156,6 @@ namespace Vital::Sandbox::API {
             { "SCROLLLOCK", godot::Key::KEY_SCROLLLOCK },
 
             // Punctuation & Symbols
-            { "SPACE",        godot::Key::KEY_SPACE        },
             { "EXCLAM",       godot::Key::KEY_EXCLAM       },
             { "QUOTEDBL",     godot::Key::KEY_QUOTEDBL     },
             { "NUMBERSIGN",   godot::Key::KEY_NUMBERSIGN   },
