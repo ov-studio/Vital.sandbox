@@ -47,11 +47,11 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static bool is_pending(const std::shared_ptr<Instance>& instance) {
+        static bool is_pending(const std::shared_ptr<Instance> instance) {
             return Instance::find_unlocked(instance) && (instance -> state == State::Pending);
         }
 
-        static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
+        static int push_values(const std::shared_ptr<Instance> instance, Machine* dst) {
             if (!Instance::find_unlocked(instance) || !instance -> vm || instance -> values == 0) return 0;
             auto state = dst -> get_state();
             for (int i = 1; i <= instance -> values; ++i) {
