@@ -65,8 +65,8 @@ namespace Vital::Sandbox {
 
 
             // Table //
-            void table_get_value(int value, int index = 1) { self() -> get_table_field(value, index); }
-            void table_get_value(const std::string& value, int index = 1) { self() -> get_table_field(value, index); }
+            void table_get_value(int value, int idx = 1) { self() -> get_table_field(value, idx); }
+            void table_get_value(const std::string& value, int idx = 1) { self() -> get_table_field(value, idx); }
 
             void table_push_nil(const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
@@ -92,27 +92,27 @@ namespace Vital::Sandbox {
                 if (!nspace.empty()) self() -> pop(2);
             }
 
-            void table_set_nil(const std::string& index, const std::string& nspace = "") {
+            void table_set_nil(const std::string& idx, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 self() -> push_nil();
-                self() -> set_table_field(index, -2);
+                self() -> set_table_field(idx, -2);
                 if (!nspace.empty()) self() -> pop(1);
             }
 
             template<typename T>
-            void table_set_value(const std::string& index, T value, const std::string& nspace = "") {
+            void table_set_value(const std::string& idx, T value, const std::string& nspace = "") {
                 if (!nspace.empty()) self() -> create_namespace(nspace);
                 push_value(value);
-                self() -> set_table_field(index, -2);
+                self() -> set_table_field(idx, -2);
                 if (!nspace.empty()) self() -> pop(1);
             }
 
-            void table_set_table(const std::string& index, const std::string& nspace = "") {
+            void table_set_table(const std::string& idx, const std::string& nspace = "") {
                 if (!nspace.empty()) {
                     self() -> create_namespace(nspace);
                     self() -> get_table(-2);
                 }
-                self() -> set_table_field(index, -2);
+                self() -> set_table_field(idx, -2);
                 if (!nspace.empty()) self() -> pop(2);
             }
 
@@ -192,32 +192,32 @@ namespace Vital::Sandbox {
 
 
             // Collectors //
-            Tool::StackValue collect_value(int index, std::unordered_set<const void*>& visited, int depth = 0) {
-                if (self() -> is_nil(index)) return Tool::StackValue(nullptr);
-                if (self() -> is_bool(index)) return Tool::StackValue(self() -> get_bool(index));
-                if (self() -> is_number(index)) return Tool::StackValue(self() -> get_double(index));
-                if (self() -> is_string(index)) return Tool::StackValue(self() -> get_string(index));
-                if (self() -> is_table(index)) return Tool::StackValue(collect_table(index, visited, depth));
+            Tool::StackValue collect_value(int idx, std::unordered_set<const void*>& visited, int depth = 0) {
+                if (self() -> is_nil(idx)) return Tool::StackValue(nullptr);
+                if (self() -> is_bool(idx)) return Tool::StackValue(self() -> get_bool(idx));
+                if (self() -> is_number(idx)) return Tool::StackValue(self() -> get_double(idx));
+                if (self() -> is_string(idx)) return Tool::StackValue(self() -> get_string(idx));
+                if (self() -> is_table(idx)) return Tool::StackValue(collect_table(idx, visited, depth));
                 return Tool::StackValue(nullptr);
             }
 
-            Tool::Stack collect_args(int index) {
+            Tool::Stack collect_args(int idx) {
                 Tool::Stack payload;
                 std::unordered_set<const void*> visited;
-                for (int i = index; i <= self() -> get_count(); ++i) payload.array.emplace_back(collect_value(i, visited));
+                for (int i = idx; i <= self() -> get_count(); ++i) payload.array.emplace_back(collect_value(i, visited));
                 return payload;
             }
 
-            std::shared_ptr<Tool::Stack> collect_table(int index, std::unordered_set<const void*>& visited, int depth = 0) {
+            std::shared_ptr<Tool::Stack> collect_table(int idx, std::unordered_set<const void*>& visited, int depth = 0) {
                 auto stack = std::make_shared<Tool::Stack>();
                 if (depth > 32) return stack;
 
-                auto ptr = self() -> get_pointer(index);
+                auto ptr = self() -> get_pointer(idx);
                 if (!ptr || visited.count(ptr)) return stack;
                 visited.insert(ptr);
 
                 self() -> push_nil();
-                while (self() -> next(index)) {
+                while (self() -> next(idx)) {
                     bool key_is_number = self() -> is_number(-2);
                     bool key_is_string = self() -> is_string(-2);
                     bool val_is_collectible = self() -> is_nil(-1) || self() -> is_bool(-1) || self() -> is_number(-1) || self() -> is_string(-1) || self() -> is_table(-1);
