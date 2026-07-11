@@ -29,7 +29,6 @@ namespace Vital::Sandbox::API {
             using Owner = Thread;
             std::atomic<bool> sleeping { false };
             std::atomic<bool> awaiting { false };
-            std::atomic<bool> vm_owned { true };
             Machine* thread_vm = nullptr;
             vm_state* thread_state = nullptr;
 
@@ -47,11 +46,7 @@ namespace Vital::Sandbox::API {
             void clean() {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
-                if (instance -> vm_owned.exchange(false)) instance -> clean_thread();
-                else {
-                    instance -> thread_vm = nullptr;
-                    instance -> thread_state = nullptr;
-                }
+                instance -> clean_thread();
                 instance -> release();
             }
         };
@@ -70,10 +65,8 @@ namespace Vital::Sandbox::API {
         }
 
         static bool safe_resume(const std::shared_ptr<Instance> instance, int args) {
-            if (!Instance::find_unlocked(instance) || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
+            if (!Instance::find_unlocked(instance) || !instance -> thread_vm) return false;
             if (!instance -> vm) {
-                instance -> vm_owned.store(false);
-                instance -> clean_thread();
                 instance -> clean();
                 return false;
             }
@@ -83,8 +76,6 @@ namespace Vital::Sandbox::API {
             {
                 int status = lua_status(raw_state);
                 if (status != LUA_OK && status != LUA_YIELD) {
-                    instance -> vm_owned.store(false);
-                    instance -> clean_thread();
                     instance -> clean();
                     return false;
                 }
@@ -92,14 +83,12 @@ namespace Vital::Sandbox::API {
 
             auto thread_vm = instance -> thread_vm;
             instance -> thread_vm = nullptr;
-            instance -> vm_owned.store(false);
             if (!thread_vm -> resume(args)) {
                 instance -> thread_state = nullptr;
                 instance -> clean();
                 return false;
             }
             instance -> thread_vm = thread_vm;
-            instance -> vm_owned.store(true);
             return true;
         }
 
@@ -125,7 +114,7 @@ namespace Vital::Sandbox::API {
                 else {
                     Machine::enqueue([thread_id, resolved, promise]() {
                         auto instance = Instance::find(thread_id);
-                        if (!Instance::find_unlocked(instance) || !instance -> vm_owned.load() || !instance -> thread_vm) return;
+                        if (!Instance::find_unlocked(instance) || !instance -> thread_vm) return;
                         instance -> thread_vm -> push_bool(resolved);
                         int values = API::Promise::push_values(promise, instance -> thread_vm);
                         instance -> awaiting = false;
@@ -210,7 +199,7 @@ namespace Vital::Sandbox::API {
                             auto self = weak.lock();
                             if (!self || self -> destroyed) return;
                             self -> sleeping = false;
-                            if (!self -> vm_owned.load() || !self -> thread_vm) return;
+                            if (!self -> thread_vm) return;
                             safe_resume(self, 0);
                         });
                     }, duration, 1);
