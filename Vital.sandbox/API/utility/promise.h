@@ -53,7 +53,6 @@ namespace Vital::Sandbox::API {
 
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
             if (!Instance::find_unlocked(instance) || !instance -> vm || instance -> values == 0) return 0;
-            if (!instance || !instance -> vm || instance -> values == 0) return 0;
             auto state = dst -> get_state();
             for (int i = 1; i <= instance -> values; ++i) {
                 int ref = instance -> get_reference(instance -> value_reference(i));
