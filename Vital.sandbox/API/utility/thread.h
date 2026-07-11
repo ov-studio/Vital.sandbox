@@ -231,7 +231,7 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(false);
                     return 1;
                 }
-                else if (promise -> state != API::Promise::State::Pending) {
+                else if (!API::Promise::is_pending(promise)) {
                     vm -> push_bool(promise -> resolved);
                     return 1 + API::Promise::push_values(promise, vm);
                 }
