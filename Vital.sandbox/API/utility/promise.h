@@ -61,7 +61,7 @@ namespace Vital::Sandbox::API {
             return instance -> values;
         }
 
-        static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
+        static void settle(const std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
             if (!is_pending(instance) || !vm) return;
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
