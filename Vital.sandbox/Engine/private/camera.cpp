@@ -60,7 +60,7 @@ namespace Vital::Engine {
             return;
         }
         auto active = get_active();
-        if (active) active -> clear_current();
+        if (active) active -> clear_current(false);
     }
 }
 #endif
