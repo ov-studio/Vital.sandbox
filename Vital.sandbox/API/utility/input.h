@@ -210,9 +210,9 @@ namespace Vital::Sandbox::API {
         };
 
         inline static const std::vector<std::pair<std::string, int>> mouse_mode_registry = {
-            { "VISIBLE",         godot::Input::MOUSE_MODE_VISIBLE         },
-            { "HIDDEN",          godot::Input::MOUSE_MODE_HIDDEN          },
-            { "CAPTURED",        godot::Input::MOUSE_MODE_CAPTURED        }
+            { "VISIBLE",  godot::Input::MOUSE_MODE_VISIBLE   },
+            { "HIDDEN",   godot::Input::MOUSE_MODE_HIDDEN    },
+            { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED  }
         };
 
         struct Handler {
