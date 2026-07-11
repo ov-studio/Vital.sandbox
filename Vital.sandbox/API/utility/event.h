@@ -39,7 +39,10 @@ namespace Vital::Sandbox::API {
             std::vector<std::pair<int, Handler>> handlers;
         };
 
-        enum class FireMode { Emit, EmitCallback };
+        enum class FireMode {
+            Emit,
+            EmitCallback
+        };
 
         struct EmitOptions {
             bool remote = false;

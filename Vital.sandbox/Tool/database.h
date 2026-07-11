@@ -36,7 +36,7 @@ namespace Vital::Tool {
             };
 
             struct SchemaAction {
-                enum class Type { Add, Drop, Modify };
+                enum class Type { Add, Drop, Modify }; // TODO: MOVE IT OUTSIDE???
                 Type type;
                 std::string column;
                 Column definition;
