@@ -56,15 +56,14 @@ namespace Vital::Sandbox::API {
             Machine* vm;
         };
 
-        using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
-        inline static constexpr int remote_timeout_ms = 15000;
-        inline static constexpr int remote_sweep_interval_ms = 5000;
-
         struct PendingRemote {
             std::shared_ptr<API::Promise::Instance> promise;
             std::chrono::steady_clock::time_point created;
         };
 
+        using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
+        inline static constexpr int remote_timeout_ms = 15000;
+        inline static constexpr int remote_sweep_interval_ms = 5000;
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
         inline static std::unordered_map<uint32_t, PendingRemote> pending_remote;
