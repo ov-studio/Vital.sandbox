@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
                     if (!instance) {
                         Machine::enqueue([promise_id]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(std::string("query instance was destroyed"));
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -147,7 +147,7 @@ namespace Vital::Sandbox::API {
                             auto instance = Instance::find(instance_id);
                             if (instance) instance -> clean();
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             int index = 1;
                             vm -> create_table();
@@ -165,7 +165,7 @@ namespace Vital::Sandbox::API {
                             auto instance = Instance::find(instance_id);
                             if (instance) instance -> clean();
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
                         db -> alter(table, actions);
                         Machine::enqueue([promise_id]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -230,7 +230,7 @@ namespace Vital::Sandbox::API {
                         std::string message = error.what();
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -251,7 +251,7 @@ namespace Vital::Sandbox::API {
                         db -> drop(table);
                         Machine::enqueue([promise_id]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -261,7 +261,7 @@ namespace Vital::Sandbox::API {
                         std::string message = error.what();
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -282,7 +282,7 @@ namespace Vital::Sandbox::API {
                         db -> truncate(table);
                         Machine::enqueue([promise_id]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(true);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -292,7 +292,7 @@ namespace Vital::Sandbox::API {
                         std::string message = error.what();
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -311,7 +311,7 @@ namespace Vital::Sandbox::API {
                     if (!instance) {
                         Machine::enqueue([promise_id]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(std::string("query instance was destroyed"));
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -325,7 +325,7 @@ namespace Vital::Sandbox::API {
                             auto instance = Instance::find(instance_id);
                             if (instance) instance -> clean();
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(result);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -337,7 +337,7 @@ namespace Vital::Sandbox::API {
                             auto instance = Instance::find(instance_id);
                             if (instance) instance -> clean();
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
