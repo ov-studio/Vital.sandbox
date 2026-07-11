@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
             instance -> thread_vm -> set_finish_hook([weak_promise, root_vm, instance](Machine* thread_vm, int nresults) {
                 instance -> thread_state = nullptr;
                 auto promise = weak_promise.lock();
-                if (!promise) return;
+                if (!promise || promise -> state != API::Promise::State::Pending) return;
                 int base = root_vm -> get_count() + 1;
                 thread_vm -> move(root_vm, nresults);
                 API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, nresults);
