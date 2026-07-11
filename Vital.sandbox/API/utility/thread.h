@@ -70,7 +70,7 @@ namespace Vital::Sandbox::API {
         }
 
         static bool safe_resume(const std::shared_ptr<Instance> instance, int args) {
-            if (!instance || instance -> destroyed || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
+            if (!Instance::find_unlocked(instance) || !instance -> vm_owned.load() || !instance -> thread_vm) return false;
             if (!instance -> vm) {
                 instance -> vm_owned.store(false);
                 instance -> clean_thread();
