@@ -104,9 +104,9 @@ namespace Vital::Manager::Kit {
             bool is_index = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
             if (is_index) {
                 if (!node -> IsArray()) return nullptr;
-                const auto index = static_cast<rapidjson::SizeType>(std::stoul(key));
-                if (index >= node -> Size()) return nullptr;
-                node = &(*node)[index];
+                const auto idx = static_cast<rapidjson::SizeType>(std::stoul(key));
+                if (idx >= node -> Size()) return nullptr;
+                node = &(*node)[idx];
             }
             else {
                 if (!node -> IsObject() || !node -> HasMember(key.c_str())) return nullptr;

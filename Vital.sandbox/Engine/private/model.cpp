@@ -156,9 +156,9 @@ namespace Vital::Engine {
 
     std::pair<godot::MeshInstance3D*, int> Model::assert_material(const std::string& component, const std::string& material) {
         auto mesh = assert_component(component);
-        int index = find_material_index(mesh, material);
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
-        return { mesh, index };
+        int idx = find_material_index(mesh, material);
+        if (idx < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: material '{}' not found in component '{}'", material, component));
+        return { mesh, idx };
     }
 
     godot::Skeleton3D* Model::assert_skeleton() {
@@ -412,22 +412,22 @@ namespace Vital::Engine {
     }
 
     bool Model::is_material_visible(const std::string& component, const std::string& material) {
-        auto [mesh, index] = assert_material(component, material);
-        return !mesh -> get_surface_override_material(index).is_valid();
+        auto [mesh, idx] = assert_material(component, material);
+        return !mesh -> get_surface_override_material(idx).is_valid();
     }
 
     bool Model::is_material_feature(const std::string& component, const std::string& material, int feature) {
         assert_material_feature(feature);
-        auto [mesh, index] = assert_material(component, material);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh -> get_active_material(index).ptr());
+        auto [mesh, idx] = assert_material(component, material);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh -> get_active_material(idx).ptr());
         if (!std_mat.is_valid()) return false;
         return std_mat -> get_feature(static_cast<godot::BaseMaterial3D::Feature>(feature));
     }
 
     bool Model::is_material_flag(const std::string& component, const std::string& material, int flag) {
         assert_material_flag(flag);
-        auto [mesh, index] = assert_material(component, material);
-        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh -> get_active_material(index).ptr());
+        auto [mesh, idx] = assert_material(component, material);
+        godot::Ref<godot::StandardMaterial3D> std_mat = godot::Object::cast_to<godot::StandardMaterial3D>(mesh -> get_active_material(idx).ptr());
         if (!std_mat.is_valid()) return false;
         return std_mat -> get_flag(static_cast<godot::BaseMaterial3D::Flags>(flag));
     }
@@ -504,16 +504,16 @@ namespace Vital::Engine {
 
     float Model::get_blendshape_value(const std::string& component, const std::string& blend_shape) {
         auto mesh = assert_component(component);
-        int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
-        if (index < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
-        return mesh -> get_blend_shape_value(index);
+        int idx = mesh -> find_blend_shape_by_name(Tool::to_godot_string(blend_shape));
+        if (idx < 0) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: blendshape '{}' not found in component '{}'", blend_shape, component));
+        return mesh -> get_blend_shape_value(idx);
     }
 
     godot::Vector3 Model::get_bone_position(const std::string& bone) {
         auto skeleton = assert_skeleton();
-        int index = skeleton -> find_bone(Tool::to_godot_string(bone));
-        if (index == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
-        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(index).origin);
+        int idx = skeleton -> find_bone(Tool::to_godot_string(bone));
+        if (idx == -1) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: bone '{}' not found in model '{}'", bone, model_name));
+        return skeleton -> get_global_transform().xform(skeleton -> get_bone_global_pose(idx).origin);
     }
 
     std::string Model::get_current_animation() {
@@ -569,16 +569,16 @@ namespace Vital::Engine {
     bool Model::set_material_visible(const std::string& component, const std::string& material, bool state) {
         auto mesh = assert_component(component);
         auto exec = [&](const std::string& name) -> bool {
-            int index = find_material_index(mesh, name);
-            if (index < 0) return false;
+            int idx = find_material_index(mesh, name);
+            if (idx < 0) return false;
             if (!state) {
                 godot::Ref<godot::StandardMaterial3D> invisible = godot::Ref<godot::StandardMaterial3D>(memnew(godot::StandardMaterial3D));
                 invisible -> set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
                 invisible -> set_depth_draw_mode(godot::BaseMaterial3D::DEPTH_DRAW_DISABLED);
                 invisible -> set_albedo(godot::Color(0, 0, 0, 0));
-                mesh -> set_surface_override_material(index, invisible);
+                mesh -> set_surface_override_material(idx, invisible);
             }
-            else mesh -> set_surface_override_material(index, godot::Ref<godot::Material>());
+            else mesh -> set_surface_override_material(idx, godot::Ref<godot::Material>());
             return true;
         };
         if (!apply_wildcard(material, [&]{ return get_materials(component); }, exec))
@@ -615,9 +615,9 @@ namespace Vital::Engine {
     bool Model::set_blendshape_value(const std::string& component, const std::string& blend_shape, float value) {
         auto mesh = assert_component(component);
         auto exec = [&](const std::string& name) -> bool {
-            int index = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
-            if (index < 0) return false;
-            mesh -> set_blend_shape_value(index, value);
+            int idx = mesh -> find_blend_shape_by_name(Tool::to_godot_string(name));
+            if (idx < 0) return false;
+            mesh -> set_blend_shape_value(idx, value);
             return true;
         };
         if (!apply_wildcard(blend_shape, [&]{ return get_blendshapes(component); }, exec))

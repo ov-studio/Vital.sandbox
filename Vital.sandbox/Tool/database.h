@@ -129,9 +129,9 @@ namespace Vital::Tool {
                 return statement;
             }
 
-            void push_bind(const std::string& table, const std::string& column, const std::string& value, int index, std::string& columns_out, std::string& placeholders_out, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
+            void push_bind(const std::string& table, const std::string& column, const std::string& value, int idx, std::string& columns_out, std::string& placeholders_out, std::vector<std::string>& binds, std::vector<std::string>& bind_names) {
                 assert_column(table, column);
-                auto pname = fmt::format("d{}", index);
+                auto pname = fmt::format("d{}", idx);
                 columns_out += fmt::format("`{}`", column);
                 placeholders_out += fmt::format(":{}", pname);
                 bind_names.push_back(pname);
@@ -349,12 +349,12 @@ namespace Vital::Tool {
                 else if (query -> query_type == "update") {
                     std::string sets;
                     bool first = true;
-                    int index = 0;
+                    int idx = 0;
                     for (const auto& [k, v] : query -> data) {
                         if (!first) sets += ", ";
                         first = false;
                         std::string column, placeholder;
-                        push_bind(query -> table, k, v, index++, column, placeholder, binds, bind_names);
+                        push_bind(query -> table, k, v, idx++, column, placeholder, binds, bind_names);
                         sets += fmt::format("{} = {}", column, placeholder);
                     }
                     sql = fmt::format("UPDATE `{}` SET {}", query -> table, sets);
