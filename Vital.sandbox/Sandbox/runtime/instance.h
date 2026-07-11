@@ -110,12 +110,12 @@ namespace Vital::Sandbox {
                 return it -> second;
             }
 
-            static std::shared_ptr<Derived> find_unlocked(std::shared_ptr<Derived> instance) {
+            static std::shared_ptr<Derived> find_unlocked(const std::shared_ptr<Derived> instance) {
                 if (!instance || instance -> destroyed || !instance -> is_alive()) return nullptr;
                 return instance;
             }
 
-            static bool store(const std::shared_ptr<Derived>& instance, bool push_to_stack = false) {
+            static bool store(const std::shared_ptr<Derived> instance, bool push_to_stack = false) {
                 {
                     std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                     Derived::Owner::registry.buffer[instance -> id] = instance;
@@ -142,12 +142,12 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static bool erase(const std::shared_ptr<Derived>& instance) {
+            static bool erase(const std::shared_ptr<Derived> instance) {
                 std::lock_guard<std::mutex> lock(Derived::Owner::registry.mutex);
                 return erase_unlocked(instance);
             }
 
-            static bool erase_unlocked(const std::shared_ptr<Derived>& instance) {
+            static bool erase_unlocked(const std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
                 Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
@@ -156,7 +156,7 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static bool release(const std::shared_ptr<Derived>& instance) {
+            static bool release(const std::shared_ptr<Derived> instance) {
                 vm_module::release_userdata_ptr(instance -> userdata);
                 if (instance -> vm) {
                     auto snapshot = instance -> references;
@@ -166,7 +166,7 @@ namespace Vital::Sandbox {
                 return true;
             }
 
-            static void clean(const std::shared_ptr<Derived>& instance) {
+            static void clean(const std::shared_ptr<Derived> instance) {
                 if (!erase(instance)) return;
                 release(instance);
             }
