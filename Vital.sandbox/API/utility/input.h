@@ -225,24 +225,25 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_mouse;
 
-        static bool resolve_key(const std::string& key, int& code, bool& mouse) {
-            auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.first == key; });
+
+        static bool resolve_key(int code, std::string& key, bool& mouse) {
+            auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.second == code; });
             if (it == key_registry.end()) return false;
-            code = it -> second;
+            key = it -> first;
             mouse = it -> first.rfind("MOUSE_", 0) == 0;
             return true;
         }
 
         static bool resolve_direction(const std::string& direction, bool& down) {
-            if (direction == "down") {down = true; return true; }
+            if (direction == "down") { down = true; return true; }
             if (direction == "up") { down = false; return true; }
             return false;
         }
 
-        static bool is_valid_key(const std::string& key) {
-            int code;
+        static bool is_valid_key(int code) {
+            std::string key;
             bool mouse;
-            return resolve_key(key, code, mouse);
+            return resolve_key(code, key, mouse);
         }
 
         static bool is_valid_direction(const std::string& direction) {
