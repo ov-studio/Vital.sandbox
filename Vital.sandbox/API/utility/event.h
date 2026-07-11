@@ -57,9 +57,17 @@ namespace Vital::Sandbox::API {
         };
 
         using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
+        inline static constexpr int remote_timeout_ms = 15000;
+        inline static constexpr int remote_sweep_interval_ms = 5000;
+
+        struct PendingRemote {
+            std::shared_ptr<API::Promise::Instance> promise;
+            std::chrono::steady_clock::time_point created;
+        };
+
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
-        inline static std::unordered_map<uint32_t, std::shared_ptr<API::Promise::Instance>> pending_remote;
+        inline static std::unordered_map<uint32_t, PendingRemote> pending_remote;
         inline static std::mutex pending_remote_mutex;
         inline static std::atomic<uint32_t> serial_counter { 0 };
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
@@ -144,11 +152,32 @@ namespace Vital::Sandbox::API {
                 promise = API::Promise::make(vm);
                 {
                     std::lock_guard lock(pending_remote_mutex);
-                    pending_remote[serial] = promise;
+                    pending_remote[serial] = PendingRemote { promise, std::chrono::steady_clock::now() };
                 }
             }
             send_packet(payload, peer_id);
             return promise;
+        }
+
+        static void sweep_pending_remote() {
+            std::vector<std::shared_ptr<API::Promise::Instance>> timed_out;
+            {
+                std::lock_guard lock(pending_remote_mutex);
+                auto now = std::chrono::steady_clock::now();
+                for (auto it = pending_remote.begin(); it != pending_remote.end(); ) {
+                    if (now - it -> second.created > std::chrono::milliseconds(remote_timeout_ms)) {
+                        timed_out.push_back(it -> second.promise);
+                        it = pending_remote.erase(it);
+                    }
+                    else ++it;
+                }
+            }
+            if (timed_out.empty()) return;
+            auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+            if (!vm) return;
+            for (auto& promise : timed_out) {
+                if (promise -> state == API::Promise::State::Pending) API::Promise::settle(promise, API::Promise::State::Rejected, vm, 0, 0);
+            }
         }
 
         static void bump_subscription(const std::string& name, int ref, std::vector<int>& exhausted) {
@@ -245,7 +274,7 @@ namespace Vital::Sandbox::API {
         static void settle_aggregate(std::shared_ptr<AggState> state) {
             Machine::enqueue([state]() {
                 auto agg = state -> agg_promise.lock();
-                if (!agg) return;
+                if (!agg || agg -> state != API::Promise::State::Pending) return;
 
                 auto root_vm = state -> vm;
                 root_vm -> create_table();
@@ -323,7 +352,7 @@ namespace Vital::Sandbox::API {
                     std::lock_guard lock(pending_remote_mutex);
                     auto it = pending_remote.find(serial);
                     if (it != pending_remote.end()) {
-                        promise = it -> second;
+                        promise = it -> second.promise;
                         pending_remote.erase(it);
                     }
                 }
@@ -382,6 +411,10 @@ namespace Vital::Sandbox::API {
             static bool initialized = false;
             if (initialized) return;
             initialized = true;
+
+            Tool::Timer::create([](Tool::Timer*, int) {
+                sweep_pending_remote();
+            }, remote_sweep_interval_ms, 0);
             
             Tool::Event::bind("promise:reply", [](Tool::Stack args) {
                 if (args.array.size() < 1) return;
