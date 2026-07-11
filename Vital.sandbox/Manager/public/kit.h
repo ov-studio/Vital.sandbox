@@ -101,8 +101,8 @@ namespace Vital::Manager::Kit {
             else return std::string(k);
         }(std::forward<Keys>(keys))), ...);
         for (const std::string& key : key_list) {
-            bool is_index = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
-            if (is_index) {
+            bool is_idx = !key.empty() && std::all_of(key.begin(), key.end(), ::isdigit);
+            if (is_idx) {
                 if (!node -> IsArray()) return nullptr;
                 const auto idx = static_cast<rapidjson::SizeType>(std::stoul(key));
                 if (idx >= node -> Size()) return nullptr;

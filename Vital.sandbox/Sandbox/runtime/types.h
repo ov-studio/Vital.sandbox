@@ -50,9 +50,9 @@ namespace Vital::Sandbox {
             int arg_offset = 0;
 
             inline void throw_error(int idx, const std::string& reason = "") const {
-                int display_index = idx - arg_offset;
-                const std::string arg = (idx - 1 - arg_offset) < (int)arguments.size() ? arguments[idx - 1 - arg_offset] : std::to_string(display_index);
-                const std::string partial = fmt::format("bad argument #{} '{}' {}", display_index, arg, reason.empty() ? "" : fmt::format("({})", reason));
+                int display_idx = idx - arg_offset;
+                const std::string arg = (idx - 1 - arg_offset) < (int)arguments.size() ? arguments[idx - 1 - arg_offset] : std::to_string(display_idx);
+                const std::string partial = fmt::format("bad argument #{} '{}' {}", display_idx, arg, reason.empty() ? "" : fmt::format("({})", reason));
                 const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", syntax, partial);
                 throw vm_error(detail, partial);
             }

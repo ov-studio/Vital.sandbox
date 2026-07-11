@@ -293,7 +293,7 @@ namespace Vital::Engine {
                                 stdin_buffer.clear();
                                 if (!line.empty()) {
                                     stdin_history.push_back(line);
-                                    stdin_history_index = -1;
+                                    stdin_history_idx = -1;
                                 }
                                 std::cout << "\r\033[J" << std::flush;
                             }
@@ -304,11 +304,11 @@ namespace Vital::Engine {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
                                 if (!stdin_history.empty()) {
-                                    if (stdin_history_index == -1)
-                                        stdin_history_index = static_cast<int>(stdin_history.size()) - 1;
-                                    else if (stdin_history_index > 0)
-                                        stdin_history_index--;
-                                    stdin_buffer = stdin_history[stdin_history_index];
+                                    if (stdin_history_idx == -1)
+                                        stdin_history_idx = static_cast<int>(stdin_history.size()) - 1;
+                                    else if (stdin_history_idx > 0)
+                                        stdin_history_idx--;
+                                    stdin_buffer = stdin_history[stdin_history_idx];
                                 }
                             }
                             update();
@@ -316,13 +316,13 @@ namespace Vital::Engine {
                         else if (vk == VK_DOWN) {
                             {
                                 std::lock_guard<std::mutex> lock(stdout_mutex);
-                                if (stdin_history_index != -1) {
-                                    stdin_history_index++;
-                                    if (stdin_history_index >= static_cast<int>(stdin_history.size())) {
-                                        stdin_history_index = -1;
+                                if (stdin_history_idx != -1) {
+                                    stdin_history_idx++;
+                                    if (stdin_history_idx >= static_cast<int>(stdin_history.size())) {
+                                        stdin_history_idx = -1;
                                         stdin_buffer.clear();
                                     }
-                                    else stdin_buffer = stdin_history[stdin_history_index];
+                                    else stdin_buffer = stdin_history[stdin_history_idx];
                                 }
                             }
                             update();
@@ -353,7 +353,7 @@ namespace Vital::Engine {
                                 stdin_buffer.clear();
                                 if (!line.empty()) {
                                     stdin_history.push_back(line);
-                                    stdin_history_index = -1;
+                                    stdin_history_idx = -1;
                                 }
                                 std::cout << "\r\033[J" << std::flush;
                             }
@@ -368,11 +368,11 @@ namespace Vital::Engine {
                                     {
                                         std::lock_guard<std::mutex> lock(stdout_mutex);
                                         if (!stdin_history.empty()) {
-                                            if (stdin_history_index == -1)
-                                                stdin_history_index = static_cast<int>(stdin_history.size()) - 1;
-                                            else if (stdin_history_index > 0)
-                                                stdin_history_index--;
-                                            stdin_buffer = stdin_history[stdin_history_index];
+                                            if (stdin_history_idx == -1)
+                                                stdin_history_idx = static_cast<int>(stdin_history.size()) - 1;
+                                            else if (stdin_history_idx > 0)
+                                                stdin_history_idx--;
+                                            stdin_buffer = stdin_history[stdin_history_idx];
                                         }
                                     }
                                     update();
@@ -380,13 +380,13 @@ namespace Vital::Engine {
                                 else if (seq[1] == 'B') {
                                     {
                                         std::lock_guard<std::mutex> lock(stdout_mutex);
-                                        if (stdin_history_index != -1) {
-                                            stdin_history_index++;
-                                            if (stdin_history_index >= static_cast<int>(stdin_history.size())) {
-                                                stdin_history_index = -1;
+                                        if (stdin_history_idx != -1) {
+                                            stdin_history_idx++;
+                                            if (stdin_history_idx >= static_cast<int>(stdin_history.size())) {
+                                                stdin_history_idx = -1;
                                                 stdin_buffer.clear();
                                             }
-                                            else stdin_buffer = stdin_history[stdin_history_index];
+                                            else stdin_buffer = stdin_history[stdin_history_idx];
                                         }
                                     }
                                     update();
