@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
         };
 
         using ReplyCallback = std::function<void(Machine*, const Tool::Stack&)>;
-        inline static constexpr int remote_timeout_ms = 15000;
+        inline static constexpr int remote_timeout_ms = 30000;
         inline static constexpr int remote_sweep_interval_ms = 5000;
         inline static std::unordered_map<std::string, EventEntry> buffer;
         inline static std::mutex buffer_mutex;
