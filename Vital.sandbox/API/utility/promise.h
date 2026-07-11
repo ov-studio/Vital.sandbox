@@ -47,6 +47,10 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        static bool is_pending(const std::shared_ptr<Instance>& instance) {
+            return Instance::find_unlocked(instance) && (instance -> state == State::Pending);
+        }
+
         static int push_values(std::shared_ptr<Instance> instance, Machine* dst) {
             if (!Instance::find_unlocked(instance) || !instance -> vm || instance -> values == 0) return 0;
             if (!instance || !instance -> vm || instance -> values == 0) return 0;
@@ -59,7 +63,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void settle(std::shared_ptr<Instance> instance, State result_state, Machine* vm, int args_start, int args_count) {
-            if (!Instance::find_unlocked(instance) || instance -> state != State::Pending || !vm) return;
+            if (!is_pending(instance) || !vm) return;
             instance -> state = result_state;
             instance -> resolved = (result_state == State::Resolved);
             instance -> values = args_count;
