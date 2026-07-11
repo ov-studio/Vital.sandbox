@@ -67,16 +67,16 @@ namespace Vital::Sandbox::API {
             { "9", godot::Key::KEY_9 },
 
             // Numpad Digits
-            { "NUM0", godot::Key::KEY_KP_0 },
-            { "NUM1", godot::Key::KEY_KP_1 },
-            { "NUM2", godot::Key::KEY_KP_2 },
-            { "NUM3", godot::Key::KEY_KP_3 },
-            { "NUM4", godot::Key::KEY_KP_4 },
-            { "NUM5", godot::Key::KEY_KP_5 },
-            { "NUM6", godot::Key::KEY_KP_6 },
-            { "NUM7", godot::Key::KEY_KP_7 },
-            { "NUM8", godot::Key::KEY_KP_8 },
-            { "NUM9", godot::Key::KEY_KP_9 },
+            { "NUM_0", godot::Key::KEY_KP_0 },
+            { "NUM_1", godot::Key::KEY_KP_1 },
+            { "NUM_2", godot::Key::KEY_KP_2 },
+            { "NUM_3", godot::Key::KEY_KP_3 },
+            { "NUM_4", godot::Key::KEY_KP_4 },
+            { "NUM_5", godot::Key::KEY_KP_5 },
+            { "NUM_6", godot::Key::KEY_KP_6 },
+            { "NUM_7", godot::Key::KEY_KP_7 },
+            { "NUM_8", godot::Key::KEY_KP_8 },
+            { "NUM_9", godot::Key::KEY_KP_9 },
 
             // Numpad Operators
             { "NUM_ADD",      godot::Key::KEY_KP_ADD      },
