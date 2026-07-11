@@ -26,7 +26,7 @@
 
 namespace Vital::Sandbox::API {
     struct Canvas : vm_module {
-        inline static const std::vector<std::string> base_scope = {"core", "canvas"};
+        inline static const std::vector<std::string> base_scope = {"core", "engine"};
         using base_class = Vital::Engine::Canvas;
 
         static void bind(Machine* vm) {
