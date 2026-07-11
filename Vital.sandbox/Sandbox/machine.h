@@ -150,55 +150,55 @@ namespace Vital::Sandbox {
 
             // Checkers //
             bool is_virtual() const { return virtualized; }
-            bool is_nil(int index = 1) { return get_type(index) <= 0; }
-            bool is_bool(int index = 1) { return get_type(index) == LUA_TBOOLEAN; }
-            bool is_number(int index = 1) { return get_type(index) == LUA_TNUMBER; }
-            bool is_string(int index = 1) { return get_type(index) == LUA_TSTRING; }
-            bool is_table(int index = 1) { return get_type(index) == LUA_TTABLE; }
-            bool is_thread(int index = 1) { return get_type(index) == LUA_TTHREAD; }
-            bool is_userdata(int index = 1) { return get_type(index) == LUA_TUSERDATA || get_type(index) == LUA_TLIGHTUSERDATA; }
-            bool is_pointer(int index = 1) { return lua_topointer(state, index) != nullptr; }
-            bool is_function(int index = 1) { return get_type(index) == LUA_TFUNCTION; }
+            bool is_nil(int idx = 1) { return get_type(idx) <= 0; }
+            bool is_bool(int idx = 1) { return get_type(idx) == LUA_TBOOLEAN; }
+            bool is_number(int idx = 1) { return get_type(idx) == LUA_TNUMBER; }
+            bool is_string(int idx = 1) { return get_type(idx) == LUA_TSTRING; }
+            bool is_table(int idx = 1) { return get_type(idx) == LUA_TTABLE; }
+            bool is_thread(int idx = 1) { return get_type(idx) == LUA_TTHREAD; }
+            bool is_userdata(int idx = 1) { return (get_type(idx) == LUA_TUSERDATA) || (get_type(idx) == LUA_TLIGHTUSERDATA); }
+            bool is_pointer(int idx = 1) { return lua_topointer(state, idx) != nullptr; }
+            bool is_function(int idx = 1) { return get_type(idx) == LUA_TFUNCTION; }
             bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(make_reference(scope, name)) != reference.end(); }
 
-            bool is_horizontal_alignment(int index = 1) {
-                if (is_string(index)) return horizontal_alignment.count(get_string(index)) > 0;
-                else if (is_number(index)) {
-                    int value = get_int(index);
+            bool is_horizontal_alignment(int idx = 1) {
+                if (is_string(idx)) return horizontal_alignment.count(get_string(idx)) > 0;
+                else if (is_number(idx)) {
+                    int value = get_int(idx);
                     return value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL;
                 }
                 return false;
             }
 
-            bool is_vertical_alignment(int index = 1) {
-                if (is_string(index)) return vertical_alignment.count(get_string(index)) > 0;
-                else if (is_number(index)) {
-                    int value = get_int(index);
+            bool is_vertical_alignment(int idx = 1) {
+                if (is_string(idx)) return vertical_alignment.count(get_string(idx)) > 0;
+                else if (is_number(idx)) {
+                    int value = get_int(idx);
                     return value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL;
                 }
                 return false;
             }
 
-            bool is_color(int index = 1) {
-                if (is_string(index)) return godot::Color::html_is_valid(Tool::to_godot_string(get_string(index)));
-                return is_table(index) && get_length(index) >= 4;
+            bool is_color(int idx = 1) {
+                if (is_string(idx)) return godot::Color::html_is_valid(Tool::to_godot_string(get_string(idx)));
+                return is_table(idx) && get_length(idx) >= 4;
             }
 
-            bool is_vector2(int index = 1) { return is_table(index) && get_length(index) >= 2; }
-            bool is_vector2_array(int index = 1) {
-                if (!is_table(index)) return false;
-                if (get_length(index) == 0) return false;
-                get_table_field(1, index);
+            bool is_vector2(int idx = 1) { return is_table(idx) && get_length(idx) >= 2; }
+            bool is_vector2_array(int idx = 1) {
+                if (!is_table(idx)) return false;
+                if (get_length(idx) == 0) return false;
+                get_table_field(1, idx);
                 bool result = is_vector2(-1);
                 pop(1);
                 return result;
             }
 
-            bool is_vector3(int index = 1) { return is_table(index) && get_length(index) >= 3; }
-            bool is_vector3_array(int index = 1) {
-                if (!is_table(index)) return false;
-                if (get_length(index) == 0) return false;
-                get_table_field(1, index);
+            bool is_vector3(int idx = 1) { return is_table(idx) && get_length(idx) >= 3; }
+            bool is_vector3_array(int idx = 1) {
+                if (!is_table(idx)) return false;
+                if (get_length(idx) == 0) return false;
+                get_table_field(1, idx);
                 bool result = is_vector3(-1);
                 pop(1);
                 return result;
@@ -208,21 +208,21 @@ namespace Vital::Sandbox {
             // Getters //
             vm_state* get_state() const { return state; }
             int get_count() { return lua_gettop(state); }
-            int get_type(int index = 1) { return lua_type(state, index); }
-            bool get_global(const std::string& index) { return lua_getglobal(state, index.c_str()); }
-            bool get_bool(int index = 1) { return lua_toboolean(state, index); }
-            int get_int(int index = 1) { return (int)lua_tonumber(state, index); }
-            float get_float(int index = 1) { return (float)lua_tonumber(state, index); }
-            double get_double(int index = 1) { return lua_tonumber(state, index); }
-            std::string get_string(int index = 1) { return lua_tostring(state, index); }
-            bool get_table(int index = 1) { return lua_gettable(state, index); }
-            bool get_table_field(int value, int index = 1) { return lua_geti(state, index, value); }
-            bool get_table_field(const std::string& value, int index = 1) { return lua_getfield(state, index, value.c_str()); }
-            bool get_metatable(int index = 1) { return lua_getmetatable(state, index); }
-            bool get_metatable(const std::string& index) { return luaL_getmetatable(state, index.c_str()); }
-            vm_state* get_thread(int index = 1) { return lua_tothread(state, index); }
-            void* get_userdata(int index = 1) { return lua_touserdata(state, index); }
-            const void* get_pointer(int index = 1) { return lua_topointer(state, index); }
+            int get_type(int idx = 1) { return lua_type(state, idx); }
+            bool get_global(const std::string& idx) { return lua_getglobal(state, idx.c_str()); }
+            bool get_bool(int idx = 1) { return lua_toboolean(state, idx); }
+            int get_int(int idx = 1) { return (int)lua_tonumber(state, idx); }
+            float get_float(int idx = 1) { return (float)lua_tonumber(state, idx); }
+            double get_double(int idx = 1) { return lua_tonumber(state, idx); }
+            std::string get_string(int idx = 1) { return lua_tostring(state, idx); }
+            bool get_table(int idx = 1) { return lua_gettable(state, idx); }
+            bool get_table_field(int value, int idx = 1) { return lua_geti(state, idx, value); }
+            bool get_table_field(const std::string& value, int idx = 1) { return lua_getfield(state, idx, value.c_str()); }
+            bool get_metatable(int idx = 1) { return lua_getmetatable(state, idx); }
+            bool get_metatable(const std::string& idx) { return luaL_getmetatable(state, idx.c_str()); }
+            vm_state* get_thread(int idx = 1) { return lua_tothread(state, idx); }
+            void* get_userdata(int idx = 1) { return lua_touserdata(state, idx); }
+            const void* get_pointer(int idx = 1) { return lua_topointer(state, idx); }
 
             Machine* get_root() {
                 Machine* root = this;
@@ -230,8 +230,8 @@ namespace Vital::Sandbox {
                 return root;
             }
 
-            int get_length(int index = 1) {
-                lua_len(state, index);
+            int get_length(int idx = 1) {
+                lua_len(state, idx);
                 int result = get_int(-1);
                 pop(1);
                 return result;
@@ -248,67 +248,67 @@ namespace Vital::Sandbox {
                 return 0;
             }
 
-            godot::HorizontalAlignment get_horizontal_alignment(int index = 1) {
-                if (is_horizontal_alignment(index)) {
-                    if (is_string(index)) return horizontal_alignment.find(get_string(index)) -> second;
-                    return static_cast<godot::HorizontalAlignment>(get_int(index));
+            godot::HorizontalAlignment get_horizontal_alignment(int idx = 1) {
+                if (is_horizontal_alignment(idx)) {
+                    if (is_string(idx)) return horizontal_alignment.find(get_string(idx)) -> second;
+                    return static_cast<godot::HorizontalAlignment>(get_int(idx));
                 }
                 return godot::HORIZONTAL_ALIGNMENT_LEFT;
             }
 
-            godot::VerticalAlignment get_vertical_alignment(int index = 1) {
-                if (is_vertical_alignment(index)) {
-                    if (is_string(index)) return vertical_alignment.find(get_string(index)) -> second;
-                    return static_cast<godot::VerticalAlignment>(get_int(index));
+            godot::VerticalAlignment get_vertical_alignment(int idx = 1) {
+                if (is_vertical_alignment(idx)) {
+                    if (is_string(idx)) return vertical_alignment.find(get_string(idx)) -> second;
+                    return static_cast<godot::VerticalAlignment>(get_int(idx));
                 }
                 return godot::VERTICAL_ALIGNMENT_TOP;
             }
 
-            godot::Color get_color(int index = 1) {
-                if (is_string(index)) {
-                    auto html = Tool::to_godot_string(get_string(index));
+            godot::Color get_color(int idx = 1) {
+                if (is_string(idx)) {
+                    auto html = Tool::to_godot_string(get_string(idx));
                     if (godot::Color::html_is_valid(html)) return godot::Color::html(html);
                 }
                 godot::Color value = {1, 1, 1, 1};
-                get_table_field(1, index); value.r = get_float(-1);
-                get_table_field(2, index); value.g = get_float(-1);
-                get_table_field(3, index); value.b = get_float(-1);
-                get_table_field(4, index); value.a = get_float(-1);
+                get_table_field(1, idx); value.r = get_float(-1);
+                get_table_field(2, idx); value.g = get_float(-1);
+                get_table_field(3, idx); value.b = get_float(-1);
+                get_table_field(4, idx); value.a = get_float(-1);
                 pop(4);
                 return value;
             }
 
-            godot::Vector2 get_vector2(int index = 1) {
+            godot::Vector2 get_vector2(int idx = 1) {
                 godot::Vector2 value = {0.0f, 0.0f};
-                get_table_field(1, index); value.x = get_float(-1);
-                get_table_field(2, index); value.y = get_float(-1);
+                get_table_field(1, idx); value.x = get_float(-1);
+                get_table_field(2, idx); value.y = get_float(-1);
                 pop(2);
                 return value;
             }
 
-            godot::PackedVector2Array get_vector2_array(int index = 1) {
+            godot::PackedVector2Array get_vector2_array(int idx = 1) {
                 godot::PackedVector2Array value;
-                for (int i = 1; i <= get_length(index); ++i) {
-                    get_table_field(i, index);
+                for (int i = 1; i <= get_length(idx); ++i) {
+                    get_table_field(i, idx);
                     value.push_back(get_vector2(-1));
                     pop(1);
                 }
                 return value;
             }
 
-            godot::Vector3 get_vector3(int index = 1) {
+            godot::Vector3 get_vector3(int idx = 1) {
                 godot::Vector3 value = {0.0f, 0.0f, 0.0f};
-                get_table_field(1, index); value.x = get_float(-1);
-                get_table_field(2, index); value.y = get_float(-1);
-                get_table_field(3, index); value.z = get_float(-1);
+                get_table_field(1, idx); value.x = get_float(-1);
+                get_table_field(2, idx); value.y = get_float(-1);
+                get_table_field(3, idx); value.z = get_float(-1);
                 pop(3);
                 return value;
             }
 
-            godot::PackedVector3Array get_vector3_array(int index = 1) {
+            godot::PackedVector3Array get_vector3_array(int idx = 1) {
                 godot::PackedVector3Array value;
-                for (int i = 1; i <= get_length(index); ++i) {
-                    get_table_field(i, index);
+                for (int i = 1; i <= get_length(idx); ++i) {
+                    get_table_field(i, idx);
                     value.push_back(get_vector3(-1));
                     pop(1);
                 }
@@ -317,7 +317,7 @@ namespace Vital::Sandbox {
 
 
             // Pushers //
-            void push_global(const std::string& index) { lua_setglobal(state, index.c_str()); }
+            void push_global(const std::string& idx) { lua_setglobal(state, idx.c_str()); }
             void push_nil() { lua_pushnil(state); }
             void push_bool(bool value) { lua_pushboolean(state, value); }
             void push_number(int value) { lua_pushinteger(state, value); }
@@ -400,9 +400,9 @@ namespace Vital::Sandbox {
                 }
             }
 
-            void create_object(const std::string& index, void* value) {
+            void create_object(const std::string& idx, void* value) {
                 create_userdata(value);
-                set_metatable(index);
+                set_metatable(idx);
             }
 
             void create_userdata(void* value) {
@@ -439,7 +439,7 @@ namespace Vital::Sandbox {
             std::string get_environment_id(int level = 0) {
                 Tool::assert_main_thread("Machine::get_environment_id");
                 lua_Debug debug;
-                for (int index = level; lua_getstack(state, index, &debug); ++index) {
+                for (int idx = level; lua_getstack(state, idx, &debug); ++idx) {
                     lua_getinfo(state, "f", &debug);
                     const char* upname = lua_getupvalue(state, -1, 1);
                     lua_remove(state, -2);
@@ -525,25 +525,25 @@ namespace Vital::Sandbox {
 
 
             // Misc //
-            void push(int index = 1) { lua_pushvalue(state, index); }
+            void push(int idx = 1) { lua_pushvalue(state, idx); }
             void pop(int count = 1) { lua_pop(state, count); }
-            bool next(int index = 1) { return lua_next(state, index) != 0; }
+            bool next(int idx = 1) { return lua_next(state, idx) != 0; }
             void move(Machine* target, int count = 1) { lua_xmove(state, target -> state, count); }
-            void rotate(int index, int n) { lua_rotate(state, index, n); }
-            void set_table(int index = 1) { lua_settable(state, index); }
-            void set_table_field(int field, int index = 1) { lua_seti(state, index, field); }
-            void set_table_field(const std::string& field, int index = 1) { lua_setfield(state, index, field.c_str()); }
-            void set_metatable(int index = 1) { lua_setmetatable(state, index); }
-            void set_metatable(const std::string& index) { luaL_setmetatable(state, index.c_str()); }
+            void rotate(int idx, int n) { lua_rotate(state, idx, n); }
+            void set_table(int idx = 1) { lua_settable(state, idx); }
+            void set_table_field(int field, int idx = 1) { lua_seti(state, idx, field); }
+            void set_table_field(const std::string& field, int idx = 1) { lua_setfield(state, idx, field.c_str()); }
+            void set_metatable(int idx = 1) { lua_setmetatable(state, idx); }
+            void set_metatable(const std::string& idx) { luaL_setmetatable(state, idx.c_str()); }
 
-            void set_reference(const std::string& scope, const std::string& name, int index = 1) {
+            void set_reference(const std::string& scope, const std::string& name, int idx = 1) {
                 Tool::assert_main_thread("Machine::set_reference");
                 del_reference(scope, name);
-                reference.emplace(make_reference(scope, name), set_raw_reference(index));
+                reference.emplace(make_reference(scope, name), set_raw_reference(idx));
             }
 
-            int set_raw_reference(int index = 1) {
-                push(index);
+            int set_raw_reference(int idx = 1) {
+                push(idx);
                 return luaL_ref(state, LUA_REGISTRYINDEX);
             }
 
@@ -559,11 +559,11 @@ namespace Vital::Sandbox {
                 luaL_unref(state, LUA_REGISTRYINDEX, ref);
             }
 
-            int store_args(int index) {
+            int store_args(int idx) {
                 create_table();
-                int count = get_count() - index - 1;
+                int count = get_count() - idx - 1;
                 for (int i = 0; i <= count; ++i) {
-                    push(index + i);
+                    push(idx + i);
                     set_table_field(i + 1, -2);
                 }
                 return set_raw_reference(-1);
@@ -613,9 +613,9 @@ namespace Vital::Sandbox {
                 on_finish = std::move(exec);
             }
     
-            std::string to_string(int index = 1) {
+            std::string to_string(int idx = 1) {
                 size_t length;
-                const char* value = luaL_tolstring(state, index, &length);
+                const char* value = luaL_tolstring(state, idx, &length);
                 pop(1);
                 return std::string(value, length);
             }
