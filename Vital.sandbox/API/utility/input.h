@@ -249,6 +249,11 @@ namespace Vital::Sandbox::API {
             return resolve_direction(direction, down);
         }
 
+        static bool is_valid_cursor_mode(int code) {
+            auto it = std::find_if(cursor_mode_registry.begin(), cursor_mode_registry.end(), [&](const auto& p) { return p.second == code; });
+            return it != cursor_mode_registry.end();
+        }
+
         static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
@@ -345,7 +350,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_cursor_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require_enum(1, cursor_mode_registry);
+                    .require(1, &Machine::is_number)
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_cursor_mode(vm -> get_int(idx)); }, "invalid cursor mode");
 
                 auto mode = static_cast<godot::Input::MouseMode>(vm -> get_int(1));
                 godot::Input::get_singleton() -> set_mouse_mode(mode);
