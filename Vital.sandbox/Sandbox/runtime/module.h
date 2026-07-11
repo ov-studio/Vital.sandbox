@@ -168,16 +168,16 @@ namespace Vital::Sandbox {
             }
 
             template<typename T>
-            static bool is_userdata(Machine* vm, int index = 1) {
-                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), index, scope_name(T::Owner::base_scope).c_str()));
+            static bool is_userdata(Machine* vm, int idx = 1) {
+                auto ud = static_cast<void**>(luaL_testudata(vm -> get_state(), idx, scope_name(T::Owner::base_scope).c_str()));
                 if (!ud || !*ud) return false;
                 return T::find_unlocked(static_cast<T*>(*ud) -> id) != nullptr;
             }
 
             template<typename T = void>
-            static std::string get_userdata_type(Machine* vm, int index = 1) {
+            static std::string get_userdata_type(Machine* vm, int idx = 1) {
                 auto state = vm -> get_state();
-                if (!lua_isuserdata(state, index) || !lua_getmetatable(state, index)) return "";
+                if (!lua_isuserdata(state, idx) || !lua_getmetatable(state, idx)) return "";
                 lua_getfield(state, -1, "__name");
                 const char* name = lua_tostring(state, -1);
                 lua_pop(state, 2);
@@ -185,20 +185,20 @@ namespace Vital::Sandbox {
             }
 
             template<typename T>
-            static std::shared_ptr<T> get_userdata_object(Machine* vm, int index = 1) {
-                auto ud = get_userdata_ptr(vm, index);
+            static std::shared_ptr<T> get_userdata_object(Machine* vm, int idx = 1) {
+                auto ud = get_userdata_ptr(vm, idx);
                 if (!ud || !*ud) return nullptr;
                 return T::find_unlocked(static_cast<T*>(*ud) -> id);
             }
 
             template<typename T = void>
-            static void** get_userdata_ptr(Machine* vm, int index = 1) {
-                return static_cast<void**>(lua_touserdata(vm -> get_state(), index));
+            static void** get_userdata_ptr(Machine* vm, int idx = 1) {
+                return static_cast<void**>(lua_touserdata(vm -> get_state(), idx));
             }
 
             template<typename T = void>
-            static void release_userdata(Machine* vm, int index = 1) {
-                auto ud = get_userdata_ptr(vm, index);
+            static void release_userdata(Machine* vm, int idx = 1) {
+                auto ud = get_userdata_ptr(vm, idx);
                 release_userdata_ptr(ud);
             }
 

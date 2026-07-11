@@ -38,8 +38,8 @@ namespace Vital::Sandbox {
             Machine* vm = nullptr;
             void** userdata = nullptr;
             std::string self_reference() const { return fmt::format("vm_instance:{}:{}:self", vm_module::scope_id(Derived::Owner::base_scope), id); }
-            std::string value_reference(int index) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_id(Derived::Owner::base_scope), id, index); }
-            std::string value_reference(const std::string& index) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_id(Derived::Owner::base_scope), id, index); }
+            std::string value_reference(int idx) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_id(Derived::Owner::base_scope), id, idx); }
+            std::string value_reference(const std::string& idx) const { return fmt::format("vm_instance:{}:{}:value:{}", vm_module::scope_id(Derived::Owner::base_scope), id, idx); }
 
             bool is_alive() const {
                 return true;
@@ -53,8 +53,8 @@ namespace Vital::Sandbox {
                 return env.empty();
             }
 
-            void set_reference(const std::string& name, int index) {
-                vm -> set_reference("runtime", name, index);
+            void set_reference(const std::string& name, int idx) {
+                vm -> set_reference("runtime", name, idx);
                 if (std::find(references.begin(), references.end(), name) == references.end()) references.push_back(name);
             }
 

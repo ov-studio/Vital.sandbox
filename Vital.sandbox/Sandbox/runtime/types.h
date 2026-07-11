@@ -49,9 +49,9 @@ namespace Vital::Sandbox {
         private:
             int arg_offset = 0;
 
-            inline void throw_error(int index, const std::string& reason = "") const {
-                int display_index = index - arg_offset;
-                const std::string arg = (index - 1 - arg_offset) < (int)arguments.size() ? arguments[index - 1 - arg_offset] : std::to_string(display_index);
+            inline void throw_error(int idx, const std::string& reason = "") const {
+                int display_index = idx - arg_offset;
+                const std::string arg = (idx - 1 - arg_offset) < (int)arguments.size() ? arguments[idx - 1 - arg_offset] : std::to_string(display_index);
                 const std::string partial = fmt::format("bad argument #{} '{}' {}", display_index, arg, reason.empty() ? "" : fmt::format("({})", reason));
                 const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", syntax, partial);
                 throw vm_error(detail, partial);
@@ -76,37 +76,37 @@ namespace Vital::Sandbox {
             }
 
             template<typename F>
-            inline vm_args& require(int index, F&& check) {
-                if ((vm -> get_count() < index) || !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
+            inline vm_args& require(int idx, F&& check) {
+                if ((vm -> get_count() < idx) || !std::invoke(std::forward<F>(check), vm, idx)) throw_error(idx);
                 return *this;
             }
 
             template<typename Registry>
-            inline vm_args& require_enum(int index, const Registry& registry) {
-                return require(index, &Machine::is_number).validate_enum(index, registry);
+            inline vm_args& require_enum(int idx, const Registry& registry) {
+                return require(idx, &Machine::is_number).validate_enum(idx, registry);
             }
             
             template<typename E>
-            inline vm_args& require_enum(int index, E min, E max) {
-                return require(index, &Machine::is_number).validate_enum(index, min, max);
+            inline vm_args& require_enum(int idx, E min, E max) {
+                return require(idx, &Machine::is_number).validate_enum(idx, min, max);
             }
     
             template<typename F>
-            inline vm_args& optional(int index, F&& check) {
-                if ((vm -> get_count() >= index) && !vm -> is_nil(index) && !std::invoke(std::forward<F>(check), vm, index)) throw_error(index);
+            inline vm_args& optional(int idx, F&& check) {
+                if ((vm -> get_count() >= idx) && !vm -> is_nil(idx) && !std::invoke(std::forward<F>(check), vm, idx)) throw_error(idx);
                 return *this;
             }
 
             template<typename F>
-            inline vm_args& validate(int index, F&& check, const std::string& reason = "out of range") {
-                if (!std::invoke(std::forward<F>(check), vm, index)) throw_error(index, reason);
+            inline vm_args& validate(int idx, F&& check, const std::string& reason = "out of range") {
+                if (!std::invoke(std::forward<F>(check), vm, idx)) throw_error(idx, reason);
                 return *this;
             }
 
             template<typename Registry>
-            inline vm_args& validate_enum(int index, const Registry& registry) {
-                return validate(index, [&registry](Machine* vm, int index) {
-                    auto value = vm -> get_int(index);
+            inline vm_args& validate_enum(int idx, const Registry& registry) {
+                return validate(idx, [&registry](Machine* vm, int idx) {
+                    auto value = vm -> get_int(idx);
                     return std::find_if(registry.begin(), registry.end(), [&](const auto& entry) {
                         return static_cast<int>(entry.second) == value;
                     }) != registry.end();
@@ -114,9 +114,9 @@ namespace Vital::Sandbox {
             }
 
             template<typename E>
-            inline vm_args& validate_enum(int index, E min, E max) {
-                return validate(index, [min, max](Machine* vm, int index) {
-                    auto value = vm -> get_int(index);
+            inline vm_args& validate_enum(int idx, E min, E max) {
+                return validate(idx, [min, max](Machine* vm, int idx) {
+                    auto value = vm -> get_int(idx);
                     return value >= static_cast<int>(min) && value <= static_cast<int>(max);
                 }, fmt::format("out of enum range [{} - {}]", static_cast<int>(min), static_cast<int>(max)));
             }
