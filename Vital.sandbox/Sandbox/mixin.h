@@ -222,11 +222,11 @@ namespace Vital::Sandbox {
                     bool key_is_string = self() -> is_string(-2);
                     bool val_is_collectible = self() -> is_nil(-1) || self() -> is_bool(-1) || self() -> is_number(-1) || self() -> is_string(-1) || self() -> is_table(-1);
                     if (key_is_number) {
-                        auto idx = self() -> get_int(-2);
-                        if (idx >= 1) {
+                        auto key_idx = self() -> get_int(-2);
+                        if (key_idx >= 1) {
                             auto val = collect_value(self() -> get_count(), visited, depth + 1);
-                            if (static_cast<int>(stack -> array.size()) < idx) stack -> array.resize(idx, Tool::StackValue(nullptr));
-                            stack -> array[idx - 1] = val;
+                            if (static_cast<int>(stack -> array.size()) < key_idx) stack -> array.resize(key_idx, Tool::StackValue(nullptr));
+                            stack -> array[key_idx - 1] = val;
                         }
                     }
                     else if (key_is_string) {
