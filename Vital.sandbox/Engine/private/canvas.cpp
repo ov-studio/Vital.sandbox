@@ -194,8 +194,7 @@ namespace Vital::Engine {
     // Misc //
     godot::Vector3 Canvas::world_to_screen(godot::Vector3 position, float padding) {
         godot::Vector3 result = {-1, -1, -1};
-        // TODO: Use core singleton? Engine::Core::get_scene_root() -> get_viewport(
-        auto viewport = get_singleton() -> get_viewport();
+        auto viewport = Engine::Core::get_scene_root() -> get_viewport();
         auto camera = viewport ? viewport -> get_camera_3d() : nullptr;
         if (camera) {
             auto camera_position = camera -> get_global_position();
@@ -215,8 +214,7 @@ namespace Vital::Engine {
 
     godot::Vector3 Canvas::screen_to_world(godot::Vector2 position, float depth) {
         godot::Vector3 result = {-1, -1, -1};
-        // TODO: Use core singleton? Engine::Core::get_scene_root() -> get_viewport(
-        auto viewport = get_singleton() -> get_viewport();
+        auto viewport = Engine::Core::get_scene_root() -> get_viewport();
         auto camera = viewport ? viewport -> get_camera_3d() : nullptr;
         if (camera) {
             auto origin = camera -> project_ray_origin(position);
