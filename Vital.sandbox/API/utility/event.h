@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
             for (auto& promise : timed_out) {
-                if (promise -> state == API::Promise::State::Pending) API::Promise::settle(promise, API::Promise::State::Rejected, vm, 0, 0);
+                if (API::Promise::is_pending(promise)) API::Promise::settle(promise, API::Promise::State::Rejected, vm, 0, 0);
             }
         }
 
@@ -220,7 +220,7 @@ namespace Vital::Sandbox::API {
             instance -> thread_vm -> set_finish_hook([weak_promise, root_vm, instance](Machine* thread_vm, int nresults) {
                 instance -> thread_state = nullptr;
                 auto promise = weak_promise.lock();
-                if (!promise || promise -> state != API::Promise::State::Pending) return;
+                if (!API::Promise::is_pending(promise)) return;
                 int base = root_vm -> get_count() + 1;
                 thread_vm -> move(root_vm, nresults);
                 API::Promise::settle(promise, API::Promise::State::Resolved, root_vm, base, nresults);
@@ -276,7 +276,7 @@ namespace Vital::Sandbox::API {
         static void settle_aggregate(std::shared_ptr<AggState> state) {
             Machine::enqueue([state]() {
                 auto agg = state -> agg_promise.lock();
-                if (!agg || agg -> state != API::Promise::State::Pending) return;
+                if (!API::Promise::is_pending(agg)) return;
 
                 auto root_vm = state -> vm;
                 root_vm -> create_table();
@@ -314,7 +314,7 @@ namespace Vital::Sandbox::API {
             for (int i = 0; i < agg_state -> total; ++i) {
                 auto& promise = per_handler[i];
                 int slot = i;
-                if (promise -> state != API::Promise::State::Pending) {
+                if (!API::Promise::is_pending(promise)) {
                     auto root_vm = vm -> get_root();
                     for (int j = 1; j <= promise -> values; ++j) {
                         root_vm -> get_raw_reference(promise -> get_reference(promise -> value_reference(j)));
@@ -358,7 +358,7 @@ namespace Vital::Sandbox::API {
                         pending_remote.erase(it);
                     }
                 }
-                if (!promise || promise -> state != API::Promise::State::Pending) return;
+                if (!API::Promise::is_pending(promise)) return;
 
                 auto root_vm = vm -> get_root();
                 int base = root_vm -> get_count() + 1;
