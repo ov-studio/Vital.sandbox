@@ -358,7 +358,7 @@ namespace Vital::Sandbox::API {
                         pending_remote.erase(it);
                     }
                 }
-                if (!promise) return;
+                if (!promise || promise -> state != API::Promise::State::Pending) return;
 
                 auto root_vm = vm -> get_root();
                 int base = root_vm -> get_count() + 1;

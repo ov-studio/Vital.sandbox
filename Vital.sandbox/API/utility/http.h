@@ -25,6 +25,10 @@ namespace Vital::Sandbox::API {
     struct HTTP : public vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "http"};
 
+        static bool promise_settleable(std::shared_ptr<API::Promise::Instance>& promise) {
+            return promise && promise -> state == API::Promise::State::Pending;
+        }
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(url, headers = {\"Content-Type: application/json\"}, timeout = 60)")
@@ -48,7 +52,7 @@ namespace Vital::Sandbox::API {
                         auto response = Tool::HTTP::get(url, headers, timeout);
                         Machine::enqueue([promise_id, response]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!promise_settleable(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(response);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -58,7 +62,7 @@ namespace Vital::Sandbox::API {
                         std::string message = error.what();
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!promise_settleable(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
@@ -92,7 +96,7 @@ namespace Vital::Sandbox::API {
                         auto response = Tool::HTTP::post(url, body, headers, timeout);
                         Machine::enqueue([promise_id, response]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!promise_settleable(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(response);
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
@@ -102,7 +106,7 @@ namespace Vital::Sandbox::API {
                         std::string message = error.what();
                         Machine::enqueue([promise_id, message]() {
                             auto promise = API::Promise::Instance::find(promise_id);
-                            if (!promise) return;
+                            if (!promise_settleable(promise)) return;
                             auto vm = promise -> vm;
                             vm -> push_value(message);
                             API::Promise::settle(promise, API::Promise::State::Rejected, vm, vm -> get_count(), 1);
