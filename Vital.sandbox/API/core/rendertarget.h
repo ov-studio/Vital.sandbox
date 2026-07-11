@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_active", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(rendertarget, clear = false, instant = false)")
-                    .optional(1, [](Machine* vm, int index) { return vm_module::is_userdata<Instance>(vm, index); })
+                    .optional(1, [](Machine* vm, int idx) { return vm_module::is_userdata<Instance>(vm, idx); })
                     .optional(2, &Machine::is_bool)
                     .optional(3, &Machine::is_bool);
 

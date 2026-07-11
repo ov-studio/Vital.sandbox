@@ -75,10 +75,10 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, ReplyCallback> reply_callbacks;
         inline static std::mutex reply_callbacks_mutex;
 
-        static void read_config(Machine* vm, int index, Handler& handler) {
-            if (vm -> get_count() < index || !vm -> is_table(index)) return;
-            vm -> table_get_value("async", index); handler.async = vm -> get_bool(-1); vm -> pop(1);
-            vm -> table_get_value("subscription_limit", index);
+        static void read_config(Machine* vm, int idx, Handler& handler) {
+            if (vm -> get_count() < idx || !vm -> is_table(idx)) return;
+            vm -> table_get_value("async", idx); handler.async = vm -> get_bool(-1); vm -> pop(1);
+            vm -> table_get_value("subscription_limit", idx);
             if (vm -> is_number(-1)) handler.subscription_limit = std::max(1, vm -> get_int(-1));
             vm -> pop(1);
         }

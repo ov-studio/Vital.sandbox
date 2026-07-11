@@ -48,20 +48,20 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static base_class::Column read_schema_definition(Machine* vm, int index) {
+        static base_class::Column read_schema_definition(Machine* vm, int idx) {
             base_class::Column definition;
-            vm -> table_get_value("type", index); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
-            vm -> table_get_value("primary", index); definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.primary;
-            vm -> table_get_value("autoincrement", index); definition.autoincrement = vm -> is_bool(-1)   ? vm -> get_bool(-1) : definition.autoincrement;
-            vm -> table_get_value("nullable", index); definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.nullable;
+            vm -> table_get_value("type", idx); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
+            vm -> table_get_value("primary", idx); definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.primary;
+            vm -> table_get_value("autoincrement", idx); definition.autoincrement = vm -> is_bool(-1)   ? vm -> get_bool(-1) : definition.autoincrement;
+            vm -> table_get_value("nullable", idx); definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.nullable;
             vm -> pop(4);
             return definition;
         }
 
-        static base_class::SchemaActions read_schema_actions(Machine* vm, int index, base_class::SchemaAction::Type action) {
+        static base_class::SchemaActions read_schema_actions(Machine* vm, int idx, base_class::SchemaAction::Type action) {
             base_class::SchemaActions actions;
             vm -> push_nil();
-            while (vm -> next(index)) {
+            while (vm -> next(idx)) {
                 if (!vm -> is_string(-2) || !vm -> is_table(-1)) { vm -> pop(1); continue; }
                 auto column = vm -> get_string(-2);
                 actions.push_back({action, column, read_schema_definition(vm, vm -> get_count())});

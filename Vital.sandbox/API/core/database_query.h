@@ -47,10 +47,10 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        static std::unordered_map<std::string, std::string> read_table(Machine* vm, int index) {
+        static std::unordered_map<std::string, std::string> read_table(Machine* vm, int idx) {
             std::unordered_map<std::string, std::string> result;
             vm -> push_nil();
-            while (vm -> next(index)) {
+            while (vm -> next(idx)) {
                 if (vm -> is_string(-2)) {
                     std::string key = vm -> get_string(-2);
                     std::string value;
@@ -84,7 +84,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(column, operator, value)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_string)
-                    .require(4, [](Machine* vm, int index) { return vm -> is_string(index) || vm -> is_number(index); });
+                    .require(4, [](Machine* vm, int idx) { return vm -> is_string(idx) || vm -> is_number(idx); });
 
                 auto column = vm -> get_string(2);
                 auto op = vm -> get_string(3);
@@ -149,12 +149,12 @@ namespace Vital::Sandbox::API {
                             auto promise = API::Promise::Instance::find(promise_id);
                             if (!API::Promise::is_pending(promise)) return;
                             auto vm = promise -> vm;
-                            int index = 1;
+                            int idx = 1;
                             vm -> create_table();
                             for (const auto& row : rows) {
                                 vm -> create_table();
                                 for (const auto& [column, cell] : row) vm -> table_set_value(column, cell);
-                                vm -> set_table_field(index++, -2);
+                                vm -> set_table_field(idx++, -2);
                             }
                             API::Promise::settle(promise, API::Promise::State::Resolved, vm, vm -> get_count(), 1);
                         });
@@ -179,21 +179,21 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(actions)", true)
                     .require(2, &Machine::is_table);
 
-                int index = 2;
+                int idx = 2;
                 Tool::Database::SchemaActions actions;
-                vm -> table_get_value("add", index);
+                vm -> table_get_value("add", idx);
                 if (vm -> is_table(-1)) {
                     auto steps = API::Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Add);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
-                vm -> table_get_value("modify", index);
+                vm -> table_get_value("modify", idx);
                 if (vm -> is_table(-1)) {
                     auto steps = API::Database::read_schema_actions(vm, vm -> get_count(), Tool::Database::SchemaAction::Type::Modify);
                     actions.insert(actions.end(), steps.begin(), steps.end());
                 }
                 vm -> pop(1);
-                vm -> table_get_value("drop", index);
+                vm -> table_get_value("drop", idx);
                 if (vm -> is_table(-1)) {
                     auto step_index = vm -> get_count();
                     for (int i = 1; i <= vm -> get_length(step_index); i++) {
