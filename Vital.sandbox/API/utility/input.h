@@ -209,7 +209,7 @@ namespace Vital::Sandbox::API {
             { "MOUSE_XBUTTON2",   godot::MouseButton::MOUSE_BUTTON_XBUTTON2   }
         };
 
-        inline static const std::vector<std::pair<std::string, int>> mouse_mode_registry = {
+        inline static const std::vector<std::pair<std::string, int>> cursor_mode_registry = {
             { "VISIBLE",  godot::Input::MOUSE_MODE_VISIBLE   },
             { "HIDDEN",   godot::Input::MOUSE_MODE_HIDDEN    },
             { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED  }
@@ -338,14 +338,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_mouse_mode", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_cursor_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(godot::Input::get_singleton() -> get_mouse_mode()));
                 return 1;
             });
 
-            API::bind(vm, base_scope, "set_mouse_mode", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_cursor_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require_enum(1, mouse_mode_registry);
+                    .require_enum(1, cursor_mode_registry);
 
                 auto mode = static_cast<godot::Input::MouseMode>(vm -> get_int(1));
                 godot::Input::get_singleton() -> set_mouse_mode(mode);
@@ -394,7 +394,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "key", key_registry);
-            vm -> scope_set_enum(base_scope, "mouse_mode", mouse_mode_registry);
+            vm -> scope_set_enum(base_scope, "cursor_mode", cursor_mode_registry);
         }
 
         static void clean(const std::string& env) {
