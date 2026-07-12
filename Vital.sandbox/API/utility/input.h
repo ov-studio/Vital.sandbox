@@ -402,6 +402,7 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_function);
 
                 int code = vm -> get_int(1);
+                auto code = vm -> get_int(1);
                 std::string key;
                 bool mouse;
                 resolve_key(code, key, mouse);
