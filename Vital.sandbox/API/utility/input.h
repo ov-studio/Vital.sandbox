@@ -346,7 +346,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_cursor_position", [](auto vm, auto& id) -> int {
-                auto position = Engine::Core::get_scene_root() -> get_viewport() -> get_mouse_position();
+                auto position = Vital::Engine::Core::get_scene_root() -> get_viewport() -> get_mouse_position();
                 vm -> push_value(position);
                 return 1;
             });
@@ -372,7 +372,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_vector2);
 
                 auto position = vm -> get_vector2(1);
-                Engine::Core::get_scene_root() -> get_viewport() -> warp_mouse(position);
+                Vital::Engine::Core::get_scene_root() -> get_viewport() -> warp_mouse(position);
                 vm -> push_value(true);
                 return 1;
             });
