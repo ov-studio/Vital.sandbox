@@ -407,7 +407,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                bool ok = mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
+                auto ok = mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
