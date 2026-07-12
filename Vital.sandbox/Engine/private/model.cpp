@@ -397,9 +397,7 @@ namespace Vital::Engine {
     bool Model::is_streamed() const {
         if (placeholder || !is_visible_in_tree()) return false;
         #if defined(VSDK_Client)
-            auto viewport = get_viewport();
-            if (!viewport) return false;
-            auto camera = viewport -> get_camera_3d();
+            auto camera = Engine::Core::get_scene_root() -> get_viewport() -> get_camera_3d();
             if (!camera) return false;
             return camera -> is_position_in_frustum(get_global_position());
         #else
