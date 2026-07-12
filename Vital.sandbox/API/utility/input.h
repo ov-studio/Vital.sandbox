@@ -331,6 +331,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key");
 
+                auto code = vm -> get_int(1);
                 std::string key;
                 bool mouse;
                 resolve_key(code, key, mouse);
