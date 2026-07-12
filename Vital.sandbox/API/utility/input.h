@@ -335,13 +335,8 @@ namespace Vital::Sandbox::API {
                 std::string key;
                 bool mouse;
                 resolve_key(code, key, mouse);
-                if (mouse) vm -> push_value(godot::Input::get_singleton() -> is_mouse_button_pressed(static_cast<godot::MouseButton>(code)));
-                else vm -> push_value(godot::Input::get_singleton() -> is_key_pressed(static_cast<godot::Key>(code)));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_mouse_position", [](auto vm, auto& id) -> int {
-                vm -> push_value(Engine::Core::get_scene_root() -> get_viewport() -> get_mouse_position());
+                auto pressed = mouse ? godot::Input::get_singleton() -> is_mouse_button_pressed(static_cast<godot::MouseButton>(code)) : godot::Input::get_singleton() -> is_key_pressed(static_cast<godot::Key>(code));
+                vm -> push_value(pressed);
                 return 1;
             });
 
