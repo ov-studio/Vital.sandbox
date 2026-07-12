@@ -401,7 +401,6 @@ namespace Vital::Sandbox::API {
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
 
-                int code = vm -> get_int(1);
                 auto code = vm -> get_int(1);
                 std::string key;
                 bool mouse;
