@@ -309,15 +309,17 @@ namespace Vital::Sandbox::API {
             static bool initialized = false;
             if (initialized) return;
             initialized = true;
-
+        
             Tool::Event::bind("sandbox:key_input", [](Tool::Stack args) {
-                if (args.array.size() < 3) return;
+                if (args.array.size() < 2) return;
                 auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
-
+        
                 auto code = args.array[0].as<int32_t>();
                 auto pressed = args.array[1].as<bool>();
-                auto mouse = args.array[2].as<bool>();
+                std::string key;
+                bool mouse;
+                if (!resolve_key(code, key, mouse)) return;
                 if (mouse) dispatch_handler(bound_mouse, vm, code, pressed);
                 else dispatch_handler(bound_keys, vm, code, pressed);
             });
