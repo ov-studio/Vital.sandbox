@@ -199,7 +199,7 @@ namespace Vital::Engine {
             auto camera_position = camera -> get_global_position();
             auto camera_forward = -camera -> get_global_transform().basis.get_column(2);
             auto screen_position = camera -> unproject_position(position);
-            auto screen_size = viewport -> get_visible_rect().size;
+            auto screen_size = Engine::Core::get_scene_root() -> get_viewport() -> get_visible_rect().size;
             if (
                 (camera_forward.dot((position - camera_position).normalized()) > 0.0f) && 
                 (screen_position.x >= -padding) && 
