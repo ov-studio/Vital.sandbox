@@ -309,12 +309,12 @@ namespace Vital::Sandbox::API {
             static bool initialized = false;
             if (initialized) return;
             initialized = true;
-        
+
             Tool::Event::bind("sandbox:key_input", [](Tool::Stack args) {
                 if (args.array.size() < 2) return;
                 auto vm = Manager::Sandbox::get_singleton() -> get_vm();
                 if (!vm) return;
-        
+
                 auto code = args.array[0].as<int32_t>();
                 auto pressed = args.array[1].as<bool>();
                 std::string key;
@@ -331,7 +331,6 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_number)
                     .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key");
 
-                int code = vm -> get_int(1);
                 std::string key;
                 bool mouse;
                 resolve_key(code, key, mouse);
@@ -383,13 +382,13 @@ namespace Vital::Sandbox::API {
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
 
-                int code = vm -> get_int(1);
+                auto code = vm -> get_int(1);
                 std::string key;
                 bool mouse;
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                bool ok = mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
+                auto ok = mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
