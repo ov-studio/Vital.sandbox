@@ -340,39 +340,39 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_mouse_position", [](auto vm, auto& id) -> int {
-                auto position = Engine::Core::get_scene_root() -> get_viewport() -> get_mouse_position();
-                vm -> push_value(position);
-                return 1;
-            });
-            
-            API::bind(vm, base_scope, "get_mouse_velocity", [](auto vm, auto& id) -> int {
-                vm -> push_value(godot::Input::get_singleton() -> get_last_mouse_velocity());
-                return 1;
-            });
-
             API::bind(vm, base_scope, "get_cursor_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(godot::Input::get_singleton() -> get_mouse_mode()));
                 return 1;
             });
 
-            API::bind(vm, base_scope, "set_mouse_position", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(position)")
-                    .require(1, &Machine::is_vector2);
-
-                auto position = vm -> get_vector2(1);
-                Engine::Core::get_scene_root() -> get_viewport() -> warp_mouse(position);
-                vm -> push_value(true);
+            API::bind(vm, base_scope, "get_cursor_position", [](auto vm, auto& id) -> int {
+                auto position = Engine::Core::get_scene_root() -> get_viewport() -> get_mouse_position();
+                vm -> push_value(position);
+                return 1;
+            });
+            
+            API::bind(vm, base_scope, "get_cursor_velocity", [](auto vm, auto& id) -> int {
+                vm -> push_value(godot::Input::get_singleton() -> get_last_mouse_velocity());
                 return 1;
             });
 
             API::bind(vm, base_scope, "set_cursor_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require(1, &Machine::is_number)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_cursor_mode(vm -> get_int(idx)); }, "invalid cursor mode");
+                    .validate(1, [](Machine* vm, int idx) { return is_valid_cursor_mode(vm -> get_int(idx)); }, "invalid cursor mode"); // TODO: Use validate enum overlaod instead??
 
                 auto mode = static_cast<godot::Input::MouseMode>(vm -> get_int(1));
                 godot::Input::get_singleton() -> set_mouse_mode(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+            
+            API::bind(vm, base_scope, "set_cursor_position", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(position)")
+                    .require(1, &Machine::is_vector2);
+
+                auto position = vm -> get_vector2(1);
+                Engine::Core::get_scene_root() -> get_viewport() -> warp_mouse(position);
                 vm -> push_value(true);
                 return 1;
             });
