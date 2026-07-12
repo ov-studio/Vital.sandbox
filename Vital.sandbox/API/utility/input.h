@@ -340,6 +340,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            API::bind(vm, base_scope, "get_mouse_position", [](auto vm, auto& id) -> int {
+                vm -> push_value(Engine::Core::get_scene_root() -> get_viewport() -> get_mouse_position());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_mouse_velocity", [](auto vm, auto& id) -> int {
                 vm -> push_value(godot::Input::get_singleton() -> get_last_mouse_velocity());
                 return 1;
@@ -347,6 +352,15 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_cursor_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(godot::Input::get_singleton() -> get_mouse_mode()));
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "set_mouse_position", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(position)")
+                    .require(1, &Machine::is_vector2);
+            
+                Engine::Core::get_scene_root() -> get_viewport() -> warp_mouse(vm -> get_vector2(1));
+                vm -> push_value(true);
                 return 1;
             });
 
