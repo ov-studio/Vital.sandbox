@@ -27,6 +27,23 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "camera"};
         using base_class = Vital::Engine::Camera;
 
+        inline static const std::vector<std::pair<std::string, base_class::ProjectionType>> projection_registry = {
+            { "PERSPECTIVE", base_class::PROJECTION_PERSPECTIVE },
+            { "ORTHOGONAL",  base_class::PROJECTION_ORTHOGONAL },
+            { "FRUSTUM",     base_class::PROJECTION_FRUSTUM }
+        };
+
+        inline static const std::vector<std::pair<std::string, base_class::KeepAspect>> keep_aspect_registry = {
+            { "WIDTH",  base_class::KEEP_WIDTH },
+            { "HEIGHT", base_class::KEEP_HEIGHT }
+        };
+
+        inline static const std::vector<std::pair<std::string, base_class::DopplerTracking>> doppler_tracking_registry = {
+            { "DISABLED",     base_class::DOPPLER_TRACKING_DISABLED },
+            { "IDLE_STEP",    base_class::DOPPLER_TRACKING_IDLE_STEP },
+            { "PHYSICS_STEP", base_class::DOPPLER_TRACKING_PHYSICS_STEP }
+        };
+
         struct Instance : vm_instance<Instance> {
             using Owner = Camera;
             base_class* camera = nullptr;
@@ -192,7 +209,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "set_projection", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, base_class::PROJECTION_PERSPECTIVE, base_class::PROJECTION_FRUSTUM);
+                    .require_enum(2, projection_registry);
 
                 self -> camera -> set_projection(static_cast<base_class::ProjectionType>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -335,7 +352,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "set_keep_aspect_mode", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, base_class::KEEP_WIDTH, base_class::KEEP_HEIGHT);
+                    .require_enum(2, keep_aspect_registry);
 
                 self -> camera -> set_keep_aspect_mode(static_cast<base_class::KeepAspect>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -349,7 +366,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "set_doppler_tracking", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, base_class::DOPPLER_TRACKING_DISABLED, base_class::DOPPLER_TRACKING_PHYSICS_STEP);
+                    .require_enum(2, doppler_tracking_registry);
 
                 self -> camera -> set_doppler_tracking(static_cast<base_class::DopplerTracking>(vm -> get_int(2)));
                 vm -> push_value(true);
@@ -417,23 +434,9 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            // TODO: SEPARATE REGISTRY AT THE TOP
-            vm -> scope_set_enum(base_scope, "projection", std::vector<std::pair<std::string, base_class::ProjectionType>>{
-                {"PERSPECTIVE", base_class::PROJECTION_PERSPECTIVE},
-                {"ORTHOGONAL",  base_class::PROJECTION_ORTHOGONAL},
-                {"FRUSTUM",     base_class::PROJECTION_FRUSTUM},
-            });
-
-            vm -> scope_set_enum(base_scope, "keep_aspect", std::vector<std::pair<std::string, base_class::KeepAspect>>{
-                {"WIDTH",  base_class::KEEP_WIDTH},
-                {"HEIGHT", base_class::KEEP_HEIGHT},
-            });
-
-            vm -> scope_set_enum(base_scope, "doppler_tracking", std::vector<std::pair<std::string, base_class::DopplerTracking>>{
-                {"DISABLED",     base_class::DOPPLER_TRACKING_DISABLED},
-                {"IDLE_STEP",    base_class::DOPPLER_TRACKING_IDLE_STEP},
-                {"PHYSICS_STEP", base_class::DOPPLER_TRACKING_PHYSICS_STEP},
-            });
+            vm -> scope_set_enum(base_scope, "projection", projection_registry);
+            vm -> scope_set_enum(base_scope, "keep_aspect", keep_aspect_registry);
+            vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);
         }
 
         static void clean(const std::string& env) {
