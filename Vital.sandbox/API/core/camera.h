@@ -102,7 +102,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            // Checkers //
             vm_module::bind_method<Instance>(vm, "is_active", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> is_active());
                 return 1;
@@ -144,8 +143,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-
-            // Getters //
             vm_module::bind_method<Instance>(vm, "get_camera_transform", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_camera_transform());
                 return 1;
