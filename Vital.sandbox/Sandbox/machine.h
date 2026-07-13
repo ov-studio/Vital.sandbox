@@ -204,6 +204,16 @@ namespace Vital::Sandbox {
                 return result;
             }
 
+            bool is_vector4(int idx = 1) { return is_table(idx) && get_length(idx) >= 4; }
+            bool is_vector4_array(int idx = 1) {
+                if (!is_table(idx)) return false;
+                if (get_length(idx) == 0) return false;
+                get_table_field(1, idx);
+                bool result = is_vector4(-1);
+                pop(1);
+                return result;
+            }
+
 
             // Getters //
             vm_state* get_state() const { return state; }
@@ -315,6 +325,26 @@ namespace Vital::Sandbox {
                 return value;
             }
 
+            godot::Vector4 get_vector4(int idx = 1) {
+                godot::Vector4 value = {0.0f, 0.0f, 0.0f, 0.0f};
+                get_table_field(1, idx); value.x = get_float(-1);
+                get_table_field(2, idx); value.y = get_float(-1);
+                get_table_field(3, idx); value.z = get_float(-1);
+                get_table_field(4, idx); value.w = get_float(-1);
+                pop(4);
+                return value;
+            }
+
+            godot::PackedVector4Array get_vector4_array(int idx = 1) {
+                godot::PackedVector4Array value;
+                for (int i = 1; i <= get_length(idx); ++i) {
+                    get_table_field(i, idx);
+                    value.push_back(get_vector4(-1));
+                    pop(1);
+                }
+                return value;
+            }
+
 
             // Pushers //
             void push_global(const std::string& idx) { lua_setglobal(state, idx.c_str()); }
@@ -385,6 +415,22 @@ namespace Vital::Sandbox {
                 }
             }
 
+            void push_vector4(const godot::Vector4& value) {
+                create_table();
+                push_value(value.x); set_table_field(1, -2);
+                push_value(value.y); set_table_field(2, -2);
+                push_value(value.z); set_table_field(3, -2);
+                push_value(value.w); set_table_field(4, -2);
+            }
+
+            void push_vector4_array(const godot::PackedVector4Array& value) {
+                create_table();
+                for (int i = 0; i < value.size(); ++i) {
+                    push_value(value[i]);
+                    set_table_field(i + 1, -2);
+                }
+            }
+
             void push_transform3d(const godot::Transform3D& value) {
                 create_table();
                 create_table();
@@ -396,16 +442,12 @@ namespace Vital::Sandbox {
             }
 
             void push_projection(const godot::Projection& value) {
-                create_table();
+                godot::PackedVector4Array columns;
                 for (int i = 0; i < 4; ++i) {
-                    auto column = value.columns[i];
-                    create_table();
-                    push_value(column.x); set_table_field(1, -2);
-                    push_value(column.y); set_table_field(2, -2);
-                    push_value(column.z); set_table_field(3, -2);
-                    push_value(column.w); set_table_field(4, -2);
-                    set_table_field(i + 1, -2);
+                    auto& col = value.columns[i];
+                    columns.push_back({col.x, col.y, col.z, col.w});
                 }
+                push_vector4_array(columns);
             }
 
 
