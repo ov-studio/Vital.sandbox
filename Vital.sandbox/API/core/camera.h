@@ -166,11 +166,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_frustum", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_frustum());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_camera_transform", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_camera_transform());
                 return 1;
