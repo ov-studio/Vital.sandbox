@@ -46,13 +46,15 @@ namespace Vital::Engine {
     }
 
 
+    // Checkers //
+    bool Font::is_antialiased() const {
+        return font -> get_antialiasing() != godot::TextServer::FONT_ANTIALIASING_NONE;
+    }
+
+
     // Getters //
     godot::Ref<godot::FontFile> Font::get_font() const {
         return font;
-    }
-
-    bool Font::get_antialiasing() const {
-        return font -> get_antialiasing() != godot::TextServer::FONT_ANTIALIASING_NONE;
     }
 
     float Font::get_oversampling() const {
@@ -61,7 +63,7 @@ namespace Vital::Engine {
 
 
     // Setters //
-    void Font::set_antialiasing(bool state) {
+    void Font::set_antialiased(bool state) {
         font -> set_antialiasing(state ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
     }
 

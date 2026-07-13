@@ -37,14 +37,17 @@ namespace Vital::Engine {
             void destroy();
 
 
+            // Checkers //
+            bool is_antialiased() const;
+
+            
             // Getters //
             godot::Ref<godot::FontFile> get_font() const;
-            bool get_antialiasing() const;
             float get_oversampling() const;
 
 
             // Setters //
-            void set_antialiasing(bool state);
+            void set_antialiased(bool state);
             void set_oversampling(float oversampling);
     };
 }
