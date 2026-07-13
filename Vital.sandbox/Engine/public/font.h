@@ -44,7 +44,7 @@ namespace Vital::Engine {
 
 
             // Setters //
-            void set_antialiasing(bool enabled);
+            void set_antialiasing(bool state);
             void set_oversampling(float oversampling);
     };
 }
