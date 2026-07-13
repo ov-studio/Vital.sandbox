@@ -238,20 +238,9 @@ namespace Vital::Sandbox::API {
             return false;
         }
 
-        static bool is_valid_key(int code) {
-            std::string key;
-            bool mouse;
-            return resolve_key(code, key, mouse);
-        }
-
         static bool is_valid_direction(const std::string& direction) {
             bool down;
             return resolve_direction(direction, down);
-        }
-
-        static bool is_valid_cursor_mode(int code) {
-            auto it = std::find_if(cursor_mode_registry.begin(), cursor_mode_registry.end(), [&](const auto& p) { return p.second == code; });
-            return it != cursor_mode_registry.end();
         }
 
         static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
@@ -328,8 +317,7 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "is_pressed", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key)")
-                    .require(1, &Machine::is_number)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key");
+                    .require_enum(1, key_registry);
 
                 auto code = vm -> get_int(1);
                 std::string key;
@@ -358,8 +346,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_cursor_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_number)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_cursor_mode(vm -> get_int(idx)); }, "invalid cursor mode"); // TODO: Use validate enum overlaod instead??
+                    .require_enum(1, cursor_mode_registry);
 
                 auto mode = static_cast<godot::Input::MouseMode>(vm -> get_int(1));
                 godot::Input::get_singleton() -> set_mouse_mode(mode);
@@ -379,8 +366,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "bind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, direction, exec)")
-                    .require(1, &Machine::is_number)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key")
+                    .require_enum(1, key_registry)
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
@@ -398,8 +384,7 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "unbind", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(key, direction, exec)")
-                    .require(1, &Machine::is_number)
-                    .validate(1, [](Machine* vm, int idx) { return is_valid_key(vm -> get_int(idx)); }, "invalid key")
+                    .require_enum(1, key_registry)
                     .require(2, &Machine::is_string)
                     .validate(2, [](Machine* vm, int idx) { return is_valid_direction(vm -> get_string(idx)); }, "direction must be either 'up' or 'down'")
                     .require(3, &Machine::is_function);
