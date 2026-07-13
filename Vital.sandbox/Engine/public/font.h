@@ -23,7 +23,6 @@
 
 namespace Vital::Engine {
     class Font : public godot::Node2D {
-        GDCLASS(Font, godot::Node2D)
         private:
             godot::Ref<godot::FontFile> font;
 
