@@ -36,7 +36,7 @@ namespace Vital::Engine {
     }
 
     void Camera::destroy() {
-        queue_free(); //         TODO: memdelete(this); since the node isnt added to scene tree directly, but serves as a wrapper?
+        queue_free();
     }
 
 

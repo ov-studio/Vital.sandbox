@@ -23,7 +23,7 @@
 ////////////////////////////
 
 namespace Vital::Engine {
-    class Camera : public godot::Camera3D { // TODO: Use camera 3d? or node3d and wrap camera within it?
+    class Camera : public godot::Camera3D {
         GDCLASS(Camera, godot::Camera3D)
         private:
             // Instantiators //

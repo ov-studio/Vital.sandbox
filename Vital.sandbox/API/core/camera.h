@@ -389,12 +389,9 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Environment / Attributes / Compositor //
-            // NOTE: these three wire the camera to other engine resources that need to already
-            // be exposed as their own sandbox instance modules (Environment, CameraAttributes,
-            // Compositor) before these can bind correctly. `resource` below is a placeholder
-            // member name on each Instance -- swap in whatever the real field is called once
-            // those modules exist / are confirmed.
+            // Attributes //
+            // NOTE: assumes API::CameraAttributes already exists as its own sandbox instance
+            // module with a `resource` member. Swap in the real field name once confirmed.
             vm_module::bind_method<Instance>(vm, "set_attributes", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(attributes)", true)
                     .optional(2, [](Machine* vm, int idx) { return vm_module::is_userdata<API::CameraAttributes::Instance>(vm, idx); });
