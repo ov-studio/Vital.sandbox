@@ -29,11 +29,14 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Camera* Camera::create() {
-        auto camera = memnew(Camera);
-        Engine::Core::get_scene_root() -> add_child(camera);
-        return camera;
-    }
+    API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
+        auto instance = Instance::init(vm);
+        instance -> camera = base_class::create();
+        auto attrs = memnew(godot::CameraAttributesPractical);
+        instance -> camera -> set_attributes(attrs);
+        instance -> store(true);
+        return 1;
+    });
 
     void Camera::destroy() {
         queue_free();
