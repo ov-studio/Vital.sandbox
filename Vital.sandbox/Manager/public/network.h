@@ -26,6 +26,7 @@
 namespace Vital::Manager {
     // TODO: Improve
     class Network : public godot::Node, public Tool::Base<Network> {
+        GDCLASS(Network, godot::Node)
         friend class Tool::Base<Network>;
         public:
             static constexpr const char* Name = "Network.manager";

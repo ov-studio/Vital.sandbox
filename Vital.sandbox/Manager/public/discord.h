@@ -24,6 +24,7 @@
 
 namespace Vital::Manager {
     class Discord : public godot::Node, public Tool::Base<Discord> {
+        GDCLASS(Discord, godot::Node)
         friend class Tool::Base<Discord>;
         public:
             static constexpr const char* Name = "Discord.manager";

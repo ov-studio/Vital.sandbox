@@ -23,6 +23,7 @@
 
 namespace Vital::Manager {
     class Sandbox : public godot::Node, public Tool::Base<Sandbox> {
+        GDCLASS(Sandbox, godot::Node)
         friend class Tool::Base<Sandbox>;
         public:
             static constexpr const char* Name = "Sandbox.manager";
