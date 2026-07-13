@@ -444,8 +444,8 @@ namespace Vital::Sandbox {
             void push_projection(const godot::Projection& value) {
                 godot::PackedVector4Array columns;
                 for (int i = 0; i < 4; ++i) {
-                    auto& col = value.columns[i];
-                    columns.push_back({col.x, col.y, col.z, col.w});
+                    auto& column = value.columns[i];
+                    columns.push_back({column.x, column.y, column.z, column.w});
                 }
                 push_vector4_array(columns);
             }
