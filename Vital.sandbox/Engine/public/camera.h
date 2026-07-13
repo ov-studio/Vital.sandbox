@@ -26,11 +26,12 @@ namespace Vital::Engine {
     class Camera : public godot::Camera3D {
         GDCLASS(Camera, godot::Camera3D)
         private:
+            godot::Ref<godot::CameraAttributesPractical> attributes;
+            
             // Instantiators //
             Camera() = default;
             ~Camera() override;
-            static void _bind_methods() {} // TODO: Move to private ??
-            godot::Ref<godot::CameraAttributesPractical> attributes; // TODO: ^^
+            static void _bind_methods() {}
         public:
             // Managers //
             static Camera* create();
