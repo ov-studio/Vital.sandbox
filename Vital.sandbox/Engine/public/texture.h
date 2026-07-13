@@ -23,6 +23,7 @@
 
 namespace Vital::Engine {
     class Texture : public godot::Node2D {
+        GDCLASS(Texture, godot::Node2D)
         public:
             enum class Type {
                 Texture2D,

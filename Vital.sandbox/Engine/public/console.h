@@ -25,6 +25,7 @@
 
 namespace Vital::Engine {
     class Console : public godot::Control, public Tool::Base<Console> {
+        GDCLASS(Console, godot::Control)
         friend class Tool::Base<Console>;
         private:
             #if defined(VSDK_Client)
