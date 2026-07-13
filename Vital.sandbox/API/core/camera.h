@@ -238,13 +238,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-
-            // Setters //
-            vm_module::bind_method<Instance>(vm, "set_current", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
-                    .require(2, &Machine::is_bool);
-
-                self -> camera -> set_current(vm -> get_bool(2));
+            vm_module::bind_method<Instance>(vm, "set_active", [](auto vm, auto self, auto& id) -> int {
+                base_class::set_active(self -> camera);
                 vm -> push_value(true);
                 return 1;
             });
