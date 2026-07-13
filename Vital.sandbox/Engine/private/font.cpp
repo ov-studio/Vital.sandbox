@@ -61,8 +61,8 @@ namespace Vital::Engine {
 
 
     // Setters //
-    void Font::set_antialiasing(bool enabled) {
-        font -> set_antialiasing(enabled ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
+    void Font::set_antialiasing(bool state) {
+        font -> set_antialiasing(state ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
     }
 
     void Font::set_oversampling(float oversampling) {
