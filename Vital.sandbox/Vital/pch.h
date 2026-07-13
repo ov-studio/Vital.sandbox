@@ -74,6 +74,7 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/visual_instance3d.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/camera_attributes_practical.hpp>
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/sky.hpp>
 #include <godot_cpp/classes/panorama_sky_material.hpp>
