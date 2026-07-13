@@ -52,7 +52,7 @@ namespace Vital::Sandbox::API {
             base_class::Column definition;
             vm -> table_get_value("type", idx); definition.type = vm -> is_string(-1) ? vm -> get_string(-1) : definition.type;
             vm -> table_get_value("primary", idx); definition.primary = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.primary;
-            vm -> table_get_value("autoincrement", idx); definition.autoincrement = vm -> is_bool(-1)   ? vm -> get_bool(-1) : definition.autoincrement;
+            vm -> table_get_value("autoincrement", idx); definition.autoincrement = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.autoincrement;
             vm -> table_get_value("nullable", idx); definition.nullable = vm -> is_bool(-1) ? vm -> get_bool(-1) : definition.nullable;
             vm -> pop(4);
             return definition;
