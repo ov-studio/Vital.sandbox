@@ -385,6 +385,29 @@ namespace Vital::Sandbox {
                 }
             }
 
+            void push_transform3d(const godot::Transform3D& value) {
+                create_table();
+                create_table();
+                push_value(value.basis.get_column(0)); set_table_field("x", -2);
+                push_value(value.basis.get_column(1)); set_table_field("y", -2);
+                push_value(value.basis.get_column(2)); set_table_field("z", -2);
+                set_table_field("basis", -2);
+                push_value(value.origin); set_table_field("origin", -2);
+            }
+
+            void push_projection(const godot::Projection& value) {
+                create_table();
+                for (int i = 0; i < 4; ++i) {
+                    auto column = value.columns[i];
+                    create_table();
+                    push_value(column.x); set_table_field(1, -2);
+                    push_value(column.y); set_table_field(2, -2);
+                    push_value(column.z); set_table_field(3, -2);
+                    push_value(column.w); set_table_field(4, -2);
+                    set_table_field(i + 1, -2);
+                }
+            }
+
 
             // Containers //
             void create_table() { lua_newtable(state); }

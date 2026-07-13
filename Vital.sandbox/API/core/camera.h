@@ -166,7 +166,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Modes //
+            vm_module::bind_method<Instance>(vm, "get_frustum", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_frustum());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_camera_transform", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_camera_transform());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_camera_projection", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_camera_projection());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_perspective", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(fov, z_near, z_far)", true)
                     .require(2, &Machine::is_number)
@@ -399,11 +413,6 @@ namespace Vital::Sandbox::API {
                 else instance -> push_self(vm);
                 return 1;
             });
-
-            // NOTE: get_camera_transform, get_camera_projection, get_frustum, get_camera_rid,
-            // and get_pyramid_shape_rid are intentionally omitted -- Mixin::push_value has no
-            // overload yet for Transform3D, Projection, RID, or TypedArray<Plane>. Add those
-            // push_value overloads first, then these can be bound the same way as the rest.
         }
 
         static void inject(Machine* vm) {
