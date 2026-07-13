@@ -465,8 +465,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-
-            // Misc //
             vm_module::bind_method<Instance>(vm, "make_current", [](auto vm, auto self, auto& id) -> int {
                 self -> camera -> make_current();
                 vm -> push_value(true);
