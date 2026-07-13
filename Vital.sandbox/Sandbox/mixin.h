@@ -32,6 +32,8 @@ namespace Vital::Sandbox {
             void push_value(const godot::PackedVector2Array& value) { self() -> push_vector2_array(value); }
             void push_value(const godot::Vector3& value) { self() -> push_vector3(value); }
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
+            void push_value(const godot::Vector4& value) { self() -> push_vector4(value); }
+            void push_value(const godot::PackedVector4Array& value) { self() -> push_vector4_array(value); }
             void push_value(godot::HorizontalAlignment value) { self() -> push_horizontal_alignment(value); }
             void push_value(godot::VerticalAlignment value) { self() -> push_vertical_alignment(value); }
             void push_value(const godot::Transform3D& value) { self() -> push_transform3d(value); }
