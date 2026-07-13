@@ -107,11 +107,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_current", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> is_current());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_position_behind", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(world_point)", true)
                     .require(2, &Machine::is_vector3);
@@ -465,20 +460,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "make_current", [](auto vm, auto self, auto& id) -> int {
-                self -> camera -> make_current();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "clear_current", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enable_next = true)", true)
-                    .optional(2, &Machine::is_bool);
-
-                self -> camera -> clear_current(vm -> is_bool(2) ? vm -> get_bool(2) : true);
-                vm -> push_value(true);
-                return 1;
-            });
 
             vm_module::bind_method<Instance>(vm, "project_ray_normal", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(screen_point)", true)
