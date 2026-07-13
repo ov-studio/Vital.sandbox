@@ -29,8 +29,7 @@ namespace Vital::Sandbox::API {
 
         inline static const std::vector<std::pair<std::string, base_class::ProjectionType>> projection_registry = {
             { "PERSPECTIVE", base_class::PROJECTION_PERSPECTIVE },
-            { "ORTHOGONAL",  base_class::PROJECTION_ORTHOGONAL },
-            { "FRUSTUM",     base_class::PROJECTION_FRUSTUM }
+            { "ORTHOGONAL",  base_class::PROJECTION_ORTHOGONAL }
         };
 
         inline static const std::vector<std::pair<std::string, base_class::KeepAspect>> keep_aspect_registry = {
@@ -190,18 +189,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_frustum", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(size, offset, z_near, z_far)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_vector2)
-                    .require(4, &Machine::is_number)
-                    .require(5, &Machine::is_number);
-
-                self -> camera -> set_frustum(vm -> get_float(2), vm -> get_vector2(3), vm -> get_float(4), vm -> get_float(5));
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_projection", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_projection());
                 return 1;
@@ -299,20 +286,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number);
 
                 self -> camera -> set_far(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_frustum_offset", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_frustum_offset());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_frustum_offset", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_vector2);
-
-                self -> camera -> set_frustum_offset(vm -> get_vector2(2));
                 vm -> push_value(true);
                 return 1;
             });
