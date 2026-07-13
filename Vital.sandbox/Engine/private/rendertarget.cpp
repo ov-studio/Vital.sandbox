@@ -82,6 +82,10 @@ namespace Vital::Engine {
 
 
     // Getters //
+    Rendertarget* Rendertarget::get_active() {
+        return active;
+    }
+
     godot::Vector2 Rendertarget::get_size() {
         return viewport -> get_size();
     }
@@ -92,10 +96,6 @@ namespace Vital::Engine {
 
     godot::Ref<godot::ViewportTexture> Rendertarget::get_texture() {
         return viewport -> get_texture();
-    }
-
-    Rendertarget* Rendertarget::get_active() {
-        return active;
     }
 
 
