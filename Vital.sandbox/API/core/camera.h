@@ -480,20 +480,20 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "unproject_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(world_point)", true)
-                    .require(2, &Machine::is_vector3);
-
-                vm -> push_value(self -> camera -> unproject_position(vm -> get_vector3(2)));
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "project_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(screen_point, z_depth)", true)
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_number);
 
                 vm -> push_value(self -> camera -> project_position(vm -> get_vector2(2), vm -> get_float(3)));
+                return 1;
+            });
+            
+            vm_module::bind_method<Instance>(vm, "unproject_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(world_point)", true)
+                    .require(2, &Machine::is_vector3);
+
+                vm -> push_value(self -> camera -> unproject_position(vm -> get_vector3(2)));
                 return 1;
             });
         }
