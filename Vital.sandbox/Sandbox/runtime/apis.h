@@ -21,6 +21,7 @@
 #include <Vital.sandbox/API/core/database_query.h>
 #include <Vital.sandbox/API/core/discord.h>
 #include <Vital.sandbox/API/core/model.h>
+#include <Vital.sandbox/API/core/camera.h>
 #include <Vital.sandbox/API/core/webview.h>
 #include <Vital.sandbox/API/core/font.h>
 #include <Vital.sandbox/API/core/texture.h>
@@ -71,6 +72,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Database_Query>(),
             vm_module::make_api<Discord>(),
             vm_module::make_api<Model>(),
+            vm_module::make_api<Camera>(),
             vm_module::make_api<Webview>(),
             vm_module::make_api<Font>(),
             vm_module::make_api<Texture>(),
