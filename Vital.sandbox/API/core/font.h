@@ -66,12 +66,12 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "is_antialiased", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> font -> is_antialiased());
+                vm -> push_value(self -> font -> get_font() -> get_antialiasing() != godot::TextServer::FONT_ANTIALIASING_NONE);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_oversampling", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> font -> get_oversampling());
+                vm -> push_value(self -> font -> get_font() -> get_oversampling());
                 return 1;
             });
 
@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> font -> set_antialiased(vm -> get_bool(2));
+                self -> font -> get_font() -> set_antialiasing(vm -> get_bool(2) ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
                 vm -> push_value(true);
                 return 1;
             });
@@ -88,7 +88,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> font -> set_oversampling(vm -> get_float(2));
+                self -> font -> get_font() -> set_oversampling(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
