@@ -64,7 +64,7 @@ namespace Vital::Engine {
     // Checkers //
     bool Texture::is_compressed() const {
         if (command.type != Type::Texture2D) return false;
-        auto texture = get_image_texture();
+        auto texture = get_texture();
         if (!texture.is_valid()) return false;
         return texture -> get_image() -> is_compressed();
     }
@@ -76,16 +76,12 @@ namespace Vital::Engine {
         return it != reference_cache.end() ? it -> second : nullptr;
     }
 
-    godot::Ref<godot::ImageTexture> Texture::get_image_texture() const {
+    godot::Ref<godot::ImageTexture> Texture::get_texture() const {
         switch (command.type) {
             case Type::Texture2D: return std::get<Texture2D>(command.payload).texture;
             case Type::SVG:       return std::get<SVG>(command.payload).texture;
         }
         return godot::Ref<godot::ImageTexture>();
-    }
-
-    godot::Ref<godot::Texture2D> Texture::get_texture() const {
-        return get_image_texture();
     }
 
     godot::Vector2i Texture::get_size() const {
@@ -147,7 +143,7 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        get_image_texture() -> update(image);
+        get_texture() -> update(image);
         heartbeat();
     }
 
@@ -156,24 +152,24 @@ namespace Vital::Engine {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
-        get_image_texture() -> update(image);
+        get_texture() -> update(image);
         heartbeat();
     }
 
     void Texture::convert(godot::Image::Format format) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        auto image = get_image_texture() -> get_image();
+        auto image = get_texture() -> get_image();
         image -> convert(format);
-        get_image_texture() -> update(image);
+        get_texture() -> update(image);
         heartbeat();
     }
 
     void Texture::compress(godot::Image::CompressMode mode) {
         if (command.type != Type::Texture2D) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid command type");
-        auto image = get_image_texture() -> get_image();
+        auto image = get_texture() -> get_image();
         if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture is already compressed");
         if (image -> compress(mode, godot::Image::COMPRESS_SOURCE_GENERIC) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: compression failed");
-        get_image_texture() -> update(image);
+        get_texture() -> update(image);
         heartbeat();
     }
 }
