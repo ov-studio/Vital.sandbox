@@ -140,21 +140,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_transform", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_transform());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_projection_matrix", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_projection_matrix());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_projection", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_projection());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_fov", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_fov());
                 return 1;
@@ -172,6 +157,21 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_far", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_far());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_transform", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_transform());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_projection", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_projection());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_projection_matrix", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_projection_matrix());
                 return 1;
             });
 
@@ -246,16 +246,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_projection", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, projection_registry);
-
-                auto mode = static_cast<base_class::ProjectionType>(vm -> get_int(2));
-                self -> camera -> set_projection(mode);
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_fov", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(fov)", true)
                     .require(2, &Machine::is_number);
@@ -292,6 +282,16 @@ namespace Vital::Sandbox::API {
 
                 auto z_far = vm -> get_float(2);
                 self -> camera -> set_far(z_far);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_projection", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require_enum(2, projection_registry);
+
+                auto mode = static_cast<base_class::ProjectionType>(vm -> get_int(2));
+                self -> camera -> set_projection(mode);
                 vm -> push_value(true);
                 return 1;
             });
