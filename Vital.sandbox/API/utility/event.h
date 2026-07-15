@@ -471,7 +471,8 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "on", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, exec, config = nil)")
                     .require(1, &Machine::is_string)
-                    .require(2, &Machine::is_function);
+                    .require(2, &Machine::is_function)
+                    .optional(3, &Machine::is_table);
 
                 std::string name = vm -> get_string(1);
                 Handler handler;
@@ -519,7 +520,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "emit", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, options = nil, ...)")
-                    .require(1, &Machine::is_string);
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_table);
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);
@@ -549,7 +551,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "emit_callback", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(name, options = nil, ...)")
-                    .require(1, &Machine::is_string);
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_table);
 
                 std::string name = vm -> get_string(1);
                 auto opts = read_emit_options(vm);

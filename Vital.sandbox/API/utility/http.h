@@ -28,7 +28,9 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(url, headers = {\"Content-Type: application/json\"}, timeout = 60)")
-                    .require(1, &Machine::is_string);
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_table)
+                    .optional(3, &Machine::is_number);
 
                 auto url = vm -> get_string(1);
                 Tool::HTTP::http_headers headers = {};
@@ -71,7 +73,9 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "post", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(url, body, headers = {\"Content-Type: application/json\"}, timeout = 60)")
                     .require(1, &Machine::is_string)
-                    .require(2, &Machine::is_string);
+                    .require(2, &Machine::is_string)
+                    .optional(3, &Machine::is_table)
+                    .optional(4, &Machine::is_number);
 
                 auto url = vm -> get_string(1);
                 auto body = vm -> get_string(2);
