@@ -124,17 +124,17 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_auto_exposure_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> is_auto_exposure_enabled());
+                vm -> push_value(self -> camera -> get_attributes() -> is_auto_exposure_enabled());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "is_dof_blur_far_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> is_dof_blur_far_enabled());
+                vm -> push_value(self -> camera -> get_attributes() -> is_dof_blur_far_enabled());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "is_dof_blur_near_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> is_dof_blur_near_enabled());
+                vm -> push_value(self -> camera -> get_attributes() -> is_dof_blur_near_enabled());
                 return 1;
             });
 
@@ -194,47 +194,47 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_auto_exposure_scale", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_auto_exposure_scale());
+                vm -> push_value(self -> camera -> get_attributes() -> get_auto_exposure_scale());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_auto_exposure_speed", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_auto_exposure_speed());
+                vm -> push_value(self -> camera -> get_attributes() -> get_auto_exposure_speed());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_auto_exposure_min_sensitivity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_auto_exposure_min_sensitivity());
+                vm -> push_value(self -> camera -> get_attributes() -> get_auto_exposure_min_sensitivity());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_auto_exposure_max_sensitivity", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_auto_exposure_max_sensitivity());
+                vm -> push_value(self -> camera -> get_attributes() -> get_auto_exposure_max_sensitivity());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_dof_blur_amount", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_dof_blur_amount());
+                vm -> push_value(self -> camera -> get_attributes() -> get_dof_blur_amount());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_dof_blur_far_distance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_dof_blur_far_distance());
+                vm -> push_value(self -> camera -> get_attributes() -> get_dof_blur_far_distance());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_dof_blur_far_transition", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_dof_blur_far_transition());
+                vm -> push_value(self -> camera -> get_attributes() -> get_dof_blur_far_transition());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_dof_blur_near_distance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_dof_blur_near_distance());
+                vm -> push_value(self -> camera -> get_attributes() -> get_dof_blur_near_distance());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_dof_blur_near_transition", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_dof_blur_near_transition());
+                vm -> push_value(self -> camera -> get_attributes() -> get_dof_blur_near_transition());
                 return 1;
             });
 
@@ -351,7 +351,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> camera -> set_auto_exposure_enabled(vm -> get_bool(2));
+                self -> camera -> get_attributes() -> set_auto_exposure_enabled(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -360,7 +360,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(scale)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_auto_exposure_scale(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_auto_exposure_scale(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -369,7 +369,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(speed)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_auto_exposure_speed(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_auto_exposure_speed(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -378,7 +378,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(sensitivity)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_auto_exposure_min_sensitivity(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_auto_exposure_min_sensitivity(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -387,7 +387,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(sensitivity)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_auto_exposure_max_sensitivity(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_auto_exposure_max_sensitivity(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -396,7 +396,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(amount)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_dof_blur_amount(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_dof_blur_amount(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -405,7 +405,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> camera -> set_dof_blur_far_enabled(vm -> get_bool(2));
+                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -414,7 +414,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_dof_blur_far_distance(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_dof_blur_far_distance(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -423,7 +423,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_dof_blur_far_transition(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_dof_blur_far_transition(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -432,7 +432,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> camera -> set_dof_blur_near_enabled(vm -> get_bool(2));
+                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -441,7 +441,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_dof_blur_near_distance(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_dof_blur_near_distance(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -450,7 +450,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_dof_blur_near_transition(vm -> get_float(2));
+                self -> camera -> get_attributes() -> set_dof_blur_near_transition(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
