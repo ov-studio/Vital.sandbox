@@ -29,6 +29,20 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "engine"};
         using base_class = Vital::Engine::Canvas;
 
+        inline static const std::vector<std::pair<std::string, int>> horizontal_alignment_registry = {
+            { "LEFT",   godot::HORIZONTAL_ALIGNMENT_LEFT   },
+            { "CENTER", godot::HORIZONTAL_ALIGNMENT_CENTER },
+            { "RIGHT",  godot::HORIZONTAL_ALIGNMENT_RIGHT  },
+            { "FILL",   godot::HORIZONTAL_ALIGNMENT_FILL   }
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> vertical_alignment_registry = {
+            { "TOP",    godot::VERTICAL_ALIGNMENT_TOP    },
+            { "CENTER", godot::VERTICAL_ALIGNMENT_CENTER },
+            { "BOTTOM", godot::VERTICAL_ALIGNMENT_BOTTOM },
+            { "FILL",   godot::VERTICAL_ALIGNMENT_FILL   }
+        };
+
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "world_to_screen", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, padding = 0)")
@@ -171,20 +185,21 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_text", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(text, start_at, end_at, font, font_size, color = {1, 1, 1, 1}, alignment = {\"left\", \"top\"}, clip = false, wordwrap = false, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
+                vm_args(vm, id, "(text, start_at, end_at, font, font_size, color = {1, 1, 1, 1}, horizontal_alignment = core.engine.horizontal_alignment.LEFT, vertical_alignment = core.engine.horizontal_alignment.TOP, clip = false, wordwrap = false, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_vector2)
                     .require(4, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Font::Instance>(vm, idx); })
                     .require(5, &Machine::is_number)
                     .optional(6, &Machine::is_color)
-                    .optional(7, &Machine::is_table)
-                    .optional(8, &Machine::is_bool)
+                    .optional_enum(7, horizontal_alignment_registry)
+                    .optional_enum(8, vertical_alignment_registry)
                     .optional(9, &Machine::is_bool)
-                    .optional(10, &Machine::is_number)
-                    .optional(11, &Machine::is_color)
-                    .optional(12, &Machine::is_number)
-                    .optional(13, &Machine::is_vector2);
+                    .optional(10, &Machine::is_bool)
+                    .optional(11, &Machine::is_number)
+                    .optional(12, &Machine::is_color)
+                    .optional(13, &Machine::is_number)
+                    .optional(14, &Machine::is_vector2);
 
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
@@ -193,21 +208,23 @@ namespace Vital::Sandbox::API {
                 auto font_size = vm -> get_int(5);
                 auto color = vm -> is_color(6) ? vm -> get_color(6) : godot::Color{1, 1, 1, 1};
                 std::pair<godot::HorizontalAlignment, godot::VerticalAlignment> alignment = {godot::HORIZONTAL_ALIGNMENT_LEFT, godot::VERTICAL_ALIGNMENT_TOP};
-                if (vm -> is_table(7)) {
-                    vm -> table_get_value(1, 7); alignment.first = vm -> get_horizontal_alignment(-1);
-                    vm -> table_get_value(2, 7); alignment.second = vm -> get_vertical_alignment(-1);
-                    vm -> pop(2);
-                }
-                auto clip = vm -> is_bool(8) ? vm -> get_bool(8) : false;
-                auto wordwrap = vm -> is_bool(9) ? vm -> get_bool(9) : false;
-                auto stroke = vm -> is_number(10) ? vm -> get_int(10) : 0;
-                auto stroke_color = vm -> is_color(11) ? vm -> get_color(11) : godot::Color{1, 1, 1, 1};
-                auto rotation = vm -> is_number(12) ? vm -> get_float(12) : 0.0f;
-                auto pivot = vm -> is_vector2(13) ? vm -> get_vector2(13) : godot::Vector2{0.0f, 0.0f};
+                if (vm -> is_number(7)) alignment.first = static_cast<godot::HorizontalAlignment>(vm -> get_int(7));
+                if (vm -> is_number(8)) alignment.second = static_cast<godot::VerticalAlignment>(vm -> get_int(8));
+                auto clip = vm -> is_bool(9) ? vm -> get_bool(9) : false;
+                auto wordwrap = vm -> is_bool(10) ? vm -> get_bool(10) : false;
+                auto stroke = vm -> is_number(11) ? vm -> get_int(11) : 0;
+                auto stroke_color = vm -> is_color(12) ? vm -> get_color(12) : godot::Color{1, 1, 1, 1};
+                auto rotation = vm -> is_number(13) ? vm -> get_float(13) : 0.0f;
+                auto pivot = vm -> is_vector2(14) ? vm -> get_vector2(14) : godot::Vector2{0.0f, 0.0f};
                 base_class::get_singleton() -> draw_text(text, start_at, end_at, font_instance -> font, font_size, color, alignment, clip, wordwrap, stroke, stroke_color, rotation, pivot);
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "horizontal_alignment", horizontal_alignment_registry);
+            vm -> scope_set_enum(base_scope, "vertical_alignment", vertical_alignment_registry);
         }
     };
 }
