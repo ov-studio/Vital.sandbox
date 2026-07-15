@@ -79,7 +79,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> font -> get_font() -> set_antialiasing(vm -> get_bool(2) ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
+                auto state = vm -> get_bool(2);
+                self -> font -> get_font() -> set_antialiasing(state ? godot::TextServer::FONT_ANTIALIASING_GRAY : godot::TextServer::FONT_ANTIALIASING_NONE);
                 vm -> push_value(true);
                 return 1;
             });
@@ -88,7 +89,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> font -> get_font() -> set_oversampling(vm -> get_float(2));
+                auto value = vm -> get_float(2);
+                self -> font -> get_font() -> set_oversampling(value);
                 vm -> push_value(true);
                 return 1;
             });

@@ -129,7 +129,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> webview -> set_visible(vm -> get_bool(2));
+                auto state = vm -> get_bool(2);
+                self -> webview -> set_visible(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -138,7 +139,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
 
-                self -> webview -> set_position(vm -> get_vector2(2));
+                auto position = vm -> get_vector2(2);
+                self -> webview -> set_position(position);
                 vm -> push_value(true);
                 return 1;
             });
@@ -147,7 +149,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_vector2);
 
-                self -> webview -> set_size(vm -> get_vector2(2));
+                auto size = vm -> get_vector2(2);
+                self -> webview -> set_size(size);
                 vm -> push_value(true);
                 return 1;
             });
@@ -156,7 +159,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> webview -> set_devtools_visible(vm -> get_bool(2));
+                auto state = vm -> get_bool(2);
+                self -> webview -> set_devtools_visible(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -182,7 +186,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
 
-                self -> webview -> load_url(resolve_url(vm, vm -> get_string(2)));
+                auto url = resolve_url(vm, vm -> get_string(2));
+                self -> webview -> load_url(url);
                 vm -> push_value(true);
                 return 1;
             });
@@ -191,7 +196,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(html)", true)
                     .require(2, &Machine::is_string);
 
-                self -> webview -> load_html(vm -> get_string(2));
+                auto html = vm -> get_string(2);
+                self -> webview -> load_html(html);
                 vm -> push_value(true);
                 return 1;
             });
@@ -218,7 +224,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> webview -> zoom(vm -> get_float(2));
+                auto value = vm -> get_float(2);
+                self -> webview -> zoom(value);
                 vm -> push_value(true);
                 return 1;
             });
@@ -233,7 +240,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(input)", true)
                     .require(2, &Machine::is_string);
 
-                self -> webview -> eval(vm -> get_string(2));
+                auto input = vm -> get_string(2);
+                self -> webview -> eval(input);
                 vm -> push_value(true);
                 return 1;
             });
@@ -242,7 +250,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(input)", true)
                     .require(2, &Machine::is_string);
 
-                self -> webview -> emit(vm -> get_string(2));
+                auto input = vm -> get_string(2);
+                self -> webview -> emit(input);
                 vm -> push_value(true);
                 return 1;
             });
