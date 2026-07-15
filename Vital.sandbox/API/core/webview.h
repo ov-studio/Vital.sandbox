@@ -63,6 +63,9 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Webview>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(options = {})")
+                    .optional(1, &Machine::is_table);
+
                 base_class::Options options;
                 if (vm -> is_table(1)) {
                     vm -> table_get_value("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
