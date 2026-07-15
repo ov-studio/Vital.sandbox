@@ -108,18 +108,20 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_position_behind", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(world_point)", true)
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
-                vm -> push_value(self -> camera -> is_position_behind(vm -> get_vector3(2)));
+                auto position = vm -> get_vector3(2);
+                vm -> push_value(self -> camera -> is_position_behind(position));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "is_position_in_frustum", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(world_point)", true)
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
-                vm -> push_value(self -> camera -> is_position_in_frustum(vm -> get_vector3(2)));
+                auto position = vm -> get_vector3(2);
+                vm -> push_value(self -> camera -> is_position_in_frustum(position));
                 return 1;
             });
 
@@ -248,7 +250,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, projection_registry);
 
-                self -> camera -> set_projection(static_cast<base_class::ProjectionType>(vm -> get_int(2)));
+                auto mode = static_cast<base_class::ProjectionType>(vm -> get_int(2));
+                self -> camera -> set_projection(mode);
                 vm -> push_value(true);
                 return 1;
             });
@@ -259,7 +262,10 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_number)
                     .require(4, &Machine::is_number);
 
-                self -> camera -> set_perspective(vm -> get_float(2), vm -> get_float(3), vm -> get_float(4));
+                auto fov = vm -> get_float(2);
+                auto z_near = vm -> get_float(3);
+                auto z_far = vm -> get_float(4);
+                self -> camera -> set_perspective(fov, z_near, z_far);
                 vm -> push_value(true);
                 return 1;
             });
@@ -270,7 +276,10 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_number)
                     .require(4, &Machine::is_number);
 
-                self -> camera -> set_orthogonal(vm -> get_float(2), vm -> get_float(3), vm -> get_float(4));
+                auto size = vm -> get_float(2);
+                auto z_near = vm -> get_float(3);
+                auto z_far = vm -> get_float(4);
+                self -> camera -> set_orthogonal(size, z_near, z_far);
                 vm -> push_value(true);
                 return 1;
             });
@@ -279,7 +288,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(fov)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_fov(vm -> get_float(2));
+                auto fov = vm -> get_float(2);
+                self -> camera -> set_fov(fov);
                 vm -> push_value(true);
                 return 1;
             });
@@ -288,7 +298,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_size(vm -> get_float(2));
+                auto size = vm -> get_float(2);
+                self -> camera -> set_size(size);
                 vm -> push_value(true);
                 return 1;
             });
@@ -297,7 +308,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(z_near)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_near(vm -> get_float(2));
+                auto z_near = vm -> get_float(2);
+                self -> camera -> set_near(z_near);
                 vm -> push_value(true);
                 return 1;
             });
@@ -306,7 +318,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(z_far)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_far(vm -> get_float(2));
+                auto z_far = vm -> get_float(2);
+                self -> camera -> set_far(z_far);
                 vm -> push_value(true);
                 return 1;
             });
@@ -315,7 +328,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_h_offset(vm -> get_float(2));
+                auto offset = vm -> get_float(2);
+                self -> camera -> set_h_offset(offset);
                 vm -> push_value(true);
                 return 1;
             });
@@ -324,7 +338,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> set_v_offset(vm -> get_float(2));
+                auto offset = vm -> get_float(2);
+                self -> camera -> set_v_offset(offset);
                 vm -> push_value(true);
                 return 1;
             });
@@ -333,7 +348,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, keep_aspect_registry);
 
-                self -> camera -> set_keep_aspect_mode(static_cast<base_class::KeepAspect>(vm -> get_int(2)));
+                auto mode = static_cast<base_class::KeepAspect>(vm -> get_int(2));
+                self -> camera -> set_keep_aspect_mode(mode);
                 vm -> push_value(true);
                 return 1;
             });
@@ -342,7 +358,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, doppler_tracking_registry);
 
-                self -> camera -> set_doppler_tracking(static_cast<base_class::DopplerTracking>(vm -> get_int(2)));
+                auto mode = static_cast<base_class::DopplerTracking>(vm -> get_int(2));
+                self -> camera -> set_doppler_tracking(mode);
                 vm -> push_value(true);
                 return 1;
             });
@@ -351,7 +368,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> camera -> get_attributes() -> set_auto_exposure_enabled(vm -> get_bool(2));
+                auto enabled = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_enabled(enabled);
                 vm -> push_value(true);
                 return 1;
             });
@@ -360,7 +378,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(scale)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_auto_exposure_scale(vm -> get_float(2));
+                auto scale = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_scale(scale);
                 vm -> push_value(true);
                 return 1;
             });
@@ -369,7 +388,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(speed)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_auto_exposure_speed(vm -> get_float(2));
+                auto speed = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_speed(speed);
                 vm -> push_value(true);
                 return 1;
             });
@@ -378,7 +398,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(sensitivity)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_auto_exposure_min_sensitivity(vm -> get_float(2));
+                auto sensitivity = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_min_sensitivity(sensitivity);
                 vm -> push_value(true);
                 return 1;
             });
@@ -387,7 +408,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(sensitivity)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_auto_exposure_max_sensitivity(vm -> get_float(2));
+                auto sensitivity = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_max_sensitivity(sensitivity);
                 vm -> push_value(true);
                 return 1;
             });
@@ -396,7 +418,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(amount)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_dof_blur_amount(vm -> get_float(2));
+                auto amount = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_dof_blur_amount(amount);
                 vm -> push_value(true);
                 return 1;
             });
@@ -405,7 +428,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(vm -> get_bool(2));
+                auto enabled = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(enabled);
                 vm -> push_value(true);
                 return 1;
             });
@@ -414,7 +438,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_dof_blur_far_distance(vm -> get_float(2));
+                auto distance = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_dof_blur_far_distance(distance);
                 vm -> push_value(true);
                 return 1;
             });
@@ -423,7 +448,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_dof_blur_far_transition(vm -> get_float(2));
+                auto distance = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_dof_blur_far_transition(distance);
                 vm -> push_value(true);
                 return 1;
             });
@@ -432,7 +458,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(vm -> get_bool(2));
+                auto enabled = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(enabled);
                 vm -> push_value(true);
                 return 1;
             });
@@ -441,7 +468,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_dof_blur_near_distance(vm -> get_float(2));
+                auto distance = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_dof_blur_near_distance(distance);
                 vm -> push_value(true);
                 return 1;
             });
@@ -450,49 +478,56 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(distance)", true)
                     .require(2, &Machine::is_number);
 
-                self -> camera -> get_attributes() -> set_dof_blur_near_transition(vm -> get_float(2));
+                auto distance = vm -> get_float(2);
+                self -> camera -> get_attributes() -> set_dof_blur_near_transition(distance);
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "project_ray_normal", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(screen_point)", true)
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
 
-                vm -> push_value(self -> camera -> project_ray_normal(vm -> get_vector2(2)));
+                auto position = vm -> get_vector2(2);
+                vm -> push_value(self -> camera -> project_ray_normal(position));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "project_local_ray_normal", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(screen_point)", true)
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
 
-                vm -> push_value(self -> camera -> project_local_ray_normal(vm -> get_vector2(2)));
+                auto position = vm -> get_vector2(2);
+                vm -> push_value(self -> camera -> project_local_ray_normal(position));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "project_ray_origin", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(screen_point)", true)
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
 
-                vm -> push_value(self -> camera -> project_ray_origin(vm -> get_vector2(2)));
+                auto position = vm -> get_vector2(2);
+                vm -> push_value(self -> camera -> project_ray_origin(position));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "project_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(screen_point, z_depth)", true)
+                vm_args(vm, id, "(position, depth)", true)
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_number);
 
-                vm -> push_value(self -> camera -> project_position(vm -> get_vector2(2), vm -> get_float(3)));
+                auto position = vm -> get_vector2(2);
+                auto depth = vm -> get_float(3);
+                vm -> push_value(self -> camera -> project_position(position, depth));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "unproject_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(world_point)", true)
+                vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
-                vm -> push_value(self -> camera -> unproject_position(vm -> get_vector3(2)));
+                auto position = vm -> get_vector3(2);
+                vm -> push_value(self -> camera -> unproject_position(position));
                 return 1;
             });
         }
