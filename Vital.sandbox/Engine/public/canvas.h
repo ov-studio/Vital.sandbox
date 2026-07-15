@@ -137,7 +137,7 @@ namespace Vital::Engine {
 
             void draw_line(
                 godot::PackedVector2Array points,
-                float thickness = 0.0f,
+                float thickness,
                 const godot::Color& color = {1, 1, 1, 1}
             );
     
