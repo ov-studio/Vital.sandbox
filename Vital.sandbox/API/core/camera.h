@@ -145,8 +145,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_camera_projection", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_camera_projection());
+            vm_module::bind_method<Instance>(vm, "get_projection_matrix", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_projection_matrix());
                 return 1;
             });
 
