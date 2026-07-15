@@ -53,13 +53,13 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_line", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(points, stroke = 0, color = {1, 1, 1, 1})")
+                vm_args(vm, id, "(points, thickness = 0, color = {1, 1, 1, 1})")
                     .require(1, &Machine::is_vector2_array);
 
                 auto points = vm -> get_vector2_array(1);
-                auto stroke = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
+                auto thickness = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
                 auto color = vm -> is_color(3) ? vm -> get_color(3) : godot::Color{1, 1, 1, 1};
-                base_class::get_singleton() -> draw_line(points, stroke, color);
+                base_class::get_singleton() -> draw_line(points, thickness, color);
                 vm -> push_value(true);
                 return 1;
             });

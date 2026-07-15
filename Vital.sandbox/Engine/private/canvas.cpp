@@ -75,7 +75,7 @@ namespace Vital::Engine {
                     node -> draw_polyline(
                         payload.points,
                         payload.color,
-                        payload.stroke,
+                        payload.thickness,
                         true
                     );
                     break;
@@ -224,13 +224,13 @@ namespace Vital::Engine {
 
     void Canvas::draw_line(
         godot::PackedVector2Array points,
-        float stroke,
+        float thickness,
         const godot::Color& color
     ) {
         if (points.size() < 2) return;
         Line payload;
         payload.points = points;
-        payload.stroke = stroke;
+        payload.thickness = thickness;
         payload.color = color;
         push({Type::Line, payload});
     }

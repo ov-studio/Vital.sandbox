@@ -42,7 +42,7 @@ namespace Vital::Engine {
         
             struct Line {
                 godot::PackedVector2Array points;
-                float stroke;
+                float thickness;
                 godot::Color color;
             };
 
@@ -137,7 +137,7 @@ namespace Vital::Engine {
 
             void draw_line(
                 godot::PackedVector2Array points,
-                float stroke = 0.0f,
+                float thickness = 0.0f,
                 const godot::Color& color = {1, 1, 1, 1}
             );
     
