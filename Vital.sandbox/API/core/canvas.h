@@ -32,7 +32,8 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "world_to_screen", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, padding = 0)")
-                    .require(1, &Machine::is_vector3);
+                    .require(1, &Machine::is_vector3)
+                    .optional(2, &Machine::is_number);
 
                 auto position = vm -> get_vector3(1);
                 auto padding = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
@@ -44,7 +45,8 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "screen_to_world", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, depth = 1)")
-                    .require(1, &Machine::is_vector2);
+                    .require(1, &Machine::is_vector2)
+                    .optional(2, &Machine::is_number);
 
                 auto position = vm -> get_vector2(1);
                 auto depth = vm -> is_number(2) ? vm -> get_float(2) : 1.0f;
@@ -54,7 +56,9 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "draw_line", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(points, thickness, color = {1, 1, 1, 1})")
-                    .require(1, &Machine::is_vector2_array);
+                    .require(1, &Machine::is_vector2_array)
+                    .optional(2, &Machine::is_number)
+                    .optional(3, &Machine::is_color);
 
                 auto points = vm -> get_vector2_array(1);
                 auto thickness = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
@@ -66,7 +70,12 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "draw_polygon", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(points, color = {1, 1, 1, 1}, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
-                    .require(1, &Machine::is_vector2_array);
+                    .require(1, &Machine::is_vector2_array)
+                    .optional(2, &Machine::is_color)
+                    .optional(3, &Machine::is_number)
+                    .optional(4, &Machine::is_color)
+                    .optional(5, &Machine::is_number)
+                    .optional(6, &Machine::is_vector2);
 
                 auto points = vm -> get_vector2_array(1);
                 auto color = vm -> is_color(2) ? vm -> get_color(2) : godot::Color{1, 1, 1, 1};
@@ -82,7 +91,12 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "draw_rectangle", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, size, color = {1, 1, 1, 1}, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
                     .require(1, &Machine::is_vector2)
-                    .require(2, &Machine::is_vector2);
+                    .require(2, &Machine::is_vector2)
+                    .optional(3, &Machine::is_color)
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_color)
+                    .optional(6, &Machine::is_number)
+                    .optional(7, &Machine::is_vector2);
 
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
@@ -99,7 +113,12 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "draw_circle", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(position, radius, color = {1, 1, 1, 1}, stroke = 0, stroke_color = {1, 1, 1, 1}, rotation = 0, pivot = {0, 0})")
                     .require(1, &Machine::is_vector2)
-                    .require(2, &Machine::is_number);
+                    .require(2, &Machine::is_number)
+                    .optional(3, &Machine::is_color)
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_color)
+                    .optional(6, &Machine::is_number)
+                    .optional(7, &Machine::is_vector2);
 
                 auto position = vm -> get_vector2(1);
                 auto radius = vm -> get_float(2);
@@ -122,7 +141,10 @@ namespace Vital::Sandbox::API {
                             || vm_module::is_userdata<API::Texture::Instance>(vm, idx)
                             || vm_module::is_userdata<API::Rendertarget::Instance>(vm, idx)
                             || vm_module::is_userdata<API::SVG::Instance>(vm, idx);
-                    });
+                    })
+                    .optional(4, &Machine::is_number)
+                    .optional(5, &Machine::is_vector2)
+                    .optional(6, &Machine::is_color);
 
                 auto position = vm -> get_vector2(1);
                 auto size = vm -> get_vector2(2);
@@ -154,7 +176,15 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_vector2)
                     .require(3, &Machine::is_vector2)
                     .require(4, [](Machine* vm, int idx) { return vm_module::is_userdata<API::Font::Instance>(vm, idx); })
-                    .require(5, &Machine::is_number);
+                    .require(5, &Machine::is_number)
+                    .optional(6, &Machine::is_color)
+                    .optional(7, &Machine::is_table)
+                    .optional(8, &Machine::is_bool)
+                    .optional(9, &Machine::is_bool)
+                    .optional(10, &Machine::is_number)
+                    .optional(11, &Machine::is_color)
+                    .optional(12, &Machine::is_number)
+                    .optional(13, &Machine::is_vector2);
 
                 auto text = vm -> get_string(1);
                 auto start_at = vm -> get_vector2(2);
