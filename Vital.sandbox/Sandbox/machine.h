@@ -48,19 +48,6 @@ namespace Vital::Sandbox {
                 "loadfile"
             };
 
-            inline static const std::unordered_map<std::string, godot::HorizontalAlignment> horizontal_alignment = {
-                {"left", godot::HORIZONTAL_ALIGNMENT_LEFT},
-                {"center", godot::HORIZONTAL_ALIGNMENT_CENTER},
-                {"right", godot::HORIZONTAL_ALIGNMENT_RIGHT},
-                {"fill", godot::HORIZONTAL_ALIGNMENT_FILL}
-            };
-
-            inline static const std::unordered_map<std::string, godot::VerticalAlignment> vertical_alignment = {
-                {"top", godot::VERTICAL_ALIGNMENT_TOP},
-                {"center", godot::VERTICAL_ALIGNMENT_CENTER},
-                {"bottom", godot::VERTICAL_ALIGNMENT_BOTTOM},
-                {"fill", godot::VERTICAL_ALIGNMENT_FILL}
-            };
         private:
             bool virtualized = false;
             vm_state* state = nullptr;
@@ -161,24 +148,6 @@ namespace Vital::Sandbox {
             bool is_function(int idx = 1) { return get_type(idx) == LUA_TFUNCTION; }
             bool is_reference(const std::string& scope, const std::string& name) const { return reference.find(make_reference(scope, name)) != reference.end(); }
 
-            bool is_horizontal_alignment(int idx = 1) {
-                if (is_string(idx)) return horizontal_alignment.count(get_string(idx)) > 0;
-                else if (is_number(idx)) {
-                    int value = get_int(idx);
-                    return value >= godot::HORIZONTAL_ALIGNMENT_LEFT && value <= godot::HORIZONTAL_ALIGNMENT_FILL;
-                }
-                return false;
-            }
-
-            bool is_vertical_alignment(int idx = 1) {
-                if (is_string(idx)) return vertical_alignment.count(get_string(idx)) > 0;
-                else if (is_number(idx)) {
-                    int value = get_int(idx);
-                    return value >= godot::VERTICAL_ALIGNMENT_TOP && value <= godot::VERTICAL_ALIGNMENT_FILL;
-                }
-                return false;
-            }
-
             bool is_color(int idx = 1) {
                 if (is_string(idx)) return godot::Color::html_is_valid(Tool::to_godot_string(get_string(idx)));
                 return is_table(idx) && get_length(idx) >= 4;
@@ -256,22 +225,6 @@ namespace Vital::Sandbox {
             int get_raw_reference(int ref) {
                 lua_rawgeti(state, LUA_REGISTRYINDEX, ref);
                 return 0;
-            }
-
-            godot::HorizontalAlignment get_horizontal_alignment(int idx = 1) {
-                if (is_horizontal_alignment(idx)) {
-                    if (is_string(idx)) return horizontal_alignment.find(get_string(idx)) -> second;
-                    return static_cast<godot::HorizontalAlignment>(get_int(idx));
-                }
-                return godot::HORIZONTAL_ALIGNMENT_LEFT;
-            }
-
-            godot::VerticalAlignment get_vertical_alignment(int idx = 1) {
-                if (is_vertical_alignment(idx)) {
-                    if (is_string(idx)) return vertical_alignment.find(get_string(idx)) -> second;
-                    return static_cast<godot::VerticalAlignment>(get_int(idx));
-                }
-                return godot::VERTICAL_ALIGNMENT_TOP;
             }
 
             godot::Color get_color(int idx = 1) {
@@ -357,26 +310,6 @@ namespace Vital::Sandbox {
             void push_string(const std::string& value) { lua_pushstring(state, value.c_str()); }
             void push_userdata(void* value) { lua_pushlightuserdata(state, value); }
             void push_function(const vm_exec& value) { lua_pushcfunction(state, value); }
-
-            void push_horizontal_alignment(godot::HorizontalAlignment value) {
-                for (auto& it : horizontal_alignment) {
-                    if (it.second == value) {
-                        push_value(it.first);
-                        return;
-                    }
-                }
-                push_value("left");
-            }
-
-            void push_vertical_alignment(godot::VerticalAlignment value) {
-                for (auto& it : vertical_alignment) {
-                    if (it.second == value) {
-                        push_value(it.first);
-                        return;
-                    }
-                }
-                push_value("top");
-            }
 
             void push_color(const godot::Color& value) {
                 create_table();
