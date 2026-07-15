@@ -48,7 +48,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(Manager::Resource::get_singleton() -> is_loaded(vm -> get_string(1)));
+                auto name = vm -> get_string(1);
+                vm -> push_value(Manager::Resource::get_singleton() -> is_loaded(name));
                 return 1;
             });
         
@@ -56,7 +57,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(Manager::Resource::get_singleton() -> is_running(vm -> get_string(1)));
+                auto name = vm -> get_string(1);
+                vm -> push_value(Manager::Resource::get_singleton() -> is_running(name));
                 return 1;
             });
         
@@ -65,7 +67,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(Manager::Resource::get_singleton() -> start(vm -> get_string(1)));
+                auto name = vm -> get_string(1);
+                vm -> push_value(Manager::Resource::get_singleton() -> start(name));
                 return 1;
             });
         
@@ -73,7 +76,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(Manager::Resource::get_singleton() -> stop(vm -> get_string(1)));
+                auto name = vm -> get_string(1);
+                vm -> push_value(Manager::Resource::get_singleton() -> stop(name));
                 return 1;
             });
         
@@ -81,7 +85,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)")
                     .require(1, &Machine::is_string);
 
-                vm -> push_value(Manager::Resource::get_singleton() -> restart(vm -> get_string(1)));
+                auto name = vm -> get_string(1);
+                vm -> push_value(Manager::Resource::get_singleton() -> restart(name));
                 return 1;
             });
             #endif
