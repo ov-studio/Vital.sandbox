@@ -270,20 +270,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_orthogonal", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(size, z_near, z_far)", true)
-                    .require(2, &Machine::is_number)
-                    .require(3, &Machine::is_number)
-                    .require(4, &Machine::is_number);
-
-                auto size = vm -> get_float(2);
-                auto z_near = vm -> get_float(3);
-                auto z_far = vm -> get_float(4);
-                self -> camera -> set_orthogonal(size, z_near, z_far);
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_fov", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(fov)", true)
                     .require(2, &Machine::is_number);
