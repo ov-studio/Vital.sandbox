@@ -53,7 +53,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "draw_line", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(points, thickness = 0, color = {1, 1, 1, 1})")
+                vm_args(vm, id, "(points, thickness, color = {1, 1, 1, 1})")
                     .require(1, &Machine::is_vector2_array);
 
                 auto points = vm -> get_vector2_array(1);
