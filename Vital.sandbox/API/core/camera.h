@@ -29,17 +29,17 @@ namespace Vital::Sandbox::API {
 
         inline static const std::vector<std::pair<std::string, base_class::ProjectionType>> projection_registry = {
             { "PERSPECTIVE", base_class::PROJECTION_PERSPECTIVE },
-            { "ORTHOGONAL",  base_class::PROJECTION_ORTHOGONAL }
+            { "ORTHOGONAL",  base_class::PROJECTION_ORTHOGONAL  }
         };
 
         inline static const std::vector<std::pair<std::string, base_class::KeepAspect>> keep_aspect_registry = {
-            { "WIDTH",  base_class::KEEP_WIDTH },
+            { "WIDTH",  base_class::KEEP_WIDTH  },
             { "HEIGHT", base_class::KEEP_HEIGHT }
         };
 
         inline static const std::vector<std::pair<std::string, base_class::DopplerTracking>> doppler_tracking_registry = {
-            { "DISABLED",     base_class::DOPPLER_TRACKING_DISABLED },
-            { "IDLE_STEP",    base_class::DOPPLER_TRACKING_IDLE_STEP },
+            { "DISABLED",     base_class::DOPPLER_TRACKING_DISABLED     },
+            { "IDLE_STEP",    base_class::DOPPLER_TRACKING_IDLE_STEP    },
             { "PHYSICS_STEP", base_class::DOPPLER_TRACKING_PHYSICS_STEP }
         };
 
