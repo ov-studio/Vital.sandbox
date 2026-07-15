@@ -90,10 +90,28 @@ namespace Vital::Sandbox {
             inline vm_args& require_enum(int idx, E min, E max) {
                 return require(idx, &Machine::is_number).validate_enum(idx, min, max);
             }
-    
+
             template<typename F>
             inline vm_args& optional(int idx, F&& check) {
                 if ((vm -> get_count() >= idx) && !vm -> is_nil(idx) && !std::invoke(std::forward<F>(check), vm, idx)) throw_error(idx);
+                return *this;
+            }
+
+            template<typename Registry>
+            inline vm_args& optional_enum(int idx, const Registry& registry) {
+                if ((vm -> get_count() >= idx) && !vm -> is_nil(idx)) {
+                    if (!vm -> is_number(idx)) throw_error(idx);
+                    validate_enum(idx, registry);
+                }
+                return *this;
+            }
+
+            template<typename E>
+            inline vm_args& optional_enum(int idx, E min, E max) {
+                if ((vm -> get_count() >= idx) && !vm -> is_nil(idx)) {
+                    if (!vm -> is_number(idx)) throw_error(idx);
+                    validate_enum(idx, min, max);
+                }
                 return *this;
             }
 
