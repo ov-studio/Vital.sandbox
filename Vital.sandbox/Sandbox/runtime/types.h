@@ -49,11 +49,53 @@ namespace Vital::Sandbox {
         private:
             int arg_offset = 0;
 
+            inline static std::string format_syntax(const std::string& syntax) {
+                auto start = syntax.find('(');
+                auto end = syntax.rfind(')');
+                if (start == std::string::npos || end == std::string::npos || end < start) return syntax;
+
+                const std::string prefix = syntax.substr(0, start);
+                const std::string body = syntax.substr(start + 1, end - start - 1);
+                std::vector<std::string> params;
+                std::string current;
+                int depth = 0;
+                for (char c : body) {
+                    if (c == '(' || c == '{') {
+                        depth++;
+                        current += c;
+                    }
+                    else if (c == ')' || c == '}') {
+                        depth--;
+                        current += c;
+                    }
+                    else if (c == ',' && depth == 0) {
+                        params.push_back(current);
+                        current.clear();
+                    }
+                    else current += c;
+                }
+                if (!current.empty()) params.push_back(current);
+                for (auto& param : params) {
+                    auto s = param.find_first_not_of(" \t");
+                    auto e = param.find_last_not_of(" \t");
+                    param = (s == std::string::npos) ? "" : param.substr(s, e - s + 1);
+                }
+                if (params.empty()) return prefix + "()";
+                std::string result = prefix + "(\n";
+                for (size_t i = 0; i < params.size(); i++) {
+                    result += "\t" + params[i];
+                    if (i != params.size() - 1) result += ",";
+                    result += "\n";
+                }
+                result += ")";
+                return result;
+            }
+
             inline void throw_error(int idx, const std::string& reason = "") const {
                 int display_idx = idx - arg_offset;
                 const std::string arg = (idx - 1 - arg_offset) < (int)arguments.size() ? arguments[idx - 1 - arg_offset] : std::to_string(display_idx);
                 const std::string partial = fmt::format("bad argument #{} '{}' {}", display_idx, arg, reason.empty() ? "" : fmt::format("({})", reason));
-                const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", syntax, partial);
+                const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", format_syntax(syntax), partial);
                 throw vm_error(detail, partial);
             }
         public:
