@@ -198,16 +198,63 @@ namespace Vital::Engine {
             start = pos + 1;
         }
         normalized.append(message, start, std::string::npos);
+
+        auto count_bt = [](const std::string& s) -> std::size_t {
+            std::size_t n = 0;
+            for (char c : s) if (c == '`') ++n;
+            return n;
+        };
+
+        auto emit_code_block = [&](std::ostringstream& out, const std::vector<std::string>& lines) {
+            for (const auto& l : lines) out << format_line(mode_rgb, ts_str, mode_badge, "> `" + l + "`", true);
+        };
+
         std::ostringstream oss;
-        std::istringstream stream(normalized);
-        std::string line;
         bool first = true;
-        while (std::getline(stream, line)) {
-            if (!line.empty() && line.back() == '\r') line.pop_back();
-            if (line.empty()) continue;
-            oss << format_line(mode_rgb, ts_str, mode_badge, line, !first);
-            first = false;
+        bool open_code = false;
+        std::vector<std::string> code_lines;
+        std::istringstream stream(normalized);
+        std::string raw_line;
+        while (std::getline(stream, raw_line)) {
+            if (!raw_line.empty() && raw_line.back() == '\r') raw_line.pop_back();
+            if (raw_line.empty()) continue;
+
+            if (open_code) {
+                std::size_t bt = count_bt(raw_line);
+                if (bt % 2 == 1) {
+                    std::size_t close_pos = raw_line.find('`');
+                    std::string code_part = raw_line.substr(0, close_pos);
+                    std::string after = raw_line.substr(close_pos + 1);
+                    if (!after.empty() && after.front() == ' ') after = after.substr(1);
+                    if (!code_part.empty()) code_lines.push_back(code_part);
+                    emit_code_block(oss, code_lines);
+                    code_lines.clear();
+                    open_code = false;
+                    if (!after.empty()) oss << format_line(mode_rgb, ts_str, mode_badge, after, true);
+                }
+                else code_lines.push_back(raw_line);
+                continue;
+            }
+
+            std::size_t bt = count_bt(raw_line);
+            if (bt % 2 == 1) {
+                std::size_t open_pos  = raw_line.find('`');
+                std::string before     = raw_line.substr(0, open_pos);
+                std::string code_start = raw_line.substr(open_pos + 1);
+                if (!before.empty()) {
+                    oss << format_line(mode_rgb, ts_str, mode_badge, before, !first);
+                    first = false;
+                }
+                if (!code_start.empty()) code_lines.push_back(code_start);
+                open_code = true;
+                first = false;
+            }
+            else {
+                oss << format_line(mode_rgb, ts_str, mode_badge, raw_line, !first);
+                first = false;
+            }
         }
+        if (!code_lines.empty()) emit_code_block(oss, code_lines);
         oss << "\n";
         return oss.str();
     }
