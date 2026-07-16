@@ -293,7 +293,7 @@ namespace Vital::Engine {
                 HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                 CONSOLE_FONT_INFOEX fontInfo = {};
                 fontInfo.cbSize = sizeof(fontInfo);
-                fontInfo.dwFontSize.Y = 19;
+                fontInfo.dwFontSize.Y = 18;
                 fontInfo.FontFamily = FF_DONTCARE;
                 fontInfo.FontWeight = FW_NORMAL;
                 wcscpy_s(fontInfo.FaceName, L"Cascadia Code");
