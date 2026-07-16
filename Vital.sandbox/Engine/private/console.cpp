@@ -194,7 +194,7 @@ namespace Vital::Engine {
         std::size_t start = 0, pos;
         while ((pos = message.find('\t', start)) != std::string::npos) {
             normalized.append(message, start, pos - start);
-            normalized += "    ";
+            normalized += Tool::indent(2);
             start = pos + 1;
         }
         normalized.append(message, start, std::string::npos);
