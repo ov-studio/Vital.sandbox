@@ -36,7 +36,7 @@ namespace Vital::Tool {
 
     static std::string indent(int level) {
         #if defined(VSDK_Client)
-            return std::string(level*4, ' ');
+            return std::string(level, '\t');
         #else
             return std::string(level*2, ' ');
         #endif
