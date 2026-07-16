@@ -177,7 +177,7 @@ namespace Vital::Engine {
         }
         return oss.str();
     }
-    
+
     std::string Console::Internal::format_output(const std::string& mode, const std::string& message) {
         auto mode_badge = fetch_mode_badge(mode);
         const Tool::Stack mode_rgb = fetch_mode_color(mode);
@@ -188,6 +188,7 @@ namespace Vital::Engine {
             ts.object.at("minute").as<int32_t>(), 
             ts.object.at("second").as<int32_t>()
         );
+
         std::string normalized;
         normalized.reserve(message.size());
         std::size_t start = 0, pos;
