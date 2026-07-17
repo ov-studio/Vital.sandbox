@@ -269,8 +269,8 @@ namespace Vital::Sandbox::API {
             bool down;
         };
 
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_keys;
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> bound_mouse;
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> key_binds;
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> mouse_binds;
 
 
         static bool resolve_key(int code, std::string& key, bool& mouse) {
@@ -358,8 +358,8 @@ namespace Vital::Sandbox::API {
                 std::string key;
                 bool mouse;
                 if (!resolve_key(code, key, mouse)) return;
-                if (mouse) dispatch_handler(bound_mouse, vm, code, pressed);
-                else dispatch_handler(bound_keys, vm, code, pressed);
+                if (mouse) dispatch_handler(mouse_binds, vm, code, pressed);
+                else dispatch_handler(key_binds, vm, code, pressed);
             });
         }
 
@@ -426,7 +426,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = mouse ? bind_handler(bound_mouse, vm, code, down, 3) : bind_handler(bound_keys, vm, code, down, 3);
+                auto ok = mouse ? bind_handler(mouse_binds, vm, code, down, 3) : bind_handler(key_binds, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -444,7 +444,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = mouse ? unbind_handler(bound_mouse, vm, code, down, 3) : unbind_handler(bound_keys, vm, code, down, 3);
+                auto ok = mouse ? unbind_handler(mouse_binds, vm, code, down, 3) : unbind_handler(key_binds, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -470,8 +470,8 @@ namespace Vital::Sandbox::API {
                     else ++mit;
                 }
             };
-            release(bound_keys);
-            release(bound_mouse);
+            release(key_binds);
+            release(mouse_binds);
         }
     };
 }
