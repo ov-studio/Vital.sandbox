@@ -93,7 +93,13 @@ namespace Vital::Sandbox {
 
             inline void throw_error(int idx, const std::string& reason = "") const {
                 int display_idx = idx - arg_offset;
-                const std::string arg = (idx - 1 - arg_offset) < (int)arguments.size() ? arguments[idx - 1 - arg_offset] : std::to_string(display_idx);
+                std::string arg;
+                if ((idx - 1 - arg_offset) < (int)arguments.size()) {
+                    arg = arguments[idx - 1 - arg_offset];
+                    auto cut = arg.find_first_of(" =");
+                    if (cut != std::string::npos) arg = arg.substr(0, cut);
+                }
+                else arg = std::to_string(display_idx);
                 const std::string partial = fmt::format("bad argument #{} '{}' {}", display_idx, arg, reason.empty() ? "" : fmt::format("({})", reason));
                 const std::string detail = fmt::format("invalid argument\n> Syntax: `{}`\n> Reason: {}", format_syntax(syntax), partial);
                 throw vm_error(detail, partial);
@@ -106,14 +112,27 @@ namespace Vital::Sandbox {
             inline vm_args(Machine* vm, const std::string& syntax) : vm_args(vm, syntax, "") {}
             inline vm_args(Machine* vm, const std::string& id, const std::string& args, bool is_method = false) : vm(vm), syntax(id + args), arg_offset(is_method ? 1 : 0) {
                 auto start = syntax.find('(');
-                auto end = syntax.find(')');
-                if (start == std::string::npos || end == std::string::npos) return;
-                std::stringstream ss(syntax.substr(start + 1, end - start - 1));
-                std::string token;
-                while (std::getline(ss, token, ',')) {
-                    token.erase(0, token.find_first_not_of(" \t"));
-                    token.erase(token.find_last_not_of(" \t") + 1);
-                    if (!token.empty()) arguments.push_back(token);
+                auto end = syntax.rfind(')');
+                if (start == std::string::npos || end == std::string::npos || end < start) return;
+
+                const std::string body = syntax.substr(start + 1, end - start - 1);
+                std::string current;
+                int depth = 0;
+                for (char c : body) {
+                    if (c == '(' || c == '{') { depth++; current += c; }
+                    else if (c == ')' || c == '}') { depth--; current += c; }
+                    else if (c == ',' && depth == 0) {
+                        auto s = current.find_first_not_of(" \t");
+                        auto e = current.find_last_not_of(" \t");
+                        if (s != std::string::npos) arguments.push_back(current.substr(s, e - s + 1));
+                        current.clear();
+                    }
+                    else current += c;
+                }
+                if (!current.empty()) {
+                    auto s = current.find_first_not_of(" \t");
+                    auto e = current.find_last_not_of(" \t");
+                    if (s != std::string::npos) arguments.push_back(current.substr(s, e - s + 1));
                 }
             }
 
