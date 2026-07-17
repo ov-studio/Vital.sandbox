@@ -52,9 +52,6 @@ namespace Vital::Sandbox::API {
             return result;
         }
 
-        // dispatch_export: looks up the export ref for (resource, name) and, if found, invokes it
-        // with the `nargs` arguments already sitting on top of the stack. Returns false if no
-        // export was found (nothing is called/popped in that case). Mirrors dispatch_handler in input.h.
         static bool dispatch_export(Machine* vm, const std::string& resource, const std::string& name, int nargs, int& results) {
             int ref = LUA_NOREF;
             {
