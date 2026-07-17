@@ -172,8 +172,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(handler)", true)
                     .require(2, &Machine::is_function);
 
-                self -> set_reference(self -> value_reference("exec"), 2);
                 auto instance_id = self -> id;
+                self -> set_reference(self -> value_reference("exec"), 2);
                 self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
                     auto instance = Instance::find(instance_id);
                     if (!instance) return;
