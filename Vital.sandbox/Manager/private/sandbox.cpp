@@ -91,45 +91,4 @@ namespace Vital::Manager {
     Vital::Sandbox::Machine* Sandbox::get_vm() {
         return vm;
     }
-
-
-    // Exports //
-    int Sandbox::get_export_ref(const std::string& resource, const std::string& name) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto rit = exports.find(resource);
-        if (rit == exports.end()) return LUA_NOREF;
-        auto fit = rit -> second.find(name);
-        if (fit == rit -> second.end()) return LUA_NOREF;
-        return fit -> second;
-    }
-    
-    bool Sandbox::register_export(const std::string& resource, const std::string& name, int reference) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto& map = exports[resource];
-        auto it = map.find(name);
-        if (it != map.end()) {
-            vm -> del_raw_reference(it -> second);
-            map.erase(it);
-        }
-        map[name] = reference;
-        return true;
-    }
-
-    std::vector<std::string> Sandbox::list_exports(const std::string& resource) const {
-        std::lock_guard<std::mutex> lock(mutex);
-        std::vector<std::string> result;
-        auto it = exports.find(resource);
-        if (it == exports.end()) return result;
-        result.reserve(it -> second.size());
-        for (const auto& [name, _] : it -> second) result.push_back(name);
-        return result;
-    }
-
-    void Sandbox::reset_exports(const std::string& resource) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto it = exports.find(resource);
-        if (it == exports.end()) return;
-        for (auto& [name, ref] : it -> second) vm -> del_raw_reference(ref);
-        exports.erase(it);
-    }
 }

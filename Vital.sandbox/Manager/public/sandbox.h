@@ -67,12 +67,5 @@ namespace Vital::Manager {
 
             // Getters //
             Vital::Sandbox::Machine* get_vm();
-
-
-            // Exports //
-            int get_export_ref(const std::string& resource, const std::string& name) const;
-            bool register_export(const std::string& resource, const std::string& name, int lua_ref);
-            std::vector<std::string> list_exports(const std::string& resource) const;
-            void reset_exports(const std::string& resource);
     };
 }
