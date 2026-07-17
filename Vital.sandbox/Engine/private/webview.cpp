@@ -163,16 +163,6 @@ namespace Vital::Engine {
         webview -> call_deferred("post_message", Tool::to_godot_string(input));
     }
 
-    void Webview::inject_globals() {
-        std::ostringstream js;
-        js << "(function() {";
-        for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) {
-            js << content << "\n";
-        }
-        js << "})();";
-        eval(js.str());
-    }
-
 
     // Events //
     void Webview::on_message(godot::String message) {
@@ -181,8 +171,13 @@ namespace Vital::Engine {
     }
 
     void Webview::on_page_loaded(godot::String url) {
-        Tool::print("info", "page finished loading");
-        inject_globals();
+        std::ostringstream js;
+        js << "(function() {";
+        for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) {
+            js << content << "\n";
+        }
+        js << "})();";
+        eval(js.str());
     }
 }
 #endif

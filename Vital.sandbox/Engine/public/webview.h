@@ -85,7 +85,6 @@ namespace Vital::Engine {
             void update();
             void eval(const std::string& input);
             void emit(const std::string& input);
-            void inject_globals();
 
 
             // Events //
