@@ -28,8 +28,6 @@ namespace Vital::Sandbox::API {
         inline static std::mutex mutex;
         inline static std::unordered_map<std::string, std::unordered_map<std::string, int>> buffer;
 
-
-        // Getters //
         static bool register_export(Machine* vm, const std::string& resource, const std::string& name, int reference) {
             std::lock_guard<std::mutex> lock(mutex);
             auto& map = buffer[resource];
