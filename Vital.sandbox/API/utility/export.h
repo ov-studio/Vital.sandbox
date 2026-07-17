@@ -119,7 +119,6 @@ namespace Vital::Sandbox::API {
                 int nargs = vm -> get_count() - 2;
                 int results = 0;
                 if (!dispatch_export(vm, resource, name, nargs, results)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — resource '{}' has no export '{}'", resource, name)); // TODO: APPLY BASE NAME USING FMT
-
                 return results;
             });
         }
