@@ -121,12 +121,12 @@ namespace Vital::Sandbox::API {
             });
         }
 
-        static void clean(const std::string& resource) {
+        static void clean(const std::string& env) {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
             std::lock_guard<std::mutex> lock(mutex);
-            auto it = buffer.find(resource);
+            auto it = buffer.find(env);
             if (it == buffer.end()) return;
             for (auto& [name, ref] : it -> second) vm -> del_raw_reference(ref);
             buffer.erase(it);
