@@ -115,7 +115,6 @@ namespace Vital::Sandbox::API {
                 const std::string resource = vm -> get_string(1);
                 const std::string name = vm -> get_string(2);
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — resource '{}' is not running", resource));
-
                 int nargs = vm -> get_count() - 2;
                 int results = 0;
                 if (!dispatch_export(vm, resource, name, nargs, results)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — resource '{}' has no export '{}'", resource, name)); // TODO: APPLY BASE NAME USING FMT
