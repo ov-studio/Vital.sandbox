@@ -1,15 +1,5 @@
 [gd_scene format=3 uid="uid://3hid3cjm00pb"]
 
-[node name="Node" type="Node"]
+[node name="Node" type="Node" unique_id=1219691647]
 
-[node name="Core" type="Core" parent="."]
-_import_path = NodePath("")
-unique_name_in_owner = false
-process_mode = 0
-process_priority = 0
-process_physics_priority = 0
-process_thread_group = 0
-physics_interpolation_mode = 0
-auto_translate_mode = 0
-editor_description = ""
-script = null
+[node name="Core" type="Core" parent="." unique_id=719271596]
