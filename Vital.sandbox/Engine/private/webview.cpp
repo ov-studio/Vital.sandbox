@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/webview.h>
+#include <Vital.sandbox/Manager/public/kit.h>
 
 
 /////////////////////////////
@@ -32,9 +33,11 @@ namespace Vital::Engine {
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
+
         Engine::Core::get_singleton() -> enqueue([this]() {
             Engine::Canvas::get_singleton() -> add_child(webview);
             webview -> connect("ipc_message", godot::Callable(this, "on_message"));
+            webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
             load_url("https://github.com/ov-studio/Vital.sandbox");
             set_visible(false);
             set_devtools_visible(false);
@@ -160,11 +163,26 @@ namespace Vital::Engine {
         webview -> call_deferred("post_message", Tool::to_godot_string(input));
     }
 
+    void Webview::inject_globals() {
+        std::ostringstream js;
+        js << "(function() {";
+        for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) {
+            js << content << "\n";
+        }
+        js << "})();";
+        eval(js.str());
+    }
+
 
     // Events //
     void Webview::on_message(godot::String message) {
         if (!message_handler) return;
         message_handler(message);
+    }
+
+    void Webview::on_page_loaded(godot::String url) {
+        Tool::print("info", "page finished loading");
+        inject_globals();
     }
 }
 #endif

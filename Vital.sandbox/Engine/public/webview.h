@@ -44,6 +44,7 @@ namespace Vital::Engine {
 
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("on_message", "message"), &Webview::on_message);
+                godot::ClassDB::bind_method(godot::D_METHOD("on_page_loaded", "url"), &Webview::on_page_loaded);
             }
         public:
             // Managers //
@@ -84,10 +85,12 @@ namespace Vital::Engine {
             void update();
             void eval(const std::string& input);
             void emit(const std::string& input);
+            void inject_globals();
 
 
             // Events //
             void on_message(godot::String message);
+            void on_page_loaded(godot::String url);
     };
 }
 #endif
