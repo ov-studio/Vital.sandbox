@@ -429,7 +429,6 @@ namespace Vital::Manager {
             // so we can decrement all of them on the main thread.
             const std::unordered_set<std::string> dl_groups = dl -> groups;
             active_downloads.erase(path);
-
             Engine::Core::get_singleton() -> enqueue([this, path, dl_groups, dispatch_gens]() {
                 for (const auto& g : dl_groups) {
                     // Skip if the group was cancelled after this download was dispatched.
@@ -497,10 +496,10 @@ namespace Vital::Manager {
     void Asset::flush_spawn_queue(const std::string& loaded_name) {
         auto it = spawn_queue.find(loaded_name);
         if (it == spawn_queue.end()) return;
+
         void* raw = it -> second.placeholder;
         int authority_peer = it -> second.authority_peer;
         spawn_queue.erase(it);
-
         Engine::Core::get_singleton() -> enqueue([this, loaded_name, raw, authority_peer]() {
             Engine::Model* placeholder = static_cast<Engine::Model*>(raw);
             if (!godot::ObjectDB::get_instance(placeholder -> get_instance_id())) return;
