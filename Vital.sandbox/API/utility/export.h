@@ -28,9 +28,9 @@ namespace Vital::Sandbox::API {
         inline static std::mutex mutex;
         inline static std::unordered_map<std::string, std::unordered_map<std::string, int>> buffer;
 
-        static bool register_export(Machine* vm, const std::string& resource, const std::string& name, int reference) {
+        static bool register_export(Machine* vm, const std::string& env, const std::string& name, int reference) {
             std::lock_guard<std::mutex> lock(mutex);
-            auto& map = buffer[resource];
+            auto& map = buffer[env];
             auto it = map.find(name);
             if (it != map.end()) {
                 vm -> del_raw_reference(it -> second);
@@ -40,21 +40,21 @@ namespace Vital::Sandbox::API {
             return true;
         }
     
-        static std::vector<std::string> list_exports(const std::string& resource) {
+        static std::vector<std::string> list_exports(const std::string& env) {
             std::lock_guard<std::mutex> lock(mutex);
             std::vector<std::string> result;
-            auto it = buffer.find(resource);
+            auto it = buffer.find(env);
             if (it == buffer.end()) return result;
             result.reserve(it -> second.size());
             for (const auto& [name, _] : it -> second) result.push_back(name);
             return result;
         }
 
-        static bool dispatch_export(Machine* vm, const std::string& resource, const std::string& name, int nargs, int& results) {
+        static bool dispatch_export(Machine* vm, const std::string& env, const std::string& name, int nargs, int& results) {
             int ref = LUA_NOREF;
             {
                 std::lock_guard<std::mutex> lock(mutex);
-                auto rit = buffer.find(resource);
+                auto rit = buffer.find(env);
                 if (rit != buffer.end()) {
                     auto fit = rit -> second.find(name);
                     if (fit != rit -> second.end()) ref = fit -> second;
@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
             vm -> get_raw_reference(ref);
             if (nargs > 0) vm -> rotate(3, 1);
             // TODO: can't use vm->call — it logs+pops on failure; we need to throw instead
-            if (lua_pcall(vm -> get_state(), nargs, LUA_MULTRET, 0) != LUA_OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — error in '{}:{}': {}", resource, name, vm -> get_string(-1))); // TODO: APPLY BASE NAME USING FMT
+            if (lua_pcall(vm -> get_state(), nargs, LUA_MULTRET, 0) != LUA_OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.call — error in '{}:{}': {}", env, name, vm -> get_string(-1))); // TODO: APPLY BASE NAME USING FMT
             results = vm -> get_count() - 2;
             return true;
         }
@@ -91,7 +91,6 @@ namespace Vital::Sandbox::API {
 
                 const std::string resource = vm -> get_string(1);
                 if (!Manager::Resource::get_singleton() -> is_running(resource)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: export.list — resource '{}' is not running", resource)); // TODO: APPLY BASE NAME USING FMT
-
                 const auto names = list_exports(resource);
                 vm -> create_table();
                 for (int i = 0; i < static_cast<int>(names.size()); ++i) {
