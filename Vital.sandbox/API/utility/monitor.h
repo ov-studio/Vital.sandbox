@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: utility: performance.h
+     Script: API: utility: monitor.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Performance APIs
+     Desc: Monitor APIs
 ----------------------------------------------------------------*/
 
 
@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-//////////////////////////////////
-// Vital: API: Performance //
-//////////////////////////////////
+//////////////////////////
+// Vital: API: Monitor //
+//////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Performance : vm_module {
@@ -86,24 +86,24 @@ namespace Vital::Sandbox::API {
             { "NAVIGATION_3D_OBSTACLE_COUNT",         godot::Performance::NAVIGATION_3D_OBSTACLE_COUNT         }
         };
 
-        inline static const std::vector<std::pair<std::string, int>> monitor_type_registry = {
+        inline static const std::vector<std::pair<std::string, int>> stat_type_registry = {
             { "QUANTITY",   godot::Performance::MONITOR_TYPE_QUANTITY   },
             { "MEMORY",     godot::Performance::MONITOR_TYPE_MEMORY     },
             { "TIME",       godot::Performance::MONITOR_TYPE_TIME       },
             { "PERCENTAGE", godot::Performance::MONITOR_TYPE_PERCENTAGE }
         };
 
-        struct Custom_Monitor {
+        struct Custom_Stat {
             int exec_ref = LUA_NOREF;
             std::string env;
         };
 
-        inline static std::unordered_map<std::string, Custom_Monitor> custom_monitors;
+        inline static std::unordered_map<std::string, Custom_Stat> custom_stats;
 
-        static void remove_monitor_entry(Machine* vm, std::unordered_map<std::string, Custom_Monitor>::iterator it) {
+        static void remove_stat_entry(Machine* vm, std::unordered_map<std::string, Custom_Stat>::iterator it) {
             godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
             vm -> del_raw_reference(it -> second.exec_ref);
-            custom_monitors.erase(it);
+            custom_stats.erase(it);
         }
 
         static void bind(Machine* vm) {
@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "has_custom_monitor", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "has_custom_stat", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id)")
                     .require(1, &Machine::is_string);
 
@@ -143,7 +143,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_custom_monitor", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_custom_stat", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id)")
                     .require(1, &Machine::is_string);
 
@@ -152,33 +152,33 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "remove_custom_monitor", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "remove_custom_stat", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id)")
                     .require(1, &Machine::is_string);
 
                 auto key = vm -> get_string(1);
-                auto it = custom_monitors.find(key);
-                if (it != custom_monitors.end()) remove_monitor_entry(vm, it);
+                auto it = custom_stats.find(key);
+                if (it != custom_stats.end()) remove_stat_entry(vm, it);
                 vm -> push_value(true);
                 return 1;
             });
 
-            API::bind(vm, base_scope, "add_custom_monitor", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "add_custom_stat", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id, exec, type)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_function)
-                    .require_enum(3, monitor_type_registry);
+                    .require_enum(3, stat_type_registry);
 
                 auto key = vm -> get_string(1);
                 auto env = vm -> get_environment_id();
                 auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
-                auto old = custom_monitors.find(key);
-                if (old != custom_monitors.end()) remove_monitor_entry(vm, old);
+                auto old = custom_stats.find(key);
+                if (old != custom_stats.end()) remove_stat_entry(vm, old);
                 int exec_ref = vm -> set_raw_reference(2);
-                custom_monitors[key] = { exec_ref, env };
+                custom_stats[key] = { exec_ref, env };
                 godot::Performance::get_singleton() -> add_custom_monitor(
                     Tool::to_godot_string(key),
-                    Machine::make_callable(exec_ref, fmt::format("monitor:{}", key)),
+                    Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
                     godot::Array(),
                     type
                 );
@@ -189,15 +189,15 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "stat_native", native_registry);
-            vm -> scope_set_enum(base_scope, "stat_type", monitor_type_registry);
+            vm -> scope_set_enum(base_scope, "stat_type", stat_type_registry);
         }
 
         static void clean(const std::string& env) {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            for (auto it = custom_monitors.begin(); it != custom_monitors.end(); ) {
-                if (it -> second.env == env) remove_monitor_entry(vm, it++);
+            for (auto it = custom_stats.begin(); it != custom_stats.end(); ) {
+                if (it -> second.env == env) remove_stat_entry(vm, it++);
                 else ++it;
             }
         }

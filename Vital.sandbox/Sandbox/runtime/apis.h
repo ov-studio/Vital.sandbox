@@ -42,7 +42,7 @@
 #include <Vital.sandbox/API/utility/export.h>
 #include <Vital.sandbox/API/utility/event.h>
 #include <Vital.sandbox/API/utility/input.h>
-#include <Vital.sandbox/API/utility/performance.h>
+#include <Vital.sandbox/API/utility/monitor.h>
 
 #include <Vital.sandbox/API/gfx/sky.h>
 #include <Vital.sandbox/API/gfx/sky_panorama.h>
@@ -95,7 +95,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Export>(),
             vm_module::make_api<Event>(),
             vm_module::make_api<Input>(),
-            vm_module::make_api<Performance>(),
+            vm_module::make_api<Monitor>(),
 
             // GFX //
             vm_module::make_api<Environment>(),
