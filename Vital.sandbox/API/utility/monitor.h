@@ -21,7 +21,7 @@
 //////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Performance : vm_module {
+    struct Monitor : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "monitor"};
 
         inline static const std::vector<std::pair<std::string, int>> native_registry = {
