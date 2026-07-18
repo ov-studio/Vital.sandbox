@@ -231,9 +231,7 @@ namespace Vital::Sandbox {
                             stack -> array[key_idx - 1] = val;
                         }
                     }
-                    else if (key_is_string) {
-                        if (val_is_collectible) stack -> object[self() -> get_string(-2)] = collect_value(self() -> get_count(), visited, depth + 1);
-                    }
+                    else if (key_is_string && val_is_collectible) stack -> object[self() -> get_string(-2)] = collect_value(self() -> get_count(), visited, depth + 1);
                     self() -> pop(1);
                 }
                 visited.erase(ptr);
