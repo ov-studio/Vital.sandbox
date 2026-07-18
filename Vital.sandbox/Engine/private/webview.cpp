@@ -67,27 +67,27 @@ namespace Vital::Engine {
     }
 
     bool Webview::is_fullscreen() {
-        return (bool)webview -> get("full_window_size");
+        return webview -> get("full_window_size");
     }
 
     bool Webview::is_transparent() {
-        return (bool)webview -> get("transparent");
+        return webview -> get("transparent");
     }
 
     bool Webview::is_incognito() {
-        return (bool)webview -> get("incognito");
+        return webview -> get("incognito");
     }
 
     bool Webview::is_autoplay() {
-        return (bool)webview -> get("autoplay");
+        return webview -> get("autoplay");
     }
 
     bool Webview::is_zoomable() {
-        return (bool)webview -> get("zoom_hotkeys");
+        return webview -> get("zoom_hotkeys");
     }
 
     bool Webview::is_devtools_visible() {
-        return (bool)webview -> call("is_devtools_open");
+        return webview -> call("is_devtools_open");
     }
 
 
