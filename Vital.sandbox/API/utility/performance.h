@@ -186,7 +186,7 @@ namespace Vital::Sandbox::API {
                 custom_monitors[key] = { exec_ref, env };
                 godot::Performance::get_singleton() -> add_custom_monitor(
                     Tool::to_godot_string(key),
-                    Machine::make_callable(exec_ref, "vm_callable:performance:" + key),
+                    Machine::make_callable(exec_ref, "performance:" + key),
                     godot::Array(),
                     type
                 );
