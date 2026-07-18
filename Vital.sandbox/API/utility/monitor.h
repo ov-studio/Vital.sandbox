@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
             { "NAVIGATION_3D_OBSTACLE_COUNT",         godot::Performance::NAVIGATION_3D_OBSTACLE_COUNT         }
         };
 
-        inline static const std::vector<std::pair<std::string, int>> stat_type_registry = {
+        inline static const std::vector<std::pair<std::string, int>> stat_format_registry = {
             { "QUANTITY",   godot::Performance::MONITOR_TYPE_QUANTITY   },
             { "MEMORY",     godot::Performance::MONITOR_TYPE_MEMORY     },
             { "TIME",       godot::Performance::MONITOR_TYPE_TIME       },
@@ -109,25 +109,25 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "register_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id, name, exec, type)")
+                vm_args(vm, id, "(id, name, exec, format)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_function)
-                    .require_enum(4, stat_type_registry);
+                    .require_enum(4, stat_format_registry);
 
                 auto key = vm -> get_string(1);
                 if (custom_stats.find(key) != custom_stats.end()) vm -> push_value(false);
                 else {
                     auto name = vm -> get_string(2);
                     auto env = vm -> get_environment_id();
-                    auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(4));
+                    auto format = static_cast<godot::Performance::MonitorType>(vm -> get_int(4));
                     int exec_ref = vm -> set_raw_reference(3);
                     custom_stats[key] = { exec_ref, env, name };
                     godot::Performance::get_singleton() -> add_custom_monitor(
                         Tool::to_godot_string(key),
                         Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
                         godot::Array(),
-                        type
+                        format
                     );
                     vm -> push_value(true);
                 }
@@ -202,7 +202,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "stat_native", native_registry);
-            vm -> scope_set_enum(base_scope, "stat_type", stat_type_registry);
+            vm -> scope_set_enum(base_scope, "stat_format", stat_format_registry);
         }
 
         static void clean(const std::string& env) {
