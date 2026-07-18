@@ -93,18 +93,18 @@ namespace Vital::Sandbox::API {
             { "PERCENTAGE", godot::Performance::MONITOR_TYPE_PERCENTAGE }
         };
 
-        struct Custom_Stat {
+        struct Stat {
             int exec_ref = LUA_NOREF;
             std::string env;
             std::string name;
         };
 
-        inline static std::unordered_map<std::string, Custom_Stat> custom_stats;
+        inline static std::unordered_map<std::string, Stat> buffer;
 
-        static void remove_stat(Machine* vm, std::unordered_map<std::string, Custom_Stat>::iterator it) {
+        static void remove_stat(Machine* vm, std::unordered_map<std::string, Stat>::iterator it) {
             godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
             vm -> del_raw_reference(it -> second.exec_ref);
-            custom_stats.erase(it);
+            buffer.erase(it);
         }
 
         static void bind(Machine* vm) {
@@ -116,13 +116,13 @@ namespace Vital::Sandbox::API {
                     .require_enum(4, format_registry);
 
                 auto key = vm -> get_string(1);
-                if (custom_stats.find(key) != custom_stats.end()) vm -> push_value(false);
+                if (buffer.find(key) != buffer.end()) vm -> push_value(false);
                 else {
                     auto name = vm -> get_string(2);
                     auto env = vm -> get_environment_id();
                     auto format = static_cast<godot::Performance::MonitorType>(vm -> get_int(4));
                     int exec_ref = vm -> set_raw_reference(3);
-                    custom_stats[key] = { exec_ref, env, name };
+                    buffer[key] = { exec_ref, env, name };
                     godot::Performance::get_singleton() -> add_custom_monitor(
                         Tool::to_godot_string(key),
                         Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
@@ -139,8 +139,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto key = vm -> get_string(1);
-                auto it = custom_stats.find(key);
-                if (it != custom_stats.end()) remove_stat(vm, it);
+                auto it = buffer.find(key);
+                if (it != buffer.end()) remove_stat(vm, it);
                 vm -> push_value(true);
                 return 1;
             });
@@ -178,7 +178,7 @@ namespace Vital::Sandbox::API {
                 {
                     vm -> create_table();
                     int i = 0;
-                    for (auto& [key, stat] : custom_stats) {
+                    for (auto& [key, stat] : buffer) {
                         vm -> create_table();
                         vm -> push_value(key);
                         vm -> set_table_field("id", -2);
@@ -215,7 +215,7 @@ namespace Vital::Sandbox::API {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            for (auto it = custom_stats.begin(); it != custom_stats.end(); ) {
+            for (auto it = buffer.begin(); it != buffer.end(); ) {
                 if (it -> second.env == env) remove_stat(vm, it++);
                 else ++it;
             }
