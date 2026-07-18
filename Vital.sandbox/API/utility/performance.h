@@ -100,12 +100,6 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<std::string, Custom_Monitor> custom_monitors;
 
-        // Pushing a Variant onto the Lua stack now reuses Tool::StackValue::from_variant() plus
-        // the existing Mixin::push_value(const Tool::StackValue&) dispatcher — no local conversion.
-        static void push_variant(Machine* vm, const godot::Variant& value) {
-            vm -> push_value(Tool::StackValue::from_variant(value));
-        }
-
         // NOTE: relies on godot_cpp's CallableCustom interface (godot_cpp/variant/callable_custom.hpp).
         // The pure-virtual surface below matches the current godot-cpp GDExtension API; if your vendored
         // godot-cpp version differs, this is the piece most likely to need adjusting.
@@ -137,7 +131,6 @@ namespace Vital::Sandbox::API {
                 vm -> get_raw_reference(exec_ref);
                 for (int i = 0; i < p_argcount; ++i) vm -> push_value(Tool::StackValue::from_variant(*p_arguments[i]));
                 vm -> call(p_argcount, 1);
-
                 std::unordered_set<const void*> visited;
                 r_return_value = vm -> collect_value(vm -> get_count(), visited).to_variant();
                 vm -> pop(1);
@@ -192,7 +185,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto value = godot::Performance::get_singleton() -> get_custom_monitor(Tool::to_godot_string(vm -> get_string(1)));
-                push_variant(vm, value);
+                vm -> push_value(Tool::StackValue::from_variant(value));
                 return 1;
             });
 
