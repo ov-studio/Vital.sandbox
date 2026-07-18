@@ -154,7 +154,7 @@ namespace Vital::Sandbox::API {
                 case godot::Variant::INT:    vm -> push_value((int64_t)value); break;
                 case godot::Variant::FLOAT:  vm -> push_value((double)value); break;
                 case godot::Variant::STRING: vm -> push_value(std::string(godot::String(value).utf8().get_data())); break;
-                default: vm -> push_nil(); break;
+                default:                     vm -> push_nil(); break;
             }
         }
 
