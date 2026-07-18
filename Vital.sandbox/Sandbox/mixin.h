@@ -29,10 +29,13 @@ namespace Vital::Sandbox {
             void push_value(vm_exec& value) { self() -> push_function(value); }
             void push_value(const godot::Color& value) { self() -> push_color(value); }
             void push_value(const godot::Vector2& value) { self() -> push_vector2(value); }
+            void push_value(const godot::Vector2i& value) { self() -> push_vector2(godot::Vector2(value)); }
             void push_value(const godot::PackedVector2Array& value) { self() -> push_vector2_array(value); }
             void push_value(const godot::Vector3& value) { self() -> push_vector3(value); }
+            void push_value(const godot::Vector3i& value) { self() -> push_vector3(godot::Vector3(value)); }
             void push_value(const godot::PackedVector3Array& value) { self() -> push_vector3_array(value); }
             void push_value(const godot::Vector4& value) { self() -> push_vector4(value); }
+            void push_value(const godot::Vector4i& value) { self() -> push_vector4(godot::Vector4(value)); }
             void push_value(const godot::PackedVector4Array& value) { self() -> push_vector4_array(value); }
             void push_value(const godot::Transform3D& value) { self() -> push_transform3d(value); }
             void push_value(const godot::Projection& value) { self() -> push_projection(value); }
