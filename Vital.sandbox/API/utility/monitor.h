@@ -107,6 +107,29 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
+            API::bind(vm, base_scope, "register_stat", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(id, exec, type)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_function)
+                    .require_enum(3, stat_type_registry);
+
+                auto key = vm -> get_string(1);
+                auto env = vm -> get_environment_id();
+                auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
+                auto old = custom_stats.find(key);
+                if (old != custom_stats.end()) remove_stat_entry(vm, old);
+                int exec_ref = vm -> set_raw_reference(2);
+                custom_stats[key] = { exec_ref, env };
+                godot::Performance::get_singleton() -> add_custom_monitor(
+                    Tool::to_godot_string(key),
+                    Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
+                    godot::Array(),
+                    type
+                );
+                vm -> push_value(true);
+                return 1;
+            });
+            
             API::bind(vm, base_scope, "get_stat", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(stat)")
                     .require_enum(1, native_registry);
@@ -159,29 +182,6 @@ namespace Vital::Sandbox::API {
                 auto key = vm -> get_string(1);
                 auto it = custom_stats.find(key);
                 if (it != custom_stats.end()) remove_stat_entry(vm, it);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "add_custom_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id, exec, type)")
-                    .require(1, &Machine::is_string)
-                    .require(2, &Machine::is_function)
-                    .require_enum(3, stat_type_registry);
-
-                auto key = vm -> get_string(1);
-                auto env = vm -> get_environment_id();
-                auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
-                auto old = custom_stats.find(key);
-                if (old != custom_stats.end()) remove_stat_entry(vm, old);
-                int exec_ref = vm -> set_raw_reference(2);
-                custom_stats[key] = { exec_ref, env };
-                godot::Performance::get_singleton() -> add_custom_monitor(
-                    Tool::to_godot_string(key),
-                    Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
-                    godot::Array(),
-                    type
-                );
                 vm -> push_value(true);
                 return 1;
             });
