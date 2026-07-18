@@ -244,12 +244,12 @@ namespace Vital::Sandbox {
             struct vm_callable : public godot::CallableCustom {
                 int exec_ref;
                 std::string label;
-                explicit vm_callable(int exec_ref, std::string label = "vm_callable") : exec_ref(exec_ref), label(std::move(label)) {}
+                explicit vm_callable(int exec_ref, std::string label) : exec_ref(exec_ref), label(std::move(label)) {}
                 static bool compare_equal(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const vm_callable*>(a) -> exec_ref == static_cast<const vm_callable*>(b) -> exec_ref; }
                 static bool compare_less(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const vm_callable*>(a) -> exec_ref < static_cast<const vm_callable*>(b) -> exec_ref; }
 
                 uint32_t hash() const override { return static_cast<uint32_t>(exec_ref); }
-                godot::String get_as_text() const override { return godot::String(label.c_str()); }
+                godot::String get_as_text() const override { return godot::String(fmt::format("vm_callable:{}", label).c_str()); }
                 CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
                 CompareLessFunc get_compare_less_func() const override { return compare_less; }
                 godot::ObjectID get_object() const override { return godot::ObjectID(); }
@@ -268,7 +268,7 @@ namespace Vital::Sandbox {
                 }
             };
 
-            static godot::Callable make_callable(int exec_ref, const std::string& label = "vm_callable") {
+            static godot::Callable make_callable(int exec_ref, const std::string& label) {
                 return godot::Callable(memnew(vm_callable(exec_ref, label)));
             }
     };
