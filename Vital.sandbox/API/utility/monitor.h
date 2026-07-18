@@ -129,13 +129,31 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-            
-            API::bind(vm, base_scope, "get_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(stat)")
-                    .require_enum(1, native_registry);
 
-                auto monitor = static_cast<godot::Performance::Monitor>(vm -> get_int(1));
-                vm -> push_value(godot::Performance::get_singleton() -> get_monitor(monitor));
+            API::bind(vm, base_scope, "unregister_stat", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(id)")
+                    .require(1, &Machine::is_string);
+
+                auto key = vm -> get_string(1);
+                auto it = custom_stats.find(key);
+                if (it != custom_stats.end()) remove_stat_entry(vm, it);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_stat", [](auto vm, auto& id) -> int {
+                vm_args args(vm, id, "(stat)");
+                args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
+
+                if (vm -> is_string(1)) {
+                    auto value = godot::Performance::get_singleton() -> get_custom_monitor(Tool::to_godot_string(vm -> get_string(1)));
+                    vm -> push_value(value);
+                }
+                else {
+                    args.validate_enum(1, native_registry);
+                    auto monitor = static_cast<godot::Performance::Monitor>(vm -> get_int(1));
+                    vm -> push_value(godot::Performance::get_singleton() -> get_monitor(monitor));
+                }
                 return 1;
             });
 
@@ -163,26 +181,6 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(vm -> get_string(1))));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_custom_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id)")
-                    .require(1, &Machine::is_string);
-
-                auto value = godot::Performance::get_singleton() -> get_custom_monitor(Tool::to_godot_string(vm -> get_string(1)));
-                vm -> push_value(value);
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "remove_custom_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id)")
-                    .require(1, &Machine::is_string);
-
-                auto key = vm -> get_string(1);
-                auto it = custom_stats.find(key);
-                if (it != custom_stats.end()) remove_stat_entry(vm, it);
-                vm -> push_value(true);
                 return 1;
             });
         }
