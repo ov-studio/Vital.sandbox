@@ -124,8 +124,6 @@ namespace Vital::Tool {
             godot::Dictionary dict;
             godot::Array arr;
             arr.resize(static_cast<int>(array.size()));
-            for (int i = 0; i < static_cast<int>(array.size()); ++i)
-                arr[i] = value_to_variant(array[i]);
             for (int i = 0; i < static_cast<int>(array.size()); ++i) arr[i] = array[i].to_variant();
             dict["array"] = arr;
             godot::Dictionary obj;
