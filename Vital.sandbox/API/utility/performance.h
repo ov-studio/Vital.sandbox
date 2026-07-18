@@ -203,20 +203,16 @@ namespace Vital::Sandbox::API {
                 auto key = vm -> get_string(1);
                 auto env = vm -> get_environment_id();
                 auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
-
                 auto old = custom_monitors.find(key);
                 if (old != custom_monitors.end()) {
                     godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(key));
                     vm -> del_raw_reference(old -> second.exec_ref);
                     custom_monitors.erase(old);
                 }
-
                 int exec_ref = vm -> set_raw_reference(2);
                 custom_monitors[key] = { exec_ref, env };
-
                 godot::Callable callable(memnew(Lua_Callable(exec_ref)));
                 godot::Performance::get_singleton() -> add_custom_monitor(Tool::to_godot_string(key), callable, godot::Array(), type);
-
                 vm -> push_value(true);
                 return 1;
             });
