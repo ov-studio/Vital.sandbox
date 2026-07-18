@@ -100,25 +100,14 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<std::string, Custom_Monitor> custom_monitors;
 
-        // NOTE: relies on godot_cpp's CallableCustom interface (godot_cpp/variant/callable_custom.hpp).
-        // The pure-virtual surface below matches the current godot-cpp GDExtension API; if your vendored
-        // godot-cpp version differs, this is the piece most likely to need adjusting.
         struct Lua_Callable : public godot::CallableCustom {
             int exec_ref;
-
             explicit Lua_Callable(int exec_ref) : exec_ref(exec_ref) {}
+            static bool compare_equal(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref == static_cast<const Lua_Callable*>(b) -> exec_ref; }
+            static bool compare_less(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref <static_cast<const Lua_Callable*>(b) -> exec_ref; }
 
             uint32_t hash() const override { return static_cast<uint32_t>(exec_ref); }
             godot::String get_as_text() const override { return "vital:custom_monitor"; }
-
-            static bool compare_equal(const godot::CallableCustom* a, const godot::CallableCustom* b) {
-                return static_cast<const Lua_Callable*>(a) -> exec_ref == static_cast<const Lua_Callable*>(b) -> exec_ref;
-            }
-
-            static bool compare_less(const godot::CallableCustom* a, const godot::CallableCustom* b) {
-                return static_cast<const Lua_Callable*>(a) -> exec_ref < static_cast<const Lua_Callable*>(b) -> exec_ref;
-            }
-
             CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
             CompareLessFunc get_compare_less_func() const override { return compare_less; }
             godot::ObjectID get_object() const override { return godot::ObjectID(); }
