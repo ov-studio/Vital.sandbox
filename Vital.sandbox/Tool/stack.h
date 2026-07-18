@@ -139,8 +139,7 @@ namespace Vital::Tool {
             if (dict.has("array")) {
                 const godot::Array arr = dict["array"];
                 stack.array.reserve(arr.size());
-                for (int i = 0; i < arr.size(); ++i)
-                    stack.array.push_back(variant_to_value(arr[i]));
+                for (int i = 0; i < arr.size(); ++i) stack.array.push_back(StackValue::from_variant(arr[i]));
             }
             if (dict.has("object")) {
                 const godot::Dictionary obj = dict["object"];
