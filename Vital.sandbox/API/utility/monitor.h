@@ -86,7 +86,7 @@ namespace Vital::Sandbox::API {
             { "NAVIGATION_3D_OBSTACLE_COUNT",         godot::Performance::NAVIGATION_3D_OBSTACLE_COUNT         }
         };
 
-        inline static const std::vector<std::pair<std::string, int>> stat_format_registry = {
+        inline static const std::vector<std::pair<std::string, int>> format_registry = {
             { "QUANTITY",   godot::Performance::MONITOR_TYPE_QUANTITY   },
             { "MEMORY",     godot::Performance::MONITOR_TYPE_MEMORY     },
             { "TIME",       godot::Performance::MONITOR_TYPE_TIME       },
@@ -113,7 +113,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_function)
-                    .require_enum(4, stat_format_registry);
+                    .require_enum(4, format_registry);
 
                 auto key = vm -> get_string(1);
                 if (custom_stats.find(key) != custom_stats.end()) vm -> push_value(false);
@@ -208,7 +208,7 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "stat_native", native_registry);
-            vm -> scope_set_enum(base_scope, "stat_format", stat_format_registry);
+            vm -> scope_set_enum(base_scope, "stat_format", format_registry);
         }
 
         static void clean(const std::string& env) {
