@@ -96,6 +96,7 @@ namespace Vital::Sandbox::API {
         struct Custom_Stat {
             int exec_ref = LUA_NOREF;
             std::string env;
+            std::string name;
         };
 
         inline static std::unordered_map<std::string, Custom_Stat> custom_stats;
@@ -108,18 +109,20 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "register_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id, exec, type)")
+                vm_args(vm, id, "(id, name, exec, type)")
                     .require(1, &Machine::is_string)
-                    .require(2, &Machine::is_function)
-                    .require_enum(3, stat_type_registry);
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_function)
+                    .require_enum(4, stat_type_registry);
 
                 auto key = vm -> get_string(1);
                 if (custom_stats.find(key) != custom_stats.end()) vm -> push_value(false);
                 else {
+                    auto name = vm -> get_string(2);
                     auto env = vm -> get_environment_id();
-                    auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
-                    int exec_ref = vm -> set_raw_reference(2);
-                    custom_stats[key] = { exec_ref, env };
+                    auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(4));
+                    int exec_ref = vm -> set_raw_reference(3);
+                    custom_stats[key] = { exec_ref, env, name };
                     godot::Performance::get_singleton() -> add_custom_monitor(
                         Tool::to_godot_string(key),
                         Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
@@ -160,20 +163,31 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_stats", [](auto vm, auto& id) -> int {
                 vm -> create_table();
-                vm -> create_table();
-                for (int i = 0; i < static_cast<int>(native_registry.size()); ++i) {
-                    vm -> push_value(native_registry[i].first);
-                    vm -> set_table_field(i + 1, -2);
+                {
+                    vm -> create_table();
+                    for (int i = 0; i < static_cast<int>(native_registry.size()); ++i) {
+                        vm -> create_table();
+                        vm -> push_value(static_cast<int64_t>(native_registry[i].second));
+                        vm -> set_table_field("id", -2);
+                        vm -> push_value(native_registry[i].first);
+                        vm -> set_table_field("name", -2);
+                        vm -> set_table_field(i + 1, -2);
+                    }
+                    vm -> set_table_field("native", -2);
                 }
-                vm -> set_table_field("native", -2);
-
-                auto names = godot::Performance::get_singleton() -> get_custom_monitor_names();
-                vm -> create_table();
-                for (int i = 0; i < names.size(); ++i) {
-                    vm -> push_value(std::string(godot::String(names[i]).utf8().get_data()));
-                    vm -> set_table_field(i + 1, -2);
+                {
+                    vm -> create_table();
+                    int i = 0;
+                    for (auto& [key, stat] : custom_stats) {
+                        vm -> create_table();
+                        vm -> push_value(key);
+                        vm -> set_table_field("id", -2);
+                        vm -> push_value(stat.name);
+                        vm -> set_table_field("name", -2);
+                        vm -> set_table_field(++i, -2);
+                    }
+                    vm -> set_table_field("custom", -2);
                 }
-                vm -> set_table_field("custom", -2);
                 return 1;
             });
 
