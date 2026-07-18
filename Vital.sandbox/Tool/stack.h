@@ -23,7 +23,6 @@
 
 namespace Vital::Tool {
     struct Stack;
-    struct StackValue;
     struct StackValue {
         using stack_value = std::variant<
             std::nullptr_t,
@@ -42,15 +41,15 @@ namespace Vital::Tool {
 
         // Constructors //
         StackValue() = default;
-        StackValue(std::nullptr_t) : value(nullptr) {}
-        StackValue(bool v) : value(v) {}
-        StackValue(int32_t v) : value(v) {}
-        StackValue(int64_t v) : value(v) {}
-        StackValue(float v) : value(v) {}
-        StackValue(double v) : value(v) {}
-        StackValue(const char* v) : value(std::string(v)) {}
-        StackValue(std::string v) : value(std::move(v)) {}
-        StackValue(std::shared_ptr<Stack> v) : value(std::move(v)) {}
+        StackValue(std::nullptr_t)                : value(nullptr) {}
+        StackValue(bool v)                        : value(v) {}
+        StackValue(int32_t v)                     : value(v) {}
+        StackValue(int64_t v)                     : value(v) {}
+        StackValue(float v)                       : value(v) {}
+        StackValue(double v)                      : value(v) {}
+        StackValue(const char* v)                 : value(std::string(v)) {}
+        StackValue(std::string v)                 : value(std::move(v)) {}
+        StackValue(std::shared_ptr<Stack> v)      : value(std::move(v)) {}
         template<typename T>
         explicit StackValue(std::shared_ptr<T> v) : value(std::static_pointer_cast<void>(std::move(v))), ptr_type(&typeid(T)) {}
         explicit StackValue(Stack v);
