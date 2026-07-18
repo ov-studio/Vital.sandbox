@@ -100,31 +100,11 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<std::string, Custom_Monitor> custom_monitors;
 
-        struct Lua_Callable : public godot::CallableCustom {
-            int exec_ref;
-            explicit Lua_Callable(int exec_ref) : exec_ref(exec_ref) {}
-            static bool compare_equal(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref == static_cast<const Lua_Callable*>(b) -> exec_ref; }
-            static bool compare_less(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref < static_cast<const Lua_Callable*>(b) -> exec_ref; }
-
-            uint32_t hash() const override { return static_cast<uint32_t>(exec_ref); }
-            godot::String get_as_text() const override { return "vital:custom_monitor"; }
-            CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
-            CompareLessFunc get_compare_less_func() const override { return compare_less; }
-            godot::ObjectID get_object() const override { return godot::ObjectID(); }
-
-            void call(const godot::Variant** p_arguments, int p_argcount, godot::Variant& r_return_value, GDExtensionCallError& r_call_error) const override {
-                r_call_error.error = GDEXTENSION_CALL_OK;
-                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-                if (!vm) return;
-
-                vm -> get_raw_reference(exec_ref);
-                for (int i = 0; i < p_argcount; ++i) vm -> push_value(*p_arguments[i]);
-                vm -> call(p_argcount, 1);
-                std::unordered_set<const void*> visited;
-                r_return_value = vm -> collect_value(vm -> get_count(), visited).to_variant();
-                vm -> pop(1);
-            }
-        };
+        static void remove_monitor_entry(Machine* vm, std::unordered_map<std::string, Custom_Monitor>::iterator it) {
+            godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
+            vm -> del_raw_reference(it -> second.exec_ref);
+            custom_monitors.erase(it);
+        }
 
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_monitor", [](auto vm, auto& id) -> int {
@@ -183,13 +163,8 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto key = vm -> get_string(1);
-                godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(key));
-
                 auto it = custom_monitors.find(key);
-                if (it != custom_monitors.end()) {
-                    vm -> del_raw_reference(it -> second.exec_ref);
-                    custom_monitors.erase(it);
-                }
+                if (it != custom_monitors.end()) remove_monitor_entry(vm, it);
                 vm -> push_value(true);
                 return 1;
             });
@@ -203,16 +178,18 @@ namespace Vital::Sandbox::API {
                 auto key = vm -> get_string(1);
                 auto env = vm -> get_environment_id();
                 auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
+
                 auto old = custom_monitors.find(key);
-                if (old != custom_monitors.end()) {
-                    godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(key));
-                    vm -> del_raw_reference(old -> second.exec_ref);
-                    custom_monitors.erase(old);
-                }
+                if (old != custom_monitors.end()) remove_monitor_entry(vm, old);
+
                 int exec_ref = vm -> set_raw_reference(2);
                 custom_monitors[key] = { exec_ref, env };
-                godot::Callable callable(memnew(Lua_Callable(exec_ref)));
-                godot::Performance::get_singleton() -> add_custom_monitor(Tool::to_godot_string(key), callable, godot::Array(), type);
+                godot::Performance::get_singleton() -> add_custom_monitor(
+                    Tool::to_godot_string(key),
+                    Machine::make_callable(exec_ref, "vm_callable:performance:" + key),
+                    godot::Array(),
+                    type
+                );
                 vm -> push_value(true);
                 return 1;
             });
@@ -228,11 +205,7 @@ namespace Vital::Sandbox::API {
             if (!vm) return;
 
             for (auto it = custom_monitors.begin(); it != custom_monitors.end(); ) {
-                if (it -> second.env == env) {
-                    godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
-                    vm -> del_raw_reference(it -> second.exec_ref);
-                    it = custom_monitors.erase(it);
-                }
+                if (it -> second.env == env) remove_monitor_entry(vm, it++);
                 else ++it;
             }
         }
