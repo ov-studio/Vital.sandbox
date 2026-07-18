@@ -104,7 +104,7 @@ namespace Vital::Sandbox::API {
             int exec_ref;
             explicit Lua_Callable(int exec_ref) : exec_ref(exec_ref) {}
             static bool compare_equal(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref == static_cast<const Lua_Callable*>(b) -> exec_ref; }
-            static bool compare_less(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref <static_cast<const Lua_Callable*>(b) -> exec_ref; }
+            static bool compare_less(const godot::CallableCustom* a, const godot::CallableCustom* b) { return static_cast<const Lua_Callable*>(a) -> exec_ref < static_cast<const Lua_Callable*>(b) -> exec_ref; }
 
             uint32_t hash() const override { return static_cast<uint32_t>(exec_ref); }
             godot::String get_as_text() const override { return "vital:custom_monitor"; }
