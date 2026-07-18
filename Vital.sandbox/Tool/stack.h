@@ -73,6 +73,11 @@ namespace Vital::Tool {
         }
 
 
+        // Converters //
+        static StackValue from_variant(const godot::Variant& v);
+        godot::Variant to_variant() const;
+
+
         // Equality //
         bool operator==(const StackValue& other) const;
         bool operator!=(const StackValue& other) const { return !(*this == other); }
@@ -121,10 +126,10 @@ namespace Vital::Tool {
             arr.resize(static_cast<int>(array.size()));
             for (int i = 0; i < static_cast<int>(array.size()); ++i)
                 arr[i] = value_to_variant(array[i]);
+            for (int i = 0; i < static_cast<int>(array.size()); ++i) arr[i] = array[i].to_variant();
             dict["array"] = arr;
             godot::Dictionary obj;
-            for (const auto& [key, sv] : object)
-                obj[godot::String(key.c_str())] = value_to_variant(sv);
+            for (const auto& [key, sv] : object) obj[godot::String(key.c_str())] = sv.to_variant();
             dict["object"] = obj;
             return dict;
         }
