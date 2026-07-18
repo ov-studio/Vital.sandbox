@@ -144,7 +144,7 @@ namespace Vital::Tool {
                 const godot::Array keys = obj.keys();
                 for (int i = 0; i < keys.size(); ++i) {
                     std::string key = ((godot::String)keys[i]).utf8().get_data();
-                    stack.object[key] = variant_to_value(obj[keys[i]]);
+                    stack.object[key] = StackValue::from_variant(obj[keys[i]]);
                 }
             }
             return stack;
@@ -154,50 +154,45 @@ namespace Vital::Tool {
         // Equality //
         bool operator==(const Stack& other) const { return (version == other.version) && (array == other.array) && (object == other.object); }
         bool operator!=(const Stack& other) const { return !(*this == other); }
-
-        private:
-            // StackValue → godot::Variant
-            static godot::Variant value_to_variant(const StackValue& sv) {
-                return std::visit([](auto&& val) -> godot::Variant {
-                    using T = std::decay_t<decltype(val)>;
-                    if constexpr (std::is_same_v<T, std::nullptr_t>) return godot::Variant();
-                    else if constexpr (std::is_same_v<T, bool>) return val;
-                    else if constexpr (std::is_same_v<T, int32_t>) return (int64_t)val;
-                    else if constexpr (std::is_same_v<T, int64_t>) return val;
-                    else if constexpr (std::is_same_v<T, float>) return (double)val;
-                    else if constexpr (std::is_same_v<T, double>) return val;
-                    else if constexpr (std::is_same_v<T, std::string>) return godot::String(val.c_str());
-                    else if constexpr (std::is_same_v<T, std::shared_ptr<void>>) return godot::Variant();
-                    else if constexpr (std::is_same_v<T, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
-                    return godot::Variant();
-                }, sv.value);
-            }
-
-            // godot::Variant → StackValue
-            static StackValue variant_to_value(const godot::Variant& v) {
-                switch (v.get_type()) {
-                    case godot::Variant::NIL:    return StackValue(nullptr);
-                    case godot::Variant::BOOL:   return StackValue((bool)v);
-                    case godot::Variant::INT:    return StackValue((int32_t)(int64_t)v);
-                    case godot::Variant::FLOAT:  return StackValue((double)v);
-                    case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
-                    case godot::Variant::ARRAY: {
-                        const godot::Array arr = v;
-                        auto nested = std::make_shared<Stack>();
-                        nested -> array.reserve(arr.size());
-                        for (int i = 0; i < arr.size(); ++i)
-                            nested -> array.push_back(variant_to_value(arr[i]));
-                        return StackValue(std::move(nested));
-                    }
-                    case godot::Variant::DICTIONARY: {
-                        return StackValue(std::make_shared<Stack>(Stack::from_dict((godot::Dictionary)v)));
-                    }
-                    default: return StackValue(nullptr);
-                }
-            }
     };
 
     inline StackValue::StackValue(Stack v) : value(std::make_shared<Stack>(std::move(v))) {}
+
+    inline StackValue StackValue::from_variant(const godot::Variant& v) {
+        switch (v.get_type()) {
+            case godot::Variant::NIL:    return StackValue(nullptr);
+            case godot::Variant::BOOL:   return StackValue((bool)v);
+            case godot::Variant::INT:    return StackValue((int32_t)(int64_t)v);
+            case godot::Variant::FLOAT:  return StackValue((double)v);
+            case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
+            case godot::Variant::ARRAY: {
+                const godot::Array arr = v;
+                auto nested = std::make_shared<Stack>();
+                nested -> array.reserve(arr.size());
+                for (int i = 0; i < arr.size(); ++i) nested -> array.push_back(StackValue::from_variant(arr[i]));
+                return StackValue(std::move(nested));
+            }
+            case godot::Variant::DICTIONARY: return StackValue(std::make_shared<Stack>(Stack::from_dict((godot::Dictionary)v)));
+            default:                         return StackValue(nullptr);
+        }
+    }
+
+    inline godot::Variant StackValue::to_variant() const {
+        return std::visit([](auto&& val) -> godot::Variant {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, std::nullptr_t>) return godot::Variant();
+            else if constexpr (std::is_same_v<T, bool>)                   return val;
+            else if constexpr (std::is_same_v<T, int32_t>)                return (int64_t)val;
+            else if constexpr (std::is_same_v<T, int64_t>)                return val;
+            else if constexpr (std::is_same_v<T, float>)                  return (double)val;
+            else if constexpr (std::is_same_v<T, double>)                 return val;
+            else if constexpr (std::is_same_v<T, std::string>)            return godot::String(val.c_str());
+            else if constexpr (std::is_same_v<T, std::shared_ptr<void>>)  return godot::Variant();
+            else if constexpr (std::is_same_v<T, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
+            return godot::Variant();
+        }, value);
+    }
+
     inline bool StackValue::operator==(const StackValue& other) const {
         if (value.index() != other.value.index()) return false;
         return std::visit([&](auto&& lhs) -> bool {
