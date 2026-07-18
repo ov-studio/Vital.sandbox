@@ -108,7 +108,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            API::bind(vm, base_scope, "register_stat", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "register", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id, name, exec, format)")
                     .require(1, &Machine::is_string)
                     .require(2, &Machine::is_string)
@@ -134,7 +134,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "unregister_stat", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "unregister", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(id)")
                     .require(1, &Machine::is_string);
 
@@ -145,7 +145,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "has_stat", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "has", [](auto vm, auto& id) -> int {
                 vm_args args(vm, id, "(id)");
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
             
@@ -159,7 +159,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
             
-            API::bind(vm, base_scope, "get_stat", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get", [](auto vm, auto& id) -> int {
                 vm_args args(vm, id, "(id)");
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
 
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_stats", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
                 vm -> create_table();
                 {
                     vm -> create_table();
