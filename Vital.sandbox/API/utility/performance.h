@@ -22,9 +22,9 @@
 
 namespace Vital::Sandbox::API {
     struct Performance : vm_module {
-        inline static const std::vector<std::string> base_scope = {"util", "performance"};
+        inline static const std::vector<std::string> base_scope = {"util", "monitor"};
 
-        inline static const std::vector<std::pair<std::string, int>> monitor_registry = {
+        inline static const std::vector<std::pair<std::string, int>> native_registry = {
             { "TIME_FPS",                             godot::Performance::TIME_FPS                             },
             { "TIME_PROCESS",                         godot::Performance::TIME_PROCESS                         },
             { "TIME_PHYSICS_PROCESS",                 godot::Performance::TIME_PHYSICS_PROCESS                 },
@@ -107,37 +107,31 @@ namespace Vital::Sandbox::API {
         }
 
         static void bind(Machine* vm) {
-            API::bind(vm, base_scope, "get_monitor", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(monitor)")
-                    .require_enum(1, monitor_registry);
+            API::bind(vm, base_scope, "get_stat", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(stat)")
+                    .require_enum(1, native_registry);
 
                 auto monitor = static_cast<godot::Performance::Monitor>(vm -> get_int(1));
                 vm -> push_value(godot::Performance::get_singleton() -> get_monitor(monitor));
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_monitor_modification_time", [](auto vm, auto& id) -> int {
-                vm -> push_value(static_cast<int64_t>(godot::Performance::get_singleton() -> get_monitor_modification_time()));
-                return 1;
-            });
+            API::bind(vm, base_scope, "get_stats", [](auto vm, auto& id) -> int {
+                vm -> create_table();
+                vm -> create_table();
+                for (int i = 0; i < static_cast<int>(native_registry.size()); ++i) {
+                    vm -> push_value(native_registry[i].first);
+                    vm -> set_table_field(i + 1, -2);
+                }
+                vm -> set_table_field("native", -2);
 
-            API::bind(vm, base_scope, "get_custom_monitor_names", [](auto vm, auto& id) -> int {
                 auto names = godot::Performance::get_singleton() -> get_custom_monitor_names();
                 vm -> create_table();
                 for (int i = 0; i < names.size(); ++i) {
                     vm -> push_value(std::string(godot::String(names[i]).utf8().get_data()));
                     vm -> set_table_field(i + 1, -2);
                 }
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_custom_monitor_types", [](auto vm, auto& id) -> int {
-                auto types = godot::Performance::get_singleton() -> get_custom_monitor_types();
-                vm -> create_table();
-                for (int i = 0; i < types.size(); ++i) {
-                    vm -> push_value(static_cast<int64_t>(types[i]));
-                    vm -> set_table_field(i + 1, -2);
-                }
+                vm -> set_table_field("custom", -2);
                 return 1;
             });
 
@@ -178,10 +172,8 @@ namespace Vital::Sandbox::API {
                 auto key = vm -> get_string(1);
                 auto env = vm -> get_environment_id();
                 auto type = static_cast<godot::Performance::MonitorType>(vm -> get_int(3));
-
                 auto old = custom_monitors.find(key);
                 if (old != custom_monitors.end()) remove_monitor_entry(vm, old);
-
                 int exec_ref = vm -> set_raw_reference(2);
                 custom_monitors[key] = { exec_ref, env };
                 godot::Performance::get_singleton() -> add_custom_monitor(
@@ -196,8 +188,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "monitor", monitor_registry);
-            vm -> scope_set_enum(base_scope, "monitor_type", monitor_type_registry);
+            vm -> scope_set_enum(base_scope, "stat_native", native_registry);
+            vm -> scope_set_enum(base_scope, "stat_type", monitor_type_registry);
         }
 
         static void clean(const std::string& env) {
