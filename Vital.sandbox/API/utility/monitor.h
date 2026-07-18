@@ -191,11 +191,17 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "has_custom_stat", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(id)")
-                    .require(1, &Machine::is_string);
-
-                vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(vm -> get_string(1))));
+            API::bind(vm, base_scope, "has_stat", [](auto vm, auto& id) -> int {
+                vm_args args(vm, id, "(id)");
+                args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
+            
+                if (vm -> is_string(1)) vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(vm -> get_string(1))));
+                else {
+                    auto value = vm -> get_int(1);
+                    vm -> push_value(std::find_if(native_registry.begin(), native_registry.end(), [&](const auto& entry) {
+                        return entry.second == value;
+                    }) != native_registry.end());
+                }
                 return 1;
             });
         }
