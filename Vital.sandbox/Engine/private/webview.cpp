@@ -124,6 +124,10 @@ namespace Vital::Engine {
         message_handler = std::move(handler);
     }
 
+    void Webview::reset_message_handler() {
+        message_handler = nullptr;
+    }
+
 
     // Misc //
     void Webview::load_url(const std::string& url) {

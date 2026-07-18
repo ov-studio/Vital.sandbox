@@ -185,6 +185,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "reset_message_handler", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> reset_message_handler();
+                vm -> push_value(true);
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "load_url", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
