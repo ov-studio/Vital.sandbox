@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<std::string, Custom_Stat> custom_stats;
 
-        static void remove_stat_entry(Machine* vm, std::unordered_map<std::string, Custom_Stat>::iterator it) {
+        static void remove_stat(Machine* vm, std::unordered_map<std::string, Custom_Stat>::iterator it) {
             godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
             vm -> del_raw_reference(it -> second.exec_ref);
             custom_stats.erase(it);
@@ -140,7 +140,7 @@ namespace Vital::Sandbox::API {
 
                 auto key = vm -> get_string(1);
                 auto it = custom_stats.find(key);
-                if (it != custom_stats.end()) remove_stat_entry(vm, it);
+                if (it != custom_stats.end()) remove_stat(vm, it);
                 vm -> push_value(true);
                 return 1;
             });
@@ -216,7 +216,7 @@ namespace Vital::Sandbox::API {
             if (!vm) return;
 
             for (auto it = custom_stats.begin(); it != custom_stats.end(); ) {
-                if (it -> second.env == env) remove_stat_entry(vm, it++);
+                if (it -> second.env == env) remove_stat(vm, it++);
                 else ++it;
             }
         }
