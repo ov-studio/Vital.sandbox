@@ -146,7 +146,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_stat", [](auto vm, auto& id) -> int {
-                vm_args args(vm, id, "(stat)");
+                vm_args args(vm, id, "(id)");
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
 
                 if (vm -> is_string(1)) {
@@ -155,8 +155,8 @@ namespace Vital::Sandbox::API {
                 }
                 else {
                     args.validate_enum(1, native_registry);
-                    auto monitor = static_cast<godot::Performance::Monitor>(vm -> get_int(1));
-                    vm -> push_value(godot::Performance::get_singleton() -> get_monitor(monitor));
+                    auto value = static_cast<godot::Performance::Monitor>(vm -> get_int(1));
+                    vm -> push_value(godot::Performance::get_singleton() -> get_monitor(value));
                 }
                 return 1;
             });
