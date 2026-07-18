@@ -129,7 +129,7 @@ namespace Vital::Sandbox::API {
                 if (!vm) return;
 
                 vm -> get_raw_reference(exec_ref);
-                for (int i = 0; i < p_argcount; ++i) vm -> push_value(Tool::StackValue::from_variant(*p_arguments[i]));
+                for (int i = 0; i < p_argcount; ++i) vm -> push_value(*p_arguments[i]);
                 vm -> call(p_argcount, 1);
                 std::unordered_set<const void*> visited;
                 r_return_value = vm -> collect_value(vm -> get_count(), visited).to_variant();
@@ -185,7 +185,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto value = godot::Performance::get_singleton() -> get_custom_monitor(Tool::to_godot_string(vm -> get_string(1)));
-                vm -> push_value(Tool::StackValue::from_variant(value));
+                vm -> push_value(value);
                 return 1;
             });
 
