@@ -141,8 +141,11 @@ namespace Vital::Sandbox::API {
 
                 auto id = vm -> get_string(1);
                 auto it = buffer.find(id);
-                if (it != buffer.end()) remove_stat(vm, it);
-                vm -> push_value(true);
+                if (it == buffer.end()) vm -> push_value(false);
+                else {
+                    remove_stat(vm, it);
+                    vm -> push_value(true);
+                }
                 return 1;
             });
 
