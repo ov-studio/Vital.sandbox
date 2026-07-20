@@ -200,9 +200,9 @@ namespace Vital::Sandbox::API {
                 {
                     vm -> create_table();
                     int i = 0;
-                    for (auto& [id, stat] : buffer) {
+                    for (auto& [key, stat] : buffer) {
                         vm -> create_table();
-                        vm -> push_value(id);
+                        vm -> push_value(key);
                         vm -> set_table_field("id", -2);
                         vm -> push_value(stat.name);
                         vm -> set_table_field("name", -2);
