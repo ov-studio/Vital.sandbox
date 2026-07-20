@@ -22,9 +22,16 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Monitor : public godot::Object {
+    class Monitor : public godot::Object, public Tool::Base<Monitor> {
         GDCLASS(Monitor, godot::Object)
-        protected:
+        friend class Tool::Base<Monitor>;
+        public:
+            static constexpr const char* Name = "Monitor";
+        private:
+            // Instantiators //
+            Monitor() = default;
+            ~Monitor() override = default;
+
             static void _bind_methods() {
                 godot::ClassDB::bind_method(godot::D_METHOD("dispatch", "key"), &Monitor::dispatch);
             }
