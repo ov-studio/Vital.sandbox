@@ -15,27 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-
-
-///////////////////////////////////
-// Vital: API: Monitor: Bridge   //
-///////////////////////////////////
-
-// A real Object+method Callable. Engine-side lifetime handling for these is
-// solid; the CallableCustom path used previously is not reliably kept alive
-// inside Performance's internal monitor storage, which is why the callback
-// was never reached ("Instance is null" fired on the very first tick).
-namespace Vital::Sandbox::API {
-    class MonitorBridge : public godot::Object {
-        GDCLASS(MonitorBridge, godot::Object)
-        protected:
-            static void _bind_methods() {
-                godot::ClassDB::bind_method(godot::D_METHOD("dispatch", "key"), &MonitorBridge::dispatch);
-            }
-        public:
-            godot::Variant dispatch(const godot::String& key);
-    };
-}
+#include <Vital.sandbox/Engine/public/monitor.h>
 
 
 //////////////////////////
@@ -122,10 +102,10 @@ namespace Vital::Sandbox::API {
         };
 
         inline static std::unordered_map<std::string, Stat> buffer;
-        inline static MonitorBridge* bridge = nullptr;
+        inline static Vital::Engine::Monitor* bridge = nullptr;
 
-        static MonitorBridge* get_bridge() {
-            if (!bridge) bridge = memnew(MonitorBridge);
+        static Vital::Engine::Monitor* get_bridge() {
+            if (!bridge) bridge = memnew(Vital::Engine::Monitor);
             return bridge;
         }
 
@@ -183,7 +163,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "has", [](auto vm, auto& id) -> int {
                 vm_args args(vm, id, "(id)");
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
-            
+
                 if (vm -> is_string(1)) vm -> push_value(godot::Performance::get_singleton() -> has_custom_monitor(Tool::to_godot_string(vm -> get_string(1))));
                 else {
                     auto value = vm -> get_int(1);
@@ -193,7 +173,7 @@ namespace Vital::Sandbox::API {
                 }
                 return 1;
             });
-            
+
             API::bind(vm, base_scope, "get", [](auto vm, auto& id) -> int {
                 vm_args args(vm, id, "(id)");
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
@@ -260,23 +240,6 @@ namespace Vital::Sandbox::API {
             }
         }
     };
-
-    inline godot::Variant MonitorBridge::dispatch(const godot::String& key) {
-        auto std_key = std::string(key.utf8().get_data());
-        auto it = Monitor::buffer.find(std_key);
-        if (it == Monitor::buffer.end()) return 0;
-
-        auto vm = Manager::Sandbox::get_singleton() -> get_vm();
-        if (!vm) return 0;
-
-        vm -> get_raw_reference(it -> second.exec_ref);
-        vm -> call(0, 1);
-
-        std::unordered_set<const void*> visited;
-        auto value = vm -> collect_value(vm -> get_count(), visited).to_variant();
-        vm -> pop(1);
-        return value;
-    }
 }
 #else
 namespace Vital::Sandbox::API {
