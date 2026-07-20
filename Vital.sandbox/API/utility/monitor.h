@@ -116,17 +116,17 @@ namespace Vital::Sandbox::API {
                     .require(3, &Machine::is_function)
                     .require_enum(4, format_registry);
 
-                auto key = vm -> get_string(1);
-                if (buffer.find(key) != buffer.end()) vm -> push_value(false);
+                auto id = vm -> get_string(1);
+                if (buffer.find(id) != buffer.end()) vm -> push_value(false);
                 else {
                     auto name = vm -> get_string(2);
                     auto env = vm -> get_environment_id();
                     auto format = static_cast<godot::Performance::MonitorType>(vm -> get_int(4));
                     int exec_ref = vm -> set_raw_reference(3);
-                    buffer[key] = { exec_ref, env, name };
+                    buffer[id] = { exec_ref, env, name };
                     godot::Performance::get_singleton() -> add_custom_monitor(
-                        Tool::to_godot_string(key),
-                        Machine::make_callable(exec_ref, fmt::format("stat:{}", key)),
+                        Tool::to_godot_string(id),
+                        Machine::make_callable(exec_ref, fmt::format("stat:{}", id)),
                         godot::Array(),
                         format
                     );
@@ -139,8 +139,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(id)")
                     .require(1, &Machine::is_string);
 
-                auto key = vm -> get_string(1);
-                auto it = buffer.find(key);
+                auto id = vm -> get_string(1);
+                auto it = buffer.find(id);
                 if (it != buffer.end()) remove_stat(vm, it);
                 vm -> push_value(true);
                 return 1;
@@ -165,8 +165,12 @@ namespace Vital::Sandbox::API {
                 args.require(1, [](Machine* vm, int idx) { return vm -> is_number(idx) || vm -> is_string(idx); });
 
                 if (vm -> is_string(1)) {
-                    auto value = godot::Performance::get_singleton() -> get_custom_monitor(Tool::to_godot_string(vm -> get_string(1)));
-                    vm -> push_value(value);
+                    auto id = Tool::to_godot_string(vm -> get_string(1));
+                    if (!godot::Performance::get_singleton() -> has_custom_monitor(id)) vm -> push_value(false);
+                    else {
+                        auto value = godot::Performance::get_singleton() -> get_custom_monitor(id);
+                        vm -> push_value(value);
+                    }
                 }
                 else {
                     args.validate_enum(1, native_registry);
@@ -193,9 +197,9 @@ namespace Vital::Sandbox::API {
                 {
                     vm -> create_table();
                     int i = 0;
-                    for (auto& [key, stat] : buffer) {
+                    for (auto& [id, stat] : buffer) {
                         vm -> create_table();
-                        vm -> push_value(key);
+                        vm -> push_value(id);
                         vm -> set_table_field("id", -2);
                         vm -> push_value(stat.name);
                         vm -> set_table_field("name", -2);
