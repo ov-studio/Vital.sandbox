@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Monitor Bridge
+     Desc: Monitor Utilities
 ----------------------------------------------------------------*/
 
 
@@ -18,9 +18,9 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 
 
-////////////////////////////
+/////////////////////////////
 // Vital: Engine: Monitor //
-////////////////////////////
+/////////////////////////////
 
 namespace Vital::Engine {
     godot::Variant Monitor::dispatch(const godot::String& key) {
