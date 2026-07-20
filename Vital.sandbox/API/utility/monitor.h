@@ -269,7 +269,7 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field("id", -2);
                         vm -> push_value(native_registry[i].first);
                         vm -> set_table_field("name", -2);
-                        vm -> push_value(format_it != native_format.end() ? find_format(format_it -> second) : std::string());
+                        vm -> push_value(static_cast<int>(format_it != native_format.end() ? format_it -> second : -1));
                         vm -> set_table_field("format", -2);
                         vm -> set_table_field(i + 1, -2);
                     }
@@ -284,7 +284,7 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field("id", -2);
                         vm -> push_value(stat.name);
                         vm -> set_table_field("name", -2);
-                        vm -> push_value(find_format(stat.format));
+                        vm -> push_value(static_cast<int>(stat.format));
                         vm -> set_table_field("format", -2);
                         vm -> set_table_field(++i, -2);
                     }
