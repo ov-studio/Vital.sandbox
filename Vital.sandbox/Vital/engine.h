@@ -16,6 +16,7 @@
 #include <Vital.sandbox/Engine/public/core.h>
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/Engine/public/network.h>
+#include <Vital.sandbox/Engine/public/monitor.h>
 #include <Vital.sandbox/Engine/public/console.h>
 #include <Vital.sandbox/Engine/public/model.h>
 #include <Vital.sandbox/Engine/public/camera.h>
@@ -23,4 +24,5 @@
 #include <Vital.sandbox/Engine/public/font.h>
 #include <Vital.sandbox/Engine/public/texture.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
+
 
