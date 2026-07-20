@@ -84,6 +84,14 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     void Core::_unhandled_input(godot::Ref<godot::InputEvent> event) {
         if (!is_ready()) return;
+
+        if(auto key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
+            if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
+                take_screenshot();
+                return;
+            }
+        }
+
         Manager::Sandbox::get_singleton() -> input(event);
     }
     #endif
@@ -207,6 +215,30 @@ namespace Vital::Engine {
 
     std::string Core::get_http_url(const std::string& path) const {
         return http_server.get_url(path);
+    }
+
+    std::string Core::take_screenshot(const std::string& path){
+        auto root = get_scene_root();
+        if(!root) return "";
+        godot::Ref<godot::Image> image = root -> get_texture() -> get_image();
+        if(!image.is_valid()) return "";
+
+        std::string target = path;
+        if(target.empty()) {
+            godot::Dictionary dt = godot::Time::get_singleton() -> get_datetime_dict_from_system();
+            godot::String pictures = godot::OS::get_singleton() -> get_system_dir(godot::OS::SYSTEM_DIR_PICTURES);
+            std::string base = Tool::to_std_string(pictures) + "/Vital.sandbox";   // subfolder in Pictures
+            target = base + "/" + fmt::format(
+                "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
+                int(dt["year"]), int(dt["month"]), int(dt["day"]),
+                int(dt["hour"]), int(dt["minute"]), int(dt["second"]));
+        }
+
+        auto gd_target = Tool::to_godot_string(target);
+        godot::DirAccess::make_dir_recursive(gd_target.get_base_dir());
+        if(image -> save_png(gd_target) != godot::OK) return "";
+        Tool::print("sbox", fmt::format("Core: screenshot saved to {}", target));
+        return target;
     }
     #endif
 }

@@ -113,6 +113,17 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
             });
+
+            API::bind(vm, base_scope, "take_screenshot", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path = \"\")")
+                    .optional(1, &Machine::is_string);
+
+                std::string path = vm -> is_string(1) ? vm -> get_string(1) : "";
+                std::string result = base_class::get_singleton() -> take_screenshot(path);
+                if (result.empty()) vm -> push_value(false);
+                else vm -> push_value(result);
+                return 1;
+            });
             #endif
 
             API::bind(vm, base_scope, "get_entities", [](auto vm, auto& id) -> int {
