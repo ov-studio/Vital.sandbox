@@ -95,6 +95,75 @@ namespace Vital::Sandbox::API {
             { "PERCENTAGE", godot::Performance::MONITOR_TYPE_PERCENTAGE }
         };
 
+        inline static const std::unordered_map<int, int> native_format = {
+            { godot::Performance::TIME_FPS,                             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::TIME_PROCESS,                         godot::Performance::MONITOR_TYPE_TIME     },
+            { godot::Performance::TIME_PHYSICS_PROCESS,                 godot::Performance::MONITOR_TYPE_TIME     },
+            { godot::Performance::TIME_NAVIGATION_PROCESS,              godot::Performance::MONITOR_TYPE_TIME     },
+            { godot::Performance::MEMORY_STATIC,                        godot::Performance::MONITOR_TYPE_MEMORY   },
+            { godot::Performance::MEMORY_STATIC_MAX,                    godot::Performance::MONITOR_TYPE_MEMORY   },
+            { godot::Performance::MEMORY_MESSAGE_BUFFER_MAX,            godot::Performance::MONITOR_TYPE_MEMORY   },
+            { godot::Performance::OBJECT_COUNT,                         godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::OBJECT_RESOURCE_COUNT,                godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::OBJECT_NODE_COUNT,                    godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::OBJECT_ORPHAN_NODE_COUNT,             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::RENDER_TOTAL_OBJECTS_IN_FRAME,        godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::RENDER_TOTAL_PRIMITIVES_IN_FRAME,     godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::RENDER_TOTAL_DRAW_CALLS_IN_FRAME,     godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::RENDER_VIDEO_MEM_USED,                godot::Performance::MONITOR_TYPE_MEMORY   },
+            { godot::Performance::RENDER_TEXTURE_MEM_USED,              godot::Performance::MONITOR_TYPE_MEMORY   },
+            { godot::Performance::RENDER_BUFFER_MEM_USED,               godot::Performance::MONITOR_TYPE_MEMORY   },
+            { godot::Performance::PHYSICS_2D_ACTIVE_OBJECTS,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PHYSICS_2D_COLLISION_PAIRS,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PHYSICS_2D_ISLAND_COUNT,              godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PHYSICS_3D_ACTIVE_OBJECTS,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PHYSICS_3D_COLLISION_PAIRS,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PHYSICS_3D_ISLAND_COUNT,              godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::AUDIO_OUTPUT_LATENCY,                 godot::Performance::MONITOR_TYPE_TIME     },
+            { godot::Performance::NAVIGATION_ACTIVE_MAPS,               godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_REGION_COUNT,              godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_AGENT_COUNT,               godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_LINK_COUNT,                godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_POLYGON_COUNT,             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_EDGE_COUNT,                godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_EDGE_MERGE_COUNT,          godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_EDGE_CONNECTION_COUNT,     godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_EDGE_FREE_COUNT,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_OBSTACLE_COUNT,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PIPELINE_COMPILATIONS_CANVAS,         godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PIPELINE_COMPILATIONS_MESH,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PIPELINE_COMPILATIONS_SURFACE,        godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PIPELINE_COMPILATIONS_DRAW,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::PIPELINE_COMPILATIONS_SPECIALIZATION, godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_ACTIVE_MAPS,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_REGION_COUNT,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_AGENT_COUNT,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_LINK_COUNT,             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_POLYGON_COUNT,          godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_EDGE_COUNT,             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_EDGE_MERGE_COUNT,       godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_EDGE_CONNECTION_COUNT,  godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_EDGE_FREE_COUNT,        godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_2D_OBSTACLE_COUNT,         godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_ACTIVE_MAPS,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_REGION_COUNT,           godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_AGENT_COUNT,            godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_LINK_COUNT,             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_POLYGON_COUNT,          godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_EDGE_COUNT,             godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_EDGE_MERGE_COUNT,       godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_EDGE_CONNECTION_COUNT,  godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_EDGE_FREE_COUNT,        godot::Performance::MONITOR_TYPE_QUANTITY },
+            { godot::Performance::NAVIGATION_3D_OBSTACLE_COUNT,         godot::Performance::MONITOR_TYPE_QUANTITY }
+        };
+
+        static std::string format_name(int value) {
+            for (auto& [name, entry_value] : format_registry) {
+                if (entry_value == value) return name;
+            }
+            return "";
+        }
+
         struct Stat {
             int exec_ref = LUA_NOREF;
             std::string env;
@@ -199,6 +268,9 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field("id", -2);
                         vm -> push_value(native_registry[i].first);
                         vm -> set_table_field("name", -2);
+                        auto format_it = native_format.find(native_registry[i].second);
+                        vm -> push_value(format_it != native_format.end() ? format_name(format_it -> second) : std::string());
+                        vm -> set_table_field("format", -2);
                         vm -> set_table_field(i + 1, -2);
                     }
                     vm -> set_table_field("native", -2);
