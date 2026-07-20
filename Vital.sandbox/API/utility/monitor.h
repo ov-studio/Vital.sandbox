@@ -102,12 +102,6 @@ namespace Vital::Sandbox::API {
         };
 
         inline static std::unordered_map<std::string, Stat> buffer;
-        inline static Vital::Engine::Monitor* bridge = nullptr;
-
-        static Vital::Engine::Monitor* get_bridge() {
-            if (!bridge) bridge = memnew(Vital::Engine::Monitor);
-            return bridge;
-        }
 
         static void remove_stat(Machine* vm, std::unordered_map<std::string, Stat>::iterator it) {
             godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
@@ -137,7 +131,7 @@ namespace Vital::Sandbox::API {
 
                     godot::Performance::get_singleton() -> add_custom_monitor(
                         Tool::to_godot_string(key),
-                        godot::Callable(get_bridge(), "dispatch"),
+                        godot::Callable(Vital::Engine::Monitor::get_singleton(), "dispatch"),
                         args,
                         format
                     );
