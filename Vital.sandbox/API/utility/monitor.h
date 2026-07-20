@@ -172,7 +172,7 @@ namespace Vital::Sandbox::API {
             }
             return "";
         }
-        
+
         static void remove_stat(Machine* vm, std::unordered_map<std::string, Stat>::iterator it) {
             godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
             vm -> del_raw_reference(it -> second.exec_ref);
@@ -263,12 +263,12 @@ namespace Vital::Sandbox::API {
                 {
                     vm -> create_table();
                     for (int i = 0; i < static_cast<int>(native_registry.size()); ++i) {
+                        auto format_it = native_format.find(native_registry[i].second);
                         vm -> create_table();
                         vm -> push_value(static_cast<int64_t>(native_registry[i].second));
                         vm -> set_table_field("id", -2);
                         vm -> push_value(native_registry[i].first);
                         vm -> set_table_field("name", -2);
-                        auto format_it = native_format.find(native_registry[i].second);
                         vm -> push_value(format_it != native_format.end() ? find_format(format_it -> second) : std::string());
                         vm -> set_table_field("format", -2);
                         vm -> set_table_field(i + 1, -2);
