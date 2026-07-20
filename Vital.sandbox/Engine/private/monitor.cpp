@@ -14,8 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Engine/public/monitor.h>
-#include <Vital.sandbox/API/utility/monitor.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/API/utility/monitor.h>
 
 
 /////////////////////////////
