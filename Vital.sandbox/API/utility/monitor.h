@@ -99,6 +99,7 @@ namespace Vital::Sandbox::API {
             int exec_ref = LUA_NOREF;
             std::string env;
             std::string name;
+            int format = godot::Performance::MONITOR_TYPE_QUANTITY;
         };
 
         inline static std::unordered_map<std::string, Stat> buffer;
@@ -124,7 +125,7 @@ namespace Vital::Sandbox::API {
                     auto env = vm -> get_environment_id();
                     auto format = static_cast<godot::Performance::MonitorType>(vm -> get_int(4));
                     int exec_ref = vm -> set_raw_reference(3);
-                    buffer[key] = { exec_ref, env, name };
+                    buffer[key] = { exec_ref, env, name, static_cast<int>(format) };
 
                     godot::Array args;
                     args.push_back(Tool::to_godot_string(key));
@@ -211,6 +212,8 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field("id", -2);
                         vm -> push_value(stat.name);
                         vm -> set_table_field("name", -2);
+                        vm -> push_value(format_name(stat.format));
+                        vm -> set_table_field("format", -2);
                         vm -> set_table_field(++i, -2);
                     }
                     vm -> set_table_field("custom", -2);
