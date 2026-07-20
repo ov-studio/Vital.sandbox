@@ -235,7 +235,7 @@ namespace Vital::Engine {
         }
 
         auto gd_target = Tool::to_godot_string(target);
-        godot::DirAccess::make_dir_recursive(gd_target.get_base_dir());
+        godot::DirAccess::make_dir_recursive_absolute(gd_target.get_base_dir());
         if(image -> save_png(gd_target) != godot::OK) return "";
         Tool::print("sbox", fmt::format("Core: screenshot saved to {}", target));
         return target;
