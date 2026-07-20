@@ -35,7 +35,7 @@ namespace Vital::Engine {
             vm -> get_raw_reference(it -> second.exec_ref);
             if (!vm -> call(0, 1)) return 0;
             if (!vm -> is_number(vm -> get_count())) {
-                vm -> log("error", "monitor callback must return a number");
+                vm -> log("warn", "monitor stat callback must return a number");
                 return 0;
             }
             result = vm -> get_double(vm -> get_count());
