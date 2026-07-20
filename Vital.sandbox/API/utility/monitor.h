@@ -157,13 +157,6 @@ namespace Vital::Sandbox::API {
             { godot::Performance::NAVIGATION_3D_OBSTACLE_COUNT,         godot::Performance::MONITOR_TYPE_QUANTITY }
         };
 
-        static std::string format_name(int value) {
-            for (auto& [name, entry_value] : format_registry) {
-                if (entry_value == value) return name;
-            }
-            return "";
-        }
-
         struct Stat {
             int exec_ref = LUA_NOREF;
             std::string env;
@@ -173,6 +166,13 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<std::string, Stat> buffer;
 
+        static std::string find_format(int value) {
+            for (auto& [idx, val] : format_registry) {
+                if (val == value) return idx;
+            }
+            return "";
+        }
+        
         static void remove_stat(Machine* vm, std::unordered_map<std::string, Stat>::iterator it) {
             godot::Performance::get_singleton() -> remove_custom_monitor(Tool::to_godot_string(it -> first));
             vm -> del_raw_reference(it -> second.exec_ref);
@@ -269,7 +269,7 @@ namespace Vital::Sandbox::API {
                         vm -> push_value(native_registry[i].first);
                         vm -> set_table_field("name", -2);
                         auto format_it = native_format.find(native_registry[i].second);
-                        vm -> push_value(format_it != native_format.end() ? format_name(format_it -> second) : std::string());
+                        vm -> push_value(format_it != native_format.end() ? find_format(format_it -> second) : std::string());
                         vm -> set_table_field("format", -2);
                         vm -> set_table_field(i + 1, -2);
                     }
@@ -284,7 +284,7 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field("id", -2);
                         vm -> push_value(stat.name);
                         vm -> set_table_field("name", -2);
-                        vm -> push_value(format_name(stat.format));
+                        vm -> push_value(find_format(stat.format));
                         vm -> set_table_field("format", -2);
                         vm -> set_table_field(++i, -2);
                     }
