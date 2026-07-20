@@ -139,8 +139,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(id)")
                     .require(1, &Machine::is_string);
 
-                auto id = vm -> get_string(1);
-                auto it = buffer.find(id);
+                auto key = vm -> get_string(1);
+                auto it = buffer.find(key);
                 if (it == buffer.end()) vm -> push_value(false);
                 else {
                     remove_stat(vm, it);
