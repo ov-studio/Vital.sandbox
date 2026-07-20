@@ -13,31 +13,37 @@
 //////////////
 
 #pragma once
+#if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/monitor.h>
-#include <Vital.sandbox/API/utility/monitor.h>
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/API/utility/monitor.h>
 
 
 /////////////////////////////
 // Vital: Engine: Monitor //
 /////////////////////////////
 
-// TODO: WIP
 namespace Vital::Engine {
     godot::Variant Monitor::dispatch(const godot::String& key) {
         auto std_key = std::string(key.utf8().get_data());
         auto it = Sandbox::API::Monitor::buffer.find(std_key);
         if (it == Sandbox::API::Monitor::buffer.end()) return 0;
-
         auto vm = Manager::Sandbox::get_singleton() -> get_vm();
         if (!vm) return 0;
 
-        vm -> get_raw_reference(it -> second.exec_ref);
-        vm -> call(0, 1);
-
-        std::unordered_set<const void*> visited;
-        auto value = vm -> collect_value(vm -> get_count(), visited).to_variant();
-        vm -> pop(1);
-        return value;
+        godot::Variant result = 0;
+        vm -> execute([&]() -> int {
+            vm -> get_raw_reference(it -> second.exec_ref);
+            if (!vm -> call(0, 1)) return 0;
+            if (!vm -> is_number(vm -> get_count())) {
+                vm -> log("error", "monitor stat callback must return a number");
+                return 0;
+            }
+            result = vm -> get_double(vm -> get_count());
+            vm -> pop(1);
+            return 0;
+        });
+        return result;
     }
 }
+#endif
