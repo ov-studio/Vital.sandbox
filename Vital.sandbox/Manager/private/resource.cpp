@@ -248,6 +248,7 @@ namespace Vital::Manager {
             packet.object["scripts"] = std::move(packed.object["scripts"]);
             packet.object["files"] = std::move(packed.object["files"]);
             packet.object["models"] = std::move(packed.object["models"]);
+            packet.object["dependencies"] = std::move(packed.object["dependencies"]);
         }
         return packet;
     }
