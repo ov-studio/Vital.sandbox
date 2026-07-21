@@ -99,7 +99,7 @@ namespace Vital::Config {
 
 
             // Bootstrap //
-            std::vector<std::string> get_bootstrap_resources() const {
+            std::vector<std::string> get_bootstrap() const {
                 std::vector<std::string> result;
                 if (!loaded || !yaml.has("bootstrap")) return result;
                 const auto& list = yaml.get_root()["bootstrap"];
