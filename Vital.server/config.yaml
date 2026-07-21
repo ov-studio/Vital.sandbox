@@ -5,57 +5,51 @@
 # Simply modify the values below and restart the server - no code changes needed!
 # =============================================================================
 
-# -----------------------------------------------------------------------------
 # Server Identity
-# -----------------------------------------------------------------------------
 server:
   # The display name of your server as shown in master-list 
   name: "Vital Sandbox Server"
-  
+
   # Server version identifier (for compatibility checks)
   version: "1.0.0"
-  
+
   # Server description (optional, for client display)
   description: "A Vital Sandbox server"
 
-# -----------------------------------------------------------------------------
-# Network Configuration
-# -----------------------------------------------------------------------------
+
+# Network Server
 network:
   # TCP port for ENet multiplayer server
   # Clients connect to this port
   # Default: 7777
   port: 7777
-  
+
   # Maximum number of concurrent clients allowed
   # Default: 32
   max_peers: 32
 
-# -----------------------------------------------------------------------------
-# HTTP Asset Server Configuration
-# -----------------------------------------------------------------------------
+
+# HTTP Server
 http:
   # Port for HTTP asset delivery server
   # Clients download assets (models, textures, etc.) from this port
   # Default: 7778
   port: 7778
 
-# -----------------------------------------------------------------------------
-# Bootstrap Resources
-# -----------------------------------------------------------------------------
+
+# Bootstrapper
 bootstrap:
   # Resources listed here are automatically started after the initial resource scan.
   # They are started in the order listed, respecting dependency resolution.
   # Each entry must match a valid resource folder name under resources/.
   - "monitor"
 
-# -----------------------------------------------------------------------------
-# Community / Social Links
-# -----------------------------------------------------------------------------
+
+# Social Links
 social:
   # Discord server invite link
   # Shown in master-list and used for join requests
   discord: ""
-  
+
   # Website URL
   website: ""
