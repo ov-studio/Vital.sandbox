@@ -41,37 +41,6 @@ http:
   port: 7778
 
 # -----------------------------------------------------------------------------
-# Discord Integration
-# -----------------------------------------------------------------------------
-discord:
-  # Enable Discord Rich Presence
-  # Default: false (only applies to client builds)
-  enabled: false
-  
-  # Discord Application ID (from Discord Developer Portal)
-  # Get it at: https://discord.com/developers/applications
-  application_id: "0"
-  
-  # Rich Presence state (shown below the game name)
-  # Supports placeholders: {server_name}, {player_count}, {max_players}
-  state: "Playing on {server_name}"
-  
-  # Rich Presence details (shown above the state)
-  details: "{player_count}/{max_players} players"
-  
-  # Large image key (from Discord Developer Portal Rich Presence assets)
-  large_image_key: ""
-  
-  # Large image tooltip text
-  large_image_text: ""
-  
-  # Small image key (optional)
-  small_image_key: ""
-  
-  # Small image tooltip text
-  small_image_text: ""
-
-# -----------------------------------------------------------------------------
 # Community / Social Links
 # -----------------------------------------------------------------------------
 social:
