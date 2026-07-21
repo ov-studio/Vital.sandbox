@@ -70,6 +70,11 @@ namespace Vital::Manager {
             models.reserve(nested.array.size());
             for (const auto& entry : nested.array) models.push_back(entry.as<std::string>());
         }
+        if (const auto* sv = arguments.get("dependencies")) {
+            const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
+            dependencies.reserve(nested.array.size());
+            for (const auto& entry : nested.array) dependencies.push_back(entry.as<std::string>());
+        }
     }
 
     bool Resource::Internal::validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources) {
