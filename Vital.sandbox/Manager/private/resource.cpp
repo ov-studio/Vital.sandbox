@@ -443,6 +443,7 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Resource::Internal::stop_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "stopping all resources...");
+        
         int count = 0;
         std::unordered_set<std::string> snapshot;
         {
@@ -591,6 +592,7 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Resource::Internal::start_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "starting all resources...");
+
         int count = 0;
         std::vector<const Manifest*> all;
         {
@@ -611,6 +613,7 @@ namespace Vital::Manager {
         Tool::assert_main_thread("Resource::Internal::restart_all");
         auto rm = Resource::get_singleton();
         rm -> log("sbox", "restarting all resources...");
+
         int count = 0;
         std::unordered_set<std::string> snapshot;
         {
