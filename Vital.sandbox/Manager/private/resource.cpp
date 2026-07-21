@@ -34,6 +34,7 @@ namespace Vital::Manager {
         Tool::Stack scripts;
         Tool::Stack files;
         Tool::Stack models;
+        Tool::Stack dependencies;
         for (const auto& s : manifest.scripts) {
             Tool::Stack entry;
             entry.object["src"] = Tool::StackValue(s.src);
@@ -592,14 +593,15 @@ namespace Vital::Manager {
                     std::vector<Script> scripts;
                     std::vector<std::string> files;
                     std::vector<std::string> models;
-                    Internal::unpack_manifest(arguments, scripts, files, models);
+                    std::vector<std::string> dependencies;
+                    Internal::unpack_manifest(arguments, scripts, files, models, dependencies);
                     log("sbox", fmt::format("client received resource start: `{}`", name));
                     bool already;
                     {
                         std::lock_guard<std::mutex> lock(rm -> mutex);
                         already = Internal::is_running(name);
                     }
-                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models]() { Internal::register_resource(name, scripts, files, models); });
+                    if (!already) Engine::Core::get_singleton() -> enqueue([name, scripts, files, models, dependencies]() { Internal::register_resource(name, scripts, files, models, dependencies); });
                 }
                 else if (event == "resource:stopped") {
                     auto rm = Resource::get_singleton();
