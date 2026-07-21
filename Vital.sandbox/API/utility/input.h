@@ -437,7 +437,6 @@ namespace Vital::Sandbox::API {
                 std::vector<std::string> arguments;
                 arguments.reserve(arg_stack_ptr -> array.size());
                 for (auto& value : arg_stack_ptr -> array) arguments.push_back(value.as<std::string>());
-
                 dispatch_command(vm, name, arguments);
             });
         }
