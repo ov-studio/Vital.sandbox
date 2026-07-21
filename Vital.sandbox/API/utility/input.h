@@ -407,13 +407,6 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        static std::vector<std::string> list_handlers() {
-            std::vector<std::string> names;
-            names.reserve(command_handlers.size());
-            for (auto& [name, _] : command_handlers) names.push_back(name);
-            return names;
-        }
-
         static void init(Machine* vm) {
             static bool initialized = false;
             if (initialized) return;
@@ -543,11 +536,11 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
-                auto names = list_handlers();
                 vm -> create_table();
-                for (int i = 0; i < (int)names.size(); ++i) {
-                    vm -> push_value(names[i]);
-                    vm -> set_table_field(i + 1, -2);
+                int i = 0;
+                for (auto& [name, _] : command_handlers) {
+                    vm -> push_value(name);
+                    vm -> set_table_field(++i, -2);
                 }
                 return 1;
             });
