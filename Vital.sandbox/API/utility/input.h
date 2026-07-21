@@ -589,6 +589,16 @@ namespace Vital::Sandbox::API {
             };
             release_binds(key_binds);
             release_binds(mouse_binds);
+
+            for (auto cit = command_handlers.begin(); cit != command_handlers.end(); ) {
+                auto eit = cit -> second.find(env);
+                if (eit != cit -> second.end()) {
+                    for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
+                    cit -> second.erase(eit);
+                }
+                if (cit -> second.empty()) cit = command_handlers.erase(cit);
+                else ++cit;
+            }
         }
     };
 }
