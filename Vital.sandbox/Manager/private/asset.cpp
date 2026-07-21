@@ -210,7 +210,7 @@ namespace Vital::Manager {
             document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(cfg.get_network_port()), alloc);
             document.AddMember(rapidjson::StringRef("http_port"), rapidjson::Value(cfg.get_http_port()), alloc);
             document.AddMember(rapidjson::StringRef("max_peers"), rapidjson::Value(cfg.get_max_clients()), alloc);
-            document.AddMember(rapidjson::StringRef("discord_invite"), rapidjson::Value(cfg.get_discord().c_str(), alloc), alloc);
+            document.AddMember(rapidjson::StringRef("discord"), rapidjson::Value(cfg.get_discord().c_str(), alloc), alloc);
             document.AddMember(rapidjson::StringRef("website"), rapidjson::Value(cfg.get_website().c_str(), alloc), alloc);
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);

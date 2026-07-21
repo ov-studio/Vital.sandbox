@@ -46,7 +46,7 @@ http:
 social:
   # Discord server invite link
   # Shown in client UI and used for join requests
-  discord_invite: ""
+  discord: ""
   
   # Website URL
   website: ""

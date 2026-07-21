@@ -98,22 +98,8 @@ namespace Vital::Config {
             int get_http_port() const { return get_int("http", "port", 7778); }
 
 
-            // Discord //
-            bool get_discord_enabled() const { return get_bool("discord", "enabled", false); }
-            std::string get_discord_state() const { return get_str("discord", "state", "Playing on {server_name}"); }
-            std::string get_discord_details() const { return get_str("discord", "details", "{player_count}/{max_players} players"); }
-            std::string get_discord_large_image_key() const { return get_str("discord", "large_image_key",  ""); }
-            std::string get_discord_large_image_text() const { return get_str("discord", "large_image_text", ""); }
-            std::string get_discord_small_image_key() const { return get_str("discord", "small_image_key",  ""); }
-            std::string get_discord_small_image_text() const { return get_str("discord", "small_image_text", ""); }
-            uint64_t get_discord_application_id() const {
-                try { return std::stoull(get_str("discord", "application_id", "")); }
-                catch (...) { return 0; }
-            }
-
-
             // Social //
-            std::string get_discord() const { return get_str("social", "discord_invite", ""); }
+            std::string get_discord() const { return get_str("social", "discord", ""); }
             std::string get_website() const { return get_str("social", "website", ""); }
     };
 }
