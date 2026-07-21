@@ -180,7 +180,7 @@ namespace Vital::Manager {
     }
 
     #if defined(VSDK_Client)
-    bool Resource::Internal::register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models) {
+    bool Resource::Internal::register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models, const std::vector<std::string>& dependencies) {
         Tool::assert_main_thread("Resource::Internal::register_resource");
         auto rm = Resource::get_singleton();
         {
