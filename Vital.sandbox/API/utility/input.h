@@ -425,6 +425,19 @@ namespace Vital::Sandbox::API {
                 if (mouse) dispatch_handler(mouse_binds, vm, code, pressed);
                 else dispatch_handler(key_binds, vm, code, pressed);
             });
+
+            Tool::Event::bind("sandbox:console_input", [](Tool::Stack args) {
+                if (args.array.size() < 2) return;
+                auto vm = Manager::Sandbox::get_singleton() -> get_vm();
+                if (!vm) return;
+
+                auto name = args.array[0].as<std::string>();
+                auto arg_stack = args.array[1].as<Tool::Stack>();
+                std::vector<std::string> arguments;
+                arguments.reserve(arg_stack.array.size());
+                for (auto& value : arg_stack.array) arguments.push_back(value.as<std::string>());
+                dispatch_command(vm, name, arguments);
+            });
         }
 
         static void bind(Machine* vm) {
