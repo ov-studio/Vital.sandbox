@@ -5,6 +5,7 @@
 # Simply modify the values below and restart the server - no code changes needed!
 # =============================================================================
 
+# Server Identity
 server:
   # The display name of your server as shown in master-list 
   name: "Vital Sandbox Server"
@@ -16,6 +17,7 @@ server:
   description: "A Vital Sandbox server"
 
 
+# Network Server
 network:
   # TCP port for ENet multiplayer server
   # Clients connect to this port
@@ -27,6 +29,7 @@ network:
   max_peers: 32
 
 
+# HTTP Server
 http:
   # Port for HTTP asset delivery server
   # Clients download assets (models, textures, etc.) from this port
@@ -34,6 +37,7 @@ http:
   port: 7778
 
 
+# Bootstrapper
 bootstrap:
   # Resources listed here are automatically started after the initial resource scan.
   # They are started in the order listed, respecting dependency resolution.
@@ -41,6 +45,7 @@ bootstrap:
   - "monitor"
 
 
+# Social Links
 social:
   # Discord server invite link
   # Shown in master-list and used for join requests
