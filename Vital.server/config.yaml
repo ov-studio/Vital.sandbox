@@ -8,13 +8,13 @@
 # Server Identity
 server:
   # The display name of your server as shown in master-list 
-  name: "Vital Sandbox Server"
+  name: "Vital.sandbox Server"
 
   # Server version identifier (for compatibility checks)
   version: "1.0.0"
 
   # Server description (optional, for client display)
-  description: "A Vital Sandbox server"
+  description: "A Vital.sandbox server"
 
 
 # Network Server
