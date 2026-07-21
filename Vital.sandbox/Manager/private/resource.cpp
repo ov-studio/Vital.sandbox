@@ -193,6 +193,7 @@ namespace Vital::Manager {
             manifest.scripts = scripts;
             manifest.files = files;
             manifest.models = models;
+            manifest.dependencies = dependencies;
             rm -> resources.push_back(std::move(manifest));
         }
         rm -> log("sbox", fmt::format("resource `{}` registered from server — {} script(s), {} file(s), {} model(s)", name, scripts.size(), files.size(), models.size()));
@@ -206,6 +207,7 @@ namespace Vital::Manager {
         resource.scripts.clear();
         resource.files.clear();
         resource.models.clear();
+        resource.dependencies.clear();
         resource.script_hashes.clear();
         resource.file_hashes.clear();
         if (!manifest.has("scripts") || !manifest.get_root()["scripts"].is_seq()) return false;
