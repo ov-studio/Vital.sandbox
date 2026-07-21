@@ -304,7 +304,7 @@ namespace Vital::Sandbox::API {
             return true;
         }
 
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        template <typename KeyT, typename HandlerT, typename MatchFn>
         static bool remove_handler(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, int exec_index, MatchFn matches) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(key);
