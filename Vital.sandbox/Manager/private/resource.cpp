@@ -727,7 +727,32 @@ namespace Vital::Manager {
             });
         #else
             scan();
-
+    
+            Engine::Core::get_singleton() -> enqueue([]() {
+                auto rm = Resource::get_singleton();
+                const auto& cfg = Manager::Network::get_singleton() -> get_server_config();
+                const std::vector<std::string> bootstrap = cfg.get_bootstrap();
+                if (bootstrap.empty()) return;
+                rm -> log("sbox", fmt::format("bootstrapping {} resource(s)...", bootstrap.size()));
+                
+                int count = 0;
+                for (const auto& name : bootstrap) {
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
+                    if (!Internal::is_loaded(name)) { rm -> log("error", fmt::format("bootstrap: resource `{}` not found — skipping", name)); continue; }
+                    if (Internal::is_running(name)) { rm -> log("warn", fmt::format("bootstrap: resource `{}` already running — skipping", name)); continue; }
+                }
+                for (const auto& name : bootstrap) {
+                    bool loaded;
+                    {
+                        std::lock_guard<std::mutex> lock(rm -> mutex);
+                        loaded = Internal::is_loaded(name);
+                    }
+                    if (!loaded) continue;
+                    if (Internal::start(name)) count++;
+                }
+                rm -> log("sbox", fmt::format("bootstrap complete — {} resource(s) started", count));
+            });
+    
             Tool::Event::bind("network:peer:join", [](Tool::Stack arguments) {
                 if (arguments.array.empty()) return;
                 const int peer_id = arguments.array[0].as<int32_t>();
