@@ -46,6 +46,8 @@ namespace Vital::Manager {
         out.object["files"] = Tool::StackValue(std::move(files));
         for (const auto& f : manifest.models) models.array.push_back(Tool::StackValue(f));
         out.object["models"] = Tool::StackValue(std::move(models));
+        for (const auto& d : manifest.dependencies) dependencies.array.push_back(Tool::StackValue(d));
+        out.object["dependencies"] = Tool::StackValue(std::move(dependencies));
         return out;
     }
 
