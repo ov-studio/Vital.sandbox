@@ -591,6 +591,8 @@ namespace Vital::Sandbox::API {
             release_binds(key_binds);
             release_binds(mouse_binds);
 
+
+            // TODO: release overload for it? use template maybe for release_binds to simplify??
             for (auto cit = command_handlers.begin(); cit != command_handlers.end(); ) {
                 auto eit = cit -> second.find(env);
                 if (eit != cit -> second.end()) {
