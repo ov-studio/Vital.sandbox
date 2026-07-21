@@ -87,7 +87,7 @@ namespace Vital::Config {
 
 
             // Identity //
-            std::string get_server_name() const { return get_str("server", "name", "Vital Sandbox Server"); }
+            std::string get_server_name() const { return get_str("server", "name", "Vital.sandbox Server"); }
             std::string get_server_version() const { return get_str("server", "version", "1.0.0"); }
             std::string get_server_description() const { return get_str("server", "description", ""); }
 
