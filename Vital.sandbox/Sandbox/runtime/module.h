@@ -86,6 +86,13 @@ namespace Vital::Sandbox {
                 });
             }
 
+            static std::vector<std::string> list_types() {
+                std::vector<std::string> result;
+                result.reserve(entity_pool.size());
+                for (auto& [name, collector] : entity_pool) result.push_back(name);
+                return result;
+            }
+
             template<typename T, typename... Args>
             static T* push_owned(vm_state* state, Args&&... args) {
                 auto ptr = static_cast<T*>(lua_newuserdata(state, sizeof(T)));
