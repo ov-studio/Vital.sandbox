@@ -582,8 +582,6 @@ namespace Vital::Sandbox::API {
                     else ++mit;
                 }
             };
-            release(key_binds);
-            release(mouse_binds);
             release_binds(key_binds);
             release_binds(mouse_binds);
         }
