@@ -275,7 +275,7 @@ namespace Vital::Sandbox::API {
 
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> key_binds;
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> mouse_binds;
-        inline static std::unordered_map<std::string, std::unordered_map<std::string, std::vector<CommandHandler>>> command_handlers;
+        inline static std::unordered_map<std::string, std::unordered_map<std::string, std::vector<CommandHandler>>> command_list;
 
         static bool resolve_key(int code, std::string& key, bool& mouse) {
             auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.second == code; });
@@ -375,9 +375,9 @@ namespace Vital::Sandbox::API {
         }
 
         static bool dispatch_command(Machine* vm, const std::string& name, const std::vector<std::string>& args) {
-            if (command_handlers.find(name) == command_handlers.end()) return false;
+            if (command_list.find(name) == command_list.end()) return false;
 
-            execute_handler(command_handlers, vm, name,
+            execute_handler(command_list, vm, name,
                 [](const CommandHandler&) { return true; },
                 [&args](Machine* vm) {
                     vm -> create_table();
@@ -518,7 +518,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = add_handler(command_handlers, vm, name, 2, [](int ref) { return CommandHandler{ref}; });
+                auto ok = add_handler(command_list, vm, name, 2, [](int ref) { return CommandHandler{ref}; });
                 vm -> push_value(ok);
                 return 1;
             });
@@ -529,7 +529,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = remove_handler(command_handlers, vm, name, 2, [](const CommandHandler& handle) { return true; });
+                auto ok = remove_handler(command_list, vm, name, 2, [](const CommandHandler& handle) { return true; });
                 vm -> push_value(ok);
                 return 1;
             });
@@ -537,7 +537,7 @@ namespace Vital::Sandbox::API {
             API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
                 vm -> create_table();
                 int i = 0;
-                for (auto& [name, _] : command_handlers) {
+                for (auto& [name, _] : command_list) {
                     vm -> push_value(name);
                     vm -> set_table_field(++i, -2);
                 }
@@ -576,7 +576,7 @@ namespace Vital::Sandbox::API {
 
             release_env(key_binds, vm, env);
             release_env(mouse_binds, vm, env);
-            release_env(command_handlers, vm, env);
+            release_env(command_list, vm, env);
         }
     };
 }
