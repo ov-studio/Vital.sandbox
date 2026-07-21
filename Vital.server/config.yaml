@@ -9,7 +9,7 @@
 # Server Identity
 # -----------------------------------------------------------------------------
 server:
-  # The display name of your server (shown in client UI and Discord)
+  # The display name of your server as shown in master-list 
   name: "Vital Sandbox Server"
   
   # Server version identifier (for compatibility checks)
@@ -45,7 +45,7 @@ http:
 # -----------------------------------------------------------------------------
 social:
   # Discord server invite link
-  # Shown in client UI and used for join requests
+  # Shown in master-list and used for join requests
   discord: ""
   
   # Website URL
