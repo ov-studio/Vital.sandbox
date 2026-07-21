@@ -376,6 +376,7 @@ namespace Vital::Manager {
             if (Internal::is_pending(name)) { rm -> log("error", fmt::format("cannot start `{}` — already pending", name)); return false; }
             #endif
         }
+
         #if !defined(VSDK_Client)
             {
                 std::lock_guard<std::mutex> lock(rm -> mutex);
