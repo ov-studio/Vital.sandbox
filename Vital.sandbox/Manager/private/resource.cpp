@@ -378,17 +378,43 @@ namespace Vital::Manager {
         }
 
         #if !defined(VSDK_Client)
-            {
-                std::lock_guard<std::mutex> lock(rm -> mutex);
-                auto resource = Internal::get_resource(name);
-                std::vector<std::string> asset_paths;
-                for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
-                for (const auto& script : resource -> scripts) {
-                    if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+        {
+            std::vector<std::string> order;
+            std::vector<std::string> errors;
+            std::vector<std::string> stack;
+            if (!Internal::resolve_dependencies(name, order, errors, stack)) {
+                std::string report = fmt::format("resource `{}` failed to start\n", name);
+                report += fmt::format("> Errors ({}):\n", errors.size());
+                for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                rm -> log("error", report);
+                return false;
+            }
+            for (const auto& dependency : order) {
+                if (dependency == name) continue;
+                bool already_running;
+                {
+                    std::lock_guard<std::mutex> lock(rm -> mutex);
+                    already_running = Internal::is_running(dependency);
+                }
+                if (!already_running && !Internal::start(dependency)) {
+                    rm -> log("error", fmt::format("cannot start `{}` — dependency `{}` failed to start", name, dependency));
+                    return false;
                 }
                 am -> register_assets(asset_paths, name);
                 am -> broadcast_manifest(-1, true);
             }
+        }
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            auto resource = Internal::get_resource(name);
+            std::vector<std::string> asset_paths;
+            for (const auto& file : resource -> files) asset_paths.push_back(fmt::format("resources/{}/{}", name, file));
+            for (const auto& script : resource -> scripts) {
+                if (script.type == "shared" || script.type == "client") asset_paths.push_back(fmt::format("resources/{}/{}", name, script.src));
+            }
+            am -> register_assets(asset_paths, name);
+            am -> broadcast_manifest(-1, true);
+        }
         #endif
         Internal::execute_resource(name);
         return true;
