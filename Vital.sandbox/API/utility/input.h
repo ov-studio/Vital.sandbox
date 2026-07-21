@@ -545,7 +545,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "execute", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(name, args)")
+                vm_args(vm, id, "(name, args = {})")
                     .require(1, &Machine::is_string)
                     .optional(2, &Machine::is_table);
 
