@@ -70,6 +70,7 @@ namespace Vital::Manager {
                 static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models, const std::vector<std::string>& dependencies);
                 #else
                 static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+                static bool reload_manifest(const std::string& name, std::vector<std::string>& errors);
                 static bool resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack);
                 static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
                 #endif
