@@ -343,6 +343,66 @@ namespace Vital::Sandbox::API {
             }
         }
 
+        static bool register_command(Machine* vm, const std::string& name, int exec_index) {
+            auto env = vm -> get_environment_id();
+            int ref = vm -> set_raw_reference(exec_index);
+            command_handlers[name][env].push_back({ref});
+            return true;
+        }
+
+        static bool unregister_command(Machine* vm, const std::string& name, int exec_index) {
+            auto env = vm -> get_environment_id();
+            auto cit = command_handlers.find(name);
+            if (cit == command_handlers.end()) return false;
+            auto eit = cit -> second.find(env);
+            if (eit == cit -> second.end()) return false;
+
+            int lookup_ref = vm -> set_raw_reference(exec_index);
+            bool removed = false;
+            auto& handlers = eit -> second;
+            for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
+                vm -> get_raw_reference(lookup_ref);
+                vm -> get_raw_reference(vit -> exec_ref);
+                bool eq = lua_rawequal(vm -> get_state(), -1, -2);
+                vm -> pop(2);
+                if (!eq) continue;
+                vm -> del_raw_reference(vit -> exec_ref);
+                handlers.erase(vit);
+                removed = true;
+                break;
+            }
+            vm -> del_raw_reference(lookup_ref);
+            if (handlers.empty()) cit -> second.erase(eit);
+            if (cit -> second.empty()) command_handlers.erase(cit);
+            return removed;
+        }
+
+        static std::vector<std::string> list_commands() {
+            std::vector<std::string> names;
+            names.reserve(command_handlers.size());
+            for (auto& [name, _] : command_handlers) names.push_back(name);
+            return names;
+        }
+        
+        static bool dispatch_command(Machine* vm, const std::string& name, const std::vector<std::string>& args) {
+            auto cit = command_handlers.find(name);
+            if (cit == command_handlers.end()) return false;
+            auto snapshot = cit -> second;
+            for (auto& [env, handlers] : snapshot) {
+                for (auto& entry : handlers) {
+                    vm -> get_raw_reference(entry.exec_ref);
+                    // push args as a Lua table
+                    vm -> create_table();
+                    for (int i = 0; i < (int)args.size(); ++i) {
+                        vm -> push_value(args[i]);
+                        vm -> set_table_field(i + 1, -2);
+                    }
+                    vm -> call(1, 0);
+                }
+            }
+            return true;
+        }
+
         static void init(Machine* vm) {
             static bool initialized = false;
             if (initialized) return;
