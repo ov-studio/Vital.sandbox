@@ -275,6 +275,7 @@ namespace Vital::Manager {
             dependencies = resource -> dependencies;
         }
         stack.push_back(name);
+        
         bool ok = true;
         for (const auto& dependency : dependencies) {
             if (std::find(order.begin(), order.end(), dependency) != order.end()) continue;
