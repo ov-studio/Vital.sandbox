@@ -448,6 +448,58 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(ok);
                 return 1;
             });
+
+            API::bind(vm, base_scope, "register", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, exec)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_function);
+
+                auto name = vm -> get_string(1);
+                auto ok = register_handler(vm, name, 2);
+                vm -> push_value(ok);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "unregister", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, exec)")
+                    .require(1, &Machine::is_string)
+                    .require(2, &Machine::is_function);
+
+                auto name = vm -> get_string(1);
+                auto ok = unregister_handler(vm, name, 2);
+                vm -> push_value(ok);
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
+                auto names = list_handlers();
+                vm -> create_table();
+                for (int i = 0; i < (int)names.size(); ++i) {
+                    vm -> push_value(names[i]);
+                    vm -> set_table_field(i + 1, -2);
+                }
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "execute", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(name, args)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_table);
+
+                auto name = vm -> get_string(1);
+                std::vector<std::string> args;
+                if (vm -> get_count() >= 2 && vm -> is_table(2)) {
+                    int len = vm -> get_length(2);
+                    for (int i = 1; i <= len; ++i) {
+                        vm -> get_table_field(i, 2);
+                        args.push_back(vm -> to_string(-1));
+                        vm -> pop(1);
+                    }
+                }
+                auto ok = dispatch_command(vm, name, args);
+                vm -> push_value(ok);
+                return 1;
+            });
         }
 
         static void inject(Machine* vm) {
