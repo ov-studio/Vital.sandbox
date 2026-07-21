@@ -603,7 +603,7 @@ namespace Vital::Manager {
                 return false;
             }
         }
-        
+
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
             const auto* resource = Internal::get_resource(name);
@@ -629,7 +629,6 @@ namespace Vital::Manager {
             diff(old_script_hashes, resource -> script_hashes, "script", changes);
             diff(old_file_hashes, resource -> file_hashes, "file", changes);
             diff(to_map(old_dependencies), to_map(resource -> dependencies), "dependency", changes);
-
             std::string report = fmt::format("resource `{}` restarted\n", name);
             if (changes.empty()) report += "> No changes detected";
             else {
