@@ -637,7 +637,6 @@ namespace Vital::Manager {
             }
             rm -> log("sbox", report);
         }
-        rm -> log("sbox", change_report);
         stop(name);
         Engine::Core::get_singleton() -> enqueue([name]() { Internal::start(name); });
         return true;
