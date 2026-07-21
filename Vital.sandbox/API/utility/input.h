@@ -504,7 +504,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = mouse ? bind_handler(mouse_binds, vm, code, down, 3) : bind_handler(key_binds, vm, code, down, 3);
+                auto ok = bind_handler(mouse ? mouse_binds : key_binds, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -522,7 +522,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = mouse ? unbind_handler(mouse_binds, vm, code, down, 3) : unbind_handler(key_binds, vm, code, down, 3);
+                auto ok = unbind_handler(mouse ? mouse_binds : key_binds, vm, code, down, 3);
                 vm -> push_value(ok);
                 return 1;
             });
