@@ -54,7 +54,7 @@ bootstrap:
 # -----------------------------------------------------------------------------
 social:
   # Discord server invite link
-  # Shown in client UI and used for join requests
+  # Shown in master-list and used for join requests
   discord: ""
   
   # Website URL
