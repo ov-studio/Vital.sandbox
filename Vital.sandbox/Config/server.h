@@ -98,6 +98,21 @@ namespace Vital::Config {
             int get_http_port() const { return get_int("http", "port", 7778); }
 
 
+            // Bootstrap //
+            std::vector<std::string> get_bootstrap_resources() const {
+                std::vector<std::string> result;
+                if (!loaded || !yaml.has("bootstrap")) return result;
+                const auto& list = yaml.get_root()["bootstrap"];
+                if (!list.is_seq()) return result;
+                for (ryml::ConstNodeRef node : list) {
+                    std::string name;
+                    node >> name;
+                    if (!name.empty()) result.push_back(name);
+                }
+                return result;
+            }
+
+
             // Social //
             std::string get_discord() const { return get_str("social", "discord", ""); }
             std::string get_website() const { return get_str("social", "website", ""); }
