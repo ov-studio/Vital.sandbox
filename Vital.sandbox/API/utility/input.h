@@ -332,22 +332,6 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
-            auto it = map.find(code);
-            if (it == map.end()) return;
-            auto snapshot = it -> second;
-            const std::string direction = pressed ? "down" : "up";
-            for (auto& [env, handlers] : snapshot) {
-                for (auto& entry : handlers) {
-                    if (entry.down != pressed) continue;
-                    vm -> get_raw_reference(entry.exec_ref);
-                    vm -> push_value(code);
-                    vm -> push_value(direction);
-                    vm -> call(2, 0);
-                }
-            }
-        }
-
         static bool register_handler(Machine* vm, const std::string& name, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
@@ -382,13 +366,23 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static std::vector<std::string> list_commands() {
-            std::vector<std::string> names;
-            names.reserve(command_handlers.size());
-            for (auto& [name, _] : command_handlers) names.push_back(name);
-            return names;
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
+            auto it = map.find(code);
+            if (it == map.end()) return;
+            auto snapshot = it -> second;
+            const std::string direction = pressed ? "down" : "up";
+            for (auto& [env, handlers] : snapshot) {
+                for (auto& entry : handlers) {
+                    if (entry.down != pressed) continue;
+                    vm -> get_raw_reference(entry.exec_ref);
+                    vm -> push_value(code);
+                    vm -> push_value(direction);
+                    vm -> call(2, 0);
+                }
+            }
         }
-        
+
+        // TODO: Use dispatch_handler and overload instead
         static bool dispatch_command(Machine* vm, const std::string& name, const std::vector<std::string>& args) {
             auto cit = command_handlers.find(name);
             if (cit == command_handlers.end()) return false;
@@ -406,6 +400,14 @@ namespace Vital::Sandbox::API {
                 }
             }
             return true;
+        }
+        
+        // TODO: MERGE W API
+        static std::vector<std::string> list_handlers() {
+            std::vector<std::string> names;
+            names.reserve(command_handlers.size());
+            for (auto& [name, _] : command_handlers) names.push_back(name);
+            return names;
         }
 
         static void init(Machine* vm) {
@@ -537,7 +539,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
-                auto names = list_commands();
+                auto names = list_handlers();
                 vm -> create_table();
                 for (int i = 0; i < (int)names.size(); ++i) {
                     vm -> push_value(names[i]);
