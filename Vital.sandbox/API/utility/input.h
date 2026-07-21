@@ -277,7 +277,6 @@ namespace Vital::Sandbox::API {
         inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> mouse_binds;
         inline static std::unordered_map<std::string, std::unordered_map<std::string, std::vector<CommandHandler>>> command_handlers;
 
-
         static bool resolve_key(int code, std::string& key, bool& mouse) {
             auto it = std::find_if(key_registry.begin(), key_registry.end(), [&](const auto& p) { return p.second == code; });
             if (it == key_registry.end()) return false;
