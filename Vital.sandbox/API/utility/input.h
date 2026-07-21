@@ -455,7 +455,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = register_handler(vm, name, 2);
+                auto ok = register_command(vm, name, 2);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -466,13 +466,13 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = unregister_handler(vm, name, 2);
+                auto ok = unregister_command(vm, name, 2);
                 vm -> push_value(ok);
                 return 1;
             });
 
             API::bind(vm, base_scope, "list", [](auto vm, auto& id) -> int {
-                auto names = list_handlers();
+                auto names = list_commands();
                 vm -> create_table();
                 for (int i = 0; i < (int)names.size(); ++i) {
                     vm -> push_value(names[i]);
