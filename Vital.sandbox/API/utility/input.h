@@ -378,42 +378,31 @@ namespace Vital::Sandbox::API {
         }
 
         static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
-            auto it = map.find(code);
-            if (it == map.end()) return;
-            auto snapshot = it -> second;
             const std::string direction = pressed ? "down" : "up";
-            for (auto& [env, handlers] : snapshot) {
-                for (auto& entry : handlers) {
-                    if (entry.down != pressed) continue;
-                    vm -> get_raw_reference(entry.exec_ref);
+            execute_handler(map, vm, code,
+                [pressed](const BindHandler& h) { return h.down == pressed; },
+                [code, &direction](Machine* vm) {
                     vm -> push_value(code);
                     vm -> push_value(direction);
-                    vm -> call(2, 0);
-                }
-            }
+                    return 2;
+                });
         }
 
-        // TODO: Use dispatch_handler and overload instead
         static bool dispatch_command(Machine* vm, const std::string& name, const std::vector<std::string>& args) {
-            auto cit = command_handlers.find(name);
-            if (cit == command_handlers.end()) return false;
-            auto snapshot = cit -> second;
-            for (auto& [env, handlers] : snapshot) {
-                for (auto& entry : handlers) {
-                    vm -> get_raw_reference(entry.exec_ref);
-                    // push args as a Lua table
+            if (command_handlers.find(name) == command_handlers.end()) return false;
+            execute_handler(command_handlers, vm, name,
+                [](const CommandHandler&) { return true; },
+                [&args](Machine* vm) {
                     vm -> create_table();
                     for (int i = 0; i < (int)args.size(); ++i) {
                         vm -> push_value(args[i]);
                         vm -> set_table_field(i + 1, -2);
                     }
-                    vm -> call(1, 0);
-                }
-            }
+                    return 1;
+                });
             return true;
         }
-        
-        // TODO: MERGE W API
+
         static std::vector<std::string> list_handlers() {
             std::vector<std::string> names;
             names.reserve(command_handlers.size());
@@ -589,31 +578,9 @@ namespace Vital::Sandbox::API {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            auto release_binds = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map) {
-                for (auto mit = map.begin(); mit != map.end(); ) {
-                    auto eit = mit -> second.find(env);
-                    if (eit != mit -> second.end()) {
-                        for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
-                        mit -> second.erase(eit);
-                    }
-                    if (mit -> second.empty()) mit = map.erase(mit);
-                    else ++mit;
-                }
-            };
-            release_binds(key_binds);
-            release_binds(mouse_binds);
-
-
-            // TODO: release overload for it? use template maybe for release_binds to simplify??
-            for (auto cit = command_handlers.begin(); cit != command_handlers.end(); ) {
-                auto eit = cit -> second.find(env);
-                if (eit != cit -> second.end()) {
-                    for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
-                    cit -> second.erase(eit);
-                }
-                if (cit -> second.empty()) cit = command_handlers.erase(cit);
-                else ++cit;
-            }
+            release_env(key_binds, vm, env);
+            release_env(mouse_binds, vm, env);
+            release_env(command_handlers, vm, env);
         }
     };
 }
