@@ -337,6 +337,7 @@ namespace Vital::Sandbox::API {
         static void execute_handler(const std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, FilterFn filter, PushArgsFn push_args) {
             auto it = map.find(key);
             if (it == map.end()) return;
+
             auto snapshot = it -> second;
             for (auto& [env, handlers] : snapshot) {
                 for (auto& entry : handlers) {
@@ -385,11 +386,13 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(code);
                     vm -> push_value(direction);
                     return 2;
-                });
+                }
+            );
         }
 
         static bool dispatch_command(Machine* vm, const std::string& name, const std::vector<std::string>& args) {
             if (command_handlers.find(name) == command_handlers.end()) return false;
+
             execute_handler(command_handlers, vm, name,
                 [](const CommandHandler&) { return true; },
                 [&args](Machine* vm) {
@@ -399,7 +402,8 @@ namespace Vital::Sandbox::API {
                         vm -> set_table_field(i + 1, -2);
                     }
                     return 1;
-                });
+                }
+            );
             return true;
         }
 
