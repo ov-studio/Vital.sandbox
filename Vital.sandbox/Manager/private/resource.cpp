@@ -253,6 +253,44 @@ namespace Vital::Manager {
         return errors.empty();
     }
 
+    bool Resource::Internal::resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack) {
+        auto rm = Resource::get_singleton();
+        auto cycle_start = std::find(stack.begin(), stack.end(), name);
+        if (cycle_start != stack.end()) {
+            std::string chain;
+            for (auto it = cycle_start; it != stack.end(); ++it) chain += fmt::format("`{}` -> ", *it);
+            chain += fmt::format("`{}`", name);
+            errors.push_back(fmt::format("circular dependency detected: {}", chain));
+            return false;
+        }
+        
+        std::vector<std::string> dependencies;
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            auto resource = Internal::get_resource(name);
+            if (!resource) {
+                errors.push_back(fmt::format("dependency `{}` not found", name));
+                return false;
+            }
+            dependencies = resource -> dependencies;
+        }
+        stack.push_back(name);
+        bool ok = true;
+        for (const auto& dependency : dependencies) {
+            if (std::find(order.begin(), order.end(), dependency) != order.end()) continue;
+            bool already_running;
+            {
+                std::lock_guard<std::mutex> lock(rm -> mutex);
+                already_running = Internal::is_running(dependency);
+            }
+            if (already_running) continue;
+            if (!Internal::resolve_dependencies(dependency, order, errors, stack)) ok = false;
+        }
+        stack.pop_back();
+        if (ok) order.push_back(name);
+        return ok;
+    }
+
     Tool::Stack Resource::Internal::build_packet(const std::string& event, const std::string& name, const Manifest* manifest) {
         Tool::Stack packet;
         packet.object["event"] = Tool::StackValue(event);
