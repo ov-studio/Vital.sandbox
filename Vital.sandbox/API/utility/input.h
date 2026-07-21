@@ -333,38 +333,13 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
+        }
         static bool register_handler(Machine* vm, const std::string& name, int exec_index) {
-            auto env = vm -> get_environment_id();
-            int ref = vm -> set_raw_reference(exec_index);
-            command_handlers[name][env].push_back({ref});
-            return true;
+            return add_handler(command_handlers, vm, name, exec_index, [](int ref) { return CommandHandler{ref}; });
         }
 
         static bool unregister_handler(Machine* vm, const std::string& name, int exec_index) {
-            auto env = vm -> get_environment_id();
-            auto cit = command_handlers.find(name);
-            if (cit == command_handlers.end()) return false;
-            auto eit = cit -> second.find(env);
-            if (eit == cit -> second.end()) return false;
-
-            int lookup_ref = vm -> set_raw_reference(exec_index);
-            bool removed = false;
-            auto& handlers = eit -> second;
-            for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
-                vm -> get_raw_reference(lookup_ref);
-                vm -> get_raw_reference(vit -> exec_ref);
-                bool eq = lua_rawequal(vm -> get_state(), -1, -2);
-                vm -> pop(2);
-                if (!eq) continue;
-                vm -> del_raw_reference(vit -> exec_ref);
-                handlers.erase(vit);
-                removed = true;
-                break;
-            }
-            vm -> del_raw_reference(lookup_ref);
-            if (handlers.empty()) cit -> second.erase(eit);
-            if (cit -> second.empty()) command_handlers.erase(cit);
-            return removed;
+            return remove_handler(command_handlers, vm, name, exec_index, [](const CommandHandler& handle) { return true; });
         }
 
         static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
