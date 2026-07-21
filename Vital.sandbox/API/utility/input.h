@@ -432,10 +432,12 @@ namespace Vital::Sandbox::API {
                 if (!vm) return;
 
                 auto name = args.array[0].as<std::string>();
-                auto arg_stack = args.array[1].as<Tool::Stack>();
+                auto arg_stack_ptr = args.array[1].as<std::shared_ptr<Tool::Stack>>();
+                if (!arg_stack_ptr) return;
                 std::vector<std::string> arguments;
-                arguments.reserve(arg_stack.array.size());
-                for (auto& value : arg_stack.array) arguments.push_back(value.as<std::string>());
+                arguments.reserve(arg_stack_ptr -> array.size());
+                for (auto& value : arg_stack_ptr -> array) arguments.push_back(value.as<std::string>());
+
                 dispatch_command(vm, name, arguments);
             });
         }
