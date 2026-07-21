@@ -264,7 +264,7 @@ namespace Vital::Sandbox::API {
             { "CAPTURED", godot::Input::MOUSE_MODE_CAPTURED  }
         };
 
-        struct Handler {
+        struct BindHandler {
             int exec_ref = LUA_NOREF;
             bool down;
         };
@@ -292,14 +292,14 @@ namespace Vital::Sandbox::API {
             return resolve_direction(direction, down);
         }
 
-        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
             map[code][env].push_back({ref, down});
             return true;
         }
 
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
             auto env = vm -> get_environment_id();
             auto mit = map.find(code);
             if (mit == map.end()) return false;
@@ -327,7 +327,7 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
-        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map, Machine* vm, int code, bool pressed) {
+        static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
             auto it = map.find(code);
             if (it == map.end()) return;
             auto snapshot = it -> second;
@@ -571,7 +571,7 @@ namespace Vital::Sandbox::API {
             auto vm = Manager::Sandbox::get_singleton() -> get_vm();
             if (!vm) return;
 
-            auto release = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>>& map) {
+            auto release_binds = [&](std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map) {
                 for (auto mit = map.begin(); mit != map.end(); ) {
                     auto eit = mit -> second.find(env);
                     if (eit != mit -> second.end()) {
@@ -584,6 +584,8 @@ namespace Vital::Sandbox::API {
             };
             release(key_binds);
             release(mouse_binds);
+            release_binds(key_binds);
+            release_binds(mouse_binds);
         }
     };
 }
