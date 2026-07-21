@@ -296,16 +296,18 @@ namespace Vital::Sandbox::API {
             return resolve_direction(direction, down);
         }
 
-        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        template <typename KeyT, typename HandlerT, typename MakeFn>
+        static bool add_handler(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, int exec_index, MakeFn make) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
-            map[code][env].push_back({ref, down});
+            map[key][env].push_back(make(ref));
             return true;
         }
 
         static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+        static bool remove_handler(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, int exec_index, MatchFn matches) {
             auto env = vm -> get_environment_id();
-            auto mit = map.find(code);
+            auto mit = map.find(key);
             if (mit == map.end()) return false;
             auto eit = mit -> second.find(env);
             if (eit == mit -> second.end()) return false;
@@ -314,7 +316,7 @@ namespace Vital::Sandbox::API {
             bool removed = false;
             auto& handlers = eit -> second;
             for (auto vit = handlers.begin(); vit != handlers.end(); ++vit) {
-                if (vit -> down != down) continue;
+                if (!matches(*vit)) continue;
                 vm -> get_raw_reference(lookup_ref);
                 vm -> get_raw_reference(vit -> exec_ref);
                 bool eq = lua_rawequal(vm -> get_state(), -1, -2);
