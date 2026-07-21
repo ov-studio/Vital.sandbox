@@ -45,6 +45,7 @@ namespace Vital::Manager {
                 std::vector<Script> scripts;
                 std::vector<std::string> files;
                 std::vector<std::string> models;
+                std::vector<std::string> dependencies;
                 std::unordered_map<std::string, std::string> script_hashes;
                 std::unordered_map<std::string, std::string> file_hashes;
             };
@@ -60,15 +61,16 @@ namespace Vital::Manager {
                 // Helpers //
                 static std::string chunk_name(const std::string& resource, const std::string& src);
                 static Tool::Stack pack_manifest(const Manifest& manifest);
-                static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models);
+                static void unpack_manifest(const Tool::Stack& args, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models, std::vector<std::string>& dependencies);
                 static bool validate_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void execute_scripts(const std::string& name, std::vector<std::pair<std::string, std::string>>& sources);
                 static void load_models(const std::string& name);
                 static void execute_resource(std::string name);
                 #if defined(VSDK_Client)
-                static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models);
+                static bool register_resource(std::string name, const std::vector<Script>& scripts, const std::vector<std::string>& files, const std::vector<std::string>& models, const std::vector<std::string>& dependencies);
                 #else
                 static bool parse_manifest(Manifest& resource, Tool::YAML& manifest, const std::string& base, std::vector<std::string>& errors);
+                static bool resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack);
                 static Tool::Stack build_packet(const std::string& event, const std::string& name, const Manifest* manifest = nullptr);
                 #endif
 
