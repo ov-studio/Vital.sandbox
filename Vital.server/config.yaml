@@ -42,7 +42,7 @@ bootstrap:
   # Resources listed here are automatically started after the initial resource scan.
   # They are started in the order listed, respecting dependency resolution.
   # Each entry must match a valid resource folder name under resources/.
-  - "monitor"
+  #- "runcode"
 
 
 # Socials
