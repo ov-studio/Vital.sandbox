@@ -398,6 +398,16 @@ namespace Vital::Manager {
 
         #if !defined(VSDK_Client)
         {
+            std::vector<std::string> reload_errors;
+            if (!Internal::reload_manifest(name, reload_errors)) {
+                std::string report = fmt::format("resource `{}` failed to start\n", name);
+                report += fmt::format("> Errors ({}):\n", reload_errors.size());
+                for (const auto& err : reload_errors) report += fmt::format("> {}\n", err);
+                rm -> log("error", report);
+                return false;
+            }
+        }
+        {
             std::vector<std::string> order;
             std::vector<std::string> errors;
             std::vector<std::string> stack;
@@ -569,69 +579,64 @@ namespace Vital::Manager {
             if (!Internal::is_running(name)) { rm -> log("error", fmt::format("cannot restart `{}` — not running", name)); return false; }
         }
 
-        const std::string base = Resource::get_resource_base(name);
-        if (!Tool::File::exists(base, "manifest.yaml")) {
-            std::lock_guard<std::mutex> lock(rm -> mutex);
-            rm -> resources.erase(std::remove_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; }), rm -> resources.end());
-            rm -> log("error", fmt::format("resource `{}` manifest not found — unregistered", name));
-            return false;
-        }
-        std::string content;
-        try { content = Tool::File::read_text(base, "manifest.yaml"); }
-        catch (...) { rm -> log("error", fmt::format("resource `{}` failed to read manifest — skipping restart", name)); return false; }
-        Tool::YAML manifest;
-        try { manifest.parse(content); }
-        catch (const std::exception& e) { rm -> log("error", fmt::format("resource `{}` malformed yaml — {} — skipping restart", name, e.what())); return false; }
-
-        std::string change_report;
+        std::unordered_map<std::string, std::string> old_script_hashes;
+        std::unordered_map<std::string, std::string> old_file_hashes;
+        std::vector<std::string> old_dependencies;
         {
             std::lock_guard<std::mutex> lock(rm -> mutex);
-            for (auto& resource : rm -> resources) {
-                if (resource.ref != name) continue;
-                const auto old_script_hashes = resource.script_hashes;
-                const auto old_file_hashes = resource.file_hashes;
-                const auto old_dependencies = resource.dependencies;
-                std::vector<std::string> errors;
-                if (!Internal::parse_manifest(resource, manifest, base, errors)) {
-                    if (!errors.empty()) {
-                        std::string report = fmt::format("resource `{}` restart aborted\n", name);
-                        report += fmt::format("> Errors ({}):\n", errors.size());
-                        for (const auto& err : errors) report += fmt::format("> {}\n", err);
-                        rm -> log("error", report);
-                    }
-                    else rm -> log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping restart", name));
-                    return false;
+            const auto* resource = Internal::get_resource(name);
+            if (!resource) return false;
+            old_script_hashes = resource -> script_hashes;
+            old_file_hashes = resource -> file_hashes;
+            old_dependencies = resource -> dependencies;
+        }
+        {
+            std::vector<std::string> errors;
+            if (!Internal::reload_manifest(name, errors)) {
+                if (!errors.empty()) {
+                    std::string report = fmt::format("resource `{}` restart aborted\n", name);
+                    report += fmt::format("> Errors ({}):\n", errors.size());
+                    for (const auto& err : errors) report += fmt::format("> {}\n", err);
+                    rm -> log("error", report);
                 }
-
-                auto to_map = [](const std::vector<std::string>& values) {
-                    std::unordered_map<std::string, std::string> map;
-                    for (const auto& value : values) map[value] = value;
-                    return map;
-                };
-                
-                auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
-                    for (const auto& [k, v] : old_map) {
-                        if (!new_map.count(k)) changes.push_back(fmt::format("`{}` ({} deleted)", k, label));
-                        else if (new_map.at(k) != v) changes.push_back(fmt::format("`{}` ({} modified)", k, label));
-                    }
-                    for (const auto& [k, v] : new_map) {
-                        if (!old_map.count(k)) changes.push_back(fmt::format("`{}` ({} added)", k, label));
-                    }
-                };
-
-                std::vector<std::string> changes;
-                diff(old_script_hashes, resource.script_hashes, "script", changes);
-                diff(old_file_hashes, resource.file_hashes, "file", changes);
-                diff(to_map(old_dependencies), to_map(resource.dependencies), "dependency", changes);
-                std::string report = fmt::format("resource `{}` restarted\n", name);
-                if (changes.empty()) report += "> No changes detected";
-                else {
-                    report += fmt::format("> Changes ({}):\n", changes.size());
-                    for (const auto& change : changes) report += fmt::format("> {}\n", change);
-                }
-                change_report = report;
-                break;
+                else rm -> log("error", fmt::format("resource `{}` has no valid `scripts` section — skipping restart", name));
+                return false;
             }
+        }
+        
+        {
+            std::lock_guard<std::mutex> lock(rm -> mutex);
+            const auto* resource = Internal::get_resource(name);
+            if (!resource) return false;
+
+            auto to_map = [](const std::vector<std::string>& values) {
+                std::unordered_map<std::string, std::string> map;
+                for (const auto& value : values) map[value] = value;
+                return map;
+            };
+
+            auto diff = [](const std::unordered_map<std::string, std::string>& old_map, const std::unordered_map<std::string, std::string>& new_map, const std::string& label, std::vector<std::string>& changes) {
+                for (const auto& [k, v] : old_map) {
+                    if (!new_map.count(k)) changes.push_back(fmt::format("`{}` ({} deleted)", k, label));
+                    else if (new_map.at(k) != v) changes.push_back(fmt::format("`{}` ({} modified)", k, label));
+                }
+                for (const auto& [k, v] : new_map) {
+                    if (!old_map.count(k)) changes.push_back(fmt::format("`{}` ({} added)", k, label));
+                }
+            };
+
+            std::vector<std::string> changes;
+            diff(old_script_hashes, resource -> script_hashes, "script", changes);
+            diff(old_file_hashes, resource -> file_hashes, "file", changes);
+            diff(to_map(old_dependencies), to_map(resource -> dependencies), "dependency", changes);
+
+            std::string report = fmt::format("resource `{}` restarted\n", name);
+            if (changes.empty()) report += "> No changes detected";
+            else {
+                report += fmt::format("> Changes ({}):\n", changes.size());
+                for (const auto& change : changes) report += fmt::format("> {}\n", change);
+            }
+            rm -> log("sbox", report);
         }
         rm -> log("sbox", change_report);
         stop(name);
