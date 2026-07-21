@@ -51,7 +51,7 @@ namespace Vital::Manager {
         return out;
     }
 
-    void Resource::Internal::unpack_manifest(const Tool::Stack& arguments, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models) {
+    void Resource::Internal::unpack_manifest(const Tool::Stack& arguments, std::vector<Script>& scripts, std::vector<std::string>& files, std::vector<std::string>& models, std::vector<std::string>& dependencies) {
         if (const auto* sv = arguments.get("scripts")) {
             const auto& nested = *sv -> as<std::shared_ptr<Tool::Stack>>();
             scripts.reserve(nested.array.size());
