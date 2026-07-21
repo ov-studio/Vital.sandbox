@@ -362,22 +362,6 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
-            return add_handler(map, vm, code, exec_index, [down](int ref) { return BindHandler{ref, down}; });
-        }
-
-        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
-            return remove_handler(map, vm, code, exec_index, [down](const BindHandler& handle) { return handle.down == down; });
-        }
-
-        static bool register_handler(Machine* vm, const std::string& name, int exec_index) {
-            return add_handler(command_handlers, vm, name, exec_index, [](int ref) { return CommandHandler{ref}; });
-        }
-
-        static bool unregister_handler(Machine* vm, const std::string& name, int exec_index) {
-            return remove_handler(command_handlers, vm, name, exec_index, [](const CommandHandler& handle) { return true; });
-        }
-
         static void dispatch_handler(const std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool pressed) {
             const std::string direction = pressed ? "down" : "up";
             execute_handler(map, vm, code,
@@ -437,6 +421,7 @@ namespace Vital::Sandbox::API {
                 std::vector<std::string> arguments;
                 arguments.reserve(arg_stack_ptr -> array.size());
                 for (auto& value : arg_stack_ptr -> array) arguments.push_back(value.as<std::string>());
+
                 dispatch_command(vm, name, arguments);
             });
         }
@@ -504,7 +489,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = bind_handler(mouse ? mouse_binds : key_binds, vm, code, down, 3);
+                auto ok = add_handler(mouse ? mouse_binds : key_binds, vm, code, 3, [down](int ref) { return BindHandler{ref, down}; });
                 vm -> push_value(ok);
                 return 1;
             });
@@ -522,7 +507,7 @@ namespace Vital::Sandbox::API {
                 resolve_key(code, key, mouse);
                 bool down;
                 resolve_direction(vm -> get_string(2), down);
-                auto ok = unbind_handler(mouse ? mouse_binds : key_binds, vm, code, down, 3);
+                auto ok = remove_handler(mouse ? mouse_binds : key_binds, vm, code, 3, [down](const BindHandler& handle) { return handle.down == down; });
                 vm -> push_value(ok);
                 return 1;
             });
@@ -533,7 +518,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = register_handler(vm, name, 2);
+                auto ok = add_handler(command_handlers, vm, name, 2, [](int ref) { return CommandHandler{ref}; });
                 vm -> push_value(ok);
                 return 1;
             });
@@ -544,7 +529,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = unregister_handler(vm, name, 2);
+                auto ok = remove_handler(command_handlers, vm, name, 2, [](const CommandHandler& handle) { return true; });
                 vm -> push_value(ok);
                 return 1;
             });
