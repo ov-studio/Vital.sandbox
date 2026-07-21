@@ -269,8 +269,13 @@ namespace Vital::Sandbox::API {
             bool down;
         };
 
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> key_binds;
-        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<Handler>>> mouse_binds;
+        struct CommandHandler {
+            int exec_ref = LUA_NOREF;
+        };
+
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> key_binds;
+        inline static std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>> mouse_binds;
+        inline static std::unordered_map<std::string, std::unordered_map<std::string, std::vector<CommandHandler>>> command_handlers;
 
 
         static bool resolve_key(int code, std::string& key, bool& mouse) {
