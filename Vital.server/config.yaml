@@ -41,11 +41,20 @@ http:
   port: 7778
 
 # -----------------------------------------------------------------------------
+# Bootstrap Resources
+# -----------------------------------------------------------------------------
+bootstrap:
+  # Resources listed here are automatically started after the initial resource scan.
+  # They are started in the order listed, respecting dependency resolution.
+  # Each entry must match a valid resource folder name under resources/.
+  - "monitor"
+
+# -----------------------------------------------------------------------------
 # Community / Social Links
 # -----------------------------------------------------------------------------
 social:
   # Discord server invite link
-  # Shown in master-list and used for join requests
+  # Shown in client UI and used for join requests
   discord: ""
   
   # Website URL
