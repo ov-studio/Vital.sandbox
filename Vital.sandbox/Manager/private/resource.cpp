@@ -492,6 +492,7 @@ namespace Vital::Manager {
                 if (resource.ref != name) continue;
                 const auto old_script_hashes = resource.script_hashes;
                 const auto old_file_hashes = resource.file_hashes;
+                const auto old_dependencies = resource.dependencies;
                 std::vector<std::string> errors;
                 if (!Internal::parse_manifest(resource, manifest, base, errors)) {
                     if (!errors.empty()) {
