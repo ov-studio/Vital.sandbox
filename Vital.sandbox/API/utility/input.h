@@ -348,14 +348,14 @@ namespace Vital::Sandbox::API {
             }
         }
 
-        static bool register_command(Machine* vm, const std::string& name, int exec_index) {
+        static bool register_handler(Machine* vm, const std::string& name, int exec_index) {
             auto env = vm -> get_environment_id();
             int ref = vm -> set_raw_reference(exec_index);
             command_handlers[name][env].push_back({ref});
             return true;
         }
 
-        static bool unregister_command(Machine* vm, const std::string& name, int exec_index) {
+        static bool unregister_handler(Machine* vm, const std::string& name, int exec_index) {
             auto env = vm -> get_environment_id();
             auto cit = command_handlers.find(name);
             if (cit == command_handlers.end()) return false;
@@ -520,7 +520,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = register_command(vm, name, 2);
+                auto ok = register_handler(vm, name, 2);
                 vm -> push_value(ok);
                 return 1;
             });
@@ -531,7 +531,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_function);
 
                 auto name = vm -> get_string(1);
-                auto ok = unregister_command(vm, name, 2);
+                auto ok = unregister_handler(vm, name, 2);
                 vm -> push_value(ok);
                 return 1;
             });
