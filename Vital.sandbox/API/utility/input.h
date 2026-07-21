@@ -333,7 +333,42 @@ namespace Vital::Sandbox::API {
             return removed;
         }
 
+        template <typename KeyT, typename HandlerT, typename FilterFn, typename PushArgsFn>
+        static void execute_handler(const std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const KeyT& key, FilterFn filter, PushArgsFn push_args) {
+            auto it = map.find(key);
+            if (it == map.end()) return;
+            auto snapshot = it -> second;
+            for (auto& [env, handlers] : snapshot) {
+                for (auto& entry : handlers) {
+                    if (!filter(entry)) continue;
+                    vm -> get_raw_reference(entry.exec_ref);
+                    int argc = push_args(vm);
+                    vm -> call(argc, 0);
+                }
+            }
         }
+
+        template <typename KeyT, typename HandlerT>
+        static void release_env(std::unordered_map<KeyT, std::unordered_map<std::string, std::vector<HandlerT>>>& map, Machine* vm, const std::string& env) {
+            for (auto mit = map.begin(); mit != map.end(); ) {
+                auto eit = mit -> second.find(env);
+                if (eit != mit -> second.end()) {
+                    for (auto& entry : eit -> second) vm -> del_raw_reference(entry.exec_ref);
+                    mit -> second.erase(eit);
+                }
+                if (mit -> second.empty()) mit = map.erase(mit);
+                else ++mit;
+            }
+        }
+
+        static bool bind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+            return add_handler(map, vm, code, exec_index, [down](int ref) { return BindHandler{ref, down}; });
+        }
+
+        static bool unbind_handler(std::unordered_map<int, std::unordered_map<std::string, std::vector<BindHandler>>>& map, Machine* vm, int code, bool down, int exec_index) {
+            return remove_handler(map, vm, code, exec_index, [down](const BindHandler& handle) { return handle.down == down; });
+        }
+
         static bool register_handler(Machine* vm, const std::string& name, int exec_index) {
             return add_handler(command_handlers, vm, name, exec_index, [](int ref) { return CommandHandler{ref}; });
         }
