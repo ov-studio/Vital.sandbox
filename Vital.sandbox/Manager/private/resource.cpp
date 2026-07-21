@@ -241,6 +241,15 @@ namespace Vital::Manager {
                 }
             }
         }
+        if (manifest.has("dependencies") && manifest.get_root()["dependencies"].is_seq()) {
+            for (ryml::ConstNodeRef node : manifest.get_root()["dependencies"]) {
+                std::string dependency;
+                node >> dependency;
+                if (!Resource::is_name(dependency)) { errors.push_back(fmt::format("dependency `{}` has an invalid name", dependency)); continue; }
+                if (dependency == resource.ref) { errors.push_back("resource cannot list itself as a dependency"); continue; }
+                resource.dependencies.push_back(dependency);
+            }
+        }
         return errors.empty();
     }
 
