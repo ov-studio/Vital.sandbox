@@ -400,8 +400,6 @@ namespace Vital::Manager {
                     rm -> log("error", fmt::format("cannot start `{}` — dependency `{}` failed to start", name, dependency));
                     return false;
                 }
-                am -> register_assets(asset_paths, name);
-                am -> broadcast_manifest(-1, true);
             }
         }
         {
