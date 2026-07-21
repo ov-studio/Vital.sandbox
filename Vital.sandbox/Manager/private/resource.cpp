@@ -253,6 +253,25 @@ namespace Vital::Manager {
         return errors.empty();
     }
 
+    bool Resource::Internal::reload_manifest(const std::string& name, std::vector<std::string>& errors) {
+        auto rm = Resource::get_singleton();
+        const std::string base = Resource::get_resource_base(name);
+        if (!Tool::File::exists(base, "manifest.yaml")) { errors.push_back("manifest.yaml not found"); return false; }
+
+        std::string content;
+        try { content = Tool::File::read_text(base, "manifest.yaml"); }
+        catch (...) { errors.push_back("failed to read manifest.yaml"); return false; }
+
+        Tool::YAML manifest;
+        try { manifest.parse(content); }
+        catch (const std::exception& e) { errors.push_back(fmt::format("malformed yaml — {}", e.what())); return false; }
+
+        std::lock_guard<std::mutex> lock(rm -> mutex);
+        auto it = std::find_if(rm -> resources.begin(), rm -> resources.end(), [&](const Manifest& m) { return m.ref == name; });
+        if (it == rm -> resources.end()) { errors.push_back("resource not loaded"); return false; }
+        return Internal::parse_manifest(*it, manifest, base, errors);
+    }
+
     bool Resource::Internal::resolve_dependencies(const std::string& name, std::vector<std::string>& order, std::vector<std::string>& errors, std::vector<std::string>& stack) {
         auto rm = Resource::get_singleton();
         auto cycle_start = std::find(stack.begin(), stack.end(), name);
