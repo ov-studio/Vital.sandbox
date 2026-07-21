@@ -115,6 +115,16 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
+            API::bind(vm, base_scope, "get_entity_types", [](auto vm, auto& id) -> int {
+                vm -> create_table();
+                int i = 0;
+                for (auto& name : vm_module::list_types()) {
+                    vm -> push_value(name);
+                    vm -> set_table_field(++i, -2);
+                }
+                return 1;
+            });
+            
             API::bind(vm, base_scope, "get_entities", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(category, streamed = false)")
                     .require(1, &Machine::is_string)
