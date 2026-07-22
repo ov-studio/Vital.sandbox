@@ -31,7 +31,7 @@ namespace Vital::Engine {
                 bool incognito = true;
                 bool autoplay = false;
                 bool zoomable = false;
-                bool forward_input = true;
+                bool forward_input = false;
             };
         private:
             Options options;
