@@ -113,12 +113,12 @@ namespace Vital::Engine {
     void Webview::set_input_enabled(bool state) {
         if (state) {
             if (!is_visible()) return;
-            if (active_input_owner && active_input_owner != this) {
-                active_input_owner -> release_input_ownership();
-                active_input_owner -> webview -> call_deferred("focus_parent");
+            if (input_forwarder && input_forwarder != this) {
+                input_forwarder -> release_input_ownership();
+                input_forwarder -> webview -> call_deferred("focus_parent");
             }
-            active_input_owner = this;
-            eval("window.__vitalInputEnabled = true;");
+            input_forwarder = this;
+            eval("window.vsdk_forward_input = true;");
             webview -> call_deferred("focus");
         }
         else {
