@@ -114,7 +114,6 @@ namespace Vital::Engine {
             void load_url(const std::string& url);
             void load_html(const std::string& raw);
             void clear_history();
-            void focus();
             void reload();
             void zoom(float value);
             void update();

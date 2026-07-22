@@ -215,10 +215,6 @@ namespace Vital::Engine {
         webview -> call_deferred("clear_all_browsing_data");
     }
 
-    void Webview::focus() {
-        webview -> call_deferred("focus");
-    }
-
     void Webview::reload() {
         webview -> call_deferred("reload");
     }

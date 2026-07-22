@@ -233,12 +233,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "focus", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> focus();
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "reload", [](auto vm, auto self, auto& id) -> int {
                 self -> webview -> reload();
                 vm -> push_value(true);
