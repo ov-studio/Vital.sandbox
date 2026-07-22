@@ -126,18 +126,63 @@ namespace Vital::Engine {
     void Webview::set_focussed(bool state) {
         if (state) {
             if (!is_visible()) return;
-            if (input_forwarder && input_forwarder != this) {
-                input_forwarder -> release_input_forwarder();
-                input_forwarder -> webview -> call_deferred("focus_parent");
-            }
+            if (!options.forward_input) return; // Flagged out of ever forwarding input - explicit requests can't override this.
+            if (input_forwarder == this) return;
+            if (input_forwarder) input_forwarder -> yield_forwarder();
             input_forwarder = this;
             eval("window.vsdk_forward_input = true;");
             webview -> call_deferred("focus");
         }
         else {
-            release_input_forwarder();
-            webview -> call_deferred("focus_parent");
+            if (input_forwarder != this) return;
+            yield_forwarder();
+            fill_forwarder_vacancy();
         }
+    }
+
+    Webview* Webview::select_fallback_forwarder() {
+        std::vector<Webview*> candidates;
+        for (Webview* instance : instances) {
+            if (!instance -> options.forward_input) continue;
+            if (!instance -> is_visible()) continue;
+            candidates.push_back(instance);
+        }
+        if (candidates.empty()) return nullptr;
+
+        std::vector<Webview*> fullscreen_candidates;
+        for (Webview* instance : candidates) {
+            if (instance -> is_fullscreen()) fullscreen_candidates.push_back(instance);
+        }
+
+        std::vector<Webview*> pool;
+        if (!fullscreen_candidates.empty()) {
+            pool = fullscreen_candidates;
+        }
+        else {
+            float best_area = -1.0f;
+            for (Webview* instance : candidates) {
+                godot::Vector2 size = instance -> get_size();
+                float area = size.x * size.y;
+                if (area > best_area) {
+                    best_area = area;
+                    pool.clear();
+                    pool.push_back(instance);
+                }
+                else if (area == best_area) {
+                    pool.push_back(instance);
+                }
+            }
+        }
+
+        static std::mt19937 rng{std::random_device{}()};
+        std::uniform_int_distribution<size_t> dist(0, pool.size() - 1);
+        return pool[dist(rng)];
+    }
+
+    void Webview::fill_forwarder_vacancy() {
+        if (input_forwarder != nullptr) return; // Never contest an existing forwarder.
+        Webview* fallback = select_fallback_forwarder();
+        if (fallback) fallback -> set_focussed(true);
     }
 
     void Webview::set_position(const godot::Vector2& position) {
@@ -152,6 +197,17 @@ namespace Vital::Engine {
     void Webview::set_devtools_visible(bool state) {
         if (state) webview -> call_deferred("open_devtools");
         else webview -> call_deferred("close_devtools");
+    }
+
+    void Webview::set_forward_input_enabled(bool state) {
+        options.forward_input = state;
+        if (!state && input_forwarder == this) {
+            yield_forwarder();
+            fill_forwarder_vacancy();
+        }
+        else if (state) {
+            fill_forwarder_vacancy();
+        }
     }
 
     void Webview::set_message_handler(std::function<void(godot::String)> handler) {
