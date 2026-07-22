@@ -200,7 +200,6 @@ namespace Vital::Engine {
         for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) js << content << "\n";
         js << "})();";
         eval(js.str());
-        if (active_input_owner == this) eval("window.__vitalInputEnabled = true;");
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
     }
 }
