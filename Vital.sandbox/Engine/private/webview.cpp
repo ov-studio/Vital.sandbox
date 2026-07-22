@@ -68,6 +68,40 @@ namespace Vital::Engine {
         webview -> call_deferred("focus_parent");
     }
 
+    Webview* Webview::select_input_forwarder() {
+        std::vector<Webview*> candidates;
+        for (Webview* instance : instances) {
+            if (!instance -> options.forward_input) continue;
+            if (!instance -> is_visible()) continue;
+            candidates.push_back(instance);
+        }
+        if (candidates.empty()) return nullptr;
+
+        std::vector<Webview*> fullscreen_candidates;
+        for (Webview* instance : candidates) {
+            if (instance -> is_fullscreen()) fullscreen_candidates.push_back(instance);
+        }
+
+        std::vector<Webview*> pool;
+        if (!fullscreen_candidates.empty()) pool = fullscreen_candidates;
+        else {
+            float best_area = -1.0f;
+            for (Webview* instance : candidates) {
+                godot::Vector2 size = instance -> get_size();
+                float area = size.x * size.y;
+                if (area > best_area) {
+                    best_area = area;
+                    pool.clear();
+                    pool.push_back(instance);
+                }
+                else if (area == best_area) pool.push_back(instance);
+            }
+        }
+        static std::mt19937 rng{std::random_device{}()};
+        std::uniform_int_distribution<size_t> dist(0, pool.size() - 1);
+        return pool[dist(rng)];
+    }
+    
     void Webview::update_input_forwarder() {
         if (input_forwarder != nullptr) return;
         auto fallback = select_input_forwarder();
@@ -156,40 +190,6 @@ namespace Vital::Engine {
             }
             else webview -> call_deferred("focus_parent");
         }
-    }
-
-    Webview* Webview::select_input_forwarder() {
-        std::vector<Webview*> candidates;
-        for (Webview* instance : instances) {
-            if (!instance -> options.forward_input) continue;
-            if (!instance -> is_visible()) continue;
-            candidates.push_back(instance);
-        }
-        if (candidates.empty()) return nullptr;
-
-        std::vector<Webview*> fullscreen_candidates;
-        for (Webview* instance : candidates) {
-            if (instance -> is_fullscreen()) fullscreen_candidates.push_back(instance);
-        }
-
-        std::vector<Webview*> pool;
-        if (!fullscreen_candidates.empty()) pool = fullscreen_candidates;
-        else {
-            float best_area = -1.0f;
-            for (Webview* instance : candidates) {
-                godot::Vector2 size = instance -> get_size();
-                float area = size.x * size.y;
-                if (area > best_area) {
-                    best_area = area;
-                    pool.clear();
-                    pool.push_back(instance);
-                }
-                else if (area == best_area) pool.push_back(instance);
-            }
-        }
-        static std::mt19937 rng{std::random_device{}()};
-        std::uniform_int_distribution<size_t> dist(0, pool.size() - 1);
-        return pool[dist(rng)];
     }
 
     void Webview::set_position(const godot::Vector2& position) {

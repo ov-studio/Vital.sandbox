@@ -40,13 +40,7 @@ namespace Vital::Engine {
             static inline Webview* input_forwarder = nullptr;
             static inline std::vector<Webview*> instances;
 
-            // Picks the best eligible candidate to become forwarder:
-            // only considers visible instances with forward_input enabled,
-            // prioritizes fullscreen webviews, then falls back to the
-            // largest visible webview by area, with a random pick among
-            // ties. Returns nullptr if no eligible candidate exists.
-            static Webview* select_fallback_forwarder();
-
+            
             // Instantiators //
             Webview() : Webview(Options{}) {}
             Webview(const Options& options);
@@ -58,8 +52,10 @@ namespace Vital::Engine {
             }
 
 
+            // TODO: STAY OVER HERE??
             // Helpers //
             void pause_input_forwarder();
+            static Webview* select_input_forwarder();
             static void update_input_forwarder();
         public:
             // Managers //
