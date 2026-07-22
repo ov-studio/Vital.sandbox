@@ -48,13 +48,21 @@ namespace Vital::Engine {
     }
 
     Webview::~Webview() {
-        yield_forwarder();
+        pause_input_forwarder();
         instances.erase(std::remove(instances.begin(), instances.end(), this), instances.end());
-        fill_forwarder_vacancy();
+        update_input_forwarder();
 
         if (!webview) return;
         webview -> queue_free();
         webview = nullptr;
+    }
+
+
+    // Helpers //
+    void Webview::update_input_forwarder() {
+        if (input_forwarder != nullptr) return;
+        auto fallback = select_input_forwarder();
+        if (fallback) fallback -> set_focussed(true);
     }
 
 
@@ -115,10 +123,10 @@ namespace Vital::Engine {
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
-        if (state) fill_forwarder_vacancy();
+        if (state) update_input_forwarder();
         else if (input_forwarder == this) {
-            yield_forwarder();
-            fill_forwarder_vacancy();
+            pause_input_forwarder();
+            update_input_forwarder();
         }
     }
 
@@ -128,20 +136,20 @@ namespace Vital::Engine {
             webview -> call_deferred("focus");
             if (!options.forward_input) return;
             if (input_forwarder == this) return;
-            if (input_forwarder) input_forwarder -> yield_forwarder();
+            if (input_forwarder) input_forwarder -> pause_input_forwarder();
             input_forwarder = this;
             eval("window.vsdk_forward_input = true;");
         }
         else {
             if (input_forwarder == this) {
-                yield_forwarder();
-                fill_forwarder_vacancy();
+                pause_input_forwarder();
+                update_input_forwarder();
             }
             else webview -> call_deferred("focus_parent");
         }
     }
 
-    Webview* Webview::select_fallback_forwarder() {
+    Webview* Webview::select_input_forwarder() {
         std::vector<Webview*> candidates;
         for (Webview* instance : instances) {
             if (!instance -> options.forward_input) continue;
@@ -175,19 +183,13 @@ namespace Vital::Engine {
         return pool[dist(rng)];
     }
 
-    void Webview::fill_forwarder_vacancy() {
-        if (input_forwarder != nullptr) return;
-        auto fallback = select_fallback_forwarder();
-        if (fallback) fallback -> set_focussed(true);
-    }
-
     void Webview::set_position(const godot::Vector2& position) {
         webview -> set_position(position);
     }
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
-        fill_forwarder_vacancy(); // TODO: Use resize callback instead??
+        update_input_forwarder(); // TODO: Use resize callback instead??
     }
 
     void Webview::set_devtools_visible(bool state) {

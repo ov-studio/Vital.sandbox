@@ -51,7 +51,7 @@ namespace Vital::Engine {
             // vacancy-fill selection. Used internally when a takeover or
             // teardown is about to happen and the caller controls what
             // comes next.
-            void yield_forwarder() {
+            void pause_input_forwarder() {
                 if (input_forwarder != this) return;
                 release_input_forwarder();
                 webview -> call_deferred("focus_parent");
@@ -64,11 +64,6 @@ namespace Vital::Engine {
             // ties. Returns nullptr if no eligible candidate exists.
             static Webview* select_fallback_forwarder();
 
-            // Assigns a forwarder ONLY if none currently exists. Never
-            // contests or steals focus from an existing forwarder - this
-            // purely fills a vacancy left behind by hide/destroy/disable.
-            static void fill_forwarder_vacancy();
-
             // Instantiators //
             Webview() : Webview(Options{}) {}
             Webview(const Options& options);
@@ -78,6 +73,10 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("on_message", "message"), &Webview::on_message);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_page_loaded", "url"), &Webview::on_page_loaded);
             }
+
+            
+            // Helpers //
+            static void update_input_forwarder();
         public:
             // Managers //
             static Webview* create(const Options& options = {});
