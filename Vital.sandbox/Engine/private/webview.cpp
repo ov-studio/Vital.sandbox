@@ -33,6 +33,7 @@ namespace Vital::Engine {
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
+        webview -> set("forward_input_events", false);
 
         Engine::Core::get_singleton() -> enqueue([this]() {
             Engine::Canvas::get_singleton() -> add_child(webview);
