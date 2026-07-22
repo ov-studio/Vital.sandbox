@@ -176,8 +176,8 @@ namespace Vital::Engine {
     }
 
     void Webview::fill_forwarder_vacancy() {
-        if (input_forwarder != nullptr) return; // Never contest an existing forwarder.
-        Webview* fallback = select_fallback_forwarder();
+        if (input_forwarder != nullptr) return;
+        auto fallback = select_fallback_forwarder();
         if (fallback) fallback -> set_focussed(true);
     }
 
