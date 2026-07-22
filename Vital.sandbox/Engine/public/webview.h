@@ -38,7 +38,7 @@ namespace Vital::Engine {
             godot::Control* webview = nullptr;
             std::function<void(godot::String)> message_handler;
             static inline Webview* input_forwarder = nullptr;
-            static inline std::vector<Webview*> instances;
+            static inline std::vector<Webview*> buffer;
 
             
             // Instantiators //

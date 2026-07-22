@@ -49,7 +49,7 @@ namespace Vital::Engine {
 
     Webview::~Webview() {
         pause_input_forwarder();
-        instances.erase(std::remove(instances.begin(), instances.end(), this), instances.end());
+        buffer.erase(std::remove(buffer.begin(), buffer.end(), this), buffer.end());
         update_input_forwarder();
 
         if (!webview) return;
@@ -70,7 +70,7 @@ namespace Vital::Engine {
 
     Webview* Webview::select_input_forwarder() {
         std::vector<Webview*> candidates;
-        for (Webview* instance : instances) {
+        for (Webview* instance : buffer) {
             if (!instance -> options.forward_input) continue;
             if (!instance -> is_visible()) continue;
             candidates.push_back(instance);
@@ -101,7 +101,7 @@ namespace Vital::Engine {
         std::uniform_int_distribution<size_t> dist(0, pool.size() - 1);
         return pool[dist(rng)];
     }
-    
+
     void Webview::update_input_forwarder() {
         if (input_forwarder != nullptr) return;
         auto fallback = select_input_forwarder();
