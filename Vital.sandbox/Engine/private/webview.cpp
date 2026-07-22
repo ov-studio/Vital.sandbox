@@ -155,9 +155,7 @@ namespace Vital::Engine {
         }
 
         std::vector<Webview*> pool;
-        if (!fullscreen_candidates.empty()) {
-            pool = fullscreen_candidates;
-        }
+        if (!fullscreen_candidates.empty()) pool = fullscreen_candidates;
         else {
             float best_area = -1.0f;
             for (Webview* instance : candidates) {
@@ -168,12 +166,9 @@ namespace Vital::Engine {
                     pool.clear();
                     pool.push_back(instance);
                 }
-                else if (area == best_area) {
-                    pool.push_back(instance);
-                }
+                else if (area == best_area) pool.push_back(instance);
             }
         }
-
         static std::mt19937 rng{std::random_device{}()};
         std::uniform_int_distribution<size_t> dist(0, pool.size() - 1);
         return pool[dist(rng)];
