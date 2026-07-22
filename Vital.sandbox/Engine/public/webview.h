@@ -47,6 +47,7 @@ namespace Vital::Engine {
             ~Webview();
 
             static void _bind_methods() {
+                godot::ClassDB::bind_method(godot::D_METHOD("on_resized"), &Webview::on_resized);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_message", "message"), &Webview::on_message);
                 godot::ClassDB::bind_method(godot::D_METHOD("on_page_loaded", "url"), &Webview::on_page_loaded);
             }
@@ -100,6 +101,7 @@ namespace Vital::Engine {
 
 
             // Events //
+            void on_resized();
             void on_message(godot::String message);
             void on_page_loaded(godot::String url);
     };

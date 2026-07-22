@@ -39,6 +39,7 @@ namespace Vital::Engine {
 
         Engine::Core::get_singleton() -> enqueue([this]() {
             Engine::Canvas::get_singleton() -> add_child(webview);
+            webview -> connect("resized", godot::Callable(this, "on_resized"));
             webview -> connect("ipc_message", godot::Callable(this, "on_message"));
             webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
             load_url("https://github.com/ov-studio/Vital.sandbox");
@@ -196,7 +197,6 @@ namespace Vital::Engine {
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
-        update_input_forwarder(); // TODO: Use resize callback instead??
     }
 
     void Webview::set_devtools_visible(bool state) {
@@ -249,6 +249,10 @@ namespace Vital::Engine {
 
 
     // Events //
+    void Webview::on_resized() {
+        update_input_forwarder();
+    }
+
     void Webview::on_message(godot::String message) {
         if (!message_handler) return;
         message_handler(message);
