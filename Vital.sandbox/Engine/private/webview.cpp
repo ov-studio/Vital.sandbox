@@ -133,9 +133,11 @@ namespace Vital::Engine {
             eval("window.vsdk_forward_input = true;");
         }
         else {
-            if (input_forwarder != this) return;
-            yield_forwarder();
-            fill_forwarder_vacancy();
+            if (input_forwarder == this) {
+                yield_forwarder();
+                fill_forwarder_vacancy();
+            }
+            else webview -> call_deferred("focus_parent");
         }
     }
 
