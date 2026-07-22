@@ -25,6 +25,9 @@
 namespace Vital::Engine {
     // Instantiators //
     Webview::Webview(const Options& options) {
+        this -> options = options;
+        instances.push_back(this);
+
         godot::Object* object = godot::ClassDB::instantiate("WebView");
         if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: webview plugin missing");
         else webview = godot::Object::cast_to<godot::Control>(object);
@@ -90,6 +93,10 @@ namespace Vital::Engine {
 
     bool Webview::is_devtools_visible() {
         return webview -> call("is_devtools_open");
+    }
+
+    bool Webview::is_forward_input() {
+        return options.forward_input;
     }
 
 

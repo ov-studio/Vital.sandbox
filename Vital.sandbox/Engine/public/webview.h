@@ -31,11 +31,14 @@ namespace Vital::Engine {
                 bool incognito = true;
                 bool autoplay = false;
                 bool zoomable = false;
+                bool forward_input = true;
             };
         private:
+            Options options;
             godot::Control* webview = nullptr;
             std::function<void(godot::String)> message_handler;
             static inline Webview* input_forwarder = nullptr;
+            static inline std::vector<Webview*> instances;
 
             void release_input_forwarder() {
                 if (input_forwarder == this) {
@@ -67,6 +70,7 @@ namespace Vital::Engine {
             bool is_autoplay();
             bool is_zoomable();
             bool is_devtools_visible();
+            bool is_forward_input();
 
 
             // Getters //
