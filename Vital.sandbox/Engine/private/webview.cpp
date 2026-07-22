@@ -165,9 +165,12 @@ namespace Vital::Engine {
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
         if (state) update_input_forwarder();
-        else if (input_forwarder == this) {
-            pause_input_forwarder();
-            update_input_forwarder();
+        else {
+            if (input_forwarder == this) {
+                pause_input_forwarder();
+                update_input_forwarder();
+            }
+            else webview -> call_deferred("focus_parent");
         }
     }
 
