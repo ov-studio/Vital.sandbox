@@ -35,7 +35,14 @@ namespace Vital::Engine {
         private:
             godot::Control* webview = nullptr;
             std::function<void(godot::String)> message_handler;
+            static inline Webview* active_input_owner = nullptr;
 
+            void release_input_ownership() {
+                if (active_input_owner == this) {
+                    eval("window.__vitalInputEnabled = false;");
+                    active_input_owner = nullptr;
+                }
+            }
 
             // Instantiators //
             Webview() : Webview(Options{}) {}
@@ -69,6 +76,7 @@ namespace Vital::Engine {
 
             // Setters //
             void set_visible(bool state);
+            void set_input_enabled(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
             void set_devtools_visible(bool state);
