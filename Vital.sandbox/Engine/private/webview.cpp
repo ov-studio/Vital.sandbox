@@ -94,12 +94,12 @@ namespace Vital::Engine {
         return webview -> get("zoom_hotkeys");
     }
 
-    bool Webview::is_devtools_visible() {
-        return webview -> call("is_devtools_open");
-    }
-
     bool Webview::is_forward_input() {
         return options.forward_input;
+    }
+
+    bool Webview::is_devtools_visible() {
+        return webview -> call("is_devtools_open");
     }
 
 

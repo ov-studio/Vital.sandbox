@@ -91,8 +91,8 @@ namespace Vital::Engine {
             bool is_incognito();
             bool is_autoplay();
             bool is_zoomable();
-            bool is_devtools_visible();
             bool is_forward_input();
+            bool is_devtools_visible();
 
 
             // Getters //

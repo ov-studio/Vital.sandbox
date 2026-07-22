@@ -114,13 +114,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> webview -> is_devtools_visible());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_forward_input", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_forward_input());
+                return 1;
+            });
+            
+            vm_module::bind_method<Instance>(vm, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_devtools_visible());
                 return 1;
             });
 
