@@ -47,6 +47,28 @@ namespace Vital::Engine {
                 }
             }
 
+            // Gives up the forwarder role (if held) without triggering a
+            // vacancy-fill selection. Used internally when a takeover or
+            // teardown is about to happen and the caller controls what
+            // comes next.
+            void yield_forwarder() {
+                if (input_forwarder != this) return;
+                release_input_forwarder();
+                webview -> call_deferred("focus_parent");
+            }
+
+            // Picks the best eligible candidate to become forwarder:
+            // only considers visible instances with forward_input enabled,
+            // prioritizes fullscreen webviews, then falls back to the
+            // largest visible webview by area, with a random pick among
+            // ties. Returns nullptr if no eligible candidate exists.
+            static Webview* select_fallback_forwarder();
+
+            // Assigns a forwarder ONLY if none currently exists. Never
+            // contests or steals focus from an existing forwarder - this
+            // purely fills a vacancy left behind by hide/destroy/disable.
+            static void fill_forwarder_vacancy();
+
             // Instantiators //
             Webview() : Webview(Options{}) {}
             Webview(const Options& options);
@@ -84,6 +106,7 @@ namespace Vital::Engine {
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
             void set_devtools_visible(bool state);
+            void set_forward_input_enabled(bool state);
             void set_message_handler(std::function<void(godot::String)> handler);
             void reset_message_handler();
 
