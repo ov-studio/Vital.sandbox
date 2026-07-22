@@ -74,6 +74,7 @@ namespace Vital::Sandbox::API {
                     vm -> table_get_value("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
                     vm -> table_get_value("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> pop(5);
+                    vm -> table_get_value("forward_input", 1); options.forward_input = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.forward_input;
                 }
                 auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
@@ -115,6 +116,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_devtools_visible());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_forward_input", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_forward_input());
                 return 1;
             });
 
