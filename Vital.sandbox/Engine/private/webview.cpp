@@ -46,7 +46,7 @@ namespace Vital::Engine {
     }
 
     Webview::~Webview() {
-        release_input_ownership();
+        release_input_forwarder();
         if (!webview) return;
         webview -> queue_free();
         webview = nullptr;
@@ -105,7 +105,7 @@ namespace Vital::Engine {
 
     // Setters //
     void Webview::set_visible(bool state) {
-        if (!state) release_input_ownership();
+        if (!state) release_input_forwarder();
         webview -> set_visible(state);
         if (!state) webview -> call_deferred("focus_parent");
     }
@@ -114,7 +114,7 @@ namespace Vital::Engine {
         if (state) {
             if (!is_visible()) return;
             if (input_forwarder && input_forwarder != this) {
-                input_forwarder -> release_input_ownership();
+                input_forwarder -> release_input_forwarder();
                 input_forwarder -> webview -> call_deferred("focus_parent");
             }
             input_forwarder = this;
@@ -122,7 +122,7 @@ namespace Vital::Engine {
             webview -> call_deferred("focus");
         }
         else {
-            release_input_ownership();
+            release_input_forwarder();
             webview -> call_deferred("focus_parent");
         }
     }

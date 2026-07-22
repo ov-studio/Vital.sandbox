@@ -37,7 +37,7 @@ namespace Vital::Engine {
             std::function<void(godot::String)> message_handler;
             static inline Webview* input_forwarder = nullptr;
 
-            void release_input_ownership() {
+            void release_input_forwarder() {
                 if (input_forwarder == this) {
                     eval("window.vsdk_forward_input = false;");
                     input_forwarder = nullptr;
