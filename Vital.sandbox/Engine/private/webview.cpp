@@ -125,12 +125,12 @@ namespace Vital::Engine {
     void Webview::set_focussed(bool state) {
         if (state) {
             if (!is_visible()) return;
-            if (!options.forward_input) return; // Flagged out of ever forwarding input - explicit requests can't override this.
+            webview -> call_deferred("focus");
+            if (!options.forward_input) return;
             if (input_forwarder == this) return;
             if (input_forwarder) input_forwarder -> yield_forwarder();
             input_forwarder = this;
             eval("window.vsdk_forward_input = true;");
-            webview -> call_deferred("focus");
         }
         else {
             if (input_forwarder != this) return;
