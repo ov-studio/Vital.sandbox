@@ -110,7 +110,7 @@ namespace Vital::Engine {
         if (!state) webview -> call_deferred("focus_parent");
     }
 
-    void Webview::set_input_enabled(bool state) {
+    void Webview::set_focussed(bool state) {
         if (state) {
             if (!is_visible()) return;
             if (input_forwarder && input_forwarder != this) {
