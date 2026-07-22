@@ -205,9 +205,7 @@ namespace Vital::Engine {
             yield_forwarder();
             fill_forwarder_vacancy();
         }
-        else if (state) {
-            fill_forwarder_vacancy();
-        }
+        else if (state) fill_forwarder_vacancy();
     }
 
     void Webview::set_message_handler(std::function<void(godot::String)> handler) {
