@@ -50,6 +50,7 @@ namespace Vital::Engine {
 
     Webview::~Webview() {
         release_input_forwarder();
+        fill_forwarder_vacancy();
         if (!webview) return;
         webview -> queue_free();
         webview = nullptr;
@@ -112,9 +113,9 @@ namespace Vital::Engine {
 
     // Setters //
     void Webview::set_visible(bool state) {
-        if (!state) release_input_forwarder();
         webview -> set_visible(state);
         if (!state) webview -> call_deferred("focus_parent");
+        else if (input_forwarder == this) {
     }
 
     void Webview::set_focussed(bool state) {
@@ -140,6 +141,7 @@ namespace Vital::Engine {
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
+        fill_forwarder_vacancy();
     }
 
     void Webview::set_devtools_visible(bool state) {
