@@ -35,12 +35,12 @@ namespace Vital::Engine {
         private:
             godot::Control* webview = nullptr;
             std::function<void(godot::String)> message_handler;
-            static inline Webview* active_input_owner = nullptr;
+            static inline Webview* input_forwarder = nullptr;
 
             void release_input_ownership() {
-                if (active_input_owner == this) {
-                    eval("window.__vitalInputEnabled = false;");
-                    active_input_owner = nullptr;
+                if (input_forwarder == this) {
+                    eval("window.vsdk_forward_input = false;");
+                    input_forwarder = nullptr;
                 }
             }
 
