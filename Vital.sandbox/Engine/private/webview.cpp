@@ -199,15 +199,6 @@ namespace Vital::Engine {
         else webview -> call_deferred("close_devtools");
     }
 
-    void Webview::set_forward_input_enabled(bool state) {
-        options.forward_input = state;
-        if (!state && input_forwarder == this) {
-            yield_forwarder();
-            fill_forwarder_vacancy();
-        }
-        else if (state) fill_forwarder_vacancy();
-    }
-
     void Webview::set_message_handler(std::function<void(godot::String)> handler) {
         message_handler = std::move(handler);
     }
