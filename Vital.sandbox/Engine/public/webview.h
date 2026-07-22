@@ -40,23 +40,6 @@ namespace Vital::Engine {
             static inline Webview* input_forwarder = nullptr;
             static inline std::vector<Webview*> instances;
 
-            void release_input_forwarder() {
-                if (input_forwarder == this) {
-                    eval("window.vsdk_forward_input = false;");
-                    input_forwarder = nullptr;
-                }
-            }
-
-            // Gives up the forwarder role (if held) without triggering a
-            // vacancy-fill selection. Used internally when a takeover or
-            // teardown is about to happen and the caller controls what
-            // comes next.
-            void pause_input_forwarder() {
-                if (input_forwarder != this) return;
-                release_input_forwarder();
-                webview -> call_deferred("focus_parent");
-            }
-
             // Picks the best eligible candidate to become forwarder:
             // only considers visible instances with forward_input enabled,
             // prioritizes fullscreen webviews, then falls back to the
@@ -74,8 +57,9 @@ namespace Vital::Engine {
                 godot::ClassDB::bind_method(godot::D_METHOD("on_page_loaded", "url"), &Webview::on_page_loaded);
             }
 
-            
+
             // Helpers //
+            void pause_input_forwarder();
             static void update_input_forwarder();
         public:
             // Managers //
