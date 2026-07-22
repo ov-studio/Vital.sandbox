@@ -271,6 +271,7 @@ namespace Vital::Engine {
             options.incognito = true;
             options.autoplay = false;
             options.zoomable = false;
+            options.forward_input = false;
             webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
             webview -> set_message_handler(std::bind(&Console::on_message, this, std::placeholders::_1));
