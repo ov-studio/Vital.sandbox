@@ -29,7 +29,7 @@ namespace Vital::Engine {
         if (!object) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: webview plugin missing");
         else webview = godot::Object::cast_to<godot::Control>(object);
         this -> options = options;
-        instances.push_back(this);
+        buffer.push_back(this);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
         webview -> set("incognito", options.incognito);
