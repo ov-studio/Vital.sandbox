@@ -138,12 +138,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_input_enabled", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_focussed", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 auto state = vm -> get_bool(2);
-                self -> webview -> set_input_enabled(state);
+                self -> webview -> set_focussed(state);
                 vm -> push_value(true);
                 return 1;
             });
