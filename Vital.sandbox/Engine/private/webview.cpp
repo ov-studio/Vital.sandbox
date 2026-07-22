@@ -118,7 +118,9 @@ namespace Vital::Engine {
         webview -> set_visible(state);
         if (state) fill_forwarder_vacancy();
         else if (input_forwarder == this) {
+            yield_forwarder();
             fill_forwarder_vacancy();
+        }
     }
 
     void Webview::set_focussed(bool state) {
