@@ -49,11 +49,10 @@ namespace Vital::Engine {
     }
 
     Webview::~Webview() {
+        if (!webview) return;
         pause_input_forwarder();
         buffer.erase(std::remove(buffer.begin(), buffer.end(), this), buffer.end());
         update_input_forwarder();
-
-        if (!webview) return;
         webview -> queue_free();
         webview = nullptr;
     }
