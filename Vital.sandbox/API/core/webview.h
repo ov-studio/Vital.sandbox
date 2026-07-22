@@ -138,6 +138,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_input_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(2, &Machine::is_bool);
+
+                auto state = vm -> get_bool(2);
+                self -> webview -> set_input_enabled(state);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector2);
@@ -190,7 +200,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, "load_url", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
