@@ -198,85 +198,10 @@ namespace Vital::Engine {
         std::ostringstream js;
         js << "(function() {";
         for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) js << content << "\n";
-        js << R"(
-            window.__vitalInputEnabled = false;
-
-            document.addEventListener('mousemove', (e) => {
-                if (!window.__vitalInputEnabled) return;
-                window.ipc.postMessage(JSON.stringify({
-                    type: '_mouse_move',
-                    x: e.clientX,
-                    y: e.clientY,
-                    movementX: e.movementX,
-                    movementY: e.movementY,
-                    button: e.button
-                }));
-            });
-            document.addEventListener('mousedown', (e) => {
-                if (!window.__vitalInputEnabled) return;
-                window.ipc.postMessage(JSON.stringify({
-                    type: '_mouse_down',
-                    x: e.clientX,
-                    y: e.clientY,
-                    button: e.button
-                }));
-            });
-            document.addEventListener('mouseup', (e) => {
-                if (!window.__vitalInputEnabled) return;
-                window.ipc.postMessage(JSON.stringify({
-                    type: '_mouse_up',
-                    x: e.clientX,
-                    y: e.clientY,
-                    button: e.button
-                }));
-            });
-            document.addEventListener('wheel', (e) => {
-                if (!window.__vitalInputEnabled) return;
-                window.ipc.postMessage(JSON.stringify({
-                    type: '_mouse_wheel',
-                    x: e.clientX,
-                    y: e.clientY,
-                    deltaX: e.deltaX,
-                    deltaY: e.deltaY,
-                    shift: e.shiftKey,
-                    ctrl: e.ctrlKey,
-                    alt: e.altKey,
-                    meta: e.metaKey
-                }));
-            });
-            document.addEventListener('keydown', (e) => {
-                if (!window.__vitalInputEnabled) return;
-                const isModifier = ["Alt", "Shift", "Control", "Meta"].includes(e.key);
-                window.ipc.postMessage(JSON.stringify({
-                    type: '_key_down',
-                    key: e.key,
-                    code: e.code,
-                    keyCode: e.keyCode,
-                    shift: isModifier ? false : e.shiftKey,
-                    ctrl: isModifier ? false : e.ctrlKey,
-                    alt: isModifier ? false : e.altKey,
-                    meta: isModifier ? false : e.metaKey
-                }));
-            });
-            document.addEventListener('keyup', (e) => {
-                if (!window.__vitalInputEnabled) return;
-                const isModifier = ["Alt", "Shift", "Control", "Meta"].includes(e.key);
-                window.ipc.postMessage(JSON.stringify({
-                    type: '_key_up',
-                    key: e.key,
-                    code: e.code,
-                    keyCode: e.keyCode,
-                    shift: isModifier ? false : e.shiftKey,
-                    ctrl: isModifier ? false : e.ctrlKey,
-                    alt: isModifier ? false : e.altKey,
-                    meta: isModifier ? false : e.metaKey
-                }));
-            });
-        )";
-
         js << "})();";
         eval(js.str());
         if (active_input_owner == this) eval("window.__vitalInputEnabled = true;");
+        if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
     }
 }
 #endif
