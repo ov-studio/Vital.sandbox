@@ -49,8 +49,10 @@ namespace Vital::Engine {
     }
 
     Webview::~Webview() {
-        release_input_forwarder();
+        yield_forwarder();
+        instances.erase(std::remove(instances.begin(), instances.end(), this), instances.end());
         fill_forwarder_vacancy();
+
         if (!webview) return;
         webview -> queue_free();
         webview = nullptr;
@@ -114,8 +116,9 @@ namespace Vital::Engine {
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
-        if (!state) webview -> call_deferred("focus_parent");
+        if (state) fill_forwarder_vacancy();
         else if (input_forwarder == this) {
+            fill_forwarder_vacancy();
     }
 
     void Webview::set_focussed(bool state) {
