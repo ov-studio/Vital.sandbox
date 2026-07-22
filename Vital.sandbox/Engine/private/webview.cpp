@@ -191,7 +191,7 @@ namespace Vital::Engine {
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
-        fill_forwarder_vacancy();
+        fill_forwarder_vacancy(); // TODO: Use resize callback instead??
     }
 
     void Webview::set_devtools_visible(bool state) {
