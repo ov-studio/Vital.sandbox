@@ -61,10 +61,8 @@ namespace Vital::Engine {
     // Helpers //
     void Webview::pause_input_forwarder() {
         if (input_forwarder != this) return;
-        if (input_forwarder == this) {
-            eval("window.vsdk_forward_input = false;");
-            input_forwarder = nullptr;
-        }
+        eval("window.vsdk_forward_input = false;");
+        input_forwarder = nullptr;
         webview -> call_deferred("focus_parent");
     }
 
