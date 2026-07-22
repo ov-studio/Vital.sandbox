@@ -107,7 +107,24 @@ namespace Vital::Engine {
     void Webview::set_visible(bool state) {
         if (!state) release_input_ownership();
         webview -> set_visible(state);
-        webview -> call("focus_parent");
+        if (!state) webview -> call_deferred("focus_parent");
+    }
+
+    void Webview::set_input_enabled(bool state) {
+        if (state) {
+            if (!is_visible()) return;
+            if (active_input_owner && active_input_owner != this) {
+                active_input_owner -> release_input_ownership();
+                active_input_owner -> webview -> call_deferred("focus_parent");
+            }
+            active_input_owner = this;
+            eval("window.__vitalInputEnabled = true;");
+            webview -> call_deferred("focus");
+        }
+        else {
+            release_input_ownership();
+            webview -> call_deferred("focus_parent");
+        }
     }
 
     void Webview::set_position(const godot::Vector2& position) {
