@@ -289,9 +289,9 @@ namespace Vital::Tool {
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
-                        case SchemaAction::Type::Add:    sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
-                        case SchemaAction::Type::Drop:   sql += fmt::format("DROP COLUMN `{}`", action.column); break;
-                        case SchemaAction::Type::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
+                        case SchemaActionType::Add:    sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
+                        case SchemaActionType::Drop:   sql += fmt::format("DROP COLUMN `{}`", action.column); break;
+                        case SchemaActionType::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
                     }
                 }
                 *session << sql;
@@ -299,9 +299,9 @@ namespace Vital::Tool {
                 auto& table_schema = schema[table];
                 for (const auto& action : actions) {
                     switch (action.type) {
-                        case SchemaAction::Type::Add:
-                        case SchemaAction::Type::Modify: table_schema[action.column] = action.definition; break;
-                        case SchemaAction::Type::Drop:   table_schema.erase(action.column); break;
+                        case SchemaActionType::Add:
+                        case SchemaActionType::Modify: table_schema[action.column] = action.definition; break;
+                        case SchemaActionType::Drop:   table_schema.erase(action.column); break;
                     }
                 }
             }
