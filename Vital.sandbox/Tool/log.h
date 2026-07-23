@@ -24,6 +24,7 @@
 namespace Vital::Tool::Log {
     enum class Type { sbox, info, warn, error };
 
+
     struct Command {
         std::string_view code;
         std::string_view message;
@@ -35,22 +36,10 @@ namespace Vital::Tool::Log {
         static constexpr std::string_view label = L;
     };
 
-    inline constexpr std::string_view
-        Label_sbox = "sbox",
-        Label_info = "info",
-        Label_warn = "warn", 
-        Label_error = "error";
-
-    using sbox = Entry<Label_sbox>;
-    using info = Entry<Label_info>;
-    using warn = Entry<Label_warn>;
-    using error = Entry<Label_error>;
-
-    inline const std::unordered_set<std::string_view> runtime_levels = { 
-        "info", 
-        "warn", 
-        "error" 
-    };
+    using sbox = Entry<Type::sbox>;
+    using info = Entry<Type::info>;
+    using warn = Entry<Type::warn>;
+    using error = Entry<Type::error>;
 
     inline constexpr Command error_list[] = {
         {"invalid-argument", "invalid argument {}"},
