@@ -127,9 +127,9 @@ namespace Vital::Tool {
                 assert_table(table);
             }
 
-            static std::string escape_connection_value(const std::string& s) {
+            static std::string escape_connection_value(const std::string& value) {
                 std::string out = "'";
-                for (char c : s) {
+                for (char c : value) {
                     if (c == '\'' || c == '\\') out += '\\';
                     out += c;
                 }
