@@ -52,10 +52,9 @@ namespace Vital::Tool::Log {
         {"request-failed", "request failed {}"}
     };
 
-    template <typename... Types>
-    inline bool is_type_impl(std::string_view label) { return (... || (label == Types::label)); }
     inline bool is_type(std::string_view label) {
-        return is_type_impl<sbox, info, warn, error>(label);
+        for (const auto& l : type_labels) if (l == label) return true;
+        return false;
     }
 
     inline bool is_runtime_level(std::string_view label) {
