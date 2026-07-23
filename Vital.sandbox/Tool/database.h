@@ -127,7 +127,7 @@ namespace Vital::Tool {
                 assert_table(table);
             }
 
-            static std::string escape_conn_val(const std::string& s) {
+            static std::string escape_connection_value(const std::string& s) {
                 std::string out = "'";
                 for (char c : s) {
                     if (c == '\'' || c == '\\') out += '\\';
@@ -135,7 +135,7 @@ namespace Vital::Tool {
                 }
                 return out + "'";
             }
-            
+
             std::string build_column(const std::string& column, const Column& definition) const {
                 std::string statement = fmt::format("`{}` {}", column, definition.type);
                 if (definition.autoincrement) statement += " AUTO_INCREMENT";
@@ -169,8 +169,8 @@ namespace Vital::Tool {
 
             static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& database, unsigned int port = 3306) {
                 auto db = new Database();
-                std::string connection = fmt::format("host={} port={} user={} dbname={}", escape_conn_val(host), port, escape_conn_val(user), escape_conn_val(database));
-                if (!password.empty()) connection += fmt::format(" password={}", escape_conn_val(password));
+                std::string connection = fmt::format("host={} port={} user={} dbname={}", escape_connection_value(host), port, escape_connection_value(user), escape_connection_value(database));
+                if (!password.empty()) connection += fmt::format(" password={}", escape_connection_value(password));
                 db -> session = std::make_unique<soci::session>(soci::mysql, connection);
                 return db;
             }
