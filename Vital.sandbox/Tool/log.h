@@ -52,10 +52,9 @@ namespace Vital::Tool::Log {
     using warn = Entry<Type::warn>;
     using error = Entry<Type::error>;
 
-    inline constexpr Command error_list[] = {
-        {"invalid-argument", "invalid argument {}"},
-        {"request-failed", "request failed {}"}
-    };
+    inline constexpr std::string_view type_label(Type t) {
+        return type_labels[static_cast<std::size_t>(t)];
+    }
 
     inline bool is_type(std::string_view label) {
         for (const auto& l : type_labels) if (l == label) return true;
