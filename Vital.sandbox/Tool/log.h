@@ -37,6 +37,7 @@ namespace Vital::Tool::Log {
     };
 
     template <std::string_view const& L>
+        { "request-failed",   "request failed {}"   },
     struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
         static constexpr std::string_view label = L;
