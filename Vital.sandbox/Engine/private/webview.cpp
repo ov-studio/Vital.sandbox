@@ -36,16 +36,13 @@ namespace Vital::Engine {
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
         webview -> set("forward_input_events", false);
-
-        Engine::Core::get_singleton() -> enqueue([this]() {
-            Engine::Canvas::get_singleton() -> add_child(webview);
-            webview -> connect("resized", godot::Callable(this, "on_resized"));
-            webview -> connect("ipc_message", godot::Callable(this, "on_message"));
-            webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
-            load_url("https://github.com/ov-studio/Vital.sandbox");
-            set_visible(false);
-            set_devtools_visible(false);
-        });
+        Engine::Canvas::get_singleton() -> add_child(webview);
+        webview -> connect("resized", godot::Callable(this, "on_resized"));
+        webview -> connect("ipc_message", godot::Callable(this, "on_message"));
+        webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
+        set_visible(false);
+        set_devtools_visible(false);
+        load_url("https://github.com/ov-studio/Vital.sandbox");
     }
 
     Webview::~Webview() {
