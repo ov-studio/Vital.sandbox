@@ -29,6 +29,7 @@ namespace Vital::Engine {
         private:
             #if defined(VSDK_Client)
             Webview* webview = nullptr;
+            std::atomic<bool> console_ready { false };
             #else
             std::mutex stdout_mutex;
             std::thread stdin_thread;
@@ -74,6 +75,9 @@ namespace Vital::Engine {
 
 
             // Managers //
+            #if defined(VSDK_Client)
+            bool is_ready();
+            #endif
             void init();
             void ready();
             void update();

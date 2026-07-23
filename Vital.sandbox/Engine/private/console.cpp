@@ -487,6 +487,12 @@ namespace Vital::Engine {
 
 
     // Managers //
+    #if defined(VSDK_Client)
+    bool Console::is_ready() {
+        return console_ready.load();
+    }
+    #endif
+
     void Console::init() {
         #if !defined(VSDK_Client)
         ready();
@@ -495,6 +501,7 @@ namespace Vital::Engine {
 
     void Console::ready() {
         #if defined(VSDK_Client)
+        console_ready.store(true);
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -533,7 +540,7 @@ namespace Vital::Engine {
         }
         #endif
     }
- 
+
     void Console::update() {
         #if !defined(VSDK_Client)
             std::lock_guard<std::mutex> lock(stdout_mutex);
@@ -617,6 +624,7 @@ namespace Vital::Engine {
         if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid print mode");
         if (message.empty()) return;
         #if defined(VSDK_Client)
+            if (!console_ready.load()) return;
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -658,6 +666,7 @@ namespace Vital::Engine {
     void Console::clear(bool signal) {
         if (signal) return print("sbox", "Console cleared successfully!");
         #if defined(VSDK_Client)
+            if (!console_ready.load()) return;
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -684,6 +693,7 @@ namespace Vital::Engine {
 
     #if defined(VSDK_Client)
     void Console::toggle() {
+        if (!console_ready.load()) return;
         webview -> set_visible(!webview -> is_visible());
     }
     #endif
