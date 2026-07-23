@@ -162,10 +162,12 @@ namespace Vital::Tool {
             }
 
             void destroy() {
-                std::lock_guard<std::mutex> lock(mutex);
-                if (session) {
-                    session -> close();
-                    session.reset();
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    if (session) {
+                        session -> close();
+                        session.reset();
+                    }
                 }
                 delete this;
             }
