@@ -63,7 +63,7 @@ namespace Vital::Tool::Log {
     }
 
     inline bool is_runtime_level(std::string_view label) {
-        return runtime_levels.count(label) > 0;
+        return label != type_label(Type::sbox) && is_type(label);
     }
 
     inline std::string_view resolve(std::string_view code) {
