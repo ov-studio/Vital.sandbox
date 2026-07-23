@@ -44,7 +44,6 @@ namespace Vital::Tool::Log {
     template <Type T>
     struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
-        static constexpr std::string_view label = L;
         static constexpr std::string_view label = type_labels[static_cast<std::size_t>(T)];
     };
 
