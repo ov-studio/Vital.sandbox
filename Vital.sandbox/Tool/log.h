@@ -22,8 +22,14 @@
 ////////////
 
 namespace Vital::Tool::Log {
-    enum class Type { sbox, info, warn, error };
+    enum class Type : std::size_t { 
+        sbox, 
+        info, 
+        warn, 
+        error 
+    };
 
+    inline constexpr std::string_view type_labels[] = { "sbox", "info", "warn", "error" };
 
     struct Command {
         std::string_view code;
