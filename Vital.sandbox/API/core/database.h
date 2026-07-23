@@ -58,7 +58,7 @@ namespace Vital::Sandbox::API {
             return definition;
         }
 
-        static base_class::SchemaActions read_schema_actions(Machine* vm, int idx, base_class::SchemaAction::Type action) {
+        static base_class::SchemaActions read_schema_actions(Machine* vm, int idx, base_class::SchemaActionType action) {
             base_class::SchemaActions actions;
             vm -> push_nil();
             while (vm -> next(idx)) {
