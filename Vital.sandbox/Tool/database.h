@@ -34,10 +34,15 @@ namespace Vital::Tool {
                 bool autoincrement = false;
                 bool nullable = true;
             };
-
+            
+            enum class SchemaActionType { 
+                Add, 
+                Drop, 
+                Modify
+            };
+            
             struct SchemaAction {
-                enum class Type { Add, Drop, Modify }; // TODO: MOVE IT OUTSIDE???
-                Type type;
+                SchemaActionType type;
                 std::string column;
                 Column definition;
             };
