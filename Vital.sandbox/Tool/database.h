@@ -102,15 +102,6 @@ namespace Vital::Tool {
             GlobalSchema schema;
             std::mutex mutex;
 
-            static std::string escape_conn_val(const std::string& s) {
-                std::string out = "'";
-                for (char c : s) {
-                    if (c == '\'' || c == '\\') out += '\\';
-                    out += c;
-                }
-                return out + "'";
-            }
-
             void assert_identifier(const std::string& name) const {
                 if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid identifier '{}'", name));
                 for (char c : name) {
@@ -136,6 +127,15 @@ namespace Vital::Tool {
                 assert_table(table);
             }
 
+            static std::string escape_conn_val(const std::string& s) {
+                std::string out = "'";
+                for (char c : s) {
+                    if (c == '\'' || c == '\\') out += '\\';
+                    out += c;
+                }
+                return out + "'";
+            }
+            
             std::string build_column(const std::string& column, const Column& definition) const {
                 std::string statement = fmt::format("`{}` {}", column, definition.type);
                 if (definition.autoincrement) statement += " AUTO_INCREMENT";
