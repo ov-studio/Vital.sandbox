@@ -25,6 +25,7 @@ namespace Vital::Tool {
         private:
             inline static std::mutex mutex;
             inline static std::unordered_map<std::thread::id, Thread*> buffer;
+            inline static std::unordered_set<Thread*> live;
             std::thread thread;
 
             Thread(std::function<void(Thread*)> exec) {
@@ -38,6 +39,7 @@ namespace Vital::Tool {
                     {
                         std::lock_guard<std::mutex> lock(mutex);
                         buffer.erase(std::this_thread::get_id());
+                        live.erase(this);
                     }
                     delete this;
                 });
@@ -49,7 +51,7 @@ namespace Vital::Tool {
             }
 
             ~Thread() {
-                detach();
+                if (thread.joinable()) thread.detach();
             }
 
             static Thread* fetch() {
@@ -59,11 +61,18 @@ namespace Vital::Tool {
                 return it != buffer.end() ? it -> second : nullptr;
             }
 
+            static bool valid(Thread* instance) {
+                std::lock_guard<std::mutex> lock(mutex);
+                return live.count(instance) > 0;
+            }
+
             void join() {
+                if (!valid(this)) return;
                 if (thread.joinable()) thread.join();
             }
 
             void detach() {
+                if (!valid(this)) return;
                 if (thread.joinable()) thread.detach();
             }
 
