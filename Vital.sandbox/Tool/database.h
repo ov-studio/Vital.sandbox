@@ -304,7 +304,7 @@ namespace Vital::Tool {
                 assert_session_and_table(table);
                 *session << fmt::format("TRUNCATE TABLE `{}`", table);
             }
-            
+
             bool execute(Query* query) {
                 std::lock_guard<std::mutex> lock(mutex);
                 assert_session_and_table(query -> table);
