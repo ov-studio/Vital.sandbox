@@ -52,6 +52,8 @@ namespace Vital::Tool::Log {
     using warn = Entry<Type::warn>;
     using error = Entry<Type::error>;
 
+
+    // Helpers //
     inline constexpr std::string_view type_label(Type t) {
         return type_labels[static_cast<std::size_t>(t)];
     }
