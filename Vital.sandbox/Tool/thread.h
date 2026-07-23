@@ -29,6 +29,10 @@ namespace Vital::Tool {
             std::thread thread;
 
             Thread(std::function<void(Thread*)> exec) {
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    live.insert(this);
+                }
                 thread = std::thread([this, exec = std::move(exec)]() {
                     std::thread::id id = std::this_thread::get_id();
                     {
