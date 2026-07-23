@@ -624,7 +624,7 @@ namespace Vital::Engine {
         if (!Tool::Log::is_type(mode)) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid print mode");
         if (message.empty()) return;
         #if defined(VSDK_Client)
-            if (!console_ready.load()) return;
+            if (!is_ready()) return;
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -666,7 +666,7 @@ namespace Vital::Engine {
     void Console::clear(bool signal) {
         if (signal) return print("sbox", "Console cleared successfully!");
         #if defined(VSDK_Client)
-            if (!console_ready.load()) return;
+            if (!is_ready()) return;
             rapidjson::Document document;
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -693,7 +693,7 @@ namespace Vital::Engine {
 
     #if defined(VSDK_Client)
     void Console::toggle() {
-        if (!console_ready.load()) return;
+        if (!is_ready()) return;
         webview -> set_visible(!webview -> is_visible());
     }
     #endif
