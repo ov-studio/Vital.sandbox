@@ -97,6 +97,15 @@ namespace Vital::Tool {
             GlobalSchema schema;
             std::mutex mutex;
 
+            static std::string escape_conn_val(const std::string& s) {
+                std::string out = "'";
+                for (char c : s) {
+                    if (c == '\'' || c == '\\') out += '\\';
+                    out += c;
+                }
+                return out + "'";
+            }
+
             void assert_identifier(const std::string& name) const {
                 if (name.empty() || name.size() > 64) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid identifier '{}'", name));
                 for (char c : name) {
@@ -155,8 +164,8 @@ namespace Vital::Tool {
 
             static Database* create(const std::string& host, const std::string& user, const std::string& password, const std::string& database, unsigned int port = 3306) {
                 auto db = new Database();
-                std::string connection = fmt::format("host={} port={} user={} dbname={}", host, port, user, database);
-                if (!password.empty()) connection += fmt::format(" password={}", password);
+                std::string connection = fmt::format("host={} port={} user={} dbname={}", escape_conn_val(host), port, escape_conn_val(user), escape_conn_val(database));
+                if (!password.empty()) connection += fmt::format(" password={}", escape_conn_val(password));
                 db -> session = std::make_unique<soci::session>(soci::mysql, connection);
                 return db;
             }
