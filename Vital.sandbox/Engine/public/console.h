@@ -29,7 +29,7 @@ namespace Vital::Engine {
         private:
             #if defined(VSDK_Client)
             Webview* webview = nullptr;
-            std::atomic<bool> console_ready { false };
+            std::atomic<bool> webview_ready { false };
             #else
             std::mutex stdout_mutex;
             std::thread stdin_thread;

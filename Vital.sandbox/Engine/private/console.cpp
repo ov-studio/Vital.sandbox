@@ -489,7 +489,7 @@ namespace Vital::Engine {
     // Managers //
     #if defined(VSDK_Client)
     bool Console::is_ready() {
-        return console_ready.load();
+        return webview_ready.load();
     }
     #endif
 
@@ -501,7 +501,7 @@ namespace Vital::Engine {
 
     void Console::ready() {
         #if defined(VSDK_Client)
-        console_ready.store(true);
+        webview_ready.store(true);
         rapidjson::Document document;
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
