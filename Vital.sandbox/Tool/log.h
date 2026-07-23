@@ -36,8 +36,12 @@ namespace Vital::Tool::Log {
         std::string_view message;
     };
 
-    template <std::string_view const& L>
+    inline constexpr Command error_list[] = {
+        { "invalid-argument", "invalid argument {}" },
         { "request-failed",   "request failed {}"   },
+    };
+
+    template <Type T>
     struct Entry : std::runtime_error {
         using std::runtime_error::runtime_error;
         static constexpr std::string_view label = L;
