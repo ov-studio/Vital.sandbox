@@ -84,7 +84,7 @@ namespace Vital::Engine {
         return godot::Ref<godot::ImageTexture>();
     }
 
-    godot::Ref<godot::Texture2D> Texture::get_draw_texture() const {
+    godot::Ref<godot::Texture2D> Texture::get_canvas_texture() const {
         if (canvas_texture.is_valid()) return canvas_texture;
         return get_texture();
     }

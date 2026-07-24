@@ -344,7 +344,7 @@ namespace Vital::Engine {
         const godot::Color& color
     ) {
         texture -> heartbeat();
-        draw_image(position, size, texture -> get_draw_texture(), rotation, pivot, color);
+        draw_image(position, size, texture -> get_canvas_texture(), rotation, pivot, color);
     }
 
     void Canvas::draw_image(
