@@ -37,13 +37,6 @@ namespace Vital::Sandbox::API {
             { "L8",       godot::Image::FORMAT_L8       }
         };
 
-        inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_mode_registry = {
-            { "S3TC", godot::Image::COMPRESS_S3TC },
-            { "ETC2", godot::Image::COMPRESS_ETC2 },
-            { "BPTC", godot::Image::COMPRESS_BPTC },
-            { "ASTC", godot::Image::COMPRESS_ASTC }
-        };
-
         inline static const std::vector<std::pair<std::string, godot::CanvasItem::TextureFilter>> texture_filter_registry = {
             { "DEFAULT",                     godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE                      },
             { "NEAREST",                     godot::CanvasItem::TEXTURE_FILTER_NEAREST                          },
@@ -52,6 +45,13 @@ namespace Vital::Sandbox::API {
             { "LINEAR_MIPMAP",               godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS              },
             { "NEAREST_MIPMAP_ANISOTROPIC",  godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC },
             { "LINEAR_MIPMAP_ANISOTROPIC",   godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC  }
+        };
+
+        inline static const std::vector<std::pair<std::string, godot::Image::CompressMode>> compression_mode_registry = {
+            { "S3TC", godot::Image::COMPRESS_S3TC },
+            { "ETC2", godot::Image::COMPRESS_ETC2 },
+            { "BPTC", godot::Image::COMPRESS_BPTC },
+            { "ASTC", godot::Image::COMPRESS_ASTC }
         };
 
         struct Instance : vm_instance<Instance> {
@@ -139,8 +139,8 @@ namespace Vital::Sandbox::API {
 
         static void inject(Machine* vm) {
             vm -> scope_set_enum(base_scope, "texel_format", texel_format_registry);
-            vm -> scope_set_enum(base_scope, "compression_mode", compression_mode_registry);
             vm -> scope_set_enum(base_scope, "texture_filter", texture_filter_registry);
+            vm -> scope_set_enum(base_scope, "compression_mode", compression_mode_registry);
         }
 
         static void clean(const std::string& env) {
