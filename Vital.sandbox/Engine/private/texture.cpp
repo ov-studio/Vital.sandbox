@@ -125,11 +125,11 @@ namespace Vital::Engine {
 
 
     // Misc //
-    Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, const std::string& reference, bool mipmaps) {
+    Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
         return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), reference, mipmaps);
     }
 
-    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference, bool mipmaps) {
+    Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         godot::Error status;
@@ -150,11 +150,11 @@ namespace Vital::Engine {
         return memnew(Texture({Type::Texture2D, payload}, reference));
     }
 
-    Texture* Texture::create_svg(const std::string& base, const std::string& path, const std::string& reference, bool mipmaps) {
+    Texture* Texture::create_svg(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
         return create_svg_from_buffer(Tool::File::read_binary(base, path), reference, mipmaps);
     }
 
-    Texture* Texture::create_svg_from_raw(const std::string& raw, const std::string& reference, bool mipmaps) {
+    Texture* Texture::create_svg_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_string(Tool::to_godot_string(raw), 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
@@ -164,7 +164,7 @@ namespace Vital::Engine {
         return memnew(Texture({Type::SVG, payload}, reference));
     }
 
-    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference, bool mipmaps) {
+    Texture* Texture::create_svg_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
         godot::Ref<godot::Image> image;
         image.instantiate();
         if (image -> load_svg_from_buffer(buffer, 1.0) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid svg buffer");
