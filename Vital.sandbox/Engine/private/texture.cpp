@@ -102,18 +102,15 @@ namespace Vital::Engine {
 
     // Setters //
     void Texture::set_filter(godot::CanvasItem::TextureFilter mode) {
-        if (mode == godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
-            canvas_texture.unref();
-            heartbeat();
-        }
+        if (mode == godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE) canvas_texture.unref();
         else {
             auto texture = get_texture();
             bool wants_mipmaps = (
                 mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS ||
                 mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS ||
                 mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC ||
-                mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC;
-            )
+                mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+            );
             if (wants_mipmaps && texture.is_valid()) {
                 auto image = texture -> get_image();
                 if (image.is_valid() && !image -> has_mipmaps()) {
