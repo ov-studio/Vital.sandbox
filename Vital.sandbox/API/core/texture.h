@@ -78,7 +78,7 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Texture>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path)")
+                vm_args(vm, id, "(path, mipmaps = false)")
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
