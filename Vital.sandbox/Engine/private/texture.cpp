@@ -105,11 +105,27 @@ namespace Vital::Engine {
         if (mode == godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
             canvas_texture.unref();
             heartbeat();
-            return;
         }
-        if (!canvas_texture.is_valid()) canvas_texture.instantiate();
-        canvas_texture -> set_diffuse_texture(get_texture());
-        canvas_texture -> set_texture_filter(mode);
+        else {
+            auto texture = get_texture();
+            bool wants_mipmaps = (
+                mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS ||
+                mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS ||
+                mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC ||
+                mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC;
+            )
+            if (wants_mipmaps && texture.is_valid()) {
+                auto image = texture -> get_image();
+                if (image.is_valid() && !image -> has_mipmaps()) {
+                    if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: cannot generate mipmaps for an already-compressed texture");
+                    image -> generate_mipmaps();
+                    texture -> update(image);
+                }
+            }
+            if (!canvas_texture.is_valid()) canvas_texture.instantiate();
+            canvas_texture -> set_diffuse_texture(texture);
+            canvas_texture -> set_texture_filter(mode);
+        }
         heartbeat();
     }
 
