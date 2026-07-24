@@ -113,7 +113,7 @@ namespace Vital::Engine {
             );
             if (wants_mipmaps && texture.is_valid()) {
                 auto image = texture -> get_image();
-                if (!image -> has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture doesn't contain mipmap for the specified filtering"); // TODO: Better error msg? texture with mipmap is required for specified filter
+                if (!image -> has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture doesn't has mipmaps enabled for the specified filtering"); // TODO: Better error msg? texture with mipmap is required for specified filter
                 texture -> update(image);
             }
             if (!canvas_texture.is_valid()) canvas_texture.instantiate();
