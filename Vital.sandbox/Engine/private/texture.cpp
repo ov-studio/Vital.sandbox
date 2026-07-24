@@ -113,11 +113,8 @@ namespace Vital::Engine {
             );
             if (wants_mipmaps && texture.is_valid()) {
                 auto image = texture -> get_image();
-                if (image.is_valid() && !image -> has_mipmaps()) {
-                    if (is_compressed()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: cannot generate mipmaps for an already-compressed texture");
-                    image -> generate_mipmaps();
-                    texture -> update(image);
-                }
+                if (!image -> has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture doesn't contain mipmap for the specified filtering"); // TODO: Better error msg? texture with mipmap is required for specified filter
+                texture -> update(image);
             }
             if (!canvas_texture.is_valid()) canvas_texture.instantiate();
             canvas_texture -> set_diffuse_texture(texture);
