@@ -84,10 +84,33 @@ namespace Vital::Engine {
         return godot::Ref<godot::ImageTexture>();
     }
 
+    godot::Ref<godot::Texture2D> Texture::get_draw_texture() const {
+        if (canvas_texture.is_valid()) return canvas_texture;
+        return get_texture();
+    }
+
     godot::Vector2i Texture::get_size() const {
         auto texture = get_texture();
         if (!texture.is_valid()) return godot::Vector2i();
         return texture -> get_size();
+    }
+
+    godot::CanvasItem::TextureFilter Texture::get_filter() const {
+        return canvas_texture.is_valid() ? canvas_texture -> get_texture_filter() : godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE;
+    }
+
+
+    // Setters //
+    void Texture::set_filter(godot::CanvasItem::TextureFilter mode) {
+        if (mode == godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+            canvas_texture.unref();
+            heartbeat();
+            return;
+        }
+        if (!canvas_texture.is_valid()) canvas_texture.instantiate();
+        canvas_texture -> set_diffuse_texture(get_texture());
+        canvas_texture -> set_texture_filter(mode);
+        heartbeat();
     }
 
 

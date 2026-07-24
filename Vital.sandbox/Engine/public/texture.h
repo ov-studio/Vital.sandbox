@@ -68,6 +68,7 @@ namespace Vital::Engine {
             Command command;
             uint64_t reference_tick = 0;
             std::string reference_key = "";
+            godot::Ref<godot::CanvasTexture> canvas_texture;
             inline static std::unordered_map<std::string, Texture*> reference_cache = {};
 
 
@@ -88,7 +89,13 @@ namespace Vital::Engine {
             // Getters //
             static Texture* get_from_reference(const std::string& reference);
             godot::Ref<godot::ImageTexture> get_texture() const;
+            godot::Ref<godot::Texture2D> get_draw_texture() const;
             godot::Vector2i get_size() const;
+            godot::CanvasItem::TextureFilter get_filter() const;
+
+
+            // Setters //
+            void set_filter(godot::CanvasItem::TextureFilter mode);
 
 
             // Misc //
