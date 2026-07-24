@@ -126,7 +126,7 @@ namespace Vital::Engine {
 
     // Misc //
     Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
-        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), reference, mipmaps);
+        return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
     }
 
     Texture* Texture::create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps, const std::string& reference) {
@@ -151,7 +151,7 @@ namespace Vital::Engine {
     }
 
     Texture* Texture::create_svg(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
-        return create_svg_from_buffer(Tool::File::read_binary(base, path), reference, mipmaps);
+        return create_svg_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
     }
 
     Texture* Texture::create_svg_from_raw(const std::string& raw, bool mipmaps, const std::string& reference) {
