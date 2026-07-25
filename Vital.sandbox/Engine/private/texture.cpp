@@ -65,9 +65,7 @@ namespace Vital::Engine {
     bool Texture::has_mipmaps() const {
         auto texture = get_texture();
         if (!texture.is_valid()) return false;
-        auto image = texture -> get_image();
-        if (!image.is_valid()) return false;
-        return image -> has_mipmaps();
+        return texture -> get_image() -> has_mipmaps();
     }
     
     bool Texture::is_compressed() const {
