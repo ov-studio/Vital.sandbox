@@ -55,9 +55,7 @@ namespace Vital::Engine {
                 expired.push_back(reference_cache.first);
             }
         }
-        for (const auto& key : expired) {
-            reference_cache[key] -> destroy();
-        }
+        for (const auto& key : expired) reference_cache[key] -> destroy();
     }
 
 
