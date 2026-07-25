@@ -115,9 +115,7 @@ namespace Vital::Engine {
                 mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC ||
                 mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
             );
-            if (wants_mipmaps && !has_mipmaps()) {
-                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture doesn't have mipmaps enabled for the specified filtering"); // TODO: Better error msg? texture with mipmap is required for specified filter
-            }
+            if (wants_mipmaps && !has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: requested filter mode requires mipmaps, but texture has none");
             if (!canvas_texture.is_valid()) canvas_texture.instantiate();
             canvas_texture -> set_diffuse_texture(texture);
             canvas_texture -> set_texture_filter(mode);
