@@ -28,6 +28,16 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "svg"};
         using base_class = Vital::Engine::Texture;
 
+        inline static const std::vector<std::pair<std::string, godot::CanvasItem::TextureFilter>> texture_filter_registry = {
+            { "DEFAULT",                     godot::CanvasItem::TEXTURE_FILTER_PARENT_NODE                      },
+            { "NEAREST",                     godot::CanvasItem::TEXTURE_FILTER_NEAREST                          },
+            { "LINEAR",                      godot::CanvasItem::TEXTURE_FILTER_LINEAR                           },
+            { "NEAREST_MIPMAP",              godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS             },
+            { "LINEAR_MIPMAP",               godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS              },
+            { "NEAREST_MIPMAP_ANISOTROPIC",  godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC },
+            { "LINEAR_MIPMAP_ANISOTROPIC",   godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC  }
+        };
+
         struct Instance : vm_instance<Instance> {
             using Owner = SVG;
             base_class* texture = nullptr;
@@ -85,6 +95,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_filter", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> texture -> get_filter()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_filter", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require_enum(2, texture_filter_registry);
+
+                auto mode = static_cast<godot::CanvasItem::TextureFilter>(vm -> get_int(2));
+                self -> texture -> set_filter(mode);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(raw)", true)
                     .require(2, &Machine::is_string);
@@ -94,6 +119,10 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+        }
+
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "texture_filter", texture_filter_registry);
         }
 
         static void clean(const std::string& env) {
