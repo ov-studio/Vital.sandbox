@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> texture -> has_mipmaps());
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> texture -> get_size());
                 return 1;
@@ -118,7 +118,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "texture_filter", API::Texture::texture_filter_registry);
+            vm -> scope_set_enum(base_scope, "svg_filter", API::Texture::texture_filter_registry);
         }
 
         static void clean(const std::string& env) {
