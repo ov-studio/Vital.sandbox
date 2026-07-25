@@ -62,6 +62,14 @@ namespace Vital::Engine {
 
 
     // Checkers //
+    bool Texture::has_mipmaps() const {
+        auto texture = get_texture();
+        if (!texture.is_valid()) return false;
+        auto image = texture -> get_image();
+        if (!image.is_valid()) return false;
+        return image -> has_mipmaps();
+    }
+    
     bool Texture::is_compressed() const {
         if (command.type != Type::Texture2D) return false;
         auto texture = get_texture();
@@ -111,10 +119,8 @@ namespace Vital::Engine {
                 mode == godot::CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC ||
                 mode == godot::CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
             );
-            if (wants_mipmaps && texture.is_valid()) {
-                auto image = texture -> get_image();
-                if (!image -> has_mipmaps()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture doesn't has mipmaps enabled for the specified filtering"); // TODO: Better error msg? texture with mipmap is required for specified filter
-                texture -> update(image);
+            if (wants_mipmaps && !has_mipmaps()) {
+                throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: texture doesn't have mipmaps enabled for the specified filtering"); // TODO: Better error msg? texture with mipmap is required for specified filter
             }
             if (!canvas_texture.is_valid()) canvas_texture.instantiate();
             canvas_texture -> set_diffuse_texture(texture);

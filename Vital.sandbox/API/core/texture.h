@@ -93,6 +93,11 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "has_mipmaps", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> texture -> has_mipmaps());
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "is_compressed", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> texture -> is_compressed());
                 return 1;
