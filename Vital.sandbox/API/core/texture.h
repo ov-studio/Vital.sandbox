@@ -79,12 +79,14 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, mipmaps = false)")
-                    .require(1, &Machine::is_string);
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
+                auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_texture_2d(base, path);
+                instance -> texture = base_class::create_texture_2d(base, path, mipmaps);
                 instance -> store(true);
                 return 1;
             });

@@ -53,23 +53,27 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, mipmaps = false)")
-                    .require(1, &Machine::is_string);
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
+                auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_svg(base, path);
+                instance -> texture = base_class::create_svg(base, path, mipmaps);
                 instance -> store(true);
                 return 1;
             });
 
             API::bind(vm, base_scope, "create_from_raw", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(raw)")
-                    .require(1, &Machine::is_string);
+                vm_args(vm, id, "(raw, mipmaps = false)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto raw = vm -> get_string(1);
+                auto mipmaps = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> texture = base_class::create_svg_from_raw(raw);
+                instance -> texture = base_class::create_svg_from_raw(raw, mipmaps);
                 instance -> store(true);
                 return 1;
             });
@@ -77,9 +81,8 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                auto size = self -> texture -> get_size();
                 vm -> push_value(self -> texture -> get_size());
-                return 2;
+                return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
