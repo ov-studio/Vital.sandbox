@@ -28,7 +28,7 @@
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
 #include <Vital.sandbox/API/core/audio2d.h>
-#include <Vital.sandbox/API/core/audio3d.h>
+//#include <Vital.sandbox/API/core/audio3d.h>
 
 #include <Vital.sandbox/API/utility/math.h>
 #include <Vital.sandbox/API/utility/string.h>
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<SVG>(),
             vm_module::make_api<Rendertarget>(),
             vm_module::make_api<Audio2D>(),
-            vm_module::make_api<Audio3D>(),
+            //vm_module::make_api<Audio3D>(),
 
             // Utility //
             vm_module::make_api<Math>(),
