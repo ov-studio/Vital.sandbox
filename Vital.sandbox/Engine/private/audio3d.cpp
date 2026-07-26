@@ -28,9 +28,7 @@ namespace Vital::Engine {
     Audio3D::Audio3D(const godot::Ref<godot::AudioStream>& stream) {
         this -> stream = stream;
         set_stream(stream);
-        // TODO: self-parent to your 3D root/world singleton here, e.g.:
-        //   Engine::World::get_singleton() -> add_child(this);
-        // Without this, the node is never in the SceneTree and will not play.
+        Engine::Core::get_singleton() -> add_child(this);
     }
 
 
