@@ -28,10 +28,8 @@ namespace Vital::Engine {
     Audio2D::Audio2D(const godot::Ref<godot::AudioStream>& stream) {
         this -> stream = stream;
         set_stream(stream);
-        Engine::Canvas::get_singleton() -> add_child(this);
+        Engine::Core::get_singleton() -> add_child(this);
     }
-
-    Audio2D::~Audio2D() {}
 
 
     // Managers //

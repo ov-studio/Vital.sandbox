@@ -46,7 +46,7 @@ namespace Vital::Engine {
 
             // Instantiators //
             Audio2D(const godot::Ref<godot::AudioStream>& stream);
-            ~Audio2D();
+            ~Audio2D() override = default;
         public:
             // Managers //
             static Audio2D* create(const std::string& base, const std::string& path);
