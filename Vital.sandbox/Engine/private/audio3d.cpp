@@ -33,8 +33,6 @@ namespace Vital::Engine {
         // Without this, the node is never in the SceneTree and will not play.
     }
 
-    Audio3D::~Audio3D() {}
-
 
     // Managers //
     Audio3D* Audio3D::create(const std::string& base, const std::string& path) {
