@@ -66,8 +66,8 @@ namespace Vital::Sandbox::API {
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
-                auto volume_db = vm -> is_number(2) ? static_cast<float>(vm -> get_number(2)) : 0.0f;
-                auto pitch_scale = vm -> is_number(3) ? static_cast<float>(vm -> get_number(3)) : 1.0f;
+                auto volume_db = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
+                auto pitch_scale = vm -> is_number(3) ? vm -> get_float(3) : 1.0f;
                 auto bus = vm -> is_string(4) ? Tool::to_godot_string(vm -> get_string(4)) : godot::StringName("Master");
                 auto autoplay = vm -> is_bool(5) ? vm -> get_bool(5) : false;
 
@@ -84,10 +84,10 @@ namespace Vital::Sandbox::API {
 
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(from_position = 0.0)")
+                vm_args(vm, id, "(from_position = 0.0)", true)
                     .optional(2, &Machine::is_number);
 
-                self -> audio -> play(vm -> is_number(2) ? static_cast<float>(vm -> get_number(2)) : 0.0f);
+                self -> audio -> play(vm -> is_number(2) ? vm -> get_float(2) : 0.0f);
                 vm -> push_value(true);
                 return 1;
             });
@@ -102,7 +102,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> seek(static_cast<float>(vm -> get_number(2)));
+                self -> audio -> seek(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -121,7 +121,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(volume_db)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> set_volume_db(static_cast<float>(vm -> get_number(2)));
+                self -> audio -> set_volume_db(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(pitch_scale)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> set_pitch_scale(static_cast<float>(vm -> get_number(2)));
+                self -> audio -> set_pitch_scale(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -191,7 +191,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(pixels)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> set_max_distance(static_cast<float>(vm -> get_number(2)));
+                self -> audio -> set_max_distance(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -205,7 +205,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(curve)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> set_attenuation(static_cast<float>(vm -> get_number(2)));
+                self -> audio -> set_attenuation(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -219,7 +219,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mask)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> set_area_mask(static_cast<uint32_t>(vm -> get_number(2)));
+                self -> audio -> set_area_mask(static_cast<uint32_t>(vm -> get_double(2)));
                 vm -> push_value(true);
                 return 1;
             });
@@ -247,7 +247,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(strength)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> set_panning_strength(static_cast<float>(vm -> get_number(2)));
+                self -> audio -> set_panning_strength(vm -> get_float(2));
                 vm -> push_value(true);
                 return 1;
             });
