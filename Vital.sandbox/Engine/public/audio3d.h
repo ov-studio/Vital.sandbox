@@ -40,33 +40,22 @@ namespace Vital::Engine {
                 { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } }, // "RIFF"
                 { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }  // "ID3"
             };
-
-            inline static const unsigned int flush_interval = 10000;
-        protected:
-            uint64_t reference_tick = 0;
-            std::string reference_key = "";
+        private:
             godot::Ref<godot::AudioStream> stream;
-            inline static std::unordered_map<std::string, Audio3D*> reference_cache = {};
 
 
             // Instantiators //
-            Audio3D(const std::string& reference = "");
+            Audio3D(const godot::Ref<godot::AudioStream>& stream);
             ~Audio3D();
         public:
             // Managers //
+            static Audio3D* create(const std::string& base, const std::string& path);
+            static Audio3D* create_from_buffer(const godot::PackedByteArray& buffer);
             void destroy();
-            void heartbeat();
-            static void flush();
 
 
             // Getters //
-            static Audio3D* get_from_reference(const std::string& reference);
             godot::Ref<godot::AudioStream> get_stream() const;
-
-
-            // Misc //
-            static Audio3D* create(const std::string& base, const std::string& path, const std::string& reference = "");
-            static Audio3D* create_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
     };
 }
 #endif

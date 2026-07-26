@@ -13,7 +13,7 @@
 
 #pragma once
 #if defined(VSDK_Client)
-#include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/canvas.h>
 #include <godot_cpp/classes/audio_stream_player2d.hpp>
 #include <godot_cpp/classes/audio_stream.hpp>
 
@@ -40,33 +40,22 @@ namespace Vital::Engine {
                 { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } }, // "RIFF"
                 { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }  // "ID3"
             };
-
-            inline static const unsigned int flush_interval = 10000;
-        protected:
-            uint64_t reference_tick = 0;
-            std::string reference_key = "";
+        private:
             godot::Ref<godot::AudioStream> stream;
-            inline static std::unordered_map<std::string, Audio2D*> reference_cache = {};
 
 
             // Instantiators //
-            Audio2D(const std::string& reference = "");
+            Audio2D(const godot::Ref<godot::AudioStream>& stream);
             ~Audio2D();
         public:
             // Managers //
+            static Audio2D* create(const std::string& base, const std::string& path);
+            static Audio2D* create_from_buffer(const godot::PackedByteArray& buffer);
             void destroy();
-            void heartbeat();
-            static void flush();
 
 
             // Getters //
-            static Audio2D* get_from_reference(const std::string& reference);
             godot::Ref<godot::AudioStream> get_stream() const;
-
-
-            // Misc //
-            static Audio2D* create(const std::string& base, const std::string& path, const std::string& reference = "");
-            static Audio2D* create_from_buffer(const godot::PackedByteArray& buffer, const std::string& reference = "");
     };
 }
 #endif
