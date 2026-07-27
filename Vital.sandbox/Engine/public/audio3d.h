@@ -23,6 +23,7 @@
 namespace Vital::Engine {
     class Audio3D : public godot::AudioStreamPlayer3D {
         public:
+            // TODO: Reuse from audio2d if possible...
             enum class Format {
                 OGG,
                 WAV,
