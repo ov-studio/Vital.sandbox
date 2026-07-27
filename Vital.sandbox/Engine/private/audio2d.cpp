@@ -22,10 +22,12 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Audio2D::Audio2D(const godot::Ref<godot::AudioStream>& audio) {
-        this -> audio = audio;
-        set_stream(audio);
+    Audio2D::Audio2D(const godot::Ref<godot::AudioStream>& stream) {
+        this -> stream = stream;
+        player = memnew(godot::AudioStreamPlayer2D);
+        player -> set_stream(stream);
         Engine::Core::get_singleton() -> add_child(this);
+        add_child(player);
     }
 
 
@@ -53,8 +55,12 @@ namespace Vital::Engine {
 
 
     // Getters //
-    godot::Ref<godot::AudioStream> Audio2D::get_audio() const {
-        return audio;
+    godot::Ref<godot::AudioStream> Audio2D::get_stream() const {
+        return stream;
+    }
+
+    godot::AudioStreamPlayer2D* Audio2D::get_player() const {
+        return player;
     }
 }
 #endif

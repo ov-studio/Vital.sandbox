@@ -21,7 +21,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Audio2D : public godot::AudioStreamPlayer2D {
+    class Audio2D : public godot::Node2D {
         public:
             enum class Format {
                 OGG,
@@ -36,11 +36,12 @@ namespace Vital::Engine {
                 { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }
             };
         private:
-            godot::Ref<godot::AudioStream> audio;
+            godot::Ref<godot::AudioStream> stream;
+            godot::AudioStreamPlayer2D* player = nullptr;
 
 
             // Instantiators //
-            Audio2D(const godot::Ref<godot::AudioStream>& audio);
+            Audio2D(const godot::Ref<godot::AudioStream>& stream);
             ~Audio2D() override = default;
         public:
             // Managers //
@@ -50,7 +51,8 @@ namespace Vital::Engine {
 
 
             // Getters //
-            godot::Ref<godot::AudioStream> get_audio() const;
+            godot::Ref<godot::AudioStream> get_stream() const;
+            godot::AudioStreamPlayer2D* get_player() const;
     };
 }
 #endif
