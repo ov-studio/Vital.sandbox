@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<SVG>(),
             vm_module::make_api<Rendertarget>(),
             vm_module::make_api<Audio2D>(),
-            vm_module::make_api<Audio3D>(),
+            vm_module::make_api<Audio_3D>(),
 
             // Utility //
             vm_module::make_api<Math>(),

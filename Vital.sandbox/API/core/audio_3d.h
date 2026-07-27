@@ -3,7 +3,7 @@
      Script: API: core: audio_3d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio3D APIs
+     Desc: Audio_3D APIs
 ----------------------------------------------------------------*/
 
 
@@ -18,14 +18,14 @@
 #include <Vital.sandbox/API/utility/file.h>
 
 
-////////////////////////////
-// Vital: API: Audio3D //
-////////////////////////////
+///////////////////////////
+// Vital: API: Audio_3D //
+///////////////////////////
 
 namespace Vital::Sandbox::API {
-    struct Audio3D : vm_module {
+    struct Audio_3D : vm_module {
         inline static const std::vector<std::string> base_scope = {"core", "audio_3d"};
-        using base_class = Vital::Engine::Audio3D;
+        using base_class = Vital::Engine::Audio_3D;
 
         inline static const std::vector<std::pair<std::string, godot::AudioServer::PlaybackType>> playback_type_registry = {
             { "DEFAULT", godot::AudioServer::PLAYBACK_TYPE_DEFAULT },
@@ -47,7 +47,7 @@ namespace Vital::Sandbox::API {
         };
 
         struct Instance : vm_instance<Instance> {
-            using Owner = Audio3D;
+            using Owner = Audio_3D;
             base_class* audio = nullptr;
 
             bool is_alive() const {
@@ -67,7 +67,7 @@ namespace Vital::Sandbox::API {
         inline static vm_registry<Instance> registry;
 
         static void bind(Machine* vm) {
-            vm_module::register_type<Audio3D>(vm);
+            vm_module::register_type<Audio_3D>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, volume_db = 0.0, pitch_scale = 1.0, bus = \"Master\", autoplay = false)")
@@ -416,6 +416,6 @@ namespace Vital::Sandbox::API {
 }
 #else
 namespace Vital::Sandbox::API {
-    struct Audio3D : vm_module {};
+    struct Audio_3D : vm_module {};
 }
 #endif

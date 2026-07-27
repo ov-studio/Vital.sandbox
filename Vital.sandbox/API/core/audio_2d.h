@@ -18,9 +18,9 @@
 #include <Vital.sandbox/API/utility/file.h>
 
 
-////////////////////////////
-// Vital: API: Audio2D //
-////////////////////////////
+///////////////////////////
+// Vital: API: Audio_2D //
+///////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Audio2D : vm_module {

@@ -3,7 +3,7 @@
      Script: Engine: audio_3d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio3D Utilities
+     Desc: Audio_3D Utilities
 ----------------------------------------------------------------*/
 
 
@@ -16,12 +16,12 @@
 #include <Vital.sandbox/Engine/public/core.h>
 
 
-/////////////////////////////
-// Vital: Engine: Audio3D //
-/////////////////////////////
+//////////////////////////////
+// Vital: Engine: Audio_3D //
+//////////////////////////////
 
 namespace Vital::Engine {
-    class Audio3D : public godot::Node3D {
+    class Audio_3D : public godot::Node3D {
         public:
             // TODO: Reuse from audio_2d if possible...
             enum class Format {
@@ -43,12 +43,12 @@ namespace Vital::Engine {
 
 
             // Instantiators //
-            Audio3D(const godot::Ref<godot::AudioStream>& stream);
-            ~Audio3D();
+            Audio_3D(const godot::Ref<godot::AudioStream>& stream);
+            ~Audio_3D();
         public:
             // Managers //
-            static Audio3D* create(const std::string& base, const std::string& path);
-            static Audio3D* create_from_buffer(const godot::PackedByteArray& buffer);
+            static Audio_3D* create(const std::string& base, const std::string& path);
+            static Audio_3D* create_from_buffer(const godot::PackedByteArray& buffer);
             void destroy();
 
 

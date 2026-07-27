@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Engine/public/core.h>
 
 
-/////////////////////////////
-// Vital: Engine: Audio2D //
-/////////////////////////////
+//////////////////////////////
+// Vital: Engine: Audio_2D //
+//////////////////////////////
 
 namespace Vital::Engine {
     class Audio2D : public godot::Node2D {
