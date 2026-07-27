@@ -81,11 +81,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_playback_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_playback_position());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_volume_linear());
                 return 1;
@@ -118,6 +113,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_playback_position", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_playback_position());
                 return 1;
             });
 
