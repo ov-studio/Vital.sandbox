@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: Engine: audio3d.h
+     Script: Engine: audio_2d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio3D Utilities
+     Desc: Audio2D Utilities
 ----------------------------------------------------------------*/
 
 
@@ -17,13 +17,12 @@
 
 
 /////////////////////////////
-// Vital: Engine: Audio3D //
+// Vital: Engine: Audio2D //
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Audio3D : public godot::Node3D {
+    class Audio2D : public godot::Node2D {
         public:
-            // TODO: Reuse from audio2d if possible...
             enum class Format {
                 OGG,
                 WAV,
@@ -31,7 +30,6 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
-            // TODO: Reuse from audio2d if possible...
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } },
                 { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } },
@@ -39,22 +37,22 @@ namespace Vital::Engine {
             };
         private:
             godot::Ref<godot::AudioStream> stream;
-            godot::AudioStreamPlayer3D* player = nullptr;
+            godot::AudioStreamPlayer2D* player = nullptr;
 
 
             // Instantiators //
-            Audio3D(const godot::Ref<godot::AudioStream>& stream);
-            ~Audio3D();
+            Audio2D(const godot::Ref<godot::AudioStream>& stream);
+            ~Audio2D();
         public:
             // Managers //
-            static Audio3D* create(const std::string& base, const std::string& path);
-            static Audio3D* create_from_buffer(const godot::PackedByteArray& buffer);
+            static Audio2D* create(const std::string& base, const std::string& path);
+            static Audio2D* create_from_buffer(const godot::PackedByteArray& buffer);
             void destroy();
 
 
             // Getters //
             godot::Ref<godot::AudioStream> get_stream() const;
-            godot::AudioStreamPlayer3D* get_player() const;
+            godot::AudioStreamPlayer2D* get_player() const;
     };
 }
 #endif

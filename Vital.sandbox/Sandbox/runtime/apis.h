@@ -27,8 +27,8 @@
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/svg.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
-#include <Vital.sandbox/API/core/audio2d.h>
-#include <Vital.sandbox/API/core/audio3d.h>
+#include <Vital.sandbox/API/core/audio_2d.h>
+#include <Vital.sandbox/API/core/audio_3d.h>
 
 #include <Vital.sandbox/API/utility/math.h>
 #include <Vital.sandbox/API/utility/string.h>

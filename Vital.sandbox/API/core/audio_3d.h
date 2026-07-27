@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: core: audio3d.h
+     Script: API: core: audio_3d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      Desc: Audio3D APIs
@@ -14,7 +14,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
-#include <Vital.sandbox/Engine/public/audio3d.h>
+#include <Vital.sandbox/Engine/public/audio_3d.h>
 #include <Vital.sandbox/API/utility/file.h>
 
 
@@ -24,7 +24,7 @@
 
 namespace Vital::Sandbox::API {
     struct Audio3D : vm_module {
-        inline static const std::vector<std::string> base_scope = {"core", "audio3d"};
+        inline static const std::vector<std::string> base_scope = {"core", "audio_3d"};
         using base_class = Vital::Engine::Audio3D;
 
         inline static const std::vector<std::pair<std::string, godot::AudioServer::PlaybackType>> playback_type_registry = {
