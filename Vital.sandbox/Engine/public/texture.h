@@ -30,8 +30,8 @@ namespace Vital::Engine {
             };
 
             enum class Format {
-                PNG,
                 JPG,
+                PNG,
                 WEBP,
                 BMP,
                 DDS,

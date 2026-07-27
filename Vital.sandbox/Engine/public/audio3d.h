@@ -24,8 +24,8 @@ namespace Vital::Engine {
     class Audio3D : public godot::AudioStreamPlayer3D {
         public:
             enum class Format {
-                WAV,
                 OGG,
+                WAV,
                 MP3,
                 UNKNOWN
             };
