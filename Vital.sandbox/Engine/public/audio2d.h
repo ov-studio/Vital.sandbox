@@ -36,11 +36,11 @@ namespace Vital::Engine {
                 { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }
             };
         private:
-            godot::Ref<godot::AudioStream> stream;
+            godot::Ref<godot::AudioStream> audio;
 
 
             // Instantiators //
-            Audio2D(const godot::Ref<godot::AudioStream>& stream);
+            Audio2D(const godot::Ref<godot::AudioStream>& audio);
             ~Audio2D() override = default;
         public:
             // Managers //
