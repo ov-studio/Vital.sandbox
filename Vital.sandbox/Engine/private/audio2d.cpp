@@ -28,6 +28,7 @@ namespace Vital::Engine {
         player -> set_stream(stream);
         Engine::Core::get_singleton() -> add_child(this);
         add_child(player);
+        Engine::Core::get_singleton() -> add_child(player);
     }
 
 
