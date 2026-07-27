@@ -10,7 +10,7 @@
   [![License](https://img.shields.io/badge/License-Open--Source-3A7D44?style=flat-square&logo=apache&logoColor=white)](https://github.com/ov-studio/Vital.sandbox/blob/main/LICENSE)
   [![Engine](https://img.shields.io/badge/Engine-Godot--Engine-2F6DB3?style=flat-square&logo=godotengine&logoColor=white)](https://godotengine.org)
   [![Language](https://img.shields.io/badge/Core-C%2B%2B17-004482?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
-  [![Website](https://img.shields.io/badge/Website-Vital.sandbox-CFD8DC?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-site.vercel.app)
+  [![Website](https://img.shields.io/badge/Website-Vital.sandbox-CFD8DC?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-sandbox.com)
   [![Discord](https://img.shields.io/badge/Discord-Community-404EED?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
 </div>
 
@@ -22,7 +22,7 @@
 ## Getting Started
 
 - **Releases**: Grab the latest stable build from [Releases](https://github.com/ov-studio/Vital.sandbox/releases).
-- **Documentation**: Learn the APIs, scripting patterns, and engine integration in the [Guides](https://vital-site.vercel.app/docs).
+- **Documentation**: Learn the APIs, scripting patterns, and engine integration in the [Guides](https://vital-sandbox.com/docs).
 - **Vendors**: View all third-party dependencies and licenses in [Vendor](https://github.com/ov-studio/Vital.sandbox/blob/main/vendor.md).
 - **Community**: Got questions or want to connect? Join us on [Discord](http://discord.gg/sVCnxPW).
 
