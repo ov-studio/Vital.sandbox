@@ -14,9 +14,6 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/audio3d.h>
-#include <godot_cpp/classes/audio_stream_wav.hpp>
-#include <godot_cpp/classes/audio_stream_ogg_vorbis.hpp>
-#include <godot_cpp/classes/audio_stream_mp3.hpp>
 
 
 ///////////////////////////////

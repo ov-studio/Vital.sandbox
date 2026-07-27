@@ -14,8 +14,6 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
-#include <godot_cpp/classes/audio_stream_player2d.hpp>
-#include <godot_cpp/classes/audio_stream.hpp>
 
 
 ///////////////////////////////
