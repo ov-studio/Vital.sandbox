@@ -151,7 +151,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_stream_paused", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pause)", true)
                     .require(2, &Machine::is_bool);
 

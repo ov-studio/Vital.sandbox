@@ -163,12 +163,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_autoplay_enabled", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_autoplayed", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_stream_paused", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pause)", true)
                     .require(2, &Machine::is_bool);
 
@@ -177,7 +177,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_stream_paused", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_paused", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_stream_paused());
                 return 1;
             });
