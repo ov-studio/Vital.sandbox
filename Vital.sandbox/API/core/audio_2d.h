@@ -51,26 +51,13 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Audio2D>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path, volume_db = 0.0, pitch_scale = 1.0, bus = \"Master\", autoplay = false)")
-                    .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_number)
-                    .optional(3, &Machine::is_number)
-                    .optional(4, &Machine::is_string)
-                    .optional(5, &Machine::is_bool);
+                vm_args(vm, id, "(path)")
+                    .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
-                auto volume_db = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
-                auto pitch_scale = vm -> is_number(3) ? vm -> get_float(3) : 1.0f;
-                auto bus = vm -> is_string(4) ? Tool::to_godot_string(vm -> get_string(4)) : godot::StringName("Master");
-                auto autoplay = vm -> is_bool(5) ? vm -> get_bool(5) : false;
-
                 auto instance = Instance::init(vm);
                 instance -> audio = base_class::create(base, path);
-                instance -> audio -> get_player() -> set_volume_db(volume_db);
-                instance -> audio -> get_player() -> set_pitch_scale(pitch_scale);
-                instance -> audio -> get_player() -> set_bus(bus);
-                instance -> audio -> get_player() -> set_autoplay(autoplay);
                 instance -> store(true);
                 return 1;
             });
