@@ -21,7 +21,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Audio2D : public godot::Node2D {
+    class Audio2D {
         public:
             enum class Format {
                 OGG,

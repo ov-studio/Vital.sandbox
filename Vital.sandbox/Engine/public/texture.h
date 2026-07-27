@@ -22,7 +22,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Texture : public godot::Node2D {
+    class Texture {
         public:
             enum class Type {
                 Texture2D,
