@@ -41,12 +41,12 @@ namespace Vital::Engine {
 
 
             // Instantiators //
-            Audio2D(const godot::Ref<godot::AudioStream>& stream);
+            Audio2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
             ~Audio2D();
         public:
             // Managers //
-            static Audio2D* create(const std::string& base, const std::string& path);
-            static Audio2D* create_from_buffer(const godot::PackedByteArray& buffer);
+            static Audio2D* create(const std::string& base, const std::string& path, bool autoplay = false);
+            static Audio2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
             void destroy();
 
 

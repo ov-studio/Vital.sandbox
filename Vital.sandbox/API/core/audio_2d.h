@@ -51,13 +51,15 @@ namespace Vital::Sandbox::API {
             vm_module::register_type<Audio2D>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path)")
-                    .require(1, &Machine::is_string);
+                vm_args(vm, id, "(path, autoplay = false)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
+                auto autoplay = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> audio = base_class::create(base, path);
+                instance -> audio = base_class::create(base, path, autoplay);
                 instance -> store(true);
                 return 1;
             });
@@ -142,16 +144,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_bus", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(Tool::to_std_string(self -> audio -> get_player() -> get_bus()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_autoplay", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enable)", true)
-                    .require(2, &Machine::is_bool);
-
-                auto enable = vm -> get_bool(2);
-                self -> audio -> get_player() -> set_autoplay(enable);
-                vm -> push_value(true);
                 return 1;
             });
 
