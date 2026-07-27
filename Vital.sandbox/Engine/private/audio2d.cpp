@@ -26,8 +26,6 @@ namespace Vital::Engine {
         this -> stream = stream;
         player = memnew(godot::AudioStreamPlayer2D);
         player -> set_stream(stream);
-        Engine::Core::get_singleton() -> add_child(this);
-        add_child(player);
         Engine::Core::get_singleton() -> add_child(player);
     }
 
