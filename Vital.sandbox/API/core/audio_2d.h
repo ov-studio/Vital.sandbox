@@ -3,7 +3,7 @@
      Script: API: core: audio_2d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio2D APIs
+     Desc: Audio 2D APIs
 ----------------------------------------------------------------*/
 
 

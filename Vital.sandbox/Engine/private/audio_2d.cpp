@@ -3,7 +3,7 @@
      Script: Engine: audio_2d.cpp
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio2D Utilities
+     Desc: Audio 2D Utilities
 ----------------------------------------------------------------*/
 
 

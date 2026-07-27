@@ -3,7 +3,7 @@
      Script: Engine: audio_3d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio_3D Utilities
+     Desc: Audio 3D Utilities
 ----------------------------------------------------------------*/
 
 
