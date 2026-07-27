@@ -196,6 +196,78 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
+
+            // Effects //
+            vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(type, parameters = {})")
+                    .require(2, &Machine::is_string)
+                    .optional(3, &Machine::is_table);
+
+                auto type = vm -> get_string(2);
+                godot::Ref<godot::AudioEffect> effect;
+
+                if (type == "reverb") {
+                    auto reverb = memnew(godot::AudioEffectReverb);
+                    if (vm -> is_table(3)) {
+                        auto read_field = [&](const std::string& key, auto setter) {
+                            vm -> get_table_field(key, 3);
+                            if (vm -> is_number(-1)) setter(vm -> get_float(-1));
+                            vm -> pop(1);
+                        };
+                        read_field("room_size",         [&](float v) { reverb -> set_room_size(v); });
+                        read_field("damping",           [&](float v) { reverb -> set_damping(v); });
+                        read_field("spread",            [&](float v) { reverb -> set_spread(v); });
+                        read_field("wet",               [&](float v) { reverb -> set_wet(v); });
+                        read_field("dry",               [&](float v) { reverb -> set_dry(v); });
+                        read_field("hpf",               [&](float v) { reverb -> set_hpf(v); });
+                        read_field("predelay_msec",     [&](float v) { reverb -> set_predelay_msec(v); });
+                        read_field("predelay_feedback", [&](float v) { reverb -> set_predelay_feedback(v); });
+                    }
+                    effect = godot::Ref<godot::AudioEffectReverb>(reverb);
+                }
+
+                if (!effect.is_valid()) vm -> push_value(false);
+                else {
+                    auto result = self -> audio -> add_effect(effect);
+                    if (result) vm -> push_value(self -> audio -> get_effect_count() - 1);
+                    else vm -> push_value(false);
+                }
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "remove_effect", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(effect_index)", true)
+                    .require(2, &Machine::is_number);
+
+                auto effect_index = vm -> get_int(2);
+                vm -> push_value(self -> audio -> remove_effect(effect_index));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_effect_count", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_effect_count());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_effect_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(effect_index, state)", true)
+                    .require(2, &Machine::is_number)
+                    .require(3, &Machine::is_bool);
+
+                auto effect_index = vm -> get_int(2);
+                auto state = vm -> get_bool(3);
+                vm -> push_value(self -> audio -> set_effect_enabled(effect_index, state));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_effect_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(effect_index)", true)
+                    .require(2, &Machine::is_number);
+
+                auto effect_index = vm -> get_int(2);
+                vm -> push_value(self -> audio -> is_effect_enabled(effect_index));
+                return 1;
+            });
         }
 
         static void clean(const std::string& env) {

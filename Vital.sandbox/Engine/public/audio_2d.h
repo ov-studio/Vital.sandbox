@@ -38,11 +38,17 @@ namespace Vital::Engine {
         private:
             godot::Ref<godot::AudioStream> stream;
             godot::AudioStreamPlayer2D* player = nullptr;
-
+            std::string bus_name;
+            int32_t bus_index = -1;
 
             // Instantiators //
             Audio2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
             ~Audio2D();
+
+
+            // Helpers //
+            void init_bus();
+            void destroy_bus();
         public:
             // Managers //
             static Audio2D* create(const std::string& base, const std::string& path, bool autoplay = false);
@@ -53,6 +59,15 @@ namespace Vital::Engine {
             // Getters //
             godot::Ref<godot::AudioStream> get_stream() const;
             godot::AudioStreamPlayer2D* get_player() const;
+
+
+            // Misc //
+            bool add_effect(const godot::Ref<godot::AudioEffect>& effect);
+            bool remove_effect(int32_t effect_index);
+            godot::Ref<godot::AudioEffect> get_effect(int32_t effect_index) const;
+            int32_t get_effect_count() const;
+            bool set_effect_enabled(int32_t effect_index, bool enabled);
+            bool is_effect_enabled(int32_t effect_index) const;
     };
 }
 #endif
