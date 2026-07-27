@@ -30,13 +30,10 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
-            // Note: MP3 has no reliable magic-byte signature (only ID3-tagged
-            // files start with "ID3"; raw MPEG frames don't). Buffers that
-            // match neither OGG nor WAV fall back to MP3 in create_from_buffer.
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
-                { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } }, // "OggS"
-                { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } }, // "RIFF"
-                { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }  // "ID3"
+                { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } },
+                { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } },
+                { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }
             };
         private:
             godot::Ref<godot::AudioStream> stream;
@@ -53,7 +50,7 @@ namespace Vital::Engine {
 
 
             // Getters //
-            godot::Ref<godot::AudioStream> get_stream() const;
+            godot::Ref<godot::AudioStream> get_audio() const;
     };
 }
 #endif
