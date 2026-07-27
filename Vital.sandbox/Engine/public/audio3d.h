@@ -21,7 +21,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Audio3D : public godot::AudioStreamPlayer3D {
+    class Audio3D {
         public:
             // TODO: Reuse from audio2d if possible...
             enum class Format {
@@ -38,12 +38,13 @@ namespace Vital::Engine {
                 { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }
             };
         private:
-            godot::Ref<godot::AudioStream> audio;
+            godot::Ref<godot::AudioStream> stream;
+            godot::AudioStreamPlayer3D* player = nullptr;
 
 
             // Instantiators //
-            Audio3D(const godot::Ref<godot::AudioStream>& audio);
-            ~Audio3D() override = default;
+            Audio3D(const godot::Ref<godot::AudioStream>& stream);
+            ~Audio3D();
         public:
             // Managers //
             static Audio3D* create(const std::string& base, const std::string& path);
@@ -52,7 +53,8 @@ namespace Vital::Engine {
 
 
             // Getters //
-            godot::Ref<godot::AudioStream> get_audio() const;
+            godot::Ref<godot::AudioStream> get_stream() const;
+            godot::AudioStreamPlayer3D* get_player() const;
     };
 }
 #endif
