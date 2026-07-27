@@ -22,9 +22,9 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Audio3D::Audio3D(const godot::Ref<godot::AudioStream>& stream) {
-        this -> stream = stream;
-        set_stream(stream);
+    Audio3D::Audio3D(const godot::Ref<godot::AudioStream>& audio) {
+        this -> audio = audio;
+        set_stream(audio);
         Engine::Core::get_singleton() -> add_child(this);
     }
 
@@ -54,7 +54,7 @@ namespace Vital::Engine {
 
     // Getters //
     godot::Ref<godot::AudioStream> Audio3D::get_audio() const {
-        return stream;
+        return audio;
     }
 }
 #endif
