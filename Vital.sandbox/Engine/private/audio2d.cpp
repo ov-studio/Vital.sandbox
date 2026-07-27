@@ -29,6 +29,12 @@ namespace Vital::Engine {
         Engine::Core::get_singleton() -> add_child(player);
     }
 
+    Audio2D::~Audio2D() {
+        if (!player) return;
+        player -> queue_free();
+        player = nullptr;
+    }
+
 
     // Managers //
     Audio2D* Audio2D::create(const std::string& base, const std::string& path) {
@@ -49,7 +55,7 @@ namespace Vital::Engine {
     }
 
     void Audio2D::destroy() {
-        queue_free();
+        memdelete(this);
     }
 
 
