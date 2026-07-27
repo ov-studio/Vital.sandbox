@@ -22,14 +22,14 @@
 //////////////////////////
 
 namespace Vital::Engine {
-    class Font {
+    class Font : public godot::Node2D {
         private:
             godot::Ref<godot::FontFile> font;
 
 
             // Instantiators //
             Font(const godot::Ref<godot::FontFile>& font);
-            ~Font() = default;
+            ~Font() override = default;
         public:
             // Managers //
             static Font* create(const std::string& base, const std::string& path);
