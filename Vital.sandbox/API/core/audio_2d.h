@@ -86,11 +86,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_bus", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(Tool::to_std_string(self -> audio -> get_player() -> get_bus()));
                 return 1;
@@ -111,6 +106,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
                 return 1;
@@ -127,16 +127,6 @@ namespace Vital::Sandbox::API {
             
                 auto volume = vm -> get_float(2);
                 self -> audio -> get_player() -> set_volume_linear(volume);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pitch_scale)", true)
-                    .require(2, &Machine::is_number);
-
-                auto pitch_scale = vm -> get_float(2);
-                self -> audio -> get_player() -> set_pitch_scale(pitch_scale);
                 vm -> push_value(true);
                 return 1;
             });
@@ -191,6 +181,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(pitch_scale)", true)
+                    .require(2, &Machine::is_number);
+
+                auto pitch_scale = vm -> get_float(2);
+                self -> audio -> get_player() -> set_pitch_scale(pitch_scale);
+                vm -> push_value(true);
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(strength)", true)
                     .require(2, &Machine::is_number);
