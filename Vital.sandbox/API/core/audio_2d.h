@@ -66,32 +66,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(from_position = 0.0)", true)
-                    .optional(2, &Machine::is_number);
-
-                auto from_position = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
-                self -> audio -> get_player() -> play(from_position);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "stop", [](auto vm, auto self, auto& id) -> int {
-                self -> audio -> get_player() -> stop();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "seek", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_number);
-
-                auto position = vm -> get_float(2);
-                self -> audio -> get_player() -> seek(position);
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> is_playing());
                 return 1;
@@ -101,7 +75,12 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> audio -> get_player() -> get_stream_paused());
                 return 1;
             });
-            
+
+            vm_module::bind_method<Instance>(vm, "is_autoplay_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_playback_position", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_playback_position());
                 return 1;
@@ -154,11 +133,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_bus", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(Tool::to_std_string(self -> audio -> get_player() -> get_bus()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_autoplay_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
                 return 1;
             });
 
@@ -229,6 +203,32 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(from_position = 0.0)", true)
+                    .optional(2, &Machine::is_number);
+
+                auto from_position = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
+                self -> audio -> get_player() -> play(from_position);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "stop", [](auto vm, auto self, auto& id) -> int {
+                self -> audio -> get_player() -> stop();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "seek", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)", true)
+                    .require(2, &Machine::is_number);
+
+                auto position = vm -> get_float(2);
+                self -> audio -> get_player() -> seek(position);
+                vm -> push_value(true);
                 return 1;
             });
         }
