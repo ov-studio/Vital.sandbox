@@ -86,6 +86,41 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(godot::Math::db2linear(self -> audio -> get_player() -> get_volume_db()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_bus", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(Tool::to_std_string(self -> audio -> get_player() -> get_bus()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_max_distance", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_max_distance());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_attenuation", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_attenuation());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_max_polyphony", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_max_polyphony());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(volume)", true)
                     .require(2, &Machine::is_number);
@@ -93,11 +128,6 @@ namespace Vital::Sandbox::API {
                 auto volume = vm -> get_float(2);
                 self -> audio -> get_player() -> set_volume_db(godot::Math::linear2db(volume));
                 vm -> push_value(true);
-                return 1;
-            });
-            
-            vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(godot::Math::db2linear(self -> audio -> get_player() -> get_volume_db()));
                 return 1;
             });
 
@@ -111,11 +141,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_bus", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(bus)", true)
                     .require(2, &Machine::is_string);
@@ -123,11 +148,6 @@ namespace Vital::Sandbox::API {
                 auto bus = Tool::to_godot_string(vm -> get_string(2));
                 self -> audio -> get_player() -> set_bus(bus);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_bus", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(Tool::to_std_string(self -> audio -> get_player() -> get_bus()));
                 return 1;
             });
 
@@ -151,11 +171,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_max_distance());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_attenuation", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(curve)", true)
                     .require(2, &Machine::is_number);
@@ -163,11 +178,6 @@ namespace Vital::Sandbox::API {
                 auto curve = vm -> get_float(2);
                 self -> audio -> get_player() -> set_attenuation(curve);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_attenuation", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_attenuation());
                 return 1;
             });
 
@@ -181,11 +191,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_max_polyphony", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_max_polyphony());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(strength)", true)
                     .require(2, &Machine::is_number);
@@ -193,11 +198,6 @@ namespace Vital::Sandbox::API {
                 auto strength = vm -> get_float(2);
                 self -> audio -> get_player() -> set_panning_strength(strength);
                 vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
                 return 1;
             });
 
