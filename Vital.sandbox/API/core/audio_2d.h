@@ -101,11 +101,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_volume_db());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pitch_scale)", true)
                     .require(2, &Machine::is_number);
