@@ -31,6 +31,7 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
+            // TODO: Reuse from audio2d if possible...
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } },
                 { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } },
