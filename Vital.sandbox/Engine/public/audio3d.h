@@ -21,7 +21,7 @@
 /////////////////////////////
 
 namespace Vital::Engine {
-    class Audio3D {
+    class Audio3D : public godot::Node3D {
         public:
             // TODO: Reuse from audio2d if possible...
             enum class Format {
