@@ -86,11 +86,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_bus", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(Tool::to_std_string(self -> audio -> get_player() -> get_bus()));
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_max_distance", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_max_distance());
                 return 1;
@@ -122,16 +117,6 @@ namespace Vital::Sandbox::API {
             
                 auto volume = vm -> get_float(2);
                 self -> audio -> get_player() -> set_volume_linear(volume);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_bus", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(bus)", true)
-                    .require(2, &Machine::is_string);
-
-                auto bus = Tool::to_godot_string(vm -> get_string(2));
-                self -> audio -> get_player() -> set_bus(bus);
                 vm -> push_value(true);
                 return 1;
             });
