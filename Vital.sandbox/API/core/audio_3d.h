@@ -112,16 +112,17 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(volume_db)", true)
+                vm_args(vm, id, "(volume)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_volume_db(vm -> get_float(2));
+                auto volume = vm -> get_float(2);
+                self -> audio -> get_player() -> set_volume_db(godot::Math::linear_to_db(volume));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_volume_db());
+                vm -> push_value(godot::Math::db_to_linear(self -> audio -> get_player() -> get_volume_db()));
                 return 1;
             });
 
