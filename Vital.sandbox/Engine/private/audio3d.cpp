@@ -53,7 +53,7 @@ namespace Vital::Engine {
 
 
     // Getters //
-    godot::Ref<godot::AudioStream> Audio3D::get_stream() const {
+    godot::Ref<godot::AudioStream> Audio3D::get_audio() const {
         return stream;
     }
 }
