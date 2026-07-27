@@ -27,12 +27,6 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"core", "audio_3d"};
         using base_class = Vital::Engine::Audio_3D;
 
-        inline static const std::vector<std::pair<std::string, godot::AudioServer::PlaybackType>> playback_type_registry = {
-            { "DEFAULT", godot::AudioServer::PLAYBACK_TYPE_DEFAULT },
-            { "STREAM",  godot::AudioServer::PLAYBACK_TYPE_STREAM  },
-            { "SAMPLE",  godot::AudioServer::PLAYBACK_TYPE_SAMPLE  }
-        };
-
         inline static const std::vector<std::pair<std::string, godot::AudioStreamPlayer3D::AttenuationModel>> attenuation_model_registry = {
             { "INVERSE_DISTANCE",        godot::AudioStreamPlayer3D::ATTENUATION_INVERSE_DISTANCE        },
             { "INVERSE_SQUARE_DISTANCE", godot::AudioStreamPlayer3D::ATTENUATION_INVERSE_SQUARE_DISTANCE },
@@ -228,25 +222,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_playback_type", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(type)", true)
-                    .require_enum(2, playback_type_registry);
-
-                self -> audio -> get_player() -> set_playback_type(static_cast<godot::AudioServer::PlaybackType>(vm -> get_int(2)));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_playback_type", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_playback_type()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "has_stream_playback", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> has_stream_playback());
-                return 1;
-            });
-
             // Positional (3D-specific) //
             vm_module::bind_method<Instance>(vm, "set_unit_size", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(unit_size)", true)
@@ -404,7 +379,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "playback_type", playback_type_registry);
             vm -> scope_set_enum(base_scope, "attenuation_model", attenuation_model_registry);
             vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);
         }
