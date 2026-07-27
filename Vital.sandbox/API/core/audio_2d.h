@@ -101,11 +101,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_max_polyphony", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_max_polyphony());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
                 return 1;
@@ -171,16 +166,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_max_polyphony", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(voices)", true)
-                    .require(2, &Machine::is_number);
-
-                auto voices = vm -> get_int(2);
-                self -> audio -> get_player() -> set_max_polyphony(voices);
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pitch_scale)", true)
                     .require(2, &Machine::is_number);
@@ -190,7 +175,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(strength)", true)
                     .require(2, &Machine::is_number);
