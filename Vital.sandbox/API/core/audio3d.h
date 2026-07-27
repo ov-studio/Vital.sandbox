@@ -3,7 +3,7 @@
      Script: API: core: audio3d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: 3D Audio APIs
+     Desc: Audio3D APIs
 ----------------------------------------------------------------*/
 
 

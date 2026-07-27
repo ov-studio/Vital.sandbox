@@ -3,7 +3,7 @@
      Script: Engine: audio3d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: 3D Audio Utilities
+     Desc: Audio3D Utilities
 ----------------------------------------------------------------*/
 
 
@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Engine/public/core.h>
 
 
-///////////////////////////////
+/////////////////////////////
 // Vital: Engine: Audio3D //
-///////////////////////////////
+/////////////////////////////
 
 namespace Vital::Engine {
     class Audio3D : public godot::AudioStreamPlayer3D {

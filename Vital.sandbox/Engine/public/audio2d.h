@@ -3,7 +3,7 @@
      Script: Engine: audio2d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: 2D Audio Utilities
+     Desc: Audio2D Utilities
 ----------------------------------------------------------------*/
 
 
@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Engine/public/core.h>
 
 
-///////////////////////////////
+/////////////////////////////
 // Vital: Engine: Audio2D //
-///////////////////////////////
+/////////////////////////////
 
 namespace Vital::Engine {
     class Audio2D : public godot::AudioStreamPlayer2D {
