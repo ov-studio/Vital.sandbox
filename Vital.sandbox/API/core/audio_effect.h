@@ -287,7 +287,7 @@ namespace Vital::Sandbox::API {
                     });
                     break;
                 }
-                case Type::STEREO_ENHANCE: {
+                case Effect::STEREO_ENHANCE: {
                     effect = make<godot::AudioEffectStereoEnhance>([&](auto& e) {
                         if (!has_params) return;
                         read_float("pan_pullout",  [&](float v) { e -> set_pan_pullout(v);  });
