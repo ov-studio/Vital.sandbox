@@ -490,13 +490,12 @@ namespace Vital::Sandbox::API {
                     effect = e;
                 }
             
-                if (!effect.is_valid()) {
-                    vm -> push_value(false);
-                    return 1;
+                if (!effect.is_valid()) vm -> push_value(false);
+                else {
+                    auto result = self -> audio -> add_effect(effect);
+                    if (result) vm -> push_value(self -> audio -> get_effect_count() - 1);
+                    else vm -> push_value(false);
                 }
-                auto result = self -> audio -> add_effect(effect);
-                if (result) vm -> push_value(self -> audio -> get_effect_count() - 1);
-                else vm -> push_value(false);
                 return 1;
             });
 
