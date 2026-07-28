@@ -15,6 +15,7 @@
 #pragma once
 #include <Vital.sandbox/Vital/pch.h>
 #include <Vital.sandbox/Tool/version.h>
+#include <Vital.sandbox/Tool/log.h>
 #include <Vital.sandbox/Tool/stack.h>
 
 
