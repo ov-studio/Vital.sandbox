@@ -31,7 +31,7 @@ namespace Vital::Engine {
 
             int32_t resolve_bus_index() const {
                 if (bus_index < 0) return -1;
-                return godot::AudioServer::get_singleton() -> get_bus_index(godot::StringName(bus_name.c_str()));
+                return godot::AudioServer::get_singleton() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
             }
 
             const std::string& create_bus(const std::string& prefix) {
@@ -39,7 +39,7 @@ namespace Vital::Engine {
                 bus_name = prefix + std::to_string(reinterpret_cast<uintptr_t>(this));
                 server -> add_bus();
                 bus_index = server -> get_bus_count() - 1;
-                server -> set_bus_name(bus_index, godot::String(bus_name.c_str()));
+                server -> set_bus_name(bus_index, Tool::to_godot_string(bus_name));
                 server -> set_bus_send(bus_index, godot::StringName("Master"));
                 return bus_name;
             }
@@ -47,7 +47,7 @@ namespace Vital::Engine {
             void destroy_bus() {
                 if (bus_index < 0) return;
                 auto* server = godot::AudioServer::get_singleton();
-                auto current_index = server -> get_bus_index(godot::StringName(bus_name.c_str()));
+                auto current_index = server -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
                 if (current_index >= 0) server -> remove_bus(current_index);
                 bus_index = -1;
             }
