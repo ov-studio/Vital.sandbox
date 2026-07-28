@@ -23,7 +23,7 @@
 namespace Vital::Engine {
     // Helpers //
     const std::string& Audio_Bus::create_bus(const std::string& prefix) {
-        auto* server = godot::AudioServer::get_singleton();
+        auto server = godot::AudioServer::get_singleton();
         bus_name = prefix + std::to_string(reinterpret_cast<uintptr_t>(this));
         server -> add_bus();
         bus_index = server -> get_bus_count() - 1;
@@ -34,7 +34,7 @@ namespace Vital::Engine {
 
     void Audio_Bus::destroy_bus() {
         if (bus_index < 0) return;
-        auto* server = godot::AudioServer::get_singleton();
+        auto server = godot::AudioServer::get_singleton();
         auto current_index = server -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
         if (current_index >= 0) server -> remove_bus(current_index);
         bus_index = -1;
@@ -49,7 +49,7 @@ namespace Vital::Engine {
     // Checkerss //
     bool Audio_Bus::is_effect_enabled(int32_t effect) const {
         auto idx = resolve_bus();
-        auto* server = godot::AudioServer::get_singleton();
+        auto server = godot::AudioServer::get_singleton();
         if (idx < 0 || effect < 0 || effect >= server -> get_bus_effect_count(idx)) return false;
         return server -> is_bus_effect_enabled(idx, effect);
     }
@@ -58,7 +58,7 @@ namespace Vital::Engine {
     // Getters //
     godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int32_t effect) const {
         auto idx = resolve_bus();
-        auto* server = godot::AudioServer::get_singleton();
+        auto server = godot::AudioServer::get_singleton();
         if (idx < 0 || effect < 0 || effect >= server -> get_bus_effect_count(idx)) return nullptr;
         return server -> get_bus_effect(idx, effect);
     }
@@ -73,7 +73,7 @@ namespace Vital::Engine {
     // Setters //
     bool Audio_Bus::set_effect_enabled(int32_t effect, bool enabled) {
         auto idx = resolve_bus();
-        auto* server = godot::AudioServer::get_singleton();
+        auto server = godot::AudioServer::get_singleton();
         if (idx < 0 || effect < 0 || effect >= server -> get_bus_effect_count(idx)) return false;
         server -> set_bus_effect_enabled(idx, effect, enabled);
         return true;
@@ -90,7 +90,7 @@ namespace Vital::Engine {
 
     bool Audio_Bus::remove_effect(int32_t effect) {
         auto idx = resolve_bus();
-        auto* server = godot::AudioServer::get_singleton();
+        auto server = godot::AudioServer::get_singleton();
         if (idx < 0 || effect < 0 || effect >= server -> get_bus_effect_count(idx)) return false;
         server -> remove_bus_effect(idx, effect);
         return true;

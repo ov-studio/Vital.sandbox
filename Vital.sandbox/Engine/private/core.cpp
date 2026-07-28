@@ -164,6 +164,10 @@ namespace Vital::Engine {
         return godot::RenderingServer::get_singleton();
     }
 
+    godot::AudioServer* Core::get_audio_server() {
+        return godot::AudioServer::get_singleton();
+    }
+
     godot::Ref<godot::Environment> Core::get_environment() {
         if (!environment) {
             environment = memnew(godot::WorldEnvironment);
