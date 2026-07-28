@@ -73,16 +73,14 @@ namespace Vital::Engine {
         Engine::Core::get_audio_server() -> set_bus_effect_enabled(idx, effect, enabled);
         return true;
     }
-
-
-    // Misc //
+    
     bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& effect) {
         auto idx = resolve_bus();
         if (idx < 0 || !effect.is_valid()) return false;
         Engine::Core::get_audio_server() -> add_bus_effect(idx, effect);
         return true;
     }
-
+    
     bool Audio_Bus::remove_effect(int32_t effect) {
         int32_t idx; 
         if (!resolve_effect(effect, idx)) return false;
