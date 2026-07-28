@@ -27,11 +27,12 @@ namespace Vital::Engine {
             std::string bus_name;
             int32_t bus_index = -1;
 
-            
+
             // Helpers //
             const std::string& create_bus(const std::string& prefix);
             void destroy_bus();
             int32_t resolve_bus() const;
+            bool resolve_effect(int32_t effect, int32_t& out_idx) const;
         public:
             // Checkerss //
             bool is_effect_enabled(int32_t effect) const;

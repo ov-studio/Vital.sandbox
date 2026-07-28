@@ -43,6 +43,12 @@ namespace Vital::Engine {
         return Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
     }
 
+    bool Audio_Bus::resolve_effect(int32_t effect, int32_t& out_idx) const {
+        out_idx = resolve_bus();
+        if (out_idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_idx)) return false;
+        return true;
+    }
+
     
     // Checkerss //
     bool Audio_Bus::is_effect_enabled(int32_t effect) const {
