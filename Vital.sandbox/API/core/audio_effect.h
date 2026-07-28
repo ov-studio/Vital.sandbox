@@ -190,7 +190,6 @@ namespace Vital::Sandbox::API {
                     });
                     break;
                 }
-                case Type::DELAY: {
                 case Effect::DELAY: {
                     effect = make<godot::AudioEffectDelay>([&](auto& e) {
                         if (!has_params) return;
