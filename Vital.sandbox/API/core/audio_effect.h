@@ -40,14 +40,14 @@
 #include <godot_cpp/classes/audio_effect_eq21.hpp>
 
 
-//////////////////////////////
+///////////////////////////////
 // Vital: API: Audio_Effect //
-//////////////////////////////
+///////////////////////////////
 
 namespace Vital::Sandbox::API {
     struct Audio_Effect {
         template<typename T, typename Fn>
-        static godot::Ref<T> make_effect(Fn&& configure) {
+        static godot::Ref<T> make(Fn&& configure) {
             godot::Ref<T> e;
             e.instantiate();
             configure(e);
@@ -98,7 +98,7 @@ namespace Vital::Sandbox::API {
             };
 
             if (type == "reverb") {
-                effect = make_effect<godot::AudioEffectReverb>([&](auto& e) {
+                effect = make<godot::AudioEffectReverb>([&](auto& e) {
                     if (!has_params) return;
                     read_float("room_size",         [&](float v) { e -> set_room_size(v);         });
                     read_float("damping",           [&](float v) { e -> set_damping(v);           });
@@ -111,7 +111,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "chorus") {
-                effect = make_effect<godot::AudioEffectChorus>([&](auto& e) {
+                effect = make<godot::AudioEffectChorus>([&](auto& e) {
                     if (!has_params) return;
                     read_int("voice_count",   [&](int v)   { e -> set_voice_count(v); });
                     read_float("wet",         [&](float v) { e -> set_wet(v);         });
@@ -135,7 +135,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "delay") {
-                effect = make_effect<godot::AudioEffectDelay>([&](auto& e) {
+                effect = make<godot::AudioEffectDelay>([&](auto& e) {
                     if (!has_params) return;
                     read_float("dry",               [&](float v) { e -> set_dry(v);               });
                     read_bool("tap1_active",        [&](bool v)  { e -> set_tap1_active(v);        });
@@ -153,7 +153,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "distortion") {
-                effect = make_effect<godot::AudioEffectDistortion>([&](auto& e) {
+                effect = make<godot::AudioEffectDistortion>([&](auto& e) {
                     if (!has_params) return;
                     read_int("mode",         [&](int v)   { e -> set_mode(static_cast<godot::AudioEffectDistortion::Mode>(v)); });
                     read_float("pre_gain",   [&](float v) { e -> set_pre_gain(v);                                              });
@@ -163,14 +163,14 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "amplify") {
-                effect = make_effect<godot::AudioEffectAmplify>([&](auto& e) {
+                effect = make<godot::AudioEffectAmplify>([&](auto& e) {
                     if (!has_params) return;
                     read_float("volume_db",     [&](float v) { e -> set_volume_db(v);     });
                     read_float("volume_linear", [&](float v) { e -> set_volume_linear(v); });
                 });
             }
             else if (type == "compressor") {
-                effect = make_effect<godot::AudioEffectCompressor>([&](auto& e) {
+                effect = make<godot::AudioEffectCompressor>([&](auto& e) {
                     if (!has_params) return;
                     read_float("threshold",  [&](float v) { e -> set_threshold(v);  });
                     read_float("ratio",      [&](float v) { e -> set_ratio(v);      });
@@ -181,7 +181,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "limiter") {
-                effect = make_effect<godot::AudioEffectLimiter>([&](auto& e) {
+                effect = make<godot::AudioEffectLimiter>([&](auto& e) {
                     if (!has_params) return;
                     read_float("ceiling_db",      [&](float v) { e -> set_ceiling_db(v);      });
                     read_float("threshold_db",    [&](float v) { e -> set_threshold_db(v);    });
@@ -190,7 +190,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "hard_limiter") {
-                effect = make_effect<godot::AudioEffectHardLimiter>([&](auto& e) {
+                effect = make<godot::AudioEffectHardLimiter>([&](auto& e) {
                     if (!has_params) return;
                     read_float("ceiling_db",  [&](float v) { e -> set_ceiling_db(v);  });
                     read_float("pre_gain_db", [&](float v) { e -> set_pre_gain_db(v); });
@@ -198,13 +198,13 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "panner") {
-                effect = make_effect<godot::AudioEffectPanner>([&](auto& e) {
+                effect = make<godot::AudioEffectPanner>([&](auto& e) {
                     if (!has_params) return;
                     read_float("pan", [&](float v) { e -> set_pan(v); });
                 });
             }
             else if (type == "phaser") {
-                effect = make_effect<godot::AudioEffectPhaser>([&](auto& e) {
+                effect = make<godot::AudioEffectPhaser>([&](auto& e) {
                     if (!has_params) return;
                     read_float("range_min_hz", [&](float v) { e -> set_range_min_hz(v); });
                     read_float("range_max_hz", [&](float v) { e -> set_range_max_hz(v); });
@@ -214,7 +214,7 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "pitch_shift") {
-                effect = make_effect<godot::AudioEffectPitchShift>([&](auto& e) {
+                effect = make<godot::AudioEffectPitchShift>([&](auto& e) {
                     if (!has_params) return;
                     read_float("pitch_scale", [&](float v) { e -> set_pitch_scale(v);                                                  });
                     read_int("oversampling",  [&](int v)   { e -> set_oversampling(v);                                                 });
@@ -222,29 +222,29 @@ namespace Vital::Sandbox::API {
                 });
             }
             else if (type == "stereo_enhance") {
-                effect = make_effect<godot::AudioEffectStereoEnhance>([&](auto& e) {
+                effect = make<godot::AudioEffectStereoEnhance>([&](auto& e) {
                     if (!has_params) return;
                     read_float("pan_pullout",  [&](float v) { e -> set_pan_pullout(v);  });
                     read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
                     read_float("surround",     [&](float v) { e -> set_surround(v);     });
                 });
             }
-            else if (type == "lowpass_filter")   effect = make_effect<godot::AudioEffectLowPassFilter>(apply_filter_params);
-            else if (type == "highpass_filter")  effect = make_effect<godot::AudioEffectHighPassFilter>(apply_filter_params);
-            else if (type == "bandpass_filter")  effect = make_effect<godot::AudioEffectBandPassFilter>(apply_filter_params);
-            else if (type == "notch_filter")     effect = make_effect<godot::AudioEffectNotchFilter>(apply_filter_params);
-            else if (type == "bandlimit_filter") effect = make_effect<godot::AudioEffectBandLimitFilter>(apply_filter_params);
-            else if (type == "lowshelf_filter")  effect = make_effect<godot::AudioEffectLowShelfFilter>(apply_filter_params);
-            else if (type == "highshelf_filter") effect = make_effect<godot::AudioEffectHighShelfFilter>(apply_filter_params);
-            else if (type == "eq6")              effect = make_effect<godot::AudioEffectEQ6>(apply_eq_params);
-            else if (type == "eq10")             effect = make_effect<godot::AudioEffectEQ10>(apply_eq_params);
-            else if (type == "eq21")             effect = make_effect<godot::AudioEffectEQ21>(apply_eq_params);
+            else if (type == "lowpass_filter")   effect = make<godot::AudioEffectLowPassFilter>(apply_filter_params);
+            else if (type == "highpass_filter")  effect = make<godot::AudioEffectHighPassFilter>(apply_filter_params);
+            else if (type == "bandpass_filter")  effect = make<godot::AudioEffectBandPassFilter>(apply_filter_params);
+            else if (type == "notch_filter")     effect = make<godot::AudioEffectNotchFilter>(apply_filter_params);
+            else if (type == "bandlimit_filter") effect = make<godot::AudioEffectBandLimitFilter>(apply_filter_params);
+            else if (type == "lowshelf_filter")  effect = make<godot::AudioEffectLowShelfFilter>(apply_filter_params);
+            else if (type == "highshelf_filter") effect = make<godot::AudioEffectHighShelfFilter>(apply_filter_params);
+            else if (type == "eq6")              effect = make<godot::AudioEffectEQ6>(apply_eq_params);
+            else if (type == "eq10")             effect = make<godot::AudioEffectEQ10>(apply_eq_params);
+            else if (type == "eq21")             effect = make<godot::AudioEffectEQ21>(apply_eq_params);
 
             return effect;
         }
 
         template<typename Instance>
-        static void bind_methods(Machine* vm) {
+        static void bind(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(type, parameters = {})")
                     .require(2, &Machine::is_string)
@@ -253,7 +253,6 @@ namespace Vital::Sandbox::API {
                 auto type = vm -> get_string(2);
                 bool has_params = vm -> is_table(3);
                 auto effect = Audio_Effect::build(vm, type, has_params, 3);
-
                 if (!effect.is_valid()) vm -> push_value(false);
                 else {
                     auto result = self -> audio -> add_effect(effect);

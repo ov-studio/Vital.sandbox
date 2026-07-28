@@ -198,7 +198,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            Audio_Effect::bind_methods<Instance>(vm);
+            Audio_Effect::bind<Instance>(vm);
         }
 
         static void clean(const std::string& env) {
