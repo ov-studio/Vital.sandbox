@@ -191,6 +191,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(offset)", true)
+                    .require(2, &Machine::is_vector2);
+
+                auto offset = vm -> get_vector2(2);
+                self -> audio -> get_player() -> translate(offset);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position = 0.0)", true)
                     .optional(2, &Machine::is_number);
