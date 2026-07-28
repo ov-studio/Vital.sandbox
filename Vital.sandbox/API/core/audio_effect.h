@@ -364,6 +364,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
         }
+
+        template<typename Instance>
+        static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "mode", effect_registry);
+        }
     };
 }
 #endif
