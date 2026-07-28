@@ -204,7 +204,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Audio_Effect::inject<Instance>(vm);
+            API::Audio_Effect::inject<Instance>(vm, base_scope);
         }
 
         static void clean(const std::string& env) {

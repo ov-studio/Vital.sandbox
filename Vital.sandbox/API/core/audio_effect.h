@@ -47,7 +47,6 @@
 
 namespace Vital::Sandbox::API {
     struct Audio_Effect {
-        enum class Type {
         enum class Effect {
             REVERB,
             CHORUS,
@@ -365,8 +364,8 @@ namespace Vital::Sandbox::API {
         }
 
         template<typename Instance>
-        static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "mode", effect_registry);
+        static void inject(Machine* vm, const std::vector<std::string>& scope) {
+            vm -> scope_set_enum(scope, "key", effect_registry);
         }
     };
 }
