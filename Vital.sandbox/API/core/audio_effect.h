@@ -314,7 +314,7 @@ namespace Vital::Sandbox::API {
         template<typename Instance>
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, type, parameters = {})")
+                vm_args(vm, id, "(name, effect, parameters = {})")
                     .require(2, &Machine::is_string)
                     .require_enum(3, effect_registry)
                     .optional(4, &Machine::is_table);
