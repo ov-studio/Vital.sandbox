@@ -106,7 +106,7 @@ namespace Vital::Sandbox::API {
             return e;
         }
 
-        static godot::Ref<godot::AudioEffect> build(Machine* vm, const std::string& type, bool has_params, int param_idx) {
+        static godot::Ref<godot::AudioEffect> build(Machine* vm, Effect type, bool has_params, int param_idx) {
             godot::Ref<godot::AudioEffect> effect;
 
             auto read_bool = [&](const std::string& key, auto setter) {
