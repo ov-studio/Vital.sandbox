@@ -28,8 +28,8 @@ namespace Vital::Engine {
         player = memnew(godot::AudioStreamPlayer2D);
         player -> set_stream(stream);
         player -> set_autoplay(autoplay);
+        player -> set_bus(godot::StringName(create_bus("vs_Audio_2D_").c_str()));
         Engine::Core::get_singleton() -> add_child(player);
-        init_bus();
     }
 
     Audio_2D::~Audio_2D() {
