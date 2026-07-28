@@ -250,7 +250,7 @@ namespace Vital::Sandbox::API {
         template<typename Instance>
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(type, parameters = {})")
+                vm_args(vm, id, "(name, parameters = {})")
                     .require(2, &Machine::is_string)
                     .optional(3, &Machine::is_table);
 
@@ -267,7 +267,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "remove_effect", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(effect_index)", true)
+                vm_args(vm, id, "(effect)", true)
                     .require(2, &Machine::is_number);
 
                 vm -> push_value(self -> audio -> remove_effect(vm -> get_int(2)));
@@ -280,7 +280,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_effect_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(effect_index, state)", true)
+                vm_args(vm, id, "(effect, state)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_bool);
 
@@ -289,7 +289,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_effect_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(effect_index)", true)
+                vm_args(vm, id, "(effect)", true)
                     .require(2, &Machine::is_number);
 
                 vm -> push_value(self -> audio -> is_effect_enabled(vm -> get_int(2)));
