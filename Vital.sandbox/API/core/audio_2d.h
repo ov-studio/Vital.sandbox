@@ -255,9 +255,6 @@ namespace Vital::Sandbox::API {
                     vm -> pop(1);
                 };
 
-                // Filter helper — shared by all AudioEffectFilter subclasses
-                // NOTE: takes Ref<AudioEffectFilter>, not a raw pointer — Ref<Derived> converts
-                // implicitly to Ref<Base>, but a raw Derived* does NOT convert to Ref<Base>.
                 auto apply_filter_params = [&](const godot::Ref<godot::AudioEffectFilter>& f) {
                     if (!has_params) return;
                     read_float("cutoff",    [&](float v) { f -> set_cutoff(v);                                              });
