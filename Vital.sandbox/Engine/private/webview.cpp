@@ -150,7 +150,7 @@ namespace Vital::Engine {
 
     // Getters //
     godot::Vector2 Webview::get_position() {
-        return webview -> get_position();
+        return webview -> get_global_position();
     }
 
     godot::Vector2 Webview::get_size() {
@@ -191,7 +191,7 @@ namespace Vital::Engine {
     }
 
     void Webview::set_position(const godot::Vector2& position) {
-        webview -> set_position(position);
+        webview -> set_global_position(position);
     }
 
     void Webview::set_size(const godot::Vector2& size) {
