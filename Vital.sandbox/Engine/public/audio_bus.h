@@ -25,31 +25,31 @@ namespace Vital::Engine {
     class Audio_Bus {
         protected:
             std::string bus_name;
-            int32_t bus_index = -1;
+            int bus_index = -1;
 
 
             // Helpers //
             const std::string& create_bus(const std::string& prefix);
             void destroy_bus();
-            int32_t resolve_bus() const;
-            bool resolve_effect(int32_t effect, int32_t& out_idx) const;
+            int resolve_bus() const;
+            bool resolve_effect(int effect, int& out_idx) const;
         public:
             // Checkerss //
-            bool is_effect_enabled(int32_t effect) const;
+            bool is_effect_enabled(int effect) const;
 
             
             // Getters //
-            godot::Ref<godot::AudioEffect> get_effect(int32_t effect) const;
-            int32_t get_effect_count() const;
+            godot::Ref<godot::AudioEffect> get_effect(int effect) const;
+            int get_effect_count() const;
 
 
             // Setters //
-            bool set_effect_enabled(int32_t effect, bool enabled);
+            bool set_effect_enabled(int effect, bool enabled);
 
             
             // Misc //
             bool add_effect(const godot::Ref<godot::AudioEffect>& effect);
-            bool remove_effect(int32_t effect);
+            bool remove_effect(int effect);
     };
 }
 #endif

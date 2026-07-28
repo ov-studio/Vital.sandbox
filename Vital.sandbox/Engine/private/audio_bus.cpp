@@ -38,12 +38,12 @@ namespace Vital::Engine {
         bus_index = -1;
     }
 
-    int32_t Audio_Bus::resolve_bus() const {
+    int Audio_Bus::resolve_bus() const {
         if (bus_index < 0) return -1;
         return Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
     }
 
-    bool Audio_Bus::resolve_effect(int32_t effect, int32_t& out_idx) const {
+    bool Audio_Bus::resolve_effect(int effect, int& out_idx) const {
         out_idx = resolve_bus();
         if (out_idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_idx)) return false;
         return true;
@@ -51,24 +51,24 @@ namespace Vital::Engine {
 
     
     // Checkerss //
-    bool Audio_Bus::is_effect_enabled(int32_t effect) const {
-        int32_t idx; 
+    bool Audio_Bus::is_effect_enabled(int effect) const {
+        int idx; 
         if (!resolve_effect(effect, idx)) return false;
         return Engine::Core::get_audio_server() -> is_bus_effect_enabled(idx, effect);
     }
     
     
     // Getters //
-    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int32_t effect) const {
-        int32_t idx; 
+    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int effect) const {
+        int idx; 
         if (!resolve_effect(effect, idx)) return nullptr;
         return Engine::Core::get_audio_server() -> get_bus_effect(idx, effect);
     }
     
 
     // Setters //
-    bool Audio_Bus::set_effect_enabled(int32_t effect, bool enabled) {
-        int32_t idx; 
+    bool Audio_Bus::set_effect_enabled(int effect, bool enabled) {
+        int idx; 
         if (!resolve_effect(effect, idx)) return false;
         Engine::Core::get_audio_server() -> set_bus_effect_enabled(idx, effect, enabled);
         return true;
@@ -81,8 +81,8 @@ namespace Vital::Engine {
         return true;
     }
     
-    bool Audio_Bus::remove_effect(int32_t effect) {
-        int32_t idx; 
+    bool Audio_Bus::remove_effect(int effect) {
+        int idx; 
         if (!resolve_effect(effect, idx)) return false;
         Engine::Core::get_audio_server() -> remove_bus_effect(idx, effect);
         return true;
