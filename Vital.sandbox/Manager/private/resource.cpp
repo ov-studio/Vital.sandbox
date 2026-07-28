@@ -367,14 +367,16 @@ namespace Vital::Manager {
         auto rm = Resource::get_singleton();
         std::vector<const Manifest*> result;
         switch (type) {
-            case State::Loaded:
+            case State::Loaded: {
                 result.reserve(rm -> resources.size());
                 for (const auto& r : rm -> resources) result.push_back(&r);
                 break;
-            case State::Running:
+            }
+            case State::Running: {
                 result.reserve(rm -> running.size());
                 for (const auto& name : rm -> running) result.push_back(get_resource(name));
                 break;
+            }
         }
         return result;
     }

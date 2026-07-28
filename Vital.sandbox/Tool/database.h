@@ -263,11 +263,11 @@ namespace Vital::Tool {
                         if (row_out.get_indicator(i) == soci::i_null) cell = nullptr;
                         else {
                             switch (props.get_data_type()) {
-                                case soci::dt_string:    cell = row_out.get<std::string>(i); break;
-                                case soci::dt_integer:   cell = static_cast<int32_t>(row_out.get<int>(i)); break;
+                                case soci::dt_string:    cell = row_out.get<std::string>(i);                     break;
+                                case soci::dt_integer:   cell = static_cast<int32_t>(row_out.get<int>(i));       break;
                                 case soci::dt_long_long: cell = static_cast<int64_t>(row_out.get<long long>(i)); break;
-                                case soci::dt_double:    cell = row_out.get<double>(i); break;
-                                default:                 cell = row_out.get<std::string>(i); break;
+                                case soci::dt_double:    cell = row_out.get<double>(i);                          break;
+                                default:                 cell = row_out.get<std::string>(i);                     break;
                             }
                         }
                         row.emplace_back(props.get_name(), cell);
@@ -289,8 +289,8 @@ namespace Vital::Tool {
                     if (!first) sql += ", ";
                     first = false;
                     switch (action.type) {
-                        case SchemaActionType::Add:    sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition)); break;
-                        case SchemaActionType::Drop:   sql += fmt::format("DROP COLUMN `{}`", action.column); break;
+                        case SchemaActionType::Add:    sql += fmt::format("ADD COLUMN {}", build_column(action.column, action.definition));    break;
+                        case SchemaActionType::Drop:   sql += fmt::format("DROP COLUMN `{}`", action.column);                                  break;
                         case SchemaActionType::Modify: sql += fmt::format("MODIFY COLUMN {}", build_column(action.column, action.definition)); break;
                     }
                 }
@@ -301,7 +301,7 @@ namespace Vital::Tool {
                     switch (action.type) {
                         case SchemaActionType::Add:
                         case SchemaActionType::Modify: table_schema[action.column] = action.definition; break;
-                        case SchemaActionType::Drop:   table_schema.erase(action.column); break;
+                        case SchemaActionType::Drop:   table_schema.erase(action.column);               break;
                     }
                 }
             }
