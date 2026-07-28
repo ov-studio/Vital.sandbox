@@ -64,7 +64,13 @@ namespace Vital::Engine {
         if (!resolve_effect(effect, idx)) return nullptr;
         return Engine::Core::get_audio_server() -> get_bus_effect(idx, effect);
     }
-    
+        
+    int Audio_Bus::get_effect_count() const {
+        auto idx = resolve_bus();
+        if (idx < 0) return 0;
+        return Engine::Core::get_audio_server() -> get_bus_effect_count(idx);
+    }
+
 
     // Setters //
     bool Audio_Bus::set_effect_enabled(int effect, bool enabled) {
