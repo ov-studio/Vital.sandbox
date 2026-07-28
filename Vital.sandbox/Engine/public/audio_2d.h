@@ -39,17 +39,17 @@ namespace Vital::Engine {
             godot::Ref<godot::AudioStream> stream;
             godot::AudioStreamPlayer2D* player = nullptr;
 
+
             // Instantiators //
             Audio_2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
             ~Audio_2D();
-
         public:
             // Managers //
             static Audio_2D* create(const std::string& base, const std::string& path, bool autoplay = false);
             static Audio_2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
             void destroy();
 
-
+            
             // Getters //
             godot::Ref<godot::AudioStream> get_stream() const;
             godot::AudioStreamPlayer2D* get_player() const;
