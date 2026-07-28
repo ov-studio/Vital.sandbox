@@ -50,6 +50,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_2D>(vm);
+            API::Audio_Effect::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(path, autoplay = false)")
@@ -67,6 +68,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            API::Audio_Effect::methods<Instance>(vm);
+
             vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> is_playing());
                 return 1;
@@ -197,8 +200,6 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            Audio_Effect::bind<Instance>(vm);
         }
 
         static void clean(const std::string& env) {

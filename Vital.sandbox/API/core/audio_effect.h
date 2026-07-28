@@ -244,7 +244,10 @@ namespace Vital::Sandbox::API {
         }
 
         template<typename Instance>
-        static void bind(Machine* vm) {
+        static void bind(Machine* vm) {}
+
+        template<typename Instance>
+        static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(type, parameters = {})")
                     .require(2, &Machine::is_string)
