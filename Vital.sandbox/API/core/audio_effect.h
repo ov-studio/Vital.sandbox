@@ -301,6 +301,8 @@ namespace Vital::Sandbox::API {
                 case Type::BANDLIMIT_FILTER: effect = make<godot::AudioEffectBandLimitFilter>(apply_filter_params); break;
                 case Type::LOWSHELF_FILTER:  effect = make<godot::AudioEffectLowShelfFilter>(apply_filter_params);  break;
                 case Type::HIGHSHELF_FILTER: effect = make<godot::AudioEffectHighShelfFilter>(apply_filter_params); break;
+                case Type::EQ6:              effect = make<godot::AudioEffectEQ6>(apply_eq_params);                 break;
+                case Type::EQ10:             effect = make<godot::AudioEffectEQ10>(apply_eq_params);                break;
                 case Type::EQ21:             effect = make<godot::AudioEffectEQ21>(apply_eq_params);                break;
             }
             return effect;
