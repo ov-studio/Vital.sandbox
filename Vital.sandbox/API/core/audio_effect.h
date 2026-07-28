@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------
      Resource: Vital.sandbox
-     Script: API: core: audio_2d.h
+     Script: API: core: audio_effect.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
-     Desc: Audio 2D APIs
+     Desc: Audio Effect APIs
 ----------------------------------------------------------------*/
 
 

@@ -81,7 +81,7 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Texture>(),
             vm_module::make_api<SVG>(),
             vm_module::make_api<Rendertarget>(),
-            vm_module::make_api<Audio2D>(),
+            vm_module::make_api<Audio_2D>(),
             vm_module::make_api<Audio_3D>(),
 
             // Utility //

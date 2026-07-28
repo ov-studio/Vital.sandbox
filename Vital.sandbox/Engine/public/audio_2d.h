@@ -21,7 +21,7 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    class Audio2D : public godot::Node2D {
+    class Audio_2D : public godot::Node2D {
         public:
             enum class Format {
                 OGG,
@@ -42,8 +42,8 @@ namespace Vital::Engine {
             int32_t bus_index = -1;
 
             // Instantiators //
-            Audio2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
-            ~Audio2D();
+            Audio_2D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
+            ~Audio_2D();
 
 
             // Helpers //
@@ -51,8 +51,8 @@ namespace Vital::Engine {
             void destroy_bus();
         public:
             // Managers //
-            static Audio2D* create(const std::string& base, const std::string& path, bool autoplay = false);
-            static Audio2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
+            static Audio_2D* create(const std::string& base, const std::string& path, bool autoplay = false);
+            static Audio_2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
             void destroy();
 
 
