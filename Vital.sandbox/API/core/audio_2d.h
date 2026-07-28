@@ -71,6 +71,21 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        // Instantiates an effect of type T and runs `configure` on it before returning —
+        // collapses the `Ref<T> e; e.instantiate(); ...; return e;` boilerplate that used
+        // to be repeated per-branch in add_effect() into a single call.
+        // NOTE: this has to be a real member function template (not a local lambda) —
+        // MSVC does not reliably parse explicit template arguments on a generic lambda's
+        // operator() (e.g. `some_lambda.template operator()<T>(...)`), which is what the
+        // previous version relied on.
+        template<typename T, typename Fn>
+        static godot::Ref<T> make_effect(Fn&& configure) {
+            godot::Ref<T> e;
+            e.instantiate();
+            configure(e);
+            return e;
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Audio2D>(vm);
 
@@ -230,7 +245,7 @@ namespace Vital::Sandbox::API {
                 auto type = vm -> get_string(2);
                 bool has_params = vm -> is_table(3);
                 godot::Ref<godot::AudioEffect> effect;
-            
+
                 auto read_bool = [&](const std::string& key, auto setter) {
                     vm -> get_table_field(key, 3);
                     if (vm -> is_bool(-1)) setter(vm -> get_bool(-1));
@@ -274,9 +289,8 @@ namespace Vital::Sandbox::API {
                 };
             
                 if (type == "reverb") {
-                    godot::Ref<godot::AudioEffectReverb> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectReverb>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("room_size",          [&](float v) { e -> set_room_size(v);         });
                         read_float("damping",            [&](float v) { e -> set_damping(v);           });
                         read_float("spread",             [&](float v) { e -> set_spread(v);            });
@@ -285,13 +299,11 @@ namespace Vital::Sandbox::API {
                         read_float("hpf",                [&](float v) { e -> set_hpf(v);               });
                         read_float("predelay_msec",      [&](float v) { e -> set_predelay_msec(v);     });
                         read_float("predelay_feedback",  [&](float v) { e -> set_predelay_feedback(v); });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "chorus") {
-                    godot::Ref<godot::AudioEffectChorus> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectChorus>([&](auto& e) {
+                        if (!has_params) return;
                         read_int("voice_count", [&](int v)   { e -> set_voice_count(v); });
                         read_float("wet",         [&](float v) { e -> set_wet(v);       });
                         read_float("dry",         [&](float v) { e -> set_dry(v);       });
@@ -311,13 +323,11 @@ namespace Vital::Sandbox::API {
                             }
                         }
                         vm -> pop(1);
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "delay") {
-                    godot::Ref<godot::AudioEffectDelay> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectDelay>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("dry",               [&](float v) { e -> set_dry(v);               });
                         read_bool("tap1_active",        [&](bool v)  { e -> set_tap1_active(v);       });
                         read_float("tap1_delay_ms",     [&](float v) { e -> set_tap1_delay_ms(v);     });
@@ -331,164 +341,95 @@ namespace Vital::Sandbox::API {
                         read_float("feedback_delay_ms", [&](float v) { e -> set_feedback_delay_ms(v); });
                         read_float("feedback_level_db", [&](float v) { e -> set_feedback_level_db(v); });
                         read_float("feedback_lowpass",  [&](float v) { e -> set_feedback_lowpass(v);  });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "distortion") {
-                    godot::Ref<godot::AudioEffectDistortion> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectDistortion>([&](auto& e) {
+                        if (!has_params) return;
                         read_int("mode",         [&](int v)   { e -> set_mode(static_cast<godot::AudioEffectDistortion::Mode>(v)); });
                         read_float("pre_gain",   [&](float v) { e -> set_pre_gain(v);                                              });
                         read_float("keep_hf_hz", [&](float v) { e -> set_keep_hf_hz(v);                                            });
                         read_float("drive",      [&](float v) { e -> set_drive(v);                                                 });
                         read_float("post_gain",  [&](float v) { e -> set_post_gain(v);                                             });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "amplify") {
-                    godot::Ref<godot::AudioEffectAmplify> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectAmplify>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("volume_db",     [&](float v) { e -> set_volume_db(v);     });
                         read_float("volume_linear", [&](float v) { e -> set_volume_linear(v); });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "compressor") {
-                    godot::Ref<godot::AudioEffectCompressor> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectCompressor>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("threshold",  [&](float v) { e -> set_threshold(v);  });
                         read_float("ratio",      [&](float v) { e -> set_ratio(v);      });
                         read_float("gain",       [&](float v) { e -> set_gain(v);       });
                         read_float("attack_us",  [&](float v) { e -> set_attack_us(v);  });
                         read_float("release_ms", [&](float v) { e -> set_release_ms(v); });
                         read_float("mix",        [&](float v) { e -> set_mix(v);        });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "limiter") {
-                    godot::Ref<godot::AudioEffectLimiter> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectLimiter>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("ceiling_db",      [&](float v) { e -> set_ceiling_db(v);      });
                         read_float("threshold_db",    [&](float v) { e -> set_threshold_db(v);    });
                         read_float("soft_clip_db",    [&](float v) { e -> set_soft_clip_db(v);    });
                         read_float("soft_clip_ratio", [&](float v) { e -> set_soft_clip_ratio(v); });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "hard_limiter") {
-                    godot::Ref<godot::AudioEffectHardLimiter> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectHardLimiter>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("ceiling_db",  [&](float v) { e -> set_ceiling_db(v);  });
                         read_float("pre_gain_db", [&](float v) { e -> set_pre_gain_db(v); });
                         read_float("release",     [&](float v) { e -> set_release(v);     });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "panner") {
-                    godot::Ref<godot::AudioEffectPanner> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectPanner>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("pan", [&](float v) { e -> set_pan(v); });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "phaser") {
-                    godot::Ref<godot::AudioEffectPhaser> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectPhaser>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("range_min_hz", [&](float v) { e -> set_range_min_hz(v); });
                         read_float("range_max_hz", [&](float v) { e -> set_range_max_hz(v); });
                         read_float("rate_hz",      [&](float v) { e -> set_rate_hz(v);      });
                         read_float("feedback",     [&](float v) { e -> set_feedback(v);     });
                         read_float("depth",        [&](float v) { e -> set_depth(v);        });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "pitch_shift") {
-                    godot::Ref<godot::AudioEffectPitchShift> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectPitchShift>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("pitch_scale", [&](float v) { e -> set_pitch_scale(v);                                                  });
                         read_int("oversampling",  [&](int v)   { e -> set_oversampling(v);                                                 });
                         read_int("fft_size",      [&](int v)   { e -> set_fft_size(static_cast<godot::AudioEffectPitchShift::FFTSize>(v)); });
-                    }
-                    effect = e;
+                    });
                 }
                 else if (type == "stereo_enhance") {
-                    godot::Ref<godot::AudioEffectStereoEnhance> e;
-                    e.instantiate();
-                    if (has_params) {
+                    effect = make_effect<godot::AudioEffectStereoEnhance>([&](auto& e) {
+                        if (!has_params) return;
                         read_float("pan_pullout",  [&](float v) { e -> set_pan_pullout(v);  });
                         read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
                         read_float("surround",     [&](float v) { e -> set_surround(v);     });
-                    }
-                    effect = e;
+                    });
                 }
-                else if (type == "lowpass_filter") {
-                    godot::Ref<godot::AudioEffectLowPassFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "highpass_filter") {
-                    godot::Ref<godot::AudioEffectHighPassFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "bandpass_filter") {
-                    godot::Ref<godot::AudioEffectBandPassFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "notch_filter") {
-                    godot::Ref<godot::AudioEffectNotchFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "bandlimit_filter") {
-                    godot::Ref<godot::AudioEffectBandLimitFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "lowshelf_filter") {
-                    godot::Ref<godot::AudioEffectLowShelfFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "highshelf_filter") {
-                    godot::Ref<godot::AudioEffectHighShelfFilter> e;
-                    e.instantiate();
-                    apply_filter_params(e);
-                    effect = e;
-                }
-                else if (type == "eq6") {
-                    godot::Ref<godot::AudioEffectEQ6> e;
-                    e.instantiate();
-                    apply_eq_params(e);
-                    effect = e;
-                }
-                else if (type == "eq10") {
-                    godot::Ref<godot::AudioEffectEQ10> e;
-                    e.instantiate();
-                    apply_eq_params(e);
-                    effect = e;
-                }
-                else if (type == "eq21") {
-                    godot::Ref<godot::AudioEffectEQ21> e;
-                    e.instantiate();
-                    apply_eq_params(e);
-                    effect = e;
-                }
+                else if (type == "lowpass_filter")   effect = make_effect<godot::AudioEffectLowPassFilter>(apply_filter_params);
+                else if (type == "highpass_filter")  effect = make_effect<godot::AudioEffectHighPassFilter>(apply_filter_params);
+                else if (type == "bandpass_filter")  effect = make_effect<godot::AudioEffectBandPassFilter>(apply_filter_params);
+                else if (type == "notch_filter")     effect = make_effect<godot::AudioEffectNotchFilter>(apply_filter_params);
+                else if (type == "bandlimit_filter") effect = make_effect<godot::AudioEffectBandLimitFilter>(apply_filter_params);
+                else if (type == "lowshelf_filter")  effect = make_effect<godot::AudioEffectLowShelfFilter>(apply_filter_params);
+                else if (type == "highshelf_filter") effect = make_effect<godot::AudioEffectHighShelfFilter>(apply_filter_params);
+                else if (type == "eq6")  effect = make_effect<godot::AudioEffectEQ6>(apply_eq_params);
+                else if (type == "eq10") effect = make_effect<godot::AudioEffectEQ10>(apply_eq_params);
+                else if (type == "eq21") effect = make_effect<godot::AudioEffectEQ21>(apply_eq_params);
             
                 if (!effect.is_valid()) vm -> push_value(false);
                 else {
