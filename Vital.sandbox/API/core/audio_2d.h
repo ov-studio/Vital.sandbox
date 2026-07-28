@@ -15,8 +15,8 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/audio_2d.h>
+#include <Vital.sandbox/API/core/audio_effect.h>
 #include <Vital.sandbox/API/utility/file.h>
-#include <Vital.sandbox/API/utility/audio_effect.h>
 
 
 ///////////////////////////
