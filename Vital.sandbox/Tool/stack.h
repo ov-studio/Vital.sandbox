@@ -99,7 +99,7 @@ namespace Vital::Tool {
                 case godot::Variant::BOOL:   return StackValue((bool)v);
                 case godot::Variant::INT:    return StackValue((int32_t)(int64_t)v);
                 case godot::Variant::FLOAT:  return StackValue((double)v);
-                case godot::Variant::STRING: return StackValue(Tool::to_std_string((godot::String)v));
+                case godot::Variant::STRING: return StackValue(std::string(((godot::String)v).utf8().get_data()));
                 case godot::Variant::ARRAY: {
                     const godot::Array arr = v;
                     auto nested = std::make_shared<Stack>();
@@ -177,7 +177,7 @@ namespace Vital::Tool {
             for (int i = 0; i < static_cast<int>(array.size()); ++i) arr[i] = array[i].to_variant();
             dict["array"] = arr;
             godot::Dictionary obj;
-            for (const auto& [key, sv] : object) obj[Tool::to_godot_string(key)] = sv.to_variant();
+            for (const auto& [key, sv] : object) obj[godot::String(key.c_str())] = sv.to_variant();
             dict["object"] = obj;
             return dict;
         }
@@ -193,7 +193,7 @@ namespace Vital::Tool {
                 const godot::Dictionary obj = dict["object"];
                 const godot::Array keys = obj.keys();
                 for (int i = 0; i < keys.size(); ++i) {
-                    std::string key = Tool::to_std_string((godot::String)keys[i]);
+                    std::string key = ((godot::String)keys[i]).utf8().get_data();
                     stack.object[key] = StackValue::from_variant(obj[keys[i]]);
                 }
             }
