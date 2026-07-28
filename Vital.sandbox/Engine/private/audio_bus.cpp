@@ -46,7 +46,7 @@ namespace Vital::Engine {
     }
 
 
-    // Getters //
+    // Checkerss //
     bool Audio_Bus::is_effect_enabled(int32_t effect_index) const {
         auto idx = resolve_bus_index();
         auto* server = godot::AudioServer::get_singleton();
@@ -54,6 +54,8 @@ namespace Vital::Engine {
         return server -> is_bus_effect_enabled(idx, effect_index);
     }
 
+
+    // Getters //
     godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int32_t effect_index) const {
         auto idx = resolve_bus_index();
         auto* server = godot::AudioServer::get_singleton();
@@ -67,6 +69,8 @@ namespace Vital::Engine {
         return godot::AudioServer::get_singleton() -> get_bus_effect_count(idx);
     }
 
+
+    // Setters //
     bool Audio_Bus::set_effect_enabled(int32_t effect_index, bool enabled) {
         auto idx = resolve_bus_index();
         auto* server = godot::AudioServer::get_singleton();
@@ -75,6 +79,8 @@ namespace Vital::Engine {
         return true;
     }
 
+
+    // Misc //
     bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& effect) {
         auto idx = resolve_bus_index();
         if (idx < 0 || !effect.is_valid()) return false;
