@@ -148,36 +148,40 @@ namespace Vital::Sandbox::API {
                 vm -> pop(1);
             };
 
-            if (type == "reverb") {
-                effect = make<godot::AudioEffectReverb>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("room_size",         [&](float v) { e -> set_room_size(v);         });
-                    read_float("damping",           [&](float v) { e -> set_damping(v);           });
-                    read_float("spread",            [&](float v) { e -> set_spread(v);            });
-                    read_float("wet",               [&](float v) { e -> set_wet(v);               });
-                    read_float("dry",               [&](float v) { e -> set_dry(v);               });
-                    read_float("hpf",               [&](float v) { e -> set_hpf(v);               });
-                    read_float("predelay_msec",     [&](float v) { e -> set_predelay_msec(v);     });
-                    read_float("predelay_feedback", [&](float v) { e -> set_predelay_feedback(v); });
-                });
-            }
-            else if (type == "chorus") {
-                effect = make<godot::AudioEffectChorus>([&](auto& e) {
-                    if (!has_params) return;
-                    read_int("voice_count",   [&](int v)   { e -> set_voice_count(v); });
-                    read_float("wet",         [&](float v) { e -> set_wet(v);         });
-                    read_float("dry",         [&](float v) { e -> set_dry(v);         });
-                    vm -> get_table_field("voices", param_idx);
-                    if (vm -> is_table(-1)) {
-                        for (int i = 0; i < e -> get_voice_count(); i++) {
-                            vm -> get_table_field(i + 1, -1);
-                            if (vm -> is_table(-1)) {
-                                vm -> get_table_field("delay_ms",  -1); if (vm -> is_number(-1)) e -> set_voice_delay_ms(i, vm -> get_float(-1));  vm -> pop(1);
-                                vm -> get_table_field("rate_hz",   -1); if (vm -> is_number(-1)) e -> set_voice_rate_hz(i, vm -> get_float(-1));   vm -> pop(1);
-                                vm -> get_table_field("depth_ms",  -1); if (vm -> is_number(-1)) e -> set_voice_depth_ms(i, vm -> get_float(-1));  vm -> pop(1);
-                                vm -> get_table_field("level_db",  -1); if (vm -> is_number(-1)) e -> set_voice_level_db(i, vm -> get_float(-1));  vm -> pop(1);
-                                vm -> get_table_field("cutoff_hz", -1); if (vm -> is_number(-1)) e -> set_voice_cutoff_hz(i, vm -> get_float(-1)); vm -> pop(1);
-                                vm -> get_table_field("pan",       -1); if (vm -> is_number(-1)) e -> set_voice_pan(i, vm -> get_float(-1));       vm -> pop(1);
+            switch (type) {
+                case Type::REVERB: {
+                    effect = make<godot::AudioEffectReverb>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("room_size",         [&](float v) { e -> set_room_size(v);         });
+                        read_float("damping",           [&](float v) { e -> set_damping(v);           });
+                        read_float("spread",            [&](float v) { e -> set_spread(v);            });
+                        read_float("wet",               [&](float v) { e -> set_wet(v);               });
+                        read_float("dry",               [&](float v) { e -> set_dry(v);               });
+                        read_float("hpf",               [&](float v) { e -> set_hpf(v);               });
+                        read_float("predelay_msec",     [&](float v) { e -> set_predelay_msec(v);     });
+                        read_float("predelay_feedback", [&](float v) { e -> set_predelay_feedback(v); });
+                    });
+                    break;
+                }
+                case Type::CHORUS: {
+                    effect = make<godot::AudioEffectChorus>([&](auto& e) {
+                        if (!has_params) return;
+                        read_int("voice_count",   [&](int v)   { e -> set_voice_count(v); });
+                        read_float("wet",         [&](float v) { e -> set_wet(v);         });
+                        read_float("dry",         [&](float v) { e -> set_dry(v);         });
+                        vm -> get_table_field("voices", param_idx);
+                        if (vm -> is_table(-1)) {
+                            for (int i = 0; i < e -> get_voice_count(); i++) {
+                                vm -> get_table_field(i + 1, -1);
+                                if (vm -> is_table(-1)) {
+                                    vm -> get_table_field("delay_ms",  -1); if (vm -> is_number(-1)) e -> set_voice_delay_ms(i, vm -> get_float(-1));  vm -> pop(1);
+                                    vm -> get_table_field("rate_hz",   -1); if (vm -> is_number(-1)) e -> set_voice_rate_hz(i, vm -> get_float(-1));   vm -> pop(1);
+                                    vm -> get_table_field("depth_ms",  -1); if (vm -> is_number(-1)) e -> set_voice_depth_ms(i, vm -> get_float(-1));  vm -> pop(1);
+                                    vm -> get_table_field("level_db",  -1); if (vm -> is_number(-1)) e -> set_voice_level_db(i, vm -> get_float(-1));  vm -> pop(1);
+                                    vm -> get_table_field("cutoff_hz", -1); if (vm -> is_number(-1)) e -> set_voice_cutoff_hz(i, vm -> get_float(-1)); vm -> pop(1);
+                                    vm -> get_table_field("pan",       -1); if (vm -> is_number(-1)) e -> set_voice_pan(i, vm -> get_float(-1));       vm -> pop(1);
+                                }
+                                vm -> pop(1);
                             }
                             vm -> pop(1);
                         }
@@ -279,7 +283,9 @@ namespace Vital::Sandbox::API {
                     read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
                     read_float("surround",     [&](float v) { e -> set_surround(v);     });
                 });
+                        read_float("tap1_level_db",     [&](float v) { e -> set_tap1_level_db(v);      });
                 case Type::HIGHSHELF_FILTER: effect = make<godot::AudioEffectHighShelfFilter>(apply_filter_params); break;
+                case Type::EQ21:             effect = make<godot::AudioEffectEQ21>(apply_eq_params);                break;
             }
             return effect;
         }
