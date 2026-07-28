@@ -272,8 +272,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_effects", [](auto vm, auto self, auto& id) -> int {
-                auto names = self -> audio -> get_effects();
+            vm_module::bind_method<Instance>(vm, "list_effects", [](auto vm, auto self, auto& id) -> int {
+                auto names = self -> audio -> list_effects();
                 vm -> create_table();
                 for (int i = 0; i < static_cast<int>(names.size()); i++) {
                     vm -> push_value(names[i]);

@@ -69,8 +69,8 @@ namespace Vital::Engine {
         if (!resolve_effect(name, bus_idx, slot_idx)) return nullptr;
         return Engine::Core::get_audio_server() -> get_bus_effect(bus_idx, slot_idx);
     }
-    
-    std::vector<std::string> Audio_Bus::get_effects() const {
+
+    std::vector<std::string> Audio_Bus::list_effects() const {
         return effect_names;
     }
 

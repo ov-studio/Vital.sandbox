@@ -41,7 +41,7 @@ namespace Vital::Engine {
 
             // Getters //
             godot::Ref<godot::AudioEffect> get_effect(const std::string& name) const;
-            std::vector<std::string> get_effects() const;
+            std::vector<std::string> list_effects() const;
 
 
             // Setters //
