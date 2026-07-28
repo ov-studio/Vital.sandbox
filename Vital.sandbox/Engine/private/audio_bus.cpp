@@ -95,7 +95,7 @@ namespace Vital::Engine {
         auto idx = resolve_bus();
         if (idx < 0 || !effect.is_valid()) return false;
         auto it = std::find(effect_names.begin(), effect_names.end(), name);
-        if (it != effect_names.end()) return false; // name already exists
+        if (it != effect_names.end()) return false;
         Engine::Core::get_audio_server() -> add_bus_effect(idx, effect);
         effect_names.push_back(name);
         return true;
