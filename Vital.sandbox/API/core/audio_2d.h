@@ -418,9 +418,9 @@ namespace Vital::Sandbox::API {
                 else if (type == "bandlimit_filter") effect = make_effect<godot::AudioEffectBandLimitFilter>(apply_filter_params);
                 else if (type == "lowshelf_filter")  effect = make_effect<godot::AudioEffectLowShelfFilter>(apply_filter_params);
                 else if (type == "highshelf_filter") effect = make_effect<godot::AudioEffectHighShelfFilter>(apply_filter_params);
-                else if (type == "eq6")  effect = make_effect<godot::AudioEffectEQ6>(apply_eq_params);
-                else if (type == "eq10") effect = make_effect<godot::AudioEffectEQ10>(apply_eq_params);
-                else if (type == "eq21") effect = make_effect<godot::AudioEffectEQ21>(apply_eq_params);
+                else if (type == "eq6")              effect = make_effect<godot::AudioEffectEQ6>(apply_eq_params);
+                else if (type == "eq10")             effect = make_effect<godot::AudioEffectEQ10>(apply_eq_params);
+                else if (type == "eq21")             effect = make_effect<godot::AudioEffectEQ21>(apply_eq_params);
 
                 if (!effect.is_valid()) vm -> push_value(false);
                 else {
