@@ -308,10 +308,10 @@ namespace Vital::Sandbox::API {
         }
 
         template<typename Instance>
-        static void bind(Machine* vm) {}
+        static void bind(Machine* vm, const std::vector<std::string>& scope) {}
 
         template<typename Instance>
-        static void methods(Machine* vm) {
+        static void methods(Machine* vm, const std::vector<std::string>& scope) {
             vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, effect, parameters = {})")
                     .require(2, &Machine::is_string)
@@ -365,7 +365,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance>
         static void inject(Machine* vm, const std::vector<std::string>& scope) {
-            vm -> scope_set_enum(scope, "key", effect_registry);
+            vm -> scope_set_enum(scope, "effect", effect_registry);
         }
     };
 }
