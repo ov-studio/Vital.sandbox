@@ -184,7 +184,6 @@ namespace Vital::Sandbox::API {
                                 }
                                 vm -> pop(1);
                             }
-                            vm -> pop(1);
                         }
                         vm -> pop(1);
                     });
