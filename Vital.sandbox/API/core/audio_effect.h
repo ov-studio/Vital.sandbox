@@ -320,11 +320,11 @@ namespace Vital::Sandbox::API {
                     .optional(4, &Machine::is_table);
 
                 auto name = vm -> get_string(2);
-                auto type = vm -> get_string(3);
+                auto effect = static_cast<Effect>(vm -> get_int(3));
                 bool has_params = vm -> is_table(4);
-                auto effect = Audio_Effect::build(vm, type, has_params, 4);
-                if (!effect.is_valid()) vm -> push_value(false);
-                else vm -> push_value(self -> audio -> add_effect(name, effect));
+                auto result = build(vm, effect, has_params, 4);
+                if (!result.is_valid()) vm -> push_value(false);
+                else vm -> push_value(self -> audio -> add_effect(name, result));
                 return 1;
             });
 
