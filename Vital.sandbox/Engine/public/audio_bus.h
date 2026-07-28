@@ -34,13 +34,14 @@ namespace Vital::Engine {
                 return godot::AudioServer::get_singleton() -> get_bus_index(godot::StringName(bus_name.c_str()));
             }
 
-            void create_bus(const std::string& prefix, godot::Node* player) {
+            const std::string& create_bus(const std::string& prefix) {
                 auto* server = godot::AudioServer::get_singleton();
                 bus_name = prefix + std::to_string(reinterpret_cast<uintptr_t>(this));
                 server -> add_bus();
                 bus_index = server -> get_bus_count() - 1;
                 server -> set_bus_name(bus_index, godot::String(bus_name.c_str()));
                 server -> set_bus_send(bus_index, godot::StringName("Master"));
+                return bus_name;
             }
 
             void destroy_bus() {
