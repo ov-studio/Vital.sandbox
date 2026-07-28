@@ -85,7 +85,7 @@ namespace Vital::Tool {
                 else if constexpr (std::is_same_v<V, int64_t>)                return val;
                 else if constexpr (std::is_same_v<V, float>)                  return (double)val;
                 else if constexpr (std::is_same_v<V, double>)                 return val;
-                else if constexpr (std::is_same_v<V, std::string>)            return godot::String(val.c_str());
+                else if constexpr (std::is_same_v<V, std::string>)            return Tool::to_godot_string(val);
                 else if constexpr (std::is_same_v<V, std::shared_ptr<void>>)  return godot::Variant();
                 else if constexpr (std::is_same_v<V, std::shared_ptr<Stack>>) return val ? val -> to_dict() : godot::Variant();
                 return godot::Variant();
