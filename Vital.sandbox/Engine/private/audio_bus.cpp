@@ -69,13 +69,7 @@ namespace Vital::Engine {
         if (!resolve_effect(name, bus_idx, slot_idx)) return nullptr;
         return Engine::Core::get_audio_server() -> get_bus_effect(bus_idx, slot_idx);
     }
-
-    int Audio_Bus::get_effect_count() const {
-        auto idx = resolve_bus();
-        if (idx < 0) return 0;
-        return Engine::Core::get_audio_server() -> get_bus_effect_count(idx);
-    }
-
+    
     std::vector<std::string> Audio_Bus::get_effects() const {
         return effect_names;
     }
