@@ -279,18 +279,8 @@ namespace Vital::Sandbox::API {
                     read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
                     read_float("surround",     [&](float v) { e -> set_surround(v);     });
                 });
+                case Type::HIGHSHELF_FILTER: effect = make<godot::AudioEffectHighShelfFilter>(apply_filter_params); break;
             }
-            else if (type == "lowpass_filter")   effect = make<godot::AudioEffectLowPassFilter>(apply_filter_params);
-            else if (type == "highpass_filter")  effect = make<godot::AudioEffectHighPassFilter>(apply_filter_params);
-            else if (type == "bandpass_filter")  effect = make<godot::AudioEffectBandPassFilter>(apply_filter_params);
-            else if (type == "notch_filter")     effect = make<godot::AudioEffectNotchFilter>(apply_filter_params);
-            else if (type == "bandlimit_filter") effect = make<godot::AudioEffectBandLimitFilter>(apply_filter_params);
-            else if (type == "lowshelf_filter")  effect = make<godot::AudioEffectLowShelfFilter>(apply_filter_params);
-            else if (type == "highshelf_filter") effect = make<godot::AudioEffectHighShelfFilter>(apply_filter_params);
-            else if (type == "eq6")              effect = make<godot::AudioEffectEQ6>(apply_eq_params);
-            else if (type == "eq10")             effect = make<godot::AudioEffectEQ10>(apply_eq_params);
-            else if (type == "eq21")             effect = make<godot::AudioEffectEQ21>(apply_eq_params);
-
             return effect;
         }
 
