@@ -228,34 +228,34 @@ namespace Vital::Sandbox::API {
                     .optional(3, &Machine::is_table);
             
                 auto type = vm -> get_string(2);
+                bool has_params = vm -> is_table(3);
                 godot::Ref<godot::AudioEffect> effect;
             
-                auto read_f = [&](const std::string& key, auto setter) {
-                    vm -> get_table_field(key, 3);
-                    if (vm -> is_number(-1)) setter(vm -> get_float(-1));
-                    vm -> pop(1);
-                };
-                auto read_b = [&](const std::string& key, auto setter) {
+                auto read_bool = [&](const std::string& key, auto setter) {
                     vm -> get_table_field(key, 3);
                     if (vm -> is_bool(-1)) setter(vm -> get_bool(-1));
                     vm -> pop(1);
                 };
-                auto read_i = [&](const std::string& key, auto setter) {
+                auto read_int = [&](const std::string& key, auto setter) {
                     vm -> get_table_field(key, 3);
                     if (vm -> is_number(-1)) setter(vm -> get_int(-1));
                     vm -> pop(1);
                 };
-                bool has_params = vm -> is_table(3);
+                auto read_float = [&](const std::string& key, auto setter) {
+                    vm -> get_table_field(key, 3);
+                    if (vm -> is_number(-1)) setter(vm -> get_float(-1));
+                    vm -> pop(1);
+                };
             
                 // Filter helper — shared by all AudioEffectFilter subclasses
                 // NOTE: takes Ref<AudioEffectFilter>, not a raw pointer — Ref<Derived> converts
                 // implicitly to Ref<Base>, but a raw Derived* does NOT convert to Ref<Base>.
                 auto apply_filter_params = [&](const godot::Ref<godot::AudioEffectFilter>& f) {
                     if (!has_params) return;
-                    read_f("cutoff",    [&](float v) { f -> set_cutoff(v); });
-                    read_f("resonance", [&](float v) { f -> set_resonance(v); });
-                    read_f("gain",      [&](float v) { f -> set_gain(v); });
-                    read_i("db",        [&](int v)   { f -> set_db(static_cast<godot::AudioEffectFilter::FilterDB>(v)); });
+                    read_float("cutoff",    [&](float v) { f -> set_cutoff(v);                                              });
+                    read_float("resonance", [&](float v) { f -> set_resonance(v);                                           });
+                    read_float("gain",      [&](float v) { f -> set_gain(v);                                                });
+                    read_int("db",          [&](int v)   { f -> set_db(static_cast<godot::AudioEffectFilter::FilterDB>(v)); });
                 };
             
                 // EQ helper — shared by EQ6, EQ10, EQ21
@@ -277,14 +277,14 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectReverb> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("room_size",          [&](float v) { e -> set_room_size(v); });
-                        read_f("damping",            [&](float v) { e -> set_damping(v); });
-                        read_f("spread",             [&](float v) { e -> set_spread(v); });
-                        read_f("wet",                [&](float v) { e -> set_wet(v); });
-                        read_f("dry",                [&](float v) { e -> set_dry(v); });
-                        read_f("hpf",                [&](float v) { e -> set_hpf(v); });
-                        read_f("predelay_msec",      [&](float v) { e -> set_predelay_msec(v); });
-                        read_f("predelay_feedback",  [&](float v) { e -> set_predelay_feedback(v); });
+                        read_float("room_size",          [&](float v) { e -> set_room_size(v);         });
+                        read_float("damping",            [&](float v) { e -> set_damping(v);           });
+                        read_float("spread",             [&](float v) { e -> set_spread(v);            });
+                        read_float("wet",                [&](float v) { e -> set_wet(v);               });
+                        read_float("dry",                [&](float v) { e -> set_dry(v);               });
+                        read_float("hpf",                [&](float v) { e -> set_hpf(v);               });
+                        read_float("predelay_msec",      [&](float v) { e -> set_predelay_msec(v);     });
+                        read_float("predelay_feedback",  [&](float v) { e -> set_predelay_feedback(v); });
                     }
                     effect = e;
                 }
@@ -292,9 +292,9 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectChorus> e;
                     e.instantiate();
                     if (has_params) {
-                        read_i("voice_count", [&](int v)   { e -> set_voice_count(v); });
-                        read_f("wet",         [&](float v) { e -> set_wet(v); });
-                        read_f("dry",         [&](float v) { e -> set_dry(v); });
+                        read_int("voice_count", [&](int v)   { e -> set_voice_count(v); });
+                        read_float("wet",         [&](float v) { e -> set_wet(v);       });
+                        read_float("dry",         [&](float v) { e -> set_dry(v);       });
                         vm -> get_table_field("voices", 3);
                         if (vm -> is_table(-1)) {
                             for (int i = 0; i < e -> get_voice_count(); i++) {
@@ -318,19 +318,19 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectDelay> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("dry",                [&](float v) { e -> set_dry(v); });
-                        read_b("tap1_active",        [&](bool v)  { e -> set_tap1_active(v); });
-                        read_f("tap1_delay_ms",      [&](float v) { e -> set_tap1_delay_ms(v); });
-                        read_f("tap1_level_db",      [&](float v) { e -> set_tap1_level_db(v); });
-                        read_f("tap1_pan",           [&](float v) { e -> set_tap1_pan(v); });
-                        read_b("tap2_active",        [&](bool v)  { e -> set_tap2_active(v); });
-                        read_f("tap2_delay_ms",      [&](float v) { e -> set_tap2_delay_ms(v); });
-                        read_f("tap2_level_db",      [&](float v) { e -> set_tap2_level_db(v); });
-                        read_f("tap2_pan",           [&](float v) { e -> set_tap2_pan(v); });
-                        read_b("feedback_active",    [&](bool v)  { e -> set_feedback_active(v); });
-                        read_f("feedback_delay_ms",  [&](float v) { e -> set_feedback_delay_ms(v); });
-                        read_f("feedback_level_db",  [&](float v) { e -> set_feedback_level_db(v); });
-                        read_f("feedback_lowpass",   [&](float v) { e -> set_feedback_lowpass(v); });
+                        read_float("dry",               [&](float v) { e -> set_dry(v);               });
+                        read_bool("tap1_active",        [&](bool v)  { e -> set_tap1_active(v);       });
+                        read_float("tap1_delay_ms",     [&](float v) { e -> set_tap1_delay_ms(v);     });
+                        read_float("tap1_level_db",     [&](float v) { e -> set_tap1_level_db(v);     });
+                        read_float("tap1_pan",          [&](float v) { e -> set_tap1_pan(v);          });
+                        read_bool("tap2_active",        [&](bool v)  { e -> set_tap2_active(v);       });
+                        read_float("tap2_delay_ms",     [&](float v) { e -> set_tap2_delay_ms(v);     });
+                        read_float("tap2_level_db",     [&](float v) { e -> set_tap2_level_db(v);     });
+                        read_float("tap2_pan",          [&](float v) { e -> set_tap2_pan(v);          });
+                        read_bool("feedback_active",    [&](bool v)  { e -> set_feedback_active(v);   });
+                        read_float("feedback_delay_ms", [&](float v) { e -> set_feedback_delay_ms(v); });
+                        read_float("feedback_level_db", [&](float v) { e -> set_feedback_level_db(v); });
+                        read_float("feedback_lowpass",  [&](float v) { e -> set_feedback_lowpass(v);  });
                     }
                     effect = e;
                 }
@@ -338,11 +338,11 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectDistortion> e;
                     e.instantiate();
                     if (has_params) {
-                        read_i("mode",        [&](int v)   { e -> set_mode(static_cast<godot::AudioEffectDistortion::Mode>(v)); });
-                        read_f("pre_gain",    [&](float v) { e -> set_pre_gain(v); });
-                        read_f("keep_hf_hz",  [&](float v) { e -> set_keep_hf_hz(v); });
-                        read_f("drive",       [&](float v) { e -> set_drive(v); });
-                        read_f("post_gain",   [&](float v) { e -> set_post_gain(v); });
+                        read_int("mode",         [&](int v)   { e -> set_mode(static_cast<godot::AudioEffectDistortion::Mode>(v)); });
+                        read_float("pre_gain",   [&](float v) { e -> set_pre_gain(v);                                              });
+                        read_float("keep_hf_hz", [&](float v) { e -> set_keep_hf_hz(v);                                            });
+                        read_float("drive",      [&](float v) { e -> set_drive(v);                                                 });
+                        read_float("post_gain",  [&](float v) { e -> set_post_gain(v);                                             });
                     }
                     effect = e;
                 }
@@ -350,8 +350,8 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectAmplify> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("volume_db",     [&](float v) { e -> set_volume_db(v); });
-                        read_f("volume_linear", [&](float v) { e -> set_volume_linear(v); });
+                        read_float("volume_db",     [&](float v) { e -> set_volume_db(v);     });
+                        read_float("volume_linear", [&](float v) { e -> set_volume_linear(v); });
                     }
                     effect = e;
                 }
@@ -359,12 +359,12 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectCompressor> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("threshold",  [&](float v) { e -> set_threshold(v); });
-                        read_f("ratio",      [&](float v) { e -> set_ratio(v); });
-                        read_f("gain",       [&](float v) { e -> set_gain(v); });
-                        read_f("attack_us",  [&](float v) { e -> set_attack_us(v); });
-                        read_f("release_ms", [&](float v) { e -> set_release_ms(v); });
-                        read_f("mix",        [&](float v) { e -> set_mix(v); });
+                        read_float("threshold",  [&](float v) { e -> set_threshold(v);  });
+                        read_float("ratio",      [&](float v) { e -> set_ratio(v);      });
+                        read_float("gain",       [&](float v) { e -> set_gain(v);       });
+                        read_float("attack_us",  [&](float v) { e -> set_attack_us(v);  });
+                        read_float("release_ms", [&](float v) { e -> set_release_ms(v); });
+                        read_float("mix",        [&](float v) { e -> set_mix(v);        });
                     }
                     effect = e;
                 }
@@ -372,10 +372,10 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectLimiter> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("ceiling_db",      [&](float v) { e -> set_ceiling_db(v); });
-                        read_f("threshold_db",    [&](float v) { e -> set_threshold_db(v); });
-                        read_f("soft_clip_db",    [&](float v) { e -> set_soft_clip_db(v); });
-                        read_f("soft_clip_ratio", [&](float v) { e -> set_soft_clip_ratio(v); });
+                        read_float("ceiling_db",      [&](float v) { e -> set_ceiling_db(v);      });
+                        read_float("threshold_db",    [&](float v) { e -> set_threshold_db(v);    });
+                        read_float("soft_clip_db",    [&](float v) { e -> set_soft_clip_db(v);    });
+                        read_float("soft_clip_ratio", [&](float v) { e -> set_soft_clip_ratio(v); });
                     }
                     effect = e;
                 }
@@ -383,9 +383,9 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectHardLimiter> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("ceiling_db",  [&](float v) { e -> set_ceiling_db(v); });
-                        read_f("pre_gain_db", [&](float v) { e -> set_pre_gain_db(v); });
-                        read_f("release",     [&](float v) { e -> set_release(v); });
+                        read_float("ceiling_db",  [&](float v) { e -> set_ceiling_db(v);  });
+                        read_float("pre_gain_db", [&](float v) { e -> set_pre_gain_db(v); });
+                        read_float("release",     [&](float v) { e -> set_release(v);     });
                     }
                     effect = e;
                 }
@@ -393,7 +393,7 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectPanner> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("pan", [&](float v) { e -> set_pan(v); });
+                        read_float("pan", [&](float v) { e -> set_pan(v); });
                     }
                     effect = e;
                 }
@@ -401,11 +401,11 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectPhaser> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("range_min_hz", [&](float v) { e -> set_range_min_hz(v); });
-                        read_f("range_max_hz", [&](float v) { e -> set_range_max_hz(v); });
-                        read_f("rate_hz",      [&](float v) { e -> set_rate_hz(v); });
-                        read_f("feedback",     [&](float v) { e -> set_feedback(v); });
-                        read_f("depth",        [&](float v) { e -> set_depth(v); });
+                        read_float("range_min_hz", [&](float v) { e -> set_range_min_hz(v); });
+                        read_float("range_max_hz", [&](float v) { e -> set_range_max_hz(v); });
+                        read_float("rate_hz",      [&](float v) { e -> set_rate_hz(v);      });
+                        read_float("feedback",     [&](float v) { e -> set_feedback(v);     });
+                        read_float("depth",        [&](float v) { e -> set_depth(v);        });
                     }
                     effect = e;
                 }
@@ -413,9 +413,9 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectPitchShift> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("pitch_scale",  [&](float v) { e -> set_pitch_scale(v); });
-                        read_i("oversampling", [&](int v)   { e -> set_oversampling(v); });
-                        read_i("fft_size",     [&](int v)   { e -> set_fft_size(static_cast<godot::AudioEffectPitchShift::FFTSize>(v)); });
+                        read_float("pitch_scale", [&](float v) { e -> set_pitch_scale(v);                                                  });
+                        read_int("oversampling",  [&](int v)   { e -> set_oversampling(v);                                                 });
+                        read_int("fft_size",      [&](int v)   { e -> set_fft_size(static_cast<godot::AudioEffectPitchShift::FFTSize>(v)); });
                     }
                     effect = e;
                 }
@@ -423,9 +423,9 @@ namespace Vital::Sandbox::API {
                     godot::Ref<godot::AudioEffectStereoEnhance> e;
                     e.instantiate();
                     if (has_params) {
-                        read_f("pan_pullout",  [&](float v) { e -> set_pan_pullout(v); });
-                        read_f("time_pullout", [&](float v) { e -> set_time_pullout(v); });
-                        read_f("surround",     [&](float v) { e -> set_surround(v); });
+                        read_float("pan_pullout",  [&](float v) { e -> set_pan_pullout(v);  });
+                        read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
+                        read_float("surround",     [&](float v) { e -> set_surround(v);     });
                     }
                     effect = e;
                 }
