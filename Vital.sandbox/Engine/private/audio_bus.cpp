@@ -36,6 +36,7 @@ namespace Vital::Engine {
         auto idx = Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
         if (idx >= 0) Engine::Core::get_audio_server() -> remove_bus(idx);
         bus_index = -1;
+        effect_names.clear();
     }
 
     int Audio_Bus::resolve_bus() const {
@@ -43,54 +44,68 @@ namespace Vital::Engine {
         return Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
     }
 
-    bool Audio_Bus::resolve_effect(int id, int& out_idx) const {
-        out_idx = resolve_bus();
-        if (out_idx < 0 || id < 0 || id >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_idx)) return false;
+    bool Audio_Bus::resolve_effect(const std::string& name, int& out_bus_idx, int& out_slot_idx) const {
+        out_bus_idx = resolve_bus();
+        if (out_bus_idx < 0) return false;
+        auto it = std::find(effect_names.begin(), effect_names.end(), name);
+        if (it == effect_names.end()) return false;
+        out_slot_idx = static_cast<int>(std::distance(effect_names.begin(), it));
+        if (out_slot_idx >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_bus_idx)) return false;
         return true;
     }
 
-    
-    // Checkerss //
-    bool Audio_Bus::is_effect_enabled(int id) const {
-        int idx; 
-        if (!resolve_effect(id, idx)) return false;
-        return Engine::Core::get_audio_server() -> is_bus_effect_enabled(idx, id);
+
+    // Checkers //
+    bool Audio_Bus::is_effect_enabled(const std::string& name) const {
+        int bus_idx, slot_idx;
+        if (!resolve_effect(name, bus_idx, slot_idx)) return false;
+        return Engine::Core::get_audio_server() -> is_bus_effect_enabled(bus_idx, slot_idx);
     }
-    
-    
+
+
     // Getters //
-    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int id) const {
-        int idx; 
-        if (!resolve_effect(id, idx)) return nullptr;
-        return Engine::Core::get_audio_server() -> get_bus_effect(idx, id);
+    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(const std::string& name) const {
+        int bus_idx, slot_idx;
+        if (!resolve_effect(name, bus_idx, slot_idx)) return nullptr;
+        return Engine::Core::get_audio_server() -> get_bus_effect(bus_idx, slot_idx);
     }
-        
+
     int Audio_Bus::get_effect_count() const {
         auto idx = resolve_bus();
         if (idx < 0) return 0;
         return Engine::Core::get_audio_server() -> get_bus_effect_count(idx);
     }
 
+    std::vector<std::string> Audio_Bus::get_effects() const {
+        return effect_names;
+    }
+
 
     // Setters //
-    bool Audio_Bus::set_effect_enabled(int id, bool enabled) {
-        int idx; 
-        if (!resolve_effect(id, idx)) return false;
-        Engine::Core::get_audio_server() -> set_bus_effect_enabled(idx, id, enabled);
+    bool Audio_Bus::set_effect_enabled(const std::string& name, bool enabled) {
+        int bus_idx, slot_idx;
+        if (!resolve_effect(name, bus_idx, slot_idx)) return false;
+        Engine::Core::get_audio_server() -> set_bus_effect_enabled(bus_idx, slot_idx, enabled);
         return true;
     }
-    
-    bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& effect) {
+
+
+    // Misc //
+    bool Audio_Bus::add_effect(const std::string& name, const godot::Ref<godot::AudioEffect>& effect) {
         auto idx = resolve_bus();
         if (idx < 0 || !effect.is_valid()) return false;
+        auto it = std::find(effect_names.begin(), effect_names.end(), name);
+        if (it != effect_names.end()) return false; // name already exists
         Engine::Core::get_audio_server() -> add_bus_effect(idx, effect);
+        effect_names.push_back(name);
         return true;
     }
-    
-    bool Audio_Bus::remove_effect(int id) {
-        int idx; 
-        if (!resolve_effect(id, idx)) return false;
-        Engine::Core::get_audio_server() -> remove_bus_effect(idx, id);
+
+    bool Audio_Bus::remove_effect(const std::string& name) {
+        int bus_idx, slot_idx;
+        if (!resolve_effect(name, bus_idx, slot_idx)) return false;
+        Engine::Core::get_audio_server() -> remove_bus_effect(bus_idx, slot_idx);
+        effect_names.erase(effect_names.begin() + slot_idx);
         return true;
     }
 }

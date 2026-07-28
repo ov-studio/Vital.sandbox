@@ -250,27 +250,25 @@ namespace Vital::Sandbox::API {
         template<typename Instance>
         static void methods(Machine* vm) {
             vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, parameters = {})")
+                vm_args(vm, id, "(name, type, parameters = {})")
                     .require(2, &Machine::is_string)
-                    .optional(3, &Machine::is_table);
+                    .require(3, &Machine::is_string)
+                    .optional(4, &Machine::is_table);
 
-                auto type = vm -> get_string(2);
-                bool has_params = vm -> is_table(3);
-                auto effect = Audio_Effect::build(vm, type, has_params, 3);
+                auto name = vm -> get_string(2);
+                auto type = vm -> get_string(3);
+                bool has_params = vm -> is_table(4);
+                auto effect = Audio_Effect::build(vm, type, has_params, 4);
                 if (!effect.is_valid()) vm -> push_value(false);
-                else {
-                    auto result = self -> audio -> add_effect(effect);
-                    if (result) vm -> push_value(self -> audio -> get_effect_count() - 1);
-                    else vm -> push_value(false);
-                }
+                else vm -> push_value(self -> audio -> add_effect(name, effect));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "remove_effect", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(id)", true)
-                    .require(2, &Machine::is_number);
+                vm_args(vm, id, "(name)", true)
+                    .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> audio -> remove_effect(vm -> get_int(2)));
+                vm -> push_value(self -> audio -> remove_effect(vm -> get_string(2)));
                 return 1;
             });
 
@@ -279,20 +277,30 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_effects", [](auto vm, auto self, auto& id) -> int {
+                auto names = self -> audio -> get_effects();
+                vm -> create_table();
+                for (int i = 0; i < static_cast<int>(names.size()); i++) {
+                    vm -> push_value(names[i]);
+                    vm -> set_table_field(i + 1, -2);
+                }
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_effect_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(id, state)", true)
-                    .require(2, &Machine::is_number)
+                vm_args(vm, id, "(name, state)", true)
+                    .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
 
-                vm -> push_value(self -> audio -> set_effect_enabled(vm -> get_int(2), vm -> get_bool(3)));
+                vm -> push_value(self -> audio -> set_effect_enabled(vm -> get_string(2), vm -> get_bool(3)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "is_effect_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(id)", true)
-                    .require(2, &Machine::is_number);
+                vm_args(vm, id, "(name)", true)
+                    .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> audio -> is_effect_enabled(vm -> get_int(2)));
+                vm -> push_value(self -> audio -> is_effect_enabled(vm -> get_string(2)));
                 return 1;
             });
         }
