@@ -48,6 +48,7 @@
 namespace Vital::Sandbox::API {
     struct Audio_Effect {
         enum class Type {
+        enum class Effect {
             REVERB,
             CHORUS,
             DELAY,
@@ -72,29 +73,29 @@ namespace Vital::Sandbox::API {
             EQ21
         };
 
-        inline static const std::vector<std::pair<std::string, Type>> registry = {
-            { "REVERB",           Type::REVERB           },
-            { "CHORUS",           Type::CHORUS           },
-            { "DELAY",            Type::DELAY            },
-            { "DISTORTION",       Type::DISTORTION       },
-            { "AMPLIFY",          Type::AMPLIFY          },
-            { "COMPRESSOR",       Type::COMPRESSOR       },
-            { "LIMITER",          Type::LIMITER          },
-            { "HARD_LIMITER",     Type::HARD_LIMITER     },
-            { "PANNER",           Type::PANNER           },
-            { "PHASER",           Type::PHASER           },
-            { "PITCH_SHIFT",      Type::PITCH_SHIFT      },
-            { "STEREO_ENHANCE"  , Type::STEREO_ENHANCE   },
-            { "LOWPASS_FILTER",   Type::LOWPASS_FILTER   },
-            { "HIGHPASS_FILTER",  Type::HIGHPASS_FILTER  },
-            { "BANDPASS_FILTER",  Type::BANDPASS_FILTER  },
-            { "NOTCH_FILTER",     Type::NOTCH_FILTER     },
-            { "BANDLIMIT_FILTER", Type::BANDLIMIT_FILTER },
-            { "LOWSHELF_FILTER",  Type::LOWSHELF_FILTER  },
-            { "HIGHSHELF_FILTER", Type::HIGHSHELF_FILTER },
-            { "EQ6",              Type::EQ6              },
-            { "EQ10",             Type::EQ10             },
-            { "EQ21",             Type::EQ21             }
+        inline static const std::vector<std::pair<std::string, Effect>> effect_registry = {
+            { "REVERB",           Effect::REVERB           },
+            { "CHORUS",           Effect::CHORUS           },
+            { "DELAY",            Effect::DELAY            },
+            { "DISTORTION",       Effect::DISTORTION       },
+            { "AMPLIFY",          Effect::AMPLIFY          },
+            { "COMPRESSOR",       Effect::COMPRESSOR       },
+            { "LIMITER",          Effect::LIMITER          },
+            { "HARD_LIMITER",     Effect::HARD_LIMITER     },
+            { "PANNER",           Effect::PANNER           },
+            { "PHASER",           Effect::PHASER           },
+            { "PITCH_SHIFT",      Effect::PITCH_SHIFT      },
+            { "STEREO_ENHANCE"  , Effect::STEREO_ENHANCE   },
+            { "LOWPASS_FILTER",   Effect::LOWPASS_FILTER   },
+            { "HIGHPASS_FILTER",  Effect::HIGHPASS_FILTER  },
+            { "BANDPASS_FILTER",  Effect::BANDPASS_FILTER  },
+            { "NOTCH_FILTER",     Effect::NOTCH_FILTER     },
+            { "BANDLIMIT_FILTER", Effect::BANDLIMIT_FILTER },
+            { "LOWSHELF_FILTER",  Effect::LOWSHELF_FILTER  },
+            { "HIGHSHELF_FILTER", Effect::HIGHSHELF_FILTER },
+            { "EQ6",              Effect::EQ6              },
+            { "EQ10",             Effect::EQ10             },
+            { "EQ21",             Effect::EQ21             }
         };
 
         template<typename T, typename Fn>
