@@ -47,6 +47,56 @@
 
 namespace Vital::Sandbox::API {
     struct Audio_Effect {
+        enum class Type {
+            REVERB,
+            CHORUS,
+            DELAY,
+            DISTORTION,
+            AMPLIFY,
+            COMPRESSOR,
+            LIMITER,
+            HARD_LIMITER,
+            PANNER,
+            PHASER,
+            PITCH_SHIFT,
+            STEREO_ENHANCE,
+            LOWPASS_FILTER,
+            HIGHPASS_FILTER,
+            BANDPASS_FILTER,
+            NOTCH_FILTER,
+            BANDLIMIT_FILTER,
+            LOWSHELF_FILTER,
+            HIGHSHELF_FILTER,
+            EQ6,
+            EQ10,
+            EQ21
+        };
+
+        inline static const std::vector<std::pair<std::string, Type>> registry = {
+            { "REVERB",           Type::REVERB           },
+            { "CHORUS",           Type::CHORUS           },
+            { "DELAY",            Type::DELAY            },
+            { "DISTORTION",       Type::DISTORTION       },
+            { "AMPLIFY",          Type::AMPLIFY          },
+            { "COMPRESSOR",       Type::COMPRESSOR       },
+            { "LIMITER",          Type::LIMITER          },
+            { "HARD_LIMITER",     Type::HARD_LIMITER     },
+            { "PANNER",           Type::PANNER           },
+            { "PHASER",           Type::PHASER           },
+            { "PITCH_SHIFT",      Type::PITCH_SHIFT      },
+            { "STEREO_ENHANCE"  , Type::STEREO_ENHANCE   },
+            { "LOWPASS_FILTER",   Type::LOWPASS_FILTER   },
+            { "HIGHPASS_FILTER",  Type::HIGHPASS_FILTER  },
+            { "BANDPASS_FILTER",  Type::BANDPASS_FILTER  },
+            { "NOTCH_FILTER",     Type::NOTCH_FILTER     },
+            { "BANDLIMIT_FILTER", Type::BANDLIMIT_FILTER },
+            { "LOWSHELF_FILTER",  Type::LOWSHELF_FILTER  },
+            { "HIGHSHELF_FILTER", Type::HIGHSHELF_FILTER },
+            { "EQ6",              Type::EQ6              },
+            { "EQ10",             Type::EQ10             },
+            { "EQ21",             Type::EQ21             }
+        };
+
         template<typename T, typename Fn>
         static godot::Ref<T> make(Fn&& configure) {
             godot::Ref<T> e;
