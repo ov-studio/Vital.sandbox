@@ -52,16 +52,16 @@ namespace Vital::Engine {
     
     // Checkerss //
     bool Audio_Bus::is_effect_enabled(int32_t effect) const {
-        auto idx = resolve_bus();
-        if (idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(idx)) return false;
+        int32_t idx; 
+        if (!resolve_effect(effect, idx)) return false;
         return Engine::Core::get_audio_server() -> is_bus_effect_enabled(idx, effect);
     }
 
 
     // Getters //
     godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int32_t effect) const {
-        auto idx = resolve_bus();
-        if (idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(idx)) return nullptr;
+        int32_t idx; 
+        if (!resolve_effect(effect, idx)) return nullptr;
         return Engine::Core::get_audio_server() -> get_bus_effect(idx, effect);
     }
 
@@ -74,8 +74,8 @@ namespace Vital::Engine {
 
     // Setters //
     bool Audio_Bus::set_effect_enabled(int32_t effect, bool enabled) {
-        auto idx = resolve_bus();
-        if (idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(idx)) return false;
+        int32_t idx; 
+        if (!resolve_effect(effect, idx)) return false;
         Engine::Core::get_audio_server() -> set_bus_effect_enabled(idx, effect, enabled);
         return true;
     }
@@ -90,8 +90,8 @@ namespace Vital::Engine {
     }
 
     bool Audio_Bus::remove_effect(int32_t effect) {
-        auto idx = resolve_bus();
-        if (idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(idx)) return false;
+        int32_t idx; 
+        if (!resolve_effect(effect, idx)) return false;
         Engine::Core::get_audio_server() -> remove_bus_effect(idx, effect);
         return true;
     }
