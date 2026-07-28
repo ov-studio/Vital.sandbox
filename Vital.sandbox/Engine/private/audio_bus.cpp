@@ -80,10 +80,10 @@ namespace Vital::Engine {
         return true;
     }
     
-    bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& id) {
+    bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& effect) {
         auto idx = resolve_bus();
-        if (idx < 0 || !id.is_valid()) return false;
-        Engine::Core::get_audio_server() -> add_bus_effect(idx, id);
+        if (idx < 0 || !effect.is_valid()) return false;
+        Engine::Core::get_audio_server() -> add_bus_effect(idx, effect);
         return true;
     }
     

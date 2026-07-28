@@ -48,7 +48,7 @@ namespace Vital::Engine {
 
             
             // Misc //
-            bool add_effect(const godot::Ref<godot::AudioEffect>& id);
+            bool add_effect(const godot::Ref<godot::AudioEffect>& effect);
             bool remove_effect(int id);
     };
 }
