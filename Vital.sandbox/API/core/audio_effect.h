@@ -267,7 +267,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "remove_effect", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(effect)", true)
+                vm_args(vm, id, "(id)", true)
                     .require(2, &Machine::is_number);
 
                 vm -> push_value(self -> audio -> remove_effect(vm -> get_int(2)));
@@ -280,7 +280,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_effect_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(effect, state)", true)
+                vm_args(vm, id, "(id, state)", true)
                     .require(2, &Machine::is_number)
                     .require(3, &Machine::is_bool);
 
@@ -289,7 +289,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_effect_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(effect)", true)
+                vm_args(vm, id, "(id)", true)
                     .require(2, &Machine::is_number);
 
                 vm -> push_value(self -> audio -> is_effect_enabled(vm -> get_int(2)));
