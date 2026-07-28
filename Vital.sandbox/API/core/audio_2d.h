@@ -71,13 +71,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        // Instantiates an effect of type T and runs `configure` on it before returning —
-        // collapses the `Ref<T> e; e.instantiate(); ...; return e;` boilerplate that used
-        // to be repeated per-branch in add_effect() into a single call.
-        // NOTE: this has to be a real member function template (not a local lambda) —
-        // MSVC does not reliably parse explicit template arguments on a generic lambda's
-        // operator() (e.g. `some_lambda.template operator()<T>(...)`), which is what the
-        // previous version relied on.
         template<typename T, typename Fn>
         static godot::Ref<T> make_effect(Fn&& configure) {
             godot::Ref<T> e;
@@ -241,7 +234,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(type, parameters = {})")
                     .require(2, &Machine::is_string)
                     .optional(3, &Machine::is_table);
-            
+
                 auto type = vm -> get_string(2);
                 bool has_params = vm -> is_table(3);
                 godot::Ref<godot::AudioEffect> effect;
@@ -261,7 +254,7 @@ namespace Vital::Sandbox::API {
                     if (vm -> is_number(-1)) setter(vm -> get_float(-1));
                     vm -> pop(1);
                 };
-            
+
                 // Filter helper — shared by all AudioEffectFilter subclasses
                 // NOTE: takes Ref<AudioEffectFilter>, not a raw pointer — Ref<Derived> converts
                 // implicitly to Ref<Base>, but a raw Derived* does NOT convert to Ref<Base>.
@@ -272,7 +265,7 @@ namespace Vital::Sandbox::API {
                     read_float("gain",      [&](float v) { f -> set_gain(v);                                                });
                     read_int("db",          [&](int v)   { f -> set_db(static_cast<godot::AudioEffectFilter::FilterDB>(v)); });
                 };
-            
+
                 // EQ helper — shared by EQ6, EQ10, EQ21
                 auto apply_eq_params = [&](const godot::Ref<godot::AudioEffectEQ>& eq) {
                     if (!has_params) return;
@@ -287,7 +280,7 @@ namespace Vital::Sandbox::API {
                     }
                     vm -> pop(1);
                 };
-            
+
                 if (type == "reverb") {
                     effect = make_effect<godot::AudioEffectReverb>([&](auto& e) {
                         if (!has_params) return;
@@ -430,7 +423,7 @@ namespace Vital::Sandbox::API {
                 else if (type == "eq6")  effect = make_effect<godot::AudioEffectEQ6>(apply_eq_params);
                 else if (type == "eq10") effect = make_effect<godot::AudioEffectEQ10>(apply_eq_params);
                 else if (type == "eq21") effect = make_effect<godot::AudioEffectEQ21>(apply_eq_params);
-            
+
                 if (!effect.is_valid()) vm -> push_value(false);
                 else {
                     auto result = self -> audio -> add_effect(effect);
