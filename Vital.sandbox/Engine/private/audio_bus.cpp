@@ -43,26 +43,26 @@ namespace Vital::Engine {
         return Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
     }
 
-    bool Audio_Bus::resolve_effect(int effect, int& out_idx) const {
+    bool Audio_Bus::resolve_effect(int id, int& out_idx) const {
         out_idx = resolve_bus();
-        if (out_idx < 0 || effect < 0 || effect >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_idx)) return false;
+        if (out_idx < 0 || id < 0 || id >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_idx)) return false;
         return true;
     }
 
     
     // Checkerss //
-    bool Audio_Bus::is_effect_enabled(int effect) const {
+    bool Audio_Bus::is_effect_enabled(int id) const {
         int idx; 
-        if (!resolve_effect(effect, idx)) return false;
-        return Engine::Core::get_audio_server() -> is_bus_effect_enabled(idx, effect);
+        if (!resolve_effect(id, idx)) return false;
+        return Engine::Core::get_audio_server() -> is_bus_effect_enabled(idx, id);
     }
     
     
     // Getters //
-    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int effect) const {
+    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(int id) const {
         int idx; 
-        if (!resolve_effect(effect, idx)) return nullptr;
-        return Engine::Core::get_audio_server() -> get_bus_effect(idx, effect);
+        if (!resolve_effect(id, idx)) return nullptr;
+        return Engine::Core::get_audio_server() -> get_bus_effect(idx, id);
     }
         
     int Audio_Bus::get_effect_count() const {
@@ -73,24 +73,24 @@ namespace Vital::Engine {
 
 
     // Setters //
-    bool Audio_Bus::set_effect_enabled(int effect, bool enabled) {
+    bool Audio_Bus::set_effect_enabled(int id, bool enabled) {
         int idx; 
-        if (!resolve_effect(effect, idx)) return false;
-        Engine::Core::get_audio_server() -> set_bus_effect_enabled(idx, effect, enabled);
+        if (!resolve_effect(id, idx)) return false;
+        Engine::Core::get_audio_server() -> set_bus_effect_enabled(idx, id, enabled);
         return true;
     }
     
-    bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& effect) {
+    bool Audio_Bus::add_effect(const godot::Ref<godot::AudioEffect>& id) {
         auto idx = resolve_bus();
-        if (idx < 0 || !effect.is_valid()) return false;
-        Engine::Core::get_audio_server() -> add_bus_effect(idx, effect);
+        if (idx < 0 || !id.is_valid()) return false;
+        Engine::Core::get_audio_server() -> add_bus_effect(idx, id);
         return true;
     }
     
-    bool Audio_Bus::remove_effect(int effect) {
+    bool Audio_Bus::remove_effect(int id) {
         int idx; 
-        if (!resolve_effect(effect, idx)) return false;
-        Engine::Core::get_audio_server() -> remove_bus_effect(idx, effect);
+        if (!resolve_effect(id, idx)) return false;
+        Engine::Core::get_audio_server() -> remove_bus_effect(idx, id);
         return true;
     }
 }

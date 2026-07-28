@@ -32,24 +32,24 @@ namespace Vital::Engine {
             const std::string& create_bus(const std::string& prefix);
             void destroy_bus();
             int resolve_bus() const;
-            bool resolve_effect(int effect, int& out_idx) const;
+            bool resolve_effect(int id, int& out_idx) const;
         public:
             // Checkerss //
-            bool is_effect_enabled(int effect) const;
+            bool is_effect_enabled(int id) const;
 
             
             // Getters //
-            godot::Ref<godot::AudioEffect> get_effect(int effect) const;
+            godot::Ref<godot::AudioEffect> get_effect(int id) const;
             int get_effect_count() const;
 
 
             // Setters //
-            bool set_effect_enabled(int effect, bool enabled);
+            bool set_effect_enabled(int id, bool enabled);
 
             
             // Misc //
-            bool add_effect(const godot::Ref<godot::AudioEffect>& effect);
-            bool remove_effect(int effect);
+            bool add_effect(const godot::Ref<godot::AudioEffect>& id);
+            bool remove_effect(int id);
     };
 }
 #endif
