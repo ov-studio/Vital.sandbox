@@ -185,105 +185,121 @@ namespace Vital::Sandbox::API {
                             }
                             vm -> pop(1);
                         }
-                    }
-                    vm -> pop(1);
-                });
-            }
-            else if (type == "delay") {
-                effect = make<godot::AudioEffectDelay>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("dry",               [&](float v) { e -> set_dry(v);               });
-                    read_bool("tap1_active",        [&](bool v)  { e -> set_tap1_active(v);        });
-                    read_float("tap1_delay_ms",     [&](float v) { e -> set_tap1_delay_ms(v);      });
-                    read_float("tap1_level_db",     [&](float v) { e -> set_tap1_level_db(v);      });
-                    read_float("tap1_pan",          [&](float v) { e -> set_tap1_pan(v);           });
-                    read_bool("tap2_active",        [&](bool v)  { e -> set_tap2_active(v);        });
-                    read_float("tap2_delay_ms",     [&](float v) { e -> set_tap2_delay_ms(v);      });
-                    read_float("tap2_level_db",     [&](float v) { e -> set_tap2_level_db(v);      });
-                    read_float("tap2_pan",          [&](float v) { e -> set_tap2_pan(v);           });
-                    read_bool("feedback_active",    [&](bool v)  { e -> set_feedback_active(v);    });
-                    read_float("feedback_delay_ms", [&](float v) { e -> set_feedback_delay_ms(v);  });
-                    read_float("feedback_level_db", [&](float v) { e -> set_feedback_level_db(v);  });
-                    read_float("feedback_lowpass",  [&](float v) { e -> set_feedback_lowpass(v);   });
-                });
-            }
-            else if (type == "distortion") {
-                effect = make<godot::AudioEffectDistortion>([&](auto& e) {
-                    if (!has_params) return;
-                    read_int("mode",         [&](int v)   { e -> set_mode(static_cast<godot::AudioEffectDistortion::Mode>(v)); });
-                    read_float("pre_gain",   [&](float v) { e -> set_pre_gain(v);                                              });
-                    read_float("keep_hf_hz", [&](float v) { e -> set_keep_hf_hz(v);                                            });
-                    read_float("drive",      [&](float v) { e -> set_drive(v);                                                 });
-                    read_float("post_gain",  [&](float v) { e -> set_post_gain(v);                                             });
-                });
-            }
-            else if (type == "amplify") {
-                effect = make<godot::AudioEffectAmplify>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("volume_db",     [&](float v) { e -> set_volume_db(v);     });
-                    read_float("volume_linear", [&](float v) { e -> set_volume_linear(v); });
-                });
-            }
-            else if (type == "compressor") {
-                effect = make<godot::AudioEffectCompressor>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("threshold",  [&](float v) { e -> set_threshold(v);  });
-                    read_float("ratio",      [&](float v) { e -> set_ratio(v);      });
-                    read_float("gain",       [&](float v) { e -> set_gain(v);       });
-                    read_float("attack_us",  [&](float v) { e -> set_attack_us(v);  });
-                    read_float("release_ms", [&](float v) { e -> set_release_ms(v); });
-                    read_float("mix",        [&](float v) { e -> set_mix(v);        });
-                });
-            }
-            else if (type == "limiter") {
-                effect = make<godot::AudioEffectLimiter>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("ceiling_db",      [&](float v) { e -> set_ceiling_db(v);      });
-                    read_float("threshold_db",    [&](float v) { e -> set_threshold_db(v);    });
-                    read_float("soft_clip_db",    [&](float v) { e -> set_soft_clip_db(v);    });
-                    read_float("soft_clip_ratio", [&](float v) { e -> set_soft_clip_ratio(v); });
-                });
-            }
-            else if (type == "hard_limiter") {
-                effect = make<godot::AudioEffectHardLimiter>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("ceiling_db",  [&](float v) { e -> set_ceiling_db(v);  });
-                    read_float("pre_gain_db", [&](float v) { e -> set_pre_gain_db(v); });
-                    read_float("release",     [&](float v) { e -> set_release(v);     });
-                });
-            }
-            else if (type == "panner") {
-                effect = make<godot::AudioEffectPanner>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("pan", [&](float v) { e -> set_pan(v); });
-                });
-            }
-            else if (type == "phaser") {
-                effect = make<godot::AudioEffectPhaser>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("range_min_hz", [&](float v) { e -> set_range_min_hz(v); });
-                    read_float("range_max_hz", [&](float v) { e -> set_range_max_hz(v); });
-                    read_float("rate_hz",      [&](float v) { e -> set_rate_hz(v);      });
-                    read_float("feedback",     [&](float v) { e -> set_feedback(v);     });
-                    read_float("depth",        [&](float v) { e -> set_depth(v);        });
-                });
-            }
-            else if (type == "pitch_shift") {
-                effect = make<godot::AudioEffectPitchShift>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("pitch_scale", [&](float v) { e -> set_pitch_scale(v);                                                  });
-                    read_int("oversampling",  [&](int v)   { e -> set_oversampling(v);                                                 });
-                    read_int("fft_size",      [&](int v)   { e -> set_fft_size(static_cast<godot::AudioEffectPitchShift::FFTSize>(v)); });
-                });
-            }
-            else if (type == "stereo_enhance") {
-                effect = make<godot::AudioEffectStereoEnhance>([&](auto& e) {
-                    if (!has_params) return;
-                    read_float("pan_pullout",  [&](float v) { e -> set_pan_pullout(v);  });
-                    read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
-                    read_float("surround",     [&](float v) { e -> set_surround(v);     });
-                });
+                        vm -> pop(1);
+                    });
+                    break;
+                }
+                case Type::DELAY: {
+                    effect = make<godot::AudioEffectDelay>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("dry",               [&](float v) { e -> set_dry(v);                });
+                        read_bool("tap1_active",        [&](bool v)  { e -> set_tap1_active(v);        });
+                        read_float("tap1_delay_ms",     [&](float v) { e -> set_tap1_delay_ms(v);      });
                         read_float("tap1_level_db",     [&](float v) { e -> set_tap1_level_db(v);      });
+                        read_float("tap1_pan",          [&](float v) { e -> set_tap1_pan(v);           });
+                        read_bool("tap2_active",        [&](bool v)  { e -> set_tap2_active(v);        });
+                        read_float("tap2_delay_ms",     [&](float v) { e -> set_tap2_delay_ms(v);      });
+                        read_float("tap2_level_db",     [&](float v) { e -> set_tap2_level_db(v);      });
+                        read_float("tap2_pan",          [&](float v) { e -> set_tap2_pan(v);           });
+                        read_bool("feedback_active",    [&](bool v)  { e -> set_feedback_active(v);    });
+                        read_float("feedback_delay_ms", [&](float v) { e -> set_feedback_delay_ms(v);  });
+                        read_float("feedback_level_db", [&](float v) { e -> set_feedback_level_db(v);  });
+                        read_float("feedback_lowpass",  [&](float v) { e -> set_feedback_lowpass(v);   });
+                    });
+                    break;
+                }
+                case Type::DISTORTION: {
+                    effect = make<godot::AudioEffectDistortion>([&](auto& e) {
+                        if (!has_params) return;
+                        read_int("mode",         [&](int v)   { e -> set_mode(static_cast<godot::AudioEffectDistortion::Mode>(v)); });
+                        read_float("pre_gain",   [&](float v) { e -> set_pre_gain(v);                                              });
+                        read_float("keep_hf_hz", [&](float v) { e -> set_keep_hf_hz(v);                                            });
+                        read_float("drive",      [&](float v) { e -> set_drive(v);                                                 });
+                        read_float("post_gain",  [&](float v) { e -> set_post_gain(v);                                             });
+                    });
+                    break;
+                }
+                case Type::AMPLIFY: {
+                    effect = make<godot::AudioEffectAmplify>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("volume_db",     [&](float v) { e -> set_volume_db(v);     });
+                        read_float("volume_linear", [&](float v) { e -> set_volume_linear(v); });
+                    });
+                    break;
+                }
+                case Type::COMPRESSOR: {
+                    effect = make<godot::AudioEffectCompressor>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("threshold",  [&](float v) { e -> set_threshold(v);  });
+                        read_float("ratio",      [&](float v) { e -> set_ratio(v);      });
+                        read_float("gain",       [&](float v) { e -> set_gain(v);       });
+                        read_float("attack_us",  [&](float v) { e -> set_attack_us(v);  });
+                        read_float("release_ms", [&](float v) { e -> set_release_ms(v); });
+                        read_float("mix",        [&](float v) { e -> set_mix(v);        });
+                    });
+                    break;
+                }
+                case Type::LIMITER: {
+                    effect = make<godot::AudioEffectLimiter>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("ceiling_db",      [&](float v) { e -> set_ceiling_db(v);      });
+                        read_float("threshold_db",    [&](float v) { e -> set_threshold_db(v);    });
+                        read_float("soft_clip_db",    [&](float v) { e -> set_soft_clip_db(v);    });
+                        read_float("soft_clip_ratio", [&](float v) { e -> set_soft_clip_ratio(v); });
+                    });
+                    break;
+                }
+                case Type::HARD_LIMITER: {
+                    effect = make<godot::AudioEffectHardLimiter>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("ceiling_db",  [&](float v) { e -> set_ceiling_db(v);  });
+                        read_float("pre_gain_db", [&](float v) { e -> set_pre_gain_db(v); });
+                        read_float("release",     [&](float v) { e -> set_release(v);     });
+                    });
+                    break;
+                }
+                case Type::PANNER: {
+                    effect = make<godot::AudioEffectPanner>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("pan", [&](float v) { e -> set_pan(v); });
+                    });
+                    break;
+                }
+                case Type::PHASER: {
+                    effect = make<godot::AudioEffectPhaser>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("range_min_hz", [&](float v) { e -> set_range_min_hz(v); });
+                        read_float("range_max_hz", [&](float v) { e -> set_range_max_hz(v); });
+                        read_float("rate_hz",      [&](float v) { e -> set_rate_hz(v);      });
+                        read_float("feedback",     [&](float v) { e -> set_feedback(v);     });
+                        read_float("depth",        [&](float v) { e -> set_depth(v);        });
+                    });
+                    break;
+                }
+                case Type::PITCH_SHIFT: {
+                    effect = make<godot::AudioEffectPitchShift>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("pitch_scale", [&](float v) { e -> set_pitch_scale(v);                                                  });
+                        read_int("oversampling",  [&](int v)   { e -> set_oversampling(v);                                                 });
+                        read_int("fft_size",      [&](int v)   { e -> set_fft_size(static_cast<godot::AudioEffectPitchShift::FFTSize>(v)); });
+                    });
+                    break;
+                }
+                case Type::STEREO_ENHANCE: {
+                    effect = make<godot::AudioEffectStereoEnhance>([&](auto& e) {
+                        if (!has_params) return;
+                        read_float("pan_pullout",  [&](float v) { e -> set_pan_pullout(v);  });
+                        read_float("time_pullout", [&](float v) { e -> set_time_pullout(v); });
+                        read_float("surround",     [&](float v) { e -> set_surround(v);     });
+                    });
+                    break;
+                }
+                case Type::LOWPASS_FILTER:   effect = make<godot::AudioEffectLowPassFilter>(apply_filter_params);   break;
+                case Type::HIGHPASS_FILTER:  effect = make<godot::AudioEffectHighPassFilter>(apply_filter_params);  break;
+                case Type::BANDPASS_FILTER:  effect = make<godot::AudioEffectBandPassFilter>(apply_filter_params);  break;
+                case Type::NOTCH_FILTER:     effect = make<godot::AudioEffectNotchFilter>(apply_filter_params);     break;
+                case Type::BANDLIMIT_FILTER: effect = make<godot::AudioEffectBandLimitFilter>(apply_filter_params); break;
+                case Type::LOWSHELF_FILTER:  effect = make<godot::AudioEffectLowShelfFilter>(apply_filter_params);  break;
                 case Type::HIGHSHELF_FILTER: effect = make<godot::AudioEffectHighShelfFilter>(apply_filter_params); break;
                 case Type::EQ21:             effect = make<godot::AudioEffectEQ21>(apply_eq_params);                break;
             }
