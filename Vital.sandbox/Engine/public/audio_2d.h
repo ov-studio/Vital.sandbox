@@ -3,6 +3,7 @@
      Script: Engine: audio_2d.h
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
      Desc: Audio 2D Utilities
 ----------------------------------------------------------------*/
 
@@ -49,7 +50,7 @@ namespace Vital::Engine {
             static Audio_2D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
             void destroy();
 
-            
+
             // Getters //
             godot::Ref<godot::AudioStream> get_stream() const;
             godot::AudioStreamPlayer2D* get_player() const;
