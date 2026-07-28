@@ -250,7 +250,7 @@ namespace Vital::Sandbox::API {
                     if (vm -> is_number(-1)) setter(vm -> get_int(-1));
                     vm -> pop(1);
                 };
-                
+
                 auto read_float = [&](const std::string& key, auto setter) {
                     vm -> get_table_field(key, 3);
                     if (vm -> is_number(-1)) setter(vm -> get_float(-1));
@@ -265,7 +265,6 @@ namespace Vital::Sandbox::API {
                     read_int("db",          [&](int v)   { f -> set_db(static_cast<godot::AudioEffectFilter::FilterDB>(v)); });
                 };
 
-                // EQ helper — shared by EQ6, EQ10, EQ21
                 auto apply_eq_params = [&](const godot::Ref<godot::AudioEffectEQ>& eq) {
                     if (!has_params) return;
                     vm -> get_table_field("bands", 3);
