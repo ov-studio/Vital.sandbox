@@ -244,11 +244,13 @@ namespace Vital::Sandbox::API {
                     if (vm -> is_bool(-1)) setter(vm -> get_bool(-1));
                     vm -> pop(1);
                 };
+
                 auto read_int = [&](const std::string& key, auto setter) {
                     vm -> get_table_field(key, 3);
                     if (vm -> is_number(-1)) setter(vm -> get_int(-1));
                     vm -> pop(1);
                 };
+                
                 auto read_float = [&](const std::string& key, auto setter) {
                     vm -> get_table_field(key, 3);
                     if (vm -> is_number(-1)) setter(vm -> get_float(-1));
