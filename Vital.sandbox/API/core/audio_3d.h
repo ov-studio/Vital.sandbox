@@ -234,20 +234,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_area_mask", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mask)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_area_mask(static_cast<uint32_t>(vm -> get_double(2)));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_area_mask", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_area_mask()));
-                return 1;
-            });
-
             // Attenuation / Doppler //
             vm_module::bind_method<Instance>(vm, "set_attenuation_model", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model)", true)
