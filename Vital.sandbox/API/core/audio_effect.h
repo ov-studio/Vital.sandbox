@@ -312,7 +312,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance>
         static void methods(Machine* vm, const std::vector<std::string>& scope) {
-            vm_module::bind_method<Instance>(vm, "add_effect", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "add_fx", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, effect, parameters = {})")
                     .require(2, &Machine::is_string)
                     .require_enum(3, effect_registry)
@@ -323,15 +323,15 @@ namespace Vital::Sandbox::API {
                 bool has_params = vm -> is_table(4);
                 auto result = build(vm, effect, has_params, 4);
                 if (!result.is_valid()) vm -> push_value(false);
-                else vm -> push_value(self -> audio -> add_effect(name, result));
+                else vm -> push_value(self -> audio -> add_fx(name, result));
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "remove_effect", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "remove_fx", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name)", true)
                     .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> audio -> remove_effect(vm -> get_string(2)));
+                vm -> push_value(self -> audio -> remove_fx(vm -> get_string(2)));
                 return 1;
             });
 
@@ -345,20 +345,20 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_effect_enabled", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_fx_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, state)", true)
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
 
-                vm -> push_value(self -> audio -> set_effect_enabled(vm -> get_string(2), vm -> get_bool(3)));
+                vm -> push_value(self -> audio -> set_fx_enabled(vm -> get_string(2), vm -> get_bool(3)));
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_effect_enabled", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "is_fx_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name)", true)
                     .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> audio -> is_effect_enabled(vm -> get_string(2)));
+                vm -> push_value(self -> audio -> is_fx_enabled(vm -> get_string(2)));
                 return 1;
             });
         }

@@ -26,31 +26,31 @@ namespace Vital::Engine {
         protected:
             std::string bus_name;
             int bus_index = -1;
-            std::vector<std::string> effect_names;
+            std::vector<std::string> fx_buffer;
 
 
             // Helpers //
             const std::string& create_bus(const std::string& prefix);
             void destroy_bus();
             int resolve_bus() const;
-            bool resolve_effect(const std::string& name, int& out_bus_idx, int& out_slot_idx) const;
+            bool resolve_fx(const std::string& name, int& out_bus_idx, int& out_slot_idx) const;
         public:
             // Checkers //
-            bool is_effect_enabled(const std::string& name) const;
+            bool is_fx_enabled(const std::string& name) const;
 
 
             // Getters //
-            godot::Ref<godot::AudioEffect> get_effect(const std::string& name) const;
+            godot::Ref<godot::AudioEffect> get_fx(const std::string& name) const;
             std::vector<std::string> list_effects() const;
 
 
             // Setters //
-            bool set_effect_enabled(const std::string& name, bool enabled);
+            bool set_fx_enabled(const std::string& name, bool enabled);
 
 
             // Misc //
-            bool add_effect(const std::string& name, const godot::Ref<godot::AudioEffect>& effect);
-            bool remove_effect(const std::string& name);
+            bool add_fx(const std::string& name, const godot::Ref<godot::AudioEffect>& effect);
+            bool remove_fx(const std::string& name);
     };
 }
 #endif

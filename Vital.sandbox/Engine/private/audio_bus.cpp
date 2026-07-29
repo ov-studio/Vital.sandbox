@@ -36,7 +36,7 @@ namespace Vital::Engine {
         auto idx = Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
         if (idx >= 0) Engine::Core::get_audio_server() -> remove_bus(idx);
         bus_index = -1;
-        effect_names.clear();
+        fx_buffer.clear();
     }
 
     int Audio_Bus::resolve_bus() const {
@@ -44,62 +44,62 @@ namespace Vital::Engine {
         return Engine::Core::get_audio_server() -> get_bus_index(godot::StringName(Tool::to_godot_string(bus_name)));
     }
 
-    bool Audio_Bus::resolve_effect(const std::string& name, int& out_bus_idx, int& out_slot_idx) const {
+    bool Audio_Bus::resolve_fx(const std::string& name, int& out_bus_idx, int& out_slot_idx) const {
         out_bus_idx = resolve_bus();
         if (out_bus_idx < 0) return false;
-        auto it = std::find(effect_names.begin(), effect_names.end(), name);
-        if (it == effect_names.end()) return false;
-        out_slot_idx = static_cast<int>(std::distance(effect_names.begin(), it));
+        auto it = std::find(fx_buffer.begin(), fx_buffer.end(), name);
+        if (it == fx_buffer.end()) return false;
+        out_slot_idx = static_cast<int>(std::distance(fx_buffer.begin(), it));
         if (out_slot_idx >= Engine::Core::get_audio_server() -> get_bus_effect_count(out_bus_idx)) return false;
         return true;
     }
 
 
     // Checkers //
-    bool Audio_Bus::is_effect_enabled(const std::string& name) const {
+    bool Audio_Bus::is_fx_enabled(const std::string& name) const {
         int bus_idx, slot_idx;
-        if (!resolve_effect(name, bus_idx, slot_idx)) return false;
+        if (!resolve_fx(name, bus_idx, slot_idx)) return false;
         return Engine::Core::get_audio_server() -> is_bus_effect_enabled(bus_idx, slot_idx);
     }
 
 
     // Getters //
-    godot::Ref<godot::AudioEffect> Audio_Bus::get_effect(const std::string& name) const {
+    godot::Ref<godot::AudioEffect> Audio_Bus::get_fx(const std::string& name) const {
         int bus_idx, slot_idx;
-        if (!resolve_effect(name, bus_idx, slot_idx)) return nullptr;
+        if (!resolve_fx(name, bus_idx, slot_idx)) return nullptr;
         return Engine::Core::get_audio_server() -> get_bus_effect(bus_idx, slot_idx);
     }
 
     std::vector<std::string> Audio_Bus::list_effects() const {
-        return effect_names;
+        return fx_buffer;
     }
 
 
     // Setters //
-    bool Audio_Bus::set_effect_enabled(const std::string& name, bool enabled) {
+    bool Audio_Bus::set_fx_enabled(const std::string& name, bool enabled) {
         int bus_idx, slot_idx;
-        if (!resolve_effect(name, bus_idx, slot_idx)) return false;
+        if (!resolve_fx(name, bus_idx, slot_idx)) return false;
         Engine::Core::get_audio_server() -> set_bus_effect_enabled(bus_idx, slot_idx, enabled);
         return true;
     }
 
 
     // Misc //
-    bool Audio_Bus::add_effect(const std::string& name, const godot::Ref<godot::AudioEffect>& effect) {
+    bool Audio_Bus::add_fx(const std::string& name, const godot::Ref<godot::AudioEffect>& effect) {
         auto idx = resolve_bus();
         if (idx < 0 || !effect.is_valid()) return false;
-        auto it = std::find(effect_names.begin(), effect_names.end(), name);
-        if (it != effect_names.end()) return false;
+        auto it = std::find(fx_buffer.begin(), fx_buffer.end(), name);
+        if (it != fx_buffer.end()) return false;
         Engine::Core::get_audio_server() -> add_bus_effect(idx, effect);
-        effect_names.push_back(name);
+        fx_buffer.push_back(name);
         return true;
     }
 
-    bool Audio_Bus::remove_effect(const std::string& name) {
+    bool Audio_Bus::remove_fx(const std::string& name) {
         int bus_idx, slot_idx;
-        if (!resolve_effect(name, bus_idx, slot_idx)) return false;
+        if (!resolve_fx(name, bus_idx, slot_idx)) return false;
         Engine::Core::get_audio_server() -> remove_bus_effect(bus_idx, slot_idx);
-        effect_names.erase(effect_names.begin() + slot_idx);
+        fx_buffer.erase(fx_buffer.begin() + slot_idx);
         return true;
     }
 }
