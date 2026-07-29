@@ -62,6 +62,22 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
+        // Helpers //
+        static void push_vector3(Machine* vm, const godot::Vector3& v) {
+            vm -> create_table();
+            vm -> push_value(v.x); vm -> set_table_field("x", -2);
+            vm -> push_value(v.y); vm -> set_table_field("y", -2);
+            vm -> push_value(v.z); vm -> set_table_field("z", -2);
+        }
+
+        static godot::Vector3 read_vector3(Machine* vm, int idx) {
+            godot::Vector3 v;
+            vm -> get_table_field("x", idx); v.x = vm -> is_number(-1) ? vm -> get_float(-1) : 0.0f; vm -> pop(1);
+            vm -> get_table_field("y", idx); v.y = vm -> is_number(-1) ? vm -> get_float(-1) : 0.0f; vm -> pop(1);
+            vm -> get_table_field("z", idx); v.z = vm -> is_number(-1) ? vm -> get_float(-1) : 0.0f; vm -> pop(1);
+            return v;
+        }
+
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
             API::Audio_Effect::bind<Instance>(vm, base_scope);
@@ -323,6 +339,169 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_attenuation_filter_db", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_attenuation_filter_db());
+                return 1;
+            });
+
+            // TODO: set_position should be global position, while a separate api for relative position/rotation, refactor all below eventually
+            // Node3D: Position //
+            vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> set_position(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
+                push_vector3(vm, self -> audio -> get_position());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> set_global_position(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
+                push_vector3(vm, self -> audio -> get_global_position());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(offset)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> translate(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(offset)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> translate_object_local(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // Node3D: Scale //
+            vm_module::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(scale)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> set_scale(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_scale", [](auto vm, auto self, auto& id) -> int {
+                push_vector3(vm, self -> audio -> get_scale());
+                return 1;
+            });
+
+            // Node3D: Rotation //
+            vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(euler_radians)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> set_rotation(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
+                push_vector3(vm, self -> audio -> get_rotation());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(euler_degrees)", true)
+                    .require(2, &Machine::is_table);
+
+                self -> audio -> set_rotation_degrees(read_vector3(vm, 2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
+                push_vector3(vm, self -> audio -> get_rotation_degrees());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "rotate_x", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(angle)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> rotate_x(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "rotate_y", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(angle)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> rotate_y(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "rotate_z", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(angle)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> rotate_z(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // Node3D: Look At //
+            vm_module::bind_method<Instance>(vm, "look_at", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(target, up = {x=0,y=1,z=0})", true)
+                    .require(2, &Machine::is_table)
+                    .optional(3, &Machine::is_table);
+
+                auto target = read_vector3(vm, 2);
+                auto up     = vm -> is_table(3) ? read_vector3(vm, 3) : godot::Vector3(0, 1, 0);
+                self -> audio -> look_at(target, up);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "look_at_from_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position, target, up = {x=0,y=1,z=0})", true)
+                    .require(2, &Machine::is_table)
+                    .require(3, &Machine::is_table)
+                    .optional(4, &Machine::is_table);
+
+                auto position = read_vector3(vm, 2);
+                auto target   = read_vector3(vm, 3);
+                auto up       = vm -> is_table(4) ? read_vector3(vm, 4) : godot::Vector3(0, 1, 0);
+                self -> audio -> look_at_from_position(position, target, up);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // Node3D: Coordinate Conversion //
+            vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(global_point)", true)
+                    .require(2, &Machine::is_table);
+
+                push_vector3(vm, self -> audio -> to_local(read_vector3(vm, 2)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "to_global", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(local_point)", true)
+                    .require(2, &Machine::is_table);
+
+                push_vector3(vm, self -> audio -> to_global(read_vector3(vm, 2)));
                 return 1;
             });
         }
