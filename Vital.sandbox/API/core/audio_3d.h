@@ -62,22 +62,6 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        // Helpers //
-        static void push_vector3(Machine* vm, const godot::Vector3& v) {
-            vm -> create_table();
-            vm -> push_value(v.x); vm -> set_table_field("x", -2);
-            vm -> push_value(v.y); vm -> set_table_field("y", -2);
-            vm -> push_value(v.z); vm -> set_table_field("z", -2);
-        }
-
-        static godot::Vector3 read_vector3(Machine* vm, int idx) {
-            godot::Vector3 v;
-            vm -> get_table_field("x", idx); v.x = vm -> is_number(-1) ? vm -> get_float(-1) : 0.0f; vm -> pop(1);
-            vm -> get_table_field("y", idx); v.y = vm -> is_number(-1) ? vm -> get_float(-1) : 0.0f; vm -> pop(1);
-            vm -> get_table_field("z", idx); v.z = vm -> is_number(-1) ? vm -> get_float(-1) : 0.0f; vm -> pop(1);
-            return v;
-        }
-
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
             API::Audio_Effect::bind<Instance>(vm, base_scope);
@@ -98,6 +82,7 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Audio_Effect::methods<Instance>(vm, base_scope);
 
+            // Playback //
             vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position = 0.0)", true)
                     .optional(2, &Machine::is_number);
@@ -132,6 +117,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Volume //
             vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(volume)", true)
                     .require(2, &Machine::is_number);
@@ -146,6 +132,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Pitch //
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pitch_scale)", true)
                     .require(2, &Machine::is_number);
@@ -160,6 +147,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Autoplay / Pause //
             vm_module::bind_method<Instance>(vm, "set_autoplay", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(enable)", true)
                     .require(2, &Machine::is_bool);
@@ -188,6 +176,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Panning //
             vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(strength)", true)
                     .require(2, &Machine::is_number);
@@ -202,6 +191,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Positional (3D-specific) //
             vm_module::bind_method<Instance>(vm, "set_unit_size", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(unit_size)", true)
                     .require(2, &Machine::is_number);
@@ -244,6 +234,21 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_area_mask", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mask)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_area_mask(static_cast<uint32_t>(vm -> get_double(2)));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_area_mask", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_area_mask()));
+                return 1;
+            });
+
+            // Attenuation / Doppler //
             vm_module::bind_method<Instance>(vm, "set_attenuation_model", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(model)", true)
                     .require_enum(2, attenuation_model_registry);
@@ -272,6 +277,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Emission Angle //
             vm_module::bind_method<Instance>(vm, "set_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(enabled)", true)
                     .require(2, &Machine::is_bool);
@@ -314,6 +320,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Attenuation Filter //
             vm_module::bind_method<Instance>(vm, "set_attenuation_filter_cutoff_hz", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(hz)", true)
                     .require(2, &Machine::is_number);
@@ -342,50 +349,49 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // TODO: set_position should be global position, while a separate api for relative position/rotation, refactor all below eventually
             // Node3D: Position //
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> set_position(read_vector3(vm, 2));
+                self -> audio -> set_position(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
-                push_vector3(vm, self -> audio -> get_position());
+                vm -> push_value(self -> audio -> get_position());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> set_global_position(read_vector3(vm, 2));
+                self -> audio -> set_global_position(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
-                push_vector3(vm, self -> audio -> get_global_position());
+                vm -> push_value(self -> audio -> get_global_position());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> translate(read_vector3(vm, 2));
+                self -> audio -> translate(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> translate_object_local(read_vector3(vm, 2));
+                self -> audio -> translate_object_local(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
@@ -393,44 +399,44 @@ namespace Vital::Sandbox::API {
             // Node3D: Scale //
             vm_module::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(scale)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> set_scale(read_vector3(vm, 2));
+                self -> audio -> set_scale(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_scale", [](auto vm, auto self, auto& id) -> int {
-                push_vector3(vm, self -> audio -> get_scale());
+                vm -> push_value(self -> audio -> get_scale());
                 return 1;
             });
 
             // Node3D: Rotation //
             vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(euler_radians)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> set_rotation(read_vector3(vm, 2));
+                self -> audio -> set_rotation(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                push_vector3(vm, self -> audio -> get_rotation());
+                vm -> push_value(self -> audio -> get_rotation());
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "set_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(euler_degrees)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                self -> audio -> set_rotation_degrees(read_vector3(vm, 2));
+                self -> audio -> set_rotation_degrees(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
-                push_vector3(vm, self -> audio -> get_rotation_degrees());
+                vm -> push_value(self -> audio -> get_rotation_degrees());
                 return 1;
             });
 
@@ -463,26 +469,26 @@ namespace Vital::Sandbox::API {
 
             // Node3D: Look At //
             vm_module::bind_method<Instance>(vm, "look_at", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(target, up = {x=0,y=1,z=0})", true)
-                    .require(2, &Machine::is_table)
-                    .optional(3, &Machine::is_table);
+                vm_args(vm, id, "(target, up = {0,1,0})", true)
+                    .require(2, &Machine::is_vector3)
+                    .optional(3, &Machine::is_vector3);
 
-                auto target = read_vector3(vm, 2);
-                auto up     = vm -> is_table(3) ? read_vector3(vm, 3) : godot::Vector3(0, 1, 0);
+                auto target = vm -> get_vector3(2);
+                auto up     = vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(0, 1, 0);
                 self -> audio -> look_at(target, up);
                 vm -> push_value(true);
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "look_at_from_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position, target, up = {x=0,y=1,z=0})", true)
-                    .require(2, &Machine::is_table)
-                    .require(3, &Machine::is_table)
-                    .optional(4, &Machine::is_table);
+                vm_args(vm, id, "(position, target, up = {0,1,0})", true)
+                    .require(2, &Machine::is_vector3)
+                    .require(3, &Machine::is_vector3)
+                    .optional(4, &Machine::is_vector3);
 
-                auto position = read_vector3(vm, 2);
-                auto target   = read_vector3(vm, 3);
-                auto up       = vm -> is_table(4) ? read_vector3(vm, 4) : godot::Vector3(0, 1, 0);
+                auto position = vm -> get_vector3(2);
+                auto target   = vm -> get_vector3(3);
+                auto up       = vm -> is_vector3(4) ? vm -> get_vector3(4) : godot::Vector3(0, 1, 0);
                 self -> audio -> look_at_from_position(position, target, up);
                 vm -> push_value(true);
                 return 1;
@@ -491,17 +497,49 @@ namespace Vital::Sandbox::API {
             // Node3D: Coordinate Conversion //
             vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(global_point)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                push_vector3(vm, self -> audio -> to_local(read_vector3(vm, 2)));
+                vm -> push_value(self -> audio -> to_local(vm -> get_vector3(2)));
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "to_global", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(local_point)", true)
-                    .require(2, &Machine::is_table);
+                    .require(2, &Machine::is_vector3);
 
-                push_vector3(vm, self -> audio -> to_global(read_vector3(vm, 2)));
+                vm -> push_value(self -> audio -> to_global(vm -> get_vector3(2)));
+                return 1;
+            });
+
+            // Node3D: Visibility //
+            vm_module::bind_method<Instance>(vm, "show", [](auto vm, auto self, auto& id) -> int {
+                self -> audio -> show();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "hide", [](auto vm, auto self, auto& id) -> int {
+                self -> audio -> hide();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(visible)", true)
+                    .require(2, &Machine::is_bool);
+
+                self -> audio -> set_visible(vm -> get_bool(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> is_visible());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_visible_in_tree", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> is_visible_in_tree());
                 return 1;
             });
         }
