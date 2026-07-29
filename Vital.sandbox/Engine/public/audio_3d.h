@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/core.h>
+#include <Vital.sandbox/Engine/public/audio_bus.h>
 
 
 //////////////////////////////
@@ -22,9 +23,8 @@
 //////////////////////////////
 
 namespace Vital::Engine {
-    class Audio_3D : public godot::Node3D {
+    class Audio_3D : public godot::Node3D, public Audio_Bus {
         public:
-            // TODO: Reuse from audio_2d if possible...
             enum class Format {
                 OGG,
                 WAV,
@@ -32,7 +32,6 @@ namespace Vital::Engine {
                 UNKNOWN
             };
 
-            // TODO: Reuse from audio_2d if possible...
             inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
                 { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } },
                 { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } },

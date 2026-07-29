@@ -27,10 +27,12 @@ namespace Vital::Engine {
         this -> stream = stream;
         player = memnew(godot::AudioStreamPlayer3D);
         player -> set_stream(stream);
+        player -> set_bus(godot::StringName(Tool::to_godot_string(create_bus("audio_3d"))));
         Engine::Core::get_singleton() -> add_child(player);
     }
 
     Audio_3D::~Audio_3D() {
+        destroy_bus();
         if (!player) return;
         player -> queue_free();
         player = nullptr;
