@@ -4,7 +4,7 @@
      Author: ov-studio
      Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
      DOC: 14/09/2022
-     Desc: Audio_3D APIs
+     Desc: Audio 3D APIs
 ----------------------------------------------------------------*/
 
 
