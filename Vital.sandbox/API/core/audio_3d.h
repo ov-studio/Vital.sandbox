@@ -349,6 +349,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // TODO: set_position should be global position, while a separate api for relative position/rotation, refactor all below eventually
             // Node3D: Position //
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
