@@ -94,13 +94,20 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_global_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_module::bind_method<Instance>(vm, "scale_local", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
-                        
-                    auto transform  = self -> audio -> get_global_transform();
-                    transform.basis = transform.basis.orthonormalized().scaled(vm -> get_vector3(2));
-                    self -> audio -> set_global_transform(transform);
+
+                    self -> audio -> scale_object_local(vm -> get_vector3(2));
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "global_scale", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(scale)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    self -> audio -> global_scale(vm -> get_vector3(2));
                     vm -> push_value(true);
                     return 1;
                 });
