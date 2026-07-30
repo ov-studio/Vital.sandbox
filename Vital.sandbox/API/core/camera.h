@@ -16,6 +16,7 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/camera.h>
+#include <Vital.sandbox/API/core/node_3d.h>
 
 
 /////////////////////////
@@ -47,6 +48,10 @@ namespace Vital::Sandbox::API {
             using Owner = Camera;
             base_class* camera = nullptr;
 
+            auto get_node() { 
+                return camera;
+            }
+
             bool is_alive() const {
                 return camera ? true : false;
             }
@@ -74,6 +79,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Camera>(vm);
+            API::Node_3D::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -102,6 +108,8 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
+            API::Node_3D::methods<Instance>(vm);
+
             vm_module::bind_method<Instance>(vm, "is_active", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> is_active());
                 return 1;
@@ -505,6 +513,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
+            API::Node_3D::inject<Instance>(vm);
             vm -> scope_set_enum(base_scope, "projection", projection_registry);
             vm -> scope_set_enum(base_scope, "keep_aspect", keep_aspect_registry);
             vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);

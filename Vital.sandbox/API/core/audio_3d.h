@@ -47,6 +47,10 @@ namespace Vital::Sandbox::API {
             using Owner = Audio_3D;
             base_class* audio = nullptr;
 
+            auto get_node() { 
+                return audio -> get_player(); 
+            }
+
             bool is_alive() const {
                 return audio ? true : false;
             }

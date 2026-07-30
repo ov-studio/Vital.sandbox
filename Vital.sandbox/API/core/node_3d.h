@@ -35,51 +35,51 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> is_visible());
+                    vm -> push_value(self -> get_node() -> is_visible());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "is_visible_in_tree", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> is_visible_in_tree());
+                    vm -> push_value(self -> get_node() -> is_visible_in_tree());
                     return 1;
                 });
 
             }
             {
                 vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_position());
+                    vm -> push_value(self -> get_node() -> get_position());
                     return 1;
                 });
     
                 vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_global_position());
+                    vm -> push_value(self -> get_node() -> get_global_position());
                     return 1;
                 });
             }
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "get_scale", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_scale());
+                    vm -> push_value(self -> get_node() -> get_scale());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_global_scale", [](auto vm, auto self, auto& id) -> int {
-                    auto scale = self -> audio -> get_global_transform().basis.get_scale();
+                    auto scale = self -> get_node() -> get_global_transform().basis.get_scale();
                     vm -> push_value(scale);
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_rotation_degrees());
+                    vm -> push_value(self -> get_node() -> get_rotation_degrees());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_global_rotation_degrees());
+                    vm -> push_value(self -> get_node() -> get_global_rotation_degrees());
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_quaternion", [](auto vm, auto self, auto& id) -> int {
-                    auto quaternion = self -> audio -> get_quaternion();
+                    auto quaternion = self -> get_node() -> get_quaternion();
                     auto value = godot::Vector4(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
                     vm -> push_value(value);
                     return 1;
@@ -91,7 +91,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
     
                     auto position = vm -> get_vector3(2);
-                    self -> audio -> set_position(position);
+                    self -> get_node() -> set_position(position);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -101,7 +101,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
     
                     auto position = vm -> get_vector3(2);
-                    self -> audio -> set_global_position(position);
+                    self -> get_node() -> set_global_position(position);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -113,7 +113,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto scale = vm -> get_vector3(2);
-                    self -> audio -> set_scale(scale);
+                    self -> get_node() -> set_scale(scale);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -123,7 +123,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto euler_degrees = vm -> get_vector3(2);
-                    self -> audio -> set_rotation_degrees(euler_degrees);
+                    self -> get_node() -> set_rotation_degrees(euler_degrees);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -133,7 +133,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto euler_radians = vm -> get_vector3(2);
-                    self -> audio -> set_global_rotation_degrees(euler_radians);
+                    self -> get_node() -> set_global_rotation_degrees(euler_radians);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -144,7 +144,7 @@ namespace Vital::Sandbox::API {
 
                     auto value = vm -> get_vector4(2);
                     auto quaternion = godot::Quaternion(value.x, value.y, value.z, value.w);
-                    self -> audio -> set_quaternion(quaternion);
+                    self -> get_node() -> set_quaternion(quaternion);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -154,7 +154,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_bool);
 
                     auto visible = vm -> get_bool(2);
-                    self -> audio -> set_visible(visible);
+                    self -> get_node() -> set_visible(visible);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -165,7 +165,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
     
                     auto offset = vm -> get_vector3(2);
-                    self -> audio -> translate(offset);
+                    self -> get_node() -> translate(offset);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -175,7 +175,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
     
                     auto offset = vm -> get_vector3(2);
-                    self -> audio -> translate_object_local(offset);
+                    self -> get_node() -> translate_object_local(offset);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -186,7 +186,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto global_point = vm -> get_vector3(2);
-                    auto local_point = self -> audio -> to_local(global_point);
+                    auto local_point = self -> get_node() -> to_local(global_point);
                     vm -> push_value(local_point);
                     return 1;
                 });
@@ -196,7 +196,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto local_point = vm -> get_vector3(2);
-                    auto global_point = self -> audio -> to_global(local_point);
+                    auto global_point = self -> get_node() -> to_global(local_point);
                     vm -> push_value(global_point);
                     return 1;
                 });
@@ -206,7 +206,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto scale = vm -> get_vector3(2);
-                    self -> audio -> scale_object_local(scale);
+                    self -> get_node() -> scale_object_local(scale);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -216,7 +216,7 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     auto scale = vm -> get_vector3(2);
-                    self -> audio -> global_scale(scale);
+                    self -> get_node() -> global_scale(scale);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -228,7 +228,7 @@ namespace Vital::Sandbox::API {
 
                     auto axis = vm -> get_vector3(2);
                     auto angle = vm -> get_float(3);
-                    self -> audio -> rotate(axis, angle);
+                    self -> get_node() -> rotate(axis, angle);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -240,7 +240,7 @@ namespace Vital::Sandbox::API {
 
                     auto axis = vm -> get_vector3(2);
                     auto angle = vm -> get_float(3);
-                    self -> audio -> rotate_object_local(axis, angle);
+                    self -> get_node() -> rotate_object_local(axis, angle);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -252,7 +252,7 @@ namespace Vital::Sandbox::API {
 
                     auto target = vm -> get_vector3(2);
                     auto up = vm -> is_vector3(3) ? vm -> get_vector3(3) : godot::Vector3(0, 1, 0);
-                    self -> audio -> look_at(target, up);
+                    self -> get_node() -> look_at(target, up);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -266,7 +266,7 @@ namespace Vital::Sandbox::API {
                     auto position = vm -> get_vector3(2);
                     auto target = vm -> get_vector3(3);
                     auto up = vm -> is_vector3(4) ? vm -> get_vector3(4) : godot::Vector3(0, 1, 0);
-                    self -> audio -> look_at_from_position(position, target, up);
+                    self -> get_node() -> look_at_from_position(position, target, up);
                     vm -> push_value(true);
                     return 1;
                 });
