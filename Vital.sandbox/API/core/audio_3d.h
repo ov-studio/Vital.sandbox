@@ -47,8 +47,8 @@ namespace Vital::Sandbox::API {
             using Owner = Audio_3D;
             base_class* audio = nullptr;
 
-            auto get_node() { 
-                return audio -> get_player(); 
+            auto get_node() {
+                return audio -> get_player();
             }
 
             bool is_alive() const {
@@ -89,7 +89,230 @@ namespace Vital::Sandbox::API {
             API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm);
             API::Audio_Effect::methods<Instance>(vm);
 
-            // Playback //
+            // is_ //
+            vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> is_playing());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_paused", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_stream_paused());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_autoplayed", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> is_emission_angle_enabled());
+                return 1;
+            });
+
+            // get_ //
+            vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_volume_linear());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_playback_position", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_playback_position());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_unit_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_unit_size());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_max_db", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_max_db());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_max_distance", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_max_distance());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_attenuation_model", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_attenuation_model()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_doppler_tracking", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_doppler_tracking()));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_emission_angle", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_emission_angle());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_emission_angle_filter_attenuation_db", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_emission_angle_filter_attenuation_db());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_attenuation_filter_cutoff_hz", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_attenuation_filter_cutoff_hz());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_attenuation_filter_db", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> get_attenuation_filter_db());
+                return 1;
+            });
+
+            // set_ //
+            vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(volume)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_volume_linear(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(pitch_scale)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_pitch_scale(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(strength)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_panning_strength(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_autoplay", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(enable)", true)
+                    .require(2, &Machine::is_bool);
+
+                self -> audio -> get_player() -> set_autoplay(vm -> get_bool(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(pause)", true)
+                    .require(2, &Machine::is_bool);
+
+                self -> audio -> get_player() -> set_stream_paused(vm -> get_bool(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_unit_size", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(unit_size)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_unit_size(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_max_db", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(max_db)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_max_db(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_max_distance", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(meters)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_max_distance(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_attenuation_model", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(model)", true)
+                    .require_enum(2, attenuation_model_registry);
+
+                self -> audio -> get_player() -> set_attenuation_model(static_cast<godot::AudioStreamPlayer3D::AttenuationModel>(vm -> get_int(2)));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_doppler_tracking", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mode)", true)
+                    .require_enum(2, doppler_tracking_registry);
+
+                self -> audio -> get_player() -> set_doppler_tracking(static_cast<godot::AudioStreamPlayer3D::DopplerTracking>(vm -> get_int(2)));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(enabled)", true)
+                    .require(2, &Machine::is_bool);
+
+                self -> audio -> get_player() -> set_emission_angle_enabled(vm -> get_bool(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_emission_angle", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(degrees)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_emission_angle(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_emission_angle_filter_attenuation_db", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(db)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_emission_angle_filter_attenuation_db(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_attenuation_filter_cutoff_hz", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(hz)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_attenuation_filter_cutoff_hz(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_attenuation_filter_db", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(db)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_attenuation_filter_db(vm -> get_float(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            // Misc //
             vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position = 0.0)", true)
                     .optional(2, &Machine::is_number);
@@ -111,234 +334,6 @@ namespace Vital::Sandbox::API {
 
                 self -> audio -> get_player() -> seek(vm -> get_float(2));
                 vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> is_playing());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_playback_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_playback_position());
-                return 1;
-            });
-
-            // Volume //
-            vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(volume)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_volume_linear(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_volume_linear());
-                return 1;
-            });
-
-            // Pitch //
-            vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pitch_scale)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_pitch_scale(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
-                return 1;
-            });
-
-            // Autoplay / Pause //
-            vm_module::bind_method<Instance>(vm, "set_autoplay", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enable)", true)
-                    .require(2, &Machine::is_bool);
-
-                self -> audio -> get_player() -> set_autoplay(vm -> get_bool(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_autoplayed", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pause)", true)
-                    .require(2, &Machine::is_bool);
-
-                self -> audio -> get_player() -> set_stream_paused(vm -> get_bool(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_paused", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_stream_paused());
-                return 1;
-            });
-
-            // Panning //
-            vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(strength)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_panning_strength(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_panning_strength", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_panning_strength());
-                return 1;
-            });
-
-            // Positional (3D-specific) //
-            vm_module::bind_method<Instance>(vm, "set_unit_size", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(unit_size)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_unit_size(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_unit_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_unit_size());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_max_db", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(max_db)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_max_db(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_max_db", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_max_db());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(meters)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_max_distance(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_max_distance());
-                return 1;
-            });
-
-            // Attenuation / Doppler //
-            vm_module::bind_method<Instance>(vm, "set_attenuation_model", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(model)", true)
-                    .require_enum(2, attenuation_model_registry);
-
-                self -> audio -> get_player() -> set_attenuation_model(static_cast<godot::AudioStreamPlayer3D::AttenuationModel>(vm -> get_int(2)));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_attenuation_model", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_attenuation_model()));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_doppler_tracking", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(mode)", true)
-                    .require_enum(2, doppler_tracking_registry);
-
-                self -> audio -> get_player() -> set_doppler_tracking(static_cast<godot::AudioStreamPlayer3D::DopplerTracking>(vm -> get_int(2)));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_doppler_tracking", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(static_cast<int>(self -> audio -> get_player() -> get_doppler_tracking()));
-                return 1;
-            });
-
-            // Emission Angle //
-            vm_module::bind_method<Instance>(vm, "set_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
-                    .require(2, &Machine::is_bool);
-
-                self -> audio -> get_player() -> set_emission_angle_enabled(vm -> get_bool(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> is_emission_angle_enabled());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_emission_angle", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(degrees)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_emission_angle(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_emission_angle", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_emission_angle());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_emission_angle_filter_attenuation_db", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(db)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_emission_angle_filter_attenuation_db(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_emission_angle_filter_attenuation_db", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_emission_angle_filter_attenuation_db());
-                return 1;
-            });
-
-            // Attenuation Filter //
-            vm_module::bind_method<Instance>(vm, "set_attenuation_filter_cutoff_hz", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(hz)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_attenuation_filter_cutoff_hz(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_attenuation_filter_cutoff_hz", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_attenuation_filter_cutoff_hz());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_attenuation_filter_db", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(db)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_attenuation_filter_db(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_attenuation_filter_db", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_attenuation_filter_db());
                 return 1;
             });
         }
