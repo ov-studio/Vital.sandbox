@@ -94,6 +94,22 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+                vm_module::bind_method<Instance>(vm, "set_global_scale", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(scale)", true)
+                        .require(2, &Machine::is_vector3);
+                        
+                    auto transform  = self -> audio -> get_global_transform();
+                    transform.basis = transform.basis.orthonormalized().scaled(vm -> get_vector3(2));
+                    self -> audio -> set_global_transform(transform);
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "get_global_scale", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> audio -> get_global_transform().basis.get_scale());
+                    return 1;
+                });
+
                 vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(euler_degrees)", true)
                         .require(2, &Machine::is_vector3);
@@ -202,18 +218,6 @@ namespace Vital::Sandbox::API {
                         .require(2, &Machine::is_vector3);
 
                     vm -> push_value(self -> audio -> to_global(vm -> get_vector3(2)));
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "show", [](auto vm, auto self, auto& id) -> int {
-                    self -> audio -> show();
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "hide", [](auto vm, auto self, auto& id) -> int {
-                    self -> audio -> hide();
-                    vm -> push_value(true);
                     return 1;
                 });
 
