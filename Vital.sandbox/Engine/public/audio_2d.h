@@ -24,19 +24,6 @@
 
 namespace Vital::Engine {
     class Audio_2D : public godot::Node2D, public Audio_Bus {
-        public:
-            enum class Format {
-                OGG,
-                WAV,
-                MP3,
-                UNKNOWN
-            };
-
-            inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
-                { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } },
-                { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } },
-                { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }
-            };
         private:
             godot::Ref<godot::AudioStream> stream;
             godot::AudioStreamPlayer2D* player = nullptr;
