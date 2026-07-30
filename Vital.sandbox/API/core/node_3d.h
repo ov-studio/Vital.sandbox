@@ -190,11 +190,12 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "rotate_z", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(angle)", true)
-                        .require(2, &Machine::is_number);
-
-                    self -> audio -> rotate_z(vm -> get_float(2));
+                vm_module::bind_method<Instance>(vm, "rotate_local", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(axis, angle)", true)
+                        .require(2, &Machine::is_vector3)
+                        .require(3, &Machine::is_number);
+                        
+                    self -> audio -> rotate_object_local(vm -> get_vector3(2), vm -> get_float(3));
                     vm -> push_value(true);
                     return 1;
                 });
