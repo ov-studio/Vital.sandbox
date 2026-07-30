@@ -37,27 +37,27 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
-                self -> audio -> set_global_position(vm -> get_vector3(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_global_position());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_local_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_vector3);
-
                 self -> audio -> set_position(vm -> get_vector3(2));
                 vm -> push_value(true);
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_local_position", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_position());
+                return 1;
+            });
+            
+            vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)", true)
+                    .require(2, &Machine::is_vector3);
+
+                self -> audio -> set_global_position(vm -> get_vector3(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_global_position());
                 return 1;
             });
             
