@@ -54,6 +54,19 @@ namespace Vital::Engine {
         return true;
     }
 
+    godot::Ref<godot::AudioStream> Audio_Bus::load_stream_from_buffer(const godot::PackedByteArray& buffer) {
+        godot::Ref<godot::AudioStream> loaded;
+        switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
+            case Format::OGG:     loaded = godot::AudioStreamOggVorbis::load_from_buffer(buffer); break;
+            case Format::WAV:     loaded = godot::AudioStreamWAV::load_from_buffer(buffer);       break;
+            case Format::MP3:
+            case Format::UNKNOWN:
+            default:              loaded = godot::AudioStreamMP3::load_from_buffer(buffer);       break;
+        }
+        if (!loaded.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid audio buffer");
+        return loaded;
+    }
+    
 
     // Checkers //
     bool Audio_Bus::is_fx_enabled(const std::string& name) const {
@@ -101,21 +114,6 @@ namespace Vital::Engine {
         Engine::Core::get_audio_server() -> remove_bus_effect(bus_idx, slot_idx);
         fx_buffer.erase(fx_buffer.begin() + slot_idx);
         return true;
-    }
-
-
-    // Static Helpers //
-    godot::Ref<godot::AudioStream> Audio_Bus::load_stream_from_buffer(const godot::PackedByteArray& buffer) {
-        godot::Ref<godot::AudioStream> loaded;
-        switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
-            case Format::OGG:     loaded = godot::AudioStreamOggVorbis::load_from_buffer(buffer); break;
-            case Format::WAV:     loaded = godot::AudioStreamWAV::load_from_buffer(buffer);       break;
-            case Format::MP3:
-            case Format::UNKNOWN:
-            default:              loaded = godot::AudioStreamMP3::load_from_buffer(buffer);       break;
-        }
-        if (!loaded.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid audio buffer");
-        return loaded;
     }
 }
 #endif

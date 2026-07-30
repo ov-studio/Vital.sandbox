@@ -47,6 +47,7 @@ namespace Vital::Engine {
             void destroy_bus();
             int resolve_bus() const;
             bool resolve_fx(const std::string& name, int& out_bus_idx, int& out_slot_idx) const;
+            static godot::Ref<godot::AudioStream> load_stream_from_buffer(const godot::PackedByteArray& buffer);
         public:
             // Checkers //
             bool is_fx_enabled(const std::string& name) const;
@@ -64,10 +65,6 @@ namespace Vital::Engine {
             // Misc //
             bool add_fx(const std::string& name, const godot::Ref<godot::AudioEffect>& effect);
             bool remove_fx(const std::string& name);
-
-
-            // Static Helpers //
-            static godot::Ref<godot::AudioStream> load_stream_from_buffer(const godot::PackedByteArray& buffer);
     };
 }
 #endif
