@@ -23,6 +23,19 @@
 
 namespace Vital::Engine {
     class Audio_Bus {
+        public:
+            enum class Format {
+                OGG,
+                WAV,
+                MP3,
+                UNKNOWN
+            };
+
+            inline static const std::vector<Tool::Format::Descriptor<Format>> format_registry = {
+                { Format::OGG, "ogg", { 0x4F, 0x67, 0x67, 0x53 } },
+                { Format::WAV, "wav", { 0x52, 0x49, 0x46, 0x46 } },
+                { Format::MP3, "mp3", { 0x49, 0x44, 0x33 }       }
+            };
         protected:
             std::string bus_name;
             int bus_index = -1;
@@ -51,6 +64,10 @@ namespace Vital::Engine {
             // Misc //
             bool add_fx(const std::string& name, const godot::Ref<godot::AudioEffect>& effect);
             bool remove_fx(const std::string& name);
+
+
+            // Static Helpers //
+            static godot::Ref<godot::AudioStream> load_stream_from_buffer(const godot::PackedByteArray& buffer);
     };
 }
 #endif
