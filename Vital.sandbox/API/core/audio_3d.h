@@ -65,7 +65,7 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Audio_3D>(vm);
-            API::Node_3D::bind<Instance>(vm, base_scope);
+            API::Node_3D::bind<Instance>(vm);
             API::Audio_Effect::bind<Instance>(vm, base_scope);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm, base_scope);
+            API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm);
             API::Audio_Effect::methods<Instance>(vm, base_scope);
 
             // Playback //
@@ -340,7 +340,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm, base_scope);
+            API::Node_3D::inject<Instance>(vm);
             API::Audio_Effect::inject<Instance>(vm, base_scope);
             vm -> scope_set_enum(base_scope, "attenuation_model", attenuation_model_registry);
             vm -> scope_set_enum(base_scope, "doppler_tracking", doppler_tracking_registry);
