@@ -180,18 +180,10 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "rotate_x", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(angle)", true)
-                        .require(2, &Machine::is_number);
-
-                    self -> audio -> rotate_x(vm -> get_float(2));
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "rotate_y", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(angle)", true)
-                        .require(2, &Machine::is_number);
+                vm_module::bind_method<Instance>(vm, "rotate", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(axis, angle)", true)
+                        .require(2, &Machine::is_vector3)
+                        .require(3, &Machine::is_number);
 
                     self -> audio -> rotate_y(vm -> get_float(2));
                     vm -> push_value(true);
