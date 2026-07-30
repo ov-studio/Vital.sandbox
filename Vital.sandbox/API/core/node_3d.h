@@ -46,7 +46,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> audio -> get_position());
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
@@ -95,20 +95,6 @@ namespace Vital::Sandbox::API {
                 });
 
                 vm_module::bind_method<Instance>(vm, "set_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(euler_radians)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    self -> audio -> set_global_rotation_degrees(vm -> get_vector3(2));
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_global_rotation_degrees());
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "set_local_rotation", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(euler_degrees)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -117,8 +103,22 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "get_local_rotation", [](auto vm, auto self, auto& id) -> int {
+                vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> audio -> get_rotation_degrees());
+                    return 1;
+                });
+                
+                vm_module::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(euler_radians)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    self -> audio -> set_global_rotation_degrees(vm -> get_vector3(2));
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "get_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> audio -> get_global_rotation_degrees());
                     return 1;
                 });
 
