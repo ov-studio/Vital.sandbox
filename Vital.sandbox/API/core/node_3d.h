@@ -138,20 +138,6 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "set_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(euler_degrees)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    self -> audio -> set_rotation_degrees(vm -> get_vector3(2));
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "get_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_rotation_degrees());
-                    return 1;
-                });
-
                 vm_module::bind_method<Instance>(vm, "rotate_x", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(angle)", true)
                         .require(2, &Machine::is_number);
