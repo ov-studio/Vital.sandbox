@@ -365,7 +365,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance>
         static void inject(Machine* vm) {
-            vm -> scope_set_enum(base_scope, "effect", effect_registry);
+            vm -> scope_set_enum(Instance::Owner::base_scope, "effect", effect_registry);
         }
     };
 }
