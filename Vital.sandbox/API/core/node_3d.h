@@ -33,56 +33,6 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance, Type node_type = Type::Spatial>
         static void methods(Machine* vm) {
-            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_position());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_global_position());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto position = vm -> get_vector3(2);
-                self -> audio -> set_position(position);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto position = vm -> get_vector3(2);
-                self -> audio -> set_global_position(position);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto offset = vm -> get_vector3(2);
-                self -> audio -> translate(offset);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(offset)", true)
-                    .require(2, &Machine::is_vector3);
-
-                auto offset = vm -> get_vector3(2);
-                self -> audio -> translate_object_local(offset);
-                vm -> push_value(true);
-                return 1;
-            });
-
             if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "is_visible", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> audio -> is_visible());
@@ -94,6 +44,19 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+            }
+            {
+                vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> audio -> get_position());
+                    return 1;
+                });
+    
+                vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> audio -> get_global_position());
+                    return 1;
+                });
+            }
+            if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "get_scale", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> audio -> get_scale());
                     return 1;
@@ -121,7 +84,30 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(value);
                     return 1;
                 });
-
+            }
+            {
+                vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(position)", true)
+                        .require(2, &Machine::is_vector3);
+    
+                    auto position = vm -> get_vector3(2);
+                    self -> audio -> set_position(position);
+                    vm -> push_value(true);
+                    return 1;
+                });
+    
+                vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(position)", true)
+                        .require(2, &Machine::is_vector3);
+    
+                    auto position = vm -> get_vector3(2);
+                    self -> audio -> set_global_position(position);
+                    vm -> push_value(true);
+                    return 1;
+                });
+    
+            }
+            if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
@@ -172,7 +158,49 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
+            }
+            {
+                vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(offset)", true)
+                        .require(2, &Machine::is_vector3);
+    
+                    auto offset = vm -> get_vector3(2);
+                    self -> audio -> translate(offset);
+                    vm -> push_value(true);
+                    return 1;
+                });
+    
+                vm_module::bind_method<Instance>(vm, "translate_local", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(offset)", true)
+                        .require(2, &Machine::is_vector3);
+    
+                    auto offset = vm -> get_vector3(2);
+                    self -> audio -> translate_object_local(offset);
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
+            if constexpr (node_type == Type::Spatial) {
+                vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(global_point)", true)
+                        .require(2, &Machine::is_vector3);
 
+                    auto global_point = vm -> get_vector3(2);
+                    auto local_point = self -> audio -> to_local(global_point);
+                    vm -> push_value(local_point);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "to_global", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(local_point)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    auto local_point = vm -> get_vector3(2);
+                    auto global_point = self -> audio -> to_global(local_point);
+                    vm -> push_value(global_point);
+                    return 1;
+                });
+                
                 vm_module::bind_method<Instance>(vm, "scale_local", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
@@ -217,26 +245,6 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(global_point)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    auto global_point = vm -> get_vector3(2);
-                    auto local_point = self -> audio -> to_local(global_point);
-                    vm -> push_value(local_point);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "to_global", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(local_point)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    auto local_point = vm -> get_vector3(2);
-                    auto global_point = self -> audio -> to_global(local_point);
-                    vm -> push_value(global_point);
-                    return 1;
-                });
-                
                 vm_module::bind_method<Instance>(vm, "look_at", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(target, up = {0, 1, 0})", true)
                         .require(2, &Machine::is_vector3)
