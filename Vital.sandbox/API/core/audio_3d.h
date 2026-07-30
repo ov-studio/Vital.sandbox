@@ -89,7 +89,6 @@ namespace Vital::Sandbox::API {
             API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm);
             API::Audio_Effect::methods<Instance>(vm);
 
-            // is_ //
             vm_module::bind_method<Instance>(vm, "is_playing", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> is_playing());
                 return 1;
@@ -110,7 +109,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // get_ //
             vm_module::bind_method<Instance>(vm, "get_volume", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_volume_linear());
                 return 1;
@@ -176,7 +174,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // set_ //
             vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(volume)", true)
                     .require(2, &Machine::is_number);
@@ -312,7 +309,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Misc //
             vm_module::bind_method<Instance>(vm, "play", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position = 0.0)", true)
                     .optional(2, &Machine::is_number);

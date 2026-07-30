@@ -312,6 +312,23 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance>
         static void methods(Machine* vm) {
+            vm_module::bind_method<Instance>(vm, "is_fx_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(name)", true)
+                    .require(2, &Machine::is_string);
+
+                vm -> push_value(self -> audio -> is_fx_enabled(vm -> get_string(2)));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_fx_enabled", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(name, state)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_bool);
+
+                vm -> push_value(self -> audio -> set_fx_enabled(vm -> get_string(2), vm -> get_bool(3)));
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "add_fx", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, effect, parameters = {})")
                     .require(2, &Machine::is_string)
@@ -342,23 +359,6 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(names[i]);
                     vm -> set_table_field(i + 1, -2);
                 }
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_fx_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name, state)", true)
-                    .require(2, &Machine::is_string)
-                    .require(3, &Machine::is_bool);
-
-                vm -> push_value(self -> audio -> set_fx_enabled(vm -> get_string(2), vm -> get_bool(3)));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "is_fx_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name)", true)
-                    .require(2, &Machine::is_string);
-
-                vm -> push_value(self -> audio -> is_fx_enabled(vm -> get_string(2)));
                 return 1;
             });
         }
