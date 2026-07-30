@@ -33,22 +33,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance, Type node_type = Type::Spatial>
         static void methods(Machine* vm) {
-            // TODO: set_position should be global position, while a separate api for relative position/rotation, refactor all below eventually
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(position)", true)
-                    .require(2, &Machine::is_vector3);
-
-                self -> audio -> set_position(vm -> get_vector3(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_position());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_global_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_vector3);
 
@@ -57,11 +42,25 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_global_position", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_position", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_global_position());
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_local_position", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(position)", true)
+                    .require(2, &Machine::is_vector3);
+
+                self -> audio -> set_position(vm -> get_vector3(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_local_position", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_position());
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "translate", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(offset)", true)
                     .require(2, &Machine::is_vector3);
@@ -99,13 +98,27 @@ namespace Vital::Sandbox::API {
                     vm_args(vm, id, "(euler_radians)", true)
                         .require(2, &Machine::is_vector3);
 
-                    self -> audio -> set_rotation(vm -> get_vector3(2));
+                    self -> audio -> set_global_rotation_degrees(vm -> get_vector3(2));
                     vm -> push_value(true);
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "get_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_rotation());
+                    vm -> push_value(self -> audio -> get_global_rotation_degrees());
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "set_local_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(euler_degrees)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    self -> audio -> set_rotation_degrees(vm -> get_vector3(2));
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "get_local_rotation_degrees", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> audio -> get_rotation_degrees());
                     return 1;
                 });
 
