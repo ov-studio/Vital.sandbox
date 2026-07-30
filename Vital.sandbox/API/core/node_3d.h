@@ -110,15 +110,15 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+                vm_module::bind_method<Instance>(vm, "get_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> audio -> get_global_rotation_degrees());
+                    return 1;
+                });
+
                 vm_module::bind_method<Instance>(vm, "get_quaternion", [](auto vm, auto self, auto& id) -> int {
                     auto quaternion = self -> audio -> get_quaternion();
                     auto value = godot::Vector4(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
                     vm -> push_value(value);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "get_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm -> push_value(self -> audio -> get_global_rotation_degrees());
                     return 1;
                 });
 
@@ -142,6 +142,16 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+                vm_module::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(euler_radians)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    auto euler_radians = vm -> get_vector3(2);
+                    self -> audio -> set_global_rotation_degrees(euler_radians);
+                    vm -> push_value(true);
+                    return 1;
+                });
+                
                 vm_module::bind_method<Instance>(vm, "set_quaternion", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(quaternion)", true)
                         .require(2, &Machine::is_vector4);
@@ -149,16 +159,6 @@ namespace Vital::Sandbox::API {
                     auto value = vm -> get_vector4(2);
                     auto quaternion = godot::Quaternion(value.x, value.y, value.z, value.w);
                     self -> audio -> set_quaternion(quaternion);
-                    vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(euler_radians)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    auto euler_radians = vm -> get_vector3(2);
-                    self -> audio -> set_global_rotation_degrees(euler_radians);
                     vm -> push_value(true);
                     return 1;
                 });
