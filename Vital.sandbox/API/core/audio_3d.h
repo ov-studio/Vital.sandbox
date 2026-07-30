@@ -82,7 +82,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance>(vm, base_scope);
+            API::Node_3D::methods<Instance, Node_3D::Type::Audio>(vm, base_scope);
             API::Audio_Effect::methods<Instance>(vm, base_scope);
 
             // Playback //
