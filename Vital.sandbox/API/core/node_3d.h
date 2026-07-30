@@ -151,7 +151,7 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
-                
+
                 vm_module::bind_method<Instance>(vm, "set_quaternion", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(quaternion)", true)
                         .require(2, &Machine::is_vector4);
@@ -183,7 +183,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
-                vm_module::bind_method<Instance>(vm, "global_scale", [](auto vm, auto self, auto& id) -> int {
+                vm_module::bind_method<Instance>(vm, "scale_global", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
 
@@ -217,6 +217,26 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
 
+                vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(global_point)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    auto global_point = vm -> get_vector3(2);
+                    auto local_point = self -> audio -> to_local(global_point);
+                    vm -> push_value(local_point);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "to_global", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(local_point)", true)
+                        .require(2, &Machine::is_vector3);
+
+                    auto local_point = vm -> get_vector3(2);
+                    auto global_point = self -> audio -> to_global(local_point);
+                    vm -> push_value(global_point);
+                    return 1;
+                });
+                
                 vm_module::bind_method<Instance>(vm, "look_at", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(target, up = {0, 1, 0})", true)
                         .require(2, &Machine::is_vector3)
@@ -240,26 +260,6 @@ namespace Vital::Sandbox::API {
                     auto up = vm -> is_vector3(4) ? vm -> get_vector3(4) : godot::Vector3(0, 1, 0);
                     self -> audio -> look_at_from_position(position, target, up);
                     vm -> push_value(true);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(global_point)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    auto global_point = vm -> get_vector3(2);
-                    auto local_point = self -> audio -> to_local(global_point);
-                    vm -> push_value(local_point);
-                    return 1;
-                });
-
-                vm_module::bind_method<Instance>(vm, "to_global", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(local_point)", true)
-                        .require(2, &Machine::is_vector3);
-
-                    auto local_point = vm -> get_vector3(2);
-                    auto global_point = self -> audio -> to_global(local_point);
-                    vm -> push_value(global_point);
                     return 1;
                 });
             }
