@@ -129,11 +129,11 @@ namespace Vital::Sandbox::API {
                 });
 
                 vm_module::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(euler_radians)", true)
+                    vm_args(vm, id, "(euler_degrees)", true)
                         .require(2, &Machine::is_vector3);
 
-                    auto euler_radians = vm -> get_vector3(2);
-                    self -> get_node() -> set_global_rotation_degrees(euler_radians);
+                    auto euler_degrees = vm -> get_vector3(2);
+                    self -> get_node() -> set_global_rotation_degrees(euler_degrees);
                     vm -> push_value(true);
                     return 1;
                 });
@@ -222,25 +222,27 @@ namespace Vital::Sandbox::API {
                 });
 
                 vm_module::bind_method<Instance>(vm, "rotate", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(axis, angle)", true)
+                    vm_args(vm, id, "(axis, degrees)", true)
                         .require(2, &Machine::is_vector3)
                         .require(3, &Machine::is_number);
 
                     auto axis = vm -> get_vector3(2);
                     auto angle = vm -> get_float(3);
                     self -> get_node() -> rotate(axis, angle);
+                    self -> get_node() -> rotate(axis, godot::Math::deg_to_rad(degrees));
                     vm -> push_value(true);
                     return 1;
                 });
 
                 vm_module::bind_method<Instance>(vm, "rotate_local", [](auto vm, auto self, auto& id) -> int {
-                    vm_args(vm, id, "(axis, angle)", true)
+                    vm_args(vm, id, "(axis, degrees)", true)
                         .require(2, &Machine::is_vector3)
                         .require(3, &Machine::is_number);
 
                     auto axis = vm -> get_vector3(2);
                     auto angle = vm -> get_float(3);
                     self -> get_node() -> rotate_object_local(axis, angle);
+                    auto degrees = vm -> get_float(3);
                     vm -> push_value(true);
                     return 1;
                 });
