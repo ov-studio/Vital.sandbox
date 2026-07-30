@@ -11,7 +11,7 @@
   [![Engine](https://img.shields.io/badge/Engine-Godot--Engine-2F6DB3?style=flat-square&logo=godotengine&logoColor=white)](https://godotengine.org)
   [![Language](https://img.shields.io/badge/Core-C%2B%2B17-004482?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/17)
   [![Website](https://img.shields.io/badge/Website-Vital.sandbox-CFD8DC?style=flat-square&logo=googlechrome&logoColor=white)](https://vital-sandbox.com)
-  [![Discord](https://img.shields.io/badge/Discord-Community-404EED?style=flat-square&logo=discord&logoColor=white)](http://discord.gg/sVCnxPW)
+  [![Discord](https://img.shields.io/badge/Discord-Community-404EED?style=flat-square&logo=discord&logoColor=white)](https://discord.vital-sandbox.com)
 </div>
 
 ##
