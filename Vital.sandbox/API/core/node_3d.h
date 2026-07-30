@@ -123,6 +123,22 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(self -> audio -> get_rotation_degrees());
                     return 1;
                 });
+
+                vm_module::bind_method<Instance>(vm, "set_quaternion", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(quaternion)", true)
+                        .require(2, &Machine::is_vector4);
+
+                    auto q = vm -> get_vector4(2);
+                    self -> audio -> set_quaternion(godot::Quaternion(q.x, q.y, q.z, q.w));
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "get_quaternion", [](auto vm, auto self, auto& id) -> int {
+                    auto q = self -> audio -> get_quaternion();
+                    vm -> push_value(godot::Vector4(q.x, q.y, q.z, q.w));
+                    return 1;
+                });
                 
                 vm_module::bind_method<Instance>(vm, "set_global_rotation", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(euler_radians)", true)
