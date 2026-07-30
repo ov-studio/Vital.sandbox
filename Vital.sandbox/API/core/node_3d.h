@@ -227,8 +227,7 @@ namespace Vital::Sandbox::API {
                         .require(3, &Machine::is_number);
 
                     auto axis = vm -> get_vector3(2);
-                    auto angle = vm -> get_float(3);
-                    self -> get_node() -> rotate(axis, angle);
+                    auto degrees = vm -> get_float(3);
                     self -> get_node() -> rotate(axis, godot::Math::deg_to_rad(degrees));
                     vm -> push_value(true);
                     return 1;
@@ -240,9 +239,8 @@ namespace Vital::Sandbox::API {
                         .require(3, &Machine::is_number);
 
                     auto axis = vm -> get_vector3(2);
-                    auto angle = vm -> get_float(3);
-                    self -> get_node() -> rotate_object_local(axis, angle);
                     auto degrees = vm -> get_float(3);
+                    self -> get_node() -> rotate_object_local(axis, godot::Math::deg_to_rad(degrees));
                     vm -> push_value(true);
                     return 1;
                 });
