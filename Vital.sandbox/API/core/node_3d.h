@@ -29,10 +29,10 @@ namespace Vital::Sandbox::API {
         };
 
         template<typename Instance>
-        static void bind(Machine* vm, const std::vector<std::string>& scope) {}
+        static void bind(Machine* vm) {}
 
         template<typename Instance, Type node_type = Type::Spatial>
-        static void methods(Machine* vm, const std::vector<std::string>& scope) {
+        static void methods(Machine* vm) {
             // TODO: set_position should be global position, while a separate api for relative position/rotation, refactor all below eventually
             vm_module::bind_method<Instance>(vm, "set_position", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(position)", true)
@@ -226,7 +226,7 @@ namespace Vital::Sandbox::API {
         }
 
         template<typename Instance>
-        static void inject(Machine* vm, const std::vector<std::string>& scope) {}
+        static void inject(Machine* vm) {}
     };
 }
 #endif
