@@ -45,16 +45,7 @@ namespace Vital::Engine {
     }
 
     Audio_3D* Audio_3D::create_from_buffer(const godot::PackedByteArray& buffer) {
-        godot::Ref<godot::AudioStream> loaded;
-        switch (Tool::Format::get_format(format_registry, Format::UNKNOWN, buffer)) {
-            case Format::OGG:     loaded = godot::AudioStreamOggVorbis::load_from_buffer(buffer); break;
-            case Format::WAV:     loaded = godot::AudioStreamWAV::load_from_buffer(buffer);       break;
-            case Format::MP3:
-            case Format::UNKNOWN:
-            default:              loaded = godot::AudioStreamMP3::load_from_buffer(buffer);       break;
-        }
-        if (!loaded.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid audio buffer");
-        return memnew(Audio_3D(loaded));
+        return memnew(Audio_3D(load_stream_from_buffer(buffer)));
     }
 
     void Audio_3D::destroy() {
