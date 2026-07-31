@@ -345,11 +345,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_auto_exposure_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto enabled = vm -> get_bool(2);
-                self -> camera -> get_attributes() -> set_auto_exposure_enabled(enabled);
+                auto state = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_auto_exposure_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -405,11 +405,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_dof_blur_far_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto enabled = vm -> get_bool(2);
-                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(enabled);
+                auto state = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_dof_blur_far_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -435,11 +435,11 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_dof_blur_near_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto enabled = vm -> get_bool(2);
-                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(enabled);
+                auto state = vm -> get_bool(2);
+                self -> camera -> get_attributes() -> set_dof_blur_near_enabled(state);
                 vm -> push_value(true);
                 return 1;
             });
