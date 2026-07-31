@@ -180,7 +180,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(volume)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_volume_linear(vm -> get_float(2));
@@ -189,7 +189,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_max_volume", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(volume)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_max_db(godot::Math::linear2db(vm -> get_float(2)));
@@ -198,7 +198,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pause)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 self -> audio -> get_player() -> set_stream_paused(vm -> get_bool(2));
@@ -207,7 +207,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_looped", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(loop)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 vm -> push_value(self -> audio -> set_looped(vm -> get_bool(2)));
@@ -215,7 +215,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pitch_scale)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_pitch_scale(vm -> get_float(2));
@@ -224,7 +224,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(strength)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_panning_strength(vm -> get_float(2));
@@ -233,7 +233,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_unit_size", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(unit_size)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_unit_size(vm -> get_float(2));
@@ -242,7 +242,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(meters)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_max_distance(vm -> get_float(2));
@@ -269,7 +269,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enabled)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 self -> audio -> get_player() -> set_emission_angle_enabled(vm -> get_bool(2));
@@ -278,7 +278,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_emission_angle", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(degrees)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_emission_angle(vm -> get_float(2));
@@ -287,7 +287,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_emission_angle_filter_attenuation_db", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(db)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_emission_angle_filter_attenuation_db(vm -> get_float(2));
@@ -296,7 +296,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_attenuation_filter_cutoff_hz", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(hz)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_attenuation_filter_cutoff_hz(vm -> get_float(2));
@@ -305,7 +305,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_attenuation_filter_db", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(db)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_attenuation_filter_db(vm -> get_float(2));
