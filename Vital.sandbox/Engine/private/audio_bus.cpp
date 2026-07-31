@@ -66,7 +66,7 @@ namespace Vital::Engine {
         if (!loaded.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid audio buffer");
         return loaded;
     }
-    
+
     bool Audio_Bus::get_stream_loop(const godot::Ref<godot::AudioStream>& stream) {
         if (!stream.is_valid()) return false;
         if (auto ogg = godot::Object::cast_to<godot::AudioStreamOggVorbis>(stream.ptr())) return ogg -> get_loop();
@@ -114,11 +114,11 @@ namespace Vital::Engine {
         set_stream_loop(stream, loop);
         return true;
     }
-    
-    bool Audio_Bus::set_fx_enabled(const std::string& name, bool enabled) {
+
+    bool Audio_Bus::set_fx_enabled(const std::string& name, bool state) {
         int bus_idx, slot_idx;
         if (!resolve_fx(name, bus_idx, slot_idx)) return false;
-        Engine::Core::get_audio_server() -> set_bus_effect_enabled(bus_idx, slot_idx, enabled);
+        Engine::Core::get_audio_server() -> set_bus_effect_enabled(bus_idx, slot_idx, state);
         return true;
     }
 

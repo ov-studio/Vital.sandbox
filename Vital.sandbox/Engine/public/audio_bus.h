@@ -63,7 +63,7 @@ namespace Vital::Engine {
 
             // Setters //
             bool set_looped(bool loop);
-            bool set_fx_enabled(const std::string& name, bool enabled);
+            bool set_fx_enabled(const std::string& name, bool state);
 
 
             // Misc //
