@@ -145,7 +145,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                vm -> push_value(self -> audio -> set_looped(vm -> get_bool(2)));
+                auto loop = vm -> get_bool(2);
+                vm -> push_value(self -> audio -> set_looped(loop));
                 return 1;
             });
 

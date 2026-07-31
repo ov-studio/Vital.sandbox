@@ -183,7 +183,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_volume_linear(vm -> get_float(2));
+                auto volume = vm -> get_float(2);
+                self -> audio -> get_player() -> set_volume_linear(volume);
                 vm -> push_value(true);
                 return 1;
             });
@@ -192,7 +193,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_max_db(godot::Math::linear2db(vm -> get_float(2)));
+                auto volume = vm -> get_float(2);
+                self -> audio -> get_player() -> set_max_db(godot::Math::linear2db(volume));
                 vm -> push_value(true);
                 return 1;
             });
@@ -201,7 +203,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> audio -> get_player() -> set_stream_paused(vm -> get_bool(2));
+                auto pause = vm -> get_bool(2);
+                self -> audio -> get_player() -> set_stream_paused(pause);
                 vm -> push_value(true);
                 return 1;
             });
@@ -210,7 +213,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                vm -> push_value(self -> audio -> set_looped(vm -> get_bool(2)));
+                auto loop = vm -> get_bool(2);
+                vm -> push_value(self -> audio -> set_looped(loop));
                 return 1;
             });
 
@@ -218,7 +222,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_pitch_scale(vm -> get_float(2));
+                auto pitch_scale = vm -> get_float(2);
+                self -> audio -> get_player() -> set_pitch_scale(pitch_scale);
                 vm -> push_value(true);
                 return 1;
             });
@@ -227,7 +232,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_panning_strength(vm -> get_float(2));
+                auto strength = vm -> get_float(2);
+                self -> audio -> get_player() -> set_panning_strength(strength);
                 vm -> push_value(true);
                 return 1;
             });
@@ -236,7 +242,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_unit_size(vm -> get_float(2));
+                auto unit_size = vm -> get_float(2);
+                self -> audio -> get_player() -> set_unit_size(unit_size);
                 vm -> push_value(true);
                 return 1;
             });
@@ -245,7 +252,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_max_distance(vm -> get_float(2));
+                auto meters = vm -> get_float(2);
+                self -> audio -> get_player() -> set_max_distance(meters);
                 vm -> push_value(true);
                 return 1;
             });
@@ -254,7 +262,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(model)", true)
                     .require_enum(2, attenuation_model_registry);
 
-                self -> audio -> get_player() -> set_attenuation_model(static_cast<godot::AudioStreamPlayer3D::AttenuationModel>(vm -> get_int(2)));
+                auto model = static_cast<godot::AudioStreamPlayer3D::AttenuationModel>(vm -> get_int(2));
+                self -> audio -> get_player() -> set_attenuation_model(model);
                 vm -> push_value(true);
                 return 1;
             });
@@ -263,7 +272,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, doppler_tracking_registry);
 
-                self -> audio -> get_player() -> set_doppler_tracking(static_cast<godot::AudioStreamPlayer3D::DopplerTracking>(vm -> get_int(2)));
+                auto mode = static_cast<godot::AudioStreamPlayer3D::DopplerTracking>(vm -> get_int(2));
+                self -> audio -> get_player() -> set_doppler_tracking(mode);
                 vm -> push_value(true);
                 return 1;
             });
@@ -272,7 +282,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                self -> audio -> get_player() -> set_emission_angle_enabled(vm -> get_bool(2));
+                auto enabled = vm -> get_bool(2);
+                self -> audio -> get_player() -> set_emission_angle_enabled(enabled);
                 vm -> push_value(true);
                 return 1;
             });
@@ -281,7 +292,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_emission_angle(vm -> get_float(2));
+                auto degrees = vm -> get_float(2);
+                self -> audio -> get_player() -> set_emission_angle(degrees);
                 vm -> push_value(true);
                 return 1;
             });
@@ -290,7 +302,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_emission_angle_filter_attenuation_db(vm -> get_float(2));
+                auto db = vm -> get_float(2);
+                self -> audio -> get_player() -> set_emission_angle_filter_attenuation_db(db);
                 vm -> push_value(true);
                 return 1;
             });
@@ -299,7 +312,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_attenuation_filter_cutoff_hz(vm -> get_float(2));
+                auto hz = vm -> get_float(2);
+                self -> audio -> get_player() -> set_attenuation_filter_cutoff_hz(hz);
                 vm -> push_value(true);
                 return 1;
             });
@@ -308,7 +322,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_attenuation_filter_db(vm -> get_float(2));
+                auto db = vm -> get_float(2);
+                self -> audio -> get_player() -> set_attenuation_filter_db(db);
                 vm -> push_value(true);
                 return 1;
             });
