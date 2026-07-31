@@ -122,7 +122,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_volume", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(volume)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 auto volume = vm -> get_float(2);
@@ -132,7 +132,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pause)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 auto pause = vm -> get_bool(2);
@@ -142,7 +142,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_looped", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(loop)", true)
+                vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
                 vm -> push_value(self -> audio -> set_looped(vm -> get_bool(2)));
@@ -150,7 +150,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_max_distance", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pixels)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 auto pixels = vm -> get_float(2);
@@ -160,7 +160,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_attenuation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(curve)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 auto curve = vm -> get_float(2);
@@ -170,7 +170,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pitch_scale)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 auto pitch_scale = vm -> get_float(2);
@@ -180,7 +180,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_panning_strength", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(strength)", true)
+                vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
                 auto strength = vm -> get_float(2);
