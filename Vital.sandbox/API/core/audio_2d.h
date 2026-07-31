@@ -125,8 +125,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                auto volume = vm -> get_float(2);
-                self -> audio -> get_player() -> set_volume_linear(volume);
+                auto value = vm -> get_float(2);
+                self -> audio -> get_player() -> set_volume_linear(value);
                 vm -> push_value(true);
                 return 1;
             });
@@ -135,8 +135,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto pause = vm -> get_bool(2);
-                self -> audio -> get_player() -> set_stream_paused(pause);
+                auto state = vm -> get_bool(2);
+                self -> audio -> get_player() -> set_stream_paused(state);
                 vm -> push_value(true);
                 return 1;
             });
@@ -145,8 +145,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
 
-                auto loop = vm -> get_bool(2);
-                vm -> push_value(self -> audio -> set_looped(loop));
+                auto state = vm -> get_bool(2);
+                vm -> push_value(self -> audio -> set_looped(state));
                 return 1;
             });
 
@@ -154,8 +154,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                auto pixels = vm -> get_float(2);
-                self -> audio -> get_player() -> set_max_distance(pixels);
+                auto value = vm -> get_float(2);
+                self -> audio -> get_player() -> set_max_distance(value);
                 vm -> push_value(true);
                 return 1;
             });
@@ -164,8 +164,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                auto curve = vm -> get_float(2);
-                self -> audio -> get_player() -> set_attenuation(curve);
+                auto value = vm -> get_float(2);
+                self -> audio -> get_player() -> set_attenuation(value);
                 vm -> push_value(true);
                 return 1;
             });
@@ -174,8 +174,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                auto pitch_scale = vm -> get_float(2);
-                self -> audio -> get_player() -> set_pitch_scale(pitch_scale);
+                auto value = vm -> get_float(2);
+                self -> audio -> get_player() -> set_pitch_scale(value);
                 vm -> push_value(true);
                 return 1;
             });
@@ -184,8 +184,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                auto strength = vm -> get_float(2);
-                self -> audio -> get_player() -> set_panning_strength(strength);
+                auto value = vm -> get_float(2);
+                self -> audio -> get_player() -> set_panning_strength(value);
                 vm -> push_value(true);
                 return 1;
             });
