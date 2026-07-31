@@ -114,6 +114,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_max_volume", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(godot::Math::db_to_linear(self -> audio -> get_player() -> get_max_db()));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_pitch_scale());
                 return 1;
@@ -131,11 +136,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_unit_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> get_unit_size());
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_max_volume", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(godot::Math::db_to_linear(self -> audio -> get_player() -> get_max_db()));
                 return 1;
             });
 
@@ -183,6 +183,15 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_max_volume", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(volume)", true)
+                    .require(2, &Machine::is_number);
+
+                self -> audio -> get_player() -> set_max_db(godot::Math::linear_to_db(vm -> get_float(2)));
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pitch_scale)", true)
                     .require(2, &Machine::is_number);
@@ -224,15 +233,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_unit_size(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_max_volume", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(volume)", true)
-                    .require(2, &Machine::is_number);
-
-                self -> audio -> get_player() -> set_max_db(godot::Math::linear_to_db(vm -> get_float(2)));
                 vm -> push_value(true);
                 return 1;
             });
