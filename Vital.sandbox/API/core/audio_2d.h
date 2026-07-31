@@ -87,7 +87,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "is_looped", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> is_looped(self -> audio -> get_stream()));
+                vm -> push_value(self -> audio -> is_looped());
                 return 1;
             });
 
@@ -145,7 +145,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(loop)", true)
                     .require(2, &Machine::is_bool);
 
-                vm -> push_value(self -> audio -> set_looped(self -> audio -> get_stream(), vm -> get_bool(2)));
+                vm -> push_value(self -> audio -> set_looped(vm -> get_bool(2)));
                 return 1;
             });
 
