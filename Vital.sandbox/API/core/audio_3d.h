@@ -99,13 +99,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "is_autoplayed", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "is_looped", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> is_looped());
+                return 1;
+            });
+            
+            vm_module::bind_method<Instance>(vm, "is_autoplayed", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> get_player() -> is_autoplay_enabled());
                 return 1;
             });
 
