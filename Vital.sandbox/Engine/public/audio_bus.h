@@ -48,8 +48,12 @@ namespace Vital::Engine {
             int resolve_bus() const;
             bool resolve_fx(const std::string& name, int& out_bus_idx, int& out_slot_idx) const;
             static godot::Ref<godot::AudioStream> load_stream_from_buffer(const godot::PackedByteArray& buffer);
+            static bool get_stream_loop(const godot::Ref<godot::AudioStream>& stream);
+            static void set_stream_loop(const godot::Ref<godot::AudioStream>& stream, bool loop);
         public:
             // Checkers //
+            virtual godot::Ref<godot::AudioStream> get_stream() const = 0;
+            bool is_looped() const;
             bool is_fx_enabled(const std::string& name) const;
 
 
@@ -59,6 +63,7 @@ namespace Vital::Engine {
 
 
             // Setters //
+            bool set_looped(bool loop);
             bool set_fx_enabled(const std::string& name, bool enabled);
 
 

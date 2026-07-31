@@ -67,8 +67,27 @@ namespace Vital::Engine {
         return loaded;
     }
     
+    bool Audio_Bus::get_stream_loop(const godot::Ref<godot::AudioStream>& stream) {
+        if (!stream.is_valid()) return false;
+        if (auto ogg = godot::Object::cast_to<godot::AudioStreamOggVorbis>(stream.ptr())) return ogg -> get_loop();
+        if (auto wav = godot::Object::cast_to<godot::AudioStreamWAV>(stream.ptr())) return wav -> get_loop_mode() != godot::AudioStreamWAV::LOOP_DISABLED;
+        if (auto mp3 = godot::Object::cast_to<godot::AudioStreamMP3>(stream.ptr())) return mp3 -> get_loop();
+        return false;
+    }
+
+    void Audio_Bus::set_stream_loop(const godot::Ref<godot::AudioStream>& stream, bool loop) {
+        if (!stream.is_valid()) return;
+        if (auto ogg = godot::Object::cast_to<godot::AudioStreamOggVorbis>(stream.ptr())) ogg -> set_loop(loop);
+        else if (auto wav = godot::Object::cast_to<godot::AudioStreamWAV>(stream.ptr())) wav -> set_loop_mode(loop ? godot::AudioStreamWAV::LOOP_FORWARD : godot::AudioStreamWAV::LOOP_DISABLED);
+        else if (auto mp3 = godot::Object::cast_to<godot::AudioStreamMP3>(stream.ptr())) mp3 -> set_loop(loop);
+    }
+
 
     // Checkers //
+    bool Audio_Bus::is_looped() const {
+        return get_stream_loop(get_stream());
+    }
+
     bool Audio_Bus::is_fx_enabled(const std::string& name) const {
         int bus_idx, slot_idx;
         if (!resolve_fx(name, bus_idx, slot_idx)) return false;
@@ -89,6 +108,13 @@ namespace Vital::Engine {
 
 
     // Setters //
+    bool Audio_Bus::set_looped(bool loop) {
+        auto stream = get_stream();
+        if (!stream.is_valid()) return false;
+        set_stream_loop(stream, loop);
+        return true;
+    }
+    
     bool Audio_Bus::set_fx_enabled(const std::string& name, bool enabled) {
         int bus_idx, slot_idx;
         if (!resolve_fx(name, bus_idx, slot_idx)) return false;
