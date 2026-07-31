@@ -52,6 +52,7 @@ namespace Vital::Engine {
             static void set_stream_loop(const godot::Ref<godot::AudioStream>& stream, bool loop);
         public:
             // Checkers //
+            virtual godot::Ref<godot::AudioStream> get_stream() const = 0;
             bool is_looped() const;
             bool is_fx_enabled(const std::string& name) const;
 

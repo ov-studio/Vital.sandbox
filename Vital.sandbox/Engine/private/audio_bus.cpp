@@ -69,9 +69,9 @@ namespace Vital::Engine {
 
     bool Audio_Bus::get_stream_loop(const godot::Ref<godot::AudioStream>& stream) {
         if (!stream.is_valid()) return false;
-        if (auto ogg = godot::Object::cast_to<godot::AudioStreamOggVorbis>(stream.ptr())) return ogg -> get_loop();
+        if (auto ogg = godot::Object::cast_to<godot::AudioStreamOggVorbis>(stream.ptr())) return ogg -> has_loop();
         if (auto wav = godot::Object::cast_to<godot::AudioStreamWAV>(stream.ptr())) return wav -> get_loop_mode() != godot::AudioStreamWAV::LOOP_DISABLED;
-        if (auto mp3 = godot::Object::cast_to<godot::AudioStreamMP3>(stream.ptr())) return mp3 -> get_loop();
+        if (auto mp3 = godot::Object::cast_to<godot::AudioStreamMP3>(stream.ptr())) return mp3 -> has_loop();
         return false;
     }
 
