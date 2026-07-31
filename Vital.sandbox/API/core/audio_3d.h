@@ -134,8 +134,8 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_max_db", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> audio -> get_player() -> get_max_db());
+            vm_module::bind_method<Instance>(vm, "get_max_volume", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(godot::Math::db_to_linear(self -> audio -> get_player() -> get_max_db()));
                 return 1;
             });
 
@@ -228,11 +228,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_max_db", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(max_db)", true)
+            vm_module::bind_method<Instance>(vm, "set_max_volume", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(volume)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> set_max_db(vm -> get_float(2));
+                self -> audio -> get_player() -> set_max_db(godot::Math::linear_to_db(vm -> get_float(2)));
                 vm -> push_value(true);
                 return 1;
             });
