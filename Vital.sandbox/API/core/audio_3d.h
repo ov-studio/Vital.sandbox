@@ -104,6 +104,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "is_looped", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> audio -> is_looped(self -> audio -> get_stream()));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "is_emission_angle_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> audio -> get_player() -> is_emission_angle_enabled());
                 return 1;
@@ -192,6 +197,23 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(pause)", true)
+                    .require(2, &Machine::is_bool);
+
+                self -> audio -> get_player() -> set_stream_paused(vm -> get_bool(2));
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_looped", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(loop)", true)
+                    .require(2, &Machine::is_bool);
+
+                vm -> push_value(self -> audio -> set_looped(self -> audio -> get_stream(), vm -> get_bool(2)));
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "set_pitch_scale", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(pitch_scale)", true)
                     .require(2, &Machine::is_number);
@@ -206,24 +228,6 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_number);
 
                 self -> audio -> get_player() -> set_panning_strength(vm -> get_float(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_autoplay", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(enable)", true)
-                    .require(2, &Machine::is_bool);
-
-                self -> audio -> get_player() -> set_autoplay(vm -> get_bool(2));
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_paused", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(pause)", true)
-                    .require(2, &Machine::is_bool);
-
-                self -> audio -> get_player() -> set_stream_paused(vm -> get_bool(2));
                 vm -> push_value(true);
                 return 1;
             });
