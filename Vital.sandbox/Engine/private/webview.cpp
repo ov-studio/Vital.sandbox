@@ -258,7 +258,6 @@ namespace Vital::Engine {
     void Webview::on_message(godot::String message) {
         auto it = handlers.find("message");
         if (it == handlers.end()) return;
-        it -> second(message);
         it -> second(Tool::to_std_string(message));
     }
 
