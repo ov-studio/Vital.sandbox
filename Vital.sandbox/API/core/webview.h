@@ -79,16 +79,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(vm);
                 auto instance_id = instance -> id;
                 instance -> webview = base_class::create(options);
-                instance -> webview -> set_handler("load", [vm, instance_id](godot::String url) {
-                    auto instance = Instance::find(instance_id);
-                    if (!instance) return;
-                    Manager::Sandbox::get_singleton() -> signal(
-                        "webview:load",
-                        Tool::StackValue(std::static_pointer_cast<void>(instance)),
-                        Tool::StackValue(Tool::to_std_string(url))
-                    );
-                });
-
+                wire_handlers(instance -> id);
                 instance -> store(true);
                 return 1;
             });
@@ -129,7 +120,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(self -> webview -> is_forward_input());
                 return 1;
             });
-            
+
             vm_module::bind_method<Instance>(vm, "is_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_devtools_visible());
                 return 1;
