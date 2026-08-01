@@ -70,7 +70,6 @@ namespace Vital::Engine {
             void pause_input_forwarder();
             static Webview* select_input_forwarder();
             static void update_input_forwarder();
-            void signal(const std::string& type, Payload payload = std::monostate{});
         public:
             // Managers //
             static Webview* create(const Options& options = {});
@@ -112,6 +111,7 @@ namespace Vital::Engine {
             void update();
             void eval(const std::string& input);
             void emit(const std::string& input);
+            void signal(const std::string& type, Payload payload = std::monostate{});
 
 
             // Events //
