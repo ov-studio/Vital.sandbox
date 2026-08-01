@@ -184,29 +184,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_message_handler", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(handler)", true)
-                    .require(2, &Machine::is_function);
-
-                auto instance_id = self -> id;
-                self -> set_reference(self -> value_reference("exec"), 2);
-                self -> webview -> set_message_handler([vm, instance_id](godot::String message) {
-                    auto instance = Instance::find(instance_id);
-                    if (!instance) return;
-                    instance -> get_reference(instance -> value_reference("exec"), true);
-                    vm -> push_value(Tool::to_std_string(message));
-                    vm -> call(1, 0);
-                });
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "reset_message_handler", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> reset_message_handler();
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "load_url", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(url)", true)
                     .require(2, &Machine::is_string);
