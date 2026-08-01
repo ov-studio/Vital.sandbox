@@ -59,14 +59,12 @@ namespace Vital::Sandbox::API {
             return build_url(vm, input);
         }
 
-        static void wire_handlers(int id) {
+        static void wire_handlers(std::shared_ptr<Instance> instance) {
             for (const auto& type : base_class::signal_registry) {
-                auto instance = Instance::find(id);
-                if (!instance) continue;
-        
-                instance -> webview -> set_handler(type, [id, type](base_class::Payload payload) {
-                    auto instance = Instance::find(id);
-                    if (!instance) return;
+                if (!Instance::find_unlocked(instance)) continue;
+
+                instance -> webview -> set_handler(type, [instance, type](base_class::Payload payload) {
+                    if (!Instance::find_unlocked(instance)) return;
                     auto webview = Tool::StackValue(instance);
                     auto signal = "webview:" + type;
                     std::visit([&](auto&& value) {
@@ -98,7 +96,7 @@ namespace Vital::Sandbox::API {
                 auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
                 instance -> store(true);
-                wire_handlers(instance -> id);
+                wire_handlers(instance);
                 return 1;
             });
         }
