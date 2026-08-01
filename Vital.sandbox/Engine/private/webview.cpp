@@ -271,7 +271,7 @@ namespace Vital::Engine {
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
         auto it = handlers.find("load");
         if (it == handlers.end()) return;
-        it -> second(url);
+        it -> second(Tool::to_std_string(url));
     }
 }
 #endif
