@@ -203,12 +203,12 @@ namespace Vital::Engine {
         else webview -> call_deferred("close_devtools");
     }
 
-    void Webview::set_message_handler(std::function<void(godot::String)> handler) {
-        message_handler = std::move(handler);
+    void Webview::set_handler(const std::string& type, std::function<void(godot::String)> handler) {
+        handlers[type] = std::move(handler);
     }
 
-    void Webview::reset_message_handler() {
-        message_handler = nullptr;
+    void Webview::reset_handler(const std::string& type) {
+        handlers.erase(type);
     }
 
 
@@ -253,8 +253,9 @@ namespace Vital::Engine {
     }
 
     void Webview::on_message(godot::String message) {
-        if (!message_handler) return;
-        message_handler(message);
+        auto it = handlers.find("message");
+        if (it == handlers.end()) return;
+        it -> second(message);
     }
 
     void Webview::on_page_loaded(godot::String url) {
@@ -264,6 +265,9 @@ namespace Vital::Engine {
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
+        auto it = handlers.find("load");
+        if (it == handlers.end()) return;
+        it -> second(url);
     }
 }
 #endif

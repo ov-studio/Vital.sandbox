@@ -36,7 +36,7 @@ namespace Vital::Engine {
         private:
             Options options;
             godot::Control* webview = nullptr;
-            std::function<void(godot::String)> message_handler;
+            std::unordered_map<std::string, std::function<void(godot::String)>> handlers;
             static inline Webview* input_forwarder = nullptr;
             static inline std::vector<Webview*> buffer;
 
@@ -85,8 +85,8 @@ namespace Vital::Engine {
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
             void set_devtools_visible(bool state);
-            void set_message_handler(std::function<void(godot::String)> handler);
-            void reset_message_handler();
+            void set_handler(const std::string& type, std::function<void(godot::String)> handler);
+            void reset_handler(const std::string& type);
 
 
             // Misc //
