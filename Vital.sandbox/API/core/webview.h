@@ -48,14 +48,8 @@ namespace Vital::Sandbox::API {
         };
         inline static vm_registry<Instance> registry;
 
-        inline static const std::vector<std::string> signal_registry = {
-            "load",
-            "message",
-            "resize"
-        };
-
         static void wire_handlers(int id) {
-            for (const auto& type : signal_registry) {
+            for (const auto& type : base_class::signal_registry) {
                 auto instance = Instance::find(id);
                 if (!instance) continue;
         

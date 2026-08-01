@@ -39,6 +39,12 @@ namespace Vital::Engine {
                 std::string, 
                 bool
             >;
+
+            inline static const std::vector<std::string> signal_registry = {
+                "load",
+                "message",
+                "resize"
+            };
         private:
             Options options;
             godot::Control* webview = nullptr;
