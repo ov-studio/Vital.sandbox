@@ -97,8 +97,8 @@ namespace Vital::Sandbox::API {
                 }
                 auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
-                wire_handlers(instance -> id);
                 instance -> store(true);
+                wire_handlers(instance -> id);
                 return 1;
             });
         }
