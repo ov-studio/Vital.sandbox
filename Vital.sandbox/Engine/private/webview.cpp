@@ -103,6 +103,12 @@ namespace Vital::Engine {
         if (fallback) fallback -> set_focussed(true);
     }
 
+    void Webview::signal(const std::string& type, Payload payload) {
+        auto it = handlers.find(type);
+        if (it == handlers.end()) return;
+        it -> second(payload);
+    }
+
 
     // Managers //
     Webview* Webview::create(const Options& options) {
@@ -213,12 +219,6 @@ namespace Vital::Engine {
 
 
     // Misc //
-    void Webview::notify(const std::string& type, Payload payload) {
-        auto it = handlers.find(type);
-        if (it == handlers.end()) return;
-        it -> second(payload);
-    }
-
     void Webview::load_url(const std::string& url) {
         webview -> call_deferred("load_url", Tool::to_godot_string(url));
     }
@@ -256,11 +256,11 @@ namespace Vital::Engine {
     // Events //
     void Webview::on_resized() {
         update_input_forwarder();
-        notify("resize");
+        signal("resize");
     }
 
     void Webview::on_message(godot::String message) {
-        notify("message", Tool::to_std_string(message));
+        signal("message", Tool::to_std_string(message));
     }
 
     void Webview::on_page_loaded(godot::String url) {
@@ -270,11 +270,11 @@ namespace Vital::Engine {
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
-        auto it = handlers.find("load");
-        if (it == handlers.end()) return;
-        it -> second(Tool::to_std_string(url));
+        if (boot_loads > 0) {
+            boot_loads--;
             return;
-        notify("load", Tool::to_std_string(url));
+        }
+        signal("load", Tool::to_std_string(url));
     }
 }
 #endif

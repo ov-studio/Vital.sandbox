@@ -48,6 +48,7 @@ namespace Vital::Engine {
         private:
             Options options;
             godot::Control* webview = nullptr;
+            int boot_loads = 2;
             std::unordered_map<std::string, std::function<void(Payload)>> handlers;
             static inline Webview* input_forwarder = nullptr;
             static inline std::vector<Webview*> buffer;
@@ -69,6 +70,7 @@ namespace Vital::Engine {
             void pause_input_forwarder();
             static Webview* select_input_forwarder();
             static void update_input_forwarder();
+            void signal(const std::string& type, Payload payload = std::monostate{});
         public:
             // Managers //
             static Webview* create(const Options& options = {});
