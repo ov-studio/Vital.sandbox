@@ -40,9 +40,9 @@ namespace Vital::Engine {
         webview -> connect("resized", godot::Callable(this, "on_resized"));
         webview -> connect("ipc_message", godot::Callable(this, "on_message"));
         webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
+        webview -> call_deferred("load_html", "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
         set_visible(false);
         set_devtools_visible(false);
-        load_html("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
     }
 
     Webview::~Webview() {
@@ -213,6 +213,12 @@ namespace Vital::Engine {
 
 
     // Misc //
+    void Webview::notify(const std::string& type, Payload payload) {
+        auto it = handlers.find(type);
+        if (it == handlers.end()) return;
+        it -> second(payload);
+    }
+
     void Webview::load_url(const std::string& url) {
         webview -> call_deferred("load_url", Tool::to_godot_string(url));
     }
@@ -267,6 +273,7 @@ namespace Vital::Engine {
         auto it = handlers.find("load");
         if (it == handlers.end()) return;
         it -> second(Tool::to_std_string(url));
+            return;
         notify("load", Tool::to_std_string(url));
     }
 }
