@@ -250,15 +250,11 @@ namespace Vital::Engine {
     // Events //
     void Webview::on_resized() {
         update_input_forwarder();
-        auto it = handlers.find("resize");
-        if (it == handlers.end()) return;
-        it -> second(std::monostate{});
+        notify("resize");
     }
 
     void Webview::on_message(godot::String message) {
-        auto it = handlers.find("message");
-        if (it == handlers.end()) return;
-        it -> second(Tool::to_std_string(message));
+        notify("message", Tool::to_std_string(message));
     }
 
     void Webview::on_page_loaded(godot::String url) {
@@ -271,6 +267,7 @@ namespace Vital::Engine {
         auto it = handlers.find("load");
         if (it == handlers.end()) return;
         it -> second(Tool::to_std_string(url));
+        notify("load", Tool::to_std_string(url));
     }
 }
 #endif
