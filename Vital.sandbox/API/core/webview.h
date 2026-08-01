@@ -77,7 +77,18 @@ namespace Vital::Sandbox::API {
                     vm -> pop(6);
                 }
                 auto instance = Instance::init(vm);
+                auto instance_id = instance -> id;
                 instance -> webview = base_class::create(options);
+                instance -> webview -> set_handler("load", [vm, instance_id](godot::String url) {
+                    auto instance = Instance::find(instance_id);
+                    if (!instance) return;
+                    Manager::Sandbox::get_singleton() -> signal(
+                        "webview:load",
+                        Tool::StackValue(std::static_pointer_cast<void>(instance)),
+                        Tool::StackValue(Tool::to_std_string(url))
+                    );
+                });
+
                 instance -> store(true);
                 return 1;
             });

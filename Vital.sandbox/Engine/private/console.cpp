@@ -274,7 +274,7 @@ namespace Vital::Engine {
             options.forward_input = false;
             webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
-            webview -> set_message_handler(std::bind(&Console::on_message, this, std::placeholders::_1));
+            webview -> set_handler("message", std::bind(&Console::on_message, this, std::placeholders::_1));
 
             Tool::Event::bind("kit:ready", [this](Tool::Stack arguments) {
                 Engine::Core::get_singleton() -> enqueue([this]() {
