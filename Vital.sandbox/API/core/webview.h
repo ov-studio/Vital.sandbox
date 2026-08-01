@@ -56,7 +56,7 @@ namespace Vital::Sandbox::API {
                 instance -> webview -> set_handler(type, [id, type](base_class::Payload payload) {
                     auto instance = Instance::find(id);
                     if (!instance) return;
-                    auto webview = Tool::StackValue(std::static_pointer_cast<void>(instance));
+                    auto webview = Tool::StackValue(instance);
                     auto signal = "webview:" + type;
                     std::visit([&](auto&& value) {
                         using V = std::decay_t<decltype(value)>;
