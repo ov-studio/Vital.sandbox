@@ -47,7 +47,32 @@ namespace Vital::Sandbox::API {
             }
         };
         inline static vm_registry<Instance> registry;
-    
+
+        inline static const std::vector<std::string> signal_registry = {
+            "load",
+            "message",
+            "resize"
+        };
+
+        static void wire_handlers(int id) {
+            for (const auto& type : signal_registry) {
+                auto instance = Instance::find(id);
+                if (!instance) continue;
+        
+                instance -> webview -> set_handler(type, [id, type](base_class::Payload payload) {
+                    auto instance = Instance::find(id);
+                    if (!instance) return;
+                    auto webview = Tool::StackValue(std::static_pointer_cast<void>(instance));
+                    auto signal = "webview:" + type;
+                    std::visit([&](auto&& value) {
+                        using V = std::decay_t<decltype(value)>;
+                        if constexpr (std::is_same_v<V, std::monostate>) Manager::Sandbox::get_singleton() -> signal(signal, webview);
+                        else Manager::Sandbox::get_singleton() -> signal(signal, webview, Tool::StackValue(value));
+                    }, payload);
+                });
+            }
+        }
+
         static std::string build_url(Machine* vm, const std::string& input) {
             auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, input);
             const std::string mounted_path = resource.empty() ? fmt::format("resources/{}", relative) : fmt::format("resources/{}/{}", resource, relative);

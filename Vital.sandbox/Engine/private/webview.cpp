@@ -42,7 +42,7 @@ namespace Vital::Engine {
         webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
         set_visible(false);
         set_devtools_visible(false);
-        load_url("https://github.com/ov-studio/Vital.sandbox");
+        load_html("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
     }
 
     Webview::~Webview() {
