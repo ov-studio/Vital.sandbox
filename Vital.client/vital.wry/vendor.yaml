@@ -1,2 +1,5 @@
+# NOTE: v1.0.2 aborts on Linux as soon as a WebView enters the scene tree
+# ("GTK has not been initialized"). Fixed upstream in main, not yet released.
+# See LINUX.md in this folder.
 src: "https://github.com/doceazedo/godot_wry/releases"
 version: "v1.0.2"
