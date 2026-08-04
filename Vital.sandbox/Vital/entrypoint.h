@@ -43,8 +43,17 @@ inline void uninitialize_gdextension_types(godot::ModuleInitializationLevel p_le
     if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) return;
 }
 
+// On MSVC, GDE_EXPORT is __declspec(dllexport), which forces an inline function to be
+// emitted even when nothing calls it. Elsewhere it is only visibility("default"), so
+// this entrypoint would be silently dropped and Godot could not resolve it
+#if defined(_MSC_VER)
+    #define VSDK_KEEP
+#else
+    #define VSDK_KEEP __attribute__((used))
+#endif
+
 extern "C" {
-    inline GDExtensionBool GDE_EXPORT vsdk_entrypoint(GDExtensionInterfaceGetProcAddress p_get_proc_address, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization* r_initialization) {
+    inline GDExtensionBool GDE_EXPORT VSDK_KEEP vsdk_entrypoint(GDExtensionInterfaceGetProcAddress p_get_proc_address, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization* r_initialization) {
         Vital::Tool::main_thread_id = std::this_thread::get_id();
         godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
         init_obj.register_initializer(initialize_gdextension_types);
