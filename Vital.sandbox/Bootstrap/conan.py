@@ -31,17 +31,23 @@ class Conan:
     def build(self):
         self.install()
         log_step("Building Conan")
+        settings = [
+            "--settings=build_type=Release",
+            "--settings=compiler.cppstd=17",
+        ]
+        if Fetch_OS()["type"] == "Windows":
+            # MSVC-only settings — gcc/clang profiles reject both
+            settings += [
+                "--settings=compiler.runtime=dynamic",
+                "--settings=compiler.version=194",
+            ]
         for cmd, label in [
             (["conan", "profile", "detect", "--force"], "Detecting profile"),
             (["conan", "install", ".",
                 "--build=missing",
                 "-v", "quiet",
                 "--output-folder=.conan",
-                "--settings=build_type=Release",
-                "--settings=compiler.cppstd=17",
-                "--settings=compiler.runtime=dynamic",
-                "--settings=compiler.version=194"
-            ], "Installing packages")
+            ] + settings, "Installing packages")
         ]:
             log_info(f"{label} ...")
             returncode = self._run_live(cmd, label)

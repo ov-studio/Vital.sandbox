@@ -33,20 +33,29 @@ class Discord:
         self.env.Append(LIBPATH=[os.path.join(cwd, f"Vendor/discord-sdk/lib/{build_type}")])
         if os_info["type"] == "Windows":
             self.env.Append(LIBS=["discord_partner_sdk"])
+        elif os_info["type"] == "Linux":
+            self.env.Append(LIBS=["discord_partner_sdk"])
+            # The runtime is staged beside the extension, not on the system path
+            self.env.Append(LINKFLAGS=["-Wl,-rpath,$$ORIGIN"])
+
+    # The SDK ships the Windows runtime under bin/, but the Linux and macOS
+    # ones under lib/ with a "lib" prefix
+    RUNTIME = {
+        "Windows": ("bin", "discord_partner_sdk.dll"),
+        "Linux":   ("lib", "libdiscord_partner_sdk.so"),
+        "Darwin":  ("lib", "libdiscord_partner_sdk.dylib"),
+    }
 
     def stage(self, build, build_dir):
         if self.env.Args["platform_type"] != "Client":
             return
-        os_info = Fetch_OS()
+        runtime = self.RUNTIME.get(Fetch_OS()["type"])
+        if not runtime:
+            return
+        subdir, filename = runtime
         cwd = os.path.abspath(os.getcwd())
-        discord_bin = os.path.join(cwd, f"../Vital.sandbox/Vendor/discord-sdk/bin/{self.env.Args['build_type'].lower()}")
-        copy_nodes = []
-        if os_info["type"] == "Windows":
-            copy_nodes += self.env.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dll"))
-        elif os_info["type"] == "Darwin":
-            copy_nodes += self.env.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.dylib"))
-        elif os_info["type"] == "Linux":
-            copy_nodes += self.env.RCopy(build_dir, os.path.join(discord_bin, "discord_partner_sdk.so"))
-        self.env.Depends(build, copy_nodes)
+        build_type = self.env.Args["build_type"].lower()
+        source = os.path.join(cwd, "Vendor", "discord-sdk", subdir, build_type, filename)
+        self.env.Depends(build, self.env.RCopy(build_dir, source))
 
 BaseEnvironment.Discord = property(lambda self: Discord(self))

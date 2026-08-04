@@ -21,8 +21,21 @@
 // Vital: Sandbox //
 /////////////////////
 
+// Declared, never included — Manager/public/sandbox.h pulls in Engine headers that
+// reach back into this one, so including it here would form a cycle
+namespace Vital::Manager { class Sandbox; }
+
 namespace Vital::Sandbox {
     class Machine;
+
+    // `Machine` stays incomplete throughout these runtime headers — machine.h reaches
+    // them through index.h before it defines the class. Naming `Machine` directly in a
+    // template body is a non-dependent expression, so GCC binds it here and fails,
+    // while MSVC defers every name to instantiation. Going through this trait makes the
+    // type dependent on the enclosing template parameter, which postpones lookup to
+    // instantiation — by which point machine.h has been fully parsed.
+    template<typename> struct vm_machine_of { using type = Machine; };
+    template<typename> struct vm_sandbox_of { using type = Manager::Sandbox; };
     using vm_state = lua_State;
     using vm_exec = lua_CFunction;
     using vm_machines = std::unordered_map<vm_state*, Machine*>;
@@ -144,12 +157,12 @@ namespace Vital::Sandbox {
 
             template<typename Registry>
             inline vm_args& require_enum(int idx, const Registry& registry) {
-                return require(idx, &Machine::is_number).validate_enum(idx, registry);
+                return require(idx, &vm_machine_of<Registry>::type::is_number).validate_enum(idx, registry);
             }
-            
+
             template<typename E>
             inline vm_args& require_enum(int idx, E min, E max) {
-                return require(idx, &Machine::is_number).validate_enum(idx, min, max);
+                return require(idx, &vm_machine_of<E>::type::is_number).validate_enum(idx, min, max);
             }
 
             template<typename F>
