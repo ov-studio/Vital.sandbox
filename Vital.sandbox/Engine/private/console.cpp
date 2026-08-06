@@ -696,9 +696,22 @@ namespace Vital::Engine {
     }
 
     #if defined(VSDK_Client)
+    void Console::focus() {
+        if (!is_ready()) return;
+        rapidjson::Document document;
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        document.SetObject();
+        document.AddMember("action", "focus", document.GetAllocator());
+        document.Accept(writer);
+        webview -> emit(buffer.GetString());
+    }
+
     void Console::toggle() {
         if (!is_ready()) return;
-        webview -> set_visible(!webview -> is_visible());
+        const bool visible = !webview -> is_visible();
+        webview -> set_visible(visible);
+        if (visible) focus();
     }
     #endif
 
