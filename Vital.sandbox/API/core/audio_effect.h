@@ -404,7 +404,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)", true)
                     .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> audio -> is_fx_enabled(vm -> get_string(2)));
+                auto name = vm -> get_string(2);
+                vm -> push_value(self -> audio -> is_fx_enabled(name));
                 return 1;
             });
 
@@ -413,7 +414,9 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_string)
                     .require(3, &Machine::is_bool);
 
-                vm -> push_value(self -> audio -> set_fx_enabled(vm -> get_string(2), vm -> get_bool(3)));
+                auto name = vm -> get_string(2);
+                auto state = vm -> get_bool(3);
+                vm -> push_value(self -> audio -> set_fx_enabled(name, state));
                 return 1;
             });
             
@@ -436,7 +439,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(name)", true)
                     .require(2, &Machine::is_string);
 
-                vm -> push_value(self -> audio -> remove_fx(vm -> get_string(2)));
+                auto name = vm -> get_string(2);
+                vm -> push_value(self -> audio -> remove_fx(name));
                 return 1;
             });
 
