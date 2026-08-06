@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <iostream>
 #include <algorithm>
+#include <optional>
 #include <random>
 #include <mutex>
 #include <atomic>
