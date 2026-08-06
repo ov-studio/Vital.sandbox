@@ -334,7 +334,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position = 0.0)", true)
                     .optional(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> play(vm -> is_number(2) ? vm -> get_float(2) : 0.0f);
+                auto position = vm -> is_number(2) ? vm -> get_float(2) : 0.0f;
+                self -> audio -> get_player() -> play(position);
                 vm -> push_value(true);
                 return 1;
             });
@@ -349,7 +350,8 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(position)", true)
                     .require(2, &Machine::is_number);
 
-                self -> audio -> get_player() -> seek(vm -> get_float(2));
+                auto position = vm -> get_float(2);
+                self -> audio -> get_player() -> seek(position);
                 vm -> push_value(true);
                 return 1;
             });
