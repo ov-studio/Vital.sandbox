@@ -330,7 +330,6 @@ namespace Vital::Sandbox::API {
                 case Effect::EQ10:             { godot::Ref<godot::AudioEffectEQ10> e            = existing; if (!e.is_valid())  e.instantiate();  if (has_params) apply_eq_params(e);      return e; }
                 case Effect::EQ21:             { godot::Ref<godot::AudioEffectEQ21> e            = existing; if (!e.is_valid())  e.instantiate();  if (has_params) apply_eq_params(e);      return e; }
             }
-            return effect;
             return {};
         }
 
@@ -372,6 +371,21 @@ namespace Vital::Sandbox::API {
                 auto result = build(vm, effect, has_params, 4);
                 if (!result.is_valid()) vm -> push_value(false);
                 else vm -> push_value(self -> audio -> add_fx(name, result));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "update_fx_parameter", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(name, parameters)", true)
+                    .require(2, &Machine::is_string)
+                    .require(3, &Machine::is_table);
+
+                auto name = vm -> get_string(2);
+                auto effect = self -> audio -> get_fx(name);
+                if (!effect.is_valid()) { vm -> push_value(false); return 1; }
+                auto type = identify(effect);
+                if (!type.has_value()) { vm -> push_value(false); return 1; }
+                apply(vm, type.value(), effect, true, 3);
+                vm -> push_value(true);
                 return 1;
             });
 
