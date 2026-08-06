@@ -290,27 +290,10 @@ class Build:
             self.copy_pdb()
 
 
-def inject_godot_version(script_dir):
-    version_h = os.path.join(script_dir, "Vital.sandbox", "Tool", "version.h")
+def fetch_godot_version(script_dir):
     godot_version = Godot(None).get_version(script_dir) or "unknown"
-
-    with open(version_h, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    new_content = re.sub(
-        r'^#define VSDK_GODOT_VERSION.*$',
-        f'#define VSDK_GODOT_VERSION "{godot_version}"',
-        content,
-        count=1,
-        flags=re.MULTILINE,
-    )
-
-    if new_content != content:
-        with open(version_h, "w", encoding="utf-8") as f:
-            f.write(new_content)
-
     log_step("Godot version")
-    log_ok(f"Injected: {godot_version}")
+    log_ok(f"Resolved: {godot_version} (build-flag only, version.h untouched)")
     return godot_version
 
 
@@ -335,14 +318,14 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
-    inject_godot_version(script_dir)
+    godot_version = fetch_godot_version(script_dir)
 
-    b = Build(script_dir, platforms[0], build_type, verbose=args.verbose)
+    b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
     b.reload_vendors()
     b.build_godot_cpp(force=args.rebuild_godot)
 
     for platform_type in platforms:
-        build = Build(script_dir, platform_type, build_type, verbose=args.verbose)
+        build = Build(script_dir, platform_type, build_type, verbose=args.verbose, godot_version=godot_version)
         build.build_sandbox()
         if not args.skip_export:
             build.export()
