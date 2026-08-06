@@ -33,6 +33,9 @@
 #ifndef VSDK_VERSION_LABEL
 #define VSDK_VERSION_LABEL "dev"
 #endif
+#ifndef VSDK_GODOT_VERSION
+#define VSDK_GODOT_VERSION "unknown"
+#endif
 
 namespace Vital {
     struct Version {

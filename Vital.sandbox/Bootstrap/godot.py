@@ -89,6 +89,12 @@ class Godot:
 
         Throw_Error("Could not detect Godot version from godot-cpp and failed to fetch latest release from GitHub")
 
+    def get_version(self, script_dir=None):
+        if script_dir is None:
+            script_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        return self._get_version(script_dir)
+
+
     def _ver_dash(self, version):
         return version.replace(".stable", "-stable").replace(".rc", "-rc").replace(".beta", "-beta")
 
