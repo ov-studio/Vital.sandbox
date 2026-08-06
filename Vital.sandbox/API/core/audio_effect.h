@@ -333,6 +333,9 @@ namespace Vital::Sandbox::API {
             return effect;
             return {};
         }
+
+        static godot::Ref<godot::AudioEffect> build(Machine* vm, Effect type, bool has_params, int param_idx) {
+            return apply(vm, type, {}, has_params, param_idx);
         }
 
         template<typename Instance>
