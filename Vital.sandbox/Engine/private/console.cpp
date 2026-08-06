@@ -58,8 +58,8 @@ namespace Vital::Engine {
             "> Vital.godot: `{}`\n",
             "> Vital.kit: `{}`\n"
             Vital::Build.to_string(),
-            Manager::Kit::get_version()
             Manager::Kit::get_version(),
+            Vital::Godot_Version
         );
     }
     
