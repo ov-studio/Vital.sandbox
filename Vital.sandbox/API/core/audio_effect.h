@@ -97,12 +97,32 @@ namespace Vital::Sandbox::API {
             {"EQ21",             Effect::EQ21             }
         };
 
-        template<typename T, typename Fn>
-        static godot::Ref<T> make(Fn&& configure) {
-            godot::Ref<T> e;
-            e.instantiate();
-            configure(e);
-            return e;
+        static std::optional<Effect> identify(const godot::Ref<godot::AudioEffect>& effect) {
+            if (!effect.is_valid()) return std::nullopt;
+            auto* obj = effect.ptr();
+            if (godot::Object::cast_to<godot::AudioEffectReverb>(obj))          return Effect::REVERB;
+            if (godot::Object::cast_to<godot::AudioEffectChorus>(obj))          return Effect::CHORUS;
+            if (godot::Object::cast_to<godot::AudioEffectDelay>(obj))           return Effect::DELAY;
+            if (godot::Object::cast_to<godot::AudioEffectDistortion>(obj))      return Effect::DISTORTION;
+            if (godot::Object::cast_to<godot::AudioEffectAmplify>(obj))         return Effect::AMPLIFY;
+            if (godot::Object::cast_to<godot::AudioEffectCompressor>(obj))      return Effect::COMPRESSOR;
+            if (godot::Object::cast_to<godot::AudioEffectLimiter>(obj))         return Effect::LIMITER;
+            if (godot::Object::cast_to<godot::AudioEffectHardLimiter>(obj))     return Effect::HARD_LIMITER;
+            if (godot::Object::cast_to<godot::AudioEffectPanner>(obj))          return Effect::PANNER;
+            if (godot::Object::cast_to<godot::AudioEffectPhaser>(obj))          return Effect::PHASER;
+            if (godot::Object::cast_to<godot::AudioEffectPitchShift>(obj))      return Effect::PITCH_SHIFT;
+            if (godot::Object::cast_to<godot::AudioEffectStereoEnhance>(obj))   return Effect::STEREO_ENHANCE;
+            if (godot::Object::cast_to<godot::AudioEffectLowPassFilter>(obj))   return Effect::LOWPASS_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectHighPassFilter>(obj))  return Effect::HIGHPASS_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectBandPassFilter>(obj))  return Effect::BANDPASS_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectNotchFilter>(obj))     return Effect::NOTCH_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectBandLimitFilter>(obj)) return Effect::BANDLIMIT_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectLowShelfFilter>(obj))  return Effect::LOWSHELF_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectHighShelfFilter>(obj)) return Effect::HIGHSHELF_FILTER;
+            if (godot::Object::cast_to<godot::AudioEffectEQ6>(obj))             return Effect::EQ6;
+            if (godot::Object::cast_to<godot::AudioEffectEQ10>(obj))            return Effect::EQ10;
+            if (godot::Object::cast_to<godot::AudioEffectEQ21>(obj))            return Effect::EQ21;
+            return std::nullopt;
         }
 
         static godot::Ref<godot::AudioEffect> build(Machine* vm, Effect type, bool has_params, int param_idx) {
