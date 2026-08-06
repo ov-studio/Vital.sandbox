@@ -1,5 +1,6 @@
 import sys
 sys.path.append("./Vital.sandbox")
+import re
 from vital import *
 
 class Build:
@@ -288,6 +289,30 @@ class Build:
             self.copy_pdb()
 
 
+def inject_godot_version(script_dir):
+    version_h = os.path.join(script_dir, "Vital.sandbox", "Tool", "version.h")
+    godot_version = Godot(None).get_version(script_dir) or "unknown"
+
+    with open(version_h, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    new_content = re.sub(
+        r'^#define VSDK_GODOT_VERSION.*$',
+        f'#define VSDK_GODOT_VERSION "{godot_version}"',
+        content,
+        count=1,
+        flags=re.MULTILINE,
+    )
+
+    if new_content != content:
+        with open(version_h, "w", encoding="utf-8") as f:
+            f.write(new_content)
+
+    log_step("Godot version")
+    log_ok(f"Injected: {godot_version}")
+    return godot_version
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build Vital")
 
@@ -308,6 +333,8 @@ def main():
     build_type = "Release" if args.release else "Debug"
     script_dir = os.path.dirname(os.path.abspath(__file__))
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
+
+    inject_godot_version(script_dir)
 
     b = Build(script_dir, platforms[0], build_type, verbose=args.verbose)
     b.reload_vendors()
