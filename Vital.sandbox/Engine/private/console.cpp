@@ -54,9 +54,9 @@ namespace Vital::Engine {
     std::string Console::Internal::fetch_version() {
         return fmt::format(
             "Version:\n"
-            "> Vital.sandbox: `{}`\n",
-            "> Vital.godot: `{}`\n",
-            "> Vital.kit: `{}`\n"
+            "> Vital.sandbox: `{}`\n"
+            "> Vital.godot: `{}`\n"
+            "> Vital.kit: `{}`\n",
             Vital::Build.to_string(),
             Manager::Kit::get_version(),
             Vital::Godot_Version
