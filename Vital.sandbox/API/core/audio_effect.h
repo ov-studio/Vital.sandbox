@@ -331,6 +331,7 @@ namespace Vital::Sandbox::API {
                 case Effect::EQ21:             { godot::Ref<godot::AudioEffectEQ21> e            = existing; if (!e.is_valid())  e.instantiate();  if (has_params) apply_eq_params(e);      return e; }
             }
             return effect;
+            return {};
         }
         }
 
