@@ -73,13 +73,15 @@ namespace Vital::Sandbox::API {
             API::Audio_Effect::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(path)")
-                    .require(1, &Machine::is_string);
+                vm_args(vm, id, "(path, autoplay = false)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
 
                 auto path = vm -> get_string(1);
                 auto base = API::File::assert_file(vm, path);
+                auto autoplay = vm -> is_bool(2) ? vm -> get_bool(2) : false;
                 auto instance = Instance::init(vm);
-                instance -> audio = base_class::create(base, path);
+                instance -> audio = base_class::create(base, path, autoplay);
                 instance -> store(true);
                 return 1;
             });
