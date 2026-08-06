@@ -177,9 +177,8 @@ namespace Vital::Sandbox::API {
                         read_float("hpf",               [&](float v) { e -> set_hpf(v);               });
                         read_float("predelay_msec",     [&](float v) { e -> set_predelay_msec(v);     });
                         read_float("predelay_feedback", [&](float v) { e -> set_predelay_feedback(v); });
-                    });
-                    break;
                     }
+                    return e;
                 }
                 case Effect::CHORUS: {
                     godot::Ref<godot::AudioEffectChorus> e = existing;
@@ -236,9 +235,8 @@ namespace Vital::Sandbox::API {
                         read_float("keep_hf_hz", [&](float v) { e -> set_keep_hf_hz(v);                                            });
                         read_float("drive",      [&](float v) { e -> set_drive(v);                                                 });
                         read_float("post_gain",  [&](float v) { e -> set_post_gain(v);                                             });
-                    });
-                    break;
                     }
+                    return e;
                 }
                 case Effect::AMPLIFY: {
                     godot::Ref<godot::AudioEffectAmplify> e = existing;
@@ -253,6 +251,8 @@ namespace Vital::Sandbox::API {
                     effect = make<godot::AudioEffectCompressor>([&](auto& e) {
                         if (!has_params) return;
                     godot::Ref<godot::AudioEffectCompressor> e = existing;
+                    if (!e.is_valid()) e.instantiate();
+                    if (has_params) {
                         read_float("threshold",  [&](float v) { e -> set_threshold(v);  });
                         read_float("ratio",      [&](float v) { e -> set_ratio(v);      });
                         read_float("gain",       [&](float v) { e -> set_gain(v);       });
