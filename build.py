@@ -290,13 +290,6 @@ class Build:
             self.copy_pdb()
 
 
-def fetch_godot_version(script_dir):
-    godot_version = Godot(None).get_version(script_dir) or "unknown"
-    log_step("Godot version")
-    log_ok(f"Resolved: {godot_version} (build-flag only, version.h untouched)")
-    return godot_version
-
-
 def main():
     parser = argparse.ArgumentParser(description="Build Vital")
 
@@ -318,7 +311,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     platforms = ["Client", "Server"] if args.all else ["Client"] if args.client else ["Server"]
 
-    godot_version = fetch_godot_version(script_dir)
+    godot_version = Godot(None).get_version(script_dir)
 
     b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
     b.reload_vendors()
