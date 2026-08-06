@@ -77,4 +77,6 @@ namespace Vital {
         VSDK_VERSION_PATCH,
         VSDK_VERSION_LABEL
     };
+
+    static const std::string Godot_Version = VSDK_GODOT_VERSION;
 }
