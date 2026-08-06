@@ -55,11 +55,11 @@ namespace Vital::Engine {
         return fmt::format(
             "Version:\n"
             "> Vital.sandbox: `{}`\n"
-            "> Vital.godot: `{}`\n"
-            "> Vital.kit: `{}`\n",
+            "> Vital.kit: `{}`\n"
+            "> Vital.godot: `{}`\n",
             Vital::Build.to_string(),
-            Vital::Godot_Version,
-            Manager::Kit::get_version()
+            Manager::Kit::get_version(),
+            Vital::Godot_Version
         );
     }
     
