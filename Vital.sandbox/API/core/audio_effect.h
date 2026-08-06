@@ -432,6 +432,14 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "remove_fx", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(name)", true)
+                    .require(2, &Machine::is_string);
+
+                vm -> push_value(self -> audio -> remove_fx(vm -> get_string(2)));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "update_fx", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(name, parameters)", true)
                     .require(2, &Machine::is_string)
@@ -448,14 +456,6 @@ namespace Vital::Sandbox::API {
                     }
                 }
                 vm -> push_value(false);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "remove_fx", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(name)", true)
-                    .require(2, &Machine::is_string);
-
-                vm -> push_value(self -> audio -> remove_fx(vm -> get_string(2)));
                 return 1;
             });
 
