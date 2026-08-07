@@ -264,13 +264,15 @@ namespace Vital::Engine {
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
-        if (boot_loads > 0) boot_loads--;
         if (boot_loads > 0) return;
         signal("preload", Tool::to_std_string(url));
     }
 
     void Webview::on_load(godot::String url) {
-        if (boot_loads > 0) return;
+        if (boot_loads > 0) {
+            boot_loads--;
+            return;
+        }
         signal("load", Tool::to_std_string(url));
     }
 
