@@ -30,12 +30,12 @@ namespace Vital::Engine {
 
 
             // Instantiators //
-            Audio_3D(const godot::Ref<godot::AudioStream>& stream);
+            Audio_3D(const godot::Ref<godot::AudioStream>& stream, bool autoplay);
             ~Audio_3D();
         public:
             // Managers //
-            static Audio_3D* create(const std::string& base, const std::string& path);
-            static Audio_3D* create_from_buffer(const godot::PackedByteArray& buffer);
+            static Audio_3D* create(const std::string& base, const std::string& path, bool autoplay = false);
+            static Audio_3D* create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay = false);
             void destroy();
 
 

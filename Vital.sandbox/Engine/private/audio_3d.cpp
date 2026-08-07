@@ -23,10 +23,11 @@
 
 namespace Vital::Engine {
     // Instantiators //
-    Audio_3D::Audio_3D(const godot::Ref<godot::AudioStream>& stream) {
+    Audio_3D::Audio_3D(const godot::Ref<godot::AudioStream>& stream, bool autoplay) {
         this -> stream = stream;
         player = memnew(godot::AudioStreamPlayer3D);
         player -> set_stream(stream);
+        player -> set_autoplay(autoplay);
         player -> set_bus(godot::StringName(Tool::to_godot_string(create_bus("audio_3d"))));
         Engine::Core::get_singleton() -> add_child(player);
     }
@@ -40,12 +41,12 @@ namespace Vital::Engine {
 
 
     // Managers //
-    Audio_3D* Audio_3D::create(const std::string& base, const std::string& path) {
-        return create_from_buffer(Tool::File::read_binary(base, path));
+    Audio_3D* Audio_3D::create(const std::string& base, const std::string& path, bool autoplay) {
+        return create_from_buffer(Tool::File::read_binary(base, path), autoplay);
     }
 
-    Audio_3D* Audio_3D::create_from_buffer(const godot::PackedByteArray& buffer) {
-        return memnew(Audio_3D(load_stream_from_buffer(buffer)));
+    Audio_3D* Audio_3D::create_from_buffer(const godot::PackedByteArray& buffer, bool autoplay) {
+        return memnew(Audio_3D(load_stream_from_buffer(buffer), autoplay));
     }
 
     void Audio_3D::destroy() {
