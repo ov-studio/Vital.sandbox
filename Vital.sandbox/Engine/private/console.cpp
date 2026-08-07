@@ -698,7 +698,9 @@ namespace Vital::Engine {
     #if defined(VSDK_Client)
     void Console::toggle() {
         if (!is_ready()) return;
-        webview -> set_visible(!webview -> is_visible());
+        const bool state = !webview -> is_visible();
+        webview -> set_visible(state);
+        if (state) webview -> set_focussed(true);
     }
     #endif
 
