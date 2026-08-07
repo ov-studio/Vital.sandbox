@@ -41,7 +41,7 @@ namespace Vital::Engine {
         webview -> connect("page_load_finished", godot::Callable(this, "on_load"));
         webview -> connect("resized", godot::Callable(this, "on_resize"));
         webview -> connect("ipc_message", godot::Callable(this, "on_message"));
-        webview -> call_deferred("load_html", "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
+        load_html("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
         set_visible(false);
         set_devtools_visible(false);
     }
