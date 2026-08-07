@@ -161,7 +161,7 @@ namespace Vital::Engine {
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
-        eval(fmt::format("window.vsdk_on_visible({});", state ? "true" : "false"));
+        eval(fmt::format("window.dispatchEvent(new CustomEvent('webview:visible', {{ detail: {{ visible: {} }} }}));", state ? "true" : "false"));
         if (state) update_input_forwarder();
         else {
             if (input_forwarder == this) {
