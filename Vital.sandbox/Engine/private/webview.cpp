@@ -37,9 +37,10 @@ namespace Vital::Engine {
         webview -> set("zoom_hotkeys", options.zoomable);
         webview -> set("forward_input_events", false);
         Engine::Canvas::get_singleton() -> add_child(webview);
+        webview -> connect("page_load_started", godot::Callable(this, "on_preload"));
+        webview -> connect("page_load_finished", godot::Callable(this, "on_load"));
         webview -> connect("resized", godot::Callable(this, "on_resized"));
         webview -> connect("ipc_message", godot::Callable(this, "on_message"));
-        webview -> connect("page_load_finished", godot::Callable(this, "on_page_loaded"));
         webview -> call_deferred("load_html", "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
         set_visible(false);
         set_devtools_visible(false);
@@ -256,16 +257,7 @@ namespace Vital::Engine {
     
 
     // Events //
-    void Webview::on_resized() {
-        update_input_forwarder();
-        signal("resize");
-    }
-
-    void Webview::on_message(godot::String message) {
-        signal("message", Tool::to_std_string(message));
-    }
-
-    void Webview::on_page_loaded(godot::String url) {
+    void Webview::on_preload(godot::String url) {
         std::ostringstream js;
         js << "(function() {";
         for (const auto& [src, content] : Manager::Kit::fetch_modules("js")) js << content << "\n";
@@ -276,7 +268,20 @@ namespace Vital::Engine {
             boot_loads--;
             return;
         }
+        signal("preload", Tool::to_std_string(url));
+    }
+
+    void Webview::on_load(godot::String url) {
         signal("load", Tool::to_std_string(url));
+    }
+
+    void Webview::on_resized() {
+        update_input_forwarder();
+        signal("resize");
+    }
+
+    void Webview::on_message(godot::String message) {
+        signal("message", Tool::to_std_string(message));
     }
 }
 #endif
