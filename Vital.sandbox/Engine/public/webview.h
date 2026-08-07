@@ -41,9 +41,10 @@ namespace Vital::Engine {
             >;
 
             inline static const std::vector<std::string> signal_registry = {
+                "preload",
                 "load",
-                "message",
-                "resize"
+                "resize",
+                "message"
             };
         private:
             Options options;
