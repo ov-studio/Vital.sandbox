@@ -268,10 +268,12 @@ namespace Vital::Engine {
             boot_loads--;
             return;
         }
+        if (boot_loads > 0) return;
         signal("preload", Tool::to_std_string(url));
     }
 
     void Webview::on_load(godot::String url) {
+        if (boot_loads > 0) return;
         signal("load", Tool::to_std_string(url));
     }
 
