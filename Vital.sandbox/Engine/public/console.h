@@ -86,7 +86,6 @@ namespace Vital::Engine {
             void clear(bool signal = false);
             void teardown();
             #if defined(VSDK_Client)
-            void focus();
             void toggle();
             #endif
 
