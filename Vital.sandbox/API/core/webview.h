@@ -153,6 +153,11 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_z_index", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> get_z_index());
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -193,6 +198,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_z_index", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(value)", true)
+                    .require(2, &Machine::is_number);
+
+                auto value = (int)vm -> get_int(2);
+                self -> webview -> set_z_index(value);
+                vm -> push_value(true);
+                return 1;
+            });
+            
             vm_module::bind_method<Instance>(vm, "set_devtools_visible", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -267,6 +282,18 @@ namespace Vital::Sandbox::API {
 
                 auto input = vm -> get_string(2);
                 self -> webview -> emit(input);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "bring_to_front", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> bring_to_front();
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "send_to_back", [](auto vm, auto self, auto& id) -> int {
+                self -> webview -> send_to_back();
                 vm -> push_value(true);
                 return 1;
             });
