@@ -59,6 +59,7 @@ namespace Vital::Sandbox::API {
             return build_url(vm, input);
         }
 
+        }
         static void wire_handlers(std::shared_ptr<Instance> instance) {
             for (const auto& type : base_class::signal_registry) {
                 if (!Instance::find_unlocked(instance)) continue;
@@ -85,7 +86,7 @@ namespace Vital::Sandbox::API {
 
                 base_class::Options options;
                 if (vm -> is_table(1)) {
-                    vm -> table_get_value("z_index", 1); options.z_index = vm -> is_number(-1) ? (int)vm -> get_int(-1) : options.z_index;
+                    vm -> table_get_value("z_index", 1); options.z_index = vm -> is_number(-1) ? clamp_z_index(vm -> get_int(-1)) : options.z_index;
                     vm -> table_get_value("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
                     vm -> table_get_value("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
                     vm -> table_get_value("overlay", 1); options.overlay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.overlay;
@@ -208,7 +209,7 @@ namespace Vital::Sandbox::API {
                 vm_args(vm, id, "(value)", true)
                     .require(2, &Machine::is_number);
 
-                auto value = (int)vm -> get_int(2);
+                auto value = clamp_z_index(vm -> get_int(2));
                 self -> webview -> set_z_index(value);
                 vm -> push_value(true);
                 return 1;

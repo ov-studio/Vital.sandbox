@@ -35,6 +35,8 @@ namespace Vital::Engine {
                 bool forward_input = false;
                 bool overlay = false;
             };
+            
+            static constexpr int system_z_floor = 10000;
 
             using Payload = std::variant<
                 std::monostate, 
