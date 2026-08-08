@@ -85,13 +85,14 @@ namespace Vital::Sandbox::API {
 
                 base_class::Options options;
                 if (vm -> is_table(1)) {
+                    vm -> table_get_value("z_index", 1); options.z_index = vm -> is_number(-1) ? (int)vm -> get_int(-1) : options.z_index;
                     vm -> table_get_value("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
                     vm -> table_get_value("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
                     vm -> table_get_value("incognito", 1); options.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.incognito;
                     vm -> table_get_value("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
                     vm -> table_get_value("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> table_get_value("forward_input", 1); options.forward_input = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.forward_input;
-                    vm -> pop(6);
+                    vm -> pop(7);
                 }
                 auto instance = Instance::init(vm);
                 instance -> webview = base_class::create(options);
