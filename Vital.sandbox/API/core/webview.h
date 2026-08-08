@@ -59,7 +59,10 @@ namespace Vital::Sandbox::API {
             return build_url(vm, input);
         }
 
+        static int clamp_z_index(int value) {
+            return std::clamp(value, 0, base_class::system_z_floor - 1);
         }
+
         static void wire_handlers(std::shared_ptr<Instance> instance) {
             for (const auto& type : base_class::signal_registry) {
                 if (!Instance::find_unlocked(instance)) continue;
