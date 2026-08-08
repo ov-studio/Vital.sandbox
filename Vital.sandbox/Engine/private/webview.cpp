@@ -249,6 +249,14 @@ namespace Vital::Engine {
         webview -> call_deferred("update_visibility");
     }
 
+    void Webview::bring_to_front() {
+        webview -> call_deferred("bring_to_front");
+    }
+
+    void Webview::send_to_back() {
+        webview -> call_deferred("send_to_back");
+    }
+    
     void Webview::eval(const std::string& input) {
         webview -> call_deferred("eval", Tool::to_godot_string(input));
     }
@@ -263,7 +271,7 @@ namespace Vital::Engine {
         if (it == handlers.end()) return;
         it -> second(payload);
     }
-    
+
 
     // Events //
     void Webview::on_preload(godot::String url) {
