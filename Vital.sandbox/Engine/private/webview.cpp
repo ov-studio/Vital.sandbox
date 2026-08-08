@@ -205,6 +205,7 @@ namespace Vital::Engine {
 
     void Webview::set_z_index(int value) {
         webview -> set("window_z_index", value);
+        set_focussed(true);
     }
 
     void Webview::set_devtools_visible(bool state) {
@@ -242,14 +243,6 @@ namespace Vital::Engine {
         webview -> call_deferred("zoom", value);
     }
 
-    void Webview::bring_to_front() {
-        webview -> call_deferred("bring_to_front");
-    }
-
-    void Webview::send_to_back() {
-        webview -> call_deferred("send_to_back");
-    }
-    
     void Webview::eval(const std::string& input) {
         webview -> call_deferred("eval", Tool::to_godot_string(input));
     }

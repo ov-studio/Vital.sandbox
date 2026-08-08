@@ -113,8 +113,6 @@ namespace Vital::Engine {
             void clear_history();
             void reload();
             void zoom(float value);
-            void bring_to_front();
-            void send_to_back();
             void eval(const std::string& input);
             void emit(const std::string& input);
             void signal(const std::string& type, Payload payload = std::monostate{});

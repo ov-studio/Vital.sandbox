@@ -279,18 +279,6 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(true);
                 return 1;
             });
-
-            vm_module::bind_method<Instance>(vm, "bring_to_front", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> bring_to_front();
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "send_to_back", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> send_to_back();
-                vm -> push_value(true);
-                return 1;
-            });
         }
 
         static void clean(const std::string& env) {
