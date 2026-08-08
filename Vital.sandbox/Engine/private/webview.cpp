@@ -33,6 +33,7 @@ namespace Vital::Engine {
         webview -> set("window_z_index", options.z_index);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
+        webview -> set("overlay", options.overlay);
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
@@ -66,6 +67,7 @@ namespace Vital::Engine {
     Webview* Webview::select_input_forwarder() {
         std::vector<Webview*> candidates;
         for (Webview* instance : buffer) {
+            if (instance -> options.overlay) continue;
             if (!instance -> options.forward_input) continue;
             if (!instance -> is_visible()) continue;
             candidates.push_back(instance);
@@ -127,6 +129,10 @@ namespace Vital::Engine {
         return webview -> get("transparent");
     }
 
+    bool Webview::is_overlay() {
+        return options.overlay;
+    }
+
     bool Webview::is_incognito() {
         return webview -> get("incognito");
     }
@@ -177,6 +183,7 @@ namespace Vital::Engine {
     }
 
     void Webview::set_focussed(bool state) {
+        if (options.overlay) return;
         if (state) {
             if (!is_visible()) return;
             webview -> call_deferred("focus");

@@ -33,6 +33,7 @@ namespace Vital::Engine {
                 bool autoplay = false;
                 bool zoomable = false;
                 bool forward_input = false;
+                bool overlay = false;
             };
 
             using Payload = std::variant<
@@ -83,6 +84,7 @@ namespace Vital::Engine {
             bool is_visible();
             bool is_fullscreen();
             bool is_transparent();
+            bool is_overlay();
             bool is_incognito();
             bool is_autoplay();
             bool is_zoomable();
