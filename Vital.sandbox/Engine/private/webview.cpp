@@ -259,7 +259,6 @@ namespace Vital::Engine {
     }
 
     void Webview::signal(const std::string& type, Payload payload) {
-        if (boot_loads > 0) return;
         auto it = handlers.find(type);
         if (it == handlers.end()) return;
         it -> second(payload);
@@ -274,15 +273,10 @@ namespace Vital::Engine {
         js << "})();";
         eval(js.str());
         if (input_forwarder == this) eval("window.vsdk_forward_input = true;");
-        if (boot_loads > 0) return;
         signal("preload", Tool::to_std_string(url));
     }
 
     void Webview::on_load(godot::String url) {
-        if (boot_loads > 0) {
-            boot_loads--;
-            return;
-        }
         signal("load", Tool::to_std_string(url));
     }
 
