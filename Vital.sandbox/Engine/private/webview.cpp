@@ -159,6 +159,10 @@ namespace Vital::Engine {
         return webview -> get_size();
     }
 
+    int Webview::get_z_index() {
+        return webview -> get("webview_z_index");
+    }
+
 
     // Setters //
     void Webview::set_visible(bool state) {
@@ -199,6 +203,10 @@ namespace Vital::Engine {
 
     void Webview::set_size(const godot::Vector2& size) {
         webview -> set_size(size);
+    }
+
+    void Webview::set_z_index(int value) {
+        webview -> set("webview_z_index", value);
     }
 
     void Webview::set_devtools_visible(bool state) {
