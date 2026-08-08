@@ -259,7 +259,11 @@ namespace Vital::Engine {
     }
 
     void Webview::signal(const std::string& type, Payload payload) {
-        if (boot_loads > 0) return;
+        // The boot_loads gate suppresses load/resize noise from the boot pages, but it must
+        // not swallow IPC messages: only a real page can post one, and WebKitGTK delivers
+        // the page's first message before its page_load_finished (WebView2 orders these the
+        // other way). Gating "message" here loses the console's one-shot `ready` handshake.
+        if (boot_loads > 0 && type != "message") return;
         auto it = handlers.find(type);
         if (it == handlers.end()) return;
         it -> second(payload);

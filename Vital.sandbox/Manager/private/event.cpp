@@ -144,8 +144,11 @@ void vsdk_initialize() {
             network_initialized = true;
             auto nm = Vital::Manager::Network::get_singleton();
             #if defined(VSDK_Client)
-                // TODO: 7777?
-                nm -> connect_to_server("127.0.0.1", 7777, true);
+                // No implicit connection: this used to auto-connect to 127.0.0.1:7777 with
+                // reconnect enabled, which left the client permanently mid-retry against
+                // localhost — and connect_to_server() refuses while a retry is in flight, so
+                // the `connect` command could never take effect. Connect on demand instead.
+                (void)nm;
             #else
                 g_server_config.load();
                 nm -> host(g_server_config);

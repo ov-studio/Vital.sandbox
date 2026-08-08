@@ -600,6 +600,33 @@ namespace Vital::Engine {
             if (cmd == "version") { print("sbox", Internal::fetch_version()); return true; }
             if (cmd == "help") { print("sbox", Internal::fetch_help()); return true; }
             if (cmd == "clear") { clear(); return true; }
+            #if defined(VSDK_Client)
+            if (cmd == "connect") {
+                auto nm = Manager::Network::get_singleton();
+                const int port = std::atoi(tokens[2].c_str());
+                if (port <= 0 || port > 65535) {
+                    print("error", fmt::format("Invalid port `{}`", tokens[2]));
+                    return true;
+                }
+                // connect_to_server refuses while a connection or retry is in flight, so
+                // drop the current one first — otherwise `connect` is a no-op whenever the
+                // client is mid-reconnect
+                if (nm -> is_connected() || nm -> is_connecting()) nm -> disconnect_from_server();
+                if (!nm -> connect_to_server(tokens[1], port, true)) print("error", fmt::format("Failed to connect to `{}:{}`", tokens[1], port));
+                return true;
+            }
+            if (cmd == "disconnect") { Manager::Network::get_singleton() -> disconnect_from_server(); return true; }
+            if (cmd == "status") {
+                auto nm = Manager::Network::get_singleton();
+                print("sbox", fmt::format(
+                    "Connection:\n> Server — `{}`\n> State — `{}`\n> Peer ID — `{}`",
+                    nm -> get_server_ip(),
+                    nm -> is_connected() ? "connected" : (nm -> is_connecting() ? "connecting" : "disconnected"),
+                    nm -> get_peer_id()
+                ));
+                return true;
+            }
+            #endif
             #if !defined(VSDK_Client)
             if (cmd == "info") { print("sbox", Internal::fetch_info()); return true; }
             if (cmd == "refresh") { Manager::Resource::get_singleton() -> scan(); return true; }
