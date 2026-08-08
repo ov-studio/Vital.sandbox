@@ -30,6 +30,7 @@ namespace Vital::Engine {
         else webview = godot::Object::cast_to<godot::Control>(object);
         this -> options = options;
         buffer.push_back(this);
+        webview -> set("webview_z_index", options.z_index);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
         webview -> set("incognito", options.incognito);
