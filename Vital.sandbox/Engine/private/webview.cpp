@@ -36,13 +36,11 @@ namespace Vital::Engine {
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
-        webview -> set("forward_input_events", false);
         Engine::Canvas::get_singleton() -> add_child(webview);
         webview -> connect("page_load_started", godot::Callable(this, "on_preload"));
         webview -> connect("page_load_finished", godot::Callable(this, "on_load"));
         webview -> connect("resized", godot::Callable(this, "on_resize"));
         webview -> connect("ipc_message", godot::Callable(this, "on_message"));
-        webview -> call_deferred("load_html", "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body></body></html>");
         set_visible(false);
         set_devtools_visible(false);
     }
