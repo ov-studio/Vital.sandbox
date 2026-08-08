@@ -26,6 +26,7 @@ namespace Vital::Engine {
         GDCLASS(Webview, godot::Node2D)
         public:
             struct Options {
+                int z_index = 0;
                 bool fullscreen = true;
                 bool transparent = true;
                 bool incognito = true;
@@ -92,6 +93,7 @@ namespace Vital::Engine {
             // Getters //
             godot::Vector2 get_position();
             godot::Vector2 get_size();
+            int get_z_index();
 
 
             // Setters //
@@ -99,6 +101,7 @@ namespace Vital::Engine {
             void set_focussed(bool state);
             void set_position(const godot::Vector2& position);
             void set_size(const godot::Vector2& size);
+            void set_z_index(int value);
             void set_devtools_visible(bool state);
             void set_handler(const std::string& type, std::function<void(Payload)> handler);
             void reset_handler(const std::string& type);
@@ -111,6 +114,8 @@ namespace Vital::Engine {
             void reload();
             void zoom(float value);
             void update();
+            void bring_to_front();
+            void send_to_back();
             void eval(const std::string& input);
             void emit(const std::string& input);
             void signal(const std::string& type, Payload payload = std::monostate{});
