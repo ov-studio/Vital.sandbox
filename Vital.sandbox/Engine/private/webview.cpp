@@ -30,7 +30,7 @@ namespace Vital::Engine {
         else webview = godot::Object::cast_to<godot::Control>(object);
         this -> options = options;
         buffer.push_back(this);
-        webview -> set("webview_z_index", options.z_index);
+        webview -> set("window_z_index", options.z_index);
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
         webview -> set("incognito", options.incognito);
@@ -158,7 +158,7 @@ namespace Vital::Engine {
     }
 
     int Webview::get_z_index() {
-        return webview -> get("webview_z_index");
+        return webview -> get("window_z_index");
     }
 
 
@@ -204,7 +204,7 @@ namespace Vital::Engine {
     }
 
     void Webview::set_z_index(int value) {
-        webview -> set("webview_z_index", value);
+        webview -> set("window_z_index", value);
     }
 
     void Webview::set_devtools_visible(bool state) {
