@@ -113,7 +113,6 @@ namespace Vital::Engine {
             void clear_history();
             void reload();
             void zoom(float value);
-            void update();
             void bring_to_front();
             void send_to_back();
             void eval(const std::string& input);

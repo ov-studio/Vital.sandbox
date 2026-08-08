@@ -244,11 +244,6 @@ namespace Vital::Engine {
         webview -> call_deferred("zoom", value);
     }
 
-    void Webview::update() {
-        webview -> call_deferred("resize");
-        webview -> call_deferred("update_visibility");
-    }
-
     void Webview::bring_to_front() {
         webview -> call_deferred("bring_to_front");
     }

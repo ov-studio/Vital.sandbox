@@ -260,12 +260,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "update", [](auto vm, auto self, auto& id) -> int {
-                self -> webview -> update();
-                vm -> push_value(true);
-                return 1;
-            });
-
             vm_module::bind_method<Instance>(vm, "eval", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(input)", true)
                     .require(2, &Machine::is_string);
