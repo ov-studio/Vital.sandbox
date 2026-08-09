@@ -30,11 +30,11 @@ class Build:
             sys.path.insert(0, b["sandbox_dir"])
         Vendor(None).build()
 
-    def build_wry(self):
+    def reload_wry(self):
         b = self.init()
         if b["sandbox_dir"] not in sys.path:
             sys.path.insert(0, b["sandbox_dir"])
-        Wry(self.script_dir, os.path.join(self.script_dir, "Vital.client")).build()
+        return Wry(self.script_dir, os.path.join(self.script_dir, "Vital.client")).build()
 
     def build_godot_cpp(self, force=False):
         b = self.init()
@@ -90,6 +90,7 @@ class Build:
             "use_static_crt=no",
             "build_library=no",
             f"debug_symbols={'yes' if self.build_type == 'Debug' else 'no'}",
+            f'extra_cppdefines=VSDK_WRY_VERSION=\\"{self.wry_version}\\"',
             f'extra_cppdefines=VSDK_GODOT_VERSION=\\"{self.godot_version}\\"',
             f"-j{int(self.os_info['nproc'])}",
         ]
