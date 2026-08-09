@@ -33,6 +33,9 @@
 #ifndef VSDK_VERSION_LABEL
 #define VSDK_VERSION_LABEL "dev"
 #endif
+#ifndef VSDK_WRY_VERSION
+#define VSDK_WRY_VERSION "unknown"
+#endif
 #ifndef VSDK_GODOT_VERSION
 #define VSDK_GODOT_VERSION "unknown"
 #endif
@@ -78,5 +81,6 @@ namespace Vital {
         VSDK_VERSION_LABEL
     };
 
+    static const std::string Wry_Version = VSDK_WRY_VERSION;
     static const std::string Godot_Version = VSDK_GODOT_VERSION;
 }

@@ -43,7 +43,7 @@ class Wry:
 
         if current == version and os.path.isdir(self.install_dir):
             log_info(f"Already up to date ({version})")
-            return
+            return version
 
         assets = release.get("assets", [])
         asset = next((a for a in assets if a["name"].endswith(".zip") and "Vital.wry" in a["name"]), None)
@@ -70,3 +70,4 @@ class Wry:
         os.remove(zip_path)
         self._write_version(version)
         log_ok(f"Vital.wry {version} installed")
+        return version
