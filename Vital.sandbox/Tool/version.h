@@ -16,9 +16,9 @@
 #include <Vital.sandbox/Vital/pch.h>
 
 
-/////////////////////
-// Vital: Version //
-/////////////////////
+///////////////////////////
+// Vital: Tool: Version //
+///////////////////////////
 
 // Injected by CI from git tag — do not edit manually
 #ifndef VSDK_VERSION_MAJOR
