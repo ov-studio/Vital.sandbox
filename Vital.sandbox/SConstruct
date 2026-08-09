@@ -17,7 +17,10 @@ env.Args["extra_cppdefines"] = env.Args.get("extra_cppdefines", "")
 env.Module.build()
 env.MergeFlags(SConscript(".conan/SConscript_conandeps")["conandeps"])
 env.Append(CPPDEFINES=["CPPHTTPLIB_OPENSSL_SUPPORT"])
-env.Append(CPPDEFINES=[env.Args["extra_cppdefines"]])
+if env.Args["extra_cppdefines"]:
+    for _define in env.Args["extra_cppdefines"].split(";"):
+        if _define.strip():
+            env.Append(CPPDEFINES=[_define.strip()])
 
 if env.Args["platform_type"] == "Client":
     env.Append(CPPDEFINES=["VSDK_Client"])
