@@ -46,11 +46,11 @@ class Wry:
             return
 
         assets = release.get("assets", [])
-        asset  = next((a for a in assets if a["name"].endswith(".zip") and "Vital.wry" in a["name"]), None)
+        asset = next((a for a in assets if a["name"].endswith(".zip") and "Vital.wry" in a["name"]), None)
         if not asset:
             Throw_Error(f"No zip asset found in Vital.wry release {version}")
 
-        url      = asset["browser_download_url"]
+        url = asset["browser_download_url"]
         zip_name = asset["name"]
         zip_path = os.path.join(self.script_dir, zip_name)
 
