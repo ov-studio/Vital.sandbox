@@ -3,11 +3,12 @@ sys.path.append("./Vital.sandbox")
 from vital import *
 
 class Build:
-    def __init__(self, script_dir, platform_type, build_type, verbose=False, godot_version=None):
+    def __init__(self, script_dir, platform_type, build_type, verbose=False, wry_version=None, godot_version=None):
         self.script_dir = script_dir
         self.platform_type = platform_type
         self.build_type = build_type
         self.verbose = verbose
+        self.wry_version = wry_version or "unknown"
         self.godot_version = godot_version or "unknown"
         self.os_info = Fetch_OS()
         self.info = Fetch_Build_Info()
