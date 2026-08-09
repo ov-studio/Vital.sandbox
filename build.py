@@ -321,7 +321,6 @@ def main():
     client_dir  = os.path.join(script_dir, "Vital.client")
     sandbox_dir = os.path.join(script_dir, "Vital.sandbox")
     sys.path.insert(0, sandbox_dir)
-    from Bootstrap.wry import Wry
     Wry(script_dir, client_dir).build()
 
     for platform_type in platforms:
