@@ -13,6 +13,7 @@
 //////////////
 
 #pragma once
+#include <cstring>
 #include <Vital.sandbox/Sandbox/index.h>
 #include <Vital.sandbox/Sandbox/mixin.h>
 
@@ -438,11 +439,19 @@ namespace Vital::Sandbox {
                 Tool::assert_main_thread("Machine::get_environment_id");
                 lua_Debug debug;
                 for (int idx = level; lua_getstack(state, idx, &debug); ++idx) {
+                    bool found_env = false;
                     lua_getinfo(state, "f", &debug);
-                    const char* upname = lua_getupvalue(state, -1, 1);
-                    lua_remove(state, -2);
-                    if (!upname) continue;
-                    if (!is_table(-1)) { pop(1); continue; }
+                    for (int i = 1; ; ++i) {
+                        const char* upname = lua_getupvalue(state, -1, i);
+                        if (!upname) break;
+                        if (std::strcmp(upname, "_ENV") == 0) {
+                            found_env = true;
+                            lua_remove(state, -2);
+                            break;
+                        }
+                        pop(1);
+                    }
+                    if (!found_env || !is_table(-1)) { pop(1); continue; }
                     lua_rawget(state, LUA_REGISTRYINDEX);
                     if (is_string(-1)) {
                         std::string result = get_string(-1);
