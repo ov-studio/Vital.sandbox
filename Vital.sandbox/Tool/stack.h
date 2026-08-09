@@ -134,7 +134,7 @@ namespace Vital::Tool {
     };
 
     struct Stack {
-        uint16_t version = Vital::Build.major;
+        uint16_t version = Tool::Version::SDK.major;
         std::vector<StackValue> array;
         std::map<std::string, StackValue> object;
 
