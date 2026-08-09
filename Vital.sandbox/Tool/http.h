@@ -53,7 +53,7 @@ namespace Vital::Tool::HTTP {
 
     inline httplib::Headers make_headers(const http_headers& headers, std::string* out_content_type = nullptr) {
         httplib::Headers result;
-        result.insert({ "User-Agent", "Vital.sandbox/" + Vital::Build.to_string() });
+        result.insert({ "User-Agent", "Vital.sandbox/" + Tool::Version::get("sdk") });
         for (const auto& h : headers) {
             size_t colon_pos = h.find(":");
             if (colon_pos == std::string::npos) continue;
