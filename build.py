@@ -90,8 +90,7 @@ class Build:
             "use_static_crt=no",
             "build_library=no",
             f"debug_symbols={'yes' if self.build_type == 'Debug' else 'no'}",
-            f'extra_cppdefines=VSDK_WRY_VERSION=\\"{self.wry_version}\\"',
-            f'extra_cppdefines=VSDK_GODOT_VERSION=\\"{self.godot_version}\\"',
+            f'extra_cppdefines=VSDK_WRY_VERSION=\\"{self.wry_version}\\";VSDK_GODOT_VERSION=\\"{self.godot_version}\\"',
             f"-j{int(self.os_info['nproc'])}",
         ]
 
