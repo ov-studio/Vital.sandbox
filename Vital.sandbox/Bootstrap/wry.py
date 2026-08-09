@@ -1,16 +1,16 @@
 from Bootstrap.utils import *
 from Bootstrap.download import *
 
-VITAL_WRY_REPO  = "ov-studio/Vital.wry"
-VITAL_WRY_API   = f"https://api.github.com/repos/{VITAL_WRY_REPO}/releases/latest"
-VITAL_WRY_STAMP = ".bootstrap_wry"
+VITAL_WRY_REPO    = "ov-studio/Vital.wry"
+VITAL_WRY_API     = f"https://api.github.com/repos/{VITAL_WRY_REPO}/releases/latest"
+VITAL_WRY_VERSION = "version"
 
 class Wry:
     def __init__(self, script_dir, client_dir):
-        self.script_dir  = script_dir
-        self.client_dir  = client_dir
-        self.install_dir = os.path.join(client_dir, "vital.wry")
-        self.stamp_path  = os.path.join(script_dir, VITAL_WRY_STAMP)
+        self.script_dir   = script_dir
+        self.client_dir   = client_dir
+        self.install_dir  = os.path.join(client_dir, "vital.wry")
+        self.version_path = os.path.join(self.install_dir, VITAL_WRY_VERSION)
 
     def _fetch_release(self):
         import json
@@ -24,14 +24,14 @@ class Wry:
         except Exception as e:
             Throw_Error(f"Failed to fetch Vital.wry release info: {e}")
 
-    def _stamped_version(self):
-        if os.path.exists(self.stamp_path):
-            with open(self.stamp_path) as f:
+    def _installed_version(self):
+        if os.path.exists(self.version_path):
+            with open(self.version_path) as f:
                 return f.read().strip()
         return None
 
-    def _write_stamp(self, version):
-        with open(self.stamp_path, "w") as f:
+    def _write_version(self, version):
+        with open(self.version_path, "w") as f:
             f.write(version)
 
     def build(self):
@@ -39,7 +39,7 @@ class Wry:
 
         release = self._fetch_release()
         version = release.get("tag_name", "unknown")
-        current = self._stamped_version()
+        current = self._installed_version()
 
         if current == version and os.path.isdir(self.install_dir):
             log_info(f"Already up to date ({version})")
@@ -68,5 +68,5 @@ class Wry:
             z.extractall(self.install_dir)
 
         os.remove(zip_path)
-        self._write_stamp(version)
+        self._write_version(version)
         log_ok(f"Vital.wry {version} installed")
