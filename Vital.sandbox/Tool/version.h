@@ -76,7 +76,7 @@ namespace Vital {
                 bool operator>=(const Info& o) const { return !(*this < o); }
             };
 
-            static const Info Sandbox = {
+            static const Info SDK = {
                 VSDK_VERSION_MAJOR,
                 VSDK_VERSION_MINOR,
                 VSDK_VERSION_PATCH,
