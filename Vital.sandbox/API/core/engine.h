@@ -85,7 +85,7 @@ namespace Vital::Sandbox::API {
             });
 
             API::bind(vm, base_scope, "get_version", [](auto vm, auto& id) -> int {
-                vm -> push_value(Build.to_string());
+                vm -> push_value(Tool::Version::get("sdk"));
                 return 1;
             });
 
