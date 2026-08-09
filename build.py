@@ -326,7 +326,7 @@ def main():
     wry_version = b.reload_wry()
 
     for platform_type in platforms:
-        build = Build(script_dir, platform_type, build_type, verbose=args.verbose, godot_version=godot_version)
+        build = Build(script_dir, platform_type, build_type, verbose=args.verbose, wry_version=wry_version, godot_version=godot_version)
         build.build_sandbox()
         if not args.skip_export:
             build.export()
