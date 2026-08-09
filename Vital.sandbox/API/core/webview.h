@@ -60,7 +60,7 @@ namespace Vital::Sandbox::API {
         }
 
         static int clamp_z_index(int value) {
-            return std::clamp(value, 0, base_class::system_z_floor - 1);
+            return std::clamp(value, 0, base_class::system_z_floor);
         }
 
         static void wire_handlers(std::shared_ptr<Instance> instance) {
