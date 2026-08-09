@@ -323,7 +323,7 @@ def main():
     b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
     b.reload_vendors()
     b.build_godot_cpp(force=args.rebuild_godot)
-    b.build_wry()
+    wry_version = b.reload_wry()
 
     for platform_type in platforms:
         build = Build(script_dir, platform_type, build_type, verbose=args.verbose, godot_version=godot_version)
