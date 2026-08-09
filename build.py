@@ -27,8 +27,13 @@ class Build:
         b = self.init()
         if b["sandbox_dir"] not in sys.path:
             sys.path.insert(0, b["sandbox_dir"])
-        from Bootstrap.vendor import Vendor
         Vendor(None).build()
+
+    def build_wry(self):
+        b = self.init()
+        if b["sandbox_dir"] not in sys.path:
+            sys.path.insert(0, b["sandbox_dir"])
+        Wry(self.script_dir, os.path.join(self.script_dir, "Vital.client")).build()
 
     def build_godot_cpp(self, force=False):
         b = self.init()
@@ -316,11 +321,7 @@ def main():
     b = Build(script_dir, platforms[0], build_type, verbose=args.verbose, godot_version=godot_version)
     b.reload_vendors()
     b.build_godot_cpp(force=args.rebuild_godot)
-
-    client_dir = os.path.join(script_dir, "Vital.client")
-    sandbox_dir = os.path.join(script_dir, "Vital.sandbox")
-    sys.path.insert(0, sandbox_dir)
-    Wry(script_dir, client_dir).build()
+    b.build_wry()
 
     for platform_type in platforms:
         build = Build(script_dir, platform_type, build_type, verbose=args.verbose, godot_version=godot_version)
