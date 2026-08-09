@@ -56,9 +56,11 @@ namespace Vital::Engine {
             "Version:\n"
             "> Vital.sandbox: `{}`\n"
             "> Vital.kit: `{}`\n"
+            "> Vital.wry: `{}`\n"
             "> Vital.godot: `{}`\n",
             Vital::Build.to_string(),
             Manager::Kit::get_version(),
+            Vital::Wry_Version,
             Vital::Godot_Version
         );
     }
