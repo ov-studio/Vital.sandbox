@@ -15,11 +15,6 @@
 #pragma once
 #include <Vital.sandbox/Vital/pch.h>
 
-
-///////////////////////////
-// Vital: Tool: Version //
-///////////////////////////
-
 // Injected by CI from git tag — do not edit manually
 #ifndef VSDK_VERSION_MAJOR
 #define VSDK_VERSION_MAJOR 0
@@ -39,6 +34,11 @@
 #ifndef VSDK_GODOT_VERSION
 #define VSDK_GODOT_VERSION "unknown"
 #endif
+
+
+///////////////////////////
+// Vital: Tool: Version //
+///////////////////////////
 
 namespace Vital {
     namespace Tool {
