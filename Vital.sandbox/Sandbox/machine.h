@@ -13,7 +13,6 @@
 //////////////
 
 #pragma once
-#include <cstring>
 #include <Vital.sandbox/Sandbox/index.h>
 #include <Vital.sandbox/Sandbox/mixin.h>
 
