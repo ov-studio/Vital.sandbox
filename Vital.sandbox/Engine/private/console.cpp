@@ -60,8 +60,8 @@ namespace Vital::Engine {
             "> Vital.godot: `{}`\n",
             Tool::Version::get("sdk"),
             Manager::Kit::get_version(),
-            Vital::Wry_Version,
-            Vital::Godot_Version
+            Tool::Version::get("wry"),
+            Tool::Version::get("godot")
         );
     }
     
