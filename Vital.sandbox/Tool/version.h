@@ -86,7 +86,7 @@ namespace Vital {
             inline std::string get(const std::string& type) {
                 std::string key = type;
                 std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-                if (key == "sdk")   return Sandbox.to_string();
+                if (key == "sdk")   return SDK.to_string();
                 if (key == "wry")   return VSDK_WRY_VERSION;
                 if (key == "godot") return VSDK_GODOT_VERSION;
                 return "unknown";
