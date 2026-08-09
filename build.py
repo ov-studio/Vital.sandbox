@@ -317,6 +317,13 @@ def main():
     b.reload_vendors()
     b.build_godot_cpp(force=args.rebuild_godot)
 
+    # ── Bootstrap Vital.wry ──────────────────────────────────────────────────
+    client_dir  = os.path.join(script_dir, "Vital.client")
+    sandbox_dir = os.path.join(script_dir, "Vital.sandbox")
+    sys.path.insert(0, sandbox_dir)
+    from Bootstrap.wry import Wry
+    Wry(script_dir, client_dir).build()
+
     for platform_type in platforms:
         build = Build(script_dir, platform_type, build_type, verbose=args.verbose, godot_version=godot_version)
         build.build_sandbox()

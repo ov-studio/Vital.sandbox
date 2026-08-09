@@ -4,3 +4,4 @@ from Bootstrap.module import *
 from Bootstrap.download import *
 from Bootstrap.discord import *
 from Bootstrap.godot import *
+from Bootstrap.wry import *
