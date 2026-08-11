@@ -53,3 +53,22 @@ social:
 
   # Website URL
   website: ""
+
+
+# Masterlist
+masterlist:
+  # Set to true to report this server to the public masterlist.
+  enabled: false
+
+  # Credentials from POST /api/masterlist/register on vital.site.
+  # Treat these like an API key -- do not commit real values to a public repo.
+  id: ""
+  secret: ""
+
+  # Masterlist API base URL.
+  url: "https://vital-sandbox.com/api/masterlist"
+
+  # How often (in seconds) to report in. Should be <= the TTL the API
+  # expires listings after (currently 660s / 11 minutes) with margin to
+  # spare for a missed beat.
+  interval: 300
