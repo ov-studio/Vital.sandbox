@@ -92,8 +92,18 @@ namespace Vital::Tool::HTTP {
         auto httplib_headers = make_headers(headers, &content_type);
         auto res = cli.Post(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
         if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
-        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status));
+        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status) + " - " + res -> body);
+        return res -> body;
+    }
+
+    inline std::string del(const std::string& url, const std::string& body, const http_headers& headers = {}, int timeout = 60) {
         std::string path;
+        auto cli = make_client(url, path, 10, timeout, false);
+        std::string content_type = "application/json";
+        auto httplib_headers = make_headers(headers, &content_type);
+        auto res = cli.Delete(path.c_str(), httplib_headers, body.c_str(), body.size(), content_type.c_str());
+        if (!res) throw std::runtime_error("Request failed: " + httplib::to_string(res.error()));
+        if (res -> status != 200) throw std::runtime_error("HTTP error: " + std::to_string(res -> status) + " - " + res -> body);
         return res -> body;
     }
 
