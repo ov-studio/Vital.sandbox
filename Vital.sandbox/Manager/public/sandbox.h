@@ -41,7 +41,6 @@ namespace Vital::Manager {
 
 
             // Managers //
-            void ready();
             void drain();
             void process(double delta);
             #if defined(VSDK_Client)

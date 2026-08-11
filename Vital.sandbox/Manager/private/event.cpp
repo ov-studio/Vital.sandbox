@@ -92,7 +92,7 @@ void vsdk_initialize() {
         Vital::Engine::Monitor::get_singleton();
         Vital::Manager::Discord::get_singleton();
         #endif
-        Vital::Manager::Sandbox::get_singleton() -> ready();
+        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
         Vital::Manager::Asset::get_singleton();
         Vital::Manager::Resource::get_singleton();
         setup();
@@ -108,12 +108,6 @@ void vsdk_initialize() {
         Vital::Manager::Sandbox::free_singleton();
         Vital::Manager::Resource::free_singleton();
         shutdown();
-    });
-
-
-    // Sandbox //
-    Vital::Tool::Event::bind("sandbox:ready", [](Vital::Tool::Stack arguments) {
-        Vital::Engine::Model::setup_spawner(); // TODO: LATER THIS ME PART OF SOME MODEL:init() imo
     });
 
 

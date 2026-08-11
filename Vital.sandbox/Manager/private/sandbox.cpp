@@ -44,10 +44,6 @@ namespace Vital::Manager {
 
 
     // Managers //
-    void Sandbox::ready() {
-        signal("sandbox:ready");
-    }
-
     void Sandbox::drain() {
         Vital::Sandbox::Machine::drain();
     }
