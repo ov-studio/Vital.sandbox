@@ -66,8 +66,3 @@ masterlist:
 
   # Masterlist API base URL.
   url: "https://vital-sandbox.com/api/masterlist"
-
-  # How often (in seconds) to report in. Should be <= the TTL the API
-  # expires listings after (currently 660s / 11 minutes) with margin to
-  # spare for a missed beat.
-  interval: 300
