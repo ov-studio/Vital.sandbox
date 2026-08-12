@@ -31,8 +31,6 @@ namespace Vital::Manager {
         friend class Tool::Base<Masterlist>;
         public:
             static constexpr const char* Name = "Masterlist.manager";
-            static constexpr int HeartbeatIntervalSeconds = 300;
-            static constexpr int RefreshDebounceSeconds = 5;
         private:
             const Config::Server* server_config = nullptr;
             Tool::Timer* timer = nullptr;
@@ -40,13 +38,17 @@ namespace Vital::Manager {
             std::mutex debounce_mutex;
             Tool::Timer* debounce_timer = nullptr;
 
+
             // Instantiators //
             Masterlist() = default;
             ~Masterlist() = default;
 
+            
             // Internal //
             void send_heartbeat() const;
             void send_offline() const;
+            static int get_interval_seconds();
+            static int get_debounce_seconds();
         public:
             // Managers //
             void start(const Config::Server& config);
