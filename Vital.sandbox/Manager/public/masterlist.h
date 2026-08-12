@@ -49,6 +49,11 @@ namespace Vital::Manager {
             void stop();
             void teardown();
 
+            // Trigger an out-of-band heartbeat immediately (e.g. on player
+            // join/leave) instead of waiting for the next scheduled tick.
+            // No-op if not currently active.
+            void refresh() const;
+
             // State //
             bool is_active() const;
     };

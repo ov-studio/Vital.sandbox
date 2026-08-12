@@ -69,9 +69,11 @@ void setup() {
     });
     Vital::Tool::Event::bind("network:peer:join", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player joined: ", arguments.array[0].as<int32_t>());
+        Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
     Vital::Tool::Event::bind("network:peer:leave", [](Vital::Tool::Stack arguments) {
         Vital::Tool::print("sbox", "Player left: ", arguments.array[0].as<int32_t>());
+        Vital::Manager::Masterlist::get_singleton() -> refresh();
     });
     Vital::Tool::Event::bind("network:close", [](Vital::Tool::Stack) {
         Vital::Tool::print("sbox", "Server closed");

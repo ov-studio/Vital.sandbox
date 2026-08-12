@@ -112,6 +112,11 @@ namespace Vital::Manager {
         log("sbox", fmt::format("reporting to masterlist every {}s", server_config -> get_masterlist_interval()));
     }
 
+    void Masterlist::refresh() const {
+        if (!active) return;
+        send_heartbeat();
+    }
+
     void Masterlist::stop() {
         if (!active) return;
         if (timer) {
