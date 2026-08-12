@@ -123,6 +123,5 @@ namespace Vital::Config {
             bool get_masterlist_enabled() const { return get_bool("masterlist", "enabled", false); }
             std::string get_masterlist_token() const { return get_str("masterlist", "token", ""); }
             std::string get_masterlist_url() const { return get_str("masterlist", "url", "https://vital.site/api/masterlist"); }
-            int get_masterlist_interval() const { return get_int("masterlist", "interval", 300); } // seconds
     };
 }
