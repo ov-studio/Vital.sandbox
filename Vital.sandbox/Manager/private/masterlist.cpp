@@ -88,6 +88,18 @@ namespace Vital::Manager {
     }
 
 
+    // Internal //
+    int Masterlist::get_interval_seconds() {
+        int32_t value = Manager::Kit::fetch_json_value("config/masterlist", "interval").as<int32_t>();
+        return value > 0 ? value : 300;
+    }
+
+    int Masterlist::get_debounce_seconds() {
+        int32_t value = Manager::Kit::fetch_json_value("config/masterlist", "debounce").as<int32_t>();
+        return value > 0 ? value : 5;
+    }
+
+
     // Managers //
     void Masterlist::start(const Config::Server& config) {
         if (active) return;
