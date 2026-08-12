@@ -31,10 +31,14 @@ namespace Vital::Manager {
         friend class Tool::Base<Masterlist>;
         public:
             static constexpr const char* Name = "Masterlist.manager";
+            static constexpr int HeartbeatIntervalSeconds = 300;
+            static constexpr int RefreshDebounceSeconds = 5;
         private:
             const Config::Server* server_config = nullptr;
             Tool::Timer* timer = nullptr;
             bool active = false;
+            std::mutex debounce_mutex;
+            Tool::Timer* debounce_timer = nullptr;
 
             // Instantiators //
             Masterlist() = default;
@@ -48,11 +52,7 @@ namespace Vital::Manager {
             void start(const Config::Server& config);
             void stop();
             void teardown();
-
-            // Trigger an out-of-band heartbeat immediately (e.g. on player
-            // join/leave) instead of waiting for the next scheduled tick.
-            // No-op if not currently active.
-            void refresh() const;
+            void refresh();
 
             // State //
             bool is_active() const;

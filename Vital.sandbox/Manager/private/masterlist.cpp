@@ -102,17 +102,26 @@ namespace Vital::Manager {
 
         send_heartbeat(); // fire immediately instead of waiting a full interval
 
-        const int interval_ms = std::max(1, server_config -> get_masterlist_interval()) * 1000;
+        const int interval_ms = HeartbeatIntervalSeconds * 1000;
         timer = Tool::Timer::create([this](Tool::Timer*, int) {
             send_heartbeat();
         }, interval_ms, 0 /* repeat forever */);
 
-        log("sbox", fmt::format("reporting to masterlist every {}s", server_config -> get_masterlist_interval()));
+        log("sbox", fmt::format("reporting to masterlist every {}s", HeartbeatIntervalSeconds));
     }
 
-    void Masterlist::refresh() const {
+    void Masterlist::refresh() {
         if (!active) return;
-        send_heartbeat();
+
+        std::lock_guard<std::mutex> lock(debounce_mutex);
+        if (debounce_timer) return; // already a pending refresh queued -- let it fire
+
+        const int debounce_ms = RefreshDebounceSeconds * 1000;
+        debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
+            send_heartbeat();
+            std::lock_guard<std::mutex> inner_lock(debounce_mutex);
+            debounce_timer = nullptr;
+        }, debounce_ms, 1 /* one-shot */);
     }
 
     void Masterlist::stop() {
@@ -120,6 +129,13 @@ namespace Vital::Manager {
         if (timer) {
             timer -> stop();
             timer = nullptr;
+        }
+        {
+            std::lock_guard<std::mutex> lock(debounce_mutex);
+            if (debounce_timer) {
+                debounce_timer -> stop();
+                debounce_timer = nullptr;
+            }
         }
         send_offline();
         active = false;
