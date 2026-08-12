@@ -37,8 +37,7 @@ namespace Vital::Manager {
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
-        document.AddMember(rapidjson::StringRef("id"), rapidjson::Value(server_config -> get_masterlist_id().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("secret"), rapidjson::Value(server_config -> get_masterlist_secret().c_str(), alloc), alloc);
+        document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("name"), rapidjson::Value(server_config -> get_server_name().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("ip"), rapidjson::Value(nm -> get_server_ip().c_str(), alloc), alloc);
         document.AddMember(rapidjson::StringRef("port"), rapidjson::Value(server_config -> get_network_port()), alloc);
@@ -72,8 +71,7 @@ namespace Vital::Manager {
         rapidjson::Document document;
         document.SetObject();
         auto& alloc = document.GetAllocator();
-        document.AddMember(rapidjson::StringRef("id"), rapidjson::Value(server_config -> get_masterlist_id().c_str(), alloc), alloc);
-        document.AddMember(rapidjson::StringRef("secret"), rapidjson::Value(server_config -> get_masterlist_secret().c_str(), alloc), alloc);
+        document.AddMember(rapidjson::StringRef("token"), rapidjson::Value(server_config -> get_masterlist_token().c_str(), alloc), alloc);
 
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -94,8 +92,8 @@ namespace Vital::Manager {
     void Masterlist::start(const Config::Server& config) {
         if (active) return;
         if (!config.get_masterlist_enabled()) return;
-        if (config.get_masterlist_id().empty() || config.get_masterlist_secret().empty()) {
-            log("warn", "masterlist enabled but id/secret missing in config.yaml — skipping");
+        if (config.get_masterlist_token().empty()) {
+            log("warn", "masterlist enabled but token missing in config.yaml — skipping");
             return;
         }
 
