@@ -43,8 +43,8 @@ namespace Vital::Manager {
             Masterlist() = default;
             ~Masterlist() = default;
 
-            
-            // Internal //
+
+            // Helpers //
             void send_heartbeat() const;
             void send_offline() const;
             static int get_interval_seconds();

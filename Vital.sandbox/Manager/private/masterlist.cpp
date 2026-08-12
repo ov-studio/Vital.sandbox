@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Manager/public/masterlist.h>
 #if !defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/network.h>
+#include <Vital.sandbox/Manager/public/kit.h>
 #include <Vital.sandbox/Tool/http.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -88,7 +89,7 @@ namespace Vital::Manager {
     }
 
 
-    // Internal //
+    // Helpers //
     int Masterlist::get_interval_seconds() {
         int32_t value = Manager::Kit::fetch_json_value("config/masterlist", "interval").as<int32_t>();
         return value > 0 ? value : 300;
@@ -114,12 +115,12 @@ namespace Vital::Manager {
 
         send_heartbeat(); // fire immediately instead of waiting a full interval
 
-        const int interval_ms = HeartbeatIntervalSeconds * 1000;
+        const int interval_s = get_interval_seconds();
         timer = Tool::Timer::create([this](Tool::Timer*, int) {
             send_heartbeat();
-        }, interval_ms, 0 /* repeat forever */);
+        }, interval_s * 1000, 0 /* repeat forever */);
 
-        log("sbox", fmt::format("reporting to masterlist every {}s", HeartbeatIntervalSeconds));
+        log("sbox", fmt::format("reporting to masterlist every {}s", interval_s));
     }
 
     void Masterlist::refresh() {
@@ -128,7 +129,7 @@ namespace Vital::Manager {
         std::lock_guard<std::mutex> lock(debounce_mutex);
         if (debounce_timer) return; // already a pending refresh queued -- let it fire
 
-        const int debounce_ms = RefreshDebounceSeconds * 1000;
+        const int debounce_ms = get_debounce_seconds() * 1000;
         debounce_timer = Tool::Timer::create([this](Tool::Timer*, int) {
             send_heartbeat();
             std::lock_guard<std::mutex> inner_lock(debounce_mutex);
