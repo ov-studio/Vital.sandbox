@@ -60,10 +60,9 @@ masterlist:
   # Set to true to report this server to the public masterlist.
   enabled: false
 
-  # Credentials from POST /api/masterlist/register on vital.site.
-  # Treat these like an API key -- do not commit real values to a public repo.
-  id: ""
-  secret: ""
+  # Token from POST /api/masterlist/register on vital.site.
+  # Treat this like an API key -- do not commit a real value to a public repo.
+  token: ""
 
   # Masterlist API base URL.
   url: "https://vital-sandbox.com/api/masterlist"
