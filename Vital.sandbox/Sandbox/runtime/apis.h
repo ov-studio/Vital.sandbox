@@ -30,6 +30,10 @@
 #include <Vital.sandbox/API/core/audio_2d.h>
 #include <Vital.sandbox/API/core/audio_3d.h>
 
+#include <Vital.sandbox/API/light/directional_light.h>
+#include <Vital.sandbox/API/light/point_light.h>
+//#include <Vital.sandbox/API/core/spot_light.h>
+
 #include <Vital.sandbox/API/utility/math.h>
 #include <Vital.sandbox/API/utility/string.h>
 #include <Vital.sandbox/API/utility/table.h>
