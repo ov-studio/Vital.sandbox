@@ -48,7 +48,7 @@
 
 #include <Vital.sandbox/API/light/directional_light.h>
 #include <Vital.sandbox/API/light/point_light.h>
-//#include <Vital.sandbox/API/core/spot_light.h>
+#include <Vital.sandbox/API/core/spot_light.h>
 
 #include <Vital.sandbox/API/gfx/environment.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
@@ -105,6 +105,11 @@ namespace Vital::Sandbox::API {
             vm_module::make_api<Event>(),
             vm_module::make_api<Input>(),
             vm_module::make_api<Monitor>(),
+
+            // Light //
+            vm_module::make_api<Directional_Light>(),
+            vm_module::make_api<Point_Light>(),
+            vm_module::make_api<Spot_Light>(),
 
             // GFX //
             vm_module::make_api<Environment>(),
