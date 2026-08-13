@@ -85,12 +85,12 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            API::bind(vm, base_scope, "get_msaa", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "get_msaa_mode", [](auto vm, auto& id) -> int {
                 vm -> push_value(static_cast<int>(base_class::get_scene_root() -> get_msaa_3d()));
                 return 1;
             });
 
-            API::bind(vm, base_scope, "set_msaa", [](auto vm, auto& id) -> int {
+            API::bind(vm, base_scope, "set_msaa_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
                     .require_enum(1, msaa_registry);
 
