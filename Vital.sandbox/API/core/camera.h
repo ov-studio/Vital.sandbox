@@ -158,15 +158,13 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_near", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_near());
             vm_module::bind_method<Instance>(vm, "get_near_clip", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_near());
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_far", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> camera -> get_far());
             vm_module::bind_method<Instance>(vm, "get_far_clip", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> camera -> get_far());
                 return 1;
             });
 
