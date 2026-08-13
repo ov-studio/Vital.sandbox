@@ -38,8 +38,8 @@ namespace Vital::Engine {
 
 
             // Managers //
-            void show();
-            void destroy();
+            void show(); // TODO: CALL IT SHOW
+            void destroy(); // TODO: CALL IT HIDE??
 
 
             // Events //
