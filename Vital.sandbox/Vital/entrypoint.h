@@ -35,6 +35,7 @@ inline void initialize_gdextension_types(godot::ModuleInitializationLevel p_leve
     godot::ClassDB::register_class<Vital::Engine::Webview>(true);
     godot::ClassDB::register_class<Vital::Engine::Rendertarget>(true);
     godot::ClassDB::register_class<Vital::Engine::Monitor>(true);
+    godot::ClassDB::register_class<Vital::Engine::Camera>(true);
     #endif
     vsdk_initialize();
 }

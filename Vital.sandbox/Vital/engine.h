@@ -24,3 +24,6 @@
 #include <Vital.sandbox/Engine/public/font.h>
 #include <Vital.sandbox/Engine/public/texture.h>
 #include <Vital.sandbox/Engine/public/rendertarget.h>
+#include <Vital.sandbox/Engine/public/directional_light.h>
+#include <Vital.sandbox/Engine/public/point_light.h>
+#include <Vital.sandbox/Engine/public/spot_light.h>
