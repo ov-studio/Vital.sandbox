@@ -276,7 +276,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_near", [](auto vm, auto self, auto& id) -> int {
             vm_module::bind_method<Instance>(vm, "set_near_clip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(z_near)", true)
                     .require(2, &Machine::is_number);
@@ -287,7 +286,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_far", [](auto vm, auto self, auto& id) -> int {
             vm_module::bind_method<Instance>(vm, "set_far_clip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(z_far)", true)
                     .require(2, &Machine::is_number);
