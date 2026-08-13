@@ -23,7 +23,7 @@
 
 namespace Vital::Sandbox::API {
     struct Antialiasing : vm_module {
-        inline static const std::vector<std::string> base_scope = {"gfx", "aa"};
+        inline static const std::vector<std::string> base_scope = {"gfx", "antialiasing"};
         using base_class = Vital::Engine::Core;
 
         enum Mode { 

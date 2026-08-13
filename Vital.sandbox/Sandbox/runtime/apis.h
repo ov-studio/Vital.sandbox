@@ -46,12 +46,13 @@
 #include <Vital.sandbox/API/utility/input.h>
 #include <Vital.sandbox/API/utility/monitor.h>
 
+#include <Vital.sandbox/API/gfx/environment.h>
+#include <Vital.sandbox/API/gfx/adjustment.h>
+#include <Vital.sandbox/API/gfx/antialiasing.h>
 #include <Vital.sandbox/API/gfx/sky.h>
 #include <Vital.sandbox/API/gfx/sky_panorama.h>
 #include <Vital.sandbox/API/gfx/sky_physical.h>
 #include <Vital.sandbox/API/gfx/sky_procedural.h>
-#include <Vital.sandbox/API/gfx/environment.h>
-#include <Vital.sandbox/API/gfx/adjustment.h>
 #include <Vital.sandbox/API/gfx/glow.h>
 #include <Vital.sandbox/API/gfx/ssr.h>
 #include <Vital.sandbox/API/gfx/ssil.h>
@@ -104,6 +105,7 @@ namespace Vital::Sandbox::API {
             // GFX //
             vm_module::make_api<Environment>(),
             vm_module::make_api<Adjustment>(),
+            vm_module::make_api<Antialiasing>(),
             vm_module::make_api<Sky>(),
             vm_module::make_api<Sky_Panorama>(),
             vm_module::make_api<Sky_Physical>(),
