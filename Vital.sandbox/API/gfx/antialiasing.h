@@ -40,9 +40,9 @@ namespace Vital::Sandbox::API {
 
         inline static const std::vector<std::pair<std::string, int>> msaa_registry = {
             { "DISABLED", godot::Viewport::MSAA_DISABLED },
-            { "2X",       godot::Viewport::MSAA_2X       },
-            { "4X",       godot::Viewport::MSAA_4X       },
-            { "8X",       godot::Viewport::MSAA_8X       }
+            { "X2",       godot::Viewport::MSAA_2X       },
+            { "X4",       godot::Viewport::MSAA_4X       },
+            { "X8",       godot::Viewport::MSAA_8X       }
         };
 
         static int get_mode() {
