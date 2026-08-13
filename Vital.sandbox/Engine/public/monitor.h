@@ -26,7 +26,7 @@ namespace Vital::Engine {
         GDCLASS(Monitor, godot::Object)
         friend class Tool::Base<Monitor>;
         public:
-            static constexpr const char* Name = "Monitor";
+            static constexpr const char* Name = "Monitor.engine";
         private:
             // Instantiators //
             Monitor() = default;

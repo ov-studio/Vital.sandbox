@@ -71,7 +71,7 @@ namespace Vital::Engine {
             Console();
             ~Console();
         public:
-            static constexpr const char* Name = "Console.manager";
+            static constexpr const char* Name = "Console.engine";
 
 
             // Managers //
