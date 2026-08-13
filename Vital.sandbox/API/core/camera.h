@@ -193,7 +193,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_keep_aspect_mode", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "get_keep_aspect", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_keep_aspect_mode());
                 return 1;
             });
@@ -324,7 +324,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_keep_aspect_mode", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_keep_aspect", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, keep_aspect_registry);
 
