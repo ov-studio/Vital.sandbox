@@ -160,11 +160,13 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_near", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_near());
+            vm_module::bind_method<Instance>(vm, "get_near_clip", [](auto vm, auto self, auto& id) -> int {
                 return 1;
             });
 
             vm_module::bind_method<Instance>(vm, "get_far", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> get_far());
+            vm_module::bind_method<Instance>(vm, "get_far_clip", [](auto vm, auto self, auto& id) -> int {
                 return 1;
             });
 
@@ -275,6 +277,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_near", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_near_clip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(z_near)", true)
                     .require(2, &Machine::is_number);
 
@@ -285,6 +288,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "set_far", [](auto vm, auto self, auto& id) -> int {
+            vm_module::bind_method<Instance>(vm, "set_far_clip", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(z_far)", true)
                     .require(2, &Machine::is_number);
 
