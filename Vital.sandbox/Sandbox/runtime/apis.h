@@ -48,7 +48,7 @@
 
 #include <Vital.sandbox/API/light/directional_light.h>
 #include <Vital.sandbox/API/light/point_light.h>
-#include <Vital.sandbox/API/core/spot_light.h>
+#include <Vital.sandbox/API/light/spot_light.h>
 
 #include <Vital.sandbox/API/gfx/environment.h>
 #include <Vital.sandbox/API/gfx/adjustment.h>
