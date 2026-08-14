@@ -25,7 +25,7 @@ namespace Vital::Engine {
     // Managers //
     Directional_Light* Directional_Light::create() {
         auto light = memnew(Directional_Light);
-        Engine::Core::get_scene_root() -> add_child(light);
+        Engine::Core::get_singleton() -> add_child(light);
         return light;
     }
 

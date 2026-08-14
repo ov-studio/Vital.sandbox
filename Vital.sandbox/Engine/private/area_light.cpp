@@ -25,7 +25,7 @@ namespace Vital::Engine {
     // Managers //
     Area_Light* Area_Light::create() {
         auto light = memnew(Area_Light);
-        Engine::Core::get_scene_root() -> add_child(light);
+        Engine::Core::get_singleton() -> add_child(light);
         return light;
     }
 

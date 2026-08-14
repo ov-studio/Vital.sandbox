@@ -29,7 +29,7 @@ namespace Vital::Engine {
         blackcover -> set_anchors_preset(godot::Control::PRESET_FULL_RECT);
         blackcover -> set_color(godot::Color(0, 0, 0, 1));
         blackcover -> set_as_top_level(true);
-        Engine::Core::get_scene_root() -> add_child(blackcover);
+        Engine::Core::get_singleton() -> add_child(blackcover);
 
         Tool::Event::bind("kit:ready", [this](Tool::Stack) {
             Engine::Core::get_singleton() -> enqueue([this]() {

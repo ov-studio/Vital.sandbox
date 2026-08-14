@@ -31,7 +31,7 @@ namespace Vital::Engine {
     // Managers //
     Camera* Camera::create() {
         auto camera = memnew(Camera);
-        Engine::Core::get_scene_root() -> add_child(camera);
+        Engine::Core::get_singleton() -> add_child(camera);
         camera -> attributes.instantiate();
         camera -> set_attributes(camera -> attributes);
         return camera;

@@ -25,7 +25,7 @@ namespace Vital::Engine {
     // Managers //
     Point_Light* Point_Light::create() {
         auto light = memnew(Point_Light);
-        Engine::Core::get_scene_root() -> add_child(light);
+        Engine::Core::get_singleton() -> add_child(light);
         return light;
     }
 
