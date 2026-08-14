@@ -20,7 +20,7 @@
 
 
 /////////////////////////////
-// Vital: API: Area Light //
+// Vital: API: Area_Light //
 /////////////////////////////
 
 namespace Vital::Sandbox::API {
