@@ -32,6 +32,10 @@ namespace Vital::Tool {
             virtual ~Base() = default;
         public:
             // Singleton //
+            static bool has_singleton() {
+                return singleton != nullptr;
+            }
+
             static Derived* get_singleton() {
                 if (!singleton) {
                     singleton = memnew(Derived);
