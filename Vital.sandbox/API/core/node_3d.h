@@ -24,8 +24,8 @@
 namespace Vital::Sandbox::API {
     struct Node_3D {
         enum class Type {
-            Audio,
             Camera,
+            Audio,
             Spatial
         };
 
