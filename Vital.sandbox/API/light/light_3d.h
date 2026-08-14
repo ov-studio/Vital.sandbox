@@ -33,7 +33,6 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance>(vm);
 
-            // Checkers //
             vm_module::bind_method<Instance>(vm, "is_shadow_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> has_shadow());
                 return 1;
@@ -145,7 +144,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Setters //
             vm_module::bind_method<Instance>(vm, "set_color", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(color)", true)
                     .require(2, &Machine::is_color);

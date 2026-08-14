@@ -81,13 +81,11 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Light_3D::methods<Instance>(vm);
 
-            // Checkers: Area-only //
             vm_module::bind_method<Instance>(vm, "is_area_normalizing_energy", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> is_area_normalizing_energy());
                 return 1;
             });
 
-            // Getters: Area-only //
             vm_module::bind_method<Instance>(vm, "get_area", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_area_size());
                 return 1;
@@ -98,7 +96,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Setters: Area-only //
             vm_module::bind_method<Instance>(vm, "set_area", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_vector2);

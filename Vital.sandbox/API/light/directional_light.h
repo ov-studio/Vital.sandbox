@@ -93,13 +93,11 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Light_3D::methods<Instance>(vm);
 
-            // Checkers: Directional-only //
             vm_module::bind_method<Instance>(vm, "is_blend_splits_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> is_blend_splits_enabled());
                 return 1;
             });
 
-            // Getters: Directional-only //
             vm_module::bind_method<Instance>(vm, "get_shadow_mode", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_shadow_mode());
                 return 1;
@@ -135,7 +133,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Setters: Directional-only //
             vm_module::bind_method<Instance>(vm, "set_shadow_mode", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(mode)", true)
                     .require_enum(2, shadow_mode_registry);

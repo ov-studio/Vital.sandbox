@@ -86,7 +86,6 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Light_3D::methods<Instance>(vm);
 
-            // Getters: Point (Omni)-only //
             vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_param(base_class::PARAM_SIZE));
                 return 1;
@@ -107,7 +106,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Setters: Point (Omni)-only //
             vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(size)", true)
                     .require(2, &Machine::is_number);
