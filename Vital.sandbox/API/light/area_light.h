@@ -82,7 +82,6 @@ namespace Vital::Sandbox::API {
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance>(vm);
 
-            // Checkers //
             vm_module::bind_method<Instance>(vm, "is_shadow_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> has_shadow());
                 return 1;
@@ -194,9 +193,19 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Getters: Area-only (DRAFT — verify against local headers) //
+            // Getters: Area-only //
             vm_module::bind_method<Instance>(vm, "get_area", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_area_size());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_area_texture", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_area_texture());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_area_normalizing_energy", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> is_area_normalizing_energy());
                 return 1;
             });
 
@@ -418,6 +427,16 @@ namespace Vital::Sandbox::API {
 
                 auto size = vm -> get_vector2(2);
                 self -> light -> set_area_size(size);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_area_normalize_energy", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(state)", true)
+                    .require(2, &Machine::is_bool);
+
+                auto state = vm -> get_bool(2);
+                self -> light -> set_area_normalize_energy(state);
                 vm -> push_value(true);
                 return 1;
             });
