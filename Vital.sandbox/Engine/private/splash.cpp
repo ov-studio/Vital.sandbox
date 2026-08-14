@@ -29,10 +29,8 @@ namespace Vital::Engine {
         blackcover -> set_anchors_preset(godot::Control::PRESET_FULL_RECT);
         blackcover -> set_color(godot::Color(0, 0, 0, 1));
         blackcover -> set_as_top_level(true);
-        Engine::Core::get_singleton() -> add_child(blackcover);
+        Engine::Core::get_scene_root() -> add_child(blackcover);
 
-        // Once kit is ready, load the splash webview on top of everything
-        // (including the console, which uses system_z_floor + 1 = 10001).
         Tool::Event::bind("kit:ready", [this](Tool::Stack) {
             Engine::Core::get_singleton() -> enqueue([this]() {
                 show();
@@ -54,28 +52,25 @@ namespace Vital::Engine {
 
     // Managers //
     void Splash::show() {
-        // Remove the black cover now that the splash webview takes over.
         if (blackcover) {
             blackcover -> queue_free();
             blackcover = nullptr;
         }
-
-        // Create the splash webview above everything else.
         Engine::Webview::Options options;
-        options.z_index = Engine::Webview::system_z_floor + 2; // above console (floor + 1)
+        options.z_index = Engine::Webview::system_z_floor + 2;
         options.fullscreen = true;
-        options.transparent = false; // opaque — splash has its own black bg
+        options.transparent = true;
         options.incognito = true;
         options.autoplay = false;
         options.zoomable = false;
         options.forward_input = false;
         webview = Engine::Webview::create(options);
-        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
         webview -> set_position({0, 0});
         webview -> set_visible(true);
         webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
             if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
+        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
     }
 
     void Splash::destroy() {
@@ -89,8 +84,16 @@ namespace Vital::Engine {
         document.Parse(Tool::to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
-        // The splash HTML posts { action: "done" } when its fade-out finishes.
-        if (action == "done") destroy();
+        if (action == "ready") {
+            rapidjson::Document reply;
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            reply.SetObject();
+            reply.AddMember("action", "start", reply.GetAllocator());
+            reply.Accept(writer);
+            webview -> emit(buffer.GetString());
+        }
+        else if (action == "done") destroy();
     }
 }
 #endif
