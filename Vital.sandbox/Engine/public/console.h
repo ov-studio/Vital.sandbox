@@ -77,6 +77,7 @@ namespace Vital::Engine {
             // Managers //
             #if defined(VSDK_Client)
             bool is_ready();
+            bool is_visible();
             #endif
             void init();
             void ready();
