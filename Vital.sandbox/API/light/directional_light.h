@@ -16,7 +16,6 @@
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Engine/public/directional_light.h>
-#include <Vital.sandbox/API/core/node_3d.h>
 #include <Vital.sandbox/API/light/light_3d.h>
 
 
@@ -82,7 +81,6 @@ namespace Vital::Sandbox::API {
 
         static void bind(Machine* vm) {
             vm_module::register_type<Directional_Light>(vm);
-            API::Node_3D::bind<Instance>(vm);
 
             API::bind(vm, base_scope, "create", [](auto vm, auto& id) -> int {
                 auto instance = Instance::init(vm);
@@ -93,7 +91,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance>(vm);
             API::Light_3D::methods<Instance>(vm);
 
             // Checkers: Directional-only //
@@ -221,7 +218,6 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
-            API::Node_3D::inject<Instance>(vm);
             API::Light_3D::inject<Instance>(vm);
             vm -> scope_set_enum(base_scope, "shadow_mode", shadow_mode_registry);
             vm -> scope_set_enum(base_scope, "sky_mode", sky_mode_registry);

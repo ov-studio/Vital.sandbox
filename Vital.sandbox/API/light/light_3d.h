@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/API/core/node_3d.h>
 
 
 ///////////////////////////
@@ -24,10 +25,14 @@
 namespace Vital::Sandbox::API {
     struct Light_3D {
         template<typename Instance>
-        static void bind(Machine* vm) {}
+        static void bind(Machine* vm) {
+            API::Node_3D::bind<Instance>(vm);
+        }
 
         template<typename Instance>
         static void methods(Machine* vm) {
+            API::Node_3D::methods<Instance>(vm);
+
             // Checkers //
             vm_module::bind_method<Instance>(vm, "is_shadow_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> has_shadow());
@@ -354,6 +359,7 @@ namespace Vital::Sandbox::API {
 
         template<typename Instance>
         static void inject(Machine* vm) {
+            API::Node_3D::inject<Instance>(vm);
             vm -> scope_set_enum(Instance::Owner::base_scope, "bake_mode", Instance::Owner::bake_mode_registry);
         }
     };
