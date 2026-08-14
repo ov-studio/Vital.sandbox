@@ -277,6 +277,7 @@ namespace Vital::Engine {
             options.autoplay = false;
             options.zoomable = false;
             options.forward_input = false;
+            options.overlay = false;
             webview = Engine::Webview::create(options);
             webview -> set_position({0, 0});
             webview -> set_handler("message", [this](Engine::Webview::Payload payload) {

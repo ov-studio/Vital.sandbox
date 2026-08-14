@@ -64,13 +64,14 @@ namespace Vital::Engine {
         options.autoplay = false;
         options.zoomable = false;
         options.forward_input = false;
+        options.overlay = false;
         webview = Engine::Webview::create(options);
         webview -> set_position({0, 0});
+        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
         webview -> set_visible(true);
         webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
             if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
         });
-        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
     }
 
     void Splash::destroy() {
