@@ -38,6 +38,7 @@ namespace Vital::Engine {
 
 
             // Managers //
+            void ready();
             void show(); // TODO: CALL IT SHOW
             void destroy(); // TODO: CALL IT HIDE??
 

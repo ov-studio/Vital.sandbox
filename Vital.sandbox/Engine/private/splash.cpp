@@ -51,11 +51,21 @@ namespace Vital::Engine {
 
 
     // Managers //
-    void Splash::show() {
+    void Splash::ready() {
+        rapidjson::Document reply;
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        reply.SetObject();
+        reply.AddMember("action", "start", reply.GetAllocator());
+        reply.Accept(writer);
+        webview -> emit(buffer.GetString());
         if (blackcover) {
             blackcover -> queue_free();
             blackcover = nullptr;
         }
+    }
+
+    void Splash::show() {
         Engine::Webview::Options options;
         options.z_index = Engine::Webview::system_z_floor + 2;
         options.fullscreen = true;
@@ -85,15 +95,7 @@ namespace Vital::Engine {
         document.Parse(Tool::to_std_string(message).c_str());
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
-        if (action == "ready") {
-            rapidjson::Document reply;
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            reply.SetObject();
-            reply.AddMember("action", "start", reply.GetAllocator());
-            reply.Accept(writer);
-            webview -> emit(buffer.GetString());
-        }
+        if (action == "ready") ready();
         else if (action == "done") destroy();
     }
 }
