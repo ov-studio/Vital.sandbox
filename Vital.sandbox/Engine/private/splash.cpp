@@ -56,7 +56,7 @@ namespace Vital::Engine {
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         reply.SetObject();
-        reply.AddMember("action", "start", reply.GetAllocator());
+        reply.AddMember("action", "init", reply.GetAllocator());
         reply.Accept(writer);
         webview -> emit(buffer.GetString());
         if (blackcover) {
