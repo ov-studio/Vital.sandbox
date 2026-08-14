@@ -196,7 +196,7 @@ namespace Vital::Sandbox::API {
 
             // Getters: Area-only (DRAFT — verify against local headers) //
             vm_module::bind_method<Instance>(vm, "get_area", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_area());
+                vm -> push_value(self -> light -> get_area_size());
                 return 1;
             });
 
@@ -417,7 +417,7 @@ namespace Vital::Sandbox::API {
                     .require(2, &Machine::is_vector2);
 
                 auto size = vm -> get_vector2(2);
-                self -> light -> set_area(size);
+                self -> light -> set_area_size(size);
                 vm -> push_value(true);
                 return 1;
             });
@@ -431,7 +431,7 @@ namespace Vital::Sandbox::API {
                 auto base = API::File::assert_file(vm, path);
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, true, ref);
-                self -> light -> set_texture(texture -> get_texture());
+                self -> light -> set_area_texture(texture -> get_texture());
                 auto texture_reference = fmt::format("{}:texture:{}", vm_module::scope_id(base_scope), (void*) self -> light);
                 vm -> push_value(path);
                 vm -> set_reference("sandbox", texture_reference, -1);
@@ -441,7 +441,7 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "reset_texture", [](auto vm, auto self, auto& id) -> int {
-                self -> light -> set_texture(godot::Ref<godot::Texture2D>());
+                self -> light -> set_area_texture(godot::Ref<godot::Texture2D>());
                 auto texture_reference = fmt::format("{}:texture:{}", vm_module::scope_id(base_scope), (void*) self -> light);
                 vm -> del_reference("sandbox", texture_reference);
                 vm -> push_value(true);
