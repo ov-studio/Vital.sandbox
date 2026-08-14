@@ -85,6 +85,9 @@ void setup() {
 void vsdk_initialize() {
     // Core //
     Vital::Tool::Event::bind("core:preready", [](Vital::Tool::Stack arguments) {
+        #if defined(VSDK_Client)
+        Vital::Engine::Splash::get_singleton();
+        #endif
         Vital::Engine::Console::get_singleton();
     });
 
@@ -102,6 +105,7 @@ void vsdk_initialize() {
 
     Vital::Tool::Event::bind("core:free", [](Vital::Tool::Stack arguments) {
         #if defined(VSDK_Client)
+        Vital::Engine::Splash::free_singleton();
         Vital::Engine::Canvas::free_singleton();
         Vital::Engine::Monitor::free_singleton();
         Vital::Manager::Discord::free_singleton();
