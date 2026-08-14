@@ -120,6 +120,7 @@
 #include <godot_cpp/classes/directional_light3d.hpp>
 #include <godot_cpp/classes/omni_light3d.hpp>
 #include <godot_cpp/classes/spot_light3d.hpp>
+#include <godot_cpp/classes/area_light3d.hpp>
 #include <godot_cpp/classes/environment.hpp>
 #include <godot_cpp/classes/world_environment.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
