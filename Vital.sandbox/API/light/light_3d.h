@@ -53,7 +53,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Getters //
             vm_module::bind_method<Instance>(vm, "get_color", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_color());
                 return 1;
@@ -84,6 +83,16 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_SIZE));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_angular_distance", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_SIZE));
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "get_bake_mode", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_bake_mode());
                 return 1;
@@ -91,6 +100,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_cull_mask", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_cull_mask());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_shadow_caster_mask", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_shadow_caster_mask());
                 return 1;
             });
 
@@ -144,6 +158,7 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            // Setters //
             vm_module::bind_method<Instance>(vm, "set_color", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(color)", true)
                     .require(2, &Machine::is_color);
@@ -204,6 +219,26 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
+            vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(size)", true)
+                    .require(2, &Machine::is_number);
+
+                auto size = vm -> get_float(2);
+                self -> light -> set_param(Instance::Owner::base_class::PARAM_SIZE, size);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_angular_distance", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(degrees)", true)
+                    .require(2, &Machine::is_number);
+
+                auto degrees = vm -> get_float(2);
+                self -> light -> set_param(Instance::Owner::base_class::PARAM_SIZE, degrees);
+                vm -> push_value(true);
+                return 1;
+            });
+
             vm_module::bind_method<Instance>(vm, "set_negative", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
                     .require(2, &Machine::is_bool);
@@ -230,6 +265,16 @@ namespace Vital::Sandbox::API {
 
                 auto mask = vm -> get_int(2);
                 self -> light -> set_cull_mask(mask);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_shadow_caster_mask", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(mask)", true)
+                    .require(2, &Machine::is_number);
+
+                auto mask = vm -> get_int(2);
+                self -> light -> set_shadow_caster_mask(mask);
                 vm -> push_value(true);
                 return 1;
             });
