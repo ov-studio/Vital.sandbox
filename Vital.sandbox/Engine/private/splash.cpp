@@ -84,7 +84,7 @@ namespace Vital::Engine {
         });
     }
 
-    void Splash::destroy() {
+    void Splash::hide() {
         free_singleton();
     }
 
@@ -96,7 +96,7 @@ namespace Vital::Engine {
         if (document.HasParseError() || !document.HasMember("action")) return;
         std::string action = document["action"].GetString();
         if (action == "ready") ready();
-        else if (action == "done") destroy();
+        else if (action == "hide") hide();
     }
 }
 #endif
