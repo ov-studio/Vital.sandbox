@@ -51,6 +51,10 @@ namespace Vital::Engine {
 
 
     // Managers //
+    bool Splash::is_visible() {
+        return webview ? webview -> is_visible() : false;
+    }
+
     void Splash::ready() {
         rapidjson::Document reply;
         rapidjson::StringBuffer buffer;
