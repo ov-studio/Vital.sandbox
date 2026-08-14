@@ -25,6 +25,7 @@ namespace Vital::Sandbox::API {
     struct Node_3D {
         enum class Type {
             Audio,
+            Camera,
             Spatial
         };
 
@@ -56,7 +57,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
             }
-            if constexpr (node_type == Type::Spatial) {
+            if constexpr (node_type == Type::Spatial || node_type == Type::Camera) {
                 vm_module::bind_method<Instance>(vm, "get_scale", [](auto vm, auto self, auto& id) -> int {
                     vm -> push_value(self -> get_node() -> get_scale());
                     return 1;
@@ -107,7 +108,7 @@ namespace Vital::Sandbox::API {
                 });
     
             }
-            if constexpr (node_type == Type::Spatial) {
+            if constexpr (node_type == Type::Spatial || node_type == Type::Camera) {
                 vm_module::bind_method<Instance>(vm, "set_scale", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(scale)", true)
                         .require(2, &Machine::is_vector3);
@@ -148,7 +149,8 @@ namespace Vital::Sandbox::API {
                     vm -> push_value(true);
                     return 1;
                 });
-
+            }
+            if constexpr (node_type == Type::Spatial) {
                 vm_module::bind_method<Instance>(vm, "set_visible", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(visible)", true)
                         .require(2, &Machine::is_bool);
@@ -180,7 +182,7 @@ namespace Vital::Sandbox::API {
                     return 1;
                 });
             }
-            if constexpr (node_type == Type::Spatial) {
+            if constexpr (node_type == Type::Spatial || node_type == Type::Camera) {
                 vm_module::bind_method<Instance>(vm, "to_local", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(global_point)", true)
                         .require(2, &Machine::is_vector3);

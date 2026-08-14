@@ -108,7 +108,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
+            API::Node_3D::methods<Instance, Node_3D::Type::Camera>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_active", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> camera -> is_active());
