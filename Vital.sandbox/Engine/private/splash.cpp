@@ -1,0 +1,96 @@
+/*----------------------------------------------------------------
+     Resource: Vital.sandbox
+     Script: Engine: splash.cpp
+     Author: ov-studio
+     Developer(s): Aviril, Tron, Mario, Аниса, A-Variakojiene
+     DOC: 14/09/2022
+     Desc: Splash Utilities
+----------------------------------------------------------------*/
+
+
+//////////////
+// Imports //
+//////////////
+
+#pragma once
+#if defined(VSDK_Client)
+#include <Vital.sandbox/Engine/public/splash.h>
+#include <Vital.sandbox/Manager/public/kit.h>
+
+
+////////////////////////////
+// Vital: Engine: Splash //
+////////////////////////////
+
+namespace Vital::Engine {
+    // Instantiators //
+    Splash::Splash() {
+        blackcover = memnew(godot::ColorRect);
+        blackcover -> set_anchors_preset(godot::Control::PRESET_FULL_RECT);
+        blackcover -> set_color(godot::Color(0, 0, 0, 1));
+        blackcover -> set_as_top_level(true);
+        Engine::Core::get_singleton() -> add_child(blackcover);
+
+        // Once kit is ready, load the splash webview on top of everything
+        // (including the console, which uses system_z_floor + 1 = 10001).
+        Tool::Event::bind("kit:ready", [this](Tool::Stack) {
+            Engine::Core::get_singleton() -> enqueue([this]() {
+                show();
+            });
+        });
+    }
+
+    Splash::~Splash() {
+        if (blackcover) {
+            blackcover -> queue_free();
+            blackcover = nullptr;
+        }
+        if (webview) {
+            webview -> destroy();
+            webview = nullptr;
+        }
+    }
+
+
+    // Managers //
+    void Splash::show() {
+        // Remove the black cover now that the splash webview takes over.
+        if (blackcover) {
+            blackcover -> queue_free();
+            blackcover = nullptr;
+        }
+
+        // Create the splash webview above everything else.
+        Engine::Webview::Options options;
+        options.z_index = Engine::Webview::system_z_floor + 2; // above console (floor + 1)
+        options.fullscreen = true;
+        options.transparent = false; // opaque — splash has its own black bg
+        options.incognito = true;
+        options.autoplay = false;
+        options.zoomable = false;
+        options.forward_input = false;
+        webview = Engine::Webview::create(options);
+        webview -> load_url(Engine::Core::get_singleton() -> get_http_url("cache/Vital.kit/splash/build/index.html"));
+        webview -> set_position({0, 0});
+        webview -> set_visible(true);
+        webview -> set_handler("message", [this](Engine::Webview::Payload payload) {
+            if (auto* content = std::get_if<std::string>(&payload)) on_message(Tool::to_godot_string(*content));
+        });
+    }
+
+    void Splash::destroy() {
+        free_singleton();
+    }
+
+
+    // Events //
+    void Splash::on_message(godot::String message) {
+        rapidjson::Document document;
+        document.Parse(Tool::to_std_string(message).c_str());
+        if (document.HasParseError() || !document.HasMember("action")) return;
+        std::string action = document["action"].GetString();
+        // The splash HTML posts { action: "done" } when its fade-out finishes.
+        if (action == "done") destroy();
+    }
+}
+#endif
