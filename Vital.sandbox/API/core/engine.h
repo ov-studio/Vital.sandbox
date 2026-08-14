@@ -14,6 +14,8 @@
 
 #pragma once
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/splash.h>
+#include <Vital.sandbox/Engine/public/console.h>
 
 
 /////////////////////////
@@ -26,6 +28,72 @@ namespace Vital::Sandbox::API {
         using base_class = Vital::Engine::Core;
 
         static void bind(Machine* vm) {
+            #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "is_splash_visible", [](auto vm, auto& id) -> int {
+                vm -> push_value(Vital::Engine::Splash::has_singleton() && Vital::Engine::Splash::get_singleton() -> is_visible());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "is_console_visible", [](auto vm, auto& id) -> int {
+                vm -> push_value(Vital::Engine::Console::has_singleton() && Vital::Engine::Console::get_singleton() -> is_visible());
+                return 1;
+            });
+            #endif
+
+            API::bind(vm, base_scope, "get_version", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::Version::get("sdk"));
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_platform", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::get_platform());
+                return 1;
+            });
+
+            API::bind(vm, base_scope, "get_timestamp", [](auto vm, auto& id) -> int {
+                auto timestamp = Tool::get_timestamp();
+                vm -> create_table();
+                for (auto& [key, value] : timestamp.object) {
+                    vm -> table_set_value(key, value);
+                }
+                return 1;
+            });
+
+            #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
+                vm -> push_value(base_class::get_singleton() -> get_resolution());
+                return 1;
+            });
+            
+            API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::Inspect::fingerprint());
+                return 1;
+            });
+            #endif
+
+            API::bind(vm, base_scope, "get_entity_types", [](auto vm, auto& id) -> int {
+                vm -> create_table();
+                int i = 0;
+                for (auto& name : vm_module::list_types()) {
+                    vm -> push_value(name);
+                    vm -> set_table_field(++i, -2);
+                }
+                return 1;
+            });
+            
+            API::bind(vm, base_scope, "get_entities", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(category, streamed = false)")
+                    .require(1, &Machine::is_string)
+                    .optional(2, &Machine::is_bool);
+            
+                const std::string category = vm -> get_string(1);
+                bool streamed = vm -> is_bool(2) ? vm -> get_bool(2) : false;
+                vm -> create_table();
+                int count = 0;
+                vm_module::collect_entities(vm, category, count, streamed);
+                return 1;
+            });
+
             API::bind(vm, base_scope, "print", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode, ...)")
                     .require(1, &Machine::is_string);
@@ -81,60 +149,6 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "get_tick", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::get_tick());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_version", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::Version::get("sdk"));
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_platform", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::get_platform());
-                return 1;
-            });
-
-            API::bind(vm, base_scope, "get_timestamp", [](auto vm, auto& id) -> int {
-                auto timestamp = Tool::get_timestamp();
-                vm -> create_table();
-                for (auto& [key, value] : timestamp.object) {
-                    vm -> table_set_value(key, value);
-                }
-                return 1;
-            });
-
-            #if defined(VSDK_Client)
-            API::bind(vm, base_scope, "get_resolution", [](auto vm, auto& id) -> int {
-                vm -> push_value(base_class::get_singleton() -> get_resolution());
-                return 1;
-            });
-            
-            API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::Inspect::fingerprint());
-                return 1;
-            });
-            #endif
-
-            API::bind(vm, base_scope, "get_entity_types", [](auto vm, auto& id) -> int {
-                vm -> create_table();
-                int i = 0;
-                for (auto& name : vm_module::list_types()) {
-                    vm -> push_value(name);
-                    vm -> set_table_field(++i, -2);
-                }
-                return 1;
-            });
-            
-            API::bind(vm, base_scope, "get_entities", [](auto vm, auto& id) -> int {
-                vm_args(vm, id, "(category, streamed = false)")
-                    .require(1, &Machine::is_string)
-                    .optional(2, &Machine::is_bool);
-            
-                const std::string category = vm -> get_string(1);
-                bool streamed = vm -> is_bool(2) ? vm -> get_bool(2) : false;
-                vm -> create_table();
-                int count = 0;
-                vm_module::collect_entities(vm, category, count, streamed);
                 return 1;
             });
         }
