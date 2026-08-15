@@ -92,9 +92,8 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_texture", [](auto vm, auto self, auto& id) -> int {
-                if (self -> vm -> is_reference("runtime", self -> value_reference("texture"))) {
-                    self -> get_reference(self -> value_reference("texture"), true);
-                } else vm -> push_value(false);
+                if (self -> vm -> is_reference("runtime", self -> value_reference("texture"))) self -> get_reference(self -> value_reference("texture"), true);
+                else vm -> push_value(false);
                 return 1;
             });
 

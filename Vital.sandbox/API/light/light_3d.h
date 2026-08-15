@@ -142,9 +142,8 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_projector", [](auto vm, auto self, auto& id) -> int {
-                if (self -> vm -> is_reference("runtime", self -> value_reference("projector"))) {
-                    self -> get_reference(self -> value_reference("projector"), true);
-                } else vm -> push_value(false);
+                if (self -> vm -> is_reference("runtime", self -> value_reference("projector"))) self -> get_reference(self -> value_reference("projector"), true);
+                else vm -> push_value(false);
                 return 1;
             });
 
