@@ -25,7 +25,7 @@
 
 namespace Vital::Sandbox::API {
     struct Point_Light : vm_module {
-        inline static const std::vector<std::string> base_scope = {"light", "point_light"};
+        inline static const std::vector<std::string> base_scope = {"light", "point"};
         using base_class = Vital::Engine::Point_Light;
 
         inline static const std::vector<std::pair<std::string, base_class::BakeMode>> bake_mode_registry = {
