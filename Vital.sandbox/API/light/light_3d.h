@@ -15,7 +15,9 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Manager/public/sandbox.h>
+#include <Vital.sandbox/Engine/public/texture.h>
 #include <Vital.sandbox/API/core/node_3d.h>
+#include <Vital.sandbox/API/utility/file.h>
 
 
 ///////////////////////////
@@ -24,12 +26,19 @@
 
 namespace Vital::Sandbox::API {
     struct Light_3D {
+        enum class Type {
+            Directional,
+            Point,
+            Spot,
+            Area
+        };
+
         template<typename Instance>
         static void bind(Machine* vm) {
             API::Node_3D::bind<Instance>(vm);
         }
 
-        template<typename Instance>
+        template<typename Instance, Type light_type = Type::Point>
         static void methods(Machine* vm) {
             API::Node_3D::methods<Instance, Node_3D::Type::Spatial>(vm);
 
@@ -83,15 +92,29 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_SIZE));
-                return 1;
-            });
+            if constexpr (light_type == Type::Point || light_type == Type::Spot) {
+                vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_SIZE));
+                    return 1;
+                });
 
-            vm_module::bind_method<Instance>(vm, "get_angular_distance", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_SIZE));
-                return 1;
-            });
+                vm_module::bind_method<Instance>(vm, "get_range", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_RANGE));
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "get_attenuation", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_ATTENUATION));
+                    return 1;
+                });
+            }
+
+            if constexpr (light_type == Type::Directional) {
+                vm_module::bind_method<Instance>(vm, "get_angular_distance", [](auto vm, auto self, auto& id) -> int {
+                    vm -> push_value(self -> light -> get_param(Instance::Owner::base_class::PARAM_SIZE));
+                    return 1;
+                });
+            }
 
             vm_module::bind_method<Instance>(vm, "get_bake_mode", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_bake_mode());
@@ -115,6 +138,13 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_correlated_color", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_correlated_color());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_projector", [](auto vm, auto self, auto& id) -> int {
+                auto projector_reference = fmt::format("{}:projector:{}", vm_module::scope_id(Instance::Owner::base_scope), (void*) self -> light);
+                if (vm -> is_reference("sandbox", projector_reference)) vm -> get_reference("sandbox", projector_reference, true);
+                else vm -> push_value(false);
                 return 1;
             });
 
@@ -158,7 +188,6 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            // Setters //
             vm_module::bind_method<Instance>(vm, "set_color", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(color)", true)
                     .require(2, &Machine::is_color);
@@ -219,25 +248,49 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(size)", true)
-                    .require(2, &Machine::is_number);
+            if constexpr (light_type == Type::Point || light_type == Type::Spot) {
+                vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(size)", true)
+                        .require(2, &Machine::is_number);
 
-                auto size = vm -> get_float(2);
-                self -> light -> set_param(Instance::Owner::base_class::PARAM_SIZE, size);
-                vm -> push_value(true);
-                return 1;
-            });
+                    auto size = vm -> get_float(2);
+                    self -> light -> set_param(Instance::Owner::base_class::PARAM_SIZE, size);
+                    vm -> push_value(true);
+                    return 1;
+                });
 
-            vm_module::bind_method<Instance>(vm, "set_angular_distance", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(degrees)", true)
-                    .require(2, &Machine::is_number);
+                vm_module::bind_method<Instance>(vm, "set_range", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(range)", true)
+                        .require(2, &Machine::is_number);
 
-                auto degrees = vm -> get_float(2);
-                self -> light -> set_param(Instance::Owner::base_class::PARAM_SIZE, degrees);
-                vm -> push_value(true);
-                return 1;
-            });
+                    auto range = vm -> get_float(2);
+                    self -> light -> set_param(Instance::Owner::base_class::PARAM_RANGE, range);
+                    vm -> push_value(true);
+                    return 1;
+                });
+
+                vm_module::bind_method<Instance>(vm, "set_attenuation", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(attenuation)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto attenuation = vm -> get_float(2);
+                    self -> light -> set_param(Instance::Owner::base_class::PARAM_ATTENUATION, attenuation);
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
+
+            if constexpr (light_type == Type::Directional) {
+                vm_module::bind_method<Instance>(vm, "set_angular_distance", [](auto vm, auto self, auto& id) -> int {
+                    vm_args(vm, id, "(degrees)", true)
+                        .require(2, &Machine::is_number);
+
+                    auto degrees = vm -> get_float(2);
+                    self -> light -> set_param(Instance::Owner::base_class::PARAM_SIZE, degrees);
+                    vm -> push_value(true);
+                    return 1;
+                });
+            }
 
             vm_module::bind_method<Instance>(vm, "set_negative", [](auto vm, auto self, auto& id) -> int {
                 vm_args(vm, id, "(state)", true)
@@ -285,6 +338,32 @@ namespace Vital::Sandbox::API {
 
                 auto kelvin = vm -> get_float(2);
                 self -> light -> set_temperature(kelvin);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_projector", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(path)", true)
+                    .require(2, &Machine::is_string);
+
+                auto path = vm -> get_string(2);
+                auto ref = path;
+                auto base = API::File::assert_file(vm, path);
+                auto texture = Vital::Engine::Texture::get_from_reference(ref);
+                if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, true, ref);
+                self -> light -> set_projector(texture -> get_texture());
+                auto projector_reference = fmt::format("{}:projector:{}", vm_module::scope_id(Instance::Owner::base_scope), (void*) self -> light);
+                vm -> push_value(path);
+                vm -> set_reference("sandbox", projector_reference, -1);
+                vm -> pop(1);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "reset_projector", [](auto vm, auto self, auto& id) -> int {
+                self -> light -> set_projector(godot::Ref<godot::Texture2D>());
+                auto projector_reference = fmt::format("{}:projector:{}", vm_module::scope_id(Instance::Owner::base_scope), (void*) self -> light);
+                vm -> del_reference("sandbox", projector_reference);
                 vm -> push_value(true);
                 return 1;
             });

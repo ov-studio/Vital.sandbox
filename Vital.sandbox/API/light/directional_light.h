@@ -91,7 +91,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Light_3D::methods<Instance>(vm);
+            API::Light_3D::methods<Instance, Light_3D::Type::Directional>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_blend_splits_enabled", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> is_blend_splits_enabled());
@@ -125,6 +125,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_shadow_max_distance", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_MAX_DISTANCE));
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_shadow_pancake_size", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> light -> get_param(base_class::PARAM_SHADOW_PANCAKE_SIZE));
                 return 1;
             });
 
@@ -199,6 +204,16 @@ namespace Vital::Sandbox::API {
 
                 auto distance = vm -> get_float(2);
                 self -> light -> set_param(base_class::PARAM_SHADOW_MAX_DISTANCE, distance);
+                vm -> push_value(true);
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "set_shadow_pancake_size", [](auto vm, auto self, auto& id) -> int {
+                vm_args(vm, id, "(size)", true)
+                    .require(2, &Machine::is_number);
+
+                auto size = vm -> get_float(2);
+                self -> light -> set_param(base_class::PARAM_SHADOW_PANCAKE_SIZE, size);
                 vm -> push_value(true);
                 return 1;
             });

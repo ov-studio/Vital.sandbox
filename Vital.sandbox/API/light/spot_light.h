@@ -79,22 +79,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Light_3D::methods<Instance>(vm);
-
-            vm_module::bind_method<Instance>(vm, "get_size", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(base_class::PARAM_SIZE));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_range", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(base_class::PARAM_RANGE));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "get_attenuation", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_param(base_class::PARAM_ATTENUATION));
-                return 1;
-            });
+            API::Light_3D::methods<Instance, Light_3D::Type::Spot>(vm);
 
             vm_module::bind_method<Instance>(vm, "get_spot_angle", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_param(base_class::PARAM_SPOT_ANGLE));
@@ -103,36 +88,6 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_spot_angle_attenuation", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> get_param(base_class::PARAM_SPOT_ATTENUATION));
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_size", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(size)", true)
-                    .require(2, &Machine::is_number);
-
-                auto size = vm -> get_float(2);
-                self -> light -> set_param(base_class::PARAM_SIZE, size);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_range", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(range)", true)
-                    .require(2, &Machine::is_number);
-
-                auto range = vm -> get_float(2);
-                self -> light -> set_param(base_class::PARAM_RANGE, range);
-                vm -> push_value(true);
-                return 1;
-            });
-
-            vm_module::bind_method<Instance>(vm, "set_attenuation", [](auto vm, auto self, auto& id) -> int {
-                vm_args(vm, id, "(attenuation)", true)
-                    .require(2, &Machine::is_number);
-
-                auto attenuation = vm -> get_float(2);
-                self -> light -> set_param(base_class::PARAM_ATTENUATION, attenuation);
-                vm -> push_value(true);
                 return 1;
             });
 

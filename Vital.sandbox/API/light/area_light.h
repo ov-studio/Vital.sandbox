@@ -79,7 +79,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void methods(Machine* vm) {
-            API::Light_3D::methods<Instance>(vm);
+            API::Light_3D::methods<Instance, Light_3D::Type::Area>(vm);
 
             vm_module::bind_method<Instance>(vm, "is_area_normalizing_energy", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> light -> is_area_normalizing_energy());
@@ -91,8 +91,10 @@ namespace Vital::Sandbox::API {
                 return 1;
             });
 
-            vm_module::bind_method<Instance>(vm, "get_area_texture", [](auto vm, auto self, auto& id) -> int {
-                vm -> push_value(self -> light -> get_area_texture());
+            vm_module::bind_method<Instance>(vm, "get_texture", [](auto vm, auto self, auto& id) -> int {
+                auto texture_reference = fmt::format("{}:texture:{}", vm_module::scope_id(base_scope), (void*) self -> light);
+                if (vm -> is_reference("sandbox", texture_reference)) vm -> get_reference("sandbox", texture_reference, true);
+                else vm -> push_value(false);
                 return 1;
             });
 
