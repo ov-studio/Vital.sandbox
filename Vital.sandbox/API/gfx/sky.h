@@ -28,6 +28,18 @@ namespace Vital::Sandbox::API {
         inline static const std::vector<std::string> base_scope = {"gfx", "sky"};
         using base_class = Vital::Engine::Core;
 
+        enum class Mode {
+            PANORAMA,
+            PROCEDURAL,
+            PHYSICAL
+        };
+
+        inline static const std::vector<std::pair<std::string, int>> mode_registry = {
+            { "PANORAMA",   static_cast<int>(Mode::PANORAMA)   },
+            { "PROCEDURAL", static_cast<int>(Mode::PROCEDURAL) },
+            { "PHYSICAL",   static_cast<int>(Mode::PHYSICAL)   }
+        };
+
         inline static const std::vector<std::pair<std::string, int>> radiance_size_registry = {
             { "SIZE_32",   godot::Sky::RADIANCE_SIZE_32   },
             { "SIZE_64",   godot::Sky::RADIANCE_SIZE_64   },
@@ -60,9 +72,9 @@ namespace Vital::Sandbox::API {
         static void bind(Machine* vm) {
             API::bind(vm, base_scope, "get_mode", [](auto vm, auto& id) -> int {
                 godot::Ref<godot::Material> current = base_class::get_sky() -> get_material();
-                if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid()) vm -> push_value(std::string("panorama"));
-                else if (godot::Ref<godot::ProceduralSkyMaterial>(current).is_valid()) vm -> push_value(std::string("procedural"));
-                else if (godot::Ref<godot::PhysicalSkyMaterial>(current).is_valid()) vm -> push_value(std::string("physical"));
+                if (godot::Ref<godot::PanoramaSkyMaterial>(current).is_valid()) vm -> push_value(static_cast<int>(Mode::PANORAMA));
+                else if (godot::Ref<godot::ProceduralSkyMaterial>(current).is_valid()) vm -> push_value(static_cast<int>(Mode::PROCEDURAL));
+                else if (godot::Ref<godot::PhysicalSkyMaterial>(current).is_valid()) vm -> push_value(static_cast<int>(Mode::PHYSICAL));
                 else vm -> push_value(false);
                 return 1;
             });
@@ -89,14 +101,15 @@ namespace Vital::Sandbox::API {
 
             API::bind(vm, base_scope, "set_mode", [](auto vm, auto& id) -> int {
                 vm_args(vm, id, "(mode)")
-                    .require(1, &Machine::is_string);
+                    .require_enum(1, mode_registry);
 
-                auto type = vm -> get_string(1);
+                auto type = static_cast<Mode>(vm -> get_int(1));
                 auto sky = base_class::get_sky();
-                if (type == "panorama") { godot::Ref<godot::PanoramaSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
-                else if (type == "procedural") { godot::Ref<godot::ProceduralSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
-                else if (type == "physical") { godot::Ref<godot::PhysicalSkyMaterial> material; material.instantiate(); sky -> set_material(material); }
-                else throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: invalid sky type");
+                switch (type) {
+                    case Mode::PANORAMA:   { godot::Ref<godot::PanoramaSkyMaterial> material;   material.instantiate(); sky -> set_material(material); break; }
+                    case Mode::PROCEDURAL: { godot::Ref<godot::ProceduralSkyMaterial> material; material.instantiate(); sky -> set_material(material); break; }
+                    case Mode::PHYSICAL:   { godot::Ref<godot::PhysicalSkyMaterial> material;   material.instantiate(); sky -> set_material(material); break; }
+                }
                 vm -> push_value(true);
                 return 1;
             });
@@ -143,6 +156,7 @@ namespace Vital::Sandbox::API {
         }
 
         static void inject(Machine* vm) {
+            vm -> scope_set_enum(base_scope, "mode", mode_registry);
             vm -> scope_set_enum(base_scope, "radiance_size", radiance_size_registry);
             vm -> scope_set_enum(base_scope, "process_mode", process_mode_registry);
         }
