@@ -92,9 +92,9 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_texture", [](auto vm, auto self, auto& id) -> int {
-                auto texture_reference = fmt::format("{}:texture:{}", vm_module::scope_id(base_scope), (void*) self -> light);
-                if (vm -> is_reference("sandbox", texture_reference)) vm -> get_reference("sandbox", texture_reference, true);
-                else vm -> push_value(false);
+                if (self -> vm -> is_reference("runtime", self -> value_reference("texture"))) {
+                    self -> get_reference(self -> value_reference("texture"), true);
+                } else vm -> push_value(false);
                 return 1;
             });
 
@@ -128,9 +128,8 @@ namespace Vital::Sandbox::API {
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, true, ref);
                 self -> light -> set_area_texture(texture -> get_texture());
-                auto texture_reference = fmt::format("{}:texture:{}", vm_module::scope_id(base_scope), (void*) self -> light);
                 vm -> push_value(path);
-                vm -> set_reference("sandbox", texture_reference, -1);
+                self -> set_reference(self -> value_reference("texture"), -1);
                 vm -> pop(1);
                 vm -> push_value(true);
                 return 1;
@@ -138,8 +137,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "reset_texture", [](auto vm, auto self, auto& id) -> int {
                 self -> light -> set_area_texture(godot::Ref<godot::Texture2D>());
-                auto texture_reference = fmt::format("{}:texture:{}", vm_module::scope_id(base_scope), (void*) self -> light);
-                vm -> del_reference("sandbox", texture_reference);
+                self -> del_reference(self -> value_reference("texture"));
                 vm -> push_value(true);
                 return 1;
             });

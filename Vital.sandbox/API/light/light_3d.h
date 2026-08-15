@@ -142,9 +142,9 @@ namespace Vital::Sandbox::API {
             });
 
             vm_module::bind_method<Instance>(vm, "get_projector", [](auto vm, auto self, auto& id) -> int {
-                auto projector_reference = fmt::format("{}:projector:{}", vm_module::scope_id(Instance::Owner::base_scope), (void*) self -> light);
-                if (vm -> is_reference("sandbox", projector_reference)) vm -> get_reference("sandbox", projector_reference, true);
-                else vm -> push_value(false);
+                if (self -> vm -> is_reference("runtime", self -> value_reference("projector"))) {
+                    self -> get_reference(self -> value_reference("projector"), true);
+                } else vm -> push_value(false);
                 return 1;
             });
 
@@ -352,9 +352,8 @@ namespace Vital::Sandbox::API {
                 auto texture = Vital::Engine::Texture::get_from_reference(ref);
                 if (!texture) texture = Vital::Engine::Texture::create_texture_2d(base, path, true, ref);
                 self -> light -> set_projector(texture -> get_texture());
-                auto projector_reference = fmt::format("{}:projector:{}", vm_module::scope_id(Instance::Owner::base_scope), (void*) self -> light);
                 vm -> push_value(path);
-                vm -> set_reference("sandbox", projector_reference, -1);
+                self -> set_reference(self -> value_reference("projector"), -1);
                 vm -> pop(1);
                 vm -> push_value(true);
                 return 1;
@@ -362,8 +361,7 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "reset_projector", [](auto vm, auto self, auto& id) -> int {
                 self -> light -> set_projector(godot::Ref<godot::Texture2D>());
-                auto projector_reference = fmt::format("{}:projector:{}", vm_module::scope_id(Instance::Owner::base_scope), (void*) self -> light);
-                vm -> del_reference("sandbox", projector_reference);
+                self -> del_reference(self -> value_reference("projector"));
                 vm -> push_value(true);
                 return 1;
             });
