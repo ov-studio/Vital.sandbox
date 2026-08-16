@@ -177,18 +177,24 @@ namespace Vital::Engine {
     Vital::Engine::Texture* Webview::get_texture() {
         if (!options.offscreen) return nullptr;
         godot::Variant result = webview -> call("get_texture");
-        if (result.get_type() != godot::Variant::INT) return nullptr;
+        if (result.get_type() != godot::Variant::INT) Tool::print("warn", "bad"); return nullptr;
+        Tool::print("warn", "bad 2");
         int64_t instance_id = result.operator int64_t();
         if (instance_id <= 0) return nullptr;
+        Tool::print("warn", "bad 3");
         godot::Object* obj = godot::ObjectDB::get_instance(godot::ObjectID((uint64_t)instance_id));
         if (!obj) return nullptr;
+        Tool::print("warn", "bad 4");
         godot::ImageTexture* img_tex = godot::Object::cast_to<godot::ImageTexture>(obj);
         if (!img_tex) return nullptr;
+        Tool::print("warn", "bad 5");
         if (!offscreen_texture) {
+            Tool::print("warn", "bad 6");
             offscreen_texture = Vital::Engine::Texture::create_from_ref(
                 godot::Ref<godot::Texture2D>(img_tex)
             );
         }
+        Tool::print("warn", "bad 7");
         return offscreen_texture;
     }
 
