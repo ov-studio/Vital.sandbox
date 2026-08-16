@@ -17,6 +17,7 @@
 #include <Vital.sandbox/Manager/public/sandbox.h>
 #include <Vital.sandbox/Manager/public/resource.h>
 #include <Vital.sandbox/Engine/public/webview.h>
+#include <Vital.sandbox/API/core/texture.h>
 
 
 //////////////////////////
@@ -31,6 +32,9 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Webview;
             base_class* webview = nullptr;
+            // Cached texture instance — created once on first get_texture() call,
+            // reused on every subsequent call via push_self()
+            std::shared_ptr<API::Texture::Instance> texture_instance = nullptr;
 
             bool is_alive() const { 
                 return webview ? true : false; 
@@ -93,11 +97,12 @@ namespace Vital::Sandbox::API {
                     vm -> table_get_value("fullscreen", 1); options.fullscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.fullscreen;
                     vm -> table_get_value("transparent", 1); options.transparent = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.transparent;
                     vm -> table_get_value("overlay", 1); options.overlay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.overlay;
+                    vm -> table_get_value("offscreen", 1); options.offscreen = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.offscreen;
                     vm -> table_get_value("incognito", 1); options.incognito = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.incognito;
                     vm -> table_get_value("autoplay", 1); options.autoplay = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.autoplay;
                     vm -> table_get_value("zoomable", 1); options.zoomable = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.zoomable;
                     vm -> table_get_value("forward_input", 1); options.forward_input = vm -> is_bool(-1) ? vm -> get_bool(-1) : options.forward_input;
-                    vm -> pop(8);
+                    vm -> pop(9);
                 }
                 options.z_index = clamp_z_index(options.z_index);
 
@@ -127,6 +132,11 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "is_overlay", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> is_overlay());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "is_offscreen", [](auto vm, auto self, auto& id) -> int {
+                vm -> push_value(self -> webview -> is_offscreen());
                 return 1;
             });
 
@@ -167,6 +177,26 @@ namespace Vital::Sandbox::API {
 
             vm_module::bind_method<Instance>(vm, "get_z_index", [](auto vm, auto self, auto& id) -> int {
                 vm -> push_value(self -> webview -> get_z_index());
+                return 1;
+            });
+
+            vm_module::bind_method<Instance>(vm, "get_texture", [](auto vm, auto self, auto& id) -> int {
+                auto tex = self -> webview -> get_texture();
+                if (!tex) {
+                    vm -> push_nil();
+                    return 1;
+                }
+                // Reuse cached texture instance — same userdata every call
+                if (self -> texture_instance && API::Texture::Instance::find_unlocked(self -> texture_instance)) {
+                    self -> texture_instance -> push_self(vm);
+                    return 1;
+                }
+                // First call — create and cache the instance
+                auto instance = API::Texture::Instance::init(vm);
+                instance -> texture = tex;
+                instance -> owned = false; // webview owns the texture lifetime
+                instance -> store(true);
+                self -> texture_instance = instance;
                 return 1;
             });
 

@@ -15,6 +15,7 @@
 #pragma once
 #if defined(VSDK_Client)
 #include <Vital.sandbox/Engine/public/canvas.h>
+#include <Vital.sandbox/Engine/public/texture.h>
 
 
 /////////////////////////////
@@ -34,6 +35,7 @@ namespace Vital::Engine {
                 bool zoomable = false;
                 bool forward_input = false;
                 bool overlay = false;
+                bool offscreen = false;
             };
             
             static constexpr int system_z_floor = 10000;
@@ -54,6 +56,7 @@ namespace Vital::Engine {
             Options options;
             godot::Control* webview = nullptr;
             std::unordered_map<std::string, std::function<void(Payload)>> handlers;
+            Vital::Engine::Texture* offscreen_texture = nullptr;
             static inline Webview* input_forwarder = nullptr;
             static inline std::vector<Webview*> buffer;
 
@@ -86,6 +89,7 @@ namespace Vital::Engine {
             bool is_fullscreen();
             bool is_transparent();
             bool is_overlay();
+            bool is_offscreen();
             bool is_incognito();
             bool is_autoplay();
             bool is_zoomable();
@@ -97,6 +101,7 @@ namespace Vital::Engine {
             godot::Vector2 get_position();
             godot::Vector2 get_size();
             int get_z_index();
+            Vital::Engine::Texture* get_texture();
 
 
             // Setters //

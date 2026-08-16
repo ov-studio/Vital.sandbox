@@ -57,6 +57,7 @@ namespace Vital::Sandbox::API {
         struct Instance : vm_instance<Instance> {
             using Owner = Texture;
             base_class* texture = nullptr;
+            bool owned = true; // if false, clean() won't destroy the texture
 
             bool is_alive() const { 
                 return texture ? true : false;
@@ -66,7 +67,7 @@ namespace Vital::Sandbox::API {
                 auto instance = shared_from_this();
                 if (!instance -> erase()) return;
                 if (instance -> texture) {
-                    instance -> texture -> destroy();
+                    if (instance -> owned) instance -> texture -> destroy();
                     instance -> texture = nullptr;
                 }
                 instance -> release();

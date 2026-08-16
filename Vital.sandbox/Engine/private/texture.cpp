@@ -125,6 +125,22 @@ namespace Vital::Engine {
 
 
     // Misc //
+    Texture* Texture::create_from_ref(const godot::Ref<godot::Texture2D>& ref) {
+        if (!ref.is_valid()) return nullptr;
+        Texture2D payload;
+        payload.texture = godot::Ref<godot::ImageTexture>(
+            godot::Object::cast_to<godot::ImageTexture>(ref.ptr())
+        );
+        if (!payload.texture.is_valid()) {
+            // Not an ImageTexture — wrap via image readback
+            auto rs = godot::RenderingServer::get_singleton();
+            auto img = rs -> texture_2d_get(ref -> get_rid());
+            if (!img.is_valid()) return nullptr;
+            payload.texture = godot::ImageTexture::create_from_image(img);
+        }
+        return memnew(Texture({Type::Texture2D, payload}));
+    }
+
     Texture* Texture::create_texture_2d(const std::string& base, const std::string& path, bool mipmaps, const std::string& reference) {
         return create_texture_2d_from_buffer(Tool::File::read_binary(base, path), mipmaps, reference);
     }

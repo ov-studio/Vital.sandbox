@@ -34,6 +34,7 @@ namespace Vital::Engine {
         webview -> set("full_window_size", options.fullscreen);
         webview -> set("transparent", options.transparent);
         webview -> set("overlay", options.overlay);
+        webview -> set("offscreen", options.offscreen);
         webview -> set("incognito", options.incognito);
         webview -> set("autoplay", options.autoplay);
         webview -> set("zoom_hotkeys", options.zoomable);
@@ -51,6 +52,7 @@ namespace Vital::Engine {
         pause_input_forwarder();
         buffer.erase(std::remove(buffer.begin(), buffer.end(), this), buffer.end());
         update_input_forwarder();
+        if (offscreen_texture) { memdelete(offscreen_texture); offscreen_texture = nullptr; }
         webview -> queue_free();
         webview = nullptr;
     }
@@ -68,6 +70,7 @@ namespace Vital::Engine {
         std::vector<Webview*> candidates;
         for (Webview* instance : buffer) {
             if (instance -> options.overlay) continue;
+            if (instance -> options.offscreen) continue;
             if (!instance -> options.forward_input) continue;
             if (!instance -> is_visible()) continue;
             candidates.push_back(instance);
@@ -133,6 +136,10 @@ namespace Vital::Engine {
         return options.overlay;
     }
 
+    bool Webview::is_offscreen() {
+        return options.offscreen;
+    }
+
     bool Webview::is_incognito() {
         return webview -> get("incognito");
     }
@@ -167,10 +174,29 @@ namespace Vital::Engine {
         return webview -> get("window_z_index");
     }
 
+    Vital::Engine::Texture* Webview::get_texture() {
+        if (!options.offscreen) return nullptr;
+        godot::Variant result = webview -> call("get_texture");
+        if (result.get_type() != godot::Variant::INT) return nullptr;
+        int64_t instance_id = result.operator int64_t();
+        if (instance_id <= 0) return nullptr;
+        godot::Object* obj = godot::ObjectDB::get_instance(godot::ObjectID((uint64_t)instance_id));
+        if (!obj) return nullptr;
+        godot::ImageTexture* img_tex = godot::Object::cast_to<godot::ImageTexture>(obj);
+        if (!img_tex) return nullptr;
+        if (!offscreen_texture) {
+            offscreen_texture = Vital::Engine::Texture::create_from_ref(
+                godot::Ref<godot::Texture2D>(img_tex)
+            );
+        }
+        return offscreen_texture;
+    }
+
 
     // Setters //
     void Webview::set_visible(bool state) {
         webview -> set_visible(state);
+        if (options.offscreen) { if (state) update_input_forwarder(); return; }
         eval(fmt::format("window.dispatchEvent(new CustomEvent('webview:visible', {{ detail: {{ visible: {} }} }}));", state ? "true" : "false"));
         if (state) update_input_forwarder();
         else {

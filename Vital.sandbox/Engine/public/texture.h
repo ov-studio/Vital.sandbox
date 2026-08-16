@@ -100,6 +100,7 @@ namespace Vital::Engine {
 
 
             // Misc //
+            static Texture* create_from_ref(const godot::Ref<godot::Texture2D>& ref);
             static Texture* create_texture_2d(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
             static Texture* create_texture_2d_from_buffer(const godot::PackedByteArray& buffer, bool mipmaps = false, const std::string& reference = "");
             static Texture* create_svg(const std::string& base, const std::string& path, bool mipmaps = false, const std::string& reference = "");
