@@ -40,6 +40,12 @@ elif os_info["type"] == "Linux":
     env.Append(CPPDEFINES=["VSDK_LINUX"])
     env.Append(CPPDEFINES=["LUA_USE_LINUX", "DUK_F_LINUX", "HAS_SOCKLEN_T"])
     env.Append(CXXFLAGS=["-fexceptions"])
+    # godot-cpp defaults to disable_exceptions and appends -fno-exceptions after the
+    # flag above, which silently wins — ask it to leave exceptions alone instead
+    env.Args["disable_exceptions"] = "no"
+    # rapidjson 1.1.0's GenericStringRef::operator= assigns to its const `length`
+    # member. It is never instantiated, but GCC 14+ diagnoses it in the template body
+    env.Append(CXXFLAGS=["-Wno-template-body"])
 
 
 # Sandbox
@@ -82,6 +88,10 @@ bin_dir = f".bin/{env.Args['platform_type'].lower()}/{platform}"
 build_dir = f".build/{env.Args['platform_type'].lower()}/{platform}"
 bin_out = f"{bin_dir}/{env.name}{suffix}{env.subst('$SHLIBSUFFIX')}"
 shutil.rmtree(bin_dir, ignore_errors=True)
+# SCons prefixes shared libraries with "lib" on Linux/macOS, but vital.sdk.gdextension
+# and build.py both expect the unprefixed name that Windows produces
+if os_info["type"] != "Windows":
+    env["SHLIBPREFIX"] = ""
 bin = env.SharedLibrary(bin_out, source=env.sources)
 build = env.Install(build_dir, bin)
 env.Module.stage(build)

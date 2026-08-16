@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 if [ "$CI" = "true" ]; then
     echo "CI detected — skipping vendor reload"
     exit 0

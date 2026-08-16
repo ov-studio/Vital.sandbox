@@ -29,6 +29,9 @@ namespace Vital::Sandbox {
     template<typename Derived>
     struct vm_instance : public vm_instance_base, public std::enable_shared_from_this<Derived> {
         using std::enable_shared_from_this<Derived>::shared_from_this;
+        // Dependent on Derived, so lookup of these still-incomplete types defers to instantiation
+        using vm_machine = typename vm_machine_of<Derived>::type;
+        using vm_sandbox = typename vm_sandbox_of<Derived>::type;
         private:
             std::vector<std::string> references;
         public:
@@ -138,7 +141,7 @@ namespace Vital::Sandbox {
                     if (!push_to_stack) calling_vm -> pop(1);
                 }
 
-                Manager::Sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
+                vm_sandbox::get_singleton() -> signal("entity:created", Tool::StackValue(instance));
                 return true;
             }
 
@@ -150,7 +153,7 @@ namespace Vital::Sandbox {
             static bool erase_unlocked(const std::shared_ptr<Derived> instance) {
                 auto it = Derived::Owner::registry.buffer.find(instance -> id);
                 if (it == Derived::Owner::registry.buffer.end()) return false;
-                Manager::Sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
+                vm_sandbox::get_singleton() -> signal("entity:destroyed", Tool::StackValue(instance));
                 Derived::Owner::registry.buffer.erase(it);
                 instance -> destroyed = true;
                 return true;
@@ -174,8 +177,8 @@ namespace Vital::Sandbox {
             static std::shared_ptr<Derived> init(Machine* vm, bool remote = false) {
                 auto instance = std::make_shared<Derived>();
                 instance -> id = Derived::Owner::registry.next_id.fetch_add(1);
-                instance -> vm = remote ? Manager::Sandbox::get_singleton() -> get_vm() -> get_root() : vm;
-                if (!remote) instance -> env = vm -> get_environment_id();
+                instance -> vm = remote ? static_cast<vm_machine*>(vm_sandbox::get_singleton() -> get_vm()) -> get_root() : vm;
+                if (!remote) instance -> env = static_cast<vm_machine*>(vm) -> get_environment_id();
                 return instance;
             }
 

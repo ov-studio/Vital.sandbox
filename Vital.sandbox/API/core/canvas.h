@@ -18,6 +18,9 @@
 #include <Vital.sandbox/Engine/public/canvas.h>
 #include <Vital.sandbox/API/core/texture.h>
 #include <Vital.sandbox/API/core/rendertarget.h>
+// draw_image and draw_text reach for these instance types directly
+#include <Vital.sandbox/API/core/svg.h>
+#include <Vital.sandbox/API/core/font.h>
 
 
 /////////////////////////

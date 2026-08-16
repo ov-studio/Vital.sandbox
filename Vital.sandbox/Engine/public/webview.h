@@ -77,7 +77,10 @@ namespace Vital::Engine {
             static void update_input_forwarder();
         public:
             // Managers //
-            static Webview* create(const Options& options = {});
+            // GCC rejects a `= {}` default argument whose type is nested in this same
+            // class, so the no-argument form is an overload rather than a default
+            static Webview* create(const Options& options);
+            static Webview* create() { return create(Options{}); }
             void destroy();
 
 

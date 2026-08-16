@@ -47,7 +47,7 @@ namespace Vital::Sandbox {
 
             template<typename T>
             static vm_api make_api() {
-                Machine::register_environment_cleaner([](const std::string& env) { T::clean(env); });
+                vm_machine_of<T>::type::register_environment_cleaner([](const std::string& env) { T::clean(env); });
                 return {
                     [](Machine* vm) { T::init(vm); },
                     [](Machine* vm) { T::bind(vm); },
@@ -111,6 +111,7 @@ namespace Vital::Sandbox {
             template<typename T>
             static void bind_method(Machine* vm, const std::string& name, std::function<int(Machine*, std::shared_ptr<T>, const std::string&)> exec) {
                 using exec_type = std::function<int(Machine*, std::shared_ptr<T>, const std::string&)>;
+                using vm_machine = typename vm_machine_of<T>::type;
                 push_owned<exec_type>(vm -> get_state(), std::move(exec));
                 push_owned<std::string>(vm -> get_state(), scope_name(T::Owner::base_scope));
                 push_owned<std::string>(vm -> get_state(), "self<" + scope_name(T::Owner::base_scope) + ">:" + name);
@@ -118,7 +119,7 @@ namespace Vital::Sandbox {
                     auto fn = static_cast<exec_type*>(lua_touserdata(state, lua_upvalueindex(1)));
                     auto type = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(2)));
                     auto id = static_cast<std::string*>(lua_touserdata(state, lua_upvalueindex(3)));
-                    auto vm = Machine::fetch_machine(state);
+                    auto vm = vm_machine::fetch_machine(state);
                     return vm -> execute([&]() -> int {
                         auto ud = static_cast<void**>(luaL_checkudata(state, 1, type -> c_str()));
                         auto throw_destroyed = [&]() { throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: `<{}>` instance was destroyed", *type)); };
@@ -134,10 +135,11 @@ namespace Vital::Sandbox {
             template<typename TInstance>
             static void bind_natives(Machine* vm) {
                 using TOwner = typename TInstance::Owner;
+                using vm_machine = typename vm_machine_of<TInstance>::type;
 
                 bind_method<TInstance>(vm, "is_type", [](auto vm, auto self, auto& id) -> int {
                     vm_args(vm, id, "(name)", true)
-                        .require(2, &Machine::is_string);
+                        .require(2, &vm_machine::is_string);
 
                     vm -> push_value(scope_name(TOwner::base_scope) == vm -> get_string(2));
                     return 1;
