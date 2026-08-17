@@ -231,12 +231,8 @@ namespace Vital::Engine {
     }
 
     std::string Core::screenshot(const std::string& path) {
-        auto root = get_scene_root();
-        if (!root) return "";
-        godot::Ref<godot::Image> image = root -> get_texture() -> get_image();
-        if (!image.is_valid()) return "";
-
         std::string base, filename;
+        godot::Ref<godot::Image> image = get_scene_root() -> get_texture() -> get_image();
         if (path.empty()) {
             auto timestamp = Tool::get_timestamp();
             base = get_screenshot_directory();
