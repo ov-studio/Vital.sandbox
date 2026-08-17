@@ -73,6 +73,7 @@ namespace Vital::Manager {
                 if (keycode == resolve("config/console", "bind")) {
                     handled = true;
                     Engine::Console::get_singleton() -> toggle();
+                }
                 else if ((keycode == resolve("config/screenshot", "bind"))) {
                     if (Manager::Network::get_singleton() -> is_connected()) {
                         handled = true;
