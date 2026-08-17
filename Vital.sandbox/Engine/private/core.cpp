@@ -45,8 +45,8 @@ namespace Vital::Engine {
                     #if defined(VSDK_Client)
                     http_server.set_bind_address("127.0.0.1");
                     http_server.set_label("Core");
-                    http_server.add_mount("/cache", Tool::get_directory() + "/cache");
-                    http_server.add_mount("/resources", Tool::get_directory() + "/resources");
+                    http_server.add_mount("/cache", Tool::get_directory("cache"));
+                    http_server.add_mount("/resources", Tool::get_directory("resources"));
                     http_server.start(true);
                     #endif
                     kit_ready.store(true);
@@ -218,6 +218,10 @@ namespace Vital::Engine {
         get_environment();
     }
 
+    std::string Core::get_screenshot_directory() {
+        return Tool::get_directory("screenshots");
+    }
+
     godot::Vector2 Core::get_resolution() {
         return get_display_server() -> window_get_size();
     }
@@ -226,32 +230,38 @@ namespace Vital::Engine {
         return http_server.get_url(path);
     }
 
-    std::string Core::screenshot(const std::string& path){
+    std::string Core::screenshot(const std::string& path) {
         auto root = get_scene_root();
-        if(!root) return "";
+        if (!root) return "";
         godot::Ref<godot::Image> image = root -> get_texture() -> get_image();
-        if(!image.is_valid()) return "";
+        if (!image.is_valid()) return "";
 
-        std::string target = path;
-        if(target.empty()) {
+        std::string base, filename;
+        if (path.empty()) {
             auto timestamp = Tool::get_timestamp();
-            godot::String pictures = godot::OS::get_singleton() -> get_system_dir(godot::OS::SYSTEM_DIR_PICTURES);
-            std::string base = Tool::to_std_string(pictures) + "/Vital.sandbox";   // subfolder in Pictures
-            target = base + "/" + fmt::format(
+            base = get_screenshot_directory();
+            filename = fmt::format(
                 "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
-                timestamp.object.at("year").as<int32_t>(), 
-                timestamp.object.at("month").as<int32_t>(), 
+                timestamp.object.at("year").as<int32_t>(),
+                timestamp.object.at("month").as<int32_t>(),
                 timestamp.object.at("day").as<int32_t>(),
-                timestamp.object.at("hour").as<int32_t>(), 
-                timestamp.object.at("minute").as<int32_t>(), 
+                timestamp.object.at("hour").as<int32_t>(),
+                timestamp.object.at("minute").as<int32_t>(),
                 timestamp.object.at("second").as<int32_t>()
             );
+        } else {
+            if (!Tool::File::sanitize(path)) return "";
+            base = Tool::get_directory("resources");
+            filename = path;
         }
 
-        auto gd_target = Tool::to_godot_string(target);
+        auto gd_base = Tool::to_godot_string(base);
+        auto gd_filename = Tool::to_godot_string(filename);
+        auto gd_target = gd_base + godot::String("/") + gd_filename;
         godot::DirAccess::make_dir_recursive_absolute(gd_target.get_base_dir());
-        godot::Error err = image -> save_png(gd_target);
-        if(err != godot::OK) return "";
+        if (image -> save_png(gd_target) != godot::OK) return "";
+
+        std::string target = base + "/" + filename;
         Tool::print("sbox", fmt::format("Core: screenshot saved to {}", target));
         return target;
     }
