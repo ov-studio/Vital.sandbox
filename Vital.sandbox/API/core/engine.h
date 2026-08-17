@@ -40,6 +40,11 @@ namespace Vital::Sandbox::API {
             });
             #endif
 
+            API::bind(vm, base_scope, "get_tick", [](auto vm, auto& id) -> int {
+                vm -> push_value(Tool::get_tick());
+                return 1;
+            });
+
             API::bind(vm, base_scope, "get_version", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Version::get("sdk"));
                 return 1;
@@ -64,7 +69,7 @@ namespace Vital::Sandbox::API {
                 vm -> push_value(base_class::get_singleton() -> get_resolution());
                 return 1;
             });
-            
+
             API::bind(vm, base_scope, "get_serial", [](auto vm, auto& id) -> int {
                 vm -> push_value(Tool::Inspect::fingerprint());
                 return 1;
@@ -147,10 +152,18 @@ namespace Vital::Sandbox::API {
                 return results == 0 ? 1 : results;
             });
 
-            API::bind(vm, base_scope, "get_tick", [](auto vm, auto& id) -> int {
-                vm -> push_value(Tool::get_tick());
+            #if defined(VSDK_Client)
+            API::bind(vm, base_scope, "screenshot", [](auto vm, auto& id) -> int {
+                vm_args(vm, id, "(path = \"\")")
+                    .optional(1, &Machine::is_string);
+
+                const std::string path = vm -> is_string(1) ? vm -> get_string(1) : "";
+                const std::string result = base_class::get_singleton() -> screenshot(path);
+                if (result.empty()) vm -> push_value(false);
+                else vm -> push_value(result);
                 return 1;
             });
+            #endif
         }
 
         static void inject(Machine* vm) {

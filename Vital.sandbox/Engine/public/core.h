@@ -80,7 +80,7 @@ namespace Vital::Engine {
             static void free_environment();
             static void reset_environment();
             godot::Vector2 get_resolution();
-            std::string take_screenshot(const std::string& path = "", const std::string& format = "png");
+            std::string screenshot(const std::string& path = "");
             std::string get_http_url(const std::string& path = "") const;
             #endif
     };

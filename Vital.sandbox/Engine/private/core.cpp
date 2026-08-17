@@ -88,7 +88,7 @@ namespace Vital::Engine {
 
         if(auto key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
-                take_screenshot();
+                screenshot();
                 return;
             }
         }
@@ -226,15 +226,11 @@ namespace Vital::Engine {
         return http_server.get_url(path);
     }
 
-    std::string Core::take_screenshot(const std::string& path, const std::string& format){
+    std::string Core::screenshot(const std::string& path){
         auto root = get_scene_root();
         if(!root) return "";
         godot::Ref<godot::Image> image = root -> get_texture() -> get_image();
         if(!image.is_valid()) return "";
-
-        std::string fmt_lower = format;
-        for (auto& c : fmt_lower) if (c >= 'A' && c <= 'Z') c += 32;
-        bool is_jpg = (fmt_lower == "jpg");
 
         std::string target = path;
         if(target.empty()) {
@@ -242,14 +238,14 @@ namespace Vital::Engine {
             godot::String pictures = godot::OS::get_singleton() -> get_system_dir(godot::OS::SYSTEM_DIR_PICTURES);
             std::string base = Tool::to_std_string(pictures) + "/Vital.sandbox";   // subfolder in Pictures
             target = base + "/" + fmt::format(
-                "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.{}",
+                "screenshot_{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}.png",
                 int(dt["year"]), int(dt["month"]), int(dt["day"]),
-                int(dt["hour"]), int(dt["minute"]), int(dt["second"]), is_jpg ? "jpg" : "png");
+                int(dt["hour"]), int(dt["minute"]), int(dt["second"]));
         }
 
         auto gd_target = Tool::to_godot_string(target);
         godot::DirAccess::make_dir_recursive_absolute(gd_target.get_base_dir());
-        godot::Error err = is_jpg ? image -> save_jpg(gd_target) : image -> save_png(gd_target);
+        godot::Error err = image -> save_png(gd_target);
         if(err != godot::OK) return "";
         Tool::print("sbox", fmt::format("Core: screenshot saved to {}", target));
         return target;
