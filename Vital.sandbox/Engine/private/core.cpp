@@ -249,7 +249,8 @@ namespace Vital::Engine {
                 timestamp.object.at("minute").as<int32_t>(),
                 timestamp.object.at("second").as<int32_t>()
             );
-        } else {
+        }
+        else {
             if (!Tool::File::sanitize(path)) return "";
             base = Tool::get_directory("resources");
             filename = path;
