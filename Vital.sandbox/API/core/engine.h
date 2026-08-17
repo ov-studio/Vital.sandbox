@@ -159,9 +159,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
-                const std::string base = API::File::get_base(vm, path);
-                if (!Tool::File::sanitize(path)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid screenshot path `{}`", path));
-                base_class::get_singleton() -> screenshot(base, path);
+                base_class::get_singleton() -> screenshot(API::File::get_base(vm, path, true), path);
                 vm -> push_value(true);
                 return 1;
             });

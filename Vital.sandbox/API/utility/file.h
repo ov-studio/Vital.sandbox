@@ -25,9 +25,10 @@ namespace Vital::Sandbox::API {
     struct File : vm_module {
         inline static const std::vector<std::string> base_scope = {"util", "file"};
 
-        static std::string get_base(Machine* vm, std::string& path) {
+        static std::string get_base(Machine* vm, std::string& path, bool sanitize = false) {
             auto [resource, relative] = Manager::Resource::get_resource_scoped_path(vm, path);
             path = relative;
+            if (!path.empty() && sanitize && !Tool::File::sanitize(path)) throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, fmt::format("\n> Reason: invalid file path `{}`", path));
             return resource.empty() ? Tool::get_directory("resources") : Manager::Resource::get_resource_base(resource);
         }
 
