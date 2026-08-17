@@ -252,9 +252,7 @@ namespace Vital::Engine {
             filename = path;
         }
 
-        auto gd_base = Tool::to_godot_string(base);
-        auto gd_filename = Tool::to_godot_string(filename);
-        auto gd_target = gd_base + godot::String("/") + gd_filename;
+        auto gd_target = Tool::to_godot_string(base) + godot::String("/") + Tool::to_godot_string(filename);
         godot::DirAccess::make_dir_recursive_absolute(gd_target.get_base_dir());
         if (image -> save_png(gd_target) != godot::OK) return "";
 
