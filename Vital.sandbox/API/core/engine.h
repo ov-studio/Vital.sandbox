@@ -158,6 +158,9 @@ namespace Vital::Sandbox::API {
                     .optional(1, &Machine::is_string);
 
                 const std::string path = vm -> is_string(1) ? vm -> get_string(1) : "";
+                if (!path.empty() && !Tool::File::sanitize(path))
+                    throw Tool::Log::fetch("invalid-argument", Tool::Log::Type::error, "\n> Reason: screenshot path is invalid or targets an unsafe location");
+
                 const std::string result = base_class::get_singleton() -> screenshot(path);
                 if (result.empty()) vm -> push_value(false);
                 else vm -> push_value(result);
