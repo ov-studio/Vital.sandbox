@@ -236,7 +236,7 @@ namespace Vital::Engine {
     void Core::screenshot(const std::string& base, const std::string& path) {
         auto target = Tool::to_godot_string(base + "/" + path);
         godot::DirAccess::make_dir_recursive_absolute(target.get_base_dir());
-        godot::Ref<godot::Image> image = get_scene_root() -> get_texture() -> get_image();
+        auto image = get_scene_root() -> get_texture() -> get_image();
         if (!image.is_valid()) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, "\n> Reason: failed to capture screenshot");
         if (image -> save_png(target) != godot::OK) throw Tool::Log::fetch("request-failed", Tool::Log::Type::error, fmt::format("\n> Reason: failed to save screenshot"));
     }
