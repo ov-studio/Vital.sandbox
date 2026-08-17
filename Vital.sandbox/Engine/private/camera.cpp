@@ -50,7 +50,7 @@ namespace Vital::Engine {
 
     // Getters //
     Camera* Camera::get_active() {
-        auto viewport = Engine::Core::get_scene_root() -> get_viewport();
+        auto viewport = Engine::Core::get_scene_root();
         return viewport ? godot::Object::cast_to<Camera>(viewport -> get_camera_3d()) : nullptr;
     }
 

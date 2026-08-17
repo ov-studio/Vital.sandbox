@@ -194,12 +194,12 @@ namespace Vital::Engine {
     // Misc //
     godot::Vector3 Canvas::world_to_screen(godot::Vector3 position, float padding) {
         godot::Vector3 result = {-1, -1, -1};
-        auto camera = Engine::Core::get_scene_root() -> get_viewport() -> get_camera_3d();
+        auto camera = Engine::Core::get_scene_root() -> get_camera_3d();
         if (camera) {
             auto camera_position = camera -> get_global_position();
             auto camera_forward = -camera -> get_global_transform().basis.get_column(2);
             auto screen_position = camera -> unproject_position(position);
-            auto screen_size = Engine::Core::get_scene_root() -> get_viewport() -> get_visible_rect().size;
+            auto screen_size = Engine::Core::get_scene_root() -> get_visible_rect().size;
             if (
                 (camera_forward.dot((position - camera_position).normalized()) > 0.0f) && 
                 (screen_position.x >= -padding) && 
@@ -213,7 +213,7 @@ namespace Vital::Engine {
 
     godot::Vector3 Canvas::screen_to_world(godot::Vector2 position, float depth) {
         godot::Vector3 result = {-1, -1, -1};
-        auto camera = Engine::Core::get_scene_root() -> get_viewport() -> get_camera_3d();
+        auto camera = Engine::Core::get_scene_root() -> get_camera_3d();
         if (camera) {
             auto origin = camera -> project_ray_origin(position);
             auto direction = camera -> project_ray_normal(position);
