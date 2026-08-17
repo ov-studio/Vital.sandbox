@@ -159,7 +159,7 @@ namespace Vital::Sandbox::API {
                     .require(1, &Machine::is_string);
 
                 auto path = vm -> get_string(1);
-                base_class::get_singleton() -> screenshot(API::File::get_base(vm, path, true), path);
+                base_class::get_singleton() -> capture_screenshot(API::File::get_base(vm, path, true), path);
                 vm -> push_value(true);
                 return 1;
             });

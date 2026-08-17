@@ -88,7 +88,7 @@ namespace Vital::Engine {
         if(auto key = godot::Object::cast_to<godot::InputEventKey>(event.ptr())) {
             if(key -> is_pressed() && !key -> is_echo() && key -> get_keycode() == godot::Key::KEY_F12) {
                 auto filename = fmt::format("{}.png", Tool::get_timestamp_tag());
-                screenshot(Tool::get_directory("screenshots"), filename);
+                capture_screenshot(Tool::get_directory("screenshots"), filename);
                 Tool::print("sbox", fmt::format("Core: screenshot saved to screenshots/{}", filename));
                 return;
             }
@@ -226,7 +226,7 @@ namespace Vital::Engine {
         return http_server.get_url(path);
     }
 
-    void Core::screenshot(const std::string& base, const std::string& path) {
+    void Core::capture_screenshot(const std::string& base, const std::string& path) {
         auto target = Tool::to_godot_string(base + "/" + path);
         auto image = get_scene_root() -> get_texture() -> get_image();
         godot::DirAccess::make_dir_recursive_absolute(target.get_base_dir());
